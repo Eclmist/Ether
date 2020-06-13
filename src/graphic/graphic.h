@@ -19,17 +19,14 @@
 
 #pragma once
 
-// Windows includes
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h> // For HRESULT
+// For COM Ptrs
+#include <wrl.h>
 
-namespace ether
-{
-    inline void ThrowIfFailed(HRESULT hr)
-    {
-        if (FAILED(hr))
-        {
-            throw std::exception();
-        }
-    }
-}
+// DirectX 12 specific headers
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+
+// D3D12 extension library
+#include <d3dx12/d3dx12.h>

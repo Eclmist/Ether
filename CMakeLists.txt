@@ -37,7 +37,7 @@ set ( ETH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set ( ETH_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 
 # Ensure running on Windows
-if ( !WIN32 )
+if ( NOT WIN32 )
     message( FATAL_ERROR "Ether is only supported on Windows 10! CMake will exit." )
 endif ()
 
