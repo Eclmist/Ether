@@ -36,10 +36,6 @@ set(CMAKE_SUPPRESS_REGENERATION true)
 set ( ETH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 set ( ETH_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 
-# Setting on project generation
-SET ( ETH_USE_FASTMATH "YES" CACHE BOOL "Enable fast math. May introduce arithmetic error. This is enabled by default" )
-SET ( ETH_USE_WHOLE_PROGRAMME_OPTIMIZATION "YES" CACHE BOOL "Enable whole programme optimizations. This is enabled by default." )
-
 # Ensure running on Windows
 if ( !WIN32 )
     message( FATAL_ERROR "Ether is only supported on Windows 10! CMake will exit." )
@@ -102,32 +98,8 @@ set ( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${ETH_SOURCE_DIR}/bin" )
 set ( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ETH_SOURCE_DIR}/bin/release" )
 set ( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${ETH_SOURCE_DIR}/bin/debug" )
 
-add_executable ( Ether ${all_files} )
+add_executable ( Ether WIN32 ${all_files} )
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT "Ether")
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Enable Whole Programme Optimization & Link Time Optimizations (/GL, /LTCG)
-    if ( ETH_USE_WHOLE_PROGRAMME_OPTIMIZATION )
-        SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GL" )
-        set_target_properties( Ether PROPERTIES LINK_FLAGS_RELEASE "/LTCG")
-    endif ( ETH_USE_WHOLE_PROGRAMME_OPTIMIZATION )
-
-    # Enables low precision fast math
-    if ( ETH_USE_FASTMATH )
-        set_target_properties( Ether PROPERTIES COMPILE_FLAGS "/fp:fast" )
-    endif ( ETH_USE_FASTMATH )
-else ()
-	set_source_files_properties(${all_files} PROPERTIES COMPILE_FLAGS -w)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-
-    if( ETH_ENABLE_WHOLE_PROGRAMME_OPTIMIZATION )
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-    endif()
-
-    if( ETH_USE_FASTMATH )
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
-    endif()
-endif()
 
 # Set output name for different configs
 set_target_properties ( Ether PROPERTIES RELEASE_OUTPUT_NAME "ether_r" )
@@ -142,4 +114,9 @@ if ( DEBUG_CMAKE )
     endforeach ()
 endif ()
 
-MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
+# Link DX12
+target_link_libraries( Ether
+    d3d12.lib
+    dxgi.lib
+    dxguid.lib
+)
