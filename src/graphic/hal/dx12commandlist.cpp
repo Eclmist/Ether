@@ -17,39 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "graphic/hal/dx12commandlist.h"
 
-#include "graphic/hal/dx12includes.h"
-
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-template <typename T>
-class DX12Component
+void DX12CommandList::CreateCommandList()
 {
-public:
-    virtual wrl::ComPtr<T> Get() = 0;
+    if (m_CommandList != nullptr)
+        return;
 
-public:
-    wrl::ComPtr<IDXGIFactory4> CreateDxgiFactory()
-    {
-        wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-        UINT createFactoryFlags = 0;
-#if defined(_DEBUG)
-        createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-#endif
-        ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
-        return dxgiFactory;
-    };
+    CreateCommandAllocator();
+    ThrowIfFailed(m_Device->CreateCommandList(0, m_Type, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
+}
 
-    // TODO: Setup proper error handling
-    inline void ThrowIfFailed(HRESULT hr)
-    {
-        if (FAILED(hr))
-        {
-            throw std::exception();
-        }
-    };
-};
+void DX12CommandList::CreateCommandAllocator()
+{
+    if (m_CommandAllocator != nullptr)
+        return;
 
+    ThrowIfFailed(m_Device->CreateCommandAllocator(m_Type, IID_PPV_ARGS(&m_CommandAllocator)));
+}

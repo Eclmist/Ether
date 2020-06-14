@@ -21,6 +21,9 @@
 
 void DX12Device::CreateDevice()
 {
+    if (m_Device != nullptr)
+        return;
+
     ThrowIfFailed(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&m_Device)));
 }
 

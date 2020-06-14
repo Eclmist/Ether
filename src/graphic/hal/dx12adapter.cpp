@@ -28,13 +28,7 @@ DX12Adapter::DX12Adapter(bool useWarp)
 
 wrl::ComPtr<IDXGIAdapter4> DX12Adapter::QueryAdapter(bool useWarp)
 {
-    wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-
-    UINT createFactoryFlags = 0;
-#if defined(_DEBUG)
-    createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-#endif
-    ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
+    wrl::ComPtr<IDXGIFactory4> dxgiFactory = CreateDxgiFactory();
 
     if (useWarp)
         return QueryWARPAdapter(dxgiFactory);

@@ -19,37 +19,15 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12descriptorheap.h"
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-template <typename T>
-class DX12Component
+void DX12DescriptorHeap::CreateDescriptorHeap()
 {
-public:
-    virtual wrl::ComPtr<T> Get() = 0;
+    if (m_DescriptorHeap != nullptr)
+        return;
 
-public:
-    wrl::ComPtr<IDXGIFactory4> CreateDxgiFactory()
-    {
-        wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-        UINT createFactoryFlags = 0;
-#if defined(_DEBUG)
-        createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-#endif
-        ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
-        return dxgiFactory;
-    };
-
-    // TODO: Setup proper error handling
-    inline void ThrowIfFailed(HRESULT hr)
-    {
-        if (FAILED(hr))
-        {
-            throw std::exception();
-        }
-    };
-};
-
+    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+    desc.NumDescriptors = m_NumDescriptors;
+    desc.Type = m_Type;
+    ThrowIfFailed(m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap)));
+}

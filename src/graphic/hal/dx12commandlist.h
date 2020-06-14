@@ -19,37 +19,27 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12component.h"
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-template <typename T>
-class DX12Component
+class DX12CommandList : public DX12Component<ID3D12GraphicsCommandList>
 {
 public:
-    virtual wrl::ComPtr<T> Get() = 0;
+    DX12CommandList(wrl::ComPtr<ID3D12Device3> device, D3D12_COMMAND_LIST_TYPE type) 
+        : m_Device(device)
+        , m_Type(type) {};
 
+    void CreateCommandList();
 public:
-    wrl::ComPtr<IDXGIFactory4> CreateDxgiFactory()
-    {
-        wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-        UINT createFactoryFlags = 0;
-#if defined(_DEBUG)
-        createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-#endif
-        ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
-        return dxgiFactory;
-    };
+    inline wrl::ComPtr<ID3D12GraphicsCommandList> Get() override { return m_CommandList; };
 
-    // TODO: Setup proper error handling
-    inline void ThrowIfFailed(HRESULT hr)
-    {
-        if (FAILED(hr))
-        {
-            throw std::exception();
-        }
-    };
+private:
+    void CreateCommandAllocator();
+
+private:
+    wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+    wrl::ComPtr<ID3D12Device3> m_Device;
+    wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+
+    D3D12_COMMAND_LIST_TYPE m_Type;
 };
 
