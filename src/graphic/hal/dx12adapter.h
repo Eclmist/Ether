@@ -19,11 +19,23 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12component.h"
 
-class Graphic
+class DX12Adapter : public DX12Component<IDXGIAdapter4>
 {
 public:
-    Graphic(HWND hWnd);
+    DX12Adapter(bool useWarp);
+
+    wrl::ComPtr<IDXGIAdapter4> QueryAdapter(bool useWarp);
+
+public:
+    inline wrl::ComPtr<IDXGIAdapter4> Get() override { return m_Adapter; };
+
+private:
+    wrl::ComPtr<IDXGIAdapter4> QueryWARPAdapter(wrl::ComPtr<IDXGIFactory4> dxgiFactory);
+    wrl::ComPtr<IDXGIAdapter4> QueryHardwareAdapter(wrl::ComPtr<IDXGIFactory4> dxgiFactory);
+
+private:
+    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
 };
 

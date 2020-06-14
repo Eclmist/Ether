@@ -19,11 +19,32 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12component.h"
 
-class Graphic
+class DX12CommandQueue : public DX12Component<ID3D12CommandQueue>
 {
 public:
-    Graphic(HWND hWnd);
+    DX12CommandQueue(
+        wrl::ComPtr<ID3D12Device3> device,
+        D3D12_COMMAND_LIST_TYPE type,
+        D3D12_COMMAND_QUEUE_PRIORITY priority,
+        D3D12_COMMAND_QUEUE_FLAGS flags)
+        : m_Device(device)
+        , m_Type(type)
+        , m_Priority(priority)
+        , m_Flags(flags) {};
+    
+    void CreateCommandQueue();
+
+public:
+    inline wrl::ComPtr<ID3D12CommandQueue> Get() override { return m_CommandQueue; };
+
+private:
+    wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
+    wrl::ComPtr<ID3D12Device3> m_Device;
+
+    D3D12_COMMAND_LIST_TYPE m_Type;
+    D3D12_COMMAND_QUEUE_PRIORITY m_Priority;
+    D3D12_COMMAND_QUEUE_FLAGS m_Flags;
 };
 

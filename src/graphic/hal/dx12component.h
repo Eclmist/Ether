@@ -21,9 +21,23 @@
 
 #include "graphic/hal/dx12includes.h"
 
-class Graphic
+// ComPtr library
+#include <wrl.h>
+namespace wrl = Microsoft::WRL;
+
+template <typename T>
+class DX12Component
 {
 public:
-    Graphic(HWND hWnd);
+    virtual wrl::ComPtr<T> Get() = 0;
+};
+
+// TODO: Setup proper error handling
+inline void ThrowIfFailed(HRESULT hr)
+{
+    if (FAILED(hr))
+    {
+        throw std::exception();
+    }
 };
 
