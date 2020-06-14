@@ -19,11 +19,10 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12commandqueue.h"
 
-class Graphic
+void DX12CommandQueue::CreateCommandQueue()
 {
-public:
-    Graphic(HWND hWnd);
-};
-
+    D3D12_COMMAND_QUEUE_DESC desc = { m_Type, m_Priority, m_Flags, 0 };
+    ThrowIfFailed(m_Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
+}

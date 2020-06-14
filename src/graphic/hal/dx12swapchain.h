@@ -20,10 +20,11 @@
 #pragma once
 
 #include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12component.h"
 
-class Graphic
+class DX12SwapChain
 {
 public:
-    Graphic(HWND hWnd);
-};
+    DX12SwapChain(HWND hWnd, uint32_t numFrames, 
 
+};

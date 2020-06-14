@@ -20,6 +20,7 @@
 #pragma once
 
 #include "ethwin.h"
+#include "system/system.h"
 
 class Window
 {

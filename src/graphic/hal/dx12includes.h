@@ -19,11 +19,13 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+// D3D12 library
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
 
-class Graphic
-{
-public:
-    Graphic(HWND hWnd);
-};
+// D3D12 extension library
+#include <d3dx12/d3dx12.h>
 
+#define ETH_MINIMUM_FEATURE_LEVEL    D3D_FEATURE_LEVEL_11_0

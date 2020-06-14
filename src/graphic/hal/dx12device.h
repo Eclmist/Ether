@@ -19,11 +19,22 @@
 
 #pragma once
 
-#include "graphic/hal/dx12includes.h"
+#include "graphic/hal/dx12component.h"
 
-class Graphic
+class DX12Device : public DX12Component<ID3D12Device3>
 {
 public:
-    Graphic(HWND hWnd);
+    DX12Device(wrl::ComPtr<IDXGIAdapter4> adapter) : m_Adapter(adapter) {};
+
+    void CreateDevice();
+    void CreateDebugInfoQueue();
+
+public:
+    inline wrl::ComPtr<ID3D12Device3> Get() override { return m_Device; };
+
+private:
+    wrl::ComPtr<ID3D12Device3> m_Device;
+    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
+    wrl::ComPtr<ID3D12InfoQueue> m_DebugInfoQueue;
 };
 
