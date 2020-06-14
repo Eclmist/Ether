@@ -23,6 +23,9 @@
 
 void DX12CommandQueue::CreateCommandQueue()
 {
+    if (m_CommandQueue != nullptr)
+        return;
+
     D3D12_COMMAND_QUEUE_DESC desc = { m_Type, m_Priority, m_Flags, 0 };
     ThrowIfFailed(m_Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
 }

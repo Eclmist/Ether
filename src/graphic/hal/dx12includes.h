@@ -28,4 +28,5 @@
 // D3D12 extension library
 #include <d3dx12/d3dx12.h>
 
-#define ETH_MINIMUM_FEATURE_LEVEL    D3D_FEATURE_LEVEL_11_0
+#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
+#define ETH_NUM_SWAPCHAIN_BUFFERS       3
