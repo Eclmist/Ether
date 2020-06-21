@@ -234,8 +234,14 @@ void Renderer::RenderImGui()
 
 
     // TODO: THIS IS A HACK
-    ID3D12DescriptorHeap* descHeap = m_SRVDescriptorHeap->Get().Get();
-    m_CommandList->Get()->SetDescriptorHeaps(1, &descHeap);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
+        m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
+        m_SwapChain->GetCurrentBackBufferIndex(),
+        m_RTVDescriptorSize
+    );
+    m_CommandList->Get()->OMSetRenderTargets(1, &(rtv), FALSE, NULL);
+    ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
+    m_CommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
 
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());
