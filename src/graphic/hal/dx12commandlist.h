@@ -24,21 +24,17 @@
 class DX12CommandList : public DX12Component<ID3D12GraphicsCommandList>
 {
 public:
-    DX12CommandList(wrl::ComPtr<ID3D12Device3> device, D3D12_COMMAND_LIST_TYPE type) 
-        : m_Device(device)
-        , m_Type(type) {};
+    DX12CommandList(
+        wrl::ComPtr<ID3D12Device3> device,
+        wrl::ComPtr<ID3D12CommandAllocator> allocator,
+        D3D12_COMMAND_LIST_TYPE type);
 
-    void CreateCommandList();
 public:
     inline wrl::ComPtr<ID3D12GraphicsCommandList> Get() override { return m_CommandList; };
-
-private:
-    void CreateCommandAllocator();
+    inline D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return m_Type; };
 
 private:
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
-    wrl::ComPtr<ID3D12Device3> m_Device;
-    wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
     D3D12_COMMAND_LIST_TYPE m_Type;
 };

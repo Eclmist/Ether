@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "graphic/hal/dx12adapter.h"
+#include "dx12adapter.h"
 
 DX12Adapter::DX12Adapter(bool useWarp)
 {

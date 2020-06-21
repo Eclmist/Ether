@@ -59,5 +59,6 @@
 #define NOTAPE
 #define NOMINMAX
 #define STRICT
+#define UNICODE
 
 #include <Windows.h>

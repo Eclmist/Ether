@@ -19,11 +19,8 @@
 
 #pragma once
 
+#include "system/system.h"
 #include "graphic/hal/dx12includes.h"
-
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
 
 template <typename T>
 class DX12Component
@@ -42,14 +39,13 @@ public:
         ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
         return dxgiFactory;
     };
+};
 
-    // TODO: Setup proper error handling
-    inline void ThrowIfFailed(HRESULT hr)
+inline void ThrowIfFailed(HRESULT hr)
+{
+    if (FAILED(hr))
     {
-        if (FAILED(hr))
-        {
-            throw std::exception();
-        }
-    };
+        throw std::exception();
+    }
 };
 

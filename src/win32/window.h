@@ -22,10 +22,13 @@
 #include "ethwin.h"
 #include "system/system.h"
 
+class Renderer;
+
 class Window
 {
 public:
     Window(int width, int height, const wchar_t* windowTitle);
+    Window(HWND hWnd);
     ~Window();
 
 public:
@@ -33,19 +36,26 @@ public:
     Window& operator=(const Window&) = delete;
 
 public:
+    void Show();
+    void SetRenderer(Renderer* renderer);
     void SetFullscreen(bool isFullscreen);
-
-private:
     void InitWindow(const wchar_t* windowTitle);
     void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
     RECT GetCurrentMonitorRect() const;
     void RegisterWindowClass() const noexcept;
+
+    inline HWND GetHwnd() const { return m_hWnd; };
+    inline uint32_t GetWidth() const { return m_WindowedRect.right - m_WindowedRect.left; };
+    inline uint32_t GetHeight() const { return m_WindowedRect.bottom - m_WindowedRect.top; };
 
 private:
     static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
+    // TODO: Find a better way to store call renderer's update methods
+    Renderer* m_Renderer;
+
     // Handle toggling of fullscreen
     bool m_IsFullscreen;
     RECT m_WindowedRect;

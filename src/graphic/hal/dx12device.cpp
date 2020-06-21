@@ -17,14 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphic/hal/dx12device.h"
+#include "dx12device.h"
 
-void DX12Device::CreateDevice()
+DX12Device::DX12Device(wrl::ComPtr<IDXGIAdapter4> adapter)
 {
-    if (m_Device != nullptr)
-        return;
-
-    ThrowIfFailed(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&m_Device)));
+    ThrowIfFailed(D3D12CreateDevice(adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&m_Device)));
 }
 
 void DX12Device::CreateDebugInfoQueue()

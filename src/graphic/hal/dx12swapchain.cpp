@@ -19,36 +19,48 @@
 
 #pragma once
 
-#include "graphic/hal/dx12swapchain.h"
+#include "dx12swapchain.h"
 
-void DX12SwapChain::CreateSwapChain()
+DX12SwapChain::DX12SwapChain(
+    HWND hWnd,
+    wrl::ComPtr<ID3D12Device3> device,
+    wrl::ComPtr<ID3D12CommandQueue> commandQueue,
+    uint32_t frameWidth,
+    uint32_t frameHeight)
+    : m_FrameWidth(frameWidth)
+    , m_FrameHeight(frameHeight)
+    , m_CurrentBackBufferIndex(0)
 {
-    if (m_SwapChain != nullptr)
-        return;
-
     wrl::ComPtr<IDXGIFactory4> dxgiFactory4 = CreateDxgiFactory();
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
     DXGI_SWAP_CHAIN_DESC1 desc = BuildSwapChainDescriptor();
 
-    ThrowIfFailed(dxgiFactory4->CreateSwapChainForHwnd(m_CommandQueue.Get(), m_hWnd, &desc, nullptr, nullptr, &swapChain1));
-    ThrowIfFailed(dxgiFactory4->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER));
+    ThrowIfFailed(dxgiFactory4->CreateSwapChainForHwnd(commandQueue.Get(), hWnd, &desc, nullptr, nullptr, &swapChain1));
+    ThrowIfFailed(dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
     ThrowIfFailed(swapChain1.As(&m_SwapChain));
 }
 
-void DX12SwapChain::UpdateRenderTargets()
+void DX12SwapChain::CreateRenderTargetViews(
+    wrl::ComPtr<ID3D12Device3> device,
+    wrl::ComPtr<ID3D12DescriptorHeap> descriptorHeap)
 {
-    auto rtvSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    auto rtvSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-    for (int i = 0; i < m_NumBuffers; ++i)
+    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
     {
         ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_Buffers[i])));
-        m_Device->CreateRenderTargetView(m_Buffers[i].Get(), nullptr, rtvHandle);
+        device->CreateRenderTargetView(m_Buffers[i].Get(), nullptr, rtvHandle);
         rtvHandle.Offset(rtvSize);
     }
 }
 
-DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor()
+void DX12SwapChain::UpdateBackBufferIndex()
+{
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+}
+
+DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor() const noexcept
 {
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width = m_FrameWidth;
@@ -57,7 +69,7 @@ DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor()
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc = { 1, 0 };
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = m_NumBuffers;
+    swapChainDesc.BufferCount = ETH_NUM_SWAPCHAIN_BUFFERS;
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
