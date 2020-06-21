@@ -40,10 +40,6 @@ void DX12Fence::WaitForFence()
 {
     if (m_Fence->GetCompletedValue() < m_FenceValue)
     {
-// TODO: Why the fuck is max still defined here?
-#if defined(max)
-#undef max
-#endif 
         auto maxWaitDuration = chrono::milliseconds::max();
         ThrowIfFailed(m_Fence->SetEventOnCompletion(m_FenceValue, m_FenceEvent));
         WaitForSingleObject(m_FenceEvent, static_cast<DWORD>(maxWaitDuration.count()));

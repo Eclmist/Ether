@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "win32/window.h"
 #include "system/system.h"
 
 #include "graphic/hal/dx12includes.h"

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "window.h"
+#include "win32/window.h"
 #include "graphic/renderer.h"
 
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
