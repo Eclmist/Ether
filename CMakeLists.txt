@@ -90,4 +90,6 @@ set_target_properties(Ether PROPERTIES DEBUG_OUTPUT_NAME "ether_win32_debug")
 # Link DX12
 target_link_libraries(Ether d3d12.lib dxgi.lib dxguid.lib)
 
-add_compile_options($<$<CONFIG:Library>:/LD>)
+# Link /includes/
+ADD_LIBRARY(ImGui ${extern_files})
+target_link_libraries(Ether ImGui)

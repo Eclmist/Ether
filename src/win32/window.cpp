@@ -19,6 +19,7 @@
 
 #include "win32/window.h"
 #include "graphic/renderer.h"
+#include "imgui/imgui_impl_win32.h"
 
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
@@ -44,6 +45,8 @@ Window::Window(int width, int height, const wchar_t* windowTitle)
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
     InitWindow(windowTitle);
+
+    ImGui_ImplWin32_Init(m_hWnd);
 }
 
 Window::Window(HWND hWnd)
@@ -51,11 +54,11 @@ Window::Window(HWND hWnd)
     , m_IsFullscreen(false)
     , m_WindowedRect()
 {
-    CentralizeClientRect(1920, 1080, 200, 200);
 }
 
 Window::~Window()
 {
+    ImGui_ImplWin32_Shutdown();
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
 }
@@ -191,6 +194,10 @@ LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    // ImGui should read the message first.
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+        return true;
+
     switch (msg)
     {
     case WM_PAINT:
