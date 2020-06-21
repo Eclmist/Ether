@@ -48,7 +48,10 @@ Window::Window(int width, int height, const wchar_t* windowTitle)
 
 Window::Window(HWND hWnd)
     : m_hWnd(hWnd)
+    , m_IsFullscreen(false)
+    , m_WindowedRect()
 {
+    CentralizeClientRect(1920, 1080, 200, 200);
 }
 
 Window::~Window()
