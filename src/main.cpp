@@ -51,7 +51,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     return 0;
 }
 
-ETH_EXPORT_DLL void __cdecl Initialize(HWND hWnd)
+ETH_EXPORT_DLL void Initialize(HWND hWnd)
 {
     g_Window = new Window(hWnd);
     g_Renderer = new Renderer();
@@ -67,6 +67,5 @@ ETH_EXPORT_DLL void Release()
     g_Renderer->Flush();
     g_Renderer->Release();
     delete g_Renderer;
-    delete g_Window;
 }
 
