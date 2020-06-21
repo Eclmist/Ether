@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "win32/ethwinmacros.h"
+
 // STL Headers
 #include <algorithm>
 #include <cassert>

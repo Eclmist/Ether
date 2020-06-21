@@ -20,6 +20,7 @@
 #pragma once
 
 #include "renderer.h"
+#include "win32/window.h"
 
 extern Window* g_Window;
 
@@ -96,9 +97,9 @@ void Renderer::ClearRenderTarget()
 {
     // Hardcode clear color for now
     float clearColor[] = { 
-        sin(m_Timer.GetTimeSinceStart() * 0.0001f),
-        cos(m_Timer.GetTimeSinceStart() * 0.0002f),
-        sin(m_Timer.GetTimeSinceStart() * 0.00015f),
+        (float)sin(m_Timer.GetTimeSinceStart() * 0.0001f),
+        (float)cos(m_Timer.GetTimeSinceStart() * 0.0002f),
+        (float)sin(m_Timer.GetTimeSinceStart() * 0.00015f),
         1.0f };
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(

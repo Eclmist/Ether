@@ -24,6 +24,7 @@
 GfxTimer::GfxTimer() noexcept
     : m_GraphicFrameNumber(0)
     , m_DeltaTime(0)
+    , m_TimeSinceStart(0)
 {
     m_StartTime = chrono::high_resolution_clock::now();
     m_CurrentTime = m_StartTime;
