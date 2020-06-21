@@ -17,14 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dx12commandlist.h"
+#pragma once
 
-DX12CommandList::DX12CommandList(
-    wrl::ComPtr<ID3D12Device3> device,
-    wrl::ComPtr<ID3D12CommandAllocator> allocator,
-    D3D12_COMMAND_LIST_TYPE type) 
-    : m_Type(type)
+#include "graphic/hal/dx12component.h"
+
+class DX12Fence : public DX12Component<ID3D12Fence>
 {
-    ThrowIfFailed(device->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
-    ThrowIfFailed(m_CommandList->Close());
-}
+public:
+    DX12Fence(wrl::ComPtr<ID3D12Device3> device);
+
+    HANDLE CreateFenceEvent() const noexcept;
+    void WaitForFence();
+    void Release();
+
+public:
+    inline wrl::ComPtr<ID3D12Fence> Get() override { return m_Fence; };
+    inline uint64_t GetValue() const noexcept { return m_FenceValue; };
+    inline uint64_t Increment() noexcept { return ++m_FenceValue; };
+
+private:
+    wrl::ComPtr<ID3D12Fence> m_Fence;
+    uint64_t m_FenceValue;
+    HANDLE m_FenceEvent;
+};

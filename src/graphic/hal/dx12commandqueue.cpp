@@ -19,13 +19,23 @@
 
 #pragma once
 
-#include "graphic/hal/dx12commandqueue.h"
+#include "dx12commandqueue.h"
 
-void DX12CommandQueue::CreateCommandQueue()
+DX12CommandQueue::DX12CommandQueue(
+    wrl::ComPtr<ID3D12Device3> device,
+    D3D12_COMMAND_LIST_TYPE type,
+    D3D12_COMMAND_QUEUE_PRIORITY priority,
+    D3D12_COMMAND_QUEUE_FLAGS flags)
+    : m_Type(type)
+    , m_Priority(priority)
 {
-    if (m_CommandQueue != nullptr)
-        return;
+    D3D12_COMMAND_QUEUE_DESC desc = { type, priority, flags, 0 };
+    ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
+}
 
-    D3D12_COMMAND_QUEUE_DESC desc = { m_Type, m_Priority, m_Flags, 0 };
-    ThrowIfFailed(m_Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
+uint64_t DX12CommandQueue::Signal(DX12Fence& fence)
+{
+    wrl::ComPtr<ID3D12Fence> halFence = fence.Get();
+    ThrowIfFailed(m_CommandQueue->Signal(halFence.Get(), fence.Increment()));
+    return fence.GetValue();
 }

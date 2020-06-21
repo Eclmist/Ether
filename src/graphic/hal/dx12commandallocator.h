@@ -17,14 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dx12commandlist.h"
+#pragma once
 
-DX12CommandList::DX12CommandList(
-    wrl::ComPtr<ID3D12Device3> device,
-    wrl::ComPtr<ID3D12CommandAllocator> allocator,
-    D3D12_COMMAND_LIST_TYPE type) 
-    : m_Type(type)
+#include "graphic/hal/dx12component.h"
+
+class DX12CommandAllocator : public DX12Component<ID3D12CommandAllocator>
 {
-    ThrowIfFailed(device->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
-    ThrowIfFailed(m_CommandList->Close());
-}
+public:
+    DX12CommandAllocator(wrl::ComPtr<ID3D12Device3> device, D3D12_COMMAND_LIST_TYPE type);
+    
+public:
+    inline wrl::ComPtr<ID3D12CommandAllocator> Get() override { return m_CommandAllocator; };
+    inline D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return m_Type; };
+
+private:
+    wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+
+    D3D12_COMMAND_LIST_TYPE m_Type;
+};
+

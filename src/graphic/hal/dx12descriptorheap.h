@@ -24,19 +24,17 @@
 class DX12DescriptorHeap : public DX12Component<ID3D12DescriptorHeap>
 {
 public:
-    DX12DescriptorHeap(wrl::ComPtr<ID3D12Device3> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
-        : m_Device(device)
-        , m_Type(type)
-        , m_NumDescriptors(numDescriptors) {};
-
-    void CreateDescriptorHeap();
+    DX12DescriptorHeap(
+        wrl::ComPtr<ID3D12Device3> device, 
+        D3D12_DESCRIPTOR_HEAP_TYPE type, 
+        uint32_t numDescriptors);
 
 public:
     inline wrl::ComPtr<ID3D12DescriptorHeap> Get() override { return m_DescriptorHeap; };
+    inline D3D12_DESCRIPTOR_HEAP_TYPE GetType() const noexcept { return m_Type; };
 
 private:
     wrl::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
-    wrl::ComPtr<ID3D12Device3> m_Device;
 
     D3D12_DESCRIPTOR_HEAP_TYPE m_Type;
     uint32_t m_NumDescriptors;

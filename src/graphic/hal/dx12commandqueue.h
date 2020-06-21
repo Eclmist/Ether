@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphic/hal/dx12component.h"
+#include "graphic/hal/dx12fence.h"
 
 class DX12CommandQueue : public DX12Component<ID3D12CommandQueue>
 {
@@ -28,23 +29,19 @@ public:
         wrl::ComPtr<ID3D12Device3> device,
         D3D12_COMMAND_LIST_TYPE type,
         D3D12_COMMAND_QUEUE_PRIORITY priority,
-        D3D12_COMMAND_QUEUE_FLAGS flags)
-        : m_Device(device)
-        , m_Type(type)
-        , m_Priority(priority)
-        , m_Flags(flags) {};
-    
-    void CreateCommandQueue();
+        D3D12_COMMAND_QUEUE_FLAGS flags);
+
+    uint64_t Signal(DX12Fence& fence);
 
 public:
     inline wrl::ComPtr<ID3D12CommandQueue> Get() override { return m_CommandQueue; };
+    inline D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return m_Type; };
+    inline D3D12_COMMAND_QUEUE_PRIORITY GetPriority() const noexcept { return m_Priority; };
 
 private:
     wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-    wrl::ComPtr<ID3D12Device3> m_Device;
 
     D3D12_COMMAND_LIST_TYPE m_Type;
     D3D12_COMMAND_QUEUE_PRIORITY m_Priority;
-    D3D12_COMMAND_QUEUE_FLAGS m_Flags;
 };
 

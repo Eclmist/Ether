@@ -19,15 +19,17 @@
 
 #pragma once
 
-#include "graphic/hal/dx12descriptorheap.h"
+#include "dx12descriptorheap.h"
 
-void DX12DescriptorHeap::CreateDescriptorHeap()
+DX12DescriptorHeap::DX12DescriptorHeap(
+wrl::ComPtr<ID3D12Device3> device,
+    D3D12_DESCRIPTOR_HEAP_TYPE type,
+    uint32_t numDescriptors)
+    : m_Type(type)
+    , m_NumDescriptors(numDescriptors)
 {
-    if (m_DescriptorHeap != nullptr)
-        return;
-
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.NumDescriptors = m_NumDescriptors;
     desc.Type = m_Type;
-    ThrowIfFailed(m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap)));
+    ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap)));
 }

@@ -24,9 +24,8 @@
 class DX12Device : public DX12Component<ID3D12Device3>
 {
 public:
-    DX12Device(wrl::ComPtr<IDXGIAdapter4> adapter) : m_Adapter(adapter) {};
+    DX12Device(wrl::ComPtr<IDXGIAdapter4> adapter);;
 
-    void CreateDevice();
     void CreateDebugInfoQueue();
 
 public:

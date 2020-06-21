@@ -17,14 +17,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "dx12commandlist.h"
+#pragma once
 
-DX12CommandList::DX12CommandList(
-    wrl::ComPtr<ID3D12Device3> device,
-    wrl::ComPtr<ID3D12CommandAllocator> allocator,
-    D3D12_COMMAND_LIST_TYPE type) 
-    : m_Type(type)
+#include "gfxtimer.h"
+
+GfxTimer::GfxTimer() noexcept
+    : m_GraphicFrameNumber(0)
+    , m_DeltaTime(0)
 {
-    ThrowIfFailed(device->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
-    ThrowIfFailed(m_CommandList->Close());
+    m_StartTime = chrono::high_resolution_clock::now();
+    m_CurrentTime = m_StartTime;
+    m_PreviousTime = m_StartTime;
+}
+
+void GfxTimer::Update() noexcept
+{
+    m_PreviousTime = m_CurrentTime;
+    m_CurrentTime = chrono::high_resolution_clock::now();
+    m_GraphicFrameNumber++;
+    m_DeltaTime = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(m_CurrentTime - m_PreviousTime).count());
+    m_TimeSinceStart = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(m_CurrentTime - m_StartTime).count());
 }

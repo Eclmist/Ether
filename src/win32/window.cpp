@@ -18,6 +18,7 @@
 */
 
 #include "window.h"
+#include "graphic/renderer.h"
 
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
@@ -41,8 +42,11 @@ Window::Window(int width, int height, const wchar_t* windowTitle)
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
     InitWindow(windowTitle);
+}
 
-    ShowWindow(m_hWnd, SW_SHOW);
+Window::Window(HWND hWnd)
+    : m_hWnd(hWnd)
+{
 }
 
 Window::~Window()
@@ -86,6 +90,16 @@ void Window::SetFullscreen(bool isFullscreen)
     }
 
     m_IsFullscreen = isFullscreen;
+}
+
+void Window::Show()
+{
+    ShowWindow(m_hWnd, SW_SHOW);
+}
+
+void Window::SetRenderer(Renderer* renderer)
+{
+    m_Renderer = renderer;
 }
 
 void Window::InitWindow(const wchar_t* windowTitle)
@@ -179,6 +193,10 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 {
     switch (msg)
     {
+    case WM_PAINT:
+        if (m_Renderer != nullptr)
+            m_Renderer->Render();
+        break;
     case WM_KEYDOWN:
     {
         switch (wParam)

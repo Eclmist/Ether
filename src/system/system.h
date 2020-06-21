@@ -22,4 +22,13 @@
 // STL Headers
 #include <algorithm>
 #include <cassert>
+
+// ComPtr library
+#include <wrl.h>
+namespace wrl = Microsoft::WRL;
+
+// Chrono
 #include <chrono>
+namespace chrono = std::chrono;
+
+#define ETH_EXPORT_DLL extern "C" __declspec(dllexport)
