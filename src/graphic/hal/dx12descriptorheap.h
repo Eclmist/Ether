@@ -27,7 +27,8 @@ public:
     DX12DescriptorHeap(
         wrl::ComPtr<ID3D12Device3> device, 
         D3D12_DESCRIPTOR_HEAP_TYPE type, 
-        uint32_t numDescriptors);
+        uint32_t numDescriptors,
+        D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
 public:
     inline wrl::ComPtr<ID3D12DescriptorHeap> Get() override { return m_DescriptorHeap; };

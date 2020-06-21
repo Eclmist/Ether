@@ -44,6 +44,7 @@ private:
     void ResetCommandList();
     void ClearRenderTarget();
     void Present();
+    void EndOfFrame();
     void EnableDebugLayer();
 
 private:
@@ -58,7 +59,9 @@ private:
     std::unique_ptr<DX12CommandQueue> m_CommandQueue;
 
     std::unique_ptr<DX12DescriptorHeap> m_RTVDescriptorHeap;
+    std::unique_ptr<DX12DescriptorHeap> m_SRVDescriptorHeap;
     uint32_t m_RTVDescriptorSize;
 private:
     GfxTimer m_Timer;
+    void RenderImGui();
 };

@@ -20,6 +20,7 @@
 #include "win32/window.h"
 #include "system/system.h"
 #include "graphic/renderer.h"
+#include "imgui/imguimanager.h"
 
 uint32_t g_ClientWidth = 1280;
 uint32_t g_ClientHeight = 720;
@@ -29,6 +30,9 @@ Renderer* g_Renderer;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
+    // TODO: Move this into an app class
+    ImGuiManager imguiManager;
+
     g_Window = new Window(g_ClientWidth, g_ClientHeight, L"Ether");
     g_Renderer = new Renderer();
 

@@ -24,12 +24,14 @@
 DX12DescriptorHeap::DX12DescriptorHeap(
 wrl::ComPtr<ID3D12Device3> device,
     D3D12_DESCRIPTOR_HEAP_TYPE type,
-    uint32_t numDescriptors)
+    uint32_t numDescriptors,
+    D3D12_DESCRIPTOR_HEAP_FLAGS flags)
     : m_Type(type)
     , m_NumDescriptors(numDescriptors)
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.NumDescriptors = m_NumDescriptors;
     desc.Type = m_Type;
+    desc.Flags = flags;
     ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap)));
 }

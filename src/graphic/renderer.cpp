@@ -21,6 +21,8 @@
 
 #include "renderer.h"
 #include "win32/window.h"
+#include "imgui/imgui_impl_dx12.h"
+#include "imgui/imgui_impl_win32.h"
 
 extern Window* g_Window;
 
@@ -28,7 +30,7 @@ Renderer::Renderer()
 {
     EnableDebugLayer();
 
-    m_Adapter = std::make_unique<DX12Adapter>(false);
+    m_Adapter = std::make_unique<DX12Adapter>();
     m_Device = std::make_unique<DX12Device>(m_Adapter->Get());
 
     D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -59,6 +61,22 @@ Renderer::Renderer()
     }
 
     m_CommandList = std::make_unique<DX12CommandList>(m_Device->Get(), m_CommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+    m_SRVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
+        m_Device->Get(),
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+        1,
+        D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+    );
+
+    ImGui_ImplDX12_Init(
+        m_Device->Get().Get(),
+        ETH_NUM_SWAPCHAIN_BUFFERS,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        m_SRVDescriptorHeap->Get().Get(),
+        m_SRVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
+        m_SRVDescriptorHeap->Get()->GetGPUDescriptorHandleForHeapStart()
+    );
 }
 
 void Renderer::Flush()
@@ -76,7 +94,9 @@ void Renderer::Render()
 
     ResetCommandList();
     ClearRenderTarget(); // For now, just clear the backbuffer to some color
+    RenderImGui();
     Present();
+    EndOfFrame();
 }
 
 void Renderer::Release()
@@ -85,6 +105,8 @@ void Renderer::Release()
     {
         m_Fence[i]->Release();
     }
+
+    ImGui_ImplDX12_Shutdown();
 }
 
 void Renderer::ResetCommandList()
@@ -141,7 +163,10 @@ void Renderer::Present()
     // TODO: Implement VSync and tearing support
     ThrowIfFailed(m_SwapChain->Get()->Present(0, 0));
     m_CommandQueue->Signal(*m_Fence[m_SwapChain->GetCurrentBackBufferIndex()]);
+}
 
+void Renderer::EndOfFrame()
+{
     m_SwapChain->UpdateBackBufferIndex();
     m_Fence[m_SwapChain->GetCurrentBackBufferIndex()]->WaitForFence();
 }
@@ -156,4 +181,62 @@ void Renderer::EnableDebugLayer()
     ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
 #endif
+}
+
+// TODO: move this away from the core renderer.
+void Renderer::RenderImGui()
+{
+    ImGui_ImplDX12_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    bool show_another_window = false;
+    static bool show_demo_window = true;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    if (show_demo_window)
+    {
+        ImGui::ShowDemoWindow(&show_demo_window);
+    }
+
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+    {
+        static float f = 0.0f;
+        static int counter = 0;
+
+        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+        ImGui::Checkbox("Another Window", &show_another_window);
+
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::ColorEdit3("clear color", (float*)& clear_color); // Edit 3 floats representing a color
+
+        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            counter++;
+        ImGui::SameLine();
+        ImGui::Text("counter = %d", counter);
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
+
+    // 3. Show another simple window.
+    if (show_another_window)
+    {
+        ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Text("Hello from another window!");
+        if (ImGui::Button("Close Me"))
+            show_another_window = false;
+        ImGui::End();
+    }
+
+
+    // TODO: THIS IS A HACK
+    ID3D12DescriptorHeap* descHeap = m_SRVDescriptorHeap->Get().Get();
+    m_CommandList->Get()->SetDescriptorHeaps(1, &descHeap);
+
+    ImGui::Render();
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());
 }

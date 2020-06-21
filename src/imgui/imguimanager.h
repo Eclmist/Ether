@@ -19,23 +19,9 @@
 
 #pragma once
 
-#include "graphic/hal/dx12component.h"
-
-class DX12Adapter : public DX12Component<IDXGIAdapter4>
+class ImGuiManager
 {
 public:
-    DX12Adapter(bool useWarp = false);
-
-    wrl::ComPtr<IDXGIAdapter4> QueryAdapter(bool useWarp);
-
-public:
-    inline wrl::ComPtr<IDXGIAdapter4> Get() override { return m_Adapter; };
-
-private:
-    wrl::ComPtr<IDXGIAdapter4> QueryWARPAdapter(wrl::ComPtr<IDXGIFactory4> dxgiFactory);
-    wrl::ComPtr<IDXGIAdapter4> QueryHardwareAdapter(wrl::ComPtr<IDXGIFactory4> dxgiFactory);
-
-private:
-    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
+    ImGuiManager();
+    ~ImGuiManager();
 };
-
