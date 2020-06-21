@@ -21,8 +21,9 @@
 
 #include "renderer.h"
 
-Renderer::Renderer(std::shared_ptr<Window> window)
-    : m_Window(window)
+extern Window* g_Window;
+
+Renderer::Renderer()
 {
     EnableDebugLayer();
 
@@ -35,11 +36,11 @@ Renderer::Renderer(std::shared_ptr<Window> window)
     m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
 
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        window->GetHwnd(),
+        g_Window->GetHwnd(),
         m_Device->Get(),
         m_CommandQueue->Get(),
-        window->GetWidth(),
-        window->GetHeight());
+        g_Window->GetWidth(),
+        g_Window->GetHeight());
 
     m_RTVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
         m_Device->Get(),

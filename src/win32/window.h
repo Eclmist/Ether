@@ -22,8 +22,6 @@
 #include "ethwin.h"
 #include "system/system.h"
 
-class Renderer;
-
 class Window
 {
 public:
@@ -37,7 +35,6 @@ public:
 
 public:
     void Show();
-    void SetRenderer(Renderer* renderer);
     void SetFullscreen(bool isFullscreen);
     void InitWindow(const wchar_t* windowTitle);
     void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
@@ -53,9 +50,6 @@ private:
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
-    // TODO: Find a better way to store call renderer's update methods
-    Renderer* m_Renderer;
-
     // Handle toggling of fullscreen
     bool m_IsFullscreen;
     RECT m_WindowedRect;
