@@ -35,7 +35,7 @@
 class Renderer
 {
 public:
-    Renderer(std::shared_ptr<Window> window);
+    Renderer();
 
     void Flush();
     void Render();
@@ -48,8 +48,6 @@ private:
     void EnableDebugLayer();
 
 private:
-    std::shared_ptr<Window> m_Window;
-
     std::unique_ptr<DX12Adapter> m_Adapter;
     std::unique_ptr<DX12Device> m_Device;
     std::unique_ptr<DX12SwapChain> m_SwapChain;

@@ -25,6 +25,8 @@
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 
+extern Renderer* g_Renderer;
+
 Window::Window(int width, int height, const wchar_t* windowTitle)
     : m_IsFullscreen(false)
     , m_hInst(GetModuleHandle(nullptr))
@@ -53,6 +55,11 @@ Window::~Window()
 {
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
+}
+
+void Window::Show()
+{
+    ShowWindow(m_hWnd, SW_SHOW);
 }
 
 void Window::SetFullscreen(bool isFullscreen)
@@ -90,16 +97,6 @@ void Window::SetFullscreen(bool isFullscreen)
     }
 
     m_IsFullscreen = isFullscreen;
-}
-
-void Window::Show()
-{
-    ShowWindow(m_hWnd, SW_SHOW);
-}
-
-void Window::SetRenderer(Renderer* renderer)
-{
-    m_Renderer = renderer;
 }
 
 void Window::InitWindow(const wchar_t* windowTitle)
@@ -194,8 +191,8 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg)
     {
     case WM_PAINT:
-        if (m_Renderer != nullptr)
-            m_Renderer->Render();
+        if (g_Renderer != nullptr)
+            g_Renderer->Render();
         break;
     case WM_KEYDOWN:
     {

@@ -24,14 +24,16 @@
 uint32_t g_ClientWidth = 1280;
 uint32_t g_ClientHeight = 720;
 
+Window* g_Window;
+Renderer* g_Renderer;
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-    std::shared_ptr<Window> window = std::make_shared<Window>(g_ClientWidth, g_ClientHeight, L"Ether");
-    std::shared_ptr<Renderer> dx12Renderer = std::make_shared<Renderer>(window);
+    g_Window = new Window(g_ClientWidth, g_ClientHeight, L"Ether");
+    g_Renderer = new Renderer();
 
     // Renderer is an RAII type, dx12 should be initialized at this point.
-    window->SetRenderer(dx12Renderer.get());
-    window->Show();
+    g_Window->Show();
 
     MSG msg = {};
     while (msg.message != WM_QUIT)
@@ -43,31 +45,28 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         }
     }
 
-    dx12Renderer->Flush();
-    dx12Renderer->Release();
+    g_Renderer->Flush();
+    g_Renderer->Release();
 
     return 0;
 }
 
-ETH_EXPORT_DLL int __cdecl Initialize(HWND hWnd)
+ETH_EXPORT_DLL void __cdecl Initialize(HWND hWnd)
 {
-    Window editorWindow(hWnd);
-
-    //MSG msg = {};
-    //while (msg.message != WM_QUIT)
-    //{
-    //    if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
-    //    {
-    //        TranslateMessage(&msg);
-    //        DispatchMessage(&msg);
-    //    }
-    //}
-
-    return 0;
+    g_Window = new Window(hWnd);
+    g_Renderer = new Renderer();
 }
 
-ETH_EXPORT_DLL int __cdecl Update()
+ETH_EXPORT_DLL void Update()
 {
-    return 0;
+    g_Renderer->Render();
+}
+
+ETH_EXPORT_DLL void Release()
+{
+    g_Renderer->Flush();
+    g_Renderer->Release();
+    delete g_Renderer;
+    delete g_Window;
 }
 
