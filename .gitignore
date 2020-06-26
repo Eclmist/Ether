@@ -31,7 +31,6 @@ _deps
 Thumbs.db
 *.vscode
 test*.png
-*.png
 
 
 # User-specific files
