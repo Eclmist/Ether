@@ -19,25 +19,17 @@
 
 #pragma once
 
-#include "system/system.h"
+#include "system.h"
+#include "subsystemid.h"
 
-class GfxTimer : public NonCopyable
+class SubSystemScheduler
 {
 public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
-
-public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
+    void DeclareDependency(const USSID& dependency);
+    void InitializeSubSystems();
+    void ShutdownSubSystems();
 
 private:
-    chrono::time_point<chrono::high_resolution_clock> m_StartTime;
-    chrono::time_point<chrono::high_resolution_clock> m_CurrentTime;
-    chrono::time_point<chrono::high_resolution_clock> m_PreviousTime;
-
-    uint64_t m_GraphicFrameNumber;
-    double m_DeltaTime;
-    double m_TimeSinceStart;
+    void BuildDependencyGraph();
+    void BuildAdjacencyList();
 };

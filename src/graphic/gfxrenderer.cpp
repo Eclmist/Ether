@@ -19,14 +19,16 @@
 
 #pragma once
 
-#include "renderer.h"
-#include "win32/window.h"
+#include "gfxrenderer.h"
+#include "win32/windowmanager.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
 
-extern Window* g_Window;
+DEFINE_SUBSYSTEM(GfxRenderer);
+DECLARE_SUBSYSTEM(ImGuiManager);
+DECLARE_SUBSYSTEM(WindowManager);
 
-Renderer::Renderer()
+GfxRenderer::GfxRenderer()
 {
     EnableDebugLayer();
 
@@ -39,11 +41,11 @@ Renderer::Renderer()
     m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
 
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        g_Window->GetHwnd(),
+        WindowManager::GetInstance().GetHwnd(),
         m_Device->Get(),
         m_CommandQueue->Get(),
-        g_Window->GetWidth(),
-        g_Window->GetHeight());
+        WindowManager::GetInstance().GetWidth(),
+        WindowManager::GetInstance().GetHeight());
 
     m_RTVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
         m_Device->Get(),
@@ -79,7 +81,24 @@ Renderer::Renderer()
     );
 }
 
-void Renderer::Flush()
+
+GfxRenderer::~GfxRenderer()
+{
+    Flush();
+
+    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
+        m_Fence[i]->Release();
+
+    ImGui_ImplDX12_Shutdown();
+}
+
+void GfxRenderer::RegisterDependencies(SubSystemScheduler& schedule)
+{
+    schedule.DeclareDependency(USSID(ImGuiManager));
+    schedule.DeclareDependency(USSID(WindowManager));
+}
+
+void GfxRenderer::Flush()
 {
     for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
     {
@@ -88,7 +107,7 @@ void Renderer::Flush()
     }
 }
 
-void Renderer::Render()
+void GfxRenderer::Render()
 {
     m_Timer.Update();
 
@@ -99,23 +118,21 @@ void Renderer::Render()
     EndOfFrame();
 }
 
-void Renderer::Release()
+void GfxRenderer::ToggleImGui()
 {
-    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
-    {
-        m_Fence[i]->Release();
-    }
+    if (!ImGuiManager::HasInstance())
+        return;
 
-    ImGui_ImplDX12_Shutdown();
+    ImGuiManager::GetInstance().ToggleVisible();
 }
 
-void Renderer::ResetCommandList()
+void GfxRenderer::ResetCommandList()
 {
     m_CommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get()->Reset();
     m_CommandList->Get()->Reset(m_CommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get().Get(), nullptr);
 }
 
-void Renderer::ClearRenderTarget()
+void GfxRenderer::ClearRenderTarget()
 {
     // Hardcode clear color for now
     float clearColor[] = { 
@@ -142,7 +159,7 @@ void Renderer::ClearRenderTarget()
     m_CommandList->Get()->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
 
-void Renderer::Present()
+void GfxRenderer::Present()
 {
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         m_SwapChain->GetCurrentBackBuffer().Get(),
@@ -165,13 +182,13 @@ void Renderer::Present()
     m_CommandQueue->Signal(*m_Fence[m_SwapChain->GetCurrentBackBufferIndex()]);
 }
 
-void Renderer::EndOfFrame()
+void GfxRenderer::EndOfFrame()
 {
     m_SwapChain->UpdateBackBufferIndex();
     m_Fence[m_SwapChain->GetCurrentBackBufferIndex()]->WaitForFence();
 }
 
-void Renderer::EnableDebugLayer()
+void GfxRenderer::EnableDebugLayer()
 {
 #if defined(_DEBUG)
     // Always enable the debug layer before doing anything DX12 related
@@ -183,57 +200,16 @@ void Renderer::EnableDebugLayer()
 #endif
 }
 
-// TODO: move this away from the core renderer.
-void Renderer::RenderImGui()
+void GfxRenderer::RenderImGui()
 {
-    ImGui_ImplDX12_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+    if (!ImGuiManager::HasInstance())
+        return;
 
-    bool show_another_window = false;
-    static bool show_demo_window = true;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImGuiManager& imGuiManager = ImGuiManager::GetInstance();
 
-    if (show_demo_window)
-    {
-        ImGui::ShowDemoWindow(&show_demo_window);
-    }
+    if (!imGuiManager.GetVisible())
+        return;
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-    {
-        static float f = 0.0f;
-        static int counter = 0;
-
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
-
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)& clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
-    }
-
-    // 3. Show another simple window.
-    if (show_another_window)
-    {
-        ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
-        if (ImGui::Button("Close Me"))
-            show_another_window = false;
-        ImGui::End();
-    }
-
-
-    // TODO: THIS IS A HACK
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
         m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
         m_SwapChain->GetCurrentBackBufferIndex(),
@@ -242,6 +218,12 @@ void Renderer::RenderImGui()
     m_CommandList->Get()->OMSetRenderTargets(1, &(rtv), FALSE, NULL);
     ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
     m_CommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
+
+    ImGui_ImplDX12_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    imGuiManager.SetupUI();
 
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());

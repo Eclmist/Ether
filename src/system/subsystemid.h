@@ -19,25 +19,21 @@
 
 #pragma once
 
-#include "system/system.h"
+typedef const char* USSID;
 
-class GfxTimer : public NonCopyable
+class SubSystemID
 {
 public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
+    SubSystemID()
+        : m_Name("UNINITIALIZED") {};
 
-public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
+    SubSystemID(const char* name)
+        : m_Name(name) {};
+
+    ~SubSystemID() {};
+
+    const USSID operator*() { return m_Name; };
 
 private:
-    chrono::time_point<chrono::high_resolution_clock> m_StartTime;
-    chrono::time_point<chrono::high_resolution_clock> m_CurrentTime;
-    chrono::time_point<chrono::high_resolution_clock> m_PreviousTime;
-
-    uint64_t m_GraphicFrameNumber;
-    double m_DeltaTime;
-    double m_TimeSinceStart;
+    USSID m_Name;
 };

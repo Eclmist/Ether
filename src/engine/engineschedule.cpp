@@ -19,21 +19,36 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "system/subsystem.h"
+#include "engineschedule.h"
+#include "engine/engine.h"
+#include "graphic/gfxrenderer.h"
+#include "imgui/imguimanager.h"
+#include "win32/windowmanager.h"
 
-class ImGuiManager : public SubSystem<ImGuiManager>
+DECLARE_SUBSYSTEM(GfxRenderer);
+DECLARE_SUBSYSTEM(ImGuiManager);
+DECLARE_SUBSYSTEM(WindowManager);
+
+EngineSchedule::EngineSchedule()
 {
-public:
-    ImGuiManager();
-    ~ImGuiManager();
+}
 
-    void SetupUI() const noexcept;
+EngineSchedule::~EngineSchedule()
+{
+}
 
-    void ToggleVisible() noexcept;
-    void SetVisible(bool isVisible) noexcept;
-    bool GetVisible() const noexcept;
+void EngineSchedule::ScheduleSubSystems()
+{
+    // Note: This list does not control execution order of subsystems.
+    // Execution order will be determined based on dependencies declared in 
+    // SubSystem::RegisterDependencies. 
 
-private:
-    bool m_IsVisible;
-};
+    RegisterSubsystem(USSID(GfxRenderer));
+    RegisterSubsystem(USSID(ImGuiManager));
+    RegisterSubsystem(USSID(WindowManager));
+}
+
+void EngineSchedule::RegisterSubsystem(const USSID& uid)
+{
+    Engine::GetInstance().RegisterSubsystem(uid);
+}

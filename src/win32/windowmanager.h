@@ -21,17 +21,17 @@
 
 #include "ethwin.h"
 #include "system/system.h"
+#include "system/subsystem.h"
 
-class Window
+class WindowManager : public SubSystem<WindowManager>
 {
 public:
-    Window(int width, int height, const wchar_t* windowTitle);
-    Window(HWND hWnd);
-    ~Window();
+    WindowManager(const wchar_t* windowTitle, int width = 1280, int height = 720);
+    WindowManager(HWND hWnd);
+    ~WindowManager();
 
 public:
-    Window(const Window&) = delete;
-    Window& operator=(const Window&) = delete;
+    void RegisterDependencies(SubSystemScheduler& schedule) override;
 
 public:
     void Show();

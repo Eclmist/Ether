@@ -17,21 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "win32/window.h"
-#include "graphic/renderer.h"
+#include "win32/windowmanager.h"
+#include "graphic/gfxrenderer.h"
 #include "imgui/imgui_impl_win32.h"
+
+DEFINE_SUBSYSTEM(WindowManager);
+DECLARE_SUBSYSTEM(ImGuiManager);
 
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 
-extern Renderer* g_Renderer;
-
-Window::Window(int width, int height, const wchar_t* windowTitle)
+WindowManager::WindowManager(const wchar_t* windowTitle, int width, int height)
     : m_IsFullscreen(false)
-    , m_hInst(GetModuleHandle(nullptr))
 {
+    m_hInst = GetModuleHandle(nullptr);
+
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
     // to achieve 100% scaling while still allowing non-client window content to 
@@ -49,26 +51,32 @@ Window::Window(int width, int height, const wchar_t* windowTitle)
     ImGui_ImplWin32_Init(m_hWnd);
 }
 
-Window::Window(HWND hWnd)
+WindowManager::WindowManager(HWND hWnd)
     : m_hWnd(hWnd)
     , m_IsFullscreen(false)
     , m_WindowedRect()
 {
+    m_hInst = GetModuleHandle(nullptr);
 }
 
-Window::~Window()
+WindowManager::~WindowManager()
 {
     ImGui_ImplWin32_Shutdown();
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
 }
 
-void Window::Show()
+void WindowManager::RegisterDependencies(SubSystemScheduler& schedule)
+{
+    schedule.DeclareDependency(USSID(ImGuiManager));
+}
+
+void WindowManager::Show()
 {
     ShowWindow(m_hWnd, SW_SHOW);
 }
 
-void Window::SetFullscreen(bool isFullscreen)
+void WindowManager::SetFullscreen(bool isFullscreen)
 {
     if (m_IsFullscreen == isFullscreen)
         return;
@@ -105,7 +113,7 @@ void Window::SetFullscreen(bool isFullscreen)
     m_IsFullscreen = isFullscreen;
 }
 
-void Window::InitWindow(const wchar_t* windowTitle)
+void WindowManager::InitWindow(const wchar_t* windowTitle)
 {
     m_hWnd = CreateWindowExW(
         NULL,
@@ -123,7 +131,7 @@ void Window::InitWindow(const wchar_t* windowTitle)
     );
 }
 
-void Window::CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight)
+void WindowManager::CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight)
 {
     int clientPosX = std::max<int>(0, (screenWidth - clientWidth) / 2);
     int clientPosY = std::max<int>(0, (screenHeight - clientHeight) / 2);
@@ -134,7 +142,7 @@ void Window::CentralizeClientRect(int screenWidth, int screenHeight, int clientW
     m_WindowedRect.bottom = clientPosY + clientHeight;
 }
 
-RECT Window::GetCurrentMonitorRect() const
+RECT WindowManager::GetCurrentMonitorRect() const
 {
     // Query the name of the nearest display device for the window.
     // This is required to set the full screen dimensions of the window
@@ -147,7 +155,7 @@ RECT Window::GetCurrentMonitorRect() const
     return monitorInfo.rcMonitor;
 }
 
-void Window::RegisterWindowClass() const noexcept
+void WindowManager::RegisterWindowClass() const noexcept
 {
     WNDCLASSEXW windowClass;
 
@@ -176,23 +184,23 @@ void Window::RegisterWindowClass() const noexcept
     }
 }
 
-LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowManager::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (msg == WM_NCCREATE)
     {
         const CREATESTRUCTW* cstruct = reinterpret_cast<CREATESTRUCTW*>(lParam);
-        Window* ethWnd = static_cast<Window*>(cstruct->lpCreateParams);
+        WindowManager* ethWnd = static_cast<WindowManager*>(cstruct->lpCreateParams);
         SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(ethWnd));
         return ethWnd->WndProcInternal(hWnd, msg, wParam, lParam);
     }
     else
     {
-        Window* ethWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+        WindowManager* ethWnd = reinterpret_cast<WindowManager*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         return ethWnd->WndProcInternal(hWnd, msg, wParam, lParam);
     }
 }
 
-LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     // ImGui should read the message first.
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
@@ -201,13 +209,17 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg)
     {
     case WM_PAINT:
-        if (g_Renderer != nullptr)
-            g_Renderer->Render();
+        if (GfxRenderer::HasInstance())
+            GfxRenderer::GetInstance().Render();
         break;
     case WM_KEYDOWN:
     {
         switch (wParam)
         {
+        case VK_F3:
+        if (GfxRenderer::HasInstance())
+            GfxRenderer::GetInstance().ToggleImGui();
+            break;
         case VK_F11:
             SetFullscreen(!m_IsFullscreen);
             break;

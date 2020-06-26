@@ -19,25 +19,4 @@
 
 #pragma once
 
-#include "system/system.h"
-
-class GfxTimer : public NonCopyable
-{
-public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
-
-public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
-
-private:
-    chrono::time_point<chrono::high_resolution_clock> m_StartTime;
-    chrono::time_point<chrono::high_resolution_clock> m_CurrentTime;
-    chrono::time_point<chrono::high_resolution_clock> m_PreviousTime;
-
-    uint64_t m_GraphicFrameNumber;
-    double m_DeltaTime;
-    double m_TimeSinceStart;
-};
+#include "api.h"

@@ -23,7 +23,7 @@
 #include "graphic/hal/dx12includes.h"
 
 template <typename T>
-class DX12Component
+class DX12Component : public NonCopyable
 {
 public:
     virtual wrl::ComPtr<T> Get() = 0;

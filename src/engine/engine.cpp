@@ -19,25 +19,35 @@
 
 #pragma once
 
-#include "system/system.h"
+#include "engine.h"
+#include "win32/windowmanager.h"
 
-class GfxTimer : public NonCopyable
+Engine::Engine()
 {
-public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
+    m_Scheduler.InitializeSubSystems();
 
-public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
+    WindowManager::GetInstance().Show();
+}
 
-private:
-    chrono::time_point<chrono::high_resolution_clock> m_StartTime;
-    chrono::time_point<chrono::high_resolution_clock> m_CurrentTime;
-    chrono::time_point<chrono::high_resolution_clock> m_PreviousTime;
+Engine::~Engine()
+{
+    m_Scheduler.ShutdownSubSystems();
+}
 
-    uint64_t m_GraphicFrameNumber;
-    double m_DeltaTime;
-    double m_TimeSinceStart;
-};
+void Engine::Run()
+{
+    MSG msg = {};
+    while (msg.message != WM_QUIT)
+    {
+        if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+}
+
+void Engine::RegisterSubsystem(const USSID& uid)
+{
+    //m_SubSystems.push_back(uid);
+}

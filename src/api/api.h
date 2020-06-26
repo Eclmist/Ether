@@ -21,23 +21,11 @@
 
 #include "system/system.h"
 
-class GfxTimer : public NonCopyable
-{
-public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
+#define ETH_EXPORT_DLL extern "C" __declspec(dllexport)
 
-public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
+ETH_EXPORT_DLL void Initialize(HWND hWnd);
 
-private:
-    chrono::time_point<chrono::high_resolution_clock> m_StartTime;
-    chrono::time_point<chrono::high_resolution_clock> m_CurrentTime;
-    chrono::time_point<chrono::high_resolution_clock> m_PreviousTime;
+ETH_EXPORT_DLL void Update();
 
-    uint64_t m_GraphicFrameNumber;
-    double m_DeltaTime;
-    double m_TimeSinceStart;
-};
+ETH_EXPORT_DLL void Release();
+

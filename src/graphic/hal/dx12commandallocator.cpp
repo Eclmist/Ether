@@ -20,6 +20,7 @@
 #include "dx12commandallocator.h"
 
 DX12CommandAllocator::DX12CommandAllocator(wrl::ComPtr<ID3D12Device3> device, D3D12_COMMAND_LIST_TYPE type)
+    : m_Type(type)
 {
     ThrowIfFailed(device->CreateCommandAllocator(type, IID_PPV_ARGS(&m_CommandAllocator)));
 }

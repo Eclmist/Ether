@@ -24,6 +24,7 @@
 // STL Headers
 #include <algorithm>
 #include <cassert>
+#include <string>
 
 // ComPtr library
 #include <wrl.h>
@@ -33,4 +34,12 @@ namespace wrl = Microsoft::WRL;
 #include <chrono>
 namespace chrono = std::chrono;
 
-#define ETH_EXPORT_DLL extern "C" __declspec(dllexport)
+// Common Containers
+#include <vector>
+#include <list>
+#include <stack>
+#include <queue>
+
+// Useful standalone no-dep Ether includes
+#include "noncopyable.h"
+#include "singleton.h"
