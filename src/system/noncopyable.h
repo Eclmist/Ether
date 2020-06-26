@@ -19,25 +19,16 @@
 
 #pragma once
 
-#include "system/system.h"
+/*
+    Derive from this class to make your classes non copyable
+*/
 
-class GfxTimer : public NonCopyable
+class NonCopyable
 {
 public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
+    NonCopyable() {};
+    ~NonCopyable() {};
 
-public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
-
-private:
-    chrono::time_point<chrono::high_resolution_clock> m_StartTime;
-    chrono::time_point<chrono::high_resolution_clock> m_CurrentTime;
-    chrono::time_point<chrono::high_resolution_clock> m_PreviousTime;
-
-    uint64_t m_GraphicFrameNumber;
-    double m_DeltaTime;
-    double m_TimeSinceStart;
+    NonCopyable(const NonCopyable&) = delete;
+    const NonCopyable& operator=(const NonCopyable&) = delete;
 };

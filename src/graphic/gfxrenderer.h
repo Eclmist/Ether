@@ -30,19 +30,27 @@
 #include "graphic/hal/dx12descriptorheap.h"
 
 #include "graphic/gfxtimer.h"
+#include "imgui/imguimanager.h"
 
-class Renderer
+class GfxRenderer : public SubSystem<GfxRenderer>
 {
 public:
-    Renderer();
+    GfxRenderer();
+    ~GfxRenderer();
 
+public:
+    void RegisterDependencies(SubSystemScheduler& schedule) override;
+
+public:
     void Flush();
     void Render();
     void Release();
+    void ToggleImGui();
 
 private:
     void ResetCommandList();
     void ClearRenderTarget();
+    void RenderImGui();
     void Present();
     void EndOfFrame();
     void EnableDebugLayer();
@@ -61,7 +69,7 @@ private:
     std::unique_ptr<DX12DescriptorHeap> m_RTVDescriptorHeap;
     std::unique_ptr<DX12DescriptorHeap> m_SRVDescriptorHeap;
     uint32_t m_RTVDescriptorSize;
+
 private:
     GfxTimer m_Timer;
-    void RenderImGui();
 };
