@@ -1,4 +1,11 @@
-<h4 align="center">A simple, lightweight, and minimalistic DX12 renderer.</h4>
+<h1 align="center">
+  <br>
+  <img src="https://raw.githubusercontent.com/eclmist/ether/master/docs/ether.png" alt="Ether-Logo" width="200"></a>
+  <br>
+  Ether
+  <br>
+</h1>
+<h4 align="center">A simple and lightweight DX12 renderer.</h4>
 
 ## Introduction
 
@@ -13,17 +20,17 @@ As Ether is a DirectX 12 renderer, it can only be built and ran on a Windows 10 
 Furthermore, ensure that your hardware supports:
 
     - DirectX 12
-    - Shader Model 5.1
+    - Shader Model 5.0
 
 ## Getting Started
 
 > Note: Ether is currently a WIP and is considered unstable. Proceed with caution at your own risk.
 
 Ether uses CMake to build it's binaries. If you would like to build Ether yourselves, run the following CMake commands to generate project files and compile with your favourite C++ compiler.
-
+All targets (debug, release, library) will be generated automatically.
 
 ```shell
-$ cmake -B build -S . -DCMAKE_CONFIGURATION_TYPES:STRING="Debug;Release;" -DCMAKE_BUILD_TYPE=Release
+$ cmake -B build -S .
 ```
 
 ```
