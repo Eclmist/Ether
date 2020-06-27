@@ -22,7 +22,16 @@
 // Use DXMath classes for SIMD/SSE optimized types
 #include <DirectXMath.h>
 
+// Only XMMATRIX and XMVECTOR are SIMD optimized.
+// When SIMD optimization is desired, the other more compact types
+// should be loaded into either XMMATRIX or XMVECTOR for operations.
+
 typedef DirectX::XMMATRIX           ethMatrix;
+typedef DirectX::XMFLOAT3X3         ethMatrix3x3;
+typedef DirectX::XMFLOAT4X3         ethMatrix4x3;
+typedef DirectX::XMFLOAT4X4         ethMatrix4x4;
+
+typedef DirectX::XMVECTOR           ethVector;
 typedef DirectX::XMFLOAT2           ethVector2;
 typedef DirectX::XMFLOAT3           ethVector3;
 typedef DirectX::XMFLOAT4           ethVector4;
