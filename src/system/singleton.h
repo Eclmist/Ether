@@ -21,6 +21,16 @@
 
 #include "system/noncopyable.h"
 
+#define ASSERT_INIT()       assert(m_Instance == nullptr &&\
+                            "Attempting to instantiate a singleton more than once");\
+                            m_IsInitializing = true;
+
+#define ASSERT_DESTROY()    assert(m_Instance != nullptr &&\
+                            "Attempting to destroy a singleton before it has been instantiated");\
+                            m_IsDestroying = true;
+
+#define ASSERT_EXIST()      assert(m_Instance != nullptr && "Attempting to return an uninitialized singleton");
+
 /*
     Global Singleton that is only created or destroyed through explicit new/delete.
     This is mainly used by engine subsystems where it is important that object
@@ -32,14 +42,14 @@ class Singleton : public NonCopyable
 public:
     static void InitSingleton()
     {
-        assert(m_Instance == nullptr && "Attempting to instantiate a singleton more than once");
+        ASSERT_INIT();
         m_Instance = new T();
     };
 
     template <typename TArg1>
     static void InitSingleton(TArg1 arg)
     {
-        assert(m_Instance == nullptr && "Attempting to instantiate a singleton more than once");
+        ASSERT_INIT();
         m_Instance = new T(arg);
     };
 
@@ -56,19 +66,41 @@ public:
 
     static void DestroySingleton()
     {
-        assert(m_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
-        delete m_Instance;
+        ASSERT_DESTROY();
+        delete(m_Instance);
         m_Instance = nullptr;
     };
 
 protected:
-    Singleton() {};
-    ~Singleton() {};
+    Singleton()
+    { 
+        assert(m_IsInitializing &&
+            "Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
+        m_IsInitializing = false;
+    };
+
+    ~Singleton()
+    {
+        assert(m_IsDestroying &&
+            "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
+        m_IsDestroying = false;
+    };
 
 protected:
     static T* m_Instance;
+    static bool m_IsInitializing;
+    static bool m_IsDestroying;
 };
 
 template <typename T>
 T* Singleton<T>::m_Instance = nullptr;
 
+template <typename T>
+bool Singleton<T>::m_IsInitializing = false;
+
+template <typename T>
+bool Singleton<T>::m_IsDestroying = false;
+
+#undef ASSERT_INIT
+#undef ASSERT_EXIST
+#undef ASSERT_DESTROY
