@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <cassert>
 #include <string>
+#include <memory>
 
 // ComPtr library
 #include <wrl.h>
@@ -39,8 +40,13 @@ namespace chrono = std::chrono;
 #include <list>
 #include <stack>
 #include <queue>
+#include <unordered_set>
+#include <unordered_map>
 
 // Useful standalone no-dep Ether includes
 #include "noncopyable.h"
 #include "singleton.h"
 #include "types.h"
+
+#define ETH_ENGINE
+// #define ETH_TOOLMODE

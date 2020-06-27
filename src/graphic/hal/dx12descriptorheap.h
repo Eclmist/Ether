@@ -32,7 +32,7 @@ public:
 
 public:
     inline wrl::ComPtr<ID3D12DescriptorHeap> Get() override { return m_DescriptorHeap; };
-    inline D3D12_DESCRIPTOR_HEAP_TYPE GetType() const noexcept { return m_Type; };
+    inline D3D12_DESCRIPTOR_HEAP_TYPE GetType() const { return m_Type; };
 
 private:
     wrl::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;

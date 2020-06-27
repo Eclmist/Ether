@@ -19,17 +19,22 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "system/subsystemid.h"
+#include "enginesubsystemscheduler.h"
 
-class EngineSchedule
+#include "imgui/imguimanager.h"
+#include "win32/windowmanager.h"
+#include "graphic/gfxrenderer.h"
+
+void EngineSubsystemScheduler::InitializeSubsystems()
 {
-public:
-    EngineSchedule();
-    ~EngineSchedule();
+    //ImGuiManager::GetInstance().Initialize();
+    //WindowManager::GetInstance().Initialize();
+    //GfxRenderer::GetInstance().Initialize();
+}
 
-    void ScheduleSubSystems();
-
-private:
-    void RegisterSubsystem(const USSID& uid);
-};
+void EngineSubsystemScheduler::ShutdownSubsystems()
+{
+    //ImGuiManager::GetInstance().Shutdown();
+    //WindowManager::GetInstance().Shutdown();
+    //GfxRenderer::GetInstance().Shutdown();
+}

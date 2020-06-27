@@ -19,29 +19,13 @@
 
 #pragma once
 
-#include "graphic/hal/dx12component.h"
-#include "graphic/hal/dx12fence.h"
+#include "enginesubsystemid.h"
+#include "engine/enginesubsystem.h"
+#include "engine/enginesubsystemregistry.h"
 
-class DX12CommandQueue : public DX12Component<ID3D12CommandQueue>
+EngineSubsystemID::EngineSubsystemID(const char* name, EngineSubsystem& subsystem)
+    : m_Name(name)
 {
-public:
-    DX12CommandQueue(
-        wrl::ComPtr<ID3D12Device3> device,
-        D3D12_COMMAND_LIST_TYPE type,
-        D3D12_COMMAND_QUEUE_PRIORITY priority,
-        D3D12_COMMAND_QUEUE_FLAGS flags);
-
-    uint64_t Signal(DX12Fence& fence);
-
-public:
-    inline wrl::ComPtr<ID3D12CommandQueue> Get() override { return m_CommandQueue; };
-    inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; };
-    inline D3D12_COMMAND_QUEUE_PRIORITY GetPriority() const { return m_Priority; };
-
-private:
-    wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-
-    D3D12_COMMAND_LIST_TYPE m_Type;
-    D3D12_COMMAND_QUEUE_PRIORITY m_Priority;
-};
-
+    m_RegistryIndex = EngineSubsystemRegistry::GetInstance().Register(subsystem);
+    subsystem.SetID(*this);
+}

@@ -22,10 +22,7 @@
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
-    Engine::InitSingleton();
     Engine::GetInstance().Run();
-    Engine::DestroySingleton();
-
     return 0;
 }
 

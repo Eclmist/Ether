@@ -24,22 +24,21 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
-DEFINE_SUBSYSTEM(ImGuiManager);
+DEFINE_ENGINESUBSYSTEM(ImGuiManager);
 
-ImGuiManager::ImGuiManager()
-    : m_IsVisible(false)
+void ImGuiManager::Initialize()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
 }
 
-ImGuiManager::~ImGuiManager()
+void ImGuiManager::Shutdown()
 {
     ImGui::DestroyContext();
 }
 
-void ImGuiManager::SetupUI() const noexcept
+void ImGuiManager::SetupUI() const
 {
     bool show_another_window = false;
     static bool show_demo_window = true;
@@ -84,18 +83,17 @@ void ImGuiManager::SetupUI() const noexcept
     }
 }
 
-
-void ImGuiManager::ToggleVisible() noexcept
+void ImGuiManager::ToggleVisible()
 {
     SetVisible(!GetVisible());
 }
 
-void ImGuiManager::SetVisible(bool isVisible) noexcept
+void ImGuiManager::SetVisible(bool isVisible)
 {
     m_IsVisible = isVisible;
 }
 
-bool ImGuiManager::GetVisible() const noexcept
+bool ImGuiManager::GetVisible() const
 {
     return m_IsVisible;
 }

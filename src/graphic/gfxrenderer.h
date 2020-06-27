@@ -20,6 +20,7 @@
 #pragma once
 
 #include "system/system.h"
+#include "engine/enginesubsystem.h"
 
 #include "graphic/hal/dx12includes.h"
 #include "graphic/hal/dx12adapter.h"
@@ -32,19 +33,19 @@
 #include "graphic/gfxtimer.h"
 #include "imgui/imguimanager.h"
 
-class GfxRenderer : public SubSystem<GfxRenderer>
+class GfxRenderer : public EngineSubsystem
 {
 public:
-    GfxRenderer();
-    ~GfxRenderer();
+    GfxRenderer() = default;
+    ~GfxRenderer() = default;
 
 public:
-    void RegisterDependencies(SubSystemScheduler& schedule) override;
+    void Initialize() override;
+    void Shutdown() override;
 
 public:
     void Flush();
     void Render();
-    void Release();
     void ToggleImGui();
 
 private:

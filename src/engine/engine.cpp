@@ -21,21 +21,25 @@
 
 #include "engine.h"
 #include "win32/windowmanager.h"
+#include "engine/enginesubsystemregistry.h"
+
+DECLARE_ENGINESUBSYSTEM(WindowManager);
 
 Engine::Engine()
 {
-    m_Scheduler.InitializeSubSystems();
-
-    WindowManager::GetInstance().Show();
+    m_Scheduler.InitializeSubsystems();
 }
 
 Engine::~Engine()
 {
-    m_Scheduler.ShutdownSubSystems();
+    m_Scheduler.ShutdownSubsystems();
 }
 
 void Engine::Run()
 {
+    // do assert here?
+    // ENGINE_SUBSYSTEM(WindowManager)->Show();
+
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {
@@ -45,9 +49,4 @@ void Engine::Run()
             DispatchMessage(&msg);
         }
     }
-}
-
-void Engine::RegisterSubsystem(const USSID& uid)
-{
-    //m_SubSystems.push_back(uid);
 }

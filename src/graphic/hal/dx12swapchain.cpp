@@ -60,7 +60,7 @@ void DX12SwapChain::UpdateBackBufferIndex()
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
-DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor() const noexcept
+DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor() const
 {
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width = m_FrameWidth;

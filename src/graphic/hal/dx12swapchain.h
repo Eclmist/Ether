@@ -35,7 +35,7 @@ public:
 
     void CreateRenderTargetViews(wrl::ComPtr<ID3D12Device3> device, wrl::ComPtr<ID3D12DescriptorHeap> descriptorHeap);
     void UpdateBackBufferIndex();
-    DXGI_SWAP_CHAIN_DESC1 BuildSwapChainDescriptor() const noexcept;
+    DXGI_SWAP_CHAIN_DESC1 BuildSwapChainDescriptor() const;
 
 public:
     inline wrl::ComPtr<IDXGISwapChain4> Get() override { return m_SwapChain; };

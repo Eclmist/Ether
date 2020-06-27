@@ -19,21 +19,9 @@
 
 #pragma once
 
-typedef const char* USSID;
-
-class SubSystemID
+class EngineSubsystemScheduler
 {
 public:
-    SubSystemID()
-        : m_Name("UNINITIALIZED") {};
-
-    SubSystemID(const char* name)
-        : m_Name(name) {};
-
-    ~SubSystemID() {};
-
-    const USSID operator*() { return m_Name; };
-
-private:
-    USSID m_Name;
+    void InitializeSubsystems();
+    void ShutdownSubsystems();
 };

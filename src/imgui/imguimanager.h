@@ -20,19 +20,24 @@
 #pragma once
 
 #include "system/system.h"
-#include "system/subsystem.h"
+#include "engine/enginesubsystem.h"
 
-class ImGuiManager : public SubSystem<ImGuiManager>
+class ImGuiManager : public EngineSubsystem
 {
 public:
-    ImGuiManager();
-    ~ImGuiManager();
+    ImGuiManager() = default;
+    ~ImGuiManager() = default;
 
-    void SetupUI() const noexcept;
+public:
+    void Initialize() override;
+    void Shutdown() override;
 
-    void ToggleVisible() noexcept;
-    void SetVisible(bool isVisible) noexcept;
-    bool GetVisible() const noexcept;
+public:
+    void SetupUI() const;
+
+    void ToggleVisible();
+    void SetVisible(bool isVisible);
+    bool GetVisible() const;
 
 private:
     bool m_IsVisible;

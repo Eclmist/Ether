@@ -31,7 +31,7 @@ public:
 
 public:
     inline wrl::ComPtr<ID3D12GraphicsCommandList> Get() override { return m_CommandList; };
-    inline D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return m_Type; };
+    inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; };
 
 private:
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;

@@ -20,17 +20,20 @@
 #include "win32/windowmanager.h"
 #include "graphic/gfxrenderer.h"
 #include "imgui/imgui_impl_win32.h"
+#include "engine/enginesubsystemregistry.h"
 
-DEFINE_SUBSYSTEM(WindowManager);
-DECLARE_SUBSYSTEM(ImGuiManager);
-
+#define ETH_WINDOW_TITLE        L"Ether"
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
+#define ETH_WINDOW_WIDTH        1920
+#define ETH_WINDOW_HEIGHT       1080
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 
-WindowManager::WindowManager(const wchar_t* windowTitle, int width, int height)
-    : m_IsFullscreen(false)
+DEFINE_ENGINESUBSYSTEM(WindowManager);
+DECLARE_ENGINESUBSYSTEM(GfxRenderer);
+
+void WindowManager::Initialize()
 {
     m_hInst = GetModuleHandle(nullptr);
 
@@ -42,33 +45,20 @@ WindowManager::WindowManager(const wchar_t* windowTitle, int width, int height)
 
     RegisterWindowClass();
 
-    CentralizeClientRect(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), width, height);
+    CentralizeClientRect(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), ETH_WINDOW_WIDTH, ETH_WINDOW_HEIGHT);
 
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
-    InitWindow(windowTitle);
+    InitWindow();
 
     ImGui_ImplWin32_Init(m_hWnd);
 }
 
-WindowManager::WindowManager(HWND hWnd)
-    : m_hWnd(hWnd)
-    , m_IsFullscreen(false)
-    , m_WindowedRect()
-{
-    m_hInst = GetModuleHandle(nullptr);
-}
-
-WindowManager::~WindowManager()
+void WindowManager::Shutdown()
 {
     ImGui_ImplWin32_Shutdown();
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
-}
-
-void WindowManager::RegisterDependencies(SubSystemScheduler& schedule)
-{
-    schedule.DeclareDependency(USSID(ImGuiManager));
 }
 
 void WindowManager::Show()
@@ -113,12 +103,12 @@ void WindowManager::SetFullscreen(bool isFullscreen)
     m_IsFullscreen = isFullscreen;
 }
 
-void WindowManager::InitWindow(const wchar_t* windowTitle)
+void WindowManager::InitWindow()
 {
     m_hWnd = CreateWindowExW(
         NULL,
         ETH_WINDOW_CLASS,
-        windowTitle,
+        ETH_WINDOW_TITLE,
         ETH_WINDOW_STYLE,
         m_WindowedRect.left,
         m_WindowedRect.top,
@@ -155,7 +145,7 @@ RECT WindowManager::GetCurrentMonitorRect() const
     return monitorInfo.rcMonitor;
 }
 
-void WindowManager::RegisterWindowClass() const noexcept
+void WindowManager::RegisterWindowClass() const
 {
     WNDCLASSEXW windowClass;
 
@@ -206,19 +196,21 @@ LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARA
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;
 
+    auto* renderer = ENGINE_SUBSYSTEM(GfxRenderer);
+
     switch (msg)
     {
     case WM_PAINT:
-        if (GfxRenderer::HasInstance())
-            GfxRenderer::GetInstance().Render();
+        if (renderer->IsInitialized())
+            renderer->Render();
         break;
     case WM_KEYDOWN:
     {
         switch (wParam)
         {
         case VK_F3:
-        if (GfxRenderer::HasInstance())
-            GfxRenderer::GetInstance().ToggleImGui();
+        if (renderer->IsInitialized())
+            renderer->ToggleImGui();
             break;
         case VK_F11:
             SetFullscreen(!m_IsFullscreen);

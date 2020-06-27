@@ -19,28 +19,20 @@
 
 #pragma once
 
-#include "system.h"
-#include "subsystemid.h"
-#include "subsystemscheduler.h"
+#include "system/system.h"
 
-// Intended fancy (ab)use of macros
-#define SUBSYSTEM_NAME(name)            __SubSystemID__##name
-#define DEFINE_SUBSYSTEM(name)          namespace SYSTEM_LINKSPACE_TAG { SubSystemID SUBSYSTEM_NAME(name)(#name); } 
-#define DECLARE_SUBSYSTEM(name)         namespace SYSTEM_LINKSPACE_TAG { extern SubSystemID SUBSYSTEM_NAME(name); }
-#define USSID(name)                     *(SYSTEM_LINKSPACE_TAG::SUBSYSTEM_NAME(name))
-
-template <typename T>
-class SubSystem : public Singleton<T>
+class Subsystem
 {
 public:
-    SubSystem() {};
-    ~SubSystem() {};
+    Subsystem() = default;
+    ~Subsystem() = default;
 
-public:
-    virtual void RegisterDependencies(SubSystemScheduler& schedule) { /* Default No Dependency */ };
+    virtual void Initialize() = 0;
+    virtual void Shutdown() = 0;
+
+    inline bool IsInitialized() const { return m_IsInitialized; };
 
 protected:
-    SubSystemID m_ID;
-    std::list<SubSystemID> m_Dependencies;
+    bool m_IsInitialized;
 };
 

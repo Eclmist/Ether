@@ -24,13 +24,13 @@
 class GfxTimer : public NonCopyable
 {
 public:
-    GfxTimer() noexcept;
-    void Update() noexcept;
+    GfxTimer();
+    void Update();
 
 public:
-    inline double GetDeltaTime() const noexcept { return m_DeltaTime; };
-    inline double GetTimeSinceStart() const noexcept { return m_TimeSinceStart; };
-    inline double GetFps() const noexcept { return 1.0 / m_DeltaTime; };
+    inline double GetDeltaTime() const { return m_DeltaTime; };
+    inline double GetTimeSinceStart() const { return m_TimeSinceStart; };
+    inline double GetFps() const { return 1.0 / m_DeltaTime; };
 
 private:
     chrono::time_point<chrono::high_resolution_clock> m_StartTime;
