@@ -22,24 +22,25 @@
 #include "ethwin.h"
 #include "system/system.h"
 #include "system/subsystem.h"
+#include "engine/enginesubsystem.h"
 
-class WindowManager : public SubSystem<WindowManager>
+class WindowManager : public EngineSubsystem
 {
 public:
-    WindowManager(const wchar_t* windowTitle, int width = 1280, int height = 720);
-    WindowManager(HWND hWnd);
-    ~WindowManager();
+    WindowManager() = default;
+    ~WindowManager() = default;
 
 public:
-    void RegisterDependencies(SubSystemScheduler& schedule) override;
+    void Initialize() override;
+    void Shutdown() override;
 
 public:
     void Show();
+    void InitWindow();
     void SetFullscreen(bool isFullscreen);
-    void InitWindow(const wchar_t* windowTitle);
     void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
     RECT GetCurrentMonitorRect() const;
-    void RegisterWindowClass() const noexcept;
+    void RegisterWindowClass() const;
 
     inline HWND GetHwnd() const { return m_hWnd; };
     inline uint32_t GetWidth() const { return m_WindowedRect.right - m_WindowedRect.left; };

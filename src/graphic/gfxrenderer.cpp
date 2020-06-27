@@ -23,12 +23,13 @@
 #include "win32/windowmanager.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
+#include "engine/enginesubsystemregistry.h"
 
-DEFINE_SUBSYSTEM(GfxRenderer);
-DECLARE_SUBSYSTEM(ImGuiManager);
-DECLARE_SUBSYSTEM(WindowManager);
+DEFINE_ENGINESUBSYSTEM(GfxRenderer);
+DECLARE_ENGINESUBSYSTEM(WindowManager);
+DECLARE_ENGINESUBSYSTEM(ImGuiManager);
 
-GfxRenderer::GfxRenderer()
+void GfxRenderer::Initialize()
 {
     EnableDebugLayer();
 
@@ -40,12 +41,14 @@ GfxRenderer::GfxRenderer()
     D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
 
+    auto window = ENGINE_SUBSYSTEM(WindowManager);
+
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        WindowManager::GetInstance().GetHwnd(),
+        window->GetHwnd(),
         m_Device->Get(),
         m_CommandQueue->Get(),
-        WindowManager::GetInstance().GetWidth(),
-        WindowManager::GetInstance().GetHeight());
+        window->GetWidth(),
+        window->GetHeight());
 
     m_RTVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
         m_Device->Get(),
@@ -81,8 +84,7 @@ GfxRenderer::GfxRenderer()
     );
 }
 
-
-GfxRenderer::~GfxRenderer()
+void GfxRenderer::Shutdown()
 {
     Flush();
 
@@ -90,12 +92,6 @@ GfxRenderer::~GfxRenderer()
         m_Fence[i]->Release();
 
     ImGui_ImplDX12_Shutdown();
-}
-
-void GfxRenderer::RegisterDependencies(SubSystemScheduler& schedule)
-{
-    schedule.DeclareDependency(USSID(ImGuiManager));
-    schedule.DeclareDependency(USSID(WindowManager));
 }
 
 void GfxRenderer::Flush()
@@ -120,10 +116,10 @@ void GfxRenderer::Render()
 
 void GfxRenderer::ToggleImGui()
 {
-    if (!ImGuiManager::HasInstance())
-        return;
+    auto* imGuiManager = ENGINE_SUBSYSTEM(ImGuiManager);
 
-    ImGuiManager::GetInstance().ToggleVisible();
+    if (imGuiManager->IsInitialized())
+        imGuiManager->ToggleVisible();
 }
 
 void GfxRenderer::ResetCommandList()
@@ -202,12 +198,9 @@ void GfxRenderer::EnableDebugLayer()
 
 void GfxRenderer::RenderImGui()
 {
-    if (!ImGuiManager::HasInstance())
-        return;
+    ImGuiManager* imGuiManager = ENGINE_SUBSYSTEM(ImGuiManager);
 
-    ImGuiManager& imGuiManager = ImGuiManager::GetInstance();
-
-    if (!imGuiManager.GetVisible())
+    if (!imGuiManager->GetVisible())
         return;
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
@@ -223,7 +216,7 @@ void GfxRenderer::RenderImGui()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    imGuiManager.SetupUI();
+    imGuiManager->SetupUI();
 
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());

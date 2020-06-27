@@ -19,36 +19,21 @@
 
 #pragma once
 
-#include "engineschedule.h"
-#include "engine/engine.h"
-#include "graphic/gfxrenderer.h"
-#include "imgui/imguimanager.h"
-#include "win32/windowmanager.h"
+#include "system/system.h"
 
-DECLARE_SUBSYSTEM(GfxRenderer);
-DECLARE_SUBSYSTEM(ImGuiManager);
-DECLARE_SUBSYSTEM(WindowManager);
+typedef uint16_t EngineSubsystemIndex;
 
-EngineSchedule::EngineSchedule()
+class EngineSubsystem;
+
+class EngineSubsystemID
 {
-}
+public:
+    EngineSubsystemID(const char* name, EngineSubsystem& subsystem);
 
-EngineSchedule::~EngineSchedule()
-{
-}
+    inline const char* GetName() const { return m_Name; };
+    inline const EngineSubsystemIndex operator*() const { return m_RegistryIndex; };
 
-void EngineSchedule::ScheduleSubSystems()
-{
-    // Note: This list does not control execution order of subsystems.
-    // Execution order will be determined based on dependencies declared in 
-    // SubSystem::RegisterDependencies. 
-
-    RegisterSubsystem(USSID(GfxRenderer));
-    RegisterSubsystem(USSID(ImGuiManager));
-    RegisterSubsystem(USSID(WindowManager));
-}
-
-void EngineSchedule::RegisterSubsystem(const USSID& uid)
-{
-    Engine::GetInstance().RegisterSubsystem(uid);
-}
+private:
+    const char* m_Name;
+    EngineSubsystemIndex m_RegistryIndex;
+};

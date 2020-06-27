@@ -26,14 +26,14 @@ class DX12Fence : public DX12Component<ID3D12Fence>
 public:
     DX12Fence(wrl::ComPtr<ID3D12Device3> device);
 
-    HANDLE CreateFenceEvent() const noexcept;
+    HANDLE CreateFenceEvent() const;
     void WaitForFence();
     void Release();
 
 public:
     inline wrl::ComPtr<ID3D12Fence> Get() override { return m_Fence; };
-    inline uint64_t GetValue() const noexcept { return m_FenceValue; };
-    inline uint64_t Increment() noexcept { return ++m_FenceValue; };
+    inline uint64_t GetValue() const { return m_FenceValue; };
+    inline uint64_t Increment() { return ++m_FenceValue; };
 
 private:
     wrl::ComPtr<ID3D12Fence> m_Fence;

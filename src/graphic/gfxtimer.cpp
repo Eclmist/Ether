@@ -21,7 +21,7 @@
 
 #include "gfxtimer.h"
 
-GfxTimer::GfxTimer() noexcept
+GfxTimer::GfxTimer()
     : m_GraphicFrameNumber(0)
     , m_DeltaTime(0)
     , m_TimeSinceStart(0)
@@ -31,7 +31,7 @@ GfxTimer::GfxTimer() noexcept
     m_PreviousTime = m_StartTime;
 }
 
-void GfxTimer::Update() noexcept
+void GfxTimer::Update()
 {
     m_PreviousTime = m_CurrentTime;
     m_CurrentTime = chrono::high_resolution_clock::now();

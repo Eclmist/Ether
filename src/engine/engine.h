@@ -21,7 +21,7 @@
 
 #include "system/system.h"
 #include "system/subsystem.h"
-#include "system/subsystemscheduler.h"
+#include "engine/enginesubsystemscheduler.h"
 
 class Engine : public Singleton<Engine>
 {
@@ -32,10 +32,6 @@ public:
 public:
     void Run();
 
-public:
-    void RegisterSubsystem(const USSID& uid);
-
 private:
-    //std::vector<std::unique_ptr<ISubSystem>> m_SubSystems;
-    SubSystemScheduler m_Scheduler;
+    EngineSubsystemScheduler m_Scheduler;
 };

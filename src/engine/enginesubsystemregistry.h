@@ -19,17 +19,23 @@
 
 #pragma once
 
-#include "system.h"
-#include "subsystemid.h"
+#include "system/system.h"
+#include "engine/enginesubsystem.h"
 
-class SubSystemScheduler
+class EngineSubsystemRegistry : public Singleton<EngineSubsystemRegistry>
 {
 public:
-    void DeclareDependency(const USSID& dependency);
-    void InitializeSubSystems();
-    void ShutdownSubSystems();
+    EngineSubsystemRegistry() = default;
+    ~EngineSubsystemRegistry();
+
+public:
+    EngineSubsystemIndex Register(EngineSubsystem& subsystem);
+    void Unregister(EngineSubsystem& subsystem);
+
+    EngineSubsystem* GetSubsystem(const EngineSubsystemIndex& index);
+    std::vector<EngineSubsystem*> GetRegisteredSubsystems() const;
 
 private:
-    void BuildDependencyGraph();
-    void BuildAdjacencyList();
+    std::vector<EngineSubsystem*> m_Subsystems;
+    uint32_t m_NumRegisteredSubsystems;
 };

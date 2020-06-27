@@ -28,7 +28,7 @@ public:
     
 public:
     inline wrl::ComPtr<ID3D12CommandAllocator> Get() override { return m_CommandAllocator; };
-    inline D3D12_COMMAND_LIST_TYPE GetType() const noexcept { return m_Type; };
+    inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; };
 
 private:
     wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;

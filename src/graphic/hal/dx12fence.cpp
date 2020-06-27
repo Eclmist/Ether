@@ -28,7 +28,7 @@ DX12Fence::DX12Fence(wrl::ComPtr<ID3D12Device3> device)
     m_FenceEvent = CreateFenceEvent();
 }
 
-HANDLE DX12Fence::CreateFenceEvent() const noexcept
+HANDLE DX12Fence::CreateFenceEvent() const
 {
     HANDLE fenceEvent;
     fenceEvent = CreateEvent(nullptr, false, false, nullptr);
