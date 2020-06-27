@@ -19,28 +19,16 @@
 
 #pragma once
 
-#include "win32/ethwinmacros.h"
+// Use DXMath classes for SIMD/SSE optimized types
+#include <DirectXMath.h>
 
-// STL Headers
-#include <algorithm>
-#include <cassert>
-#include <string>
-
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-// Chrono
-#include <chrono>
-namespace chrono = std::chrono;
-
-// Common Containers
-#include <vector>
-#include <list>
-#include <stack>
-#include <queue>
-
-// Useful standalone no-dep Ether includes
-#include "noncopyable.h"
-#include "singleton.h"
-#include "types.h"
+typedef DirectX::XMMATRIX           ethMatrix;
+typedef DirectX::XMFLOAT2           ethVector2;
+typedef DirectX::XMFLOAT3           ethVector3;
+typedef DirectX::XMFLOAT4           ethVector4;
+typedef DirectX::XMUINT2            ethVector2u;
+typedef DirectX::XMUINT3            ethVector3u;
+typedef DirectX::XMUINT4            ethVector4u;
+typedef DirectX::XMINT2             ethVector2i;
+typedef DirectX::XMINT3             ethVector3i;
+typedef DirectX::XMINT4             ethVector4i;
