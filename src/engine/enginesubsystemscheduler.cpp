@@ -28,7 +28,7 @@ void EngineSubsystemScheduler::InitializeSubsystems()
     //WindowManager::GetInstance().Initialize();
     //GfxRenderer::GetInstance().Initialize();
 
-    EngineSubsystemRegistry subsystemRegistry = EngineSubsystemRegistry::GetInstance();
+    //std::vector<EngineSubsystem*> subsystemRegistry = EngineSubsystemRegistry::GetInstance().GetRegisteredSubsystems();
 }
 
 void EngineSubsystemScheduler::ShutdownSubsystems()
