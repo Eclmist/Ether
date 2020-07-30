@@ -6,6 +6,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Generate Projects
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B build
     - name: Build
-      run: cmake --build ./build/
+      run: cmake --build ./build/ --config Release
