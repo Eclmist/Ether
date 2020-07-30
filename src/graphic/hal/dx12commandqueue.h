@@ -31,6 +31,7 @@ public:
         D3D12_COMMAND_QUEUE_PRIORITY priority,
         D3D12_COMMAND_QUEUE_FLAGS flags);
 
+public:
     uint64_t Signal(DX12Fence& fence);
 
 public:
