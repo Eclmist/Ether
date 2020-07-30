@@ -8,7 +8,7 @@
 <h4 align="center">A simple and lightweight DX12 renderer.</h4>
 
 <p align="center">
-  <a href="https://travis-ci.com/Eclmist/Elixir">
+  <a href="https://github.com/Eclmist/Ether/actions">
     <img src="https://github.com/Eclmist/Ether/workflows/Build/badge.svg" alt="Build Status">
   </a>
   <a href="#------">
