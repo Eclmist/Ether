@@ -24,7 +24,7 @@
 #include "system/subsystem.h"
 #include "engine/enginesubsystem.h"
 
-class WindowManager : public EngineSubsystem
+class WindowManager : public EngineSubsystem<WindowManager>
 {
 public:
     WindowManager() = default;

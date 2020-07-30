@@ -24,13 +24,13 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
-DEFINE_ENGINESUBSYSTEM(ImGuiManager);
-
 void ImGuiManager::Initialize()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
+
+    SetInitialized(true);
 }
 
 void ImGuiManager::Shutdown()
@@ -40,6 +40,9 @@ void ImGuiManager::Shutdown()
 
 void ImGuiManager::SetupUI() const
 {
+    if (!IsInitialized())
+        return;
+
     bool show_another_window = false;
     static bool show_demo_window = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

@@ -33,7 +33,7 @@
 #include "graphic/gfxtimer.h"
 #include "imgui/imguimanager.h"
 
-class GfxRenderer : public EngineSubsystem
+class GfxRenderer : public EngineSubsystem<GfxRenderer>
 {
 public:
     GfxRenderer() = default;

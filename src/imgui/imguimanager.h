@@ -22,7 +22,7 @@
 #include "system/system.h"
 #include "engine/enginesubsystem.h"
 
-class ImGuiManager : public EngineSubsystem
+class ImGuiManager : public EngineSubsystem<ImGuiManager>
 {
 public:
     ImGuiManager() = default;
