@@ -1,0 +1,11 @@
+name: Build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Generate Projects
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build ./build/
