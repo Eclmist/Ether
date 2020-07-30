@@ -20,16 +20,15 @@
 #pragma once
 
 #include "enginesubsystemscheduler.h"
-
-#include "imgui/imguimanager.h"
-#include "win32/windowmanager.h"
-#include "graphic/gfxrenderer.h"
+#include "engine/enginesubsystemregistry.h"
 
 void EngineSubsystemScheduler::InitializeSubsystems()
 {
     //ImGuiManager::GetInstance().Initialize();
     //WindowManager::GetInstance().Initialize();
     //GfxRenderer::GetInstance().Initialize();
+
+    //std::vector<EngineSubsystem*> subsystemRegistry = EngineSubsystemRegistry::GetInstance().GetRegisteredSubsystems();
 }
 
 void EngineSubsystemScheduler::ShutdownSubsystems()
