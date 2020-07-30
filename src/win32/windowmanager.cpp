@@ -20,18 +20,14 @@
 #include "win32/windowmanager.h"
 #include "graphic/gfxrenderer.h"
 #include "imgui/imgui_impl_win32.h"
-#include "engine/enginesubsystemregistry.h"
 
 #define ETH_WINDOW_TITLE        L"Ether"
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
-#define ETH_WINDOW_WIDTH        1920
-#define ETH_WINDOW_HEIGHT       1080
+#define ETH_WINDOW_WIDTH        1270
+#define ETH_WINDOW_HEIGHT       768
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
-
-DEFINE_ENGINESUBSYSTEM(WindowManager);
-DECLARE_ENGINESUBSYSTEM(GfxRenderer);
 
 void WindowManager::Initialize()
 {
@@ -52,6 +48,8 @@ void WindowManager::Initialize()
     InitWindow();
 
     ImGui_ImplWin32_Init(m_hWnd);
+
+    SetInitialized(true);
 }
 
 void WindowManager::Shutdown()
@@ -196,7 +194,7 @@ LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARA
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;
 
-    GfxRenderer* renderer = ENGINE_SUBSYSTEM(GfxRenderer);
+    GfxRenderer* renderer = &GfxRenderer::GetInstance();
 
     switch (msg)
     {

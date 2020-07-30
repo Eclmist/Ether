@@ -21,7 +21,8 @@
 
 #include "system/system.h"
 
-class Subsystem
+template <typename T>
+class Subsystem : public Singleton<T>
 {
 public:
     Subsystem() = default;
@@ -33,6 +34,9 @@ public:
     inline bool IsInitialized() const { return m_IsInitialized; };
 
 protected:
+    inline void SetInitialized(bool isInitialized) { m_IsInitialized = isInitialized; };
+
+private:
     bool m_IsInitialized;
 };
 

@@ -21,26 +21,14 @@
 
 #include "system/system.h"
 #include "system/subsystem.h"
-#include "engine/enginesubsystemid.h"
 
-#define ESSID_NAME(name)                __EngineSubsystemID__##name
-#define DEFINE_ENGINESUBSYSTEM(name)    namespace ENGINE_LINKSPACE { EngineSubsystemID ESSID_NAME(name)(#name, *(new name())); }
-#define DECLARE_ENGINESUBSYSTEM(name)   namespace ENGINE_LINKSPACE { extern EngineSubsystemID ESSID_NAME(name); }
-#define ENGINE_SUBSYSTEM(name)          static_cast<name*>(EngineSubsystemRegistry::GetInstance().GetSubsystem(*(ENGINE_LINKSPACE::ESSID_NAME(name))))
-
-class EngineSubsystem : public Subsystem
+template <typename T>
+class EngineSubsystem : public Subsystem<T>
 {
 public:
     EngineSubsystem() = default;
     ~EngineSubsystem() = default;
         
-    virtual void Initialize() override { m_IsInitialized = true; };
-    virtual void Shutdown() override { m_IsInitialized = false; };
-
-public:
-    inline void SetID(EngineSubsystemID& id) { m_ID = &id; }
-    inline const EngineSubsystemID GetID() const { return *m_ID; };
-
-private:
-    EngineSubsystemID* m_ID;
+    virtual void Initialize() override { SetInitialized(true); };
+    virtual void Shutdown() override { SetInitialized(false); };
 };

@@ -21,13 +21,9 @@
 
 #include "gfxrenderer.h"
 #include "win32/windowmanager.h"
+#include "imgui/imguimanager.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
-#include "engine/enginesubsystemregistry.h"
-
-DEFINE_ENGINESUBSYSTEM(GfxRenderer);
-DECLARE_ENGINESUBSYSTEM(WindowManager);
-DECLARE_ENGINESUBSYSTEM(ImGuiManager);
 
 void GfxRenderer::Initialize()
 {
@@ -41,7 +37,7 @@ void GfxRenderer::Initialize()
     D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
 
-    auto window = ENGINE_SUBSYSTEM(WindowManager);
+    WindowManager* window = &WindowManager::GetInstance();
 
     m_SwapChain = std::make_unique<DX12SwapChain>(
         window->GetHwnd(),
@@ -82,6 +78,8 @@ void GfxRenderer::Initialize()
         m_SRVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
         m_SRVDescriptorHeap->Get()->GetGPUDescriptorHandleForHeapStart()
     );
+
+    SetInitialized(true);
 }
 
 void GfxRenderer::Shutdown()
@@ -105,6 +103,9 @@ void GfxRenderer::Flush()
 
 void GfxRenderer::Render()
 {
+    if (!IsInitialized())
+        return;
+
     m_Timer.Update();
 
     ResetCommandList();
@@ -116,10 +117,8 @@ void GfxRenderer::Render()
 
 void GfxRenderer::ToggleImGui()
 {
-    auto* imGuiManager = ENGINE_SUBSYSTEM(ImGuiManager);
-
-    if (imGuiManager->IsInitialized())
-        imGuiManager->ToggleVisible();
+    ImGuiManager* imGuiManager = &ImGuiManager::GetInstance();
+    imGuiManager->ToggleVisible();
 }
 
 void GfxRenderer::ResetCommandList()
@@ -198,7 +197,7 @@ void GfxRenderer::EnableDebugLayer()
 
 void GfxRenderer::RenderImGui()
 {
-    ImGuiManager* imGuiManager = ENGINE_SUBSYSTEM(ImGuiManager);
+    ImGuiManager* imGuiManager = &ImGuiManager::GetInstance();
 
     if (!imGuiManager->GetVisible())
         return;
