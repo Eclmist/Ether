@@ -23,7 +23,6 @@
 #include "system/subsystem.h"
 #include "engine/enginesubsystemid.h"
 
-// Intended fancy ab(use) of macros
 #define ESSID_NAME(name)                __EngineSubsystemID__##name
 #define DEFINE_ENGINESUBSYSTEM(name)    namespace ENGINE_LINKSPACE { EngineSubsystemID ESSID_NAME(name)(#name, *(new name())); }
 #define DECLARE_ENGINESUBSYSTEM(name)   namespace ENGINE_LINKSPACE { extern EngineSubsystemID ESSID_NAME(name); }

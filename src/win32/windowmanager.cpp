@@ -196,7 +196,7 @@ LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARA
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;
 
-    auto* renderer = ENGINE_SUBSYSTEM(GfxRenderer);
+    GfxRenderer* renderer = ENGINE_SUBSYSTEM(GfxRenderer);
 
     switch (msg)
     {
