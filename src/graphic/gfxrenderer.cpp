@@ -33,9 +33,7 @@ void GfxRenderer::Initialize()
     m_Device = std::make_unique<DX12Device>(m_Adapter->Get());
 
     D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    D3D12_COMMAND_QUEUE_PRIORITY priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-    D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
+    m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type);
 
     WindowManager* window = &WindowManager::GetInstance();
 
