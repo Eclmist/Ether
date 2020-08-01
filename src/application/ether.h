@@ -19,28 +19,37 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "engine/subsystem/enginesubsystem.h"
+#include "application/application.h"
 
-class Engine;
-
-class ImGuiManager : public EngineSubsystem
+class Ether : public Application
 {
 public:
-    ImGuiManager(Engine* engine);
-    ~ImGuiManager() = default;
+    Ether(const EngineConfig& config);
 
-public:
+    //! @brief Initialize the Ether engine.
     void Initialize() override;
-    void Shutdown() override;
 
-public:
-    void SetupUI() const;
+    //! @brief Load all content required.
+    void LoadContent() override;
 
-    void ToggleVisible();
-    void SetVisible(bool isVisible);
-    bool GetVisible() const;
+    //! @brief Unload content that was loaded by LoadContent.
+    void UnloadContent() override;
 
-private:
-    bool m_IsVisible;
+    //! @brief Destroy all resources that are being used.
+    void Destroy() override;
+
+protected:
+    void OnUpdate(UpdateEventArgs& e) override;
+
+    void OnRender(RenderEventArgs& e) override;
+
+    void OnKeyPressed(KeyEventArgs& e) override;
+
+    void OnKeyReleased(KeyEventArgs& e) override;
+
+    void OnMouseButtonPressed(MouseEventArgs& e) override;
+
+    void OnMouseButtonReleased(MouseEventArgs& e) override;
+
+    void OnMouseMoved(MouseEventArgs& e) override;
 };

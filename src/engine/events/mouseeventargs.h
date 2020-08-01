@@ -17,25 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "system/system.h"
-#include "application/ether.h"
+#pragma once
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+#include "eventargs.h"
+
+struct MouseEventArgs : public EventArgs
 {
-    EngineConfig engineConfig;
-    engineConfig.SetClientName("Ether Demo");
-    engineConfig.SetClientWidth(1270);
-    engineConfig.SetClientHeight(720);
-    engineConfig.SetIsRunningInEditor(false);
+    enum ButtonState
+    {
+        BUTTONSTATE_DOWN,
+        BUTTONSTATE_UP,
+    };
 
-    Ether ether(engineConfig);
-    ether.Initialize();
+    enum MouseButton
+    {
+        MOUSEBUTTON_NONE,
+        MOUSEBUTTON_LEFT,
+        MOUSEBUTTON_RIGHT,
+        MOUSEBUTTON_MIDDLE,
+    };
 
-    // Temp hijack engine to call engine.run().
-    // TODO: This should be removed. A separate game loop should be running either in the application
-    // or from the editor through api.
-    ether.GetEngine()->Run();
-    
-    return 0;
-}
+    MouseButton m_Button;
+    ButtonState m_State;
 
+    bool m_IsControlPressed;
+    bool m_IsShiftPressed;
+    bool m_IsAltPressed;
+
+    int m_PosX;
+    int m_PosY;
+    int m_DeltaX;
+    int m_DeltaY;
+};

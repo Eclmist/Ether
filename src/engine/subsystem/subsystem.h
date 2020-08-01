@@ -19,9 +19,23 @@
 
 #pragma once
 
-class EngineSubsystemScheduler
+#include "system/system.h"
+
+class Subsystem : NonCopyable
 {
 public:
-    void InitializeSubsystems();
-    void ShutdownSubsystems();
+    Subsystem() = default;
+    ~Subsystem() = default;
+
+    virtual void Initialize() = 0;
+    virtual void Shutdown() = 0;
+
+    inline bool IsInitialized() const { return m_IsInitialized; };
+
+protected:
+    inline void SetInitialized(bool isInitialized) { m_IsInitialized = isInitialized; };
+
+private:
+    bool m_IsInitialized;
 };
+

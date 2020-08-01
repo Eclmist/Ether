@@ -24,6 +24,11 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
+ImGuiManager::ImGuiManager(Engine* engine)
+    : EngineSubsystem(engine)
+{
+}
+
 void ImGuiManager::Initialize()
 {
     IMGUI_CHECKVERSION();

@@ -24,8 +24,8 @@
 DX12CommandQueue::DX12CommandQueue(
     wrl::ComPtr<ID3D12Device3> device,
     D3D12_COMMAND_LIST_TYPE type,
-    D3D12_COMMAND_QUEUE_PRIORITY priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
-    D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE)
+    D3D12_COMMAND_QUEUE_PRIORITY priority,
+    D3D12_COMMAND_QUEUE_FLAGS flags)
     : m_Type(type)
     , m_Priority(priority)
 {

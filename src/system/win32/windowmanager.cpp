@@ -17,7 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "win32/windowmanager.h"
+#include "windowmanager.h"
+#include "engine/engine.h"
 #include "graphic/gfxrenderer.h"
 #include "imgui/imgui_impl_win32.h"
 
@@ -28,6 +29,11 @@
 #define ETH_WINDOW_HEIGHT       768
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
+
+WindowManager::WindowManager(Engine* engine)
+    : EngineSubsystem(engine)
+{
+}
 
 void WindowManager::Initialize()
 {
@@ -46,6 +52,15 @@ void WindowManager::Initialize()
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
     InitWindow();
+
+    ImGui_ImplWin32_Init(m_hWnd);
+
+    SetInitialized(true);
+}
+
+void WindowManager::InitializeForEditor()
+{
+    m_hWnd = m_Engine->GetEngineConfig().GetEditorHwnd();
 
     ImGui_ImplWin32_Init(m_hWnd);
 
@@ -194,21 +209,17 @@ LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARA
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;
 
-    GfxRenderer* renderer = &GfxRenderer::GetInstance();
-
     switch (msg)
     {
     case WM_PAINT:
-        if (renderer->IsInitialized())
-            renderer->Render();
+        m_Engine->GetRenderer()->RenderFrame();
         break;
     case WM_KEYDOWN:
     {
         switch (wParam)
         {
         case VK_F3:
-        if (renderer->IsInitialized())
-            renderer->ToggleImGui();
+            m_Engine->GetRenderer()->ToggleImGui();
             break;
         case VK_F11:
             SetFullscreen(!m_IsFullscreen);

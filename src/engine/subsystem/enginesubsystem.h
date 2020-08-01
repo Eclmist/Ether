@@ -20,23 +20,19 @@
 #pragma once
 
 #include "system/system.h"
+#include "engine/subsystem/subsystem.h"
 
-template <typename T>
-class Subsystem : public Singleton<T>
+class Engine;
+
+class EngineSubsystem : public Subsystem
 {
 public:
-    Subsystem() = default;
-    ~Subsystem() = default;
-
-    virtual void Initialize() = 0;
-    virtual void Shutdown() = 0;
-
-    inline bool IsInitialized() const { return m_IsInitialized; };
+    EngineSubsystem(Engine* engine) { m_Engine = engine; };
+    ~EngineSubsystem() = default;
+        
+    virtual void Initialize() override { SetInitialized(true); };
+    virtual void Shutdown() override { SetInitialized(false); };
 
 protected:
-    inline void SetInitialized(bool isInitialized) { m_IsInitialized = isInitialized; };
-
-private:
-    bool m_IsInitialized;
+    Engine* m_Engine;
 };
-

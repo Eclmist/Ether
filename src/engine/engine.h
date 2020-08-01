@@ -20,18 +20,33 @@
 #pragma once
 
 #include "system/system.h"
-#include "system/subsystem.h"
-#include "engine/enginesubsystemscheduler.h"
+#include "engine/config/engineconfig.h"
+#include "engine/events/events.h"
+#include "engine/subsystem/enginesubsystemcontroller.h"
+#include "engine/subsystem/subsystem.h"
 
-class Engine : public Singleton<Engine>
+class WindowManager;
+class GfxRenderer;
+class ImGuiManager;
+
+class Engine : public NonCopyable
 {
 public:
-    Engine();
-    ~Engine();
+    Engine(const EngineConfig& config);
+
+    void Initialize();
+    void Run();
+    void Shutdown();
 
 public:
-    void Run();
+    inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };
 
-private:
-    EngineSubsystemScheduler m_Scheduler;
+    inline WindowManager* GetWindowManager() const { return m_SubsystemController.GetWindowManager(); };
+    inline GfxRenderer* GetRenderer() const { return m_SubsystemController.GetRenderer(); };
+    inline ImGuiManager* GetImGuiManager() const { return m_SubsystemController.GetImGuiManager(); };
+
+protected:
+    EngineConfig m_EngineConfig;
+    EngineSubsystemController m_SubsystemController;
 };
+

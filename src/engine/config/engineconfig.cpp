@@ -19,16 +19,27 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "system/subsystem.h"
+#include "engineconfig.h"
 
-template <typename T>
-class EngineSubsystem : public Subsystem<T>
+EngineConfig::EngineConfig()
 {
-public:
-    EngineSubsystem() = default;
-    ~EngineSubsystem() = default;
-        
-    virtual void Initialize() override { SetInitialized(true); };
-    virtual void Shutdown() override { SetInitialized(false); };
-};
+    m_ClientName = "Ether";
+    m_ClientWidth = 1920;
+    m_ClientHeight = 1080;
+    m_IsRunningInEditor = false;
+    m_EditorHwnd = nullptr;
+}
+
+EngineConfig::EngineConfig(const EngineConfig& copy)
+{
+    m_ClientName = copy.m_ClientName;
+    m_ClientWidth = copy.m_ClientWidth;
+    m_ClientHeight = copy.m_ClientHeight;
+    m_IsRunningInEditor = copy.m_IsRunningInEditor;
+    m_EditorHwnd = copy.m_EditorHwnd;
+}
+
+EngineConfig::~EngineConfig()
+{
+
+}
