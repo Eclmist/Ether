@@ -30,6 +30,7 @@ LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (m_EtherEditorInstance == nullptr)
         return 0;
 
+    m_EtherEditorInstance->GetEngine()->GetWindowManager()->WndProcInternal(hWnd, msg, wParam, lParam);
     return 0;
 }
 
@@ -40,10 +41,12 @@ void Initialize(HWND hWnd)
     engineConfig.SetEditorHwnd(hWnd);
 
     m_EtherEditorInstance = new Ether(engineConfig);
+    m_EtherEditorInstance->Initialize();
 }
 
 void Update()
 {
+    m_EtherEditorInstance->GetEngine()->GetRenderer()->RenderFrame();
 }
 
 void Release()

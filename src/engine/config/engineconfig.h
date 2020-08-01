@@ -30,6 +30,7 @@ public:
 
 public:
     inline std::string GetClientName() const { return m_ClientName; };
+    inline LPCWSTR GetWindowTitle() const { return std::wstring(m_ClientName.begin(), m_ClientName.end()).c_str(); };
     inline uint32_t GetClientWidth() const { return m_ClientWidth; };
     inline uint32_t GetClientHeight() const { return m_ClientHeight; };
     inline bool GetIsRunningInEditor() const { return m_IsRunningInEditor; };
