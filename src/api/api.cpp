@@ -20,3 +20,34 @@
 #pragma once
 
 #include "api.h"
+#include "application/ether.h"
+
+Ether* m_EtherEditorInstance;
+
+LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    // TODO: Setup proper API error handling, whether the api has been initialized or not etc.
+    if (m_EtherEditorInstance == nullptr)
+        return 0;
+
+    return 0;
+}
+
+void Initialize(HWND hWnd)
+{
+    EngineConfig engineConfig;
+    engineConfig.SetIsRunningInEditor(true);
+    engineConfig.SetEditorHwnd(hWnd);
+
+    m_EtherEditorInstance = new Ether(engineConfig);
+}
+
+void Update()
+{
+}
+
+void Release()
+{
+    delete m_EtherEditorInstance;
+}
+

@@ -17,25 +17,54 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "system/system.h"
-#include "application/ether.h"
+#pragma once
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+#include "application.h"
+
+Application::Application(const EngineConfig& config)
 {
-    EngineConfig engineConfig;
-    engineConfig.SetClientName("Ether Demo");
-    engineConfig.SetClientWidth(1270);
-    engineConfig.SetClientHeight(720);
-    engineConfig.SetIsRunningInEditor(false);
-
-    Ether ether(engineConfig);
-    ether.Initialize();
-
-    // Temp hijack engine to call engine.run().
-    // TODO: This should be removed. A separate game loop should be running either in the application
-    // or from the editor through api.
-    ether.GetEngine()->Run();
-    
-    return 0;
+    m_Engine = std::make_unique<Engine>(config);
 }
 
+void Application::Initialize()
+{
+}
+
+void Application::Destroy()
+{
+}
+
+void Application::OnUpdate(UpdateEventArgs& e)
+{
+
+}
+
+void Application::OnRender(RenderEventArgs& e)
+{
+
+}
+
+void Application::OnKeyPressed(KeyEventArgs& e)
+{
+
+}
+
+void Application::OnKeyReleased(KeyEventArgs& e)
+{
+
+}
+
+void Application::OnMouseButtonPressed(MouseEventArgs& e)
+{
+
+}
+
+void Application::OnMouseButtonReleased(MouseEventArgs& e)
+{
+
+}
+
+void Application::OnMouseMoved(MouseEventArgs& e)
+{
+
+}

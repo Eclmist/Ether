@@ -20,23 +20,24 @@
 #pragma once
 
 #include "engine.h"
-#include "win32/windowmanager.h"
+#include "system/win32/windowmanager.h"
 
-Engine::Engine()
+Engine::Engine(const EngineConfig& engineConfig)
+    : m_EngineConfig(engineConfig)
+    , m_SubsystemController(this)
 {
-    m_Scheduler.InitializeSubsystems();
 }
 
-Engine::~Engine()
+void Engine::Initialize()
 {
-    m_Scheduler.ShutdownSubsystems();
+    m_SubsystemController.InitializeSubsystems();
 }
 
 void Engine::Run()
 {
-    assert(WindowManager::GetInstance().IsInitialized() && "Window should have been initialized by now!");
-    WindowManager::GetInstance().Show();
+    m_SubsystemController.GetWindowManager()->Show();
 
+    // Lock thread and let WinProc in WindowManager handle the rest.
     MSG msg = {};
     while (msg.message != WM_QUIT)
     {
@@ -46,5 +47,10 @@ void Engine::Run()
             DispatchMessage(&msg);
         }
     }
+}
+
+void Engine::Shutdown()
+{
+    m_SubsystemController.ShutdownSubsystems();
 }
 

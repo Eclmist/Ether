@@ -20,10 +20,16 @@
 #pragma once
 
 #include "gfxrenderer.h"
-#include "win32/windowmanager.h"
+#include "engine/engine.h"
+#include "system/win32/windowmanager.h"
 #include "imgui/imguimanager.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
+
+GfxRenderer::GfxRenderer(Engine* engine)
+    : EngineSubsystem(engine)
+{
+}
 
 void GfxRenderer::Initialize()
 {
@@ -33,9 +39,11 @@ void GfxRenderer::Initialize()
     m_Device = std::make_unique<DX12Device>(m_Adapter->Get());
 
     D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type);
+    D3D12_COMMAND_QUEUE_PRIORITY priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
 
-    WindowManager* window = &WindowManager::GetInstance();
+    WindowManager* window = m_Engine->GetWindowManager();
 
     m_SwapChain = std::make_unique<DX12SwapChain>(
         window->GetHwnd(),
@@ -99,7 +107,7 @@ void GfxRenderer::Flush()
     }
 }
 
-void GfxRenderer::Render()
+void GfxRenderer::RenderFrame()
 {
     if (!IsInitialized())
         return;
@@ -108,15 +116,14 @@ void GfxRenderer::Render()
 
     ResetCommandList();
     ClearRenderTarget(); // For now, just clear the backbuffer to some color
-    RenderImGui();
+    RenderGui();
     Present();
     EndOfFrame();
 }
 
 void GfxRenderer::ToggleImGui()
 {
-    ImGuiManager* imGuiManager = &ImGuiManager::GetInstance();
-    imGuiManager->ToggleVisible();
+    m_Engine->GetImGuiManager()->ToggleVisible();
 }
 
 void GfxRenderer::ResetCommandList()
@@ -193,11 +200,9 @@ void GfxRenderer::EnableDebugLayer()
 #endif
 }
 
-void GfxRenderer::RenderImGui()
+void GfxRenderer::RenderGui()
 {
-    ImGuiManager* imGuiManager = &ImGuiManager::GetInstance();
-
-    if (!imGuiManager->GetVisible())
+    if (!m_Engine->GetImGuiManager()->GetVisible())
         return;
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
@@ -213,7 +218,7 @@ void GfxRenderer::RenderImGui()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    imGuiManager->SetupUI();
+    m_Engine->GetImGuiManager()->SetupUI();
 
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());

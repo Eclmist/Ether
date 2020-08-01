@@ -28,4 +28,3 @@ ETH_EXPORT_DLL void Initialize(HWND hWnd);
 ETH_EXPORT_DLL void Update();
 
 ETH_EXPORT_DLL void Release();
-

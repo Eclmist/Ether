@@ -21,17 +21,19 @@
 
 #include "ethwin.h"
 #include "system/system.h"
-#include "system/subsystem.h"
-#include "engine/enginesubsystem.h"
+#include "engine/subsystem/enginesubsystem.h"
 
-class WindowManager : public EngineSubsystem<WindowManager>
+class Engine;
+
+class WindowManager : public EngineSubsystem
 {
 public:
-    WindowManager() = default;
+    WindowManager(Engine* engine);
     ~WindowManager() = default;
 
 public:
     void Initialize() override;
+    void InitializeForEditor();
     void Shutdown() override;
 
 public:

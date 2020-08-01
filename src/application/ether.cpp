@@ -17,25 +17,66 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "system/system.h"
-#include "application/ether.h"
+#pragma once
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+#include "ether.h"
+
+Ether::Ether(const EngineConfig& config)
+    : Application(config)
 {
-    EngineConfig engineConfig;
-    engineConfig.SetClientName("Ether Demo");
-    engineConfig.SetClientWidth(1270);
-    engineConfig.SetClientHeight(720);
-    engineConfig.SetIsRunningInEditor(false);
-
-    Ether ether(engineConfig);
-    ether.Initialize();
-
-    // Temp hijack engine to call engine.run().
-    // TODO: This should be removed. A separate game loop should be running either in the application
-    // or from the editor through api.
-    ether.GetEngine()->Run();
-    
-    return 0;
 }
 
+void Ether::Initialize()
+{
+    m_Engine->Initialize();
+}
+
+void Ether::LoadContent()
+{
+
+}
+
+void Ether::UnloadContent()
+{
+
+}
+
+void Ether::Destroy()
+{
+
+}
+
+void Ether::OnUpdate(UpdateEventArgs& e)
+{
+
+}
+
+void Ether::OnRender(RenderEventArgs& e)
+{
+
+}
+
+void Ether::OnKeyPressed(KeyEventArgs& e)
+{
+
+}
+
+void Ether::OnKeyReleased(KeyEventArgs& e)
+{
+
+}
+
+void Ether::OnMouseButtonPressed(MouseEventArgs& e)
+{
+
+}
+
+void Ether::OnMouseButtonReleased(MouseEventArgs& e)
+{
+
+}
+
+void Ether::OnMouseMoved(MouseEventArgs& e)
+{
+
+}

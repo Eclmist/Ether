@@ -17,25 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "system/system.h"
-#include "application/ether.h"
+#pragma once
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+#include "eventargs.h"
+
+struct RenderEventArgs : public EventArgs
 {
-    EngineConfig engineConfig;
-    engineConfig.SetClientName("Ether Demo");
-    engineConfig.SetClientWidth(1270);
-    engineConfig.SetClientHeight(720);
-    engineConfig.SetIsRunningInEditor(false);
-
-    Ether ether(engineConfig);
-    ether.Initialize();
-
-    // Temp hijack engine to call engine.run().
-    // TODO: This should be removed. A separate game loop should be running either in the application
-    // or from the editor through api.
-    ether.GetEngine()->Run();
-    
-    return 0;
-}
-
+    double m_TotalElapsedTime;
+    double m_DeltaTime;
+};
