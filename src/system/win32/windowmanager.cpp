@@ -22,11 +22,8 @@
 #include "graphic/gfxrenderer.h"
 #include "imgui/imgui_impl_win32.h"
 
-#define ETH_WINDOW_TITLE        L"Ether"
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
-#define ETH_WINDOW_WIDTH        1270
-#define ETH_WINDOW_HEIGHT       768
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 
@@ -47,7 +44,12 @@ void WindowManager::Initialize()
 
     RegisterWindowClass();
 
-    CentralizeClientRect(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), ETH_WINDOW_WIDTH, ETH_WINDOW_HEIGHT);
+    CentralizeClientRect(
+        GetSystemMetrics(SM_CXSCREEN),
+        GetSystemMetrics(SM_CYSCREEN),
+        m_Engine->GetEngineConfig().GetClientWidth(),
+        m_Engine->GetEngineConfig().GetClientHeight()
+    );
 
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
@@ -121,7 +123,7 @@ void WindowManager::InitWindow()
     m_hWnd = CreateWindowExW(
         NULL,
         ETH_WINDOW_CLASS,
-        ETH_WINDOW_TITLE,
+        m_Engine->GetEngineConfig().GetWindowTitle(),
         ETH_WINDOW_STYLE,
         m_WindowedRect.left,
         m_WindowedRect.top,

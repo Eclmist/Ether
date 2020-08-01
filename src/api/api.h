@@ -23,6 +23,8 @@
 
 #define ETH_EXPORT_DLL extern "C" __declspec(dllexport)
 
+ETH_EXPORT_DLL LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 ETH_EXPORT_DLL void Initialize(HWND hWnd);
 
 ETH_EXPORT_DLL void Update();
