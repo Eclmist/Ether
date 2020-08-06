@@ -40,7 +40,7 @@ public:
     void Run();
     void Show();
     void InitWindow();
-    void SetFullscreen(bool isFullscreen);
+    void ToggleFullscreen();
     void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
     void RegisterWindowClass() const;
     RECT GetCurrentMonitorRect() const;
