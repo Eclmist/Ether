@@ -37,12 +37,13 @@ public:
     void Shutdown() override;
 
 public:
+    void Run();
     void Show();
     void InitWindow();
     void SetFullscreen(bool isFullscreen);
     void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
-    RECT GetCurrentMonitorRect() const;
     void RegisterWindowClass() const;
+    RECT GetCurrentMonitorRect() const;
 
     inline HWND GetHwnd() const { return m_hWnd; };
     inline uint32_t GetWidth() const { return m_WindowedRect.right - m_WindowedRect.left; };

@@ -34,9 +34,31 @@ class Engine : public NonCopyable
 public:
     Engine(const EngineConfig& config);
 
-    void Initialize();
-    void Run();
-    void Shutdown();
+    //! @brief Initialize the Ether engine.
+    virtual void Initialize();
+
+    //! @brief Load all content required.
+    virtual void LoadContent() = 0;
+
+    //! @brief Unload content that was loaded by LoadContent.
+    virtual void UnloadContent() = 0;
+
+    //! @brief Unload all content and shutdown engine.
+    virtual void Shutdown();
+
+    virtual void OnUpdate(UpdateEventArgs& e);
+
+    virtual void OnRender(RenderEventArgs& e);
+
+    virtual void OnKeyPressed(KeyEventArgs& e);
+
+    virtual void OnKeyReleased(KeyEventArgs& e);
+
+    virtual void OnMouseButtonPressed(MouseEventArgs& e);
+
+    virtual void OnMouseButtonReleased(MouseEventArgs& e);
+
+    virtual void OnMouseMoved(MouseEventArgs& e);
 
 public:
     inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };

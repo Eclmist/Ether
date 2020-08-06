@@ -19,64 +19,32 @@
 
 #pragma once
 
-#include "ether.h"
+#include "engine/engine.h"
 
-Ether::Ether(const EngineConfig& config)
-    : Application(config)
+class EtherSample : public Engine
 {
-}
+public:
+    EtherSample(const EngineConfig& config);
 
-void Ether::Initialize()
-{
-    m_Engine->Initialize();
-}
+    void Initialize() override;
 
-void Ether::LoadContent()
-{
+    void LoadContent() override;
 
-}
+    void UnloadContent() override;
 
-void Ether::UnloadContent()
-{
+    void Shutdown() override;
 
-}
+    void OnUpdate(UpdateEventArgs& e) override;
 
-void Ether::Destroy()
-{
+    void OnRender(RenderEventArgs& e) override;
 
-}
+    void OnKeyPressed(KeyEventArgs& e) override;
 
-void Ether::OnUpdate(UpdateEventArgs& e)
-{
+    void OnKeyReleased(KeyEventArgs& e) override;
 
-}
+    void OnMouseButtonPressed(MouseEventArgs& e) override;
 
-void Ether::OnRender(RenderEventArgs& e)
-{
+    void OnMouseButtonReleased(MouseEventArgs& e) override;
 
-}
-
-void Ether::OnKeyPressed(KeyEventArgs& e)
-{
-
-}
-
-void Ether::OnKeyReleased(KeyEventArgs& e)
-{
-
-}
-
-void Ether::OnMouseButtonPressed(MouseEventArgs& e)
-{
-
-}
-
-void Ether::OnMouseButtonReleased(MouseEventArgs& e)
-{
-
-}
-
-void Ether::OnMouseMoved(MouseEventArgs& e)
-{
-
-}
+    void OnMouseMoved(MouseEventArgs& e) override;
+};

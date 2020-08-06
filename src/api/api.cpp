@@ -20,9 +20,9 @@
 #pragma once
 
 #include "api.h"
-#include "application/ether.h"
+#include "sample/ethersample.h"
 
-Ether* m_EtherEditorInstance;
+EtherSample* m_EtherEditorInstance;
 
 LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -30,7 +30,8 @@ LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (m_EtherEditorInstance == nullptr)
         return 0;
 
-    m_EtherEditorInstance->GetEngine()->GetWindowManager()->WndProcInternal(hWnd, msg, wParam, lParam);
+    // TODO: Fix this hack. WndProcInternal should not be directly called. (and should be private)
+    m_EtherEditorInstance->GetWindowManager()->WndProcInternal(hWnd, msg, wParam, lParam);
     return 0;
 }
 
@@ -40,17 +41,20 @@ void Initialize(HWND hWnd)
     engineConfig.SetIsRunningInEditor(true);
     engineConfig.SetEditorHwnd(hWnd);
 
-    m_EtherEditorInstance = new Ether(engineConfig);
+    m_EtherEditorInstance = new EtherSample(engineConfig);
     m_EtherEditorInstance->Initialize();
 }
 
 void Update()
 {
-    m_EtherEditorInstance->GetEngine()->GetRenderer()->RenderFrame();
+    // TODO: Figure out how to properly populate this args
+    UpdateEventArgs e;
+    m_EtherEditorInstance->OnUpdate(e);
 }
 
 void Release()
 {
+    m_EtherEditorInstance->Shutdown();
     delete m_EtherEditorInstance;
 }
 
