@@ -18,7 +18,7 @@
 */
 
 #include "system/system.h"
-#include "application/ether.h"
+#include "sample/ethersample.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
@@ -28,15 +28,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     engineConfig.SetClientHeight(720);
     engineConfig.SetIsRunningInEditor(false);
 
-    Ether ether(engineConfig);
-    ether.Initialize();
-
-    // Temp hijack engine to call engine.run().
-    // TODO: This should be removed. A separate game loop should be running either in the application
-    // or from the editor through api.
-    ether.GetEngine()->Run();
-    ether.GetEngine()->Shutdown();
-    
+    EtherSample sampleEngine(engineConfig);
+    sampleEngine.Initialize();
+    sampleEngine.GetWindowManager()->Run();
+    sampleEngine.Shutdown();
     return 0;
 }
 

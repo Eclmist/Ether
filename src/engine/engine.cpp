@@ -33,24 +33,44 @@ void Engine::Initialize()
     m_SubsystemController.InitializeSubsystems();
 }
 
-void Engine::Run()
-{
-    m_SubsystemController.GetWindowManager()->Show();
-
-    // Lock thread and let WinProc in WindowManager handle the rest.
-    MSG msg = {};
-    while (msg.message != WM_QUIT)
-    {
-        if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-}
-
 void Engine::Shutdown()
 {
+    UnloadContent();
     m_SubsystemController.ShutdownSubsystems();
+}
+
+void Engine::OnUpdate(UpdateEventArgs& e)
+{
+
+}
+
+void Engine::OnRender(RenderEventArgs& e)
+{
+    GetRenderer()->RenderFrame();
+}
+
+void Engine::OnKeyPressed(KeyEventArgs& e)
+{
+
+}
+
+void Engine::OnKeyReleased(KeyEventArgs& e)
+{
+
+}
+
+void Engine::OnMouseButtonPressed(MouseEventArgs& e)
+{
+
+}
+
+void Engine::OnMouseButtonReleased(MouseEventArgs& e)
+{
+
+}
+
+void Engine::OnMouseMoved(MouseEventArgs& e)
+{
+
 }
 

@@ -19,7 +19,6 @@
 
 #include "windowmanager.h"
 #include "engine/engine.h"
-#include "graphic/gfxrenderer.h"
 #include "imgui/imgui_impl_win32.h"
 
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
@@ -74,6 +73,22 @@ void WindowManager::Shutdown()
     ImGui_ImplWin32_Shutdown();
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
+}
+
+void WindowManager::Run()
+{
+    Show();
+
+    // Lock thread and let WinProc handle the rest.
+    MSG msg = {};
+    while (msg.message != WM_QUIT)
+    {
+        if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
 }
 
 void WindowManager::Show()
@@ -214,23 +229,23 @@ LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARA
     switch (msg)
     {
     case WM_PAINT:
-        m_Engine->GetRenderer()->RenderFrame();
+        // TODO: Figure out how to populate args
+        RenderEventArgs renderArgs;
+        m_Engine->OnRender(renderArgs);
         break;
     case WM_KEYDOWN:
-    {
-        switch (wParam)
-        {
-        case VK_F3:
-            m_Engine->GetRenderer()->ToggleImGui();
-            break;
-        case VK_F11:
-            SetFullscreen(!m_IsFullscreen);
-            break;
-        default:
-            break;
-        }
+        // TODO: Handle Ctrl, Alt, and convert keycode to character
+        KeyEventArgs keydownArgs;
+        keydownArgs.m_Key = static_cast<KeyCode>(wParam);
+        keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
+        m_Engine->OnKeyPressed(keydownArgs);
         break;
-    }
+    case WM_KEYUP:
+        KeyEventArgs keyupArgs;
+        keyupArgs.m_Key = static_cast<KeyCode>(wParam);
+        keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
+        m_Engine->OnKeyReleased(keyupArgs);
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
