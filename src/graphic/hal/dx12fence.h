@@ -25,10 +25,10 @@ class DX12Fence : public DX12Component<ID3D12Fence>
 {
 public:
     DX12Fence(wrl::ComPtr<ID3D12Device3> device);
+    ~DX12Fence();
 
     HANDLE CreateFenceEvent() const;
-    void WaitForFence();
-    void Release();
+    void WaitForFenceValue(uint64_t fenceValue);
 
 public:
     inline wrl::ComPtr<ID3D12Fence> Get() override { return m_Fence; };

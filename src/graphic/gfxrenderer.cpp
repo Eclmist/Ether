@@ -60,11 +60,12 @@ void GfxRenderer::Initialize()
 
     m_RTVDescriptorSize = m_Device->Get()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
+    m_Fence = std::make_unique<DX12Fence>(m_Device->Get());
     
     for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
     {
         m_CommandAllocators[i] = std::make_unique<DX12CommandAllocator>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT); 
-        m_Fence[i] = std::make_unique<DX12Fence>(m_Device->Get());
+        m_FenceValues[i] = 0;
     }
 
     m_CommandList = std::make_unique<DX12CommandList>(m_Device->Get(), m_CommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
@@ -91,10 +92,6 @@ void GfxRenderer::Initialize()
 void GfxRenderer::Shutdown()
 {
     Flush();
-
-    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
-        m_Fence[i]->Release();
-
     ImGui_ImplDX12_Shutdown();
 }
 
@@ -102,8 +99,9 @@ void GfxRenderer::Flush()
 {
     for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
     {
-        uint64_t nextFenceValue = m_CommandQueue->Signal(*m_Fence[i]);
-        m_Fence[i]->WaitForFence();
+        m_FenceValues[i]++;
+        m_CommandQueue->Signal(*m_Fence, m_FenceValues[i]);
+        m_Fence->WaitForFenceValue(m_FenceValues[i]);
     }
 }
 
@@ -149,7 +147,6 @@ void GfxRenderer::ClearRenderTarget()
 
     m_CommandList->Get()->ResourceBarrier(1, &barrier);
 
-
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
         m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
         m_SwapChain->GetCurrentBackBufferIndex(),
@@ -157,47 +154,6 @@ void GfxRenderer::ClearRenderTarget()
     );
 
     m_CommandList->Get()->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
-}
-
-void GfxRenderer::Present()
-{
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        m_SwapChain->GetCurrentBackBuffer().Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET, // Hard code before state for now
-        D3D12_RESOURCE_STATE_PRESENT
-    );
-
-    m_CommandList->Get()->ResourceBarrier(1, &barrier);
-
-    ThrowIfFailed(m_CommandList->Get()->Close());
-
-    ID3D12CommandList* const commandLists[] = {
-        m_CommandList->Get().Get()
-    };
-
-    m_CommandQueue->Get()->ExecuteCommandLists(_countof(commandLists), commandLists);
-
-    // TODO: Implement VSync and tearing support
-    ThrowIfFailed(m_SwapChain->Get()->Present(0, 0));
-    m_CommandQueue->Signal(*m_Fence[m_SwapChain->GetCurrentBackBufferIndex()]);
-}
-
-void GfxRenderer::EndOfFrame()
-{
-    m_SwapChain->UpdateBackBufferIndex();
-    m_Fence[m_SwapChain->GetCurrentBackBufferIndex()]->WaitForFence();
-}
-
-void GfxRenderer::EnableDebugLayer()
-{
-#if defined(_DEBUG)
-    // Always enable the debug layer before doing anything DX12 related
-    // so all possible errors generated while creating DX12 objects
-    // are caught by the debug layer.
-    wrl::ComPtr<ID3D12Debug> debugInterface;
-    ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
-    debugInterface->EnableDebugLayer();
-#endif
 }
 
 void GfxRenderer::RenderGui()
@@ -223,3 +179,47 @@ void GfxRenderer::RenderGui()
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());
 }
+
+void GfxRenderer::Present()
+{
+    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        m_SwapChain->GetCurrentBackBuffer().Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET, // Hard code before state for now
+        D3D12_RESOURCE_STATE_PRESENT
+    );
+
+    m_CommandList->Get()->ResourceBarrier(1, &barrier);
+
+    ThrowIfFailed(m_CommandList->Get()->Close());
+
+    ID3D12CommandList* const commandLists[] = {
+        m_CommandList->Get().Get()
+    };
+
+    m_CommandQueue->Get()->ExecuteCommandLists(_countof(commandLists), commandLists);
+
+    // TODO: Implement VSync and tearing support
+    ThrowIfFailed(m_SwapChain->Get()->Present(0, 0));
+
+    m_CommandQueue->Signal(*m_Fence, m_Fence->Increment());
+    m_FenceValues[m_SwapChain->GetCurrentBackBufferIndex()] = m_Fence->GetValue();
+}
+
+void GfxRenderer::EndOfFrame()
+{
+    m_SwapChain->UpdateBackBufferIndex();
+    m_Fence->WaitForFenceValue(m_FenceValues[m_SwapChain->GetCurrentBackBufferIndex()]);
+}
+
+void GfxRenderer::EnableDebugLayer()
+{
+#if defined(_DEBUG)
+    // Always enable the debug layer before doing anything DX12 related
+    // so all possible errors generated while creating DX12 objects
+    // are caught by the debug layer.
+    wrl::ComPtr<ID3D12Debug> debugInterface;
+    ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
+    debugInterface->EnableDebugLayer();
+#endif
+}
+

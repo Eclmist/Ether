@@ -51,9 +51,9 @@ public:
     void ToggleImGui();
 
 private:
-    void ResetCommandList();
-    void ClearRenderTarget();
-    void RenderGui();
+    void ResetCommandList(); // This should be done in a worker thread
+    void ClearRenderTarget(); // This should be done in a worker thread
+    void RenderGui(); 
     void Present();
     void EndOfFrame();
     void EnableDebugLayer();
@@ -65,13 +65,16 @@ private:
 
     // TODO: What is the best way to store multiple command queues?
     std::unique_ptr<DX12CommandAllocator> m_CommandAllocators[ETH_NUM_SWAPCHAIN_BUFFERS];
-    std::unique_ptr<DX12Fence> m_Fence[ETH_NUM_SWAPCHAIN_BUFFERS];
     std::unique_ptr<DX12CommandList> m_CommandList;
     std::unique_ptr<DX12CommandQueue> m_CommandQueue;
 
     std::unique_ptr<DX12DescriptorHeap> m_RTVDescriptorHeap;
     std::unique_ptr<DX12DescriptorHeap> m_SRVDescriptorHeap;
     uint32_t m_RTVDescriptorSize;
+
+    // Synchronization objects
+    std::unique_ptr<DX12Fence> m_Fence;
+    uint64_t m_FenceValues[ETH_NUM_SWAPCHAIN_BUFFERS];
 
 private:
     GfxTimer m_Timer;

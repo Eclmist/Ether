@@ -35,6 +35,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // TODO: This should be removed. A separate game loop should be running either in the application
     // or from the editor through api.
     ether.GetEngine()->Run();
+    ether.GetEngine()->Shutdown();
     
     return 0;
 }
