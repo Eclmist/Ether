@@ -31,9 +31,9 @@ void EngineSubsystemController::InitializeSubsystems()
 
 void EngineSubsystemController::ShutdownSubsystems()
 {
-    ShutdownImGui();
-    ShutdownWindow();
     ShutdownRenderer();
+    ShutdownWindow();
+    ShutdownImGui();
 }
 
 void EngineSubsystemController::InitializeWindow()

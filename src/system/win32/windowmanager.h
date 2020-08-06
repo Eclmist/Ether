@@ -46,8 +46,6 @@ public:
     RECT GetCurrentMonitorRect() const;
 
     inline HWND GetHwnd() const { return m_hWnd; };
-    inline uint32_t GetWidth() const { return m_WindowedRect.right - m_WindowedRect.left; };
-    inline uint32_t GetHeight() const { return m_WindowedRect.bottom - m_WindowedRect.top; };
 
     // TODO: Make these private. This is only made public to test with Cauldron to be called
     // from api.cpp
