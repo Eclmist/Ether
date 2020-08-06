@@ -96,12 +96,11 @@ void WindowManager::Show()
     ShowWindow(m_hWnd, SW_SHOW);
 }
 
-void WindowManager::SetFullscreen(bool isFullscreen)
+void WindowManager::ToggleFullscreen()
 {
-    if (m_IsFullscreen == isFullscreen)
-        return;
+    m_IsFullscreen = !m_IsFullscreen;
 
-    if (isFullscreen)
+    if (m_IsFullscreen)
     {
         RECT monitorRect = GetCurrentMonitorRect();
         GetWindowRect(m_hWnd, &m_WindowedRect);
@@ -129,8 +128,6 @@ void WindowManager::SetFullscreen(bool isFullscreen)
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ShowWindow(m_hWnd, SW_NORMAL);
     }
-
-    m_IsFullscreen = isFullscreen;
 }
 
 void WindowManager::InitWindow()

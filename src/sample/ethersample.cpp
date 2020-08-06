@@ -59,6 +59,17 @@ void EtherSample::OnRender(RenderEventArgs& e)
 void EtherSample::OnKeyPressed(KeyEventArgs& e)
 {
     Engine::OnKeyPressed(e);
+
+    switch (e.m_Key)
+    {
+    case KEYCODE_F3:
+        GetRenderer()->ToggleImGui();
+        break;
+    case KEYCODE_F11:
+        GetWindowManager()->ToggleFullscreen();
+    default:
+        break;
+    }
 }
 
 void EtherSample::OnKeyReleased(KeyEventArgs& e)
