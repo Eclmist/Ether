@@ -39,9 +39,8 @@ DX12CommandQueue::DX12CommandQueue(
     ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
 }
 
-uint64_t DX12CommandQueue::Signal(DX12Fence& fence)
+void DX12CommandQueue::Signal(DX12Fence& fence, uint64_t fenceValue)
 {
     wrl::ComPtr<ID3D12Fence> halFence = fence.Get();
-    ThrowIfFailed(m_CommandQueue->Signal(halFence.Get(), fence.Increment()));
-    return fence.GetValue();
+    ThrowIfFailed(m_CommandQueue->Signal(halFence.Get(), fenceValue));
 }

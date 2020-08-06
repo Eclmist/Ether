@@ -32,7 +32,7 @@ public:
         D3D12_COMMAND_QUEUE_FLAGS flags);
 
 public:
-    uint64_t Signal(DX12Fence& fence);
+    void Signal(DX12Fence& fence, uint64_t fenceValue);
 
 public:
     inline wrl::ComPtr<ID3D12CommandQueue> Get() override { return m_CommandQueue; };

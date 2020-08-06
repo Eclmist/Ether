@@ -22,10 +22,15 @@
 #include "dx12fence.h"
 
 DX12Fence::DX12Fence(wrl::ComPtr<ID3D12Device3> device)
-    : m_FenceValue(0)
 {
     ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence))); 
     m_FenceEvent = CreateFenceEvent();
+    m_FenceValue = 0;
+}
+
+DX12Fence::~DX12Fence()
+{
+    CloseHandle(m_FenceEvent);
 }
 
 HANDLE DX12Fence::CreateFenceEvent() const
@@ -36,17 +41,13 @@ HANDLE DX12Fence::CreateFenceEvent() const
     return fenceEvent;
 }
 
-void DX12Fence::WaitForFence()
+void DX12Fence::WaitForFenceValue(uint64_t fenceValue)
 {
-    if (m_Fence->GetCompletedValue() < m_FenceValue)
+    if (m_Fence->GetCompletedValue() < fenceValue)
     {
         auto maxWaitDuration = chrono::milliseconds::max();
-        ThrowIfFailed(m_Fence->SetEventOnCompletion(m_FenceValue, m_FenceEvent));
+        ThrowIfFailed(m_Fence->SetEventOnCompletion(fenceValue, m_FenceEvent));
         WaitForSingleObject(m_FenceEvent, static_cast<DWORD>(maxWaitDuration.count()));
     }
 }
 
-void DX12Fence::Release()
-{
-    CloseHandle(m_FenceEvent);
-}
