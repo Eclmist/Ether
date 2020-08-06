@@ -56,6 +56,7 @@ private:
     void RenderGui(); 
     void Present();
     void EndOfFrame();
+    void WaitForGPU();
     void EnableDebugLayer();
 
 private:

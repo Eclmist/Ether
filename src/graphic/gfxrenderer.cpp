@@ -49,8 +49,8 @@ void GfxRenderer::Initialize()
         window->GetHwnd(),
         m_Device->Get(),
         m_CommandQueue->Get(),
-        window->GetWidth(),
-        window->GetHeight());
+        m_Engine->GetEngineConfig().GetClientWidth(),
+        m_Engine->GetEngineConfig().GetClientHeight());
 
     m_RTVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
         m_Device->Get(),
@@ -208,6 +208,11 @@ void GfxRenderer::Present()
 void GfxRenderer::EndOfFrame()
 {
     m_SwapChain->UpdateBackBufferIndex();
+    WaitForGPU();
+}
+
+void GfxRenderer::WaitForGPU()
+{
     m_Fence->WaitForFenceValue(m_FenceValues[m_SwapChain->GetCurrentBackBufferIndex()]);
 }
 
