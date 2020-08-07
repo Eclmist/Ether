@@ -49,6 +49,7 @@ public:
     void Flush();
     void RenderFrame();
     void ToggleImGui();
+    void Resize(uint32_t width, uint32_t height);
 
 private:
     void ResetCommandList(); // This should be done in a worker thread

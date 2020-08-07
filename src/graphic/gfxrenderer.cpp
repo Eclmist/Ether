@@ -124,6 +124,19 @@ void GfxRenderer::ToggleImGui()
     m_Engine->GetImGuiManager()->ToggleVisible();
 }
 
+void GfxRenderer::Resize(uint32_t width, uint32_t height)
+{
+    // Flush the graphics device to make sure that the swap chain buffers that we're
+    // about to release are not referenced by any in-flight command lists
+    Flush();
+
+    // Buffers are released
+    m_SwapChain->ResizeBuffers(width, height);
+
+    // Recreate buffers with new size
+    m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
+}
+
 void GfxRenderer::ResetCommandList()
 {
     m_CommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get()->Reset();

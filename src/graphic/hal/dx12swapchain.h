@@ -35,6 +35,7 @@ public:
 
     void CreateRenderTargetViews(wrl::ComPtr<ID3D12Device3> device, wrl::ComPtr<ID3D12DescriptorHeap> descriptorHeap);
     void UpdateBackBufferIndex();
+    void ResizeBuffers(uint32_t width, uint32_t height);
     DXGI_SWAP_CHAIN_DESC1 BuildSwapChainDescriptor() const;
 
 public:

@@ -114,6 +114,10 @@ void WindowManager::ToggleFullscreen()
             monitorRect.bottom - monitorRect.top,
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ShowWindow(m_hWnd, SW_MAXIMIZE);
+        
+        // TODO: Find more elegant method to trigger resize
+        m_Engine->GetRenderer()->Resize(monitorRect.right - monitorRect.left,
+            monitorRect.bottom - monitorRect.top);
     }
     else
     {
@@ -127,6 +131,10 @@ void WindowManager::ToggleFullscreen()
             m_WindowedRect.bottom - m_WindowedRect.top,
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ShowWindow(m_hWnd, SW_NORMAL);
+
+        // TODO: Find more elegant method to trigger resize
+        m_Engine->GetRenderer()->Resize(m_Engine->GetEngineConfig().GetClientWidth(),
+            m_Engine->GetEngineConfig().GetClientHeight());
     }
 }
 

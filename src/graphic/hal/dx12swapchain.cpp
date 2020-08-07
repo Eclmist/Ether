@@ -60,6 +60,25 @@ void DX12SwapChain::UpdateBackBufferIndex()
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
+void DX12SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
+{
+    assert((width != 0) && (height != 0), "0 sized frame buffers are not allowed.");
+
+    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
+        m_Buffers[i].Reset();
+
+    DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+    ThrowIfFailed(m_SwapChain->GetDesc(&swapChainDesc));
+    ThrowIfFailed(m_SwapChain->ResizeBuffers(
+        ETH_NUM_SWAPCHAIN_BUFFERS,
+        width,
+        height,
+        swapChainDesc.BufferDesc.Format,
+        swapChainDesc.Flags));
+
+    UpdateBackBufferIndex();
+}
+
 DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor() const
 {
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
