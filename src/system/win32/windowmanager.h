@@ -33,7 +33,6 @@ public:
 
 public:
     void Initialize() override;
-    void InitializeForEditor();
     void Shutdown() override;
 
 public:

@@ -34,13 +34,13 @@ public:
     inline uint32_t GetClientWidth() const { return m_ClientWidth; };
     inline uint32_t GetClientHeight() const { return m_ClientHeight; };
     inline bool GetIsRunningInEditor() const { return m_IsRunningInEditor; };
-    inline HWND GetEditorHwnd() const { return m_EditorHwnd; };
+    inline HWND GetEditorHwndHost() const { return m_EditorHwndHost; };
 
     inline void SetClientName(std::string name) { m_ClientName = name; };
     inline void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
     inline void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
     inline void SetIsRunningInEditor(bool isRunningInEditor) { m_IsRunningInEditor = isRunningInEditor; };
-    inline void SetEditorHwnd(HWND hWnd) { m_EditorHwnd = hWnd; };
+    inline void SetEditorHwnd(HWND hWnd) { m_EditorHwndHost = hWnd; };
 
 private:
     std::string m_ClientName;
@@ -49,7 +49,7 @@ private:
 
 private:
     bool m_IsRunningInEditor;
-    HWND m_EditorHwnd;
+    HWND m_EditorHwndHost;
 
 };
 

@@ -61,15 +61,6 @@ void WindowManager::Initialize()
     SetInitialized(true);
 }
 
-void WindowManager::InitializeForEditor()
-{
-    m_hWnd = m_Engine->GetEngineConfig().GetEditorHwnd();
-
-    ImGui_ImplWin32_Init(m_hWnd);
-
-    SetInitialized(true);
-}
-
 void WindowManager::Shutdown()
 {
     ImGui_ImplWin32_Shutdown();
@@ -151,7 +142,7 @@ void WindowManager::InitWindow()
         m_WindowedRect.top,
         m_WindowedRect.right - m_WindowedRect.left,
         m_WindowedRect.bottom - m_WindowedRect.top,
-        nullptr,
+        m_Engine->GetEngineConfig().GetEditorHwndHost(),
         nullptr,
         m_hInst,
         this

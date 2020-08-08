@@ -35,14 +35,16 @@ LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void Initialize(HWND hWnd)
+HWND Initialize(HWND host)
 {
     EngineConfig engineConfig;
     engineConfig.SetIsRunningInEditor(true);
-    engineConfig.SetEditorHwnd(hWnd);
+    engineConfig.SetEditorHwnd(host);
 
     m_EtherEditorInstance = new EtherSample(engineConfig);
     m_EtherEditorInstance->Initialize();
+
+    return m_EtherEditorInstance->GetWindowManager()->GetHwnd();
 }
 
 void ResizeViewport(uint32_t width, uint32_t height)
