@@ -46,9 +46,6 @@ include(ProcessorCount)
 ProcessorCount(N)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
 
-# Set the output of the ether binary to /bin
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${ETH_SOURCE_DIR}/bin")
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # =========================================================================== #
@@ -97,6 +94,7 @@ add_executable(${PROJECT_NAME} WIN32 ${all_files})
 add_library(${PROJECT_NAME}_DLL SHARED ${all_files})
 
 set_target_properties (${PROJECT_NAME} PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY "${ETH_SOURCE_DIR}/bin/win32"
 	RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r"
 	RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_win32_d"
 	RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "${PROJECT_NAME}_win32_rx"
@@ -104,6 +102,7 @@ set_target_properties (${PROJECT_NAME} PROPERTIES
 )
 
 set_target_properties (${PROJECT_NAME}_DLL PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY "${ETH_SOURCE_DIR}/bin/lib"
 	RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r"
 	RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_win32_d"
 	RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "${PROJECT_NAME}_win32_rx"
