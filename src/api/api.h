@@ -23,8 +23,6 @@
 
 #define ETH_EXPORT_DLL extern "C" __declspec(dllexport)
 
-ETH_EXPORT_DLL LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 ETH_EXPORT_DLL HWND Initialize(HWND host);
 
 ETH_EXPORT_DLL void ResizeViewport(uint32_t width, uint32_t height);
