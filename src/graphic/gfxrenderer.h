@@ -26,9 +26,10 @@
 #include "graphic/hal/dx12adapter.h"
 #include "graphic/hal/dx12commandqueue.h"
 #include "graphic/hal/dx12commandallocator.h"
-#include "graphic/hal/dx12device.h"
-#include "graphic/hal/dx12swapchain.h"
 #include "graphic/hal/dx12descriptorheap.h"
+#include "graphic/hal/dx12device.h"
+#include "graphic/hal/dx12pipelinestate.h"
+#include "graphic/hal/dx12swapchain.h"
 
 #include "graphic/gfxtimer.h"
 #include "imgui/imguimanager.h"
@@ -44,8 +45,6 @@ public:
 public:
     void Initialize() override;
     void Shutdown() override;
-
-public:
     void Flush();
     void RenderFrame();
     void ToggleImGui();
@@ -54,11 +53,13 @@ public:
 private:
     void ResetCommandList(); // This should be done in a worker thread
     void ClearRenderTarget(); // This should be done in a worker thread
+    void RenderKMS();
     void RenderGui(); 
     void Present();
     void EndOfFrame();
     void WaitForGPU();
     void EnableDebugLayer();
+    DX12CommandQueue* GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const;
 
 private:
     std::unique_ptr<DX12Adapter> m_Adapter;
@@ -68,7 +69,10 @@ private:
     // TODO: What is the best way to store multiple command queues?
     std::unique_ptr<DX12CommandAllocator> m_CommandAllocators[ETH_NUM_SWAPCHAIN_BUFFERS];
     std::unique_ptr<DX12CommandList> m_CommandList;
-    std::unique_ptr<DX12CommandQueue> m_CommandQueue;
+
+    std::unique_ptr<DX12CommandQueue> m_DirectCommandQueue;
+    std::unique_ptr<DX12CommandQueue> m_ComputeCommandQueue;
+    std::unique_ptr<DX12CommandQueue> m_CopyCommandQueue;
 
     std::unique_ptr<DX12DescriptorHeap> m_RTVDescriptorHeap;
     std::unique_ptr<DX12DescriptorHeap> m_SRVDescriptorHeap;
@@ -80,4 +84,39 @@ private:
 
 private:
     GfxTimer m_Timer;
+
+
+
+    // PROTOTYPE BS
+public:
+    
+    // Used to create a ID3D12Resource that is large enough to store the vertex/index buffers
+    void UpdateBufferResource(
+        wrl::ComPtr<ID3D12GraphicsCommandList2> commandList,
+        ID3D12Resource** pDestinationResource,
+        ID3D12Resource** pIntermediateResource,
+        size_t numElements, size_t elementSize, const void* bufferData,
+        D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+
+    void LoadContent();
+
+    wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
+    wrl::ComPtr<ID3D12Resource> m_VertexBuffer;
+    wrl::ComPtr<ID3D12Resource> m_IntermediateVertexBuffer; // to be used to upload vertex buffer for the first time
+
+    wrl::ComPtr<ID3D12Resource> m_IndexBuffer;
+    wrl::ComPtr<ID3D12Resource> m_IntermediateIndexBuffer; // to be used to upload index buffer for the first time
+
+    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+
+    std::unique_ptr<DX12PipelineState> m_PipelineState;
+
+    D3D12_VIEWPORT m_Viewport;
+    D3D12_RECT m_ScissorRect;
+
+
+    std::unique_ptr<DX12CommandAllocator> m_CopyCommandAllocators[ETH_NUM_SWAPCHAIN_BUFFERS];
+    std::unique_ptr<DX12CommandList> m_CopyCommandList;
+
 };

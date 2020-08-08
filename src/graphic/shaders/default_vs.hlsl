@@ -22,7 +22,7 @@ struct ModelViewProjection
     matrix MVP;
 };
 
-ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b0)
+ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b0);
 
 struct VS_INPUT
 {
