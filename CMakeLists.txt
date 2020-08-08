@@ -93,6 +93,9 @@ set(imgui_files ${imgui_headers} ${imgui_cpps})
 add_executable(${PROJECT_NAME} WIN32 ${all_files})
 add_library(${PROJECT_NAME}_DLL SHARED ${all_files})
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC ETH_STANDALONE_BUILD)
+target_compile_definitions(${PROJECT_NAME}_DLL PUBLIC ETH_EDITOR_BUILD)
+
 set_target_properties (${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${ETH_SOURCE_DIR}/bin/win32"
 	RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r"

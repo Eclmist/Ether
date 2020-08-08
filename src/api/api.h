@@ -29,4 +29,6 @@ ETH_EXPORT_DLL void ResizeViewport(uint32_t width, uint32_t height);
 
 ETH_EXPORT_DLL void Update();
 
+ETH_EXPORT_DLL void Render();
+
 ETH_EXPORT_DLL void Release();

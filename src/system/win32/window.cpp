@@ -17,25 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "windowmanager.h"
+#include "window.h"
 #include "engine/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
+//#define ETH_STANDALONE
+
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/system/win32/ether.ico"
-#define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 
-WindowManager::WindowManager(Engine* engine)
+#ifdef ETH_EDITOR_BUILD
+#define ETH_WINDOW_STYLE        WS_CHILD
+#else
+#define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
+#endif
+
+Window::Window(Engine* engine)
     : EngineSubsystem(engine)
-    , m_WindowedRect()
 {
     m_hWnd = nullptr;
     m_hInst = nullptr;
     m_IsFullscreen = false;
+    m_WindowedRect = { 0, 0, 0, 0 };
 }
 
-void WindowManager::Initialize()
+void Window::Initialize()
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -54,21 +61,34 @@ void WindowManager::Initialize()
 
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
-    InitWindow();
+    m_hWnd = CreateWindowExW(
+        NULL,
+        ETH_WINDOW_CLASS,
+        m_Engine->GetEngineConfig().GetWindowTitle(),
+        ETH_WINDOW_STYLE,
+        m_WindowedRect.left,
+        m_WindowedRect.top,
+        m_WindowedRect.right - m_WindowedRect.left,
+        m_WindowedRect.bottom - m_WindowedRect.top,
+        m_Engine->GetEngineConfig().GetEditorHwndHost(),
+        nullptr,
+        m_hInst,
+        this
+    );
 
     ImGui_ImplWin32_Init(m_hWnd);
 
     SetInitialized(true);
 }
 
-void WindowManager::Shutdown()
+void Window::Shutdown()
 {
     ImGui_ImplWin32_Shutdown();
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
 }
 
-void WindowManager::Run()
+void Window::Run()
 {
     Show();
 
@@ -84,72 +104,57 @@ void WindowManager::Run()
     }
 }
 
-void WindowManager::Show()
+void Window::Show()
 {
     ShowWindow(m_hWnd, SW_SHOW);
 }
 
-void WindowManager::ToggleFullscreen()
+void Window::ToggleFullscreen()
 {
-    m_IsFullscreen = !m_IsFullscreen;
+#ifdef ETH_EDITOR_BUILD
+    // Toggling of fullscreen is currently not supported when the window's hWnd
+    // is a child of another. TODO: Fix this.
+    return;
+#endif
 
-    if (m_IsFullscreen)
-    {
-        RECT monitorRect = GetCurrentMonitorRect();
-        GetWindowRect(m_hWnd, &m_WindowedRect);
-        SetWindowLongW(m_hWnd, GWL_STYLE, WS_OVERLAPPED);
-        SetWindowPos(
-            m_hWnd,
-            HWND_TOP,
-            monitorRect.left,
-            monitorRect.top,
-            monitorRect.right - monitorRect.left,
-            monitorRect.bottom - monitorRect.top,
-            SWP_FRAMECHANGED | SWP_NOACTIVATE);
-        ShowWindow(m_hWnd, SW_MAXIMIZE);
-        
-        // TODO: Find more elegant method to trigger resize
-        m_Engine->GetRenderer()->Resize(monitorRect.right - monitorRect.left,
-            monitorRect.bottom - monitorRect.top);
-    }
-    else
+    if (m_IsFullscreen) // Go to windowed mode
     {
         SetWindowLongW(m_hWnd, GWL_STYLE, ETH_WINDOW_STYLE);
-        SetWindowPos(
-            m_hWnd,
-            HWND_NOTOPMOST,
-            m_WindowedRect.left,
-            m_WindowedRect.top,
-            m_WindowedRect.right - m_WindowedRect.left,
-            m_WindowedRect.bottom - m_WindowedRect.top,
-            SWP_FRAMECHANGED | SWP_NOACTIVATE);
+        SetViewportRect(m_WindowedRect);
         ShowWindow(m_hWnd, SW_NORMAL);
-
-        // TODO: Find more elegant method to trigger resize
-        m_Engine->GetRenderer()->Resize(m_Engine->GetEngineConfig().GetClientWidth(),
-            m_Engine->GetEngineConfig().GetClientHeight());
+        m_IsFullscreen = false;
+    }
+    else // Go to fullscreen mode
+    {
+        // Cache windowed rect
+        GetWindowRect(m_hWnd, &m_WindowedRect);
+        RECT monitorRect = GetCurrentMonitorRect();
+        SetWindowLongW(m_hWnd, GWL_STYLE, WS_OVERLAPPED);
+        SetViewportRect(monitorRect);
+        ShowWindow(m_hWnd, SW_MAXIMIZE);
+        m_IsFullscreen = true;
     }
 }
 
-void WindowManager::InitWindow()
+void Window::SetViewportRect(RECT viewportRect)
 {
-    m_hWnd = CreateWindowExW(
-        NULL,
-        ETH_WINDOW_CLASS,
-        m_Engine->GetEngineConfig().GetWindowTitle(),
-        ETH_WINDOW_STYLE,
-        m_WindowedRect.left,
-        m_WindowedRect.top,
-        m_WindowedRect.right - m_WindowedRect.left,
-        m_WindowedRect.bottom - m_WindowedRect.top,
-        m_Engine->GetEngineConfig().GetEditorHwndHost(),
-        nullptr,
-        m_hInst,
-        this
-    );
+    RECT windowRect = viewportRect;
+    AdjustWindowRect(&windowRect, ETH_WINDOW_STYLE, FALSE);
+
+    SetWindowPos(
+        m_hWnd,
+        HWND_TOP,
+        windowRect.left,
+        windowRect.top,
+        windowRect.right - windowRect.left,
+        windowRect.bottom - windowRect.top,
+        SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+    // TODO: Find more elegant method to trigger resize
+    m_Engine->GetRenderer()->Resize(viewportRect.right - viewportRect.left, viewportRect.bottom - viewportRect.top);
 }
 
-void WindowManager::CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight)
+void Window::CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight)
 {
     int clientPosX = std::max<int>(0, (screenWidth - clientWidth) / 2);
     int clientPosY = std::max<int>(0, (screenHeight - clientHeight) / 2);
@@ -160,7 +165,7 @@ void WindowManager::CentralizeClientRect(int screenWidth, int screenHeight, int 
     m_WindowedRect.bottom = clientPosY + clientHeight;
 }
 
-RECT WindowManager::GetCurrentMonitorRect() const
+RECT Window::GetCurrentMonitorRect() const
 {
     // Query the name of the nearest display device for the window.
     // This is required to set the full screen dimensions of the window
@@ -173,7 +178,7 @@ RECT WindowManager::GetCurrentMonitorRect() const
     return monitorInfo.rcMonitor;
 }
 
-void WindowManager::RegisterWindowClass() const
+void Window::RegisterWindowClass() const
 {
     WNDCLASSEXW windowClass;
 
@@ -202,23 +207,23 @@ void WindowManager::RegisterWindowClass() const
     }
 }
 
-LRESULT CALLBACK WindowManager::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (msg == WM_NCCREATE)
     {
         const CREATESTRUCTW* cstruct = reinterpret_cast<CREATESTRUCTW*>(lParam);
-        WindowManager* ethWnd = static_cast<WindowManager*>(cstruct->lpCreateParams);
+        Window* ethWnd = static_cast<Window*>(cstruct->lpCreateParams);
         SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(ethWnd));
         return ethWnd->WndProcInternal(hWnd, msg, wParam, lParam);
     }
     else
     {
-        WindowManager* ethWnd = reinterpret_cast<WindowManager*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+        Window* ethWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         return ethWnd->WndProcInternal(hWnd, msg, wParam, lParam);
     }
 }
 
-LRESULT WindowManager::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     // ImGui should read the message first.
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))

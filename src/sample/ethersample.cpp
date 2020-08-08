@@ -66,7 +66,8 @@ void EtherSample::OnKeyPressed(KeyEventArgs& e)
         GetRenderer()->ToggleImGui();
         break;
     case KEYCODE_F11:
-        GetWindowManager()->ToggleFullscreen();
+        GetWindow()->ToggleFullscreen();
+        break;
     default:
         break;
     }
@@ -90,5 +91,10 @@ void EtherSample::OnMouseButtonReleased(MouseEventArgs& e)
 void EtherSample::OnMouseMoved(MouseEventArgs& e)
 {
     Engine::OnMouseMoved(e);
+}
+
+void EtherSample::OnEditorViewportResize(uint32_t width, uint32_t height)
+{
+    GetWindow()->SetViewportRect({0, 0, (LONG)width, (LONG)height});
 }
 

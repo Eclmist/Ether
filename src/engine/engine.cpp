@@ -20,7 +20,7 @@
 #pragma once
 
 #include "engine.h"
-#include "system/win32/windowmanager.h"
+#include "system/win32/window.h"
 
 Engine::Engine(const EngineConfig& engineConfig)
     : m_EngineConfig(engineConfig)
@@ -37,11 +37,6 @@ void Engine::Shutdown()
 {
     UnloadContent();
     m_SubsystemController.ShutdownSubsystems();
-}
-
-void Engine::OnResizeViewport(uint32_t width, uint32_t height)
-{
-    GetRenderer()->Resize(width, height);
 }
 
 void Engine::OnUpdate(UpdateEventArgs& e)

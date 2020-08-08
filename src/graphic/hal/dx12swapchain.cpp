@@ -62,7 +62,7 @@ void DX12SwapChain::UpdateBackBufferIndex()
 
 void DX12SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 {
-    assert((width != 0) && (height != 0), "0 sized frame buffers are not allowed.");
+    assert((width != 0) && (height != 0) && "0 sized frame buffers are not allowed.");
 
     for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
         m_Buffers[i].Reset();
@@ -75,6 +75,9 @@ void DX12SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         height,
         swapChainDesc.BufferDesc.Format,
         swapChainDesc.Flags));
+
+    m_FrameWidth = width;
+    m_FrameHeight = height;
 
     UpdateBackBufferIndex();
 }
