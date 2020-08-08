@@ -27,6 +27,8 @@ ETH_EXPORT_DLL LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 ETH_EXPORT_DLL void Initialize(HWND hWnd);
 
+ETH_EXPORT_DLL void ResizeViewport(uint32_t width, uint32_t height);
+
 ETH_EXPORT_DLL void Update();
 
 ETH_EXPORT_DLL void Release();

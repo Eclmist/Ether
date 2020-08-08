@@ -39,6 +39,11 @@ void Engine::Shutdown()
     m_SubsystemController.ShutdownSubsystems();
 }
 
+void Engine::OnResizeViewport(uint32_t width, uint32_t height)
+{
+    GetRenderer()->Resize(width, height);
+}
+
 void Engine::OnUpdate(UpdateEventArgs& e)
 {
 
