@@ -11,8 +11,13 @@ jobs:
       run: cmake --build ./build/ --config Debug
     - name: Build Release
       run: cmake --build ./build/ --config Release
-    - uses: actions/upload-artifact@v2
+    - name: Upload x64 Build Artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: ether_win32
-        path: bin/
-      
+        path: bin/win32
+    - name: Upload Library Build Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ether_lib
+        path: bin/lib
