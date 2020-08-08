@@ -61,18 +61,15 @@ void EngineSubsystemController::InitializeImGui()
 void EngineSubsystemController::ShutdownWindow()
 {
     m_WindowManager->Shutdown();
-    m_WindowManager.release();
 }
 
 void EngineSubsystemController::ShutdownRenderer()
 {
     m_Renderer->Shutdown();
-    m_Renderer.release();
 }
 
 void EngineSubsystemController::ShutdownImGui()
 {
     m_ImGuiManager->Shutdown();
-    m_ImGuiManager.release();
 }
 
