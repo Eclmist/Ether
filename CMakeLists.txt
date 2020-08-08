@@ -94,11 +94,21 @@ set(imgui_files ${imgui_headers} ${imgui_cpps})
 # =========================================================================== #
 
 add_executable(${PROJECT_NAME} WIN32 ${all_files})
+add_library(${PROJECT_NAME}_DLL SHARED ${all_files})
 
-set_target_properties (${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r")
-set_target_properties (${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_win32_d")
-set_target_properties (${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "${PROJECT_NAME}_win32_rx")
-set_target_properties (${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_MINSIZEREL "${PROJECT_NAME}_win32_rm")
+set_target_properties (${PROJECT_NAME} PROPERTIES
+	RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r"
+	RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_win32_d"
+	RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "${PROJECT_NAME}_win32_rx"
+	RUNTIME_OUTPUT_NAME_MINSIZEREL "${PROJECT_NAME}_win32_rm"
+)
+
+set_target_properties (${PROJECT_NAME}_DLL PROPERTIES
+	RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r"
+	RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_win32_d"
+	RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "${PROJECT_NAME}_win32_rx"
+	RUNTIME_OUTPUT_NAME_MINSIZEREL "${PROJECT_NAME}_win32_rm"
+)
 
 # =========================================================================== #
 #                          LINK EXTERNAL LIBRARIES                            #
@@ -106,7 +116,9 @@ set_target_properties (${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_MINSIZEREL
 
 # Link DX12
 target_link_libraries(${PROJECT_NAME} d3d12.lib dxgi.lib dxguid.lib)
+target_link_libraries(${PROJECT_NAME}_DLL d3d12.lib dxgi.lib dxguid.lib)
 
 # Link Imgui
 ADD_LIBRARY(ImGui ${imgui_files})
 target_link_libraries(${PROJECT_NAME} ImGui)
+target_link_libraries(${PROJECT_NAME}_DLL ImGui)
