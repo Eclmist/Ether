@@ -22,19 +22,21 @@
 #include "imgui/imgui_impl_win32.h"
 
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
-#define ETH_WINDOW_ICON         L"../src/win32/ether.ico"
+#define ETH_WINDOW_ICON         L"../src/system/win32/ether.ico"
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 
 WindowManager::WindowManager(Engine* engine)
     : EngineSubsystem(engine)
+    , m_WindowedRect()
 {
+    m_hWnd = nullptr;
+    m_hInst = nullptr;
+    m_IsFullscreen = false;
 }
 
 void WindowManager::Initialize()
 {
-    m_hInst = GetModuleHandle(nullptr);
-
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
     // to achieve 100% scaling while still allowing non-client window content to 
