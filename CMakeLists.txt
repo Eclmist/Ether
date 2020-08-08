@@ -73,7 +73,8 @@ endmacro (source_group_by_dir)
 
 file(GLOB_RECURSE project_headers src/*.h)
 file(GLOB_RECURSE project_cpps src/*.cpp)
-set(all_files ${project_headers} ${project_cpps})
+file(GLOB_RECURSE project_shaders src/*.hlsl)
+set(all_files ${project_headers} ${project_cpps} ${project_shaders})
 source_group_by_dir(all_files)
 
 # =========================================================================== #
