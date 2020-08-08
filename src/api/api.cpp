@@ -45,6 +45,11 @@ void Initialize(HWND hWnd)
     m_EtherEditorInstance->Initialize();
 }
 
+void ResizeViewport(uint32_t width, uint32_t height)
+{
+    m_EtherEditorInstance->OnResizeViewport(width, height);
+}
+
 void Update()
 {
     // TODO: Figure out how to properly populate this args

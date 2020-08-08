@@ -46,6 +46,8 @@ public:
     //! @brief Unload all content and shutdown engine.
     virtual void Shutdown();
 
+    virtual void OnResizeViewport(uint32_t width, uint32_t height);
+
     virtual void OnUpdate(UpdateEventArgs& e);
 
     virtual void OnRender(RenderEventArgs& e);
