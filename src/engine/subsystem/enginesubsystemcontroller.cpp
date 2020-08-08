@@ -39,11 +39,7 @@ void EngineSubsystemController::ShutdownSubsystems()
 void EngineSubsystemController::InitializeWindow()
 {
     m_WindowManager = std::make_unique<WindowManager>(m_Engine);
-
-    if (m_Engine->GetEngineConfig().GetIsRunningInEditor())
-        m_WindowManager->InitializeForEditor();
-    else
-        m_WindowManager->Initialize();
+    m_WindowManager->Initialize();
 }
 
 void EngineSubsystemController::InitializeRenderer()
