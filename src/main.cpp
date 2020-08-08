@@ -30,7 +30,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     EtherSample sampleEngine(engineConfig);
     sampleEngine.Initialize();
-    sampleEngine.GetWindowManager()->Run();
+    sampleEngine.GetWindow()->Run();
     sampleEngine.Shutdown();
     return 0;
 }

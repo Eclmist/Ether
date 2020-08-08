@@ -47,6 +47,3 @@ namespace chrono = std::chrono;
 #include "noncopyable.h"
 #include "singleton.h"
 #include "types.h"
-
-#define ETH_ENGINE
-// #define ETH_TOOLMODE

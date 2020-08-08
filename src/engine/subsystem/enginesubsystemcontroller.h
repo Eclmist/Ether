@@ -20,7 +20,7 @@
 #pragma once
 
 #include "engine/config/engineconfig.h"
-#include "system/win32/windowmanager.h"
+#include "system/win32/window.h"
 #include "graphic/gfxrenderer.h"
 #include "imgui/imguimanager.h"
 
@@ -37,7 +37,7 @@ public:
     void ShutdownSubsystems();
 
 public:
-    inline WindowManager* GetWindowManager() const { return m_WindowManager.get(); };
+    inline Window* GetWindow() const { return m_Window.get(); };
     inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
     inline ImGuiManager* GetImGuiManager() const { return m_ImGuiManager.get(); };
 
@@ -51,7 +51,7 @@ private:
     void ShutdownImGui();
 
 private:
-    std::unique_ptr<WindowManager> m_WindowManager;
+    std::unique_ptr<Window> m_Window;
     std::unique_ptr<GfxRenderer> m_Renderer;
     std::unique_ptr<ImGuiManager> m_ImGuiManager;
 

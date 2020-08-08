@@ -25,7 +25,7 @@
 #include "engine/subsystem/enginesubsystemcontroller.h"
 #include "engine/subsystem/subsystem.h"
 
-class WindowManager;
+class Window;
 class GfxRenderer;
 class ImGuiManager;
 
@@ -46,8 +46,6 @@ public:
     //! @brief Unload all content and shutdown engine.
     virtual void Shutdown();
 
-    virtual void OnResizeViewport(uint32_t width, uint32_t height);
-
     virtual void OnUpdate(UpdateEventArgs& e);
 
     virtual void OnRender(RenderEventArgs& e);
@@ -65,7 +63,7 @@ public:
 public:
     inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };
 
-    inline WindowManager* GetWindowManager() const { return m_SubsystemController.GetWindowManager(); };
+    inline Window* GetWindow() const { return m_SubsystemController.GetWindow(); };
     inline GfxRenderer* GetRenderer() const { return m_SubsystemController.GetRenderer(); };
     inline ImGuiManager* GetImGuiManager() const { return m_SubsystemController.GetImGuiManager(); };
 

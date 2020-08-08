@@ -33,12 +33,14 @@ HWND Initialize(HWND host)
     m_EtherEditorInstance = new EtherSample(engineConfig);
     m_EtherEditorInstance->Initialize();
 
-    return m_EtherEditorInstance->GetWindowManager()->GetHwnd();
+    m_EtherEditorInstance->GetWindow()->Show();
+
+    return m_EtherEditorInstance->GetWindow()->GetHwnd();
 }
 
 void ResizeViewport(uint32_t width, uint32_t height)
 {
-    m_EtherEditorInstance->OnResizeViewport(width, height);
+    m_EtherEditorInstance->OnEditorViewportResize(width, height);
 }
 
 void Update()
@@ -46,6 +48,13 @@ void Update()
     // TODO: Figure out how to properly populate this args
     UpdateEventArgs e;
     m_EtherEditorInstance->OnUpdate(e);
+}
+
+ETH_EXPORT_DLL void Render()
+{
+    // TODO: Figure out how to properly populate this args
+    RenderEventArgs e;
+    m_EtherEditorInstance->OnRender(e);
 }
 
 void Release()

@@ -21,7 +21,7 @@
 
 #include "gfxrenderer.h"
 #include "engine/engine.h"
-#include "system/win32/windowmanager.h"
+#include "system/win32/window.h"
 #include "imgui/imguimanager.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
@@ -43,7 +43,7 @@ void GfxRenderer::Initialize()
     D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     m_CommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), type, priority, flags);
 
-    WindowManager* window = m_Engine->GetWindowManager();
+    Window* window = m_Engine->GetWindow();
 
     m_SwapChain = std::make_unique<DX12SwapChain>(
         window->GetHwnd(),

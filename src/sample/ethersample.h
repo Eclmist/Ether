@@ -47,4 +47,7 @@ public:
     void OnMouseButtonReleased(MouseEventArgs& e) override;
 
     void OnMouseMoved(MouseEventArgs& e) override;
+
+public:
+    void OnEditorViewportResize(uint32_t width, uint32_t height);
 };

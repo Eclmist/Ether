@@ -25,30 +25,28 @@
 
 class Engine;
 
-class WindowManager : public EngineSubsystem
+class Window : public EngineSubsystem
 {
 public:
-    WindowManager(Engine* engine);
-    ~WindowManager() = default;
+    Window(Engine* engine);
+    ~Window() = default;
 
 public:
     void Initialize() override;
     void Shutdown() override;
-
-public:
     void Run();
     void Show();
-    void InitWindow();
     void ToggleFullscreen();
-    void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
-    void RegisterWindowClass() const;
-    RECT GetCurrentMonitorRect() const;
+    void SetViewportRect(RECT rect);
 
     inline HWND GetHwnd() const { return m_hWnd; };
 
 private:
     static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
+    void RegisterWindowClass() const;
+    RECT GetCurrentMonitorRect() const;
 
 private:
     // Handle toggling of fullscreen

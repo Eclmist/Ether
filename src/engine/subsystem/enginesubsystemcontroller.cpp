@@ -38,8 +38,8 @@ void EngineSubsystemController::ShutdownSubsystems()
 
 void EngineSubsystemController::InitializeWindow()
 {
-    m_WindowManager = std::make_unique<WindowManager>(m_Engine);
-    m_WindowManager->Initialize();
+    m_Window = std::make_unique<Window>(m_Engine);
+    m_Window->Initialize();
 }
 
 void EngineSubsystemController::InitializeRenderer()
@@ -56,7 +56,7 @@ void EngineSubsystemController::InitializeImGui()
 
 void EngineSubsystemController::ShutdownWindow()
 {
-    m_WindowManager->Shutdown();
+    m_Window->Shutdown();
 }
 
 void EngineSubsystemController::ShutdownRenderer()
