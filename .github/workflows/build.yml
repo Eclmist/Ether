@@ -7,10 +7,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Generate Projects
       run: cmake -B build
-    - name: Build
+    - name: Build Debug
+      run: cmake --build ./build/ --config Debug
+    - name: Build Release
       run: cmake --build ./build/ --config Release
     - uses: actions/upload-artifact@v2
       with:
-        name: elixir_win32_release
-        path: bin/release/ether_win32_r.exe
+        name: ether_win32
+        path: bin/
       
