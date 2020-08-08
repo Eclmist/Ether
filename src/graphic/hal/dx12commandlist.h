@@ -21,7 +21,7 @@
 
 #include "graphic/hal/dx12component.h"
 
-class DX12CommandList : public DX12Component<ID3D12GraphicsCommandList>
+class DX12CommandList : public DX12Component<ID3D12GraphicsCommandList2>
 {
 public:
     DX12CommandList(
@@ -30,11 +30,11 @@ public:
         D3D12_COMMAND_LIST_TYPE type);
 
 public:
-    inline wrl::ComPtr<ID3D12GraphicsCommandList> Get() override { return m_CommandList; };
+    inline wrl::ComPtr<ID3D12GraphicsCommandList2> Get() override { return m_CommandList; };
     inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; };
 
 private:
-    wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+    wrl::ComPtr<ID3D12GraphicsCommandList2> m_CommandList;
 
     D3D12_COMMAND_LIST_TYPE m_Type;
 };

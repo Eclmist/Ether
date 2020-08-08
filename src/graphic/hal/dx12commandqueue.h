@@ -27,9 +27,7 @@ class DX12CommandQueue : public DX12Component<ID3D12CommandQueue>
 public:
     DX12CommandQueue(
         wrl::ComPtr<ID3D12Device3> device,
-        D3D12_COMMAND_LIST_TYPE type,
-        D3D12_COMMAND_QUEUE_PRIORITY priority,
-        D3D12_COMMAND_QUEUE_FLAGS flags);
+        D3D12_COMMAND_LIST_TYPE type);
 
 public:
     void Signal(DX12Fence& fence, uint64_t fenceValue);

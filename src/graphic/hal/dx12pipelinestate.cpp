@@ -21,12 +21,15 @@
 
 #include "dx12pipelinestate.h"
 
-DX12PipelineState::DX12PipelineState(wrl::ComPtr<ID3D12Device3> device, DX12PipelineStateStream& pipelineStateStream)
+DX12PipelineState::DX12PipelineState(
+    wrl::ComPtr<ID3D12Device3> device,
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {})
+    : m_PipelineStateDesc(psoDesc)
 {
-    // Our PipelineStateStream needs to be wrapped in the proper dx12 desc structure
-    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
-        sizeof(DX12PipelineStateStream), &pipelineStateStream
-    };
+    Recompile(device);
+}
 
-    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStream, IID_PPV_ARGS(&m_PipelineState)));
+void DX12PipelineState::Recompile(wrl::ComPtr<ID3D12Device3> device)
+{
+    ThrowIfFailed(device->CreateGraphicsPipelineState(&m_PipelineStateDesc, IID_PPV_ARGS(&m_PipelineState)));
 }

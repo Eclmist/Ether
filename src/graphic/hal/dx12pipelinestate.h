@@ -21,29 +21,17 @@
 
 #include "graphic/hal/dx12component.h"
 
-struct DX12PipelineStateStream
-{
-    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE        m_RootSignature;
-    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT          m_InputLayout;
-    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY    m_PrimitiveTopology;
-    CD3DX12_PIPELINE_STATE_STREAM_VS                    m_VertexShader;
-    CD3DX12_PIPELINE_STATE_STREAM_PS                    m_PixelShader;
-    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT  m_DSVFormat;
-    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS m_RTVFormats;
-};
-
 class DX12PipelineState : public DX12Component<ID3D12PipelineState>
 {
 public:
-    DX12PipelineState(
-        wrl::ComPtr<ID3D12Device3> device, 
-        DX12PipelineStateStream& pipelineStateStream
-    );
+    DX12PipelineState(wrl::ComPtr<ID3D12Device3> device, D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc);
+    void Recompile(wrl::ComPtr<ID3D12Device3> device);
 
 public:
-    inline wrl::ComPtr<ID3D12PipelineState> Get() { return m_PipelineState; };
+    inline wrl::ComPtr<ID3D12PipelineState> Get() override { return m_PipelineState; };
 
 private:
     wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDesc;
 };
 
