@@ -40,7 +40,7 @@ public:
     inline void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
     inline void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
     inline void SetIsRunningInEditor(bool isRunningInEditor) { m_IsRunningInEditor = isRunningInEditor; };
-    inline void SetEditorHwnd(HWND hWnd) { m_EditorHwndHost = hWnd; };
+    inline void SetEditorHwndHost(HWND hWnd) { m_EditorHwndHost = hWnd; };
 
 private:
     std::string m_ClientName;

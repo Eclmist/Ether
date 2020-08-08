@@ -46,9 +46,7 @@ public:
 
     inline HWND GetHwnd() const { return m_hWnd; };
 
-    // TODO: Make these private. This is only made public to test with Cauldron to be called
-    // from api.cpp
-public:
+private:
     static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
