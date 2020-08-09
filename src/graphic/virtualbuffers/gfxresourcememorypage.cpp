@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "gfxmemorypage.h"
+#include "gfxresourcememorypage.h"
 #include "graphic/virtualbuffers/gfxmemoryutils.h"
 
-GfxMemoryPage::GfxMemoryPage(
+GfxResourceMemoryPage::GfxResourceMemoryPage(
     wrl::ComPtr<ID3D12Device3> device,
     size_t sizeInBytes)
     : m_PageSize(sizeInBytes)
@@ -42,14 +42,14 @@ GfxMemoryPage::GfxMemoryPage(
     m_Resource->Get()->Map(0, nullptr, &m_CPUMemoryPtr);
 }
 
-GfxMemoryPage::~GfxMemoryPage()
+GfxResourceMemoryPage::~GfxResourceMemoryPage()
 {
     m_Resource->Get()->Unmap(0, nullptr);
     m_CPUMemoryPtr = nullptr;
     m_GPUMemoryPtr = D3D12_GPU_VIRTUAL_ADDRESS(0);
 }
 
-bool GfxMemoryPage::HasSpace(size_t sizeInBytes, size_t alignment) const
+bool GfxResourceMemoryPage::HasSpace(size_t sizeInBytes, size_t alignment) const
 {
     size_t alignedSize = AlignUp(sizeInBytes, alignment);
     size_t alignedOffset = AlignUp(m_Offset, alignment);
@@ -57,7 +57,7 @@ bool GfxMemoryPage::HasSpace(size_t sizeInBytes, size_t alignment) const
     return alignedOffset + alignedSize <= m_PageSize;
 }
 
-GfxAllocation GfxMemoryPage::Allocate(size_t sizeInBytes, size_t alignment)
+GfxResourceAllocation GfxResourceMemoryPage::Allocate(size_t sizeInBytes, size_t alignment)
 {
     if (!HasSpace(sizeInBytes, alignment))
     {
@@ -67,7 +67,7 @@ GfxAllocation GfxMemoryPage::Allocate(size_t sizeInBytes, size_t alignment)
     size_t alignedSize = AlignUp(sizeInBytes, alignment);
     m_Offset = AlignUp(m_Offset, alignment);
 
-    GfxAllocation allocation;
+    GfxResourceAllocation allocation;
     allocation.m_CPUMemoryPtr = static_cast<uint8_t*>(m_CPUMemoryPtr) + m_Offset;
     allocation.m_GPUMemoryPtr = m_GPUMemoryPtr + m_Offset;
 
@@ -76,7 +76,7 @@ GfxAllocation GfxMemoryPage::Allocate(size_t sizeInBytes, size_t alignment)
     return allocation;
 }
 
-void GfxMemoryPage::Reset()
+void GfxResourceMemoryPage::Reset()
 {
     m_Offset = 0;
 }

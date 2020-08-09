@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "gfxlinearallocator.h"
+#include "gfxresourceallocator.h"
 #include "graphic/virtualbuffers/gfxmemoryutils.h"
 
-GfxLinearAllocator::GfxLinearAllocator(
+GfxResourceAllocator::GfxResourceAllocator(
     wrl::ComPtr<ID3D12Device3> device,
     size_t pageSize)
     : m_Device(device)
@@ -30,12 +30,12 @@ GfxLinearAllocator::GfxLinearAllocator(
 {
 }
 
-GfxLinearAllocator::~GfxLinearAllocator()
+GfxResourceAllocator::~GfxResourceAllocator()
 {
 
 }
 
-GfxAllocation GfxLinearAllocator::Allocate(size_t sizeInBytes, size_t alignment)
+GfxResourceAllocation GfxResourceAllocator::Allocate(size_t sizeInBytes, size_t alignment)
 {
     if (sizeInBytes > m_PageSize)
         throw std::bad_alloc();
@@ -46,7 +46,7 @@ GfxAllocation GfxLinearAllocator::Allocate(size_t sizeInBytes, size_t alignment)
     return m_CurrentPage->Allocate(sizeInBytes, alignment);
 }
 
-void GfxLinearAllocator::Reset()
+void GfxResourceAllocator::Reset()
 {
     m_CurrentPage = nullptr;
     m_AvailablePages = m_PagePool;
@@ -55,9 +55,9 @@ void GfxLinearAllocator::Reset()
         m_AvailablePages[i]->Reset();
 }
 
-std::shared_ptr<GfxMemoryPage> GfxLinearAllocator::RequestNewPage()
+std::shared_ptr<GfxResourceMemoryPage> GfxResourceAllocator::RequestNewPage()
 {
-    std::shared_ptr<GfxMemoryPage> page;
+    std::shared_ptr<GfxResourceMemoryPage> page;
 
     if (!m_AvailablePages.empty())
     {
@@ -66,7 +66,7 @@ std::shared_ptr<GfxMemoryPage> GfxLinearAllocator::RequestNewPage()
     }
     else
     {
-        page = std::make_shared<GfxMemoryPage>(m_Device, m_PageSize);
+        page = std::make_shared<GfxResourceMemoryPage>(m_Device, m_PageSize);
         m_PagePool.push_back(page);
     }
 

@@ -22,8 +22,8 @@
 #include "system/system.h"
 
 #include "graphic/hal/dx12includes.h"
-#include "graphic/virtualbuffers/gfxallocation.h"
-#include "graphic/virtualbuffers/gfxmemorypage.h"
+#include "graphic/virtualbuffers/gfxresourceallocation.h"
+#include "graphic/virtualbuffers/gfxresourcememorypage.h"
 
 /*
     This class is used to satisfy requests for memory that must be uploaded to the GPU.
@@ -34,19 +34,19 @@
 
     This system is similar to the LinearAllocator in the official DirectX Sample MiniEngine.
 */
-class GfxLinearAllocator
+class GfxResourceAllocator
 {
 public:
     // Default page size of 2MB
-    GfxLinearAllocator(
+    GfxResourceAllocator(
         wrl::ComPtr<ID3D12Device3> device,
         size_t pageSize = 2097152);
 
-    ~GfxLinearAllocator();
+    ~GfxResourceAllocator();
 
     // Allocate memory in an upload heap. The allocation must not
     // exceed the size of a page.
-    GfxAllocation Allocate(size_t sizeInBytes, size_t alignment);
+    GfxResourceAllocation Allocate(size_t sizeInBytes, size_t alignment);
 
     // Release all allocated pages.
     void Reset();
@@ -55,15 +55,15 @@ public:
     inline size_t GetPageSize() const { return m_PageSize; };
 
 private:
-    std::shared_ptr<GfxMemoryPage> RequestNewPage();
+    std::shared_ptr<GfxResourceMemoryPage> RequestNewPage();
 
 private:
     wrl::ComPtr<ID3D12Device3> m_Device;
 
-    std::deque<std::shared_ptr<GfxMemoryPage>> m_PagePool;
-    std::deque<std::shared_ptr<GfxMemoryPage>> m_AvailablePages;
+    std::deque<std::shared_ptr<GfxResourceMemoryPage>> m_PagePool;
+    std::deque<std::shared_ptr<GfxResourceMemoryPage>> m_AvailablePages;
 
-    std::shared_ptr<GfxMemoryPage> m_CurrentPage;
+    std::shared_ptr<GfxResourceMemoryPage> m_CurrentPage;
 
     size_t m_PageSize;
 };
