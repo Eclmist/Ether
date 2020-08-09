@@ -19,15 +19,11 @@
 
 #pragma once
 
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
+#include "system/system.h"
+#include "graphic/hal/dx12includes.h"
 
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
-
-#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS       3
-
+struct GfxAllocation
+{
+    void*                       m_CPUMemoryPtr;
+    D3D12_GPU_VIRTUAL_ADDRESS   m_GPUMemoryPtr;
+};

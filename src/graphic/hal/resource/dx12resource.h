@@ -19,15 +19,18 @@
 
 #pragma once
 
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
+#include "graphic/hal/dx12component.h"
 
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
+class DX12Resource : public DX12Component<ID3D12Resource>
+{
+protected:
+    DX12Resource() {};
+    ~DX12Resource() {};
+    
+public:
+    inline wrl::ComPtr<ID3D12Resource> Get() override { return m_Resource; };
 
-#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS       3
+protected:
+    wrl::ComPtr<ID3D12Resource> m_Resource;
+};
 
