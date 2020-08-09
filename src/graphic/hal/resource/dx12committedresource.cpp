@@ -17,17 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "dx12committedresource.h"
 
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
-
-#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS       3
+DX12CommittedResource::DX12CommittedResource(
+    wrl::ComPtr<ID3D12Device3> device,
+    size_t resourceSize,
+    D3D12_HEAP_TYPE resourceHeapType,
+    D3D12_HEAP_FLAGS resourceHeapFlag,
+    D3D12_RESOURCE_STATES initialResourceState)
+{
+    ThrowIfFailed(device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(resourceHeapType),
+        resourceHeapFlag,
+        &CD3DX12_RESOURCE_DESC::Buffer(resourceSize),
+        initialResourceState,
+        nullptr,
+        IID_PPV_ARGS(&m_Resource)
+    ));
+}
 

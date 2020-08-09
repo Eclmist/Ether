@@ -19,15 +19,18 @@
 
 #pragma once
 
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
+#include "dx12resource.h"
 
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
+class DX12CommittedResource : public DX12Resource
+{
+public:
+    DX12CommittedResource(
+        wrl::ComPtr<ID3D12Device3> device,
+        size_t resourceSize,
+        D3D12_HEAP_TYPE resourceHeapType,
+        D3D12_HEAP_FLAGS resourceHeapFlag,
+        D3D12_RESOURCE_STATES initialResourceState
+    );
 
-#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS       3
+};
 
