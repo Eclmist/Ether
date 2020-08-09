@@ -21,28 +21,28 @@
 
 #include "system/system.h"
 #include "graphic/hal/resource/dx12committedresource.h"
-#include "graphic/virtualbuffers/gfxallocation.h"
+#include "graphic/virtualbuffers/gfxresourceallocation.h"
 
 /**
  * WARNING: This memory page is *not* thread safe! It is not designed to be used across threads
  * to avoid unnecessary overhead of locking/unlocking mutexes. 
  */
-class GfxMemoryPage
+class GfxResourceMemoryPage
 {
 public:
-    GfxMemoryPage(
+    GfxResourceMemoryPage(
         wrl::ComPtr<ID3D12Device3> device,
         size_t sizeInBytes
     );
 
-    ~GfxMemoryPage();
+    ~GfxResourceMemoryPage();
 
 public:
     // Check to see if the page has room to allocate.
     bool HasSpace(size_t sizeInBytes, size_t alignment) const;
 
     // Allocate memory from the page.
-    GfxAllocation Allocate(size_t sizeInBytes, size_t alignment);
+    GfxResourceAllocation Allocate(size_t sizeInBytes, size_t alignment);
 
     // Reset the page for reuse.
     void Reset();

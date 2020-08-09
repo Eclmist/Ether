@@ -22,7 +22,7 @@
 #include "system/system.h"
 #include "graphic/hal/dx12includes.h"
 
-struct GfxAllocation
+struct GfxResourceAllocation
 {
     void*                       m_CPUMemoryPtr;
     D3D12_GPU_VIRTUAL_ADDRESS   m_GPUMemoryPtr;
