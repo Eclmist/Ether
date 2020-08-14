@@ -19,25 +19,13 @@
 
 #pragma once
 
-#include "graphic/hal/dx12component.h"
+#include "system/system.h"
+#include "graphic/hal/dx12includes.h"
 
-class DX12DescriptorHeap : public DX12Component<ID3D12DescriptorHeap>
+struct GfxDescriptorAllocation
 {
-public:
-    DX12DescriptorHeap(
-        wrl::ComPtr<ID3D12Device3> device, 
-        D3D12_DESCRIPTOR_HEAP_TYPE type, 
-        uint32_t numDescriptors,
-        D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+    void*                       m_CPUMemoryPtr;
+    D3D12_GPU_VIRTUAL_ADDRESS   m_GPUMemoryPtr;
 
-public:
-    inline wrl::ComPtr<ID3D12DescriptorHeap> Get() override { return m_DescriptorHeap; };
-    inline D3D12_DESCRIPTOR_HEAP_TYPE GetType() const { return m_Type; };
-    inline uint32_t GetNumDescriptors() const { return m_NumDescriptors; };
-
-private:
-    wrl::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
-
-    D3D12_DESCRIPTOR_HEAP_TYPE m_Type;
-    uint32_t m_NumDescriptors;
+    bool IsNull() { return false; };
 };
