@@ -22,10 +22,52 @@
 #include "system/system.h"
 #include "graphic/hal/dx12includes.h"
 
-struct GfxDescriptorAllocation
-{
-    void*                       m_CPUMemoryPtr;
-    D3D12_GPU_VIRTUAL_ADDRESS   m_GPUMemoryPtr;
+class GfxDescriptorMemoryPage;
 
-    bool IsNull() { return false; };
+// This class describes a single allocation in a descriptor page.
+// A single allocation may contain multiple, uniformly sized descriptors.
+// These descriptors will be in a contiguous block and can be 
+// individually accessed if the specific offset is known.
+class GfxDescriptorAllocation
+{
+public:
+    GfxDescriptorAllocation();
+
+    GfxDescriptorAllocation(
+        D3D12_CPU_DESCRIPTOR_HANDLE descriptor,
+        uint32_t numHandles,
+        uint32_t descriptorSize,
+        GfxDescriptorMemoryPage* page);
+
+    ~GfxDescriptorAllocation();
+
+    // Copy is forbidden
+    GfxDescriptorAllocation(const GfxDescriptorAllocation& copy) = delete;
+    GfxDescriptorAllocation& operator=(const GfxDescriptorAllocation& copy) = delete;
+
+    // Move is ok
+    GfxDescriptorAllocation(GfxDescriptorAllocation&& source);
+    GfxDescriptorAllocation& operator=(GfxDescriptorAllocation&& source);
+
+public:
+    inline uint32_t GetNumHandles() const { return m_NumHandles; };
+    inline bool IsNull() const { return m_Descriptor.ptr == 0; };
+
+public:
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle(uint32_t offset = 0);
+
+private:
+    void MoveFrom(GfxDescriptorAllocation& source);
+    void Invalidate();
+    void Free();
+
+    // The base descriptor
+    D3D12_CPU_DESCRIPTOR_HANDLE m_Descriptor;
+
+    uint32_t m_NumHandles;
+    uint32_t m_DescriptorSize;
+
+    // A pointer to the page where this allocator came from
+    GfxDescriptorMemoryPage* m_Page;
 };
+
