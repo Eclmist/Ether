@@ -26,6 +26,7 @@
 #include <cassert>
 #include <string>
 #include <memory>
+#include <mutex>
 
 // ComPtr library
 #include <wrl.h>
@@ -43,6 +44,7 @@ namespace chrono = std::chrono;
 #include <deque>
 #include <unordered_set>
 #include <unordered_map>
+#include <set>
 
 // Useful standalone no-dep Ether includes
 #include "noncopyable.h"
