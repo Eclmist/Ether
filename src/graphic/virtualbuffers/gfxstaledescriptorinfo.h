@@ -19,35 +19,16 @@
 
 #pragma once
 
-#include "win32/ethwinmacros.h"
+#include "system/system.h"
 
-// STL Headers
-#include <algorithm>
-#include <cassert>
-#include <string>
-#include <memory>
-#include <mutex>
+struct GfxStaleDescriptorInfo
+{
+    GfxStaleDescriptorInfo(uint32_t offset, uint32_t size, uint32_t graphicFrameNumber)
+        : m_Offset(offset)
+        , m_Size(size)
+        , m_GraphicFrameNumber(graphicFrameNumber) {};
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-// Chrono
-#include <chrono>
-namespace chrono = std::chrono;
-
-// Common Containers
-#include <vector>
-#include <list>
-#include <stack>
-#include <queue>
-#include <deque>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include <map>
-
-// Useful standalone no-dep Ether includes
-#include "noncopyable.h"
-#include "singleton.h"
-#include "types.h"
+    uint32_t m_Offset;
+    uint32_t m_Size;
+    uint32_t m_GraphicFrameNumber;
+};

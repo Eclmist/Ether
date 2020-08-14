@@ -27,44 +27,125 @@ GfxDescriptorMemoryPage::GfxDescriptorMemoryPage(
     uint32_t numDescriptors)
 {
     m_DescriptorHeap = std::make_unique<DX12DescriptorHeap>(device, type, numDescriptors);
+    m_NumFreeHandles = numDescriptors;
+    AddNewBlock(0, m_NumFreeHandles);
 }
 
-bool GfxDescriptorMemoryPage::HasSpace(uint32_t numDescriptors)
+bool GfxDescriptorMemoryPage::HasSpace(uint32_t numDescriptors) const
 {
-    return false;
-
+    return m_FreeListBySize.lower_bound(numDescriptors) != m_FreeListBySize.end();
 }
 
 GfxDescriptorAllocation GfxDescriptorMemoryPage::Allocate(uint32_t numDescriptors)
 {
-    GfxDescriptorAllocation allocation;
-    allocation.m_CPUMemoryPtr = nullptr;
-    allocation.m_GPUMemoryPtr = 1;
+    std::lock_guard<std::mutex> lock(m_AllocationMutex);
 
-    return allocation;
+    if (numDescriptors > m_NumFreeHandles)
+        return GfxDescriptorAllocation(); // Default construct a null allocation to signal failure
+
+    auto smallestBlockIterator = m_FreeListBySize.lower_bound(numDescriptors);
+    if (smallestBlockIterator == m_FreeListBySize.end())
+        return GfxDescriptorAllocation(); // Default construct a null allocation to signal failure
+
+    auto blockSize = smallestBlockIterator->first;
+    auto offsetIterator = smallestBlockIterator->second;
+    auto offset = offsetIterator->first;
+
+    // Remove the existing free block from the free list
+    m_FreeListBySize.erase(smallestBlockIterator);
+    m_FreeListByOffset.erase(offsetIterator);
+    
+    // Compute the new free block that results from splitting this block
+    auto newOffset = offset + numDescriptors;
+    auto newSize = blockSize - numDescriptors;
+
+    if (newSize > 0)
+        AddNewBlock(newOffset, newSize);
+
+    m_NumFreeHandles -= numDescriptors;
+
+    return GfxDescriptorAllocation(
+        m_DescriptorHeap->GetHandle(offset),
+        numDescriptors,
+        m_DescriptorHeap->GetDescriptorHandleStride(),
+        this);
 }
 
-void GfxDescriptorMemoryPage::Free(GfxDescriptorAllocation&& descriptionHandle, uint64_t frameNumber)
+void GfxDescriptorMemoryPage::Free(GfxDescriptorAllocation&& allocation, uint32_t graphicFrameNumber)
 {
+    auto offset = m_DescriptorHeap->ComputeOffset(allocation.GetDescriptorHandle());
 
+    std::lock_guard<std::mutex> lock(m_AllocationMutex);
+
+    m_StaleDescriptors.emplace(offset, allocation.GetNumHandles(), graphicFrameNumber);
 }
 
-void GfxDescriptorMemoryPage::ReleaseStaleDescriptors(uint64_t frameNumber)
+void GfxDescriptorMemoryPage::ReleaseStaleDescriptors(uint64_t graphicFrameNumber)
 {
+    std::lock_guard<std::mutex> lock(m_AllocationMutex);
 
-}
+    while (!m_StaleDescriptors.empty() &&
+        m_StaleDescriptors.front().m_GraphicFrameNumber <= graphicFrameNumber)
+    {
+        GfxStaleDescriptorInfo& staleDescriptor = m_StaleDescriptors.front();
 
-uint32_t GfxDescriptorMemoryPage::ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle)
-{
-    return 0;
+        auto offset = staleDescriptor.m_Offset;
+        auto numDescriptors = staleDescriptor.m_Size;
+
+        FreeBlock(offset, numDescriptors);
+        m_StaleDescriptors.pop();
+    }
 }
 
 void GfxDescriptorMemoryPage::AddNewBlock(uint32_t offset, uint32_t numDescriptors)
 {
+    auto offsetIterator = m_FreeListByOffset.emplace(offset, numDescriptors);
+    auto sizeIterator = m_FreeListBySize.emplace(numDescriptors, offsetIterator.first);
 
+    offsetIterator.first->second.m_BlockLocation = sizeIterator;
 }
 
 void GfxDescriptorMemoryPage::FreeBlock(uint32_t offset, uint32_t numDescriptors)
 {
+    auto nextBlockIterator = m_FreeListByOffset.upper_bound(offset);
+    auto prevBlockIterator = nextBlockIterator;
 
+    if (prevBlockIterator!= m_FreeListByOffset.begin())
+        --prevBlockIterator;
+    else
+        prevBlockIterator = m_FreeListByOffset.end(); // no prev block to consider
+
+    m_NumFreeHandles += numDescriptors;
+
+    // Check if the previous block can be merged
+    if (prevBlockIterator != m_FreeListByOffset.end() &&
+        offset == prevBlockIterator->first + prevBlockIterator->second.m_Size)
+    {
+        // The previous block is exactly behind the block that is to be freed
+        // ///////// |<--- PrevBlock.second (size) --->|<--- size --- >|
+        //           |                                 |
+        // PrevBlock.first (offset)                  offset
+        offset = prevBlockIterator->first;
+        numDescriptors += prevBlockIterator->second.m_Size;
+
+        m_FreeListBySize.erase(prevBlockIterator->second.m_BlockLocation);
+        m_FreeListByOffset.erase(prevBlockIterator);
+    }
+
+    // Check if the next block can be merged
+    if (nextBlockIterator != m_FreeListByOffset.end() &&
+        offset + numDescriptors == nextBlockIterator->first)
+    {
+        // The next block is exactly after the block that is to be freed
+        // ///////// |<--- size --->|<--- nextBlock.second (size) --- >|
+        //           |              |
+        //         offset        nextBlock.first (offset)
+
+        numDescriptors += nextBlockIterator->second.m_Size;
+        m_FreeListBySize.erase(nextBlockIterator->second.m_BlockLocation);
+        m_FreeListByOffset.erase(nextBlockIterator);
+    }
+
+    AddNewBlock(offset, numDescriptors);
 }
+

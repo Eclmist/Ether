@@ -23,6 +23,8 @@
 
 #include "graphic/hal/dx12descriptorheap.h"
 #include "graphic/virtualbuffers/gfxdescriptorallocation.h"
+#include "graphic/virtualbuffers/gfxdescriptormemoryblock.h"
+#include "graphic/virtualbuffers/gfxstaledescriptorinfo.h"
 
 class GfxDescriptorMemoryPage
 {
@@ -33,22 +35,29 @@ public:
         uint32_t numDescriptors
     );
 
-    bool HasSpace(uint32_t numDescriptors);
+    //! @brief Checks if the page has enough memory to satisfy an allocation request
+    bool HasSpace(uint32_t numDescriptors) const;
+
     GfxDescriptorAllocation Allocate(uint32_t numDescriptors);
-    void Free(GfxDescriptorAllocation&& descriptionHandle, uint64_t frameNumber);
-    void ReleaseStaleDescriptors(uint64_t frameNumber);
+    void Free(GfxDescriptorAllocation&& allocation, uint32_t frameNumber);
+    void ReleaseStaleDescriptors(uint64_t graphicFrameNumber);
 
 public:
     inline D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const { return m_DescriptorHeap->GetType(); };
-    inline uint32_t GetNumFreeHandles() const { return 0; };
+    inline uint32_t GetNumDescriptorsInHeap() const { return m_DescriptorHeap->GetNumDescriptors(); };
+    inline uint32_t GetNumFreeHandles() const { return m_NumFreeHandles; };
 
 protected:
-    uint32_t ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle);
     void AddNewBlock(uint32_t offset, uint32_t numDescriptors);
     void FreeBlock(uint32_t offset, uint32_t numDescriptors);
 
 private:
     std::unique_ptr<DX12DescriptorHeap> m_DescriptorHeap;
 
+    std::map<uint32_t, GfxDescriptorMemoryBlock> m_FreeListByOffset;
+    std::multimap<uint32_t, std::map<uint32_t, GfxDescriptorMemoryBlock>::iterator> m_FreeListBySize;
+    std::queue<GfxStaleDescriptorInfo> m_StaleDescriptors;
+    std::mutex m_AllocationMutex;
 
+    uint32_t m_NumFreeHandles;
 };

@@ -33,11 +33,20 @@ public:
 public:
     inline wrl::ComPtr<ID3D12DescriptorHeap> Get() override { return m_DescriptorHeap; };
     inline D3D12_DESCRIPTOR_HEAP_TYPE GetType() const { return m_Type; };
+    inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetBaseHandle() const { return m_BaseDescriptor; };
     inline uint32_t GetNumDescriptors() const { return m_NumDescriptors; };
+    inline uint32_t GetDescriptorHandleStride() const { return m_DescriptorHandleStride; };
+
+public:
+    CD3DX12_CPU_DESCRIPTOR_HANDLE GetHandle(uint32_t offset) const;
+    uint32_t ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle) const;
 
 private:
     wrl::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
 
     D3D12_DESCRIPTOR_HEAP_TYPE m_Type;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE m_BaseDescriptor;
+
     uint32_t m_NumDescriptors;
+    uint32_t m_DescriptorHandleStride;
 };

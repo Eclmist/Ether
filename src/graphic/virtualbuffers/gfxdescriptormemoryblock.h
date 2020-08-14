@@ -19,35 +19,13 @@
 
 #pragma once
 
-#include "win32/ethwinmacros.h"
+#include "system/system.h"
 
-// STL Headers
-#include <algorithm>
-#include <cassert>
-#include <string>
-#include <memory>
-#include <mutex>
+struct GfxDescriptorMemoryBlock
+{
+    GfxDescriptorMemoryBlock(uint32_t size)
+        : m_Size(size) {};
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-// Chrono
-#include <chrono>
-namespace chrono = std::chrono;
-
-// Common Containers
-#include <vector>
-#include <list>
-#include <stack>
-#include <queue>
-#include <deque>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include <map>
-
-// Useful standalone no-dep Ether includes
-#include "noncopyable.h"
-#include "singleton.h"
-#include "types.h"
+    uint32_t m_Size;
+    std::multimap<uint32_t, std::map<uint32_t, GfxDescriptorMemoryBlock>::iterator>::iterator m_BlockLocation;
+};
