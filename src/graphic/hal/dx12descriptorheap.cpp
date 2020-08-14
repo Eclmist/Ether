@@ -34,4 +34,17 @@ wrl::ComPtr<ID3D12Device3> device,
     desc.Type = m_Type;
     desc.Flags = flags;
     ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap)));
+
+    m_DescriptorHandleStride = device->GetDescriptorHandleIncrementSize(m_Type);
+    m_BaseDescriptor = m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+}
+
+CD3DX12_CPU_DESCRIPTOR_HANDLE DX12DescriptorHeap::GetHandle(uint32_t offset) const
+{
+    return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_BaseDescriptor, offset, m_DescriptorHandleStride);
+}
+
+uint32_t DX12DescriptorHeap::ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle) const
+{
+    return static_cast<uint32_t>(handle.ptr - m_BaseDescriptor.ptr) / m_DescriptorHandleStride;
 }

@@ -43,7 +43,8 @@ GfxDescriptorAllocation::GfxDescriptorAllocation(
 
 GfxDescriptorAllocation::~GfxDescriptorAllocation()
 {
-    Free();
+    // Todo Critical: Create GfxContext, which would store the graphic frame number to pass into here
+    Free(0);
 }
 
 GfxDescriptorAllocation::GfxDescriptorAllocation(GfxDescriptorAllocation&& source)
@@ -53,7 +54,8 @@ GfxDescriptorAllocation::GfxDescriptorAllocation(GfxDescriptorAllocation&& sourc
 
 GfxDescriptorAllocation& GfxDescriptorAllocation::operator=(GfxDescriptorAllocation&& source)
 {
-    Free();
+    // Todo Critical: Create GfxContext, which would store the graphic frame number to pass into here
+    Free(0);
     MoveFrom(source);
     return *this;
 }
@@ -82,11 +84,11 @@ void GfxDescriptorAllocation::Invalidate()
     m_Page = nullptr;
 }
 
-void GfxDescriptorAllocation::Free()
+void GfxDescriptorAllocation::Free(uint32_t graphicFrameNumber)
 {
     if (!IsNull() && m_Page)
     {
-        m_Page->Free(std::move(*this));
+        m_Page->Free(std::move(*this), graphicFrameNumber);
         Invalidate();
     }
 }

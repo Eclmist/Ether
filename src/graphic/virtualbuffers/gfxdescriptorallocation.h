@@ -59,7 +59,7 @@ public:
 private:
     void MoveFrom(GfxDescriptorAllocation& source);
     void Invalidate();
-    void Free();
+    void Free(uint32_t graphicFrameNumber);
 
     // The base descriptor
     D3D12_CPU_DESCRIPTOR_HANDLE m_Descriptor;
