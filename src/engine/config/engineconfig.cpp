@@ -23,7 +23,7 @@
 
 EngineConfig::EngineConfig()
 {
-    m_ClientName = "Ether";
+    m_ClientName = L"Ether";
     m_ClientWidth = 1920;
     m_ClientHeight = 1080;
     m_IsRunningInEditor = false;

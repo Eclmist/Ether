@@ -23,7 +23,7 @@
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
     EngineConfig engineConfig;
-    engineConfig.SetClientName("Ether Demo");
+    engineConfig.SetClientName(L"Ether Demo");
     engineConfig.SetClientWidth(1270);
     engineConfig.SetClientHeight(720);
     engineConfig.SetIsRunningInEditor(false);
