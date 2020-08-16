@@ -59,7 +59,7 @@ GfxDescriptorAllocation GfxDescriptorAllocator::Allocate(uint32_t numDescriptors
         }
     }
 
-    // No heap were able to allocoate
+    // No heap were able to allocated
     if (allocation.IsNull())
     {
         m_NumDescriptorsPerHeap = std::max(m_NumDescriptorsPerHeap, numDescriptors);
