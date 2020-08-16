@@ -64,7 +64,7 @@ void Window::Initialize()
     m_hWnd = CreateWindowExW(
         NULL,
         ETH_WINDOW_CLASS,
-        m_Engine->GetEngineConfig().GetWindowTitle(),
+        m_Engine->GetEngineConfig().GetClientName().c_str(),
         ETH_WINDOW_STYLE,
         m_WindowedRect.left,
         m_WindowedRect.top,
