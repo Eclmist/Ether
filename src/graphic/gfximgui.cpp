@@ -28,6 +28,7 @@
 #include "imgui/imgui_impl_dx12.h"
 
 GfxImGui::GfxImGui()
+    : m_IsVisible(false)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
