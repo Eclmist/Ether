@@ -24,7 +24,7 @@
 
 void EngineSubsystemController::InitializeSubsystems()
 {
-    InitializeImGui();
+    InitializeGui();
     InitializeWindow();
     InitializeRenderer();
 }
@@ -33,7 +33,7 @@ void EngineSubsystemController::ShutdownSubsystems()
 {
     ShutdownRenderer();
     ShutdownWindow();
-    ShutdownImGui();
+    ShutdownGui();
 }
 
 void EngineSubsystemController::InitializeWindow()
@@ -51,10 +51,10 @@ void EngineSubsystemController::InitializeRenderer()
     m_Renderer->LoadContent();
 }
 
-void EngineSubsystemController::InitializeImGui()
+void EngineSubsystemController::InitializeGui()
 {
-    m_ImGuiManager = std::make_unique<ImGuiManager>(m_Engine);
-    m_ImGuiManager->Initialize();
+    m_GuiManager = std::make_unique<GuiManager>(m_Engine);
+    m_GuiManager->Initialize();
 }
 
 void EngineSubsystemController::ShutdownWindow()
@@ -67,8 +67,8 @@ void EngineSubsystemController::ShutdownRenderer()
     m_Renderer->Shutdown();
 }
 
-void EngineSubsystemController::ShutdownImGui()
+void EngineSubsystemController::ShutdownGui()
 {
-    m_ImGuiManager->Shutdown();
+    m_GuiManager->Shutdown();
 }
 

@@ -63,7 +63,7 @@ void EtherSample::OnKeyPressed(KeyEventArgs& e)
     switch (e.m_Key)
     {
     case KEYCODE_F3:
-        GetRenderer()->ToggleImGui();
+        GetRenderer()->ToggleGui();
         break;
     case KEYCODE_F11:
         GetWindow()->ToggleFullscreen();

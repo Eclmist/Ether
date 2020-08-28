@@ -19,17 +19,20 @@
 
 #pragma once
 
-#include "imguimanager.h"
+#include "guimanager.h"
+#include "graphic/hal/dx12commandlist.h"
+#include "graphic/hal/dx12descriptorheap.h"
+#include "graphic/hal/dx12device.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
-ImGuiManager::ImGuiManager(Engine* engine)
+GuiManager::GuiManager(Engine* engine)
     : EngineSubsystem(engine)
 {
 }
 
-void ImGuiManager::Initialize()
+void GuiManager::Initialize()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -38,12 +41,25 @@ void ImGuiManager::Initialize()
     SetInitialized(true);
 }
 
-void ImGuiManager::Shutdown()
+void GuiManager::Shutdown()
 {
+    ImGui_ImplDX12_Shutdown();
     ImGui::DestroyContext();
 }
 
-void ImGuiManager::SetupUI() const
+void GuiManager::InitializeHal(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const
+{
+    ImGui_ImplDX12_Init(
+        device->Get().Get(),
+        ETH_NUM_SWAPCHAIN_BUFFERS,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        srvDescriptor->Get().Get(),
+        srvDescriptor->Get()->GetCPUDescriptorHandleForHeapStart(),
+        srvDescriptor->Get()->GetGPUDescriptorHandleForHeapStart()
+    );
+}
+
+void GuiManager::SetupUI() const
 {
     if (!IsInitialized())
         return;
@@ -91,17 +107,29 @@ void ImGuiManager::SetupUI() const
     }
 }
 
-void ImGuiManager::ToggleVisible()
+void GuiManager::Render(DX12CommandList* commandList) const
+{
+    ImGui_ImplDX12_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    SetupUI();
+
+    ImGui::Render();
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList->Get().Get());
+}
+
+void GuiManager::ToggleVisible()
 {
     SetVisible(!GetVisible());
 }
 
-void ImGuiManager::SetVisible(bool isVisible)
+void GuiManager::SetVisible(bool isVisible)
 {
     m_IsVisible = isVisible;
 }
 
-bool ImGuiManager::GetVisible() const
+bool GuiManager::GetVisible() const
 {
     return m_IsVisible;
 }

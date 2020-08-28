@@ -22,24 +22,30 @@
 #include "system/system.h"
 #include "engine/subsystem/enginesubsystem.h"
 
+class DX12CommandList;
+class DX12Device;
+class DX12DescriptorHeap;
 class Engine;
 
-class ImGuiManager : public EngineSubsystem
+class GuiManager : public EngineSubsystem
 {
 public:
-    ImGuiManager(Engine* engine);
-    ~ImGuiManager() = default;
+    GuiManager(Engine* engine);
+    ~GuiManager() = default;
 
 public:
     void Initialize() override;
     void Shutdown() override;
 
 public:
-    void SetupUI() const;
-
+    void InitializeHal(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const;
+    void Render(DX12CommandList* commandList) const;
     void ToggleVisible();
     void SetVisible(bool isVisible);
     bool GetVisible() const;
+
+private:
+    void SetupUI() const;
 
 private:
     bool m_IsVisible;

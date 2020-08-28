@@ -32,7 +32,7 @@
 #include "graphic/hal/dx12swapchain.h"
 
 #include "graphic/gfxtimer.h"
-#include "imgui/imguimanager.h"
+#include "gui/guimanager.h"
 
 class Engine;
 
@@ -47,7 +47,7 @@ public:
     void Shutdown() override;
     void Flush();
     void RenderFrame();
-    void ToggleImGui();
+    void ToggleGui();
     void Resize(uint32_t width, uint32_t height);
 
 private:

@@ -27,7 +27,7 @@
 
 class Window;
 class GfxRenderer;
-class ImGuiManager;
+class GuiManager;
 
 class Engine : public NonCopyable
 {
@@ -65,7 +65,7 @@ public:
 
     inline Window* GetWindow() const { return m_SubsystemController.GetWindow(); };
     inline GfxRenderer* GetRenderer() const { return m_SubsystemController.GetRenderer(); };
-    inline ImGuiManager* GetImGuiManager() const { return m_SubsystemController.GetImGuiManager(); };
+    inline GuiManager* GetGuiManager() const { return m_SubsystemController.GetGuiManager(); };
 
 protected:
     EngineConfig m_EngineConfig;
