@@ -20,32 +20,30 @@
 #pragma once
 
 #include "system/system.h"
-#include "graphic/gfxcontext.h"
-#include "imgui/imgui.h"
 
-class DX12CommandList;
-class DX12DescriptorHeap;
+class DX12Device;
+class GfxRenderer;
 
-class GfxImGui : NonCopyable
+class GfxContext : NonCopyable
 {
 public:
-    GfxImGui();
-    ~GfxImGui() = default;
+    GfxContext(DX12Device& device, GfxRenderer& renderer);
 
 public:
-    void Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor);
-    void Render(DX12CommandList& commandList) const;
-    void Shutdown();
-    void ToggleVisible();
-    void SetVisible(bool isVisible);
-    bool GetVisible() const;
+    inline DX12Device* GetDevice() const { return m_Device; };
+    inline GfxRenderer* GetRenderer() const { return m_Renderer; };
+
+    inline ethVector4 GetClearColor() const { return m_ClearColor; };
+    inline bool GetRenderWireframe() const { return m_RenderWireframe; };
+
+    inline void SetClearColor(ethVector4 clearColor) { m_ClearColor = clearColor; };
+    inline void SetRenderWireframe(bool shouldRenderWireframe) { m_RenderWireframe = shouldRenderWireframe; };
 
 private:
-    void SetupUI() const;
-    ImGuiWindowFlags GetWindowFlags() const;
+    DX12Device* m_Device;
+    GfxRenderer* m_Renderer;
 
 private:
-    bool m_IsVisible;
-
-    GfxContext* m_Context;
+    ethVector4      m_ClearColor;
+    bool            m_RenderWireframe; // TODO: Move to display options
 };

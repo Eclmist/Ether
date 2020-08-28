@@ -31,6 +31,7 @@
 #include "graphic/hal/dx12pipelinestate.h"
 #include "graphic/hal/dx12swapchain.h"
 
+#include "graphic/gfxcontext.h"
 #include "graphic/gfxtimer.h"
 #include "graphic/gfximgui.h"
 
@@ -85,6 +86,7 @@ private:
 private:
     GfxTimer m_Timer;
     GfxImGui m_GfxImGui;
+    std::unique_ptr<GfxContext> m_Context;
 
     // PROTOTYPE BS
 public:

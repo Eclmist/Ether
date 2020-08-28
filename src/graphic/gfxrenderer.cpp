@@ -60,6 +60,7 @@ GfxRenderer::GfxRenderer(Engine* engine)
         static_cast<float>(engine->GetEngineConfig().GetClientHeight()));
 
     m_ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
+
 }
 
 void GfxRenderer::Initialize()
@@ -68,6 +69,7 @@ void GfxRenderer::Initialize()
 
     m_Adapter = std::make_unique<DX12Adapter>();
     m_Device = std::make_unique<DX12Device>(m_Adapter->Get());
+    m_Context = std::make_unique<GfxContext>(*m_Device, *this);
 
     m_DirectCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
     m_ComputeCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE);
@@ -109,7 +111,7 @@ void GfxRenderer::Initialize()
         D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
     );
 
-    m_GfxImGui.Initialize(m_Device.get(), m_SRVDescriptorHeap.get());
+    m_GfxImGui.Initialize(*m_Context, *m_SRVDescriptorHeap);
 
     SetInitialized(true);
 }
@@ -175,11 +177,14 @@ void GfxRenderer::ResetCommandList()
 void GfxRenderer::ClearRenderTarget()
 {
     // Hardcode clear color for now
-    float clearColor[] = { 
-        (float)sin(m_Timer.GetTimeSinceStart() * 0.0001f),
-        (float)cos(m_Timer.GetTimeSinceStart() * 0.0002f),
-        (float)sin(m_Timer.GetTimeSinceStart() * 0.00015f),
-        1.0f };
+    //float clearColor[] = { 
+    //    (float)sin(m_Timer.GetTimeSinceStart() * 0.0001f),
+    //    (float)cos(m_Timer.GetTimeSinceStart() * 0.0002f),
+    //    (float)sin(m_Timer.GetTimeSinceStart() * 0.00015f),
+    //    1.0f };
+
+    ethVector4 clearColorVec = m_Context->GetClearColor();
+    float clearColor[] = { clearColorVec.x, clearColorVec.y, clearColorVec.z, clearColorVec.w };
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         m_SwapChain->GetCurrentBackBuffer().Get(),
@@ -202,31 +207,31 @@ void GfxRenderer::RenderKMS()
 {
     // Update constant buffer values
     // Update the MVP matrix
-    const ethVector rotationAxis = DirectX::XMVectorSet(0, 1, 1, 0);
-    ethMatrix model = DirectX::XMMatrixRotationAxis(rotationAxis, static_cast<float>(m_Timer.GetTimeSinceStart() / 1000.0));
-    const ethVector eyePosition = DirectX::XMVectorSet(0, 0, -5, 1);
-    const ethVector focusPoint = DirectX::XMVectorSet(0, 0, 0, 1);
-    const ethVector upDirection = DirectX::XMVectorSet(0, 1, 0, 0);
-    ethMatrix view = DirectX::XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
+    const ethXMVector rotationAxis = DirectX::XMVectorSet(0, 1, 1, 0);
+    ethXMMatrix model = DirectX::XMMatrixRotationAxis(rotationAxis, static_cast<float>(m_Timer.GetTimeSinceStart() / 1000.0));
+    const ethXMVector eyePosition = DirectX::XMVectorSet(0, 0, -5, 1);
+    const ethXMVector focusPoint = DirectX::XMVectorSet(0, 0, 0, 1);
+    const ethXMVector upDirection = DirectX::XMVectorSet(0, 1, 0, 0);
+    ethXMMatrix view = DirectX::XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
 
     // Update the projection matrix.
     float aspectRatio = m_Engine->GetEngineConfig().GetClientWidth() / static_cast<float>(m_Engine->GetEngineConfig().GetClientHeight());
-    ethMatrix projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), aspectRatio, 0.1f, 100.0f);
+    ethXMMatrix projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), aspectRatio, 0.1f, 100.0f);
 
-    ethMatrix mvpMatrix = DirectX::XMMatrixMultiply(model, view);
+    ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(model, view);
     mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projection);
 
     // Root signature must be explicitly set even though it is already set in the PSO
     // for some reason or other
     m_CommandList->Get()->SetGraphicsRootSignature(m_RootSignature.Get());
 
-    m_CommandList->Get()->SetGraphicsRoot32BitConstants(0, sizeof(ethMatrix) / 4, &mvpMatrix, 0);
+    m_CommandList->Get()->SetGraphicsRoot32BitConstants(0, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
 
     // Bind the PSO
     m_CommandList->Get()->SetPipelineState(m_PipelineState->Get().Get());
 
     // Setup the input assembler
-    m_CommandList->Get()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_CommandList->Get()->IASetPrimitiveTopology(m_Context->GetRenderWireframe() ? D3D_PRIMITIVE_TOPOLOGY_LINESTRIP : D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_CommandList->Get()->IASetVertexBuffers(0, 1, &m_VertexBufferView);
     m_CommandList->Get()->IASetIndexBuffer(&m_IndexBufferView);
 
@@ -256,7 +261,7 @@ void GfxRenderer::RenderGui()
     ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
     m_CommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
 
-    m_GfxImGui.Render(m_CommandList.get());
+    m_GfxImGui.Render(*m_CommandList);
 }
 
 void GfxRenderer::Present()

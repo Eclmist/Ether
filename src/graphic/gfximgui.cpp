@@ -23,7 +23,6 @@
 #include "graphic/hal/dx12commandlist.h"
 #include "graphic/hal/dx12descriptorheap.h"
 #include "graphic/hal/dx12device.h"
-#include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
@@ -35,19 +34,21 @@ GfxImGui::GfxImGui()
     ImGui::StyleColorsDark();
 }
 
-void GfxImGui::Initialize(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const
+void GfxImGui::Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor)
 {
+    m_Context = &context;
+
     ImGui_ImplDX12_Init(
-        device->Get().Get(),
+        context.GetDevice()->Get().Get(),
         ETH_NUM_SWAPCHAIN_BUFFERS,
         DXGI_FORMAT_R8G8B8A8_UNORM,
-        srvDescriptor->Get().Get(),
-        srvDescriptor->Get()->GetCPUDescriptorHandleForHeapStart(),
-        srvDescriptor->Get()->GetGPUDescriptorHandleForHeapStart()
+        srvDescriptor.Get().Get(),
+        srvDescriptor.Get()->GetCPUDescriptorHandleForHeapStart(),
+        srvDescriptor.Get()->GetGPUDescriptorHandleForHeapStart()
     );
 }
 
-void GfxImGui::Render(DX12CommandList* commandList) const
+void GfxImGui::Render(DX12CommandList& commandList) const
 {
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -56,7 +57,7 @@ void GfxImGui::Render(DX12CommandList* commandList) const
     SetupUI();
 
     ImGui::Render();
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList->Get().Get());
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get().Get());
 }
 
 void GfxImGui::Shutdown()
@@ -83,46 +84,51 @@ bool GfxImGui::GetVisible() const
 
 void GfxImGui::SetupUI() const
 {
-    bool show_another_window = false;
-    static bool show_demo_window = true;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    static bool showImGuiDemo = false;
+    ethVector4 clearColor = m_Context->GetClearColor();
+    bool renderWireframe = m_Context->GetRenderWireframe();
 
-    if (show_demo_window)
+    ImGui::SetNextWindowPos(ImVec2(20, 20));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
     {
-        ImGui::ShowDemoWindow(&show_demo_window);
-    }
+        ImGui::Begin("Debug Menu", nullptr, GetWindowFlags());
+        ImGui::Text("Ether Version: 0.1.0");
+        ImGui::Spacing();
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-    {
-        static float f = 0.0f;
-        static int counter = 0;
+        if (ImGui::CollapsingHeader("Display Options"))
+        {
+            ImGui::ColorEdit3("clear color", (float*)& clearColor); // Edit 3 floats representing a color
+            ImGui::Checkbox("Render Wireframe", &renderWireframe);      // Edit bools storing our window open/close state
+        }
 
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        if (ImGui::CollapsingHeader("ImGui"))
+        {
+            ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo);      // Edit bools storing our window open/close state
+        }
 
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
-
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float*)& clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
-    }
 
-    // 3. Show another simple window.
-    if (show_another_window)
-    {
-        ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
-        if (ImGui::Button("Close Me"))
-            show_another_window = false;
-        ImGui::End();
+        m_Context->SetClearColor(clearColor);
+        m_Context->SetRenderWireframe(renderWireframe);
     }
+    ImGui::PopStyleVar();
+
+    if (showImGuiDemo)
+    {
+        ImGui::ShowDemoWindow(&showImGuiDemo);
+    }
+}
+
+ImGuiWindowFlags GfxImGui::GetWindowFlags() const
+{
+    ImGuiWindowFlags windowFlags = 0;
+
+    windowFlags |= ImGuiWindowFlags_NoMove;
+    windowFlags |= ImGuiWindowFlags_NoResize;
+    windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+    windowFlags |= ImGuiWindowFlags_NoCollapse;
+
+    return windowFlags;
 }
 

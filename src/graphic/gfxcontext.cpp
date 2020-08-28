@@ -19,33 +19,12 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "graphic/gfxcontext.h"
-#include "imgui/imgui.h"
+#include "gfxcontext.h"
 
-class DX12CommandList;
-class DX12DescriptorHeap;
-
-class GfxImGui : NonCopyable
+GfxContext::GfxContext(DX12Device& device, GfxRenderer& renderer)
+    : m_Device(&device)
+    , m_Renderer(&renderer)
+    , m_ClearColor(0, 0, 0, 0)
+    , m_RenderWireframe(false)
 {
-public:
-    GfxImGui();
-    ~GfxImGui() = default;
-
-public:
-    void Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor);
-    void Render(DX12CommandList& commandList) const;
-    void Shutdown();
-    void ToggleVisible();
-    void SetVisible(bool isVisible);
-    bool GetVisible() const;
-
-private:
-    void SetupUI() const;
-    ImGuiWindowFlags GetWindowFlags() const;
-
-private:
-    bool m_IsVisible;
-
-    GfxContext* m_Context;
-};
+}
