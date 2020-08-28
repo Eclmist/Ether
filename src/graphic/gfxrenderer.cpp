@@ -21,10 +21,8 @@
 
 #include "gfxrenderer.h"
 #include "engine/engine.h"
+#include "gui/guimanager.h"
 #include "system/win32/window.h"
-#include "imgui/imguimanager.h"
-#include "imgui/imgui_impl_dx12.h"
-#include "imgui/imgui_impl_win32.h"
 
 // Vertex data for a colored cube.
 struct VertexPosColor
@@ -112,14 +110,7 @@ void GfxRenderer::Initialize()
         D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
     );
 
-    ImGui_ImplDX12_Init(
-        m_Device->Get().Get(),
-        ETH_NUM_SWAPCHAIN_BUFFERS,
-        DXGI_FORMAT_R8G8B8A8_UNORM,
-        m_SRVDescriptorHeap->Get().Get(),
-        m_SRVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
-        m_SRVDescriptorHeap->Get()->GetGPUDescriptorHandleForHeapStart()
-    );
+    m_Engine->GetGuiManager()->InitializeHal(m_Device.get(), m_SRVDescriptorHeap.get());
 
     SetInitialized(true);
 }
@@ -127,7 +118,6 @@ void GfxRenderer::Initialize()
 void GfxRenderer::Shutdown()
 {
     Flush();
-    ImGui_ImplDX12_Shutdown();
 }
 
 void GfxRenderer::Flush()
@@ -155,9 +145,9 @@ void GfxRenderer::RenderFrame()
     EndOfFrame();
 }
 
-void GfxRenderer::ToggleImGui()
+void GfxRenderer::ToggleGui()
 {
-    m_Engine->GetImGuiManager()->ToggleVisible();
+    m_Engine->GetGuiManager()->ToggleVisible();
 }
 
 void GfxRenderer::Resize(uint32_t width, uint32_t height)
@@ -255,7 +245,7 @@ void GfxRenderer::RenderKMS()
 
 void GfxRenderer::RenderGui()
 {
-    if (!m_Engine->GetImGuiManager()->GetVisible())
+    if (!m_Engine->GetGuiManager()->GetVisible())
         return;
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
@@ -267,14 +257,7 @@ void GfxRenderer::RenderGui()
     ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
     m_CommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
 
-    ImGui_ImplDX12_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
-    m_Engine->GetImGuiManager()->SetupUI();
-
-    ImGui::Render();
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_CommandList->Get().Get());
+    m_Engine->GetGuiManager()->Render(m_CommandList.get());
 }
 
 void GfxRenderer::Present()

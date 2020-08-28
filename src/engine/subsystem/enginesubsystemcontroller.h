@@ -22,7 +22,7 @@
 #include "engine/config/engineconfig.h"
 #include "system/win32/window.h"
 #include "graphic/gfxrenderer.h"
-#include "imgui/imguimanager.h"
+#include "gui/guimanager.h"
 
 class Engine;
 
@@ -39,21 +39,21 @@ public:
 public:
     inline Window* GetWindow() const { return m_Window.get(); };
     inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
-    inline ImGuiManager* GetImGuiManager() const { return m_ImGuiManager.get(); };
+    inline GuiManager* GetGuiManager() const { return m_GuiManager.get(); };
 
 private:
     void InitializeWindow();
     void InitializeRenderer();
-    void InitializeImGui();
+    void InitializeGui();
 
     void ShutdownWindow();
     void ShutdownRenderer();
-    void ShutdownImGui();
+    void ShutdownGui();
 
 private:
     std::unique_ptr<Window> m_Window;
     std::unique_ptr<GfxRenderer> m_Renderer;
-    std::unique_ptr<ImGuiManager> m_ImGuiManager;
+    std::unique_ptr<GuiManager> m_GuiManager;
 
     Engine* m_Engine;
 };
