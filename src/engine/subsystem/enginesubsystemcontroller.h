@@ -22,15 +22,14 @@
 #include "engine/config/engineconfig.h"
 #include "system/win32/window.h"
 #include "graphic/gfxrenderer.h"
-#include "gui/guimanager.h"
 
 class Engine;
 
-class EngineSubsystemController
+class EngineSubsystemController : NonCopyable
 {
 public:
-    EngineSubsystemController(Engine* engine)
-        : m_Engine(engine) {};
+    EngineSubsystemController(Engine* engine);
+    ~EngineSubsystemController() = default;
 
 public:
     void InitializeSubsystems();
@@ -39,21 +38,17 @@ public:
 public:
     inline Window* GetWindow() const { return m_Window.get(); };
     inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
-    inline GuiManager* GetGuiManager() const { return m_GuiManager.get(); };
 
 private:
     void InitializeWindow();
     void InitializeRenderer();
-    void InitializeGui();
 
     void ShutdownWindow();
     void ShutdownRenderer();
-    void ShutdownGui();
 
 private:
     std::unique_ptr<Window> m_Window;
     std::unique_ptr<GfxRenderer> m_Renderer;
-    std::unique_ptr<GuiManager> m_GuiManager;
 
     Engine* m_Engine;
 };

@@ -83,7 +83,6 @@ void Window::Initialize()
 
 void Window::Shutdown()
 {
-    ImGui_ImplWin32_Shutdown();
     DestroyWindow(m_hWnd);
     UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
 }

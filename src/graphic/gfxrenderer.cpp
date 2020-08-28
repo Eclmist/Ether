@@ -21,7 +21,6 @@
 
 #include "gfxrenderer.h"
 #include "engine/engine.h"
-#include "gui/guimanager.h"
 #include "system/win32/window.h"
 
 // Vertex data for a colored cube.
@@ -110,7 +109,7 @@ void GfxRenderer::Initialize()
         D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
     );
 
-    m_Engine->GetGuiManager()->InitializeHal(m_Device.get(), m_SRVDescriptorHeap.get());
+    m_GfxImGui.Initialize(m_Device.get(), m_SRVDescriptorHeap.get());
 
     SetInitialized(true);
 }
@@ -147,7 +146,7 @@ void GfxRenderer::RenderFrame()
 
 void GfxRenderer::ToggleGui()
 {
-    m_Engine->GetGuiManager()->ToggleVisible();
+    m_GfxImGui.ToggleVisible();
 }
 
 void GfxRenderer::Resize(uint32_t width, uint32_t height)
@@ -245,7 +244,7 @@ void GfxRenderer::RenderKMS()
 
 void GfxRenderer::RenderGui()
 {
-    if (!m_Engine->GetGuiManager()->GetVisible())
+    if (!m_GfxImGui.GetVisible())
         return;
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
@@ -257,7 +256,7 @@ void GfxRenderer::RenderGui()
     ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
     m_CommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
 
-    m_Engine->GetGuiManager()->Render(m_CommandList.get());
+    m_GfxImGui.Render(m_CommandList.get());
 }
 
 void GfxRenderer::Present()

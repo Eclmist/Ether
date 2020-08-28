@@ -20,26 +20,21 @@
 #pragma once
 
 #include "system/system.h"
-#include "engine/subsystem/enginesubsystem.h"
 
 class DX12CommandList;
 class DX12Device;
 class DX12DescriptorHeap;
-class Engine;
 
-class GuiManager : public EngineSubsystem
+class GfxImGui : NonCopyable
 {
 public:
-    GuiManager(Engine* engine);
-    ~GuiManager() = default;
+    GfxImGui();
+    ~GfxImGui() = default;
 
 public:
-    void Initialize() override;
-    void Shutdown() override;
-
-public:
-    void InitializeHal(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const;
+    void Initialize(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const;
     void Render(DX12CommandList* commandList) const;
+    void Shutdown();
     void ToggleVisible();
     void SetVisible(bool isVisible);
     bool GetVisible() const;
