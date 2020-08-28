@@ -32,7 +32,7 @@
 #include "graphic/hal/dx12swapchain.h"
 
 #include "graphic/gfxtimer.h"
-#include "gui/guimanager.h"
+#include "graphic/gfximgui.h"
 
 class Engine;
 
@@ -84,8 +84,7 @@ private:
 
 private:
     GfxTimer m_Timer;
-
-
+    GfxImGui m_GfxImGui;
 
     // PROTOTYPE BS
 public:

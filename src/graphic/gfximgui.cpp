@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "guimanager.h"
+#include "gfximgui.h"
 #include "graphic/hal/dx12commandlist.h"
 #include "graphic/hal/dx12descriptorheap.h"
 #include "graphic/hal/dx12device.h"
@@ -27,27 +27,14 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
-GuiManager::GuiManager(Engine* engine)
-    : EngineSubsystem(engine)
-{
-}
-
-void GuiManager::Initialize()
+GfxImGui::GfxImGui()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-
-    SetInitialized(true);
 }
 
-void GuiManager::Shutdown()
-{
-    ImGui_ImplDX12_Shutdown();
-    ImGui::DestroyContext();
-}
-
-void GuiManager::InitializeHal(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const
+void GfxImGui::Initialize(DX12Device* device, DX12DescriptorHeap* srvDescriptor) const
 {
     ImGui_ImplDX12_Init(
         device->Get().Get(),
@@ -59,11 +46,42 @@ void GuiManager::InitializeHal(DX12Device* device, DX12DescriptorHeap* srvDescri
     );
 }
 
-void GuiManager::SetupUI() const
+void GfxImGui::Render(DX12CommandList* commandList) const
 {
-    if (!IsInitialized())
-        return;
+    ImGui_ImplDX12_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
 
+    SetupUI();
+
+    ImGui::Render();
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList->Get().Get());
+}
+
+void GfxImGui::Shutdown()
+{
+    ImGui_ImplWin32_Shutdown();
+    ImGui_ImplDX12_Shutdown();
+    ImGui::DestroyContext();
+}
+
+void GfxImGui::ToggleVisible()
+{
+    SetVisible(!GetVisible());
+}
+
+void GfxImGui::SetVisible(bool isVisible)
+{
+    m_IsVisible = isVisible;
+}
+
+bool GfxImGui::GetVisible() const
+{
+    return m_IsVisible;
+}
+
+void GfxImGui::SetupUI() const
+{
     bool show_another_window = false;
     static bool show_demo_window = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -107,29 +125,3 @@ void GuiManager::SetupUI() const
     }
 }
 
-void GuiManager::Render(DX12CommandList* commandList) const
-{
-    ImGui_ImplDX12_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
-    SetupUI();
-
-    ImGui::Render();
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList->Get().Get());
-}
-
-void GuiManager::ToggleVisible()
-{
-    SetVisible(!GetVisible());
-}
-
-void GuiManager::SetVisible(bool isVisible)
-{
-    m_IsVisible = isVisible;
-}
-
-bool GuiManager::GetVisible() const
-{
-    return m_IsVisible;
-}
