@@ -20,35 +20,39 @@
 #pragma once
 
 #include "system/system.h"
+#include "graphic/hal/resource/dx12committedresource.h"
+#include "graphic/virtualbuffer/gfxresourceallocation.h"
 
-#include "graphic/hal/dx12includes.h"
-#include "graphic/virtualbuffers/gfxdescriptorallocation.h"
-#include "graphic/virtualbuffers/gfxdescriptormemorypage.h"
-
-class GfxDescriptorAllocator
+/**
+ * WARNING: This memory page is *not* thread safe! It is not designed to be used across threads
+ * to avoid unnecessary overhead of locking/unlocking mutexes. 
+ */
+class GfxResourceMemoryPage
 {
 public:
-    GfxDescriptorAllocator(
+    GfxResourceMemoryPage(
         wrl::ComPtr<ID3D12Device3> device,
-        D3D12_DESCRIPTOR_HEAP_TYPE type,
-        uint32_t numDescriptorsPerHeap = 256);
+        size_t sizeInBytes
+    );
 
-    ~GfxDescriptorAllocator();
+    ~GfxResourceMemoryPage();
 
 public:
-    GfxDescriptorAllocation Allocate(uint32_t numDescriptors = 1);
-    void ReleaseStaleDescriptors(uint64_t frameNumber);
+    // Check to see if the page has room to allocate.
+    bool HasSpace(size_t sizeInBytes, size_t alignment) const;
+
+    // Allocate memory from the page.
+    GfxResourceAllocation Allocate(size_t sizeInBytes, size_t alignment);
+
+    // Reset the page for reuse.
+    void Reset();
 
 private:
-    std::shared_ptr<GfxDescriptorMemoryPage> CreateAllocatorPage();
+    std::unique_ptr<DX12CommittedResource> m_Resource;
 
-    wrl::ComPtr<ID3D12Device3> m_Device;
+    void* m_CPUMemoryPtr;
+    D3D12_GPU_VIRTUAL_ADDRESS m_GPUMemoryPtr;
 
-    D3D12_DESCRIPTOR_HEAP_TYPE m_HeapType;
-    uint32_t m_NumDescriptorsPerHeap;
-
-    std::vector<std::shared_ptr<GfxDescriptorMemoryPage>> m_HeapPool;
-    std::set<size_t> m_AvailableHeaps;
-
-    std::mutex m_AllocationMutex;
+    size_t m_PageSize;
+    size_t m_Offset;
 };

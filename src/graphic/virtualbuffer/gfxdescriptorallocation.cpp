@@ -18,7 +18,7 @@
 */
 
 #include "gfxdescriptorallocation.h"
-#include "graphic/virtualbuffers/gfxdescriptormemorypage.h"
+#include "graphic/virtualbuffer/gfxdescriptormemorypage.h"
 
 GfxDescriptorAllocation::GfxDescriptorAllocation()
     : m_Descriptor{0}

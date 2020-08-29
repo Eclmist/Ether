@@ -22,8 +22,8 @@
 #include "system/system.h"
 
 #include "graphic/hal/dx12includes.h"
-#include "graphic/virtualbuffers/gfxresourceallocation.h"
-#include "graphic/virtualbuffers/gfxresourcememorypage.h"
+#include "graphic/virtualbuffer/gfxresourceallocation.h"
+#include "graphic/virtualbuffer/gfxresourcememorypage.h"
 
 /*
     This class is used to satisfy requests for memory that must be uploaded to the GPU.
