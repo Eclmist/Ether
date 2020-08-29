@@ -22,6 +22,7 @@
 #include "system/system.h"
 
 class DX12Device;
+class DX12SwapChain;
 class GfxRenderer;
 
 class GfxContext : NonCopyable
@@ -31,6 +32,7 @@ public:
 
 public:
     inline DX12Device* GetDevice() const { return m_Device; };
+    inline DX12SwapChain* GetSwapChain() const { return m_SwapChain; };
     inline GfxRenderer* GetRenderer() const { return m_Renderer; };
 
     inline ethVector4 GetClearColor() const { return m_ClearColor; };
@@ -41,6 +43,7 @@ public:
 
 private:
     DX12Device*     m_Device;
+    DX12SwapChain*  m_SwapChain;
     GfxRenderer*    m_Renderer;
 
 private:

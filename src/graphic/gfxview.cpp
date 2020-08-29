@@ -19,9 +19,14 @@
 
 #pragma once
 
-#include "graphicsubsystem.h"
+#include "gfxview.h"
 
-GraphicSubsystem::GraphicSubsystem(const GfxContext& context)
-    : m_Context(&context)
+GfxView::GfxView()
 {
+    m_ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
+}
+
+void GfxView::UpdateView(uint32_t width, uint32_t height)
+{
+    m_Viewport = CD3DX12_VIEWPORT(0.0, 0.0f, static_cast<float>(width), static_cast<float>(height));
 }

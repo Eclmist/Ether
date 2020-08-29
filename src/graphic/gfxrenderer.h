@@ -32,8 +32,9 @@
 #include "graphic/hal/dx12swapchain.h"
 
 #include "graphic/gfxcontext.h"
-#include "graphic/gfxtimer.h"
 #include "graphic/gfximgui.h"
+#include "graphic/gfxtimer.h"
+#include "graphic/gfxview.h"
 
 class Engine;
 
@@ -50,16 +51,27 @@ public:
     void RenderFrame();
     void ToggleGui();
     void Resize(uint32_t width, uint32_t height);
+    void SetRTCommonParams(DX12CommandList& commandList) const;
 
 private:
-    void ResetCommandList(); // This should be done in a worker thread
-    void ClearRenderTarget(); // This should be done in a worker thread
-    void RenderKMS();
+    void InitRendererCore();
+    void InitCommandQueues();
+    void InitRTVDescriptor();
+    void InitSRVDescriptor();
+    void InitSwapChain();
+    void InitFences();
+    void InitUtilityCommandList();
+    void InitGuiManager();
+
+    void ResetUtilityCommandLists();
+    void ClearRenderTarget();
+    //void RenderKMS();
     void RenderGui(); 
     void Present();
     void EndOfFrame();
     void WaitForGPU();
     void EnableDebugLayer();
+
     DX12CommandQueue* GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const;
 
 private:
@@ -67,9 +79,8 @@ private:
     std::unique_ptr<DX12Device> m_Device;
     std::unique_ptr<DX12SwapChain> m_SwapChain;
 
-    // TODO: What is the best way to store multiple command queues?
-    std::unique_ptr<DX12CommandAllocator> m_CommandAllocators[ETH_NUM_SWAPCHAIN_BUFFERS];
-    std::unique_ptr<DX12CommandList> m_CommandList;
+    std::unique_ptr<DX12CommandAllocator> m_UtilityCommandAllocators[ETH_NUM_SWAPCHAIN_BUFFERS];
+    std::unique_ptr<DX12CommandList> m_UtilityCommandList;
 
     std::unique_ptr<DX12CommandQueue> m_DirectCommandQueue;
     std::unique_ptr<DX12CommandQueue> m_ComputeCommandQueue;
@@ -79,14 +90,13 @@ private:
     std::unique_ptr<DX12DescriptorHeap> m_SRVDescriptorHeap;
     uint32_t m_RTVDescriptorSize;
 
-    // Synchronization objects
     std::unique_ptr<DX12Fence> m_Fence;
     uint64_t m_FenceValues[ETH_NUM_SWAPCHAIN_BUFFERS];
 
 private:
-    GfxTimer m_Timer;
-    GfxImGui m_GfxImGui;
     std::unique_ptr<GfxContext> m_Context;
+    std::unique_ptr<GfxView> m_View;
+    GfxImGui m_ImGui;
 
     // PROTOTYPE BS
 public:
@@ -100,24 +110,4 @@ public:
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
 
     void LoadContent();
-
-    wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
-    wrl::ComPtr<ID3D12Resource> m_VertexBuffer;
-    wrl::ComPtr<ID3D12Resource> m_IntermediateVertexBuffer; // to be used to upload vertex buffer for the first time
-
-    wrl::ComPtr<ID3D12Resource> m_IndexBuffer;
-    wrl::ComPtr<ID3D12Resource> m_IntermediateIndexBuffer; // to be used to upload index buffer for the first time
-
-    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
-
-    std::unique_ptr<DX12PipelineState> m_PipelineState;
-
-    D3D12_VIEWPORT m_Viewport;
-    D3D12_RECT m_ScissorRect;
-
-
-    std::unique_ptr<DX12CommandAllocator> m_CopyCommandAllocators[ETH_NUM_SWAPCHAIN_BUFFERS];
-    std::unique_ptr<DX12CommandList> m_CopyCommandList;
-
 };

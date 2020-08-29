@@ -23,97 +23,34 @@
 #include "engine/engine.h"
 #include "system/win32/window.h"
 
-// Vertex data for a colored cube.
-struct VertexPosColor
-{
-    ethVector3 Position;
-    ethVector3 Color;
-};
-
-static VertexPosColor g_Vertices[8] = {
-    { ethVector3(-1.0f, -1.0f, -1.0f), ethVector3(0.0f, 0.0f, 0.0f) }, // 0
-    { ethVector3(-1.0f, 1.0f, -1.0f), ethVector3(0.0f, 1.0f, 0.0f) }, // 1
-    { ethVector3(1.0f, 1.0f, -1.0f), ethVector3(1.0f, 1.0f, 0.0f) }, // 2
-    { ethVector3(1.0f, -1.0f, -1.0f), ethVector3(1.0f, 0.0f, 0.0f) }, // 3
-    { ethVector3(-1.0f, -1.0f, 1.0f), ethVector3(0.0f, 0.0f, 1.0f) }, // 4
-    { ethVector3(-1.0f, 1.0f, 1.0f), ethVector3(0.0f, 1.0f, 1.0f) }, // 5
-    { ethVector3(1.0f, 1.0f, 1.0f), ethVector3(1.0f, 1.0f, 1.0f) }, // 6
-    { ethVector3(1.0f, -1.0f, 1.0f), ethVector3(1.0f, 0.0f, 1.0f) }
-};
-
-static WORD g_Indicies[36] =
-{
-    0, 1, 2, 0, 2, 3,
-    4, 6, 5, 4, 7, 6,
-    4, 5, 1, 4, 1, 0,
-    3, 2, 6, 3, 6, 7,
-    1, 5, 6, 1, 6, 2,
-    4, 0, 3, 4, 3, 7
-};
-
-
 GfxRenderer::GfxRenderer(Engine* engine)
     : EngineSubsystem(engine)
 {
-    m_Viewport = CD3DX12_VIEWPORT(0.0, 0.0f,
-        static_cast<float>(engine->GetEngineConfig().GetClientWidth()),
-        static_cast<float>(engine->GetEngineConfig().GetClientHeight()));
-
-    m_ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
-
 }
 
 void GfxRenderer::Initialize()
 {
-    EnableDebugLayer();
+    InitRendererCore();
+    InitCommandQueues();
+    InitRTVDescriptor();
+    InitSRVDescriptor();
+    InitSwapChain();
+    InitFences();
+    InitUtilityCommandList();
+    InitGuiManager();
 
+    SetInitialized(true);
+}
+
+void GfxRenderer::InitRendererCore()
+{
+    EnableDebugLayer();
     m_Adapter = std::make_unique<DX12Adapter>();
     m_Device = std::make_unique<DX12Device>(m_Adapter->Get());
     m_Context = std::make_unique<GfxContext>(*m_Device, *this);
 
-    m_DirectCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_ComputeCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE);
-    m_CopyCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_COPY);
-
-    Window* window = m_Engine->GetWindow();
-
-    m_SwapChain = std::make_unique<DX12SwapChain>(
-        window->GetHwnd(),
-        m_Device->Get(),
-        m_DirectCommandQueue->Get(),
-        m_Engine->GetEngineConfig().GetClientWidth(),
-        m_Engine->GetEngineConfig().GetClientHeight());
-
-    m_RTVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
-        m_Device->Get(),
-        D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
-        ETH_NUM_SWAPCHAIN_BUFFERS
-    );
-
-    m_RTVDescriptorSize = m_Device->Get()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
-    m_Fence = std::make_unique<DX12Fence>(m_Device->Get());
-    
-    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
-    {
-        m_CommandAllocators[i] = std::make_unique<DX12CommandAllocator>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT); 
-        m_CopyCommandAllocators[i] = std::make_unique<DX12CommandAllocator>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_COPY); 
-        m_FenceValues[i] = 0;
-    }
-
-    m_CommandList = std::make_unique<DX12CommandList>(m_Device->Get(), m_CommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_CopyCommandList = std::make_unique<DX12CommandList>(m_Device->Get(), m_CopyCommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_COPY);
-
-    m_SRVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
-        m_Device->Get(),
-        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-        1,
-        D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-    );
-
-    m_GfxImGui.Initialize(*m_Context, *m_SRVDescriptorHeap);
-
-    SetInitialized(true);
+    m_View = std::make_unique<GfxView>();
+    m_View->UpdateView(m_Engine->GetEngineConfig().GetClientWidth(), m_Engine->GetEngineConfig().GetClientHeight());
 }
 
 void GfxRenderer::Shutdown()
@@ -133,14 +70,10 @@ void GfxRenderer::Flush()
 
 void GfxRenderer::RenderFrame()
 {
-    if (!IsInitialized())
-        return;
+    assert(IsInitialized() && "Trying to render frame before initialization");
 
-    m_Timer.Update();
-
-    ResetCommandList();
-    ClearRenderTarget(); // For now, just clear the backbuffer to some color
-    RenderKMS();
+    ResetUtilityCommandLists();
+    ClearRenderTarget();
     RenderGui();
     Present();
     EndOfFrame();
@@ -148,7 +81,7 @@ void GfxRenderer::RenderFrame()
 
 void GfxRenderer::ToggleGui()
 {
-    m_GfxImGui.ToggleVisible();
+    m_ImGui.ToggleVisible();
 }
 
 void GfxRenderer::Resize(uint32_t width, uint32_t height)
@@ -157,123 +90,190 @@ void GfxRenderer::Resize(uint32_t width, uint32_t height)
     // about to release are not referenced by any in-flight command lists
     Flush();
 
+    m_View->UpdateView(width, height);
+
     // Buffers are released
     m_SwapChain->ResizeBuffers(width, height);
 
     // Recreate buffers with new size
     m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
-
-    m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f,
-        static_cast<float>(width), static_cast<float>(height));
-
 }
 
-void GfxRenderer::ResetCommandList()
+void GfxRenderer::SetRTCommonParams(DX12CommandList& commandList) const
 {
-    m_CommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get()->Reset();
-    m_CommandList->Get()->Reset(m_CommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get().Get(), nullptr);
+    // Setup the rasterizer states
+    commandList.Get()->RSSetViewports(1, &m_View->GetViewport());
+    commandList.Get()->RSSetScissorRects(1, &m_View->GetScissorRect());
+
+    // Bind render target to the output merger
+    auto rtv = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
+        m_SwapChain->GetCurrentBackBufferIndex(), m_RTVDescriptorSize);
+    commandList.Get()->OMSetRenderTargets(1, &rtv, false, nullptr);
+}
+
+void GfxRenderer::InitSwapChain()
+{
+    m_SwapChain = std::make_unique<DX12SwapChain>(
+        m_Engine->GetWindow()->GetHwnd(),
+        m_Device->Get(),
+        m_DirectCommandQueue->Get(),
+        m_Engine->GetEngineConfig().GetClientWidth(),
+        m_Engine->GetEngineConfig().GetClientHeight());
+
+    m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
+}
+
+void GfxRenderer::InitCommandQueues()
+{
+    m_DirectCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+    m_ComputeCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    m_CopyCommandQueue = std::make_unique<DX12CommandQueue>(m_Device->Get(), D3D12_COMMAND_LIST_TYPE_COPY);
+}
+
+void GfxRenderer::InitRTVDescriptor()
+{
+    m_RTVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
+        m_Device->Get(),
+        D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
+        ETH_NUM_SWAPCHAIN_BUFFERS
+        );
+
+    m_RTVDescriptorSize = m_Device->Get()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+}
+
+void GfxRenderer::InitSRVDescriptor()
+{
+    m_SRVDescriptorHeap = std::make_unique<DX12DescriptorHeap>(
+        m_Device->Get(),
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+        1,
+        D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+        );
+}
+
+void GfxRenderer::InitFences()
+{
+    m_Fence = std::make_unique<DX12Fence>(m_Device->Get());
+
+    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
+        m_FenceValues[i] = 0;
+}
+
+void GfxRenderer::InitUtilityCommandList()
+{
+    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
+    {
+        m_UtilityCommandAllocators[i] = std::make_unique<DX12CommandAllocator>(
+            m_Device->Get(),
+            D3D12_COMMAND_LIST_TYPE_DIRECT); 
+    }
+
+    m_UtilityCommandList = std::make_unique<DX12CommandList>(
+        m_Device->Get(),
+        m_UtilityCommandAllocators[0]->Get(),
+        D3D12_COMMAND_LIST_TYPE_DIRECT);
+}
+
+void GfxRenderer::InitGuiManager()
+{
+    m_ImGui.Initialize(*m_Context, *m_SRVDescriptorHeap);
+}
+
+void GfxRenderer::ResetUtilityCommandLists()
+{
+    m_UtilityCommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get()->Reset();
+    m_UtilityCommandList->Get()->Reset(m_UtilityCommandAllocators[m_SwapChain->GetCurrentBackBufferIndex()]->Get().Get(), nullptr);
 }
 
 void GfxRenderer::ClearRenderTarget()
 {
+    // TODO: Clearing might be simple, but since we have a framework setup to build command lists
+    // we should use that instead here.
     ethVector4 clearColorVec = m_Context->GetClearColor();
     float clearColor[] = { clearColorVec.x, clearColorVec.y, clearColorVec.z, clearColorVec.w };
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         m_SwapChain->GetCurrentBackBuffer().Get(),
-        D3D12_RESOURCE_STATE_PRESENT, // Hard code before state for now
+        D3D12_RESOURCE_STATE_PRESENT,
         D3D12_RESOURCE_STATE_RENDER_TARGET
     );
 
-    m_CommandList->Get()->ResourceBarrier(1, &barrier);
+    m_UtilityCommandList->Get()->ResourceBarrier(1, &barrier);
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
+    auto rtv = CD3DX12_CPU_DESCRIPTOR_HANDLE(
         m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
         m_SwapChain->GetCurrentBackBufferIndex(),
-        m_RTVDescriptorSize
-    );
+        m_RTVDescriptorSize);
 
-    m_CommandList->Get()->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+    m_UtilityCommandList->Get()->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+
+    // Immediately execute this command list.
+    // Since this utility command list will not be used anymore
+    ThrowIfFailed(m_UtilityCommandList->Get()->Close());
+
+    ID3D12CommandList* const clearCommand[] = {
+        m_UtilityCommandList->Get().Get()
+    };
+
+    m_DirectCommandQueue->Get()->ExecuteCommandLists(_countof(clearCommand), clearCommand);
+
+    // We want to signal and wait for the fence because we don't want issue more commands
+    // to the utility command list while it is in flight. This is fine in this case because
+    // clearing *should* be very fast on the GPU. TODO: Profile
+    m_DirectCommandQueue->Signal(*m_Fence, m_Fence->Increment());
+    m_FenceValues[m_SwapChain->GetCurrentBackBufferIndex()] = m_Fence->GetValue();
+    WaitForGPU();
+    
+    // Reset the utility command list for others to use
+    ResetUtilityCommandLists();
 }
 
-void GfxRenderer::RenderKMS()
-{
-    // Update constant buffer values
-    // Update the MVP matrix
-    const ethXMVector rotationAxis = DirectX::XMVectorSet(0, 1, 1, 0);
-    ethXMMatrix model = DirectX::XMMatrixRotationAxis(rotationAxis, static_cast<float>(m_Timer.GetTimeSinceStart() / 1000.0));
-    const ethXMVector eyePosition = DirectX::XMVectorSet(0, 0, -5, 1);
-    const ethXMVector focusPoint = DirectX::XMVectorSet(0, 0, 0, 1);
-    const ethXMVector upDirection = DirectX::XMVectorSet(0, 1, 0, 0);
-    ethXMMatrix view = DirectX::XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
-
-    // Update the projection matrix.
-    float aspectRatio = m_Engine->GetEngineConfig().GetClientWidth() / static_cast<float>(m_Engine->GetEngineConfig().GetClientHeight());
-    ethXMMatrix projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), aspectRatio, 0.1f, 100.0f);
-
-    ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(model, view);
-    mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projection);
-
-    // Root signature must be explicitly set even though it is already set in the PSO
-    // for some reason or other
-    m_CommandList->Get()->SetGraphicsRootSignature(m_RootSignature.Get());
-
-    m_CommandList->Get()->SetGraphicsRoot32BitConstants(0, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
-
-    // Bind the PSO
-    m_CommandList->Get()->SetPipelineState(m_PipelineState->Get().Get());
-
-    // Setup the input assembler
-    m_CommandList->Get()->IASetPrimitiveTopology(m_Context->GetRenderWireframe() ? D3D_PRIMITIVE_TOPOLOGY_LINESTRIP : D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_CommandList->Get()->IASetVertexBuffers(0, 1, &m_VertexBufferView);
-    m_CommandList->Get()->IASetIndexBuffer(&m_IndexBufferView);
-
-    // Setup the rasterizer states
-    m_CommandList->Get()->RSSetViewports(1, &m_Viewport);
-    m_CommandList->Get()->RSSetScissorRects(1, &m_ScissorRect);
-
-    // Bind render target to the output merger
-    auto rtv = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
-        m_SwapChain->GetCurrentBackBufferIndex(), m_RTVDescriptorSize);
-    m_CommandList->Get()->OMSetRenderTargets(1, &rtv, false, nullptr);
-
-    m_CommandList->Get()->DrawIndexedInstanced(_countof(g_Indicies), 1, 0, 0, 0);
-}
+//void GfxRenderer::RenderKMS()
+//{
+//    const ethXMVector eyePosition = DirectX::XMVectorSet(0, 0, -5, 1);
+//    const ethXMVector focusPoint = DirectX::XMVectorSet(0, 0, 0, 1);
+//    const ethXMVector upDirection = DirectX::XMVectorSet(0, 1, 0, 0);
+//    ethXMMatrix view = DirectX::XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
+//
+//    // Update the projection matrix.
+//    float aspectRatio = m_Engine->GetEngineConfig().GetClientWidth() / static_cast<float>(m_Engine->GetEngineConfig().GetClientHeight());
+//    ethXMMatrix projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(70), aspectRatio, 0.1f, 100.0f);
+//
+//    ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(model, view);
+//    mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projection);
+//
+//}
 
 void GfxRenderer::RenderGui()
 {
-    if (!m_GfxImGui.GetVisible())
+    if (!m_ImGui.GetVisible())
         return;
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(
-        m_RTVDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(),
-        m_SwapChain->GetCurrentBackBufferIndex(),
-        m_RTVDescriptorSize
-    );
-    m_CommandList->Get()->OMSetRenderTargets(1, &(rtv), FALSE, NULL);
-    ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
-    m_CommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
+    SetRTCommonParams(*m_UtilityCommandList);
 
-    m_GfxImGui.Render(*m_CommandList);
+    ID3D12DescriptorHeap* srvdescHeap = m_SRVDescriptorHeap->Get().Get();
+    m_UtilityCommandList->Get()->SetDescriptorHeaps(1, &srvdescHeap);
+
+    m_ImGui.Render(*m_UtilityCommandList);
 }
 
 void GfxRenderer::Present()
 {
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         m_SwapChain->GetCurrentBackBuffer().Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET, // TODO: Remove this. Hard code before state for now
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
         D3D12_RESOURCE_STATE_PRESENT
     );
 
-    m_CommandList->Get()->ResourceBarrier(1, &barrier);
+    m_UtilityCommandList->Get()->ResourceBarrier(1, &barrier);
 
-    ThrowIfFailed(m_CommandList->Get()->Close());
+    ThrowIfFailed(m_UtilityCommandList->Get()->Close());
 
-    ID3D12CommandList* const commandLists[] = {
-        m_CommandList->Get().Get()
+    ID3D12CommandList* const commands[] = {
+        m_UtilityCommandList->Get().Get()
     };
 
-    m_DirectCommandQueue->Get()->ExecuteCommandLists(_countof(commandLists), commandLists);
+    m_DirectCommandQueue->Get()->ExecuteCommandLists(_countof(commands), commands);
 
     // TODO: Implement VSync and tearing support
     ThrowIfFailed(m_SwapChain->Get()->Present(0, 0));
@@ -321,6 +321,7 @@ DX12CommandQueue* GfxRenderer::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) con
     }
 }
 
+/*
 void GfxRenderer::UpdateBufferResource(
     wrl::ComPtr<ID3D12GraphicsCommandList2> commandList,
     ID3D12Resource** pDestinationResource,
@@ -337,6 +338,7 @@ void GfxRenderer::UpdateBufferResource(
         &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
+        IID_PPV_ARGS(pDestinationResource)));
         IID_PPV_ARGS(pDestinationResource)));
 
     // Create an committed resource for the upload.
@@ -408,6 +410,13 @@ void GfxRenderer::LoadContent()
     // Create the root signature.
     ThrowIfFailed(m_Device->Get()->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
         rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        m_SwapChain->GetCurrentBackBuffer().Get(),
+        D3D12_RESOURCE_STATE_PRESENT,
+        D3D12_RESOURCE_STATE_RENDER_TARGET
+    );
+
+    m_UtilityCommandList->Get()->ResourceBarrier(1, &barrier);
 
     wrl::ComPtr<ID3DBlob> vertexShader;
     wrl::ComPtr<ID3DBlob> pixelShader;
@@ -497,4 +506,5 @@ void GfxRenderer::LoadContent()
     m_CopyCommandQueue->Signal(*m_Fence, m_Fence->Increment());
     WaitForGPU();
 }
+*/
 
