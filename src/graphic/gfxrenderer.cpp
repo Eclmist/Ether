@@ -176,13 +176,6 @@ void GfxRenderer::ResetCommandList()
 
 void GfxRenderer::ClearRenderTarget()
 {
-    // Hardcode clear color for now
-    //float clearColor[] = { 
-    //    (float)sin(m_Timer.GetTimeSinceStart() * 0.0001f),
-    //    (float)cos(m_Timer.GetTimeSinceStart() * 0.0002f),
-    //    (float)sin(m_Timer.GetTimeSinceStart() * 0.00015f),
-    //    1.0f };
-
     ethVector4 clearColorVec = m_Context->GetClearColor();
     float clearColor[] = { clearColorVec.x, clearColorVec.y, clearColorVec.z, clearColorVec.w };
 

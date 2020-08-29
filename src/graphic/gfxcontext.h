@@ -40,8 +40,8 @@ public:
     inline void SetRenderWireframe(bool shouldRenderWireframe) { m_RenderWireframe = shouldRenderWireframe; };
 
 private:
-    DX12Device* m_Device;
-    GfxRenderer* m_Renderer;
+    DX12Device*     m_Device;
+    GfxRenderer*    m_Renderer;
 
 private:
     ethVector4      m_ClearColor;
