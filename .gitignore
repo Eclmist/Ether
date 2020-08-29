@@ -4,8 +4,6 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # Ether specific
-src/system/config.h
-GenerateProjects.*
 vs-chromium-project.txt
 
 # Post CMake integration (No need project files anymore)

@@ -428,7 +428,7 @@ void GfxRenderer::LoadContent()
 #endif
 
     if (FAILED(D3DCompileFromFile(
-        L"../src/graphic/shaders/default_vs.hlsl",
+        L"data/shaders/default_vs.hlsl",
         nullptr,
         nullptr,
         "VS_Main",
@@ -443,7 +443,7 @@ void GfxRenderer::LoadContent()
     }
 
     if (FAILED(D3DCompileFromFile(
-        L"../src/graphic/shaders/default_ps.hlsl",
+        L"data/shaders/default_ps.hlsl",
         nullptr,
         nullptr,
         "PS_Main",

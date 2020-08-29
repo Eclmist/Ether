@@ -112,6 +112,17 @@ set_target_properties (${PROJECT_NAME}_DLL PROPERTIES
 	RUNTIME_OUTPUT_NAME_MINSIZEREL "${PROJECT_NAME}_rm"
 )
 
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+				   COMMAND ${CMAKE_COMMAND} -E copy_directory
+				   ${ETH_SOURCE_DIR}/src/graphic/shaders
+				   $<TARGET_FILE_DIR:${PROJECT_NAME}>/data/shaders)
+
+add_custom_command(TARGET ${PROJECT_NAME}_DLL POST_BUILD
+				   COMMAND ${CMAKE_COMMAND} -E copy_directory
+				   ${ETH_SOURCE_DIR}/src/graphic/shaders
+				   $<TARGET_FILE_DIR:${PROJECT_NAME}_DLL>/data/shaders)
+
+
 # =========================================================================== #
 #                          LINK EXTERNAL LIBRARIES                            #
 # =========================================================================== #
