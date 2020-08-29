@@ -28,6 +28,7 @@
 
 GfxImGui::GfxImGui()
     : m_IsVisible(false)
+    , m_Context(nullptr)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

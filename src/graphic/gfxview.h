@@ -19,4 +19,21 @@
 
 #pragma once
 
-#include "visualrenderer.h"
+#include "system/system.h"
+#include "graphic/hal/dx12includes.h"
+
+class GfxView : NonCopyable
+{
+public:
+    GfxView();
+    ~GfxView() = default;
+
+    inline D3D12_VIEWPORT GetViewport() const { return m_Viewport; };
+    inline D3D12_RECT GetScissorRect() const { return m_ScissorRect; };
+
+    void UpdateView(uint32_t width, uint32_t height);
+
+private:
+    D3D12_VIEWPORT m_Viewport;
+    D3D12_RECT m_ScissorRect;
+};

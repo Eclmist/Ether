@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "graphic/subsystem/graphicsubsystem.h"
+#include "gfxgraphicobject.h"
 
-class VisualRenderer : GraphicSubsystem
-{
-};
+

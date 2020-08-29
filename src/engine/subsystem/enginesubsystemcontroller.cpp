@@ -51,7 +51,7 @@ void EngineSubsystemController::InitializeRenderer()
     m_Renderer->Initialize();
     // TODO: Is this really the right place to load content?
     // should there be a OnLoadContent in Engine instead?
-    m_Renderer->LoadContent();
+    // m_Renderer->LoadContent();
 }
 
 void EngineSubsystemController::ShutdownWindow()
