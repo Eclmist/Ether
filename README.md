@@ -31,14 +31,13 @@ As Ether is a DirectX 12 renderer, it can only be built and ran on a Windows 10 
 
 ## Getting Started
 
-> Note: Ether is currently a WIP and is considered unstable. Proceed with caution at your own risk.
+> Note: Ether is currently a very early WIP and is considered unstable and not particularly useful. Proceed with caution at your own risk.
 
-Ether uses CMake to build it's binaries. If you would like to build Ether yourselves, run the following CMake commands to generate project files and compile with your favourite C++ compiler.
+Ether uses CMake to build it's binaries. If you would like to build Ether yourselves, make sure that CMake is installed and run the included build script `GenerateProjects.bat`.
+
 All targets (debug, release, library) will be generated automatically.
 
-```shell
-$ cmake -B build -DCMAKE_BUILD_TYPE=Release
-```
+To compile, simply run
 
 ```
 $ cmake --build ./build/

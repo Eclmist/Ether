@@ -6,7 +6,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Generate Projects
-      run: cmake -B build
+      run: ./GenerateProjects.bat
     - name: Build Debug
       run: cmake --build ./build/ --config Debug
     - name: Build Release
