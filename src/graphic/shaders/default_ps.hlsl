@@ -23,8 +23,9 @@ struct PS_INPUT
     float4 Color : COLOR;
 };
 
-float4 PS_Main(PS_INPUT IN) : SV_Target
+float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
 {
+    return float4(pid / 12.0f, pid / 12.0 + 0.3f, pid / 12.0 + 0.6f, 1.0);
     return IN.Color;
 }
 
