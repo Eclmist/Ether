@@ -117,13 +117,13 @@ set_target_properties (${PROJECT_NAME}_DLL PROPERTIES
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 				   COMMAND ${CMAKE_COMMAND} -E copy_directory
-				   ${ETH_SOURCE_DIR}/src/graphic/shaders
-				   $<TARGET_FILE_DIR:${PROJECT_NAME}>/data/shaders)
+				   ${ETH_SOURCE_DIR}/src/graphic/shader
+				   $<TARGET_FILE_DIR:${PROJECT_NAME}>/data/shader)
 
 add_custom_command(TARGET ${PROJECT_NAME}_DLL POST_BUILD
 				   COMMAND ${CMAKE_COMMAND} -E copy_directory
-				   ${ETH_SOURCE_DIR}/src/graphic/shaders
-				   $<TARGET_FILE_DIR:${PROJECT_NAME}_DLL>/data/shaders)
+				   ${ETH_SOURCE_DIR}/src/graphic/shader
+				   $<TARGET_FILE_DIR:${PROJECT_NAME}_DLL>/data/shader)
 
 
 # =========================================================================== #

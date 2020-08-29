@@ -13,7 +13,7 @@ if %errorlevel% neq 0 (
 
 echo Creating Symbolic Links for Data
 if not exist ".\build\Data" md ".\build\Data"
-if not exist ".\build\Data\shaders" mklink /J ".\build\Data\shaders" ".\src\graphic\shaders"
+if not exist ".\build\Data\shaders" mklink /J ".\build\Data\shader" ".\src\graphic\shader"
 
 if %errorlevel% neq 0 (
     echo Failed to create symlink with error code %errorlevel%

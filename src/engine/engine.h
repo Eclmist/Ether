@@ -21,9 +21,8 @@
 
 #include "system/system.h"
 #include "engine/config/engineconfig.h"
-#include "engine/events/events.h"
+#include "engine/event/events.h"
 #include "engine/subsystem/enginesubsystemcontroller.h"
-#include "engine/subsystem/subsystem.h"
 
 class Window;
 class GfxRenderer;

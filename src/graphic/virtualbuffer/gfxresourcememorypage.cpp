@@ -20,7 +20,7 @@
 #pragma once
 
 #include "gfxresourcememorypage.h"
-#include "graphic/virtualbuffers/gfxmemoryutils.h"
+#include "graphic/virtualbuffer/gfxmemoryutils.h"
 
 GfxResourceMemoryPage::GfxResourceMemoryPage(
     wrl::ComPtr<ID3D12Device3> device,

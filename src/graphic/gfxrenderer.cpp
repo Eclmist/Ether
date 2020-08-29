@@ -421,7 +421,7 @@ void GfxRenderer::LoadContent()
 #endif
 
     if (FAILED(D3DCompileFromFile(
-        L"data/shaders/default_vs.hlsl",
+        L"data/shader/default_vs.hlsl",
         nullptr,
         nullptr,
         "VS_Main",
@@ -436,7 +436,7 @@ void GfxRenderer::LoadContent()
     }
 
     if (FAILED(D3DCompileFromFile(
-        L"data/shaders/default_ps.hlsl",
+        L"data/shader/default_ps.hlsl",
         nullptr,
         nullptr,
         "PS_Main",

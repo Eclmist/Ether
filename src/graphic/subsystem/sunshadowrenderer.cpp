@@ -19,20 +19,5 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "system/subsystem.h"
+#include "sunshadowrenderer.h"
 
-class Engine;
-
-class EngineSubsystem : public Subsystem
-{
-public:
-    EngineSubsystem(Engine* engine) { m_Engine = engine; };
-    ~EngineSubsystem() = default;
-        
-    virtual void Initialize() override { SetInitialized(true); };
-    virtual void Shutdown() override { SetInitialized(false); };
-
-protected:
-    Engine* m_Engine;
-};

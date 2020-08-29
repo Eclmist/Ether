@@ -1,0 +1,4 @@
+The different renderers in this folder refer to various thread-safe
+rendering subsystems that can generate their own command lists. They
+may be required to be scheduled before or after subsystems if there
+are resource dependencies.
