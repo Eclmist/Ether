@@ -20,7 +20,7 @@
 #pragma once
 
 #include "gfxresourceallocator.h"
-#include "graphic/virtualbuffer/gfxmemoryutils.h"
+#include "graphic/gfx/virtualbuffer/gfxmemoryutils.h"
 
 GfxResourceAllocator::GfxResourceAllocator(
     wrl::ComPtr<ID3D12Device3> device,
