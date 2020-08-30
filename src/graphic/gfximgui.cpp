@@ -49,12 +49,13 @@ void GfxImGui::Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor
     );
 }
 
-void GfxImGui::Render(DX12CommandList& commandList) const
+void GfxImGui::Render(DX12CommandList& commandList)
 {
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
+    UpdateFpsHistory();
     SetupUI();
 
     ImGui::Render();
@@ -83,6 +84,17 @@ bool GfxImGui::GetVisible() const
     return m_IsVisible;
 }
 
+void GfxImGui::UpdateFpsHistory()
+{
+    static float refresh_time = 0;
+    while (refresh_time < ImGui::GetTime()) // Create data at fixed 60 Hz rate for the demo
+    {
+        refresh_time += 10.0f / 60.0f;
+        m_FpsHistory[m_FpsHistoryOffset] = ImGui::GetIO().Framerate;
+        m_FpsHistoryOffset = (m_FpsHistoryOffset + 1) % HistoryBufferSize;
+    }
+}
+
 void GfxImGui::SetupUI() const
 {
     static bool showImGuiDemo = false;
@@ -107,7 +119,11 @@ void GfxImGui::SetupUI() const
             ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo);      // Edit bools storing our window open/close state
         }
 
-        ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        if (ImGui::CollapsingHeader("Performance"))
+        {
+            ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::PlotLines("", m_FpsHistory, HistoryBufferSize, m_FpsHistoryOffset, nullptr, 0.0f, 300.0f, ImVec2(384, 100));
+        }
         ImGui::End();
 
         m_Context->SetClearColor(clearColor);
