@@ -21,7 +21,7 @@
 
 #include "system/system.h"
 #include "graphic/hal/resource/dx12committedresource.h"
-#include "graphic/virtualbuffer/gfxresourceallocation.h"
+#include "graphic/gfx/virtualbuffer/gfxresourceallocation.h"
 
 /**
  * WARNING: This memory page is *not* thread safe! It is not designed to be used across threads

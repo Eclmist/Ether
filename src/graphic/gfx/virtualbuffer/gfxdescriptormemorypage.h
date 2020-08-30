@@ -22,9 +22,9 @@
 #include "system/system.h"
 
 #include "graphic/hal/dx12descriptorheap.h"
-#include "graphic/virtualbuffer/gfxdescriptorallocation.h"
-#include "graphic/virtualbuffer/gfxdescriptormemoryblock.h"
-#include "graphic/virtualbuffer/gfxstaledescriptorinfo.h"
+#include "graphic/gfx/virtualbuffer/gfxdescriptorallocation.h"
+#include "graphic/gfx/virtualbuffer/gfxdescriptormemoryblock.h"
+#include "graphic/gfx/virtualbuffer/gfxstaledescriptorinfo.h"
 
 class GfxDescriptorMemoryPage
 {

@@ -22,8 +22,8 @@
 #include "system/system.h"
 
 #include "graphic/hal/dx12includes.h"
-#include "graphic/virtualbuffer/gfxdescriptorallocation.h"
-#include "graphic/virtualbuffer/gfxdescriptormemorypage.h"
+#include "graphic/gfx/virtualbuffer/gfxdescriptorallocation.h"
+#include "graphic/gfx/virtualbuffer/gfxdescriptormemorypage.h"
 
 class GfxDescriptorAllocator
 {
