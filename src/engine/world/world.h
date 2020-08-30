@@ -24,6 +24,5 @@
 class World : public NonCopyable
 {
 public:
-
 };
 
