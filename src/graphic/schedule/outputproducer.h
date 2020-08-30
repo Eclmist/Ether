@@ -19,38 +19,11 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "graphic/gfxcontext.h"
-#include "imgui/imgui.h"
+#include "graphic/gfx/gfxproducer.h"
 
-class DX12CommandList;
-class DX12DescriptorHeap;
-
-class GfxImGui : NonCopyable
+class OutputProducer : GfxProducer
 {
 public:
-    GfxImGui();
-    ~GfxImGui() = default;
-
-public:
-    void Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor);
-    void Render(DX12CommandList& commandList);
-    void Shutdown();
-    void ToggleVisible();
-    void SetVisible(bool isVisible);
-    bool GetVisible() const;
-
-private:
-    void UpdateFpsHistory();
-    void SetupUI() const;
-    ImGuiWindowFlags GetWindowFlags() const;
-
-private:
-    bool m_IsVisible;
-    GfxContext* m_Context;
-
-private:
-    static const uint32_t HistoryBufferSize = 128;
-    float m_FpsHistory[HistoryBufferSize];
-    uint32_t m_FpsHistoryOffset = 0;
+    OutputProducer(const GfxContext& context);
+    ~OutputProducer() = default;
 };

@@ -19,14 +19,15 @@
 
 #pragma once
 
-#include "graphicobjectrenderer.h"
+#include "gbufferproducer.h"
+
 #include "graphic/hal/dx12device.h"
 #include "graphic/hal/dx12swapchain.h"
-#include "graphic/gfxcontext.h"
-#include "graphic/gfxrenderer.h"
+#include "graphic/gfx/gfxcontext.h"
+#include "graphic/gfx/gfxrenderer.h"
 
-GraphicObjectRenderer::GraphicObjectRenderer(const GfxContext& context)
-    : GraphicSubsystem(context)
+GBufferProducer::GBufferProducer(const GfxContext& context)
+    : GfxProducer("GBuffer Producer", context)
 {
     for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
     {
@@ -37,7 +38,7 @@ GraphicObjectRenderer::GraphicObjectRenderer(const GfxContext& context)
     m_CommandList = std::make_unique<DX12CommandList>(m_Context->GetDevice()->Get(), m_CommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
 
-void GraphicObjectRenderer::BuildCommandLists()
+void GBufferProducer::BuildCommandLists()
 {
     GfxGraphicObject* object = m_StaticObjects[0];
 
@@ -60,7 +61,7 @@ void GraphicObjectRenderer::BuildCommandLists()
     m_CommandList->Get()->DrawIndexedInstanced(_countof(g_Indicies), 1, 0, 0, 0);
 }
 
-void GraphicObjectRenderer::Reset()
+void GBufferProducer::Reset()
 {
     uint32_t currentBackBufferIndex = m_Context->GetSwapChain()->GetCurrentBackBufferIndex();
 
@@ -68,12 +69,12 @@ void GraphicObjectRenderer::Reset()
     m_CommandList->Get()->Reset(m_CommandAllocators[currentBackBufferIndex]->Get().Get(), nullptr);
 }
 
-void GraphicObjectRenderer::AddStaticObject(GfxGraphicObject* graphicObject)
+void GBufferProducer::AddStaticObject(GfxGraphicObject* graphicObject)
 {
     m_StaticObjects.push_back(graphicObject);
 }
 
-void GraphicObjectRenderer::AddDynamicObject(GfxGraphicObject* graphicObject)
+void GBufferProducer::AddDynamicObject(GfxGraphicObject* graphicObject)
 {
     throw std::exception("Not yet implemented");
 }

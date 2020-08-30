@@ -31,10 +31,10 @@
 #include "graphic/hal/dx12pipelinestate.h"
 #include "graphic/hal/dx12swapchain.h"
 
-#include "graphic/gfxcontext.h"
-#include "graphic/gfximgui.h"
-#include "graphic/gfxtimer.h"
-#include "graphic/gfxview.h"
+#include "graphic/gfx/gfxcontext.h"
+#include "graphic/gfx/gfximgui.h"
+#include "graphic/gfx/gfxtimer.h"
+#include "graphic/gfx/gfxview.h"
 
 class Engine;
 

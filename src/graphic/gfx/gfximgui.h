@@ -19,9 +19,38 @@
 
 #pragma once
 
-#include "graphicsubsystem.h"
+#include "system/system.h"
+#include "graphic/gfx/gfxcontext.h"
+#include "imgui/imgui.h"
 
-GraphicSubsystem::GraphicSubsystem(const GfxContext& context)
-    : m_Context(&context)
+class DX12CommandList;
+class DX12DescriptorHeap;
+
+class GfxImGui : NonCopyable
 {
-}
+public:
+    GfxImGui();
+    ~GfxImGui() = default;
+
+public:
+    void Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor);
+    void Render(DX12CommandList& commandList);
+    void Shutdown();
+    void ToggleVisible();
+    void SetVisible(bool isVisible);
+    bool GetVisible() const;
+
+private:
+    void UpdateFpsHistory();
+    void SetupUI() const;
+    ImGuiWindowFlags GetWindowFlags() const;
+
+private:
+    bool m_IsVisible;
+    GfxContext* m_Context;
+
+private:
+    static const uint32_t HistoryBufferSize = 128;
+    float m_FpsHistory[HistoryBufferSize];
+    uint32_t m_FpsHistoryOffset = 0;
+};

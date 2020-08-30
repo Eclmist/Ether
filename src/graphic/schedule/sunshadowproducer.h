@@ -19,36 +19,11 @@
 
 #pragma once
 
-#include "engine/config/engineconfig.h"
-#include "system/win32/window.h"
-#include "graphic/gfx/gfxrenderer.h"
+#include "graphic/gfx/gfxproducer.h"
 
-class Engine;
-
-class EngineSubsystemController : NonCopyable
+class SunShadowProducer : public GfxProducer
 {
 public:
-    EngineSubsystemController(Engine* engine);
-    ~EngineSubsystemController() = default;
-
-public:
-    void InitializeSubsystems();
-    void ShutdownSubsystems();
-
-public:
-    inline Window* GetWindow() const { return m_Window.get(); };
-    inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
-
-private:
-    void InitializeWindow();
-    void InitializeRenderer();
-
-    void ShutdownWindow();
-    void ShutdownRenderer();
-
-private:
-    std::unique_ptr<Window> m_Window;
-    std::unique_ptr<GfxRenderer> m_Renderer;
-
-    Engine* m_Engine;
+    SunShadowProducer(GfxContext& context);
+    ~SunShadowProducer();
 };

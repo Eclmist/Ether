@@ -19,18 +19,17 @@
 
 #pragma once
 
-#include "graphic/subsystem/graphicsubsystem.h"
-#include "graphic/gfxgraphicobject.h"
+#include "graphic/gfx/gfxproducer.h"
+#include "graphic/gfx/gfxgraphicobject.h"
 
-class GraphicObjectRenderer : GraphicSubsystem
+class GBufferProducer : GfxProducer
 {
 public:
-    GraphicObjectRenderer(const GfxContext& context);
-    ~GraphicObjectRenderer() = default;
+    GBufferProducer(const GfxContext& context);
+    ~GBufferProducer() = default;
 
     void BuildCommandLists() override;
     void Reset() override;
-    void Shutdown() override {};
 
     void AddStaticObject(GfxGraphicObject* graphicObject);
     void AddDynamicObject(GfxGraphicObject* graphicObject);

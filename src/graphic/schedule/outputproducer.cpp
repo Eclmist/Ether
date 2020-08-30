@@ -19,25 +19,9 @@
 
 #pragma once
 
-#include "system/subsystem.h"
-#include "graphic/gfxcontext.h"
-#include "graphic/hal/dx12commandlist.h"
-#include "graphic/hal/dx12commandallocator.h"
-#include "graphic/hal/dx12commandqueue.h"
-#include "graphic/hal/dx12pipelinestate.h"
+#include "outputproducer.h"
 
-class GraphicSubsystem : Subsystem
+OutputProducer::OutputProducer(const GfxContext& context)
+    : GfxProducer("Output Producer", context)
 {
-public:
-    GraphicSubsystem(const GfxContext& context);
-    ~GraphicSubsystem() = default;
-
-    virtual void BuildCommandLists() = 0;
-    virtual void Reset() = 0;
-    virtual void Flush() = 0;
-
-protected:
-    const GfxContext* m_Context;
-
-    std::unique_ptr<DX12PipelineState> m_PipelineState;
-};
+}

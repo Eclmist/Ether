@@ -19,9 +19,15 @@
 
 #pragma once
 
-#include "system/system.h"
+#include "sunshadowproducer.h"
 
-class SunShadowRenderer : NonCopyable
+SunShadowProducer::SunShadowProducer(GfxContext& context)
+    : GfxProducer("Sun Shadow Producer", context)
 {
-public:
-};
+
+}
+
+SunShadowProducer::~SunShadowProducer()
+{
+
+}
