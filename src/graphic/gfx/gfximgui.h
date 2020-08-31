@@ -41,8 +41,10 @@ public:
     bool GetVisible() const;
 
 private:
+    void CreateImGuiContext();
+    void SetStyle();
     void UpdateFpsHistory();
-    void SetupUI() const;
+    void SetupDebugMenu() const;
     ImGuiWindowFlags GetWindowFlags() const;
 
 private:
@@ -52,5 +54,5 @@ private:
 private:
     static const uint32_t HistoryBufferSize = 128;
     float m_FpsHistory[HistoryBufferSize];
-    uint32_t m_FpsHistoryOffset = 0;
+    uint32_t m_FpsHistoryOffset;
 };
