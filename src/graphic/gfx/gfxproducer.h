@@ -20,22 +20,25 @@
 #pragma once
 
 #include "system/system.h"
-#include "graphic/gfx/gfxcontext.h"
+
 #include "graphic/hal/dx12commandlist.h"
 #include "graphic/hal/dx12commandallocator.h"
 #include "graphic/hal/dx12commandqueue.h"
 #include "graphic/hal/dx12pipelinestate.h"
 
+#include "graphic/gfx/gfxcontext.h"
+#include "graphic/gfx/gfxschedulecontext.h"
+
 class GfxProducer : NonCopyable
 {
 public:
-    GfxProducer(const char* name, const GfxContext& context);
+    GfxProducer(const char* name);
     ~GfxProducer() = default;
 
-    virtual void GetInputOutput() = 0;
-    virtual void BuildCommandLists() = 0;
-    virtual void Reset() = 0;
-    virtual void Flush() = 0;
+    virtual bool GetInputOutput(GfxScheduleContext& scheduleContext);
+    //virtual void BuildCommandLists() = 0;
+    //virtual void Reset() = 0;
+    //virtual void Flush() = 0;
 
 protected:
     const char* m_Name;

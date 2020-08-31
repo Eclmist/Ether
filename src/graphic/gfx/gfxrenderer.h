@@ -33,6 +33,7 @@
 
 #include "graphic/gfx/gfxcontext.h"
 #include "graphic/gfx/gfximgui.h"
+#include "graphic/gfx/gfxproducer.h"
 #include "graphic/gfx/gfxtimer.h"
 #include "graphic/gfx/gfxview.h"
 
@@ -52,6 +53,7 @@ public:
     void ToggleGui();
     void Resize(uint32_t width, uint32_t height);
     void SetRTCommonParams(DX12CommandList& commandList) const;
+    void AddProducer(GfxProducer& producer);
 
 private:
     void InitRendererCore();
@@ -97,6 +99,8 @@ private:
     std::unique_ptr<GfxContext> m_Context;
     std::unique_ptr<GfxView> m_View;
     GfxImGui m_ImGui;
+
+    std::vector<GfxProducer*> m_Producers;
 
     // PROTOTYPE BS
 public:

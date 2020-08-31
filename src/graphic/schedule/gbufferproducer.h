@@ -22,17 +22,20 @@
 #include "graphic/gfx/gfxproducer.h"
 #include "graphic/gfx/gfxgraphicobject.h"
 
-class GBufferProducer : GfxProducer
+class GBufferProducer : public GfxProducer
 {
 public:
-    GBufferProducer(const GfxContext& context);
+    GBufferProducer();
     ~GBufferProducer() = default;
 
-    void BuildCommandLists() override;
-    void Reset() override;
+    bool GetInputOutput(GfxScheduleContext& scheduleContext);
 
     void AddStaticObject(GfxGraphicObject* graphicObject);
     void AddDynamicObject(GfxGraphicObject* graphicObject);
+
+private:
+    void BuildCommandLists();
+    void Reset();
 
 private:
     std::unique_ptr<DX12CommandList> m_CommandList;

@@ -19,14 +19,23 @@
 
 #pragma once
 
-#include "gfxproducer.h"
+#include "system/system.h"
 
-GfxProducer::GfxProducer(const char* name)
-    : m_Name(name)
-{
-}
+class GfxProducer;
+class GfxRenderer;
 
-bool GfxProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
+class GfxGameRendererScheduler : NonCopyable
 {
-    return true;
-}
+public:
+    GfxGameRendererScheduler(GfxRenderer& renderer);
+    ~GfxGameRendererScheduler() = default;
+
+    void ScheduleProducers();
+
+private:
+    void AddProducer(GfxProducer& producer);
+
+private:
+    GfxRenderer& m_Renderer;
+};
+

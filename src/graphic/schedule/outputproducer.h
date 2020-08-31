@@ -21,9 +21,9 @@
 
 #include "graphic/gfx/gfxproducer.h"
 
-class OutputProducer : GfxProducer
+class OutputProducer : public GfxProducer
 {
 public:
-    OutputProducer(const GfxContext& context);
+    OutputProducer();
     ~OutputProducer() = default;
 };
