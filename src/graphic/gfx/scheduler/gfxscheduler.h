@@ -19,14 +19,19 @@
 
 #pragma once
 
-#include "gfxproducer.h"
+#include "system/system.h"
 
-GfxProducer::GfxProducer(const char* name)
-    : m_Name(name)
-{
-}
+class GfxProducer;
 
-bool GfxProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
+class GfxScheduler
 {
-    return true;
-}
+public:
+    GfxScheduler() = default;
+    ~GfxScheduler() = default;
+
+    std::queue<GfxProducer*> ScheduleProducers(std::vector<GfxProducer*>& orderedProducers);
+
+private:
+    void QueueProducer(GfxProducer* producer, std::unordered_set<GfxProducer*>& visited, std::queue<GfxProducer*>& finalSchedule);
+    bool IsScheduled(std::unordered_set<GfxProducer*>& visited, GfxProducer* producer);
+};

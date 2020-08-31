@@ -19,14 +19,10 @@
 
 #pragma once
 
-#include "gfxproducer.h"
+#include "gfxschedulecontext.h"
 
-GfxProducer::GfxProducer(const char* name)
-    : m_Name(name)
+GfxScheduleContext::GfxScheduleContext(GfxContext& context, GfxScheduler& scheduler)
+    : m_Context(context)
+    , m_Scheduler(scheduler)
 {
-}
-
-bool GfxProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
-{
-    return true;
 }

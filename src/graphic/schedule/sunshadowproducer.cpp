@@ -21,8 +21,8 @@
 
 #include "sunshadowproducer.h"
 
-SunShadowProducer::SunShadowProducer(GfxContext& context)
-    : GfxProducer("Sun Shadow Producer", context)
+SunShadowProducer::SunShadowProducer()
+    : GfxProducer("Sun Shadow Producer")
 {
 
 }

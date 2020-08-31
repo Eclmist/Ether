@@ -24,6 +24,6 @@
 class SunShadowProducer : public GfxProducer
 {
 public:
-    SunShadowProducer(GfxContext& context);
+    SunShadowProducer();
     ~SunShadowProducer();
 };

@@ -111,6 +111,11 @@ void GfxRenderer::SetRTCommonParams(DX12CommandList& commandList) const
     commandList.Get()->OMSetRenderTargets(1, &rtv, false, nullptr);
 }
 
+void GfxRenderer::AddProducer(GfxProducer& producer)
+{
+    m_Producers.push_back(&producer);
+}
+
 void GfxRenderer::InitSwapChain()
 {
     m_SwapChain = std::make_unique<DX12SwapChain>(

@@ -19,14 +19,21 @@
 
 #pragma once
 
-#include "gfxproducer.h"
+#include "system/system.h"
 
-GfxProducer::GfxProducer(const char* name)
-    : m_Name(name)
-{
-}
+class GfxContext;
+class GfxScheduler;
 
-bool GfxProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
+class GfxScheduleContext : NonCopyable
 {
-    return true;
-}
+    GfxScheduleContext(GfxContext& context, GfxScheduler& scheduler);
+    ~GfxScheduleContext() = default;
+
+    inline GfxContext& GetContext() const { return m_Context; };
+    inline GfxScheduler& GetScheduler() const { return m_Scheduler; };
+
+private:
+    GfxContext&     m_Context;
+    GfxScheduler&   m_Scheduler;
+};
+

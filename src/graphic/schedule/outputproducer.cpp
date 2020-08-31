@@ -21,7 +21,7 @@
 
 #include "outputproducer.h"
 
-OutputProducer::OutputProducer(const GfxContext& context)
-    : GfxProducer("Output Producer", context)
+OutputProducer::OutputProducer()
+    : GfxProducer("Output Producer")
 {
 }

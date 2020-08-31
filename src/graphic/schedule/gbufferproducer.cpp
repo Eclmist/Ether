@@ -26,16 +26,16 @@
 #include "graphic/gfx/gfxcontext.h"
 #include "graphic/gfx/gfxrenderer.h"
 
-GBufferProducer::GBufferProducer(const GfxContext& context)
-    : GfxProducer("GBuffer Producer", context)
+GBufferProducer::GBufferProducer()
+    : GfxProducer("GBuffer Producer")
 {
-    for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
-    {
-        m_CommandAllocators[i] = std::make_unique<DX12CommandAllocator>(m_Context->GetDevice()->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT); 
-        m_FenceValues[i] = 0;
-    }
+    //for (int i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
+    //{
+    //    m_CommandAllocators[i] = std::make_unique<DX12CommandAllocator>(m_Context->GetDevice()->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT); 
+    //    m_FenceValues[i] = 0;
+    //}
 
-    m_CommandList = std::make_unique<DX12CommandList>(m_Context->GetDevice()->Get(), m_CommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+    //m_CommandList = std::make_unique<DX12CommandList>(m_Context->GetDevice()->Get(), m_CommandAllocators[0]->Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 }
 
 void GBufferProducer::BuildCommandLists()
@@ -67,6 +67,11 @@ void GBufferProducer::Reset()
 
     m_CommandAllocators[currentBackBufferIndex]->Get()->Reset();
     m_CommandList->Get()->Reset(m_CommandAllocators[currentBackBufferIndex]->Get().Get(), nullptr);
+}
+
+bool GBufferProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
+{
+    return true;
 }
 
 void GBufferProducer::AddStaticObject(GfxGraphicObject* graphicObject)

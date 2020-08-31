@@ -19,14 +19,26 @@
 
 #pragma once
 
-#include "gfxproducer.h"
+#include "gfxgamerenderschedule.h"
+#include "graphic/gfx/gfxrenderer.h"
 
-GfxProducer::GfxProducer(const char* name)
-    : m_Name(name)
+#include "graphic/schedule/sunshadowproducer.h"
+#include "graphic/schedule/gbufferproducer.h"
+#include "graphic/schedule/outputproducer.h"
+
+GBufferProducer g_GBufferProducer;
+
+GfxGameRendererScheduler::GfxGameRendererScheduler(GfxRenderer& renderer)
+    : m_Renderer(renderer)
 {
 }
 
-bool GfxProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
+void GfxGameRendererScheduler::ScheduleProducers()
 {
-    return true;
+    AddProducer(g_GBufferProducer);
+}
+
+void GfxGameRendererScheduler::AddProducer(GfxProducer& producer)
+{
+    m_Renderer.AddProducer(producer);
 }
