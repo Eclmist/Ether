@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
 #include "graphic/gfx/gfxcontext.h"
 #include "imgui/imgui.h"
 

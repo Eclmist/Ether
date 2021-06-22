@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 class GfxProducer;
 
 class GfxScheduler

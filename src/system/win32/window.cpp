@@ -18,7 +18,7 @@
 */
 
 #include "window.h"
-#include "engine/engine.h"
+#include "core/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
 //#define ETH_STANDALONE
@@ -26,6 +26,7 @@
 #define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/system/win32/ether.ico"
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
+#define ETH_HINST               GetModuleHandle(NULL)
 
 #ifdef ETH_EDITOR_BUILD
 #define ETH_WINDOW_STYLE        WS_CHILD
@@ -37,9 +38,7 @@ Window::Window(Engine* engine)
     : EngineSubsystem(engine)
 {
     m_hWnd = nullptr;
-    m_hInst = nullptr;
     m_IsFullscreen = false;
-    m_WindowedRect = { 0, 0, 0, 0 };
 }
 
 void Window::Initialize()
@@ -72,7 +71,7 @@ void Window::Initialize()
         m_WindowedRect.bottom - m_WindowedRect.top,
         m_Engine->GetEngineConfig().GetEditorHwndHost(),
         nullptr,
-        m_hInst,
+        ETH_HINST,
         this
     );
 
@@ -84,7 +83,7 @@ void Window::Initialize()
 void Window::Shutdown()
 {
     DestroyWindow(m_hWnd);
-    UnregisterClassW(ETH_WINDOW_CLASS, m_hInst);
+    UnregisterClassW(ETH_WINDOW_CLASS, ETH_HINST);
 }
 
 void Window::Run()
@@ -186,14 +185,14 @@ void Window::RegisterWindowClass() const
     windowClass.lpfnWndProc = &WndProcSetup;
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
-    windowClass.hInstance = m_hInst;
+    windowClass.hInstance = ETH_HINST;
     windowClass.hCursor = nullptr;
     windowClass.hbrBackground = nullptr;
     windowClass.lpszMenuName = nullptr;
     windowClass.lpszClassName = ETH_WINDOW_CLASS;
     windowClass.hIconSm = nullptr;
     windowClass.hIcon = (HICON)LoadImageW(
-        m_hInst,
+        ETH_HINST,
         ETH_WINDOW_ICON,
         IMAGE_ICON,
         0,

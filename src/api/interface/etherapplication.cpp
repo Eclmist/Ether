@@ -17,22 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "etherapplication.h"
 
-#include "system/system.h"
-#include "system/subsystem.h"
-
-class Engine;
-
-class EngineSubsystem : public Subsystem
+EtherApplication::EtherApplication()
 {
-public:
-    EngineSubsystem(Engine* engine) { m_Engine = engine; };
-    ~EngineSubsystem() = default;
-        
-    virtual void Initialize() override { SetInitialized(true); };
-    virtual void Shutdown() override { SetInitialized(false); };
 
-protected:
-    Engine* m_Engine;
-};
+}

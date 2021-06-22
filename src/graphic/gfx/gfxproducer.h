@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 #include "graphic/hal/dx12commandlist.h"
 #include "graphic/hal/dx12commandallocator.h"
 #include "graphic/hal/dx12commandqueue.h"

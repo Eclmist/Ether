@@ -19,8 +19,7 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "engine/subsystem/enginesubsystem.h"
+#include "core/subsystem/enginesubsystem.h"
 
 #include "graphic/hal/dx12includes.h"
 #include "graphic/hal/dx12adapter.h"

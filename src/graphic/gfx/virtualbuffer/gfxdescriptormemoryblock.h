@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 struct GfxDescriptorMemoryBlock
 {
     GfxDescriptorMemoryBlock(uint32_t size)

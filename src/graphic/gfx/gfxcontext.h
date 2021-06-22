@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 class DX12Device;
 class DX12SwapChain;
 class GfxRenderer;

@@ -30,18 +30,13 @@ set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 # Ensure running on Windows
 if (NOT WIN32)
-    message(FATAL_ERROR "${PROJECT_NAME} is a DirectX 12 project and thus only supported on Windows 10! CMake will exit.")
+    message(FATAL_ERROR "${PROJECT_NAME} is only supported on Windows 10! CMake will exit.")
 endif ()
 
 # Sets the C++ versions
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Enable multi-thread compiling.
-include(ProcessorCount)
-ProcessorCount(N)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
 
 # =========================================================================== #
 #                        ADD SOURCE FILES TO PROJECT                          #
@@ -70,34 +65,19 @@ set(imgui_files ${imgui})
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
 
-add_executable(${PROJECT_NAME} WIN32 ${all_files})
-add_library(${PROJECT_NAME}_DLL SHARED ${all_files})
+add_library(${PROJECT_NAME} SHARED ${all_files})
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC ETH_STANDALONE_BUILD)
-target_compile_definitions(${PROJECT_NAME}_DLL PUBLIC ETH_EDITOR_BUILD)
+target_precompile_headers(${PROJECT_NAME} PRIVATE src/system/pch.h)
+target_compile_definitions(${PROJECT_NAME} PUBLIC ETH_ENGINE)
 
 set_target_properties (${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/win32"
-    RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_win32_r"
-    RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_win32_d")
-
-
-set_target_properties (${PROJECT_NAME}_DLL PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/lib"
-    RUNTIME_OUTPUT_NAME_RELEASE "${PROJECT_NAME}_r"
-    RUNTIME_OUTPUT_NAME_DEBUG "${PROJECT_NAME}_d")
-
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin/enginelib"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/enginelib")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_SOURCE_DIR}/src/graphic/shader
                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/data/shader)
-
-add_custom_command(TARGET ${PROJECT_NAME}_DLL POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_CURRENT_SOURCE_DIR}/src/graphic/shader
-                   $<TARGET_FILE_DIR:${PROJECT_NAME}_DLL>/data/shader)
-
 
 # =========================================================================== #
 #                          LINK EXTERNAL LIBRARIES                            #
@@ -105,9 +85,10 @@ add_custom_command(TARGET ${PROJECT_NAME}_DLL POST_BUILD
 
 # Link DX12
 target_link_libraries(${PROJECT_NAME} d3d12.lib dxgi.lib dxguid.lib)
-target_link_libraries(${PROJECT_NAME}_DLL d3d12.lib dxgi.lib dxguid.lib)
 
-# Link Imgui
-ADD_LIBRARY(ImGui ${imgui_files})
-target_link_libraries(${PROJECT_NAME} ImGui)
-target_link_libraries(${PROJECT_NAME}_DLL ImGui)
+# =========================================================================== #
+#                             INCLUDE SUBPROJECTS                             #
+# =========================================================================== #
+
+add_subdirectory(sampleapp)
+

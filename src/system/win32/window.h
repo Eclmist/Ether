@@ -19,9 +19,7 @@
 
 #pragma once
 
-#include "ethwin.h"
-#include "system/system.h"
-#include "engine/subsystem/enginesubsystem.h"
+#include "core/subsystem/enginesubsystem.h"
 
 class Engine;
 
@@ -55,5 +53,4 @@ private:
 
     // Handle to the actual win32 window and window instance
     HWND m_hWnd;
-    HINSTANCE m_hInst;
 };

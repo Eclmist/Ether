@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 #include "graphic/hal/dx12includes.h"
 #include "graphic/gfx/virtualbuffer/gfxresourceallocation.h"
 #include "graphic/gfx/virtualbuffer/gfxresourcememorypage.h"

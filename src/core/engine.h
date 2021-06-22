@@ -19,10 +19,9 @@
 
 #pragma once
 
-#include "system/system.h"
-#include "engine/config/engineconfig.h"
-#include "engine/event/events.h"
-#include "engine/subsystem/enginesubsystemcontroller.h"
+#include "core/config/engineconfig.h"
+#include "core/event/events.h"
+#include "core/subsystem/enginesubsystemcontroller.h"
 
 class Window;
 class GfxRenderer;

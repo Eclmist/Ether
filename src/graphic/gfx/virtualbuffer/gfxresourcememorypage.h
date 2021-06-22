@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
 #include "graphic/hal/resource/dx12committedresource.h"
 #include "graphic/gfx/virtualbuffer/gfxresourceallocation.h"
 
