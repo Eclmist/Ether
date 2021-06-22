@@ -20,7 +20,7 @@
 #include "system/system.h"
 #include "sample/ethersample.h"
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, INT)
 {
     EngineConfig engineConfig;
     engineConfig.SetClientName(L"Ether Demo");
