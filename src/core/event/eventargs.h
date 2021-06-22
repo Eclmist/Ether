@@ -19,35 +19,9 @@
 
 #pragma once
 
-#include "engine/engine.h"
+#include "system/win32/keycodes.h"
 
-class EtherSample : public Engine
+struct EventArgs
 {
-public:
-    EtherSample(const EngineConfig& config);
-
-    void Initialize() override;
-
-    void LoadContent() override;
-
-    void UnloadContent() override;
-
-    void Shutdown() override;
-
-    void OnUpdate(UpdateEventArgs& e) override;
-
-    void OnRender(RenderEventArgs& e) override;
-
-    void OnKeyPressed(KeyEventArgs& e) override;
-
-    void OnKeyReleased(KeyEventArgs& e) override;
-
-    void OnMouseButtonPressed(MouseEventArgs& e) override;
-
-    void OnMouseButtonReleased(MouseEventArgs& e) override;
-
-    void OnMouseMoved(MouseEventArgs& e) override;
-
-public:
-    void OnEditorViewportResize(uint32_t width, uint32_t height);
 };
+

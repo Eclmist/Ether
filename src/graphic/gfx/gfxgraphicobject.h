@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
 #include "graphic/hal/dx12includes.h"
 
 class GfxGraphicObject

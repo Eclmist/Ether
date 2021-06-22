@@ -19,36 +19,19 @@
 
 #pragma once
 
-#include "engine/config/engineconfig.h"
-#include "system/win32/window.h"
-#include "graphic/gfx/gfxrenderer.h"
+#include "system/subsystem.h"
 
 class Engine;
 
-class EngineSubsystemController : NonCopyable
+class EngineSubsystem : public Subsystem
 {
 public:
-    EngineSubsystemController(Engine* engine);
-    ~EngineSubsystemController() = default;
+    EngineSubsystem(Engine* engine) { m_Engine = engine; };
+    ~EngineSubsystem() = default;
+        
+    virtual void Initialize() override { SetInitialized(true); };
+    virtual void Shutdown() override { SetInitialized(false); };
 
-public:
-    void InitializeSubsystems();
-    void ShutdownSubsystems();
-
-public:
-    inline Window* GetWindow() const { return m_Window.get(); };
-    inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
-
-private:
-    void InitializeWindow();
-    void InitializeRenderer();
-
-    void ShutdownWindow();
-    void ShutdownRenderer();
-
-private:
-    std::unique_ptr<Window> m_Window;
-    std::unique_ptr<GfxRenderer> m_Renderer;
-
+protected:
     Engine* m_Engine;
 };

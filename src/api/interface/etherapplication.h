@@ -19,35 +19,14 @@
 
 #pragma once
 
-#include "win32/ethwinmacros.h"
+#include "api/api.h"
 
-// STL Headers
-#include <algorithm>
-#include <cassert>
-#include <string>
-#include <memory>
-#include <mutex>
+class ETH_EXPORT_DLL EtherApplication
+{
+public:
+    EtherApplication();
+    ~EtherApplication() = default;
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-// Chrono
-#include <chrono>
-namespace chrono = std::chrono;
-
-// Common Containers
-#include <vector>
-#include <list>
-#include <stack>
-#include <queue>
-#include <deque>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include <map>
-
-// Useful standalone no-dep Ether includes
-#include "noncopyable.h"
-#include "singleton.h"
-#include "types.h"
+public:
+    virtual void Update() = 0;
+};

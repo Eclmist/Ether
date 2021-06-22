@@ -20,46 +20,46 @@
 #pragma once
 
 #include "api.h"
-#include "sample/ethersample.h"
-
-EtherSample* m_EtherEditorInstance;
-
-HWND Initialize(HWND host)
-{
-    EngineConfig engineConfig;
-    engineConfig.SetIsRunningInEditor(true);
-    engineConfig.SetEditorHwndHost(host);
-
-    m_EtherEditorInstance = new EtherSample(engineConfig);
-    m_EtherEditorInstance->Initialize();
-
-    m_EtherEditorInstance->GetWindow()->Show();
-
-    return m_EtherEditorInstance->GetWindow()->GetHwnd();
-}
-
-void ResizeViewport(uint32_t width, uint32_t height)
-{
-    m_EtherEditorInstance->OnEditorViewportResize(width, height);
-}
-
-void Update()
-{
-    // TODO: Figure out how to properly populate this args
-    UpdateEventArgs e;
-    m_EtherEditorInstance->OnUpdate(e);
-}
-
-ETH_EXPORT_DLL void Render()
-{
-    // TODO: Figure out how to properly populate this args
-    RenderEventArgs e;
-    m_EtherEditorInstance->OnRender(e);
-}
-
-void Release()
-{
-    m_EtherEditorInstance->Shutdown();
-    delete m_EtherEditorInstance;
-}
-
+//#include "sample/ethersample.h"
+//
+//EtherSample* m_EtherEditorInstance;
+//
+//HWND Initialize(HWND host)
+//{
+//    EngineConfig engineConfig;
+//    engineConfig.SetIsRunningInEditor(true);
+//    engineConfig.SetEditorHwndHost(host);
+//
+//    m_EtherEditorInstance = new EtherSample(engineConfig);
+//    m_EtherEditorInstance->Initialize();
+//
+//    m_EtherEditorInstance->GetWindow()->Show();
+//
+//    return m_EtherEditorInstance->GetWindow()->GetHwnd();
+//}
+//
+//void ResizeViewport(uint32_t width, uint32_t height)
+//{
+//    m_EtherEditorInstance->OnEditorViewportResize(width, height);
+//}
+//
+//void Update()
+//{
+//    // TODO: Figure out how to properly populate this args
+//    UpdateEventArgs e;
+//    m_EtherEditorInstance->OnUpdate(e);
+//}
+//
+//ETH_EXPORT_DLL void Render()
+//{
+//    // TODO: Figure out how to properly populate this args
+//    RenderEventArgs e;
+//    m_EtherEditorInstance->OnRender(e);
+//}
+//
+//void Release()
+//{
+//    m_EtherEditorInstance->Shutdown();
+//    delete m_EtherEditorInstance;
+//}
+//

@@ -20,7 +20,7 @@
 #pragma once
 
 #include "gfxrenderer.h"
-#include "engine/engine.h"
+#include "core/engine.h"
 #include "system/win32/window.h"
 
 GfxRenderer::GfxRenderer(Engine* engine)

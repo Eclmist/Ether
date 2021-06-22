@@ -19,16 +19,12 @@
 
 #pragma once
 
-#include "system/system.h"
+#define ETH_EXPORT_DLL __declspec(dllexport)
+#define ETH_IMPORT_DLL __declspec(dllimport)
 
-#define ETH_EXPORT_DLL extern "C" __declspec(dllexport)
-
-ETH_EXPORT_DLL HWND Initialize(HWND host);
-
-ETH_EXPORT_DLL void ResizeViewport(uint32_t width, uint32_t height);
-
-ETH_EXPORT_DLL void Update();
-
-ETH_EXPORT_DLL void Render();
-
-ETH_EXPORT_DLL void Release();
+//ETH_EXPORT_DLL HWND Initialize(HWND host);
+//ETH_EXPORT_DLL void ResizeViewport(uint32_t width, uint32_t height);
+//ETH_EXPORT_DLL void Update();
+//ETH_EXPORT_DLL void Render();
+//ETH_EXPORT_DLL void Release();
+//

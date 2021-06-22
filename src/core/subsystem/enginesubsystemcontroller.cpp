@@ -20,7 +20,7 @@
 #pragma once
 
 #include "enginesubsystemcontroller.h"
-#include "engine/engine.h"
+#include "core/engine.h"
 
 EngineSubsystemController::EngineSubsystemController(Engine* engine)
     : m_Engine(engine)

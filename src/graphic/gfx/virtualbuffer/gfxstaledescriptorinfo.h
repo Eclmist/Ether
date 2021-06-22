@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 struct GfxStaleDescriptorInfo
 {
     GfxStaleDescriptorInfo(uint32_t offset, uint32_t size, uint32_t graphicFrameNumber)

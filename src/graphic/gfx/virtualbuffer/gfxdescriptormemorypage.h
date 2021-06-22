@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/system.h"
-
 #include "graphic/hal/dx12descriptorheap.h"
 #include "graphic/gfx/virtualbuffer/gfxdescriptorallocation.h"
 #include "graphic/gfx/virtualbuffer/gfxdescriptormemoryblock.h"

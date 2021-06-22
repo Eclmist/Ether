@@ -17,21 +17,38 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "system/system.h"
-#include "sample/ethersample.h"
+#pragma once
 
-int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, INT)
+#include "core/config/engineconfig.h"
+#include "system/win32/window.h"
+#include "graphic/gfx/gfxrenderer.h"
+
+class Engine;
+
+class EngineSubsystemController : NonCopyable
 {
-    EngineConfig engineConfig;
-    engineConfig.SetClientName(L"Ether Demo");
-    engineConfig.SetClientWidth(1270);
-    engineConfig.SetClientHeight(720);
-    engineConfig.SetIsRunningInEditor(false);
+public:
+    EngineSubsystemController(Engine* engine);
+    ~EngineSubsystemController() = default;
 
-    EtherSample sampleEngine(engineConfig);
-    sampleEngine.Initialize();
-    sampleEngine.GetWindow()->Run();
-    sampleEngine.Shutdown();
-    return 0;
-}
+public:
+    void InitializeSubsystems();
+    void ShutdownSubsystems();
 
+public:
+    inline Window* GetWindow() const { return m_Window.get(); };
+    inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
+
+private:
+    void InitializeWindow();
+    void InitializeRenderer();
+
+    void ShutdownWindow();
+    void ShutdownRenderer();
+
+private:
+    std::unique_ptr<Window> m_Window;
+    std::unique_ptr<GfxRenderer> m_Renderer;
+
+    Engine* m_Engine;
+};
