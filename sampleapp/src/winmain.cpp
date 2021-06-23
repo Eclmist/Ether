@@ -19,26 +19,10 @@
 
 #include <Windows.h>
 #include "sampleapp.h"
+#include "api/api.h"
 
-SampleApp g_SampleApp;
-
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int cmdShow)
 {
-    // Lock thread and let WinProc handle the rest.
-    MSG msg = {};
-    while (msg.message != WM_QUIT)
-    {
-        if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-        else
-        {
-            g_SampleApp.Update();
-        }
-    }
-
-    return 0;
+    return EtherGame::Start(SampleApp(), L"Ether Sample Application", hInst, cmdShow);
 }
 

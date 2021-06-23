@@ -119,7 +119,7 @@ void GfxRenderer::AddProducer(GfxProducer& producer)
 void GfxRenderer::InitSwapChain()
 {
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        m_Engine->GetWindow()->GetHwnd(),
+        nullptr, // TODO get window hwnd. m_Engine->GetWindow()->GetHwnd(),
         m_Device->Get(),
         m_DirectCommandQueue->Get(),
         m_Engine->GetEngineConfig().GetClientWidth(),

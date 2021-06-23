@@ -22,9 +22,9 @@
 #define ETH_EXPORT_DLL __declspec(dllexport)
 #define ETH_IMPORT_DLL __declspec(dllimport)
 
-//ETH_EXPORT_DLL HWND Initialize(HWND host);
-//ETH_EXPORT_DLL void ResizeViewport(uint32_t width, uint32_t height);
-//ETH_EXPORT_DLL void Update();
-//ETH_EXPORT_DLL void Render();
-//ETH_EXPORT_DLL void Release();
-//
+namespace EtherGame
+{
+    class iGameApplication;
+
+    int ETH_EXPORT_DLL Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow);
+}
