@@ -21,7 +21,6 @@
 #include "core/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
-#define ETH_WINDOW_ICON         L"../src/system/win32/ether.ico"
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 
@@ -87,13 +86,7 @@ void Window::RegisterWindowClass() const
     windowClass.lpszMenuName = nullptr;
     windowClass.lpszClassName = m_ClassName;
     windowClass.hIconSm = nullptr;
-    windowClass.hIcon = (HICON)LoadImageW(
-         m_hInst,
-        ETH_WINDOW_ICON,
-        IMAGE_ICON,
-        0,
-        0,
-        LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED);
+    windowClass.hIcon = LoadIcon(m_hInst, MAKEINTRESOURCE(IDI_ENGINEICON));
 
     if (RegisterClassExW(&windowClass) == 0)
     {

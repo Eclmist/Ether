@@ -48,6 +48,9 @@ namespace chrono = std::chrono;
 #include <set>
 #include <map>
 
+// Resources
+#include "../resource/resource.h"
+
 // Useful standalone no-dep Ether includes
 #include "noncopyable.h"
 #include "singleton.h"
