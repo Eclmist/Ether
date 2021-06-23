@@ -17,16 +17,5 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "igameapplication.h"
 
-#include "api/api.h"
-
-class ETH_EXPORT_DLL EtherApplication
-{
-public:
-    EtherApplication();
-    ~EtherApplication() = default;
-
-public:
-    virtual void Update() = 0;
-};

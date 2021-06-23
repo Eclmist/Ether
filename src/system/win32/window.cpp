@@ -18,30 +18,16 @@
 */
 
 #include "window.h"
-#include "core/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
-//#define ETH_STANDALONE
-
-#define ETH_WINDOW_CLASS        L"Ether Direct3D Window Class"
 #define ETH_WINDOW_ICON         L"../src/system/win32/ether.ico"
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
-#define ETH_HINST               GetModuleHandle(NULL)
-
-#ifdef ETH_EDITOR_BUILD
-#define ETH_WINDOW_STYLE        WS_CHILD
-#else
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
-#endif
 
-Window::Window(Engine* engine)
-    : EngineSubsystem(engine)
-{
-    m_hWnd = nullptr;
-    m_IsFullscreen = false;
-}
-
-void Window::Initialize()
+Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINSTANCE hInst)
+    : m_ClassName(classname)
+    , m_hInst(hInst)
+    , m_IsFullscreen(false)
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -51,129 +37,36 @@ void Window::Initialize()
 
     RegisterWindowClass();
 
-    CentralizeClientRect(
-        GetSystemMetrics(SM_CXSCREEN),
-        GetSystemMetrics(SM_CYSCREEN),
-        m_Engine->GetEngineConfig().GetClientWidth(),
-        m_Engine->GetEngineConfig().GetClientHeight()
-    );
-
-    AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
+    AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
     m_hWnd = CreateWindowExW(
         NULL,
-        ETH_WINDOW_CLASS,
-        m_Engine->GetEngineConfig().GetClientName().c_str(),
+        classname,
+        classname,
         ETH_WINDOW_STYLE,
-        m_WindowedRect.left,
-        m_WindowedRect.top,
-        m_WindowedRect.right - m_WindowedRect.left,
-        m_WindowedRect.bottom - m_WindowedRect.top,
-        m_Engine->GetEngineConfig().GetEditorHwndHost(),
+        m_WindowRect.left,
+        m_WindowRect.top,
+        m_WindowRect.right - m_WindowRect.left,
+        m_WindowRect.bottom - m_WindowRect.top,
         nullptr,
-        ETH_HINST,
+        nullptr,
+        hInst,
         this
     );
 
     ImGui_ImplWin32_Init(m_hWnd);
-
-    SetInitialized(true);
 }
 
-void Window::Shutdown()
+
+Window::~Window()
 {
     DestroyWindow(m_hWnd);
-    UnregisterClassW(ETH_WINDOW_CLASS, ETH_HINST);
+    UnregisterClassW(m_ClassName, m_hInst);
 }
 
-void Window::Run()
+void Window::Show(int cmdShow)
 {
-    Show();
-
-    // Lock thread and let WinProc handle the rest.
-    MSG msg = {};
-    while (msg.message != WM_QUIT)
-    {
-        if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-}
-
-void Window::Show()
-{
-    ShowWindow(m_hWnd, SW_SHOW);
-}
-
-void Window::ToggleFullscreen()
-{
-#ifdef ETH_EDITOR_BUILD
-    // Toggling of fullscreen is currently not supported when the window's hWnd
-    // is a child of another. TODO: Fix this.
-    return;
-#endif
-
-    if (m_IsFullscreen) // Go to windowed mode
-    {
-        SetWindowLongW(m_hWnd, GWL_STYLE, ETH_WINDOW_STYLE);
-        SetViewportRect(m_WindowedRect);
-        ShowWindow(m_hWnd, SW_NORMAL);
-        m_IsFullscreen = false;
-    }
-    else // Go to fullscreen mode
-    {
-        // Cache windowed rect
-        GetWindowRect(m_hWnd, &m_WindowedRect);
-        RECT monitorRect = GetCurrentMonitorRect();
-        SetWindowLongW(m_hWnd, GWL_STYLE, WS_OVERLAPPED);
-        SetViewportRect(monitorRect);
-        ShowWindow(m_hWnd, SW_MAXIMIZE);
-        m_IsFullscreen = true;
-    }
-}
-
-void Window::SetViewportRect(RECT viewportRect)
-{
-    RECT windowRect = viewportRect;
-    AdjustWindowRect(&windowRect, ETH_WINDOW_STYLE, FALSE);
-
-    SetWindowPos(
-        m_hWnd,
-        HWND_TOP,
-        windowRect.left,
-        windowRect.top,
-        windowRect.right - windowRect.left,
-        windowRect.bottom - windowRect.top,
-        SWP_FRAMECHANGED | SWP_NOACTIVATE);
-
-    // TODO: Find more elegant method to trigger resize
-    m_Engine->GetRenderer()->Resize(viewportRect.right - viewportRect.left, viewportRect.bottom - viewportRect.top);
-}
-
-void Window::CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight)
-{
-    int clientPosX = std::max<int>(0, (screenWidth - clientWidth) / 2);
-    int clientPosY = std::max<int>(0, (screenHeight - clientHeight) / 2);
-
-    m_WindowedRect.left = clientPosX;
-    m_WindowedRect.right = clientPosX + clientWidth;
-    m_WindowedRect.top = clientPosY;
-    m_WindowedRect.bottom = clientPosY + clientHeight;
-}
-
-RECT Window::GetCurrentMonitorRect() const
-{
-    // Query the name of the nearest display device for the window.
-    // This is required to set the full screen dimensions of the window
-    // when using a multi-monitor setup.
-    HMONITOR hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
-    MONITORINFOEX monitorInfo = {};
-    monitorInfo.cbSize = sizeof(MONITORINFOEX);
-    GetMonitorInfo(hMonitor, &monitorInfo);
-
-    return monitorInfo.rcMonitor;
+    ShowWindow(m_hWnd, cmdShow);
 }
 
 void Window::RegisterWindowClass() const
@@ -185,14 +78,14 @@ void Window::RegisterWindowClass() const
     windowClass.lpfnWndProc = &WndProcSetup;
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
-    windowClass.hInstance = ETH_HINST;
+    windowClass.hInstance = m_hInst;
     windowClass.hCursor = nullptr;
     windowClass.hbrBackground = nullptr;
     windowClass.lpszMenuName = nullptr;
-    windowClass.lpszClassName = ETH_WINDOW_CLASS;
+    windowClass.lpszClassName = m_ClassName;
     windowClass.hIconSm = nullptr;
     windowClass.hIcon = (HICON)LoadImageW(
-        ETH_HINST,
+         m_hInst,
         ETH_WINDOW_ICON,
         IMAGE_ICON,
         0,
@@ -231,21 +124,21 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
     case WM_PAINT:
         // TODO: Figure out how to populate args
-        RenderEventArgs renderArgs;
-        m_Engine->OnRender(renderArgs);
+        //RenderEventArgs renderArgs;
+        //m_Engine->OnRender(renderArgs);
         break;
     case WM_KEYDOWN:
         // TODO: Handle Ctrl, Alt, and convert keycode to character
-        KeyEventArgs keydownArgs;
-        keydownArgs.m_Key = static_cast<KeyCode>(wParam);
-        keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
-        m_Engine->OnKeyPressed(keydownArgs);
+        //KeyEventArgs keydownArgs;
+        //keydownArgs.m_Key = static_cast<KeyCode>(wParam);
+        //keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
+        //m_Engine->OnKeyPressed(keydownArgs);
         break;
     case WM_KEYUP:
-        KeyEventArgs keyupArgs;
-        keyupArgs.m_Key = static_cast<KeyCode>(wParam);
-        keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
-        m_Engine->OnKeyReleased(keyupArgs);
+        //KeyEventArgs keyupArgs;
+        //keyupArgs.m_Key = static_cast<KeyCode>(wParam);
+        //keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
+        //m_Engine->OnKeyReleased(keyupArgs);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);

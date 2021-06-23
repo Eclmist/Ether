@@ -17,9 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "etherapplication.h"
+#pragma once
 
-EtherApplication::EtherApplication()
+#include "api/api.h"
+
+namespace EtherGame
 {
+    class iGameApplication
+    {
+    public:
+        virtual void Initialize() = 0;
+        virtual void Shutdown() = 0;
 
+    public:
+        virtual bool IsDone() = 0;
+        virtual void Update() = 0;
+        virtual void RenderScene() = 0;
+        virtual void RenderGui() = 0;
+    };
 }
+

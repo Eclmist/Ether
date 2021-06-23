@@ -60,7 +60,6 @@ public:
 public:
     inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };
 
-    inline Window* GetWindow() const { return m_SubsystemController.GetWindow(); };
     inline GfxRenderer* GetRenderer() const { return m_SubsystemController.GetRenderer(); };
 
 protected:

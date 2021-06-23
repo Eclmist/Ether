@@ -36,18 +36,13 @@ public:
     void ShutdownSubsystems();
 
 public:
-    inline Window* GetWindow() const { return m_Window.get(); };
     inline GfxRenderer* GetRenderer() const { return m_Renderer.get(); };
 
 private:
-    void InitializeWindow();
     void InitializeRenderer();
-
-    void ShutdownWindow();
     void ShutdownRenderer();
 
 private:
-    std::unique_ptr<Window> m_Window;
     std::unique_ptr<GfxRenderer> m_Renderer;
 
     Engine* m_Engine;

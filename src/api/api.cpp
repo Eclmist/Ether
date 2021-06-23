@@ -20,46 +20,53 @@
 #pragma once
 
 #include "api.h"
-//#include "sample/ethersample.h"
-//
-//EtherSample* m_EtherEditorInstance;
-//
-//HWND Initialize(HWND host)
-//{
-//    EngineConfig engineConfig;
-//    engineConfig.SetIsRunningInEditor(true);
-//    engineConfig.SetEditorHwndHost(host);
-//
-//    m_EtherEditorInstance = new EtherSample(engineConfig);
-//    m_EtherEditorInstance->Initialize();
-//
-//    m_EtherEditorInstance->GetWindow()->Show();
-//
-//    return m_EtherEditorInstance->GetWindow()->GetHwnd();
-//}
-//
-//void ResizeViewport(uint32_t width, uint32_t height)
-//{
-//    m_EtherEditorInstance->OnEditorViewportResize(width, height);
-//}
-//
-//void Update()
-//{
-//    // TODO: Figure out how to properly populate this args
-//    UpdateEventArgs e;
-//    m_EtherEditorInstance->OnUpdate(e);
-//}
-//
-//ETH_EXPORT_DLL void Render()
-//{
-//    // TODO: Figure out how to properly populate this args
-//    RenderEventArgs e;
-//    m_EtherEditorInstance->OnRender(e);
-//}
-//
-//void Release()
-//{
-//    m_EtherEditorInstance->Shutdown();
-//    delete m_EtherEditorInstance;
-//}
-//
+#include "api/interface/igameapplication.h"
+#include "system/win32/window.h"
+
+namespace EtherGame
+{
+    void InitializeApplication(iGameApplication& app)
+    {
+        // TODO: Init other engine systems here
+
+        app.Initialize();
+    }
+
+    void TerminateApplication(iGameApplication& app)
+    {
+        // TODO: Terminate other engine systems here
+        app.Shutdown();
+    }
+
+    bool UpdateApplication(iGameApplication& app)
+    {
+        app.Update();
+        app.RenderScene();
+        app.RenderGui();
+
+        return !app.IsDone();
+    }
+
+    int Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow)
+    {
+        Window gameWindow(app, classname, hInst);
+        InitializeApplication(app);
+        gameWindow.Show(cmdShow);
+
+        do
+        {
+            MSG msg = {};
+            while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+            if (msg.message == WM_QUIT)
+                break;
+        } 
+        while (UpdateApplication(app));
+
+        TerminateApplication(app);
+        return 0;
+    }
+}

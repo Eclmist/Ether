@@ -19,13 +19,20 @@
 
 #pragma once
 
-#include "api/interface/etherapplication.h"
+#include "api/interface/igameapplication.h"
 
-class SampleApp : public EtherApplication
+class SampleApp : public EtherGame::iGameApplication
 {
 public:
     SampleApp();
     ~SampleApp() = default;
 
+public:
+    bool IsDone() override;
+
+    void Initialize() override;
+    void Shutdown() override;
     void Update() override;
+    void RenderScene() override;
+    void RenderGui() override;
 };

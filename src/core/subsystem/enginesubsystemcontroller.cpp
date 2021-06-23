@@ -25,25 +25,17 @@
 EngineSubsystemController::EngineSubsystemController(Engine* engine)
     : m_Engine(engine)
 {
-    m_Window = std::make_unique<Window>(m_Engine);
     m_Renderer = std::make_unique<GfxRenderer>(m_Engine);
 }
 
 void EngineSubsystemController::InitializeSubsystems()
 {
-    InitializeWindow();
     InitializeRenderer();
 }
 
 void EngineSubsystemController::ShutdownSubsystems()
 {
     ShutdownRenderer();
-    ShutdownWindow();
-}
-
-void EngineSubsystemController::InitializeWindow()
-{
-    m_Window->Initialize();
 }
 
 void EngineSubsystemController::InitializeRenderer()
@@ -52,11 +44,6 @@ void EngineSubsystemController::InitializeRenderer()
     // TODO: Is this really the right place to load content?
     // should there be a OnLoadContent in Engine instead?
     // m_Renderer->LoadContent();
-}
-
-void EngineSubsystemController::ShutdownWindow()
-{
-    m_Window->Shutdown();
 }
 
 void EngineSubsystemController::ShutdownRenderer()

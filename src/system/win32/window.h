@@ -19,38 +19,32 @@
 
 #pragma once
 
-#include "core/subsystem/enginesubsystem.h"
+namespace EtherGame
+{
+    class iGameApplication;
+}
 
-class Engine;
-
-class Window : public EngineSubsystem
+class Window
 {
 public:
-    Window(Engine* engine);
-    ~Window() = default;
+    Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINSTANCE hInst);
+    ~Window();
 
 public:
-    void Initialize() override;
-    void Shutdown() override;
-    void Run();
-    void Show();
-    void ToggleFullscreen();
-    void SetViewportRect(RECT rect);
-
+    void Show(int cmdShow);
     inline HWND GetHwnd() const { return m_hWnd; };
 
 private:
+    void RegisterWindowClass() const;
     static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    void CentralizeClientRect(int screenWidth, int screenHeight, int clientWidth, int clientHeight);
-    void RegisterWindowClass() const;
-    RECT GetCurrentMonitorRect() const;
 
 private:
-    // Handle toggling of fullscreen
     bool m_IsFullscreen;
-    RECT m_WindowedRect;
+    RECT m_WindowRect;
 
     // Handle to the actual win32 window and window instance
     HWND m_hWnd;
+    HINSTANCE m_hInst;
+    const wchar_t* m_ClassName;
 };

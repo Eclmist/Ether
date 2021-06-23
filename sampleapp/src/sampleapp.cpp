@@ -24,6 +24,28 @@ SampleApp::SampleApp()
 
 }
 
+bool SampleApp::IsDone()
+{
+    return false;
+}
+
+void SampleApp::Initialize()
+{
+}
+
+void SampleApp::Shutdown()
+{
+}
+
 void SampleApp::Update()
 {
 }
+
+void SampleApp::RenderScene()
+{
+}
+
+void SampleApp::RenderGui()
+{
+}
+
