@@ -32,6 +32,7 @@ GfxImGui::GfxImGui()
     , m_FpsHistoryOffset(0)
 {
     CreateImGuiContext();
+    ImGui_ImplWin32_Init(EtherGame::g_hWnd);
     SetStyle();
 }
 

@@ -28,7 +28,7 @@ class Engine;
 class EngineSubsystemController : NonCopyable
 {
 public:
-    EngineSubsystemController(Engine* engine);
+    EngineSubsystemController();
     ~EngineSubsystemController() = default;
 
 public:

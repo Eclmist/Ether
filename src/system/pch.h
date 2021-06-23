@@ -53,4 +53,6 @@ namespace chrono = std::chrono;
 #include "singleton.h"
 #include "types.h"
 
+// Globals
+namespace EtherGame { extern HWND g_hWnd; }
 
