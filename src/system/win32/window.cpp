@@ -18,6 +18,7 @@
 */
 
 #include "window.h"
+#include "core/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
 #define ETH_WINDOW_ICON         L"../src/system/win32/ether.ico"
@@ -37,11 +38,10 @@ Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINST
 
     RegisterWindowClass();
 
-    m_WindowRect.left = 0;
-    m_WindowRect.right = 1920;
-    m_WindowRect.top = 0;
-    m_WindowRect.bottom = 1080;
-
+    m_WindowRect.left = 500;
+    m_WindowRect.right = 500 + 1920;
+    m_WindowRect.top = 100;
+    m_WindowRect.bottom = 100 + 1080;
 
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
@@ -132,16 +132,16 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         break;
     case WM_KEYDOWN:
         // TODO: Handle Ctrl, Alt, and convert keycode to character
-        //KeyEventArgs keydownArgs;
-        //keydownArgs.m_Key = static_cast<KeyCode>(wParam);
-        //keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
-        //m_Engine->OnKeyPressed(keydownArgs);
+        KeyEventArgs keydownArgs;
+        keydownArgs.m_Key = static_cast<KeyCode>(wParam);
+        keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
+        Engine::GetInstance().OnKeyPressed(keydownArgs);
         break;
     case WM_KEYUP:
-        //KeyEventArgs keyupArgs;
-        //keyupArgs.m_Key = static_cast<KeyCode>(wParam);
-        //keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
-        //m_Engine->OnKeyReleased(keyupArgs);
+        KeyEventArgs keyupArgs;
+        keyupArgs.m_Key = static_cast<KeyCode>(wParam);
+        keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
+        Engine::GetInstance().OnKeyReleased(keyupArgs);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);

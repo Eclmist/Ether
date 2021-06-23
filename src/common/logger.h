@@ -19,29 +19,9 @@
 
 #pragma once
 
-namespace EtherGame
-{
-    class iGameApplication;
-}
-
-class Window : NonCopyable
+class Logger : public Singleton<Logger>
 {
 public:
-    Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINSTANCE hInst);
-    ~Window();
 
-public:
-    void Show(int cmdShow);
-
-private:
-    void RegisterWindowClass() const;
-    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    bool m_IsFullscreen;
-    RECT m_WindowRect;
-
-    HINSTANCE m_hInst;
-    const wchar_t* m_ClassName;
 };
+

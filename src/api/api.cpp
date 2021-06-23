@@ -50,7 +50,8 @@ namespace EtherGame
         app.Update();
         app.RenderScene();
         app.RenderGui();
-        return false;
+        Engine::GetInstance().OnRender(RenderEventArgs());
+        return !app.IsDone();
     }
 
     int Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow)
@@ -62,11 +63,12 @@ namespace EtherGame
         do
         {
             MSG msg = {};
-            while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+            if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
+
             if (msg.message == WM_QUIT)
                 break;
         } 
