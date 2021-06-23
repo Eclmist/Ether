@@ -44,14 +44,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/resource")
 
 file(GLOB_RECURSE project_headers src/*.h)
 file(GLOB_RECURSE project_cpps src/*.cpp)
 file(GLOB_RECURSE project_shaders src/*.hlsl)
 file(GLOB_RECURSE extern_files include/*)
+file(GLOB_RECURSE resources resource/*)
 set_source_files_properties(${project_shaders} PROPERTIES VS_TOOL_OVERRIDE "None")
 
-set(all_files ${project_headers} ${project_cpps} ${project_shaders} ${extern_files})
+set(all_files ${project_headers} ${project_cpps} ${project_shaders} ${extern_files} ${resources})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${all_files})
 
 # =========================================================================== #
