@@ -41,7 +41,7 @@ class Engine;
 class GfxRenderer : public EngineSubsystem
 {
 public:
-    GfxRenderer(Engine* engine);
+    GfxRenderer();
     ~GfxRenderer() = default;
 
 public:

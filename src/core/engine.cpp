@@ -22,15 +22,25 @@
 #include "engine.h"
 #include "system/win32/window.h"
 
-Engine::Engine(const EngineConfig& engineConfig)
-    : m_EngineConfig(engineConfig)
-    , m_SubsystemController(this)
+Engine::Engine()
+    : m_SubsystemController()
 {
 }
 
-void Engine::Initialize()
+void Engine::Initialize(const EngineConfig& engineConfig)
 {
+    m_EngineConfig = engineConfig;
     m_SubsystemController.InitializeSubsystems();
+}
+
+void Engine::LoadContent()
+{
+
+}
+
+void Engine::UnloadContent()
+{
+
 }
 
 void Engine::Shutdown()

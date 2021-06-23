@@ -37,9 +37,15 @@ Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINST
 
     RegisterWindowClass();
 
+    m_WindowRect.left = 0;
+    m_WindowRect.right = 1920;
+    m_WindowRect.top = 0;
+    m_WindowRect.bottom = 1080;
+
+
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
-    m_hWnd = CreateWindowExW(
+    EtherGame::g_hWnd = CreateWindowExW(
         NULL,
         classname,
         classname,
@@ -53,20 +59,17 @@ Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINST
         hInst,
         this
     );
-
-    ImGui_ImplWin32_Init(m_hWnd);
 }
-
 
 Window::~Window()
 {
-    DestroyWindow(m_hWnd);
+    DestroyWindow(EtherGame::g_hWnd);
     UnregisterClassW(m_ClassName, m_hInst);
 }
 
 void Window::Show(int cmdShow)
 {
-    ShowWindow(m_hWnd, cmdShow);
+    ShowWindow(EtherGame::g_hWnd, cmdShow);
 }
 
 void Window::RegisterWindowClass() const

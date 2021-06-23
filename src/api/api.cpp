@@ -21,14 +21,20 @@
 
 #include "api.h"
 #include "api/interface/igameapplication.h"
+#include "core/engine.h"
 #include "system/win32/window.h"
 
 namespace EtherGame
 {
+    HWND g_hWnd = nullptr;
+
     void InitializeApplication(iGameApplication& app)
     {
-        // TODO: Init other engine systems here
-
+        EngineConfig config;
+        config.SetClientWidth(1920);
+        config.SetClientHeight(1080);
+        config.SetClientName(L"Test");
+        Engine::GetInstance().Initialize(config);
         app.Initialize();
     }
 
@@ -36,6 +42,7 @@ namespace EtherGame
     {
         // TODO: Terminate other engine systems here
         app.Shutdown();
+        Engine::GetInstance().Shutdown();
     }
 
     bool UpdateApplication(iGameApplication& app)
@@ -43,8 +50,7 @@ namespace EtherGame
         app.Update();
         app.RenderScene();
         app.RenderGui();
-
-        return !app.IsDone();
+        return false;
     }
 
     int Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow)

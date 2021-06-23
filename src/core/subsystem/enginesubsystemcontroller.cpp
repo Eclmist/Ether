@@ -22,10 +22,9 @@
 #include "enginesubsystemcontroller.h"
 #include "core/engine.h"
 
-EngineSubsystemController::EngineSubsystemController(Engine* engine)
-    : m_Engine(engine)
+EngineSubsystemController::EngineSubsystemController()
 {
-    m_Renderer = std::make_unique<GfxRenderer>(m_Engine);
+    m_Renderer = std::make_unique<GfxRenderer>();
 }
 
 void EngineSubsystemController::InitializeSubsystems()

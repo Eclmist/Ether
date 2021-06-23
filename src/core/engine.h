@@ -26,40 +26,35 @@
 class Window;
 class GfxRenderer;
 
-class Engine : public NonCopyable
+class Engine : public Singleton<Engine>
 {
 public:
-    Engine(const EngineConfig& config);
+    Engine();
 
-    //! @brief Initialize the Ether engine.
-    virtual void Initialize();
+    void Initialize(const EngineConfig& config);
 
-    //! @brief Load all content required.
-    virtual void LoadContent() = 0;
+    void LoadContent();
 
-    //! @brief Unload content that was loaded by LoadContent.
-    virtual void UnloadContent() = 0;
+    void UnloadContent();
 
-    //! @brief Unload all content and shutdown engine.
-    virtual void Shutdown();
+    void Shutdown();
 
-    virtual void OnUpdate(UpdateEventArgs& e);
+    void OnUpdate(UpdateEventArgs& e);
 
-    virtual void OnRender(RenderEventArgs& e);
+    void OnRender(RenderEventArgs& e);
 
-    virtual void OnKeyPressed(KeyEventArgs& e);
+    void OnKeyPressed(KeyEventArgs& e);
 
-    virtual void OnKeyReleased(KeyEventArgs& e);
+    void OnKeyReleased(KeyEventArgs& e);
 
-    virtual void OnMouseButtonPressed(MouseEventArgs& e);
+    void OnMouseButtonPressed(MouseEventArgs& e);
 
-    virtual void OnMouseButtonReleased(MouseEventArgs& e);
+    void OnMouseButtonReleased(MouseEventArgs& e);
 
-    virtual void OnMouseMoved(MouseEventArgs& e);
+    void OnMouseMoved(MouseEventArgs& e);
 
 public:
     inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };
-
     inline GfxRenderer* GetRenderer() const { return m_SubsystemController.GetRenderer(); };
 
 protected:

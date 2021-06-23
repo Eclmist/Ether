@@ -23,8 +23,8 @@
 #include "core/engine.h"
 #include "system/win32/window.h"
 
-GfxRenderer::GfxRenderer(Engine* engine)
-    : EngineSubsystem(engine)
+GfxRenderer::GfxRenderer()
+    : EngineSubsystem()
 {
 }
 
@@ -50,7 +50,7 @@ void GfxRenderer::InitRendererCore()
     m_Context = std::make_unique<GfxContext>(*m_Device, *this);
 
     m_View = std::make_unique<GfxView>();
-    m_View->UpdateView(m_Engine->GetEngineConfig().GetClientWidth(), m_Engine->GetEngineConfig().GetClientHeight());
+    m_View->UpdateView(Engine::GetInstance().GetEngineConfig().GetClientWidth(), Engine::GetInstance().GetEngineConfig().GetClientHeight());
 }
 
 void GfxRenderer::Shutdown()
@@ -119,11 +119,11 @@ void GfxRenderer::AddProducer(GfxProducer& producer)
 void GfxRenderer::InitSwapChain()
 {
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        nullptr, // TODO get window hwnd. m_Engine->GetWindow()->GetHwnd(),
+        EtherGame::g_hWnd,
         m_Device->Get(),
         m_DirectCommandQueue->Get(),
-        m_Engine->GetEngineConfig().GetClientWidth(),
-        m_Engine->GetEngineConfig().GetClientHeight());
+        Engine::GetInstance().GetEngineConfig().GetClientWidth(),
+        Engine::GetInstance().GetEngineConfig().GetClientHeight());
 
     m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
 }
