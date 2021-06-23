@@ -43,6 +43,7 @@ namespace EtherGame
         // TODO: Terminate other engine systems here
         app.Shutdown();
         Engine::GetInstance().Shutdown();
+        Logger::GetInstance().Serialize();
     }
 
     bool UpdateApplication(iGameApplication& app)

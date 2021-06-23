@@ -34,7 +34,6 @@
 #define OEMRESOURCE
 #define NOATOM
 #define NOCOLOR
-#define NOCTLMGR
 #define NODRAWTEXT
 #define NOKERNEL
 #define NOMEMMGR

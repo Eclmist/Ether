@@ -34,7 +34,6 @@ target_precompile_headers(SampleApp PRIVATE ${CMAKE_SOURCE_DIR}/src/system/pch.h
 
 add_custom_target(CopyDependencies ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/bin/enginelib/ $<TARGET_FILE_DIR:SampleApp>/)
-    # COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/system/win32/ether.ico $<TARGET_FILE_DIR:SampleApp>/ether.ico)
 
 # =========================================================================== #
 #                                LINK LIBRARIES                               #
