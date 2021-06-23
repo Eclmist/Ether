@@ -32,7 +32,7 @@ add_executable(SampleApp WIN32 ${sample_app})
 set_target_properties(SampleApp PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}/bin/sampleapp>)
 target_precompile_headers(SampleApp PRIVATE ${CMAKE_SOURCE_DIR}/src/system/pch.h)
 
-add_custom_target(CopyDll ALL
+add_custom_target(CopyDLL ALL
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_SOURCE_DIR}/bin/enginelib/
                    $<TARGET_FILE_DIR:SampleApp>/)

@@ -61,7 +61,8 @@ void Engine::OnRender(RenderEventArgs& e)
 
 void Engine::OnKeyPressed(KeyEventArgs& e)
 {
-
+    if (e.m_Key == KEYCODE_F3)
+        GetRenderer()->ToggleGui();
 }
 
 void Engine::OnKeyReleased(KeyEventArgs& e)
