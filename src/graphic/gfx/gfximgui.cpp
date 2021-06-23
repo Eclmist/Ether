@@ -133,6 +133,7 @@ void GfxImGui::Render(DX12CommandList& commandList)
 
     UpdateFpsHistory();
     SetupDebugMenu();
+    Logger::GetInstance().DrawImGui();
 
     ImGui::Render();
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get().Get());

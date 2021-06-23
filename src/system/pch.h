@@ -51,10 +51,12 @@ namespace chrono = std::chrono;
 // Resources
 #include "../resource/resource.h"
 
-// Useful standalone no-dep Ether includes
+// Useful Ether includes
 #include "noncopyable.h"
 #include "singleton.h"
 #include "types.h"
+
+#include "common/logger.h"
 
 // Globals
 namespace EtherGame { extern HWND g_hWnd; }

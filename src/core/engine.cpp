@@ -29,6 +29,7 @@ Engine::Engine()
 
 void Engine::Initialize(const EngineConfig& engineConfig)
 {
+    Logger::Log(Logger::LOGLEVEL_INFO, Logger::LOGTYPE_ENGINE, "Initializing Ether Engine");
     m_EngineConfig = engineConfig;
     m_SubsystemController.InitializeSubsystems();
 }
@@ -51,7 +52,6 @@ void Engine::Shutdown()
 
 void Engine::OnUpdate(UpdateEventArgs& e)
 {
-
 }
 
 void Engine::OnRender(RenderEventArgs& e)
