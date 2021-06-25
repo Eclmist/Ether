@@ -21,19 +21,19 @@
 
 #include "api/api.h"
 
-namespace EtherGame
+ETH_NAMESPACE_BEGIN
+
+class iGameApplication
 {
-    class iGameApplication
-    {
-    public:
-        virtual void Initialize() = 0;
-        virtual void Shutdown() = 0;
+public:
+    virtual void Initialize() = 0;
+    virtual void Shutdown() = 0;
 
-    public:
-        virtual bool IsDone() = 0;
-        virtual void Update() = 0;
-        virtual void RenderScene() = 0;
-        virtual void RenderGui() = 0;
-    };
-}
+public:
+    virtual bool IsDone() = 0;
+    virtual void Update() = 0;
+    virtual void RenderScene() = 0;
+    virtual void RenderGui() = 0;
+};
 
+ETH_NAMESPACE_END

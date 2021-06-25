@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class GfxProducer;
 
 class GfxScheduler
@@ -33,3 +35,5 @@ private:
     void QueueProducer(GfxProducer* producer, std::unordered_set<GfxProducer*>& visited, std::queue<GfxProducer*>& finalSchedule);
     bool IsScheduled(std::unordered_set<GfxProducer*>& visited, GfxProducer* producer);
 };
+
+ETH_NAMESPACE_END

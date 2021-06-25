@@ -22,6 +22,8 @@
 #include "graphic/hal/resource/dx12committedresource.h"
 #include "graphic/gfx/virtualbuffer/gfxresourceallocation.h"
 
+ETH_NAMESPACE_BEGIN
+
 /**
  * WARNING: This memory page is *not* thread safe! It is not designed to be used across threads
  * to avoid unnecessary overhead of locking/unlocking mutexes. 
@@ -55,3 +57,5 @@ private:
     size_t m_PageSize;
     size_t m_Offset;
 };
+
+ETH_NAMESPACE_END

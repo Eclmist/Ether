@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12includes.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GfxGraphicObject
 {
 public:
@@ -93,3 +95,5 @@ private:
     ethXMVector m_Rotation;
     ethXMVector m_Scale;
 };
+
+ETH_NAMESPACE_END

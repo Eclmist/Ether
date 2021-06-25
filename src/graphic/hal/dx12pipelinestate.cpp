@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "dx12pipelinestate.h"
+
+ETH_NAMESPACE_BEGIN
 
 DX12PipelineState::DX12PipelineState(
     wrl::ComPtr<ID3D12Device3> device,
@@ -33,3 +33,5 @@ void DX12PipelineState::Recompile(wrl::ComPtr<ID3D12Device3> device)
 {
     ThrowIfFailed(device->CreateGraphicsPipelineState(&m_PipelineStateDesc, IID_PPV_ARGS(&m_PipelineState)));
 }
+
+ETH_NAMESPACE_END

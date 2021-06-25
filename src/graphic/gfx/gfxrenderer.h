@@ -36,6 +36,8 @@
 #include "graphic/gfx/gfxtimer.h"
 #include "graphic/gfx/gfxview.h"
 
+ETH_NAMESPACE_BEGIN
+
 class Engine;
 
 class GfxRenderer : public EngineSubsystem
@@ -114,3 +116,5 @@ public:
 
     void LoadContent();
 };
+
+ETH_NAMESPACE_END

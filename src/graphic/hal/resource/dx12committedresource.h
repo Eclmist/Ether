@@ -21,6 +21,8 @@
 
 #include "dx12resource.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12CommittedResource : public DX12Resource
 {
 public:
@@ -34,3 +36,4 @@ public:
 
 };
 
+ETH_NAMESPACE_END

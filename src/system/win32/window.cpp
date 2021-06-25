@@ -21,10 +21,15 @@
 #include "core/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
+ETH_NAMESPACE_BEGIN
+
+namespace Win32
+{
+
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 
-Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINSTANCE hInst)
+Window::Window(const wchar_t* classname, HINSTANCE hInst)
     : m_ClassName(classname)
     , m_hInst(hInst)
     , m_IsFullscreen(false)
@@ -44,7 +49,7 @@ Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINST
 
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
-    EtherGame::g_hWnd = CreateWindowExW(
+    Ether::g_hWnd = CreateWindowExW(
         NULL,
         classname,
         classname,
@@ -62,13 +67,13 @@ Window::Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINST
 
 Window::~Window()
 {
-    DestroyWindow(EtherGame::g_hWnd);
+    DestroyWindow(Ether::g_hWnd);
     UnregisterClassW(m_ClassName, m_hInst);
 }
 
 void Window::Show(int cmdShow)
 {
-    ShowWindow(EtherGame::g_hWnd, cmdShow);
+    ShowWindow(Ether::g_hWnd, cmdShow);
 }
 
 void Window::RegisterWindowClass() const
@@ -145,3 +150,6 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     return 0;
 }
+}
+
+ETH_NAMESPACE_END

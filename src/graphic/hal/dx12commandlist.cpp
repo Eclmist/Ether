@@ -19,6 +19,8 @@
 
 #include "dx12commandlist.h"
 
+ETH_NAMESPACE_BEGIN
+
 DX12CommandList::DX12CommandList(
     wrl::ComPtr<ID3D12Device3> device,
     wrl::ComPtr<ID3D12CommandAllocator> allocator,
@@ -28,3 +30,5 @@ DX12CommandList::DX12CommandList(
     ThrowIfFailed(device->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
     ThrowIfFailed(m_CommandList->Close());
 }
+
+ETH_NAMESPACE_END

@@ -19,12 +19,13 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 #define ETH_EXPORT_DLL __declspec(dllexport)
 #define ETH_IMPORT_DLL __declspec(dllimport)
 
-namespace EtherGame
-{
-    class iGameApplication;
+class iGameApplication;
 
-    int ETH_EXPORT_DLL Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow);
-}
+int ETH_EXPORT_DLL Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow);
+
+ETH_NAMESPACE_END

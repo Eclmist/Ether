@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 struct GfxDescriptorMemoryBlock
 {
     GfxDescriptorMemoryBlock(uint32_t size)
@@ -27,3 +29,5 @@ struct GfxDescriptorMemoryBlock
     uint32_t m_Size;
     std::multimap<uint32_t, std::map<uint32_t, GfxDescriptorMemoryBlock>::iterator>::iterator m_BlockLocation;
 };
+
+ETH_NAMESPACE_END

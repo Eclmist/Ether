@@ -22,6 +22,8 @@
 #include "graphic/gfx/gfxproducer.h"
 #include "graphic/gfx/gfxgraphicobject.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GBufferProducer : public GfxProducer
 {
 public:
@@ -55,3 +57,5 @@ private:
     std::vector<GfxGraphicObject*> m_StaticObjects;
     std::vector<GfxGraphicObject*> m_DynamicObjects;
 };
+
+ETH_NAMESPACE_END

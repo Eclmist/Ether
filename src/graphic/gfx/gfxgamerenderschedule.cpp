@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxgamerenderschedule.h"
 #include "graphic/gfx/gfxrenderer.h"
 
 #include "graphic/schedule/sunshadowproducer.h"
 #include "graphic/schedule/gbufferproducer.h"
 #include "graphic/schedule/outputproducer.h"
+
+ETH_NAMESPACE_BEGIN
 
 GBufferProducer g_GBufferProducer;
 
@@ -42,3 +42,5 @@ void GfxGameRendererScheduler::AddProducer(GfxProducer& producer)
 {
     m_Renderer.AddProducer(producer);
 }
+
+ETH_NAMESPACE_END

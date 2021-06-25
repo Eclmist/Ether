@@ -21,6 +21,8 @@
 
 #include "system/noncopyable.h"
 
+ETH_NAMESPACE_BEGIN
+
 /*
     Global Singleton that forbids object creation through explicit new/delete.
     This is mainly used by engine subsystems where it is important that object
@@ -83,3 +85,4 @@ bool Singleton<T>::m_IsInitializing = false;
 template <typename T>
 bool Singleton<T>::m_IsDestroying = false;
 
+ETH_NAMESPACE_END

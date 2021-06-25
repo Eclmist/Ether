@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxdescriptormemorypage.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxDescriptorMemoryPage::GfxDescriptorMemoryPage(
     wrl::ComPtr<ID3D12Device3> device,
@@ -149,3 +149,4 @@ void GfxDescriptorMemoryPage::FreeBlock(uint32_t offset, uint32_t numDescriptors
     AddNewBlock(offset, numDescriptors);
 }
 
+ETH_NAMESPACE_END

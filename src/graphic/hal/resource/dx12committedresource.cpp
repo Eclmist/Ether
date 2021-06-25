@@ -19,6 +19,8 @@
 
 #include "dx12committedresource.h"
 
+ETH_NAMESPACE_BEGIN
+
 DX12CommittedResource::DX12CommittedResource(
     wrl::ComPtr<ID3D12Device3> device,
     size_t resourceSize,
@@ -36,3 +38,4 @@ DX12CommittedResource::DX12CommittedResource(
     ));
 }
 
+ETH_NAMESPACE_END

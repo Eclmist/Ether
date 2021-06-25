@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "dx12fence.h"
+
+ETH_NAMESPACE_BEGIN
 
 DX12Fence::DX12Fence(wrl::ComPtr<ID3D12Device3> device)
 {
@@ -51,3 +51,4 @@ void DX12Fence::WaitForFenceValue(uint64_t fenceValue)
     }
 }
 
+ETH_NAMESPACE_END

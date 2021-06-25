@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12includes.h"
 
+ETH_NAMESPACE_BEGIN
+
 template <typename T>
 class DX12Component : public NonCopyable
 {
@@ -48,3 +50,4 @@ inline void ThrowIfFailed(HRESULT hr)
     }
 };
 
+ETH_NAMESPACE_END

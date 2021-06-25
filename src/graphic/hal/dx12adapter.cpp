@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "dx12adapter.h"
+
+ETH_NAMESPACE_BEGIN
 
 DX12Adapter::DX12Adapter(bool useWarp)
 {
@@ -76,3 +76,5 @@ wrl::ComPtr<IDXGIAdapter4> DX12Adapter::QueryHardwareAdapter(wrl::ComPtr<IDXGIFa
 
     return dxgiAdapter4;
 }
+
+ETH_NAMESPACE_END

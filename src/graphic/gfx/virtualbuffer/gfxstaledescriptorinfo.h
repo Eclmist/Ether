@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 struct GfxStaleDescriptorInfo
 {
     GfxStaleDescriptorInfo(uint32_t offset, uint32_t size, uint32_t graphicFrameNumber)
@@ -30,3 +32,5 @@ struct GfxStaleDescriptorInfo
     uint32_t m_Size;
     uint32_t m_GraphicFrameNumber;
 };
+
+ETH_NAMESPACE_END

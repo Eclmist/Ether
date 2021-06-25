@@ -23,6 +23,8 @@
 #include "graphic/hal/dx12commandlist.h"
 #include "graphic/hal/dx12descriptorheap.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12SwapChain : public DX12Component<IDXGISwapChain4>
 {
 public:
@@ -51,3 +53,5 @@ private:
     uint32_t m_FrameHeight;
     uint32_t m_CurrentBackBufferIndex;
 };
+
+ETH_NAMESPACE_END

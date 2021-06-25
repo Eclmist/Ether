@@ -22,32 +22,54 @@
 #include <fstream>
 #include <ShlObj_core.h>
 
+ETH_NAMESPACE_BEGIN
+
+#define vLOG(a)\
+    va_list args;\
+    va_start(args, a);\
+    GetInstance().Log(a, args);\
+    va_end(args);
+
 Logger::Logger()
 {
     Clear();
 }
 
-void Logger::Log(LogLevel level, LogType type, const char* fmt, ...)
+void Logger::LogInfo(const char* fmt, ...)
 {
-    Logger& logger = GetInstance();
+    GetInstance().m_Buffer.append("[INFO] ");
+    vLOG(fmt);
+}
 
-    int oldSize = logger.m_Buffer.size();
-    logger.AppendLogTypePrefix(type);
-    logger.m_Buffer.append(" ");
-    logger.AppendLogLevelPrefix(level);
-    logger.m_Buffer.append(" ");
+void Logger::LogWarning(const char* fmt, ...)
+{
+    GetInstance().m_Buffer.append("[WARNING] ");
+    vLOG(fmt);
+}
 
-    va_list args;
-    va_start(args, fmt);
-    logger.m_Buffer.appendfv(fmt, args);
-    va_end(args);
+void Logger::LogError(const char* fmt, ...)
+{
+    GetInstance().m_Buffer.append("[ERROR] ");
+    vLOG(fmt);
+}
 
-    if (logger.m_Buffer[logger.m_Buffer.size()  - 1] != '\n')
-        logger.m_Buffer.append("\n");
+void Logger::LogFatal(const char* fmt, ...)
+{
+    GetInstance().m_Buffer.append("[FATAL] ");
+    vLOG(fmt);
+}
 
-    for (int newSize = logger.m_Buffer.size(); oldSize < newSize; oldSize++)
-        if (logger.m_Buffer[oldSize] == '\n')
-            logger.m_LineOffsets.push_back(oldSize + 1);
+void Logger::Log(const char* fmt, va_list args)
+{
+    int oldSize = m_Buffer.size();
+    m_Buffer.appendfv(fmt, args);
+
+    if (m_Buffer[m_Buffer.size()  - 1] != '\n')
+        m_Buffer.append("\n");
+
+    for (int newSize = m_Buffer.size(); oldSize < newSize; oldSize++)
+        if (m_Buffer[oldSize] == '\n')
+            m_LineOffsets.push_back(oldSize + 1);
 }
 
 void Logger::Clear()
@@ -100,51 +122,12 @@ void Logger::Serialize()
 
     if (!outfile.is_open()) 
     {
-        Log(LOGLEVEL_WARNING, LOGTYPE_NONE, "Unable to open log file for serialization. Logs may be lost.\n");
+        LogWarning("Unable to open log file for serialization. Logs may be lost.\n");
         return;
     }
 
     outfile << m_Buffer.Buf.Data;
     outfile.close();
-}
-
-void Logger::AppendLogLevelPrefix(LogLevel level)
-{
-    switch (level)
-    {
-    case Logger::LOGLEVEL_INFO:
-        m_Buffer.append("[INFO]");
-        break;
-    case Logger::LOGLEVEL_WARNING:
-        m_Buffer.append("[WARNING]");
-        break;
-    case Logger::LOGLEVEL_ERROR:
-        m_Buffer.append("[ERROR]");
-        break;
-    case Logger::LOGLEVEL_FATAL:
-        m_Buffer.append("[FATAL]");
-        break;
-    default:
-        return;
-    }
-}
-
-void Logger::AppendLogTypePrefix(LogType type)
-{
-    switch (type)
-    {
-    case Logger::LOGTYPE_ENGINE:
-        m_Buffer.append("[Engine]");
-        break;
-    case Logger::LOGTYPE_GRAPHICS:
-        m_Buffer.append("[Graphics]");
-        break;
-    case Logger::LOGTYPE_WIN32:
-        m_Buffer.append("[Win32]");
-        break;
-    default:
-        break;
-    }
 }
 
 const std::wstring Logger::GetOutputDirectory() const
@@ -169,3 +152,5 @@ const std::wstring Logger::GetTimestampedFileName() const
     wcscat_s(filename, L".log");
     return filename;
 }
+
+ETH_NAMESPACE_END

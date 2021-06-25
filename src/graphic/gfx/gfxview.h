@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12includes.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GfxView : NonCopyable
 {
 public:
@@ -36,3 +38,5 @@ private:
     D3D12_VIEWPORT m_Viewport;
     D3D12_RECT m_ScissorRect;
 };
+
+ETH_NAMESPACE_END

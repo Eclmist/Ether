@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 enum KeyCode
 {
     KEYCODE_None            = 0x00, // No key was pressed
@@ -227,3 +229,5 @@ enum KeyCode
     KEYCODE_Pa1             = 0xfd, // The PA1 key
     KEYCODE_OemClear        = 0xfe, // The Clear key
 };
+
+ETH_NAMESPACE_END

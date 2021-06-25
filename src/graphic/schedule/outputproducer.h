@@ -21,9 +21,13 @@
 
 #include "graphic/gfx/gfxproducer.h"
 
+ETH_NAMESPACE_BEGIN
+
 class OutputProducer : public GfxProducer
 {
 public:
     OutputProducer();
     ~OutputProducer() = default;
 };
+
+ETH_NAMESPACE_END

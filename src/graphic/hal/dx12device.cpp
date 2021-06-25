@@ -19,6 +19,8 @@
 
 #include "dx12device.h"
 
+ETH_NAMESPACE_BEGIN
+
 DX12Device::DX12Device(wrl::ComPtr<IDXGIAdapter4> adapter)
 {
     ThrowIfFailed(D3D12CreateDevice(adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&m_Device)));
@@ -54,3 +56,4 @@ void DX12Device::CreateDebugInfoQueue()
     ThrowIfFailed(m_DebugInfoQueue->PushStorageFilter(&NewFilter));
 }
 
+ETH_NAMESPACE_END

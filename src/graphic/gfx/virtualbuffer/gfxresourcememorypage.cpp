@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxresourcememorypage.h"
 #include "graphic/gfx/virtualbuffer/gfxmemoryutils.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxResourceMemoryPage::GfxResourceMemoryPage(
     wrl::ComPtr<ID3D12Device3> device,
@@ -81,3 +81,4 @@ void GfxResourceMemoryPage::Reset()
     m_Offset = 0;
 }
 
+ETH_NAMESPACE_END

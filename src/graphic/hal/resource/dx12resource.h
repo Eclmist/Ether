@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12Resource : public DX12Component<ID3D12Resource>
 {
 protected:
@@ -34,3 +36,4 @@ protected:
     wrl::ComPtr<ID3D12Resource> m_Resource;
 };
 
+ETH_NAMESPACE_END

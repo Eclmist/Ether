@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxtimer.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxTimer::GfxTimer()
     : m_GraphicFrameNumber(0)
@@ -39,3 +39,5 @@ void GfxTimer::Update()
     m_DeltaTime = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(m_CurrentTime - m_PreviousTime).count());
     m_TimeSinceStart = static_cast<double>(chrono::duration_cast<chrono::milliseconds>(m_CurrentTime - m_StartTime).count());
 }
+
+ETH_NAMESPACE_END

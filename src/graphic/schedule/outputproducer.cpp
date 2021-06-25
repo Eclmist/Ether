@@ -17,11 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "outputproducer.h"
+
+ETH_NAMESPACE_BEGIN
 
 OutputProducer::OutputProducer()
     : GfxProducer("Output Producer")
 {
 }
+
+ETH_NAMESPACE_END

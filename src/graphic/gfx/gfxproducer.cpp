@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxproducer.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxProducer::GfxProducer(const char* name)
     : m_Name(name)
@@ -30,3 +30,5 @@ bool GfxProducer::GetInputOutput(GfxScheduleContext& scheduleContext)
 {
     return true;
 }
+
+ETH_NAMESPACE_END

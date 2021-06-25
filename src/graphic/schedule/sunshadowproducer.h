@@ -21,9 +21,13 @@
 
 #include "graphic/gfx/gfxproducer.h"
 
+ETH_NAMESPACE_BEGIN
+
 class SunShadowProducer : public GfxProducer
 {
 public:
     SunShadowProducer();
     ~SunShadowProducer();
 };
+
+ETH_NAMESPACE_END

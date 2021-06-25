@@ -21,8 +21,12 @@
 
 #include "eventargs.h"
 
+ETH_NAMESPACE_BEGIN
+
 struct RenderEventArgs : public EventArgs
 {
     double m_TotalElapsedTime;
     double m_DeltaTime;
 };
+
+ETH_NAMESPACE_END

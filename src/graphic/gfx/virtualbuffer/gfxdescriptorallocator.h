@@ -23,6 +23,8 @@
 #include "graphic/gfx/virtualbuffer/gfxdescriptorallocation.h"
 #include "graphic/gfx/virtualbuffer/gfxdescriptormemorypage.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GfxDescriptorAllocator
 {
 public:
@@ -50,3 +52,5 @@ private:
 
     std::mutex m_AllocationMutex;
 };
+
+ETH_NAMESPACE_END

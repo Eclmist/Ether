@@ -21,10 +21,8 @@
 
 #include "core/config/engineconfig.h"
 #include "core/event/events.h"
-#include "core/subsystem/enginesubsystemcontroller.h"
 
-class Window;
-class GfxRenderer;
+ETH_NAMESPACE_BEGIN
 
 class Engine : public Singleton<Engine>
 {
@@ -55,10 +53,13 @@ public:
 
 public:
     inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };
-    inline GfxRenderer* GetRenderer() const { return m_SubsystemController.GetRenderer(); };
 
-protected:
+private:
+    void InitializeSubsystems();
+    void ShutdownSubsystems();
+
+private:
     EngineConfig m_EngineConfig;
-    EngineSubsystemController m_SubsystemController;
 };
 
+ETH_NAMESPACE_END

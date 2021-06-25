@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12PipelineState : public DX12Component<ID3D12PipelineState>
 {
 public:
@@ -35,3 +37,4 @@ private:
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_PipelineStateDesc;
 };
 
+ETH_NAMESPACE_END

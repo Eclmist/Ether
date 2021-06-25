@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12DescriptorHeap : public DX12Component<ID3D12DescriptorHeap>
 {
 public:
@@ -50,3 +52,5 @@ private:
     uint32_t m_NumDescriptors;
     uint32_t m_DescriptorHandleStride;
 };
+
+ETH_NAMESPACE_END

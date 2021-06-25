@@ -21,7 +21,7 @@
 
 #include "api/interface/igameapplication.h"
 
-class SampleApp : public EtherGame::iGameApplication
+class SampleApp : public Ether::iGameApplication
 {
 public:
     SampleApp();

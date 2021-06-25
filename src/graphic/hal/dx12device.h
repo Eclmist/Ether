@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12Device : public DX12Component<ID3D12Device3>
 {
 public:
@@ -37,3 +39,4 @@ private:
     wrl::ComPtr<ID3D12InfoQueue> m_DebugInfoQueue;
 };
 
+ETH_NAMESPACE_END

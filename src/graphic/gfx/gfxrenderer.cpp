@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxrenderer.h"
 #include "core/engine.h"
 #include "system/win32/window.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxRenderer::GfxRenderer()
     : EngineSubsystem()
@@ -72,7 +72,7 @@ void GfxRenderer::RenderFrame()
 {
     if (!IsInitialized())
     {
-        Logger::Log(Logger::LOGLEVEL_FATAL, Logger::LOGTYPE_GRAPHICS, "Trying to render frame before initialization!");
+        Logger::LogFatal("Trying to render frame before initialization!");
         assert(false);
     }
 
@@ -123,7 +123,7 @@ void GfxRenderer::AddProducer(GfxProducer& producer)
 void GfxRenderer::InitSwapChain()
 {
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        EtherGame::g_hWnd,
+        Ether::g_hWnd,
         m_Device->Get(),
         m_DirectCommandQueue->Get(),
         Engine::GetInstance().GetEngineConfig().GetClientWidth(),
@@ -517,3 +517,4 @@ void GfxRenderer::LoadContent()
 }
 */
 
+ETH_NAMESPACE_END

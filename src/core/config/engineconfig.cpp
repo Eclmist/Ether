@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "engineconfig.h"
+
+ETH_NAMESPACE_BEGIN
 
 EngineConfig::EngineConfig()
 {
@@ -43,3 +43,5 @@ EngineConfig::~EngineConfig()
 {
 
 }
+
+ETH_NAMESPACE_END

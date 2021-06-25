@@ -23,6 +23,8 @@
 #include "graphic/gfx/virtualbuffer/gfxresourceallocation.h"
 #include "graphic/gfx/virtualbuffer/gfxresourcememorypage.h"
 
+ETH_NAMESPACE_BEGIN
+
 /*
     This class is used to satisfy requests for memory that must be uploaded to the GPU.
     Each GfxLinearAllocator should only be associated to a single command list for simplicity.
@@ -65,3 +67,5 @@ private:
 
     size_t m_PageSize;
 };
+
+ETH_NAMESPACE_END
