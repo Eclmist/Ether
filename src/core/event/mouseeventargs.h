@@ -21,6 +21,8 @@
 
 #include "eventargs.h"
 
+ETH_NAMESPACE_BEGIN
+
 struct MouseEventArgs : public EventArgs
 {
     enum ButtonState
@@ -49,3 +51,5 @@ struct MouseEventArgs : public EventArgs
     int m_DeltaX;
     int m_DeltaY;
 };
+
+ETH_NAMESPACE_END

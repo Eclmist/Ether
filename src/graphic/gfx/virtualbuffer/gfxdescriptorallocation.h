@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12includes.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GfxDescriptorMemoryPage;
 
 // This class describes a single allocation in a descriptor page.
@@ -70,3 +72,4 @@ private:
     GfxDescriptorMemoryPage* m_Page;
 };
 
+ETH_NAMESPACE_END

@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class GfxTimer : public NonCopyable
 {
 public:
@@ -39,3 +41,5 @@ private:
     double m_DeltaTime;
     double m_TimeSinceStart;
 };
+
+ETH_NAMESPACE_END

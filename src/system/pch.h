@@ -19,6 +19,12 @@
 
 #pragma once
 
+// Namespace Utils
+enum { InEtherNamespace = false };
+namespace Ether { enum { InEtherNamespace = true }; }
+#define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
+#define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
+
 // Win32
 #include "win32/ethwin.h"
 
@@ -59,5 +65,13 @@ namespace chrono = std::chrono;
 #include "common/logger.h"
 
 // Globals
-namespace EtherGame { extern HWND g_hWnd; }
+ETH_NAMESPACE_BEGIN
 
+// Win32
+extern HWND g_hWnd;
+
+// Engine Subsystems
+class GfxRenderer;
+extern GfxRenderer* g_GfxRenderer;
+
+ETH_NAMESPACE_END

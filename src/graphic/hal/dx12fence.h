@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12Fence : public DX12Component<ID3D12Fence>
 {
 public:
@@ -40,3 +42,5 @@ private:
     uint64_t m_FenceValue;
     HANDLE m_FenceEvent;
 };
+
+ETH_NAMESPACE_END

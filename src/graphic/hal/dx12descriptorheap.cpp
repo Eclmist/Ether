@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "dx12descriptorheap.h"
+
+ETH_NAMESPACE_BEGIN
 
 DX12DescriptorHeap::DX12DescriptorHeap(
 wrl::ComPtr<ID3D12Device3> device,
@@ -48,3 +48,5 @@ uint32_t DX12DescriptorHeap::ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle) c
 {
     return static_cast<uint32_t>(handle.ptr - m_BaseDescriptor.ptr) / m_DescriptorHandleStride;
 }
+
+ETH_NAMESPACE_END

@@ -24,6 +24,8 @@
 #include "graphic/gfx/virtualbuffer/gfxdescriptormemoryblock.h"
 #include "graphic/gfx/virtualbuffer/gfxstaledescriptorinfo.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GfxDescriptorMemoryPage
 {
 public:
@@ -59,3 +61,5 @@ private:
 
     uint32_t m_NumFreeHandles;
 };
+
+ETH_NAMESPACE_END

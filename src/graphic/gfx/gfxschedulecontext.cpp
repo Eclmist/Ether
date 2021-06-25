@@ -17,12 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxschedulecontext.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxScheduleContext::GfxScheduleContext(GfxContext& context, GfxScheduler& scheduler)
     : m_Context(context)
     , m_Scheduler(scheduler)
 {
 }
+
+ETH_NAMESPACE_END

@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "dx12commandqueue.h"
+
+ETH_NAMESPACE_BEGIN
 
 DX12CommandQueue::DX12CommandQueue(
     wrl::ComPtr<ID3D12Device3> device,
@@ -42,3 +42,5 @@ void DX12CommandQueue::Signal(DX12Fence& fence, uint64_t fenceValue)
     wrl::ComPtr<ID3D12Fence> halFence = fence.Get();
     ThrowIfFailed(m_CommandQueue->Signal(halFence.Get(), fenceValue));
 }
+
+ETH_NAMESPACE_END

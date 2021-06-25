@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "dx12swapchain.h"
+
+ETH_NAMESPACE_BEGIN
 
 DX12SwapChain::DX12SwapChain(
     HWND hWnd,
@@ -99,3 +99,5 @@ DXGI_SWAP_CHAIN_DESC1 DX12SwapChain::BuildSwapChainDescriptor() const
 
     return swapChainDesc;
 }
+
+ETH_NAMESPACE_END

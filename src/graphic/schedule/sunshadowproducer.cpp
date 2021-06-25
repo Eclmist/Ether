@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "sunshadowproducer.h"
+
+ETH_NAMESPACE_BEGIN
 
 SunShadowProducer::SunShadowProducer()
     : GfxProducer("Sun Shadow Producer")
@@ -31,3 +31,5 @@ SunShadowProducer::~SunShadowProducer()
 {
 
 }
+
+ETH_NAMESPACE_END

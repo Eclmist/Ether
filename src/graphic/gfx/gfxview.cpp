@@ -17,9 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxview.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxView::GfxView()
 {
@@ -30,3 +30,5 @@ void GfxView::UpdateView(uint32_t width, uint32_t height)
 {
     m_Viewport = CD3DX12_VIEWPORT(0.0, 0.0f, static_cast<float>(width), static_cast<float>(height));
 }
+
+ETH_NAMESPACE_END

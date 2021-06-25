@@ -22,6 +22,8 @@
 // Use DXMath classes for SIMD/SSE optimized types
 #include <DirectXMath.h>
 
+ETH_NAMESPACE_BEGIN
+
 // Only XMMATRIX and XMVECTOR are SIMD optimized.
 // When SIMD optimization is desired, the other more compact types
 // should be loaded into either XMMATRIX or XMVECTOR for operations.
@@ -41,3 +43,5 @@ typedef DirectX::XMUINT4            ethVector4u;
 typedef DirectX::XMINT2             ethVector2i;
 typedef DirectX::XMINT3             ethVector3i;
 typedef DirectX::XMINT4             ethVector4i;
+
+ETH_NAMESPACE_END

@@ -21,6 +21,8 @@
 
 #include <new> // for std::bad_alloc
 
+ETH_NAMESPACE_BEGIN
+
 /**
  * The following helpers were taken from the MiniEngine:
  * https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Math/Common.h
@@ -61,3 +63,5 @@ inline T DivideByMultiple(T value, size_t alignment)
 {
     return (T)((value + alignment - 1) / alignment);
 }
+
+ETH_NAMESPACE_END

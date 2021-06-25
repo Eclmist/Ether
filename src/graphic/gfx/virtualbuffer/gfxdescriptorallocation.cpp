@@ -20,6 +20,8 @@
 #include "gfxdescriptorallocation.h"
 #include "graphic/gfx/virtualbuffer/gfxdescriptormemorypage.h"
 
+ETH_NAMESPACE_BEGIN
+
 GfxDescriptorAllocation::GfxDescriptorAllocation()
     : m_Descriptor{0}
     , m_NumHandles(0)
@@ -93,3 +95,4 @@ void GfxDescriptorAllocation::Free(uint32_t graphicFrameNumber)
     }
 }
 
+ETH_NAMESPACE_END

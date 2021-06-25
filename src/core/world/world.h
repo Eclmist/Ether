@@ -19,8 +19,11 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class World : public NonCopyable
 {
 public:
 };
 
+ETH_NAMESPACE_END

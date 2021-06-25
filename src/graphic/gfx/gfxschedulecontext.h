@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class GfxContext;
 class GfxScheduler;
 
@@ -35,3 +37,4 @@ private:
     GfxScheduler&   m_Scheduler;
 };
 
+ETH_NAMESPACE_END

@@ -17,21 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "engine.h"
 #include "system/win32/window.h"
+#include "graphic/gfx/gfxrenderer.h"
+
+ETH_NAMESPACE_BEGIN
 
 Engine::Engine()
-    : m_SubsystemController()
 {
 }
 
 void Engine::Initialize(const EngineConfig& engineConfig)
 {
-    Logger::Log(Logger::LOGLEVEL_INFO, Logger::LOGTYPE_ENGINE, "Initializing Ether Engine");
+    Logger::LogInfo("Initializing Engine");
     m_EngineConfig = engineConfig;
-    m_SubsystemController.InitializeSubsystems();
+
+    InitializeSubsystems();
 }
 
 void Engine::LoadContent()
@@ -47,7 +48,7 @@ void Engine::UnloadContent()
 void Engine::Shutdown()
 {
     UnloadContent();
-    m_SubsystemController.ShutdownSubsystems();
+    ShutdownSubsystems();
 }
 
 void Engine::OnUpdate(UpdateEventArgs& e)
@@ -56,13 +57,13 @@ void Engine::OnUpdate(UpdateEventArgs& e)
 
 void Engine::OnRender(RenderEventArgs& e)
 {
-    GetRenderer()->RenderFrame();
+    g_GfxRenderer->RenderFrame();
 }
 
 void Engine::OnKeyPressed(KeyEventArgs& e)
 {
     if (e.m_Key == KEYCODE_F3)
-        GetRenderer()->ToggleGui();
+        g_GfxRenderer->ToggleGui();
 }
 
 void Engine::OnKeyReleased(KeyEventArgs& e)
@@ -84,4 +85,18 @@ void Engine::OnMouseMoved(MouseEventArgs& e)
 {
 
 }
+
+void Engine::InitializeSubsystems()
+{
+    g_GfxRenderer = new GfxRenderer();
+
+    g_GfxRenderer->Initialize();
+}
+
+void Engine::ShutdownSubsystems()
+{
+    delete g_GfxRenderer;
+}
+
+ETH_NAMESPACE_END
 

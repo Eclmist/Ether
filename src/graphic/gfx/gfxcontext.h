@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class DX12Device;
 class DX12SwapChain;
 class GfxRenderer;
@@ -48,3 +50,5 @@ private:
     ethVector4      m_ClearColor;
     bool            m_RenderWireframe; // TODO: Move to display options
 };
+
+ETH_NAMESPACE_END

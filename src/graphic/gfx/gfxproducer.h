@@ -27,6 +27,8 @@
 #include "graphic/gfx/gfxcontext.h"
 #include "graphic/gfx/gfxschedulecontext.h"
 
+ETH_NAMESPACE_BEGIN
+
 class GfxProducer : NonCopyable
 {
 public:
@@ -44,3 +46,5 @@ protected:
 
     std::unique_ptr<DX12PipelineState> m_PipelineState;
 };
+
+ETH_NAMESPACE_END

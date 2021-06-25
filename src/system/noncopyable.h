@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 /*
     Derive from this class to make your classes non copyable
 */
@@ -32,3 +34,5 @@ public:
     NonCopyable(const NonCopyable&) = delete;
     const NonCopyable& operator=(const NonCopyable&) = delete;
 };
+
+ETH_NAMESPACE_END

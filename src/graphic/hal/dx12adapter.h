@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12Adapter : public DX12Component<IDXGIAdapter4>
 {
 public:
@@ -39,3 +41,4 @@ private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
 };
 
+ETH_NAMESPACE_END

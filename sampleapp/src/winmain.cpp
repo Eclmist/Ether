@@ -23,6 +23,6 @@
 
 int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int cmdShow)
 {
-    return EtherGame::Start(SampleApp(), L"Ether Sample Application", hInst, cmdShow);
+    return Ether::Start(SampleApp(), L"Ether Sample Application", hInst, cmdShow);
 }
 

@@ -21,6 +21,8 @@
 
 #include "system/subsystem.h"
 
+ETH_NAMESPACE_BEGIN
+
 class Engine;
 
 class EngineSubsystem : public Subsystem
@@ -32,3 +34,5 @@ public:
     virtual void Initialize() override { SetInitialized(true); };
     virtual void Shutdown() override { SetInitialized(false); };
 };
+
+ETH_NAMESPACE_END

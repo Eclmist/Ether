@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxscheduler.h"
 #include "graphic/gfx/gfxproducer.h"
+
+ETH_NAMESPACE_BEGIN
 
 std::queue<GfxProducer*> GfxScheduler::ScheduleProducers(std::vector<GfxProducer*>& orderedProducers)
 {
@@ -51,3 +51,4 @@ bool GfxScheduler::IsScheduled(std::unordered_set<GfxProducer*>& visited, GfxPro
     return visited.find(producer) != visited.end();
 }
 
+ETH_NAMESPACE_END

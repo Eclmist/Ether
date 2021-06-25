@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class EngineConfig
 {
 public:
@@ -50,3 +52,4 @@ private:
 
 };
 
+ETH_NAMESPACE_END

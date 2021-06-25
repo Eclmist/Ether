@@ -21,6 +21,8 @@
 
 #include "graphic/hal/dx12component.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12CommandAllocator : public DX12Component<ID3D12CommandAllocator>
 {
 public:
@@ -36,3 +38,4 @@ private:
     D3D12_COMMAND_LIST_TYPE m_Type;
 };
 
+ETH_NAMESPACE_END

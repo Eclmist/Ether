@@ -22,6 +22,8 @@
 #include "graphic/hal/dx12component.h"
 #include "graphic/hal/dx12fence.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12CommandQueue : public DX12Component<ID3D12CommandQueue>
 {
 public:
@@ -44,3 +46,4 @@ private:
     D3D12_COMMAND_QUEUE_PRIORITY m_Priority;
 };
 
+ETH_NAMESPACE_END

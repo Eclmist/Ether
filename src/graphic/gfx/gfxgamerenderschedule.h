@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class GfxProducer;
 class GfxRenderer;
 
@@ -37,3 +39,4 @@ private:
     GfxRenderer& m_Renderer;
 };
 
+ETH_NAMESPACE_END

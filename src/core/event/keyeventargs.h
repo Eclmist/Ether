@@ -21,6 +21,8 @@
 
 #include "eventargs.h"
 
+ETH_NAMESPACE_BEGIN
+
 struct KeyEventArgs : public EventArgs
 {
 public:
@@ -38,3 +40,5 @@ public:
     bool m_IsShiftPressed;
     bool m_IsAltPressed;
 };
+
+ETH_NAMESPACE_END

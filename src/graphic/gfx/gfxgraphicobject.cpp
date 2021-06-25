@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxgraphicobject.h"
 
+ETH_NAMESPACE_BEGIN
 
+ETH_NAMESPACE_END

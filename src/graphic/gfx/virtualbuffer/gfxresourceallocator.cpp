@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "gfxresourceallocator.h"
 #include "graphic/gfx/virtualbuffer/gfxmemoryutils.h"
+
+ETH_NAMESPACE_BEGIN
 
 GfxResourceAllocator::GfxResourceAllocator(
     wrl::ComPtr<ID3D12Device3> device,
@@ -72,3 +72,5 @@ std::shared_ptr<GfxResourceMemoryPage> GfxResourceAllocator::RequestNewPage()
 
     return page;
 }
+
+ETH_NAMESPACE_END

@@ -21,7 +21,10 @@
 
 #include "system/win32/keycodes.h"
 
+ETH_NAMESPACE_BEGIN
+
 struct EventArgs
 {
 };
 
+ETH_NAMESPACE_END

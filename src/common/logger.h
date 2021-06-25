@@ -20,37 +20,28 @@
 #pragma once
 #include <imgui/imgui.h>
 
+ETH_NAMESPACE_BEGIN
+
 class Logger : public Singleton<Logger>
 {
 public:
-    enum LogLevel
-    {
-        LOGLEVEL_INFO,
-        LOGLEVEL_WARNING,
-        LOGLEVEL_ERROR,
-        LOGLEVEL_FATAL
-    };
-
-    enum LogType
-    {
-        LOGTYPE_ENGINE,
-        LOGTYPE_GRAPHICS,
-        LOGTYPE_WIN32,
-        LOGTYPE_NONE,
-    };
-
     Logger();
     ~Logger() = default;
 
 public:
-    static void Log(LogLevel level, LogType type, const char* fmt, ...);
+    static void LogInfo(const char* fmt, ...);
+    static void LogWarning(const char* fmt, ...);
+    static void LogError(const char* fmt, ...);
+    static void LogFatal(const char* fmt, ...);
+
     void Clear();
     void DrawImGui();
     void Serialize();
 
+
 private:
-    void AppendLogLevelPrefix(LogLevel level);
-    void AppendLogTypePrefix(LogType type);
+    void Log(const char* fmt, va_list args);
+
     const std::wstring GetOutputDirectory() const;
     const std::wstring GetTimestampedFileName() const;
 
@@ -59,3 +50,4 @@ private:
     std::vector<int> m_LineOffsets;
 };
 
+ETH_NAMESPACE_END

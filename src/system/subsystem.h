@@ -19,6 +19,8 @@
 
 #pragma once
 
+ETH_NAMESPACE_BEGIN
+
 class Subsystem : NonCopyable
 {
 public:
@@ -37,3 +39,4 @@ private:
     bool m_IsInitialized;
 };
 
+ETH_NAMESPACE_END

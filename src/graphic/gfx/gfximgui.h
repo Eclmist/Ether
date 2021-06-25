@@ -22,6 +22,8 @@
 #include "graphic/gfx/gfxcontext.h"
 #include "imgui/imgui.h"
 
+ETH_NAMESPACE_BEGIN
+
 class DX12CommandList;
 class DX12DescriptorHeap;
 
@@ -55,3 +57,5 @@ private:
     float m_FpsHistory[HistoryBufferSize];
     uint32_t m_FpsHistoryOffset;
 };
+
+ETH_NAMESPACE_END

@@ -19,15 +19,15 @@
 
 #pragma once
 
-namespace EtherGame
+ETH_NAMESPACE_BEGIN
+
+namespace Win32
 {
-    class iGameApplication;
-}
 
 class Window : NonCopyable
 {
 public:
-    Window(EtherGame::iGameApplication& app, const wchar_t* classname, HINSTANCE hInst);
+    Window(const wchar_t* classname, HINSTANCE hInst);
     ~Window();
 
 public:
@@ -45,3 +45,7 @@ private:
     HINSTANCE m_hInst;
     const wchar_t* m_ClassName;
 };
+
+}
+
+ETH_NAMESPACE_END

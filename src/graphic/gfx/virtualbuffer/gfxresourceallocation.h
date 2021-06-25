@@ -21,8 +21,12 @@
 
 #include "graphic/hal/dx12includes.h"
 
+ETH_NAMESPACE_BEGIN
+
 struct GfxResourceAllocation
 {
     void*                       m_CPUMemoryPtr;
     D3D12_GPU_VIRTUAL_ADDRESS   m_GPUMemoryPtr;
 };
+
+ETH_NAMESPACE_END
