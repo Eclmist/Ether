@@ -30,6 +30,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+namespace Win32 { extern HWND g_hWnd; }
+
 extern ApplicationBase* g_MainApplication;
 
 ETH_NAMESPACE_END

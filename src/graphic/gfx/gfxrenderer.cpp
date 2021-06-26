@@ -23,6 +23,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+GfxRenderer* g_GfxRenderer = nullptr;
+
 GfxRenderer::GfxRenderer()
     : EngineSubsystem()
 {
@@ -123,7 +125,7 @@ void GfxRenderer::AddProducer(GfxProducer& producer)
 void GfxRenderer::InitSwapChain()
 {
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        g_hWnd,
+        Win32::g_hWnd,
         m_Device->Get(),
         m_DirectCommandQueue->Get(),
         g_MainApplication->GetClientWidth(),
