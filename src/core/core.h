@@ -19,49 +19,16 @@
 
 #pragma once
 
-// Win32
-#include "win32/ethwin.h"
+// Namespace Utils
+enum { InEtherNamespace = false };
+namespace Ether { enum { InEtherNamespace = true }; }
+#define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
+#define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
 
-// STL Headers
-#include <algorithm>
-#include <cassert>
-#include <string>
-#include <memory>
-#include <mutex>
+#ifdef ETH_ENGINE
+#define ETHER_API __declspec(dllexport)
+#else
+#define ETHER_API __declspec(dllimport)
+#endif
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-// Chrono
-#include <chrono>
-namespace chrono = std::chrono;
-
-// Common Containers
-#include <vector>
-#include <list>
-#include <stack>
-#include <queue>
-#include <deque>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include <map>
-
-// Resources
-#include "../resource/resource.h"
-
-// Useful Ether includes
-#include "core/core.h"
-
-// Globals
-ETH_NAMESPACE_BEGIN
-
-// Win32
-extern HWND g_hWnd;
-
-// Engine Subsystems
-class GfxRenderer;
-extern GfxRenderer* g_GfxRenderer;
-
-ETH_NAMESPACE_END
+#include "coreminimal.h"

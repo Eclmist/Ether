@@ -26,17 +26,21 @@ time_t GetSystemTime()
     return time(0);
 }
 
-std::string FormatTime(time_t t, char* format)
+std::string FormatTime(const time_t t, char* format)
 {
     char formatted[80];
-    strftime(formatted, 80, format, localtime(&t));
+    tm newTime;
+    localtime_s(&newTime, &t);
+    strftime(formatted, 80, format, &newTime);
     return formatted;
 }
 
-std::wstring WFormatTime(time_t t, wchar_t* format)
+std::wstring WFormatTime(const time_t t, wchar_t* format)
 {
     wchar_t formatted[80];
-    wcsftime(formatted, 80, format, localtime(&t));
+    tm newTime;
+    localtime_s(&newTime, &t);
+    wcsftime(formatted, 80, format, &newTime);
     return formatted;
 }
 

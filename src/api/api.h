@@ -23,6 +23,6 @@ ETH_NAMESPACE_BEGIN
 
 class iGameApplication;
 
-int ETH_EXPORT_DLL Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow);
+int ETHER_API Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow);
 
 ETH_NAMESPACE_END

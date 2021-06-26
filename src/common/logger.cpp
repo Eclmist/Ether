@@ -24,13 +24,9 @@
 
 ETH_NAMESPACE_BEGIN
 
-Logger::Logger()
+void Log(LogLevel level, LogType type, const char* fmt, ...)
 {
-    Clear();
-}
 
-void Logger::Log(LogLevel level, LogType type, const char* fmt, ...)
-{
     char formattedBuffer[4096];
 
     va_list args;
@@ -39,7 +35,18 @@ void Logger::Log(LogLevel level, LogType type, const char* fmt, ...)
     va_end(args);
 
     std::string formattedText(formattedBuffer);
-    m_LogEntries.emplace_back(formattedText, level, type);
+    Logger::GetInstance().AddLog(LogEntry(formattedText, level, type));
+}
+
+
+Logger::Logger()
+{
+    Clear();
+}
+
+void Logger::AddLog(const LogEntry&& entry)
+{
+    m_LogEntries.push_back(entry);
 }
 
 void Logger::Clear()
@@ -189,7 +196,5 @@ std::string LogEntry::GetTimePrefix() const
 {
     return "[" + FormatTime(m_Time) + "]";
 }
-
-
 
 ETH_NAMESPACE_END

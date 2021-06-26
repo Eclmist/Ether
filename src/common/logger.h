@@ -22,25 +22,25 @@
 
 ETH_NAMESPACE_BEGIN
 
-#define LogInfo(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_INFO, LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__);
-#define LogWarning(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_WARNING, LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__);
-#define LogError(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_ERROR, LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__);
-#define LogFatal(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_FATAL, LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__);
+#define LogInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
+#define LogWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
+#define LogError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
+#define LogFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
 
-#define LogEngineInfo(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_INFO, LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__);
-#define LogEngineWarning(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_WARNING, LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__);
-#define LogEngineError(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_ERROR, LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__);
-#define LogEngineFatal(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_FATAL, LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__);
+#define LogEngineInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
+#define LogEngineWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
+#define LogEngineError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
+#define LogEngineFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
 
-#define LogGraphicsInfo(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_INFO, LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__);
-#define LogGraphicsWarning(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_WARNING, LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__);
-#define LogGraphicsError(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_ERROR, LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__);
-#define LogGraphicsFatal(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_FATAL, LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__);
+#define LogGraphicsInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
+#define LogGraphicsWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
+#define LogGraphicsError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
+#define LogGraphicsFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
 
-#define LogWin32Info(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_INFO, LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__);
-#define LogWin32Warning(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_WARNING, LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__);
-#define LogWin32Error(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_ERROR, LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__);
-#define LogWin32Fatal(msg, ...) Logger::GetInstance().Log(LogLevel::LOGLEVEL_FATAL, LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__);
+#define LogWin32Info(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
+#define LogWin32Warning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
+#define LogWin32Error(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
+#define LogWin32Fatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
 
 enum class LogLevel
 {
@@ -57,6 +57,8 @@ enum class LogType
     LOGTYPE_WIN32,
     LOGTYPE_NONE,
 };
+
+ETHER_API void Log(LogLevel level, LogType type, const char* fmt, ...);
 
 class LogEntry
 {
@@ -83,7 +85,7 @@ public:
     ~Logger() = default;
 
 public:
-    void Log(LogLevel level, LogType type, const char* fmt, ...);
+    void AddLog(const LogEntry&& entry);
     void Clear();
     void DrawImGui();
     void Serialize();
