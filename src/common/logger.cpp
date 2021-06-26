@@ -24,59 +24,27 @@
 
 ETH_NAMESPACE_BEGIN
 
-#define vLOG(a)\
-    va_list args;\
-    va_start(args, a);\
-    GetInstance().Log(a, args);\
-    va_end(args);
-
 Logger::Logger()
 {
     Clear();
 }
 
-void Logger::LogInfo(const char* fmt, ...)
+void Logger::Log(LogLevel level, LogType type, const char* fmt, ...)
 {
-    GetInstance().m_Buffer.append("[INFO] ");
-    vLOG(fmt);
-}
+    char formattedBuffer[4096];
 
-void Logger::LogWarning(const char* fmt, ...)
-{
-    GetInstance().m_Buffer.append("[WARNING] ");
-    vLOG(fmt);
-}
+    va_list args;
+    va_start(args, fmt);
+    vsprintf_s(formattedBuffer, fmt, args);
+    va_end(args);
 
-void Logger::LogError(const char* fmt, ...)
-{
-    GetInstance().m_Buffer.append("[ERROR] ");
-    vLOG(fmt);
-}
-
-void Logger::LogFatal(const char* fmt, ...)
-{
-    GetInstance().m_Buffer.append("[FATAL] ");
-    vLOG(fmt);
-}
-
-void Logger::Log(const char* fmt, va_list args)
-{
-    int oldSize = m_Buffer.size();
-    m_Buffer.appendfv(fmt, args);
-
-    if (m_Buffer[m_Buffer.size()  - 1] != '\n')
-        m_Buffer.append("\n");
-
-    for (int newSize = m_Buffer.size(); oldSize < newSize; oldSize++)
-        if (m_Buffer[oldSize] == '\n')
-            m_LineOffsets.push_back(oldSize + 1);
+    std::string formattedText(formattedBuffer);
+    m_LogEntries.emplace_back(formattedText, level, type);
 }
 
 void Logger::Clear()
 {
-    m_Buffer.clear();
-    m_LineOffsets.clear();
-    m_LineOffsets.push_back(0);
+    m_LogEntries.clear();
 }
 
 void Logger::DrawImGui()
@@ -85,22 +53,18 @@ void Logger::DrawImGui()
     ImGui::SetNextWindowPos(ImVec2(0, 1080 - 300));
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0);
-    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-    const char* bufStart = m_Buffer.begin();
-    const char* bufEnd = m_Buffer.end();
-
     ImGuiListClipper clipper;
-    clipper.Begin((int)m_LineOffsets.size());
+    clipper.Begin((int)m_LogEntries.size());
     while (clipper.Step())
     {
-        for (int lineNum = clipper.DisplayStart; lineNum < clipper.DisplayEnd; ++lineNum)
+        for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
         {
-            const char* lineStart = bufStart + m_LineOffsets[lineNum];
-            const char* lineEnd = (lineNum + 1 < m_LineOffsets.size() ? (bufStart + m_LineOffsets[lineNum + 1] - 1) : bufEnd);
-            ImGui::TextUnformatted(lineStart, lineEnd);
+            ImGui::TextColored(m_LogEntries[i].GetColor(), m_LogEntries[i].GetText().c_str());
         }
     }
     clipper.End();
@@ -112,6 +76,7 @@ void Logger::DrawImGui()
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
         ImGui::SetScrollHereY(1.0f);
 
+    ImGui::EndChild();
     ImGui::End();
 }
 
@@ -122,11 +87,13 @@ void Logger::Serialize()
 
     if (!outfile.is_open()) 
     {
-        LogWarning("Unable to open log file for serialization. Logs may be lost.\n");
+        LogInfo("Unable to open log file for serialization. Logs may be lost.\n");
         return;
     }
 
-    outfile << m_Buffer.Buf.Data;
+    for (int i = 0; i < m_LogEntries.size(); ++i)
+        outfile << m_LogEntries[i].GetText().c_str() << '\n';
+
     outfile.close();
 }
 
@@ -148,9 +115,81 @@ const std::wstring Logger::GetOutputDirectory() const
 const std::wstring Logger::GetTimestampedFileName() const
 {
     wchar_t filename[1024];
-    wcscpy_s(filename, L"YYYYMMDD_HHMMSS"); // TODO: Replace with current time
+    wcscpy_s(filename, WFormatTime(GetSystemTime(), L"%Y%m%d%H%M%S").c_str()); // TODO: Replace with start time
     wcscat_s(filename, L".log");
     return filename;
 }
+
+LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
+    : m_Text(text)
+    , m_Level(level)
+    , m_Type(type)
+{
+    m_Time = GetSystemTime();
+}
+
+ImVec4 LogEntry::GetColor() const
+{
+    switch (m_Level)
+    {
+    case LogLevel::LOGLEVEL_INFO:
+        return ImVec4(1, 1, 1, 1);
+        break;
+    case LogLevel::LOGLEVEL_WARNING:
+        return ImVec4(1, 1, 0, 1);
+    case LogLevel::LOGLEVEL_ERROR:
+        return ImVec4(1, 0.4f, 0.4f, 1);
+    case LogLevel::LOGLEVEL_FATAL:
+        return ImVec4(1, 0.2f, 0.2f, 1);
+    default:
+        return ImVec4(1, 1, 1, 1);
+    }
+}
+
+std::string LogEntry::GetText() const
+{
+    return GetTimePrefix() + " " + m_Text;
+}
+
+std::string LogEntry::GetLogLevelPrefix() const
+{
+    switch (m_Level)
+    {
+    case LogLevel::LOGLEVEL_INFO:
+        return "[  INFO   ]";
+    case LogLevel::LOGLEVEL_WARNING:
+        return "[ WARNING ]";
+    case LogLevel::LOGLEVEL_ERROR:
+        return "[  ERROR  ]";
+    case LogLevel::LOGLEVEL_FATAL:
+        return "[  FATAL  ]";
+    default:
+        LogError("Invalid LOGLEVEL encountered by logger");
+        return "";
+    }
+}
+
+std::string LogEntry::GetLogTypePrefix() const
+{
+    switch (m_Type)
+    {
+    case LogType::LOGTYPE_ENGINE:
+        return "Engine:";
+    case LogType::LOGTYPE_GRAPHICS:
+        return "Graphics:";
+    case LogType::LOGTYPE_WIN32:
+        return "Win32:";
+    case LogType::LOGTYPE_NONE:
+    default:
+        return "";
+    }
+}
+
+std::string LogEntry::GetTimePrefix() const
+{
+    return "[" + FormatTime(m_Time) + "]";
+}
+
+
 
 ETH_NAMESPACE_END

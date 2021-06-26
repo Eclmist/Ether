@@ -25,6 +25,9 @@ namespace Ether { enum { InEtherNamespace = true }; }
 #define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
 #define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
 
+#define ETH_EXPORT_DLL __declspec(dllexport)
+#define ETH_IMPORT_DLL __declspec(dllimport)
+
 // Win32
 #include "win32/ethwin.h"
 
@@ -63,6 +66,7 @@ namespace chrono = std::chrono;
 #include "types.h"
 
 #include "common/logger.h"
+#include "common/time.h"
 
 // Globals
 ETH_NAMESPACE_BEGIN

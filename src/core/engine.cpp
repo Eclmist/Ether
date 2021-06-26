@@ -29,7 +29,36 @@ Engine::Engine()
 
 void Engine::Initialize(const EngineConfig& engineConfig)
 {
-    Logger::LogInfo("Initializing Engine");
+    LogInfo("Initializing Engine");
+    LogError("Initializing Engine");
+    LogGraphicsError("Initializing Engine");
+    LogEngineFatal("Initializing Engine");
+    LogEngineWarning("Initializing Engine");
+    LogWin32Error("Initializing Engine");
+    LogInfo("Initializing Engine");
+    LogError("Initializing Engine");
+    LogGraphicsError("Initializing Engine");
+    LogEngineFatal("Initializing Engine");
+    LogEngineWarning("Initializing Engine");
+    LogWin32Error("Initializing Engine");
+    LogInfo("Initializing Engine");
+    LogError("Initializing Engine");
+    LogGraphicsError("Initializing Engine");
+    LogEngineFatal("Initializing Engine");
+    LogEngineWarning("Initializing Engine");
+    LogWin32Error("Initializing Engine");
+    LogError("Initializing Engine");
+    LogGraphicsError("Initializing Engine");
+    LogEngineFatal("Initializing Engine");
+    LogEngineWarning("Initializing Engine");
+    LogWin32Error("Initializing Engine");
+    LogInfo("Initializing Engine");
+    LogError("Initializing Engine");
+    LogGraphicsError("Initializing Engine");
+    LogEngineFatal("Initializing Engine");
+    LogEngineWarning("Initializing Engine");
+    LogWin32Error("Initializing Engine");
+
     m_EngineConfig = engineConfig;
 
     InitializeSubsystems();
