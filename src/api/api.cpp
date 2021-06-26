@@ -18,7 +18,6 @@
 */
 
 #include "api.h"
-#include "api/interface/igameapplication.h"
 #include "core/engine.h"
 #include "system/win32/window.h"
 
@@ -27,38 +26,38 @@ ETH_NAMESPACE_BEGIN
 HWND g_hWnd = nullptr;
 GfxRenderer* g_GfxRenderer = nullptr;
 
-void InitializeApplication(iGameApplication& app)
+void InitializeApplication()
 {
-    EngineConfig config;
-    config.SetClientWidth(1920);
-    config.SetClientHeight(1080);
-    config.SetClientName(L"Test");
-    Engine::GetInstance().Initialize(config);
-    app.Initialize();
+    Engine::GetInstance().Initialize();
+    g_MainApplication->Initialize();
 }
 
-void TerminateApplication(iGameApplication& app)
+void TerminateApplication()
 {
-    app.Shutdown();
+    g_MainApplication->Shutdown();
     Engine::GetInstance().Shutdown();
     Logger::GetInstance().Serialize();
 }
 
-bool UpdateApplication(iGameApplication& app)
+bool UpdateApplication()
 {
-    app.Update();
-    app.RenderScene();
-    app.RenderGui();
+    g_MainApplication->Update();
+    g_MainApplication->RenderScene();
+    g_MainApplication->RenderGui();
     Engine::GetInstance().OnRender(RenderEventArgs());
-    return !app.IsDone();
+    return !g_MainApplication->IsDone();
 }
 
-int Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow)
+int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
 {
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
 
-    Win32::Window gameWindow(classname, hInst);
-    InitializeApplication(app);
+    g_MainApplication = &app;
+    g_MainApplication->Configure();
+
+    Win32::Window gameWindow(app.GetClientName(), hInst);
+
+    InitializeApplication();
     gameWindow.Show(cmdShow);
 
     do
@@ -73,9 +72,9 @@ int Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int 
         if (msg.message == WM_QUIT)
             break;
     } 
-    while (UpdateApplication(app));
+    while (UpdateApplication());
 
-    TerminateApplication(app);
+    TerminateApplication();
     return 0;
 }
 

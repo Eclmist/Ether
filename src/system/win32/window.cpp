@@ -39,17 +39,11 @@ Window::Window(const wchar_t* classname, HINSTANCE hInst)
     // to achieve 100% scaling while still allowing non-client window content to 
     // be rendered in a DPI sensitive fashion.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
     RegisterWindowClass();
-
-    m_WindowRect.left = 500;
-    m_WindowRect.right = 500 + 1920;
-    m_WindowRect.top = 100;
-    m_WindowRect.bottom = 100 + 1080;
-
+    PositionWindowRect();
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
-    Ether::g_hWnd = CreateWindowExW(
+    g_hWnd = CreateWindowExW(
         NULL,
         classname,
         classname,
@@ -67,13 +61,13 @@ Window::Window(const wchar_t* classname, HINSTANCE hInst)
 
 Window::~Window()
 {
-    DestroyWindow(Ether::g_hWnd);
+    DestroyWindow(g_hWnd);
     UnregisterClassW(m_ClassName, m_hInst);
 }
 
 void Window::Show(int cmdShow)
 {
-    ShowWindow(Ether::g_hWnd, cmdShow);
+    ShowWindow(g_hWnd, cmdShow);
 }
 
 void Window::RegisterWindowClass() const
@@ -95,8 +89,21 @@ void Window::RegisterWindowClass() const
 
     if (RegisterClassExW(&windowClass) == 0)
     {
+        LogWin32Fatal("Failed to register Window Class");
         assert(false && "Failed to register Window Class");
     }
+}
+
+void Window::PositionWindowRect()
+{
+    HWND desktopHwnd = GetDesktopWindow();
+    RECT screenRect;
+    GetWindowRect(desktopHwnd, &screenRect);
+
+    m_WindowRect.left = ((screenRect.right - screenRect.left) / 2 - g_MainApplication->GetClientWidth() / 2);
+    m_WindowRect.top = ((screenRect.bottom - screenRect.top) / 2 - g_MainApplication->GetClientHeight() / 2);
+    m_WindowRect.right = m_WindowRect.left + g_MainApplication->GetClientWidth();
+    m_WindowRect.bottom = m_WindowRect.top + g_MainApplication->GetClientHeight();
 }
 
 LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -150,6 +157,7 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     return 0;
 }
+
 }
 
 ETH_NAMESPACE_END

@@ -23,5 +23,13 @@
 #include "system/singleton.h"
 #include "system/types.h"
 
+#include "core/applicationbase.h"
+
 #include "common/logger.h"
 #include "common/time.h"
+
+ETH_NAMESPACE_BEGIN
+
+extern ApplicationBase* g_MainApplication;
+
+ETH_NAMESPACE_END

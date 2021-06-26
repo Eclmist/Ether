@@ -29,7 +29,7 @@ class Engine : public Singleton<Engine>
 public:
     Engine();
 
-    void Initialize(const EngineConfig& config);
+    void Initialize();
 
     void LoadContent();
 
@@ -51,15 +51,9 @@ public:
 
     void OnMouseMoved(MouseEventArgs& e);
 
-public:
-    inline const EngineConfig GetEngineConfig() const { return m_EngineConfig; };
-
 private:
     void InitializeSubsystems();
     void ShutdownSubsystems();
-
-private:
-    EngineConfig m_EngineConfig;
 };
 
 ETH_NAMESPACE_END

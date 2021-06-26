@@ -23,25 +23,14 @@ ETH_NAMESPACE_BEGIN
 
 EngineConfig::EngineConfig()
 {
-    m_ClientName = L"Ether";
-    m_ClientWidth = 1920;
-    m_ClientHeight = 1080;
     m_IsRunningInEditor = false;
     m_EditorHwndHost = nullptr;
 }
 
 EngineConfig::EngineConfig(const EngineConfig& copy)
 {
-    m_ClientName = copy.m_ClientName;
-    m_ClientWidth = copy.m_ClientWidth;
-    m_ClientHeight = copy.m_ClientHeight;
     m_IsRunningInEditor = copy.m_IsRunningInEditor;
     m_EditorHwndHost = copy.m_EditorHwndHost;
-}
-
-EngineConfig::~EngineConfig()
-{
-
 }
 
 ETH_NAMESPACE_END

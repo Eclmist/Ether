@@ -50,7 +50,7 @@ void GfxRenderer::InitRendererCore()
     m_Context = std::make_unique<GfxContext>(*m_Device, *this);
 
     m_View = std::make_unique<GfxView>();
-    m_View->UpdateView(Engine::GetInstance().GetEngineConfig().GetClientWidth(), Engine::GetInstance().GetEngineConfig().GetClientHeight());
+    m_View->UpdateView(g_MainApplication->GetClientWidth(), g_MainApplication->GetClientHeight());
 }
 
 void GfxRenderer::Shutdown()
@@ -123,11 +123,11 @@ void GfxRenderer::AddProducer(GfxProducer& producer)
 void GfxRenderer::InitSwapChain()
 {
     m_SwapChain = std::make_unique<DX12SwapChain>(
-        Ether::g_hWnd,
+        g_hWnd,
         m_Device->Get(),
         m_DirectCommandQueue->Get(),
-        Engine::GetInstance().GetEngineConfig().GetClientWidth(),
-        Engine::GetInstance().GetEngineConfig().GetClientHeight());
+        g_MainApplication->GetClientWidth(),
+        g_MainApplication->GetClientHeight());
 
     m_SwapChain->CreateRenderTargetViews(m_Device->Get(), m_RTVDescriptorHeap->Get());
 }
