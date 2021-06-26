@@ -19,14 +19,16 @@
 
 #include "sampleapp.h"
 
-SampleApp::SampleApp()
-{
-
-}
-
 bool SampleApp::IsDone()
 {
     return false;
+}
+
+void SampleApp::Configure()
+{
+    SetClientWidth(1920);
+    SetClientHeight(1080);
+    SetClientName(L"Ether Sample App");
 }
 
 void SampleApp::Initialize()

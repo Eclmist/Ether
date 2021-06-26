@@ -19,13 +19,12 @@
 
 #pragma once
 
-#include "api/api.h"
-
 ETH_NAMESPACE_BEGIN
 
-class iGameApplication
+class ApplicationBase
 {
 public:
+    virtual void Configure() = 0;
     virtual void Initialize() = 0;
     virtual void Shutdown() = 0;
 
@@ -34,6 +33,20 @@ public:
     virtual void Update() = 0;
     virtual void RenderScene() = 0;
     virtual void RenderGui() = 0;
+
+public:
+    inline wchar_t* GetClientName() const { return m_ClientName; };
+    inline uint32_t GetClientWidth() const { return m_ClientWidth; };
+    inline uint32_t GetClientHeight() const { return m_ClientHeight; };
+
+    inline void SetClientName(wchar_t* name) { m_ClientName = name; };
+    inline void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
+    inline void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
+
+private:
+    wchar_t* m_ClientName;
+    uint32_t m_ClientWidth;
+    uint32_t m_ClientHeight;
 };
 
 ETH_NAMESPACE_END

@@ -19,18 +19,18 @@
 
 #pragma once
 
-#include "api/interface/igameapplication.h"
 #include "core/coreminimal.h"
 
-class SampleApp : public Ether::iGameApplication
+class SampleApp : public Ether::ApplicationBase
 {
 public:
-    SampleApp();
+    SampleApp() = default;
     ~SampleApp() = default;
 
 public:
     bool IsDone() override;
 
+    void Configure() override;
     void Initialize() override;
     void Shutdown() override;
     void Update() override;

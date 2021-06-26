@@ -56,11 +56,11 @@ void Logger::Clear()
 
 void Logger::DrawImGui()
 {
-    ImGui::SetNextWindowSize(ImVec2(1920, 300));
-    ImGui::SetNextWindowPos(ImVec2(0, 1080 - 300));
+    ImGui::SetNextWindowSize(ImVec2((float)g_MainApplication->GetClientWidth(), 300));
+    ImGui::SetNextWindowPos(ImVec2(0, (float)g_MainApplication->GetClientHeight() - 300));
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0);
-    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoCollapse);
     ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -112,7 +112,8 @@ const std::wstring Logger::GetOutputDirectory() const
     wcscpy_s(path, appDataLocal);
     wcscat_s(path, L"\\Ether");
     CreateDirectory(path, NULL);
-    wcscat_s(path, L"\\ApplicationName"); //TODO: Replace with current app name
+    wcscat_s(path, L"\\");
+    wcscat_s(path, g_MainApplication->GetClientName());
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\Logs");
     CreateDirectory(path, NULL);

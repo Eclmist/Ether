@@ -25,31 +25,22 @@ class ClientConfig
 {
 public:
     ClientConfig();
-    ~ClientConfig();
+    ~ClientConfig() = default;
     ClientConfig(const ClientConfig& copy);
 
 public:
-    inline std::wstring GetClientName() const { return m_ClientName; };
-    inline uint32_t GetClientWidth() const { return m_ClientWidth; };
-    inline uint32_t GetClientHeight() const { return m_ClientHeight; };
-    inline bool GetIsRunningInEditor() const { return m_IsRunningInEditor; };
-    inline HWND GetEditorHwndHost() const { return m_EditorHwndHost; };
+    inline ETHER_API std::wstring GetClientName() const { return m_ClientName; };
+    inline ETHER_API uint32_t GetClientWidth() const { return m_ClientWidth; };
+    inline ETHER_API uint32_t GetClientHeight() const { return m_ClientHeight; };
 
-    inline void SetClientName(std::wstring name) { m_ClientName = name; };
-    inline void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
-    inline void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
-    inline void SetIsRunningInEditor(bool isRunningInEditor) { m_IsRunningInEditor = isRunningInEditor; };
-    inline void SetEditorHwndHost(HWND hWnd) { m_EditorHwndHost = hWnd; };
+    inline ETHER_API void SetClientName(std::wstring name) { m_ClientName = name; };
+    inline ETHER_API void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
+    inline ETHER_API void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
 
 private:
     std::wstring m_ClientName;
     uint32_t m_ClientWidth;
     uint32_t m_ClientHeight;
-
-private:
-    bool m_IsRunningInEditor;
-    HWND m_EditorHwndHost;
-
 };
 
 ETH_NAMESPACE_END

@@ -35,6 +35,7 @@ public:
 
 private:
     void RegisterWindowClass() const;
+    void PositionWindowRect();
     static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

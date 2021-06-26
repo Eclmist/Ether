@@ -21,8 +21,8 @@
 
 ETH_NAMESPACE_BEGIN
 
-class iGameApplication;
+class iApplication;
 
-int ETHER_API Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow);
+int ETHER_API Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow);
 
 ETH_NAMESPACE_END
