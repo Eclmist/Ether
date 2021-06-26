@@ -32,7 +32,7 @@ GfxImGui::GfxImGui()
     , m_FpsHistoryOffset(0)
 {
     CreateImGuiContext();
-    ImGui_ImplWin32_Init(g_hWnd);
+    ImGui_ImplWin32_Init(Win32::g_hWnd);
     SetStyle();
 }
 

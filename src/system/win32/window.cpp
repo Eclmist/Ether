@@ -29,6 +29,8 @@ namespace Win32
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 
+HWND g_hWnd = nullptr;
+
 Window::Window(const wchar_t* classname, HINSTANCE hInst)
     : m_ClassName(classname)
     , m_hInst(hInst)

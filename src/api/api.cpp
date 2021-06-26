@@ -23,9 +23,6 @@
 
 ETH_NAMESPACE_BEGIN
 
-HWND g_hWnd = nullptr;
-GfxRenderer* g_GfxRenderer = nullptr;
-
 void InitializeApplication()
 {
     Engine::GetInstance().Initialize();

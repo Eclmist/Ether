@@ -57,9 +57,6 @@ namespace chrono = std::chrono;
 // Globals
 ETH_NAMESPACE_BEGIN
 
-// Win32
-extern HWND g_hWnd;
-
 // Engine Subsystems
 class GfxRenderer;
 extern GfxRenderer* g_GfxRenderer;
