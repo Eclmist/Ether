@@ -55,7 +55,7 @@ bool UpdateApplication(iGameApplication& app)
 
 int Start(iGameApplication& app, const wchar_t* classname, HINSTANCE hInst, int cmdShow)
 {
-    Logger::LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
+    LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
 
     Win32::Window gameWindow(classname, hInst);
     InitializeApplication(app);

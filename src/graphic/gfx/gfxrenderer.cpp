@@ -72,7 +72,7 @@ void GfxRenderer::RenderFrame()
 {
     if (!IsInitialized())
     {
-        Logger::LogFatal("Trying to render frame before initialization!");
+        LogGraphicsFatal("Trying to render frame before initialization!");
         assert(false);
     }
 
