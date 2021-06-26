@@ -31,6 +31,7 @@ bool SampleApp::IsDone()
 
 void SampleApp::Initialize()
 {
+    LogInfo("Initializing Sample App");
 }
 
 void SampleApp::Shutdown()

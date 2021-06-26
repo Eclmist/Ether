@@ -20,6 +20,7 @@
 #pragma once
 
 #include "api/interface/igameapplication.h"
+#include "core/coreminimal.h"
 
 class SampleApp : public Ether::iGameApplication
 {

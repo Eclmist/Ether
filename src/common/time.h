@@ -23,8 +23,8 @@
 
 ETH_NAMESPACE_BEGIN
 
-ETH_EXPORT_DLL time_t GetSystemTime();
-ETH_EXPORT_DLL std::string FormatTime(time_t t, char* format = "%x %X");
-ETH_EXPORT_DLL std::wstring WFormatTime(time_t t, wchar_t* format = L"%x %X");
+ETHER_API time_t GetSystemTime();
+ETHER_API std::string FormatTime(const time_t t, char* format = "%x %X");
+ETHER_API std::wstring WFormatTime(const time_t t, wchar_t* format = L"%x %X");
 
 ETH_NAMESPACE_END

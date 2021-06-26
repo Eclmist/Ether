@@ -70,7 +70,7 @@ set(imgui_files ${imgui})
 add_library(${PROJECT_NAME} SHARED ${all_files})
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE src/system/pch.h)
-target_compile_definitions(${PROJECT_NAME} PUBLIC ETH_ENGINE)
+target_compile_definitions(${PROJECT_NAME} PRIVATE ETH_ENGINE)
 
 set_target_properties (${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin/enginelib"
