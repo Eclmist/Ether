@@ -19,14 +19,38 @@
 
 #pragma once
 
-#include "coreminimal.h"
+// Win32
+#include "system/win32/ethwin.h"
 
-ETH_NAMESPACE_BEGIN
+// STL Headers
+#include <algorithm>
+#include <cassert>
+#include <string>
+#include <memory>
+#include <mutex>
 
-namespace Win32 
-{
-    extern class Window* g_MainWindow;
-}
+// ComPtr library
+#include <wrl.h>
+namespace wrl = Microsoft::WRL;
 
-ETH_NAMESPACE_END
+// Chrono
+#include <chrono>
+namespace chrono = std::chrono;
+
+// Common Containers
+#include <vector>
+#include <list>
+#include <stack>
+#include <queue>
+#include <deque>
+#include <unordered_set>
+#include <unordered_map>
+#include <set>
+#include <map>
+
+// Resources
+#include "../resource/resource.h"
+
+// Useful Ether includes
+#include "core/core.h"
 

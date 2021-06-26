@@ -19,28 +19,45 @@
 
 #pragma once
 
+#include "graphic/gfx/gfxcontext.h"
+#include "imgui/imgui.h"
+
 ETH_NAMESPACE_BEGIN
 
-class ClientConfig
+class DX12CommandList;
+class DX12DescriptorHeap;
+class GuiComponent;
+
+class GfxImGui : NonCopyable
 {
 public:
-    ClientConfig();
-    ~ClientConfig() = default;
-    ClientConfig(const ClientConfig& copy);
+    GfxImGui();
+    ~GfxImGui() = default;
 
 public:
-    inline ETH_ENGINE_DLL std::wstring GetClientName() const { return m_ClientName; };
-    inline ETH_ENGINE_DLL uint32_t GetClientWidth() const { return m_ClientWidth; };
-    inline ETH_ENGINE_DLL uint32_t GetClientHeight() const { return m_ClientHeight; };
-
-    inline ETH_ENGINE_DLL void SetClientName(std::wstring name) { m_ClientName = name; };
-    inline ETH_ENGINE_DLL void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
-    inline ETH_ENGINE_DLL void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
+    void Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor);
+    void Render(DX12CommandList& commandList);
+    void Shutdown();
+    void ToggleVisible();
+    void SetVisible(bool isVisible);
+    bool GetVisible() const;
 
 private:
-    std::wstring m_ClientName;
-    uint32_t m_ClientWidth;
-    uint32_t m_ClientHeight;
+    void CreateImGuiContext();
+    void SetStyle();
+    void UpdateFpsHistory();
+    void SetupDebugMenu() const;
+    void SetupGuiComponents();
+    ImGuiWindowFlags GetWindowFlags() const;
+
+private:
+    bool m_IsVisible;
+    GfxContext* m_Context;
+
+private:
+    static const uint32_t HistoryBufferSize = 128;
+    float m_FpsHistory[HistoryBufferSize];
+    uint32_t m_FpsHistoryOffset;
 };
 
 ETH_NAMESPACE_END

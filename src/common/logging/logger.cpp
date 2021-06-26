@@ -26,7 +26,6 @@ ETH_NAMESPACE_BEGIN
 
 void Log(LogLevel level, LogType type, const char* fmt, ...)
 {
-
     char formattedBuffer[4096];
 
     va_list args;
@@ -52,39 +51,6 @@ void Logger::AddLog(const LogEntry&& entry)
 void Logger::Clear()
 {
     m_LogEntries.clear();
-}
-
-void Logger::DrawImGui()
-{
-    ImGui::SetNextWindowSize(ImVec2((float)g_MainApplication->GetClientWidth(), 300));
-    ImGui::SetNextWindowPos(ImVec2(0, (float)g_MainApplication->GetClientHeight() - 300));
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0);
-    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoCollapse);
-    ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-
-    ImGuiListClipper clipper;
-    clipper.Begin((int)m_LogEntries.size());
-    while (clipper.Step())
-    {
-        for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
-        {
-            ImGui::TextColored(m_LogEntries[i].GetColor(), m_LogEntries[i].GetText().c_str());
-        }
-    }
-    clipper.End();
-
-    ImGui::PopStyleVar();
-    ImGui::PopStyleVar();
-
-    // Auto scroll
-    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-        ImGui::SetScrollHereY(1.0f);
-
-    ImGui::EndChild();
-    ImGui::End();
 }
 
 void Logger::Serialize()
@@ -126,76 +92,6 @@ const std::wstring Logger::GetTimestampedFileName() const
     wcscpy_s(filename, WFormatTime(GetSystemTime(), L"%Y%m%d%H%M%S").c_str()); // TODO: Replace with start time
     wcscat_s(filename, L".log");
     return filename;
-}
-
-LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
-    : m_Text(text)
-    , m_Level(level)
-    , m_Type(type)
-{
-    m_Time = GetSystemTime();
-}
-
-ImVec4 LogEntry::GetColor() const
-{
-    switch (m_Level)
-    {
-    case LogLevel::LOGLEVEL_INFO:
-        return ImVec4(1, 1, 1, 1);
-        break;
-    case LogLevel::LOGLEVEL_WARNING:
-        return ImVec4(1, 1, 0, 1);
-    case LogLevel::LOGLEVEL_ERROR:
-        return ImVec4(1, 0.4f, 0.4f, 1);
-    case LogLevel::LOGLEVEL_FATAL:
-        return ImVec4(1, 0.2f, 0.2f, 1);
-    default:
-        return ImVec4(1, 1, 1, 1);
-    }
-}
-
-std::string LogEntry::GetText() const
-{
-    return GetTimePrefix() + " " + m_Text;
-}
-
-std::string LogEntry::GetLogLevelPrefix() const
-{
-    switch (m_Level)
-    {
-    case LogLevel::LOGLEVEL_INFO:
-        return "[  INFO   ]";
-    case LogLevel::LOGLEVEL_WARNING:
-        return "[ WARNING ]";
-    case LogLevel::LOGLEVEL_ERROR:
-        return "[  ERROR  ]";
-    case LogLevel::LOGLEVEL_FATAL:
-        return "[  FATAL  ]";
-    default:
-        LogError("Invalid LOGLEVEL encountered by logger");
-        return "";
-    }
-}
-
-std::string LogEntry::GetLogTypePrefix() const
-{
-    switch (m_Type)
-    {
-    case LogType::LOGTYPE_ENGINE:
-        return "Engine:";
-    case LogType::LOGTYPE_GRAPHICS:
-        return "Graphics:";
-    case LogType::LOGTYPE_WIN32:
-        return "Win32:";
-    case LogType::LOGTYPE_NONE:
-    default:
-        return "";
-    }
-}
-
-std::string LogEntry::GetTimePrefix() const
-{
-    return "[" + FormatTime(m_Time) + "]";
 }
 
 ETH_NAMESPACE_END

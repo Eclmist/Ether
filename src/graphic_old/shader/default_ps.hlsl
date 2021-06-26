@@ -17,76 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine.h"
-#include "system/win32/window.h"
-
-ETH_NAMESPACE_BEGIN
-
-Engine::Engine()
+struct PS_INPUT
 {
-}
+    float4 Position : SV_Position;
+    float4 Color : COLOR;
+};
 
-void Engine::Initialize()
+float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
 {
-    LogInfo("Initializing Engine");
-    InitializeSubsystems();
+    return float4(pid / 12.0f, pid / 12.0 + 0.3f, pid / 12.0 + 0.6f, 1.0);
+    return IN.Color;
 }
-
-void Engine::LoadContent()
-{
-
-}
-
-void Engine::UnloadContent()
-{
-
-}
-
-void Engine::Shutdown()
-{
-    UnloadContent();
-    ShutdownSubsystems();
-}
-
-void Engine::OnUpdate(UpdateEventArgs& e)
-{
-}
-
-void Engine::OnRender(RenderEventArgs& e)
-{
-}
-
-void Engine::OnKeyPressed(KeyEventArgs& e)
-{
-}
-
-void Engine::OnKeyReleased(KeyEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseButtonPressed(MouseEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseButtonReleased(MouseEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseMoved(MouseEventArgs& e)
-{
-
-}
-
-void Engine::InitializeSubsystems()
-{
-}
-
-void Engine::ShutdownSubsystems()
-{
-}
-
-ETH_NAMESPACE_END
 
