@@ -19,43 +19,39 @@
 
 #pragma once
 
-#include "graphic/gfx/gfxcontext.h"
-#include "imgui/imgui.h"
-
 ETH_NAMESPACE_BEGIN
 
-class DX12CommandList;
-class DX12DescriptorHeap;
+enum class LogLevel
+{
+    LOGLEVEL_INFO,
+    LOGLEVEL_WARNING,
+    LOGLEVEL_ERROR,
+    LOGLEVEL_FATAL
+};
 
-class GfxImGui : NonCopyable
+enum class LogType
+{
+    LOGTYPE_ENGINE,
+    LOGTYPE_GRAPHICS,
+    LOGTYPE_WIN32,
+    LOGTYPE_NONE,
+};
+
+class LogEntry
 {
 public:
-    GfxImGui();
-    ~GfxImGui() = default;
+    LogEntry(const std::string& text, LogLevel level, LogType type);
+
+    std::string GetText() const;
+    std::string GetLogLevelPrefix() const;
+    std::string GetLogTypePrefix() const;
+    std::string GetTimePrefix() const;
 
 public:
-    void Initialize(GfxContext& context, DX12DescriptorHeap& srvDescriptor);
-    void Render(DX12CommandList& commandList);
-    void Shutdown();
-    void ToggleVisible();
-    void SetVisible(bool isVisible);
-    bool GetVisible() const;
-
-private:
-    void CreateImGuiContext();
-    void SetStyle();
-    void UpdateFpsHistory();
-    void SetupDebugMenu() const;
-    ImGuiWindowFlags GetWindowFlags() const;
-
-private:
-    bool m_IsVisible;
-    GfxContext* m_Context;
-
-private:
-    static const uint32_t HistoryBufferSize = 128;
-    float m_FpsHistory[HistoryBufferSize];
-    uint32_t m_FpsHistoryOffset;
+    const std::string m_Text;
+    const LogLevel m_Level;
+    const LogType m_Type;
+    const time_t m_Time;
 };
 
 ETH_NAMESPACE_END

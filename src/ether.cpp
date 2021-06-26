@@ -17,16 +17,5 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "coreminimal.h"
-
-ETH_NAMESPACE_BEGIN
-
-namespace Win32 
-{
-    extern class Window* g_MainWindow;
-}
-
-ETH_NAMESPACE_END
+#include "ether.h"
 

@@ -19,14 +19,20 @@
 
 #pragma once
 
-#include "coreminimal.h"
+#include "guicomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32 
+class LoggingComponent : public GuiComponent
 {
-    extern class Window* g_MainWindow;
-}
+public:
+    LoggingComponent();
+    ~LoggingComponent() = default;
+
+private:
+    void Draw() override;
+
+    ImVec4 GetColor(LogLevel level) const;
+};
 
 ETH_NAMESPACE_END
-

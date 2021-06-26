@@ -33,6 +33,9 @@ public:
 public:
     void Show(int cmdShow);
 
+    inline HWND GetHwnd() { return m_hWnd; }
+    inline HINSTANCE GetHinst() { return m_hInst; }
+
 private:
     void RegisterWindowClass() const;
     void PositionWindowRect();
@@ -43,6 +46,7 @@ private:
     bool m_IsFullscreen;
     RECT m_WindowRect;
 
+    HWND m_hWnd;
     HINSTANCE m_hInst;
     const wchar_t* m_ClassName;
 };

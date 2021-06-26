@@ -55,6 +55,7 @@ public:
     void Resize(uint32_t width, uint32_t height);
     void SetRTCommonParams(DX12CommandList& commandList) const;
     void AddProducer(GfxProducer& producer);
+    GfxImGui m_ImGui;
 
 private:
     void InitRendererCore();
@@ -99,7 +100,6 @@ private:
 private:
     std::unique_ptr<GfxContext> m_Context;
     std::unique_ptr<GfxView> m_View;
-    GfxImGui m_ImGui;
 
     std::vector<GfxProducer*> m_Producers;
 

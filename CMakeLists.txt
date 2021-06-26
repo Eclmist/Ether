@@ -33,6 +33,10 @@ if (NOT WIN32)
     message(FATAL_ERROR "${PROJECT_NAME} is only supported on Windows 10! CMake will exit.")
 endif ()
 
+if (NOT MSVC)
+    message(FATAL_ERROR "${PROJECT_NAME} can only be built on VisualStudios! CMake will exit.")
+endif ()
+
 # Sets the C++ versions
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -43,8 +47,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # =========================================================================== #
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/resource")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 file(GLOB_RECURSE project_headers src/*.h)
 file(GLOB_RECURSE project_cpps src/*.cpp)
@@ -52,8 +56,10 @@ file(GLOB_RECURSE project_shaders src/*.hlsl)
 file(GLOB_RECURSE extern_files include/*)
 file(GLOB_RECURSE resources resource/*)
 set_source_files_properties(${project_shaders} PROPERTIES VS_TOOL_OVERRIDE "None")
+set_source_files_properties(src/ether.cpp PROPERTIES COMPILE_FLAGS "/Ycether.h")
 
 set(all_files ${project_headers} ${project_cpps} ${project_shaders} ${extern_files} ${resources})
+list(FILTER all_files EXCLUDE REGEX "src/graphic_old/*")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${all_files})
 
 # =========================================================================== #
@@ -68,13 +74,13 @@ set(imgui_files ${imgui})
 # =========================================================================== #
 
 add_library(${PROJECT_NAME} SHARED ${all_files})
-
-target_precompile_headers(${PROJECT_NAME} PRIVATE src/system/pch.h)
-target_compile_definitions(${PROJECT_NAME} PRIVATE ETH_ENGINE)
+target_compile_definitions(${PROJECT_NAME} PRIVATE ETH_ENGINE_BUILD)
+target_compile_options(${PROJECT_NAME} PRIVATE "/Yuether.h")
+target_compile_options(${PROJECT_NAME} PRIVATE "/FIether.h")
 
 set_target_properties (${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin/enginelib"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/enginelib")
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin/ether"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/ether")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -93,4 +99,3 @@ target_link_libraries(${PROJECT_NAME} d3d12.lib dxgi.lib dxguid.lib)
 # =========================================================================== #
 
 add_subdirectory(sampleapp)
-

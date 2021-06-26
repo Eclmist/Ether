@@ -20,18 +20,23 @@
 #include "api.h"
 #include "core/engine.h"
 #include "system/win32/window.h"
+#include "graphic/gui/guimanager.h"
 
 ETH_NAMESPACE_BEGIN
+
+extern GuiManager* g_GuiManager;
 
 void InitializeApplication()
 {
     Engine::GetInstance().Initialize();
+    //g_GuiManager->Initialize();
     g_MainApplication->Initialize();
 }
 
 void TerminateApplication()
 {
     g_MainApplication->Shutdown();
+    g_GuiManager->Shutdown();
     Engine::GetInstance().Shutdown();
     Logger::GetInstance().Serialize();
 }
@@ -76,3 +81,4 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
 }
 
 ETH_NAMESPACE_END
+

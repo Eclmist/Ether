@@ -26,16 +26,18 @@ ETH_NAMESPACE_BEGIN
 namespace Win32
 {
 
+Window* g_MainWindow = nullptr;
+
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
-
-HWND g_hWnd = nullptr;
 
 Window::Window(const wchar_t* classname, HINSTANCE hInst)
     : m_ClassName(classname)
     , m_hInst(hInst)
     , m_IsFullscreen(false)
 {
+    g_MainWindow = this;
+
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
     // to achieve 100% scaling while still allowing non-client window content to 
@@ -45,7 +47,7 @@ Window::Window(const wchar_t* classname, HINSTANCE hInst)
     PositionWindowRect();
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
-    g_hWnd = CreateWindowExW(
+    m_hWnd = CreateWindowExW(
         NULL,
         classname,
         classname,
@@ -63,13 +65,13 @@ Window::Window(const wchar_t* classname, HINSTANCE hInst)
 
 Window::~Window()
 {
-    DestroyWindow(g_hWnd);
+    DestroyWindow(m_hWnd);
     UnregisterClassW(m_ClassName, m_hInst);
 }
 
 void Window::Show(int cmdShow)
 {
-    ShowWindow(g_hWnd, cmdShow);
+    ShowWindow(m_hWnd, cmdShow);
 }
 
 void Window::RegisterWindowClass() const

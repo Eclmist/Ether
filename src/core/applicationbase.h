@@ -35,13 +35,13 @@ public:
     virtual void RenderGui() = 0;
 
 public:
-    inline wchar_t* GetClientName() const { return m_ClientName; };
-    inline uint32_t GetClientWidth() const { return m_ClientWidth; };
-    inline uint32_t GetClientHeight() const { return m_ClientHeight; };
+    inline wchar_t* GetClientName() const { return m_ClientName; }
+    inline uint32_t GetClientWidth() const { return m_ClientWidth; }
+    inline uint32_t GetClientHeight() const { return m_ClientHeight; }
 
-    inline void SetClientName(wchar_t* name) { m_ClientName = name; };
-    inline void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
-    inline void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
+    inline void SetClientName(wchar_t* name) { m_ClientName = name; }
+    inline void SetClientWidth(uint32_t width) { m_ClientWidth = width; }
+    inline void SetClientHeight(uint32_t height) { m_ClientHeight = height; }
 
 private:
     wchar_t* m_ClientName;

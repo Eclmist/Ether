@@ -23,6 +23,6 @@ ETH_NAMESPACE_BEGIN
 
 class iApplication;
 
-int ETHER_API Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow);
+int ETH_ENGINE_DLL Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow);
 
 ETH_NAMESPACE_END

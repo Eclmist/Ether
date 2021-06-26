@@ -18,7 +18,8 @@
 */
 
 #pragma once
-#include <imgui/imgui.h>
+
+#include "logentry.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -42,41 +43,7 @@ ETH_NAMESPACE_BEGIN
 #define LogWin32Error(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
 #define LogWin32Fatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
 
-enum class LogLevel
-{
-    LOGLEVEL_INFO,
-    LOGLEVEL_WARNING,
-    LOGLEVEL_ERROR,
-    LOGLEVEL_FATAL
-};
-
-enum class LogType
-{
-    LOGTYPE_ENGINE,
-    LOGTYPE_GRAPHICS,
-    LOGTYPE_WIN32,
-    LOGTYPE_NONE,
-};
-
-ETHER_API void Log(LogLevel level, LogType type, const char* fmt, ...);
-
-class LogEntry
-{
-public:
-    LogEntry(const std::string& text, LogLevel level, LogType type);
-
-    ImVec4 GetColor() const;
-    std::string GetText() const;
-    std::string GetLogLevelPrefix() const;
-    std::string GetLogTypePrefix() const;
-    std::string GetTimePrefix() const;
-
-private:
-    std::string m_Text;
-    LogLevel m_Level;
-    LogType m_Type;
-    time_t m_Time;
-};
+ETH_ENGINE_DLL void Log(LogLevel level, LogType type, const char* fmt, ...);
 
 class Logger : public Singleton<Logger>
 {
@@ -87,8 +54,9 @@ public:
 public:
     void AddLog(const LogEntry&& entry);
     void Clear();
-    void DrawImGui();
     void Serialize();
+
+    inline const std::vector<LogEntry> GetEntries() const { return m_LogEntries; }
 
 private:
     const std::wstring GetOutputDirectory() const;

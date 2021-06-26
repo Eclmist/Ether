@@ -19,14 +19,32 @@
 
 #pragma once
 
-#include "coreminimal.h"
+#include "guicomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32 
+class GuiManager : public Subsystem
 {
-    extern class Window* g_MainWindow;
-}
+public:
+    GuiManager();
+    ~GuiManager();
+
+    void Initialize() override;
+    void Shutdown() override;
+
+    void Render();
+
+private:
+    inline void ToggleVisibility() { m_IsVisible = !m_IsVisible; }
+
+private:
+    void RegisterComponents();
+    void CreateImGuiContext();
+    void SetImGuiStyle();
+
+private:
+    std::vector<std::shared_ptr<GuiComponent>> m_Components;
+    bool m_IsVisible;
+};
 
 ETH_NAMESPACE_END
-

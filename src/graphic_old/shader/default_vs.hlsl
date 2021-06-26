@@ -17,76 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine.h"
-#include "system/win32/window.h"
-
-ETH_NAMESPACE_BEGIN
-
-Engine::Engine()
+struct ModelViewProjection
 {
-}
+    matrix MVP;
+};
 
-void Engine::Initialize()
+ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b0);
+
+struct VS_INPUT
 {
-    LogInfo("Initializing Engine");
-    InitializeSubsystems();
-}
+    float3 Position : POSITION;
+    float3 Color    : COLOR;
+};
 
-void Engine::LoadContent()
+struct VS_OUTPUT
 {
+    float4 Position : SV_Position;
+    float4 Color : COLOR;
+};
 
-}
-
-void Engine::UnloadContent()
+VS_OUTPUT VS_Main(VS_INPUT IN)
 {
+    VS_OUTPUT o;
+    o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position, 1.0f));
+    o.Color = float4(IN.Color, 1.0f);
 
+    return o;
 }
-
-void Engine::Shutdown()
-{
-    UnloadContent();
-    ShutdownSubsystems();
-}
-
-void Engine::OnUpdate(UpdateEventArgs& e)
-{
-}
-
-void Engine::OnRender(RenderEventArgs& e)
-{
-}
-
-void Engine::OnKeyPressed(KeyEventArgs& e)
-{
-}
-
-void Engine::OnKeyReleased(KeyEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseButtonPressed(MouseEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseButtonReleased(MouseEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseMoved(MouseEventArgs& e)
-{
-
-}
-
-void Engine::InitializeSubsystems()
-{
-}
-
-void Engine::ShutdownSubsystems()
-{
-}
-
-ETH_NAMESPACE_END
-
