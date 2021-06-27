@@ -27,21 +27,9 @@
 
 ETH_NAMESPACE_BEGIN
 
-GuiManager* g_GuiManager = nullptr;
-
-GuiManager::GuiManager()
-{
-    g_GuiManager = this;
-}
-
-GuiManager::~GuiManager()
-{
-    g_GuiManager = nullptr;
-}
-
 void GuiManager::Initialize()
 {
-    LogGraphicsInfo("Intializing GUI Manager");
+    LogGraphicsInfo("Initializing GUI Manager");
 
     CreateImGuiContext();
     ImGui_ImplWin32_Init(Win32::g_hWnd);

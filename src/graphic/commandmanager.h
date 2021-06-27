@@ -23,14 +23,12 @@
 
 ETH_NAMESPACE_BEGIN
 
-class CommandManager : public Subsystem
+class CommandManager : public NonCopyable
 {
 public:
-    CommandManager() = default;
+    CommandManager();
     ~CommandManager() = default;
 
-    void Initialize() override;
-    void Shutdown() override;
     void CreateCommandList(
         D3D12_COMMAND_LIST_TYPE type,
         ID3D12GraphicsCommandList** cmdList,

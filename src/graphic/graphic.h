@@ -19,6 +19,11 @@
 
 #pragma once
 
+#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
+#define ETH_NUM_SWAPCHAIN_BUFFERS       3
+
+#define ASSERT_SUCCESS(hr, obj) if (FAILED(hr)) { LogGraphicsFatal("Failed to create %s", #obj); throw std::exception(); }
+
 // D3D12 library
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -31,16 +36,14 @@
 // Ether Graphics Library
 #include "graphic/graphiccontext.h"
 #include "graphic/commandmanager.h"
-
-#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS       3
-
-#define ASSERT_SUCCESS(hr, obj) if (FAILED(hr)) { LogGraphicsFatal("Failed to create %s", #obj); throw std::exception(); }
+#include "graphic/renderer.h"
 
 ETH_NAMESPACE_BEGIN
 
 extern wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
 //extern GraphicContext* g_GraphicContext;
+
 extern CommandManager g_CommandManager;
+extern Renderer g_Renderer;
 
 ETH_NAMESPACE_END

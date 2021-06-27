@@ -21,17 +21,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-void CommandManager::Initialize()
+CommandManager::CommandManager()
 {
     m_GraphicsQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
     m_ComputeQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
     m_CopyQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
-
-    m_IsInitialized = true;
-}
-
-void CommandManager::Shutdown()
-{
 }
 
 void CommandManager::CreateCommandList(

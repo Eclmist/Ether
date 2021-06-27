@@ -18,26 +18,23 @@
 */
 
 #include "api.h"
-#include "core/engine.h"
 #include "graphic/graphic.h"
 #include "system/win32/window.h"
 
 ETH_NAMESPACE_BEGIN
 
-CommandManager g_CommandManager;
+Renderer g_Renderer;
 
 void InitializeApplication()
 {
-    Engine::GetInstance().Initialize();
-    g_CommandManager.Initialize();
+    g_Renderer.Initialize();
     g_MainApplication->Initialize();
 }
 
 void TerminateApplication()
 {
     g_MainApplication->Shutdown();
-    g_CommandManager.Shutdown();
-    Engine::GetInstance().Shutdown();
+    g_Renderer.Shutdown();
     Logger::GetInstance().Serialize();
 }
 
@@ -46,7 +43,6 @@ bool UpdateApplication()
     g_MainApplication->Update();
     g_MainApplication->RenderScene();
     g_MainApplication->RenderGui();
-    Engine::GetInstance().OnRender(RenderEventArgs());
     return !g_MainApplication->IsDone();
 }
 
