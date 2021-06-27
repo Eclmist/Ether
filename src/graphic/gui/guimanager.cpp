@@ -44,7 +44,7 @@ void GuiManager::Initialize()
     LogGraphicsInfo("Intializing GUI Manager");
 
     CreateImGuiContext();
-    ImGui_ImplWin32_Init(Win32::g_MainWindow->GetHwnd());
+    ImGui_ImplWin32_Init(Win32::g_hWnd);
     SetImGuiStyle();
 }
 

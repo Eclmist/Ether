@@ -72,11 +72,7 @@ void GfxRenderer::Flush()
 
 void GfxRenderer::RenderFrame()
 {
-    if (!IsInitialized())
-    {
-        LogGraphicsFatal("Trying to render frame before initialization!");
-        assert(false);
-    }
+    AssertGraphics(IsInitialized(), "Trying to render frame before initialization!");
 
     ResetUtilityCommandLists();
     ClearRenderTarget();

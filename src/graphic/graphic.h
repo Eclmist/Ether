@@ -19,14 +19,28 @@
 
 #pragma once
 
-#include "coreminimal.h"
+// D3D12 library
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+
+// D3D12 extension library
+#include <d3dx12/d3dx12.h>
+
+// Ether Graphics Library
+#include "graphic/graphiccontext.h"
+#include "graphic/commandmanager.h"
+
+#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
+#define ETH_NUM_SWAPCHAIN_BUFFERS       3
+
+#define ASSERT_SUCCESS(hr, obj) if (FAILED(hr)) { LogGraphicsFatal("Failed to create %s", #obj); throw std::exception(); }
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32 
-{
-    extern HWND g_hWnd;
-}
+extern wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
+//extern GraphicContext* g_GraphicContext;
+extern CommandManager g_CommandManager;
 
 ETH_NAMESPACE_END
-

@@ -17,36 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "graphiccontext.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
+GraphicContext* g_GraphicContext = nullptr;
+
+GraphicContext::GraphicContext()
+    : m_ClearColor(0, 0, 0, 0)
+    , m_RenderWireframe(false)
 {
-
-class Window : NonCopyable
-{
-public:
-    Window(const wchar_t* classname, HINSTANCE hInst);
-    ~Window();
-
-public:
-    void Show(int cmdShow);
-
-private:
-    void RegisterWindowClass() const;
-    void PositionWindowRect();
-    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    bool m_IsFullscreen;
-    RECT m_WindowRect;
-
-    HINSTANCE m_hInst;
-    const wchar_t* m_ClassName;
-};
-
+    g_GraphicContext = this;
 }
 
 ETH_NAMESPACE_END

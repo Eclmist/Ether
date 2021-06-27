@@ -53,4 +53,5 @@ namespace chrono = std::chrono;
 
 // Useful Ether includes
 #include "core/core.h"
+#include "graphic/graphic.h"
 
