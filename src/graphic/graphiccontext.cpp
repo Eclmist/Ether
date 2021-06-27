@@ -21,13 +21,42 @@
 
 ETH_NAMESPACE_BEGIN
 
-GraphicContext* g_GraphicContext = nullptr;
-
-GraphicContext::GraphicContext()
-    : m_ClearColor(0, 0, 0, 0)
-    , m_RenderWireframe(false)
+GraphicContext::GraphicContext(D3D12_COMMAND_LIST_TYPE type)
 {
-    g_GraphicContext = this;
+    g_CommandManager.CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
+}
+
+void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
+{
+    float clearColor[] = { color.x, color.y, color.z, color.w };
+    m_CommandList->ClearRenderTargetView(texture.GetRTV(), clearColor, 0, nullptr);
+}
+
+void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STATES newState)
+{
+    if (target.GetCurrentState() == newState)
+        return;
+
+    target.SetNextState(newState);
+
+    D3D12_RESOURCE_BARRIER barrier;
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Transition.pResource = target.GetResource();
+    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    barrier.Transition.StateBefore = target.GetCurrentState();
+    barrier.Transition.StateAfter = newState;
+
+    m_CommandList->ResourceBarrier(1, &barrier);
+    
+    // Ideally, this should be called only after checking with a fence that
+    // the resource has actually transitioned. (TODO)
+    target.TransitionToNextState();
+}
+
+void GraphicContext::FinalizeAndExecute()
+{
+    g_CommandManager.Execute(m_CommandList.Get());
 }
 
 ETH_NAMESPACE_END
+

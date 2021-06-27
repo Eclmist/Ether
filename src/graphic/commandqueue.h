@@ -29,15 +29,18 @@ public:
     CommandQueue(D3D12_COMMAND_LIST_TYPE type);
     ~CommandQueue() = default;
 
-    //inline ID3D12CommandQueue* GetCommandQueue() const { return m_CommandQueue.Get(); }
-    //inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; }
+    inline ID3D12CommandQueue* Get() const { return m_CommandQueue.Get(); }
+    inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; }
     
 private:
     friend class CommandManager;
+    friend class GraphicContext;
+
     uint64_t CommandQueue::Execute(ID3D12CommandList* cmdLst);
 
     void InitializeCommandQueue();
     void InitializeFence();
+
     ID3D12CommandAllocator* RequestAllocator();
     void DiscardAllocator(ID3D12CommandAllocator* allocator);
 

@@ -19,10 +19,14 @@
 
 #pragma once
 
-#define ETH_MINIMUM_FEATURE_LEVEL       D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS       3
+#define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
+#define ETH_NUM_SWAPCHAIN_BUFFERS           2
 
-#define ASSERT_SUCCESS(hr, obj) if (FAILED(hr)) { LogGraphicsFatal("Failed to create %s", #obj); throw std::exception(); }
+#define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
+#define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
+#define D3D12_RESOURCE_STATE_UNKNOWN        ((D3D12_RESOURCE_STATES)-1)
+
+#define ASSERT_SUCCESS(hr, obj)             if (FAILED(hr)) { LogGraphicsFatal("Failed to create %s", #obj); throw std::exception(); }
 
 // D3D12 library
 #include <d3d12.h>
@@ -41,7 +45,6 @@
 ETH_NAMESPACE_BEGIN
 
 extern wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
-//extern GraphicContext* g_GraphicContext;
 
 extern CommandManager g_CommandManager;
 extern Renderer g_Renderer;

@@ -19,24 +19,39 @@
 
 #pragma once
 
+#include "graphic/resource/gpuresource.h"
+#include "graphic/resource/textureresource.h"
+
 ETH_NAMESPACE_BEGIN
 
+/*
+* A graphic context contains all the information to successfully populate (and
+* send for execution) a single command list. In other words, there should be one
+* context for each rendering thread (one for UI, one for the main rendering thread,
+* one for compute, etc.). 
+*/
 class GraphicContext : NonCopyable
 {
 public:
-    GraphicContext();
+    GraphicContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
     ~GraphicContext() = default;
 
 public:
-    inline ethVector4 GetClearColor() const { return m_ClearColor; };
-    inline bool GetRenderWireframe() const { return m_RenderWireframe; };
+    // TODO: Create resource class that keeps track of the before states
+    void ClearColor(TextureResource& texture, ethVector4 color);
+    void TransitionResource(GPUResource& resource, D3D12_RESOURCE_STATES newState);
 
-    inline void SetClearColor(ethVector4 clearColor) { m_ClearColor = clearColor; };
-    inline void SetRenderWireframe(bool shouldRenderWireframe) { m_RenderWireframe = shouldRenderWireframe; };
+    void FinalizeAndExecute();
 
 private:
-    ethVector4      m_ClearColor;
-    bool            m_RenderWireframe; // TODO: Move to display options
+    // One descriptor heap is certainly not enough for actual rendering. This is why
+    // most D3D12 apps create some kind of allocator to get just enough descriptor heaps.
+    // TODO: Handle descriptor heap allocation once we're doing more than just clearing
+    // the screen.
+    ID3D12DescriptorHeap* m_CurrentDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+    wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+    wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 };
 
 ETH_NAMESPACE_END
