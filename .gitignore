@@ -5,6 +5,7 @@
 
 # Ether specific
 vs-chromium-project.txt
+src/graphic_old
 
 # Post CMake integration (No need project files anymore)
 *.sln
