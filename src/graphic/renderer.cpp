@@ -22,6 +22,7 @@
 ETH_NAMESPACE_BEGIN
 
 wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
+CommandManager g_CommandManager;
 
 void Renderer::Initialize()
 {
@@ -35,8 +36,10 @@ void Renderer::Initialize()
 
     InitializeAdapter();
     InitializeDevice();
-    InitializeCommandManager();
+    g_CommandManager.Initialize();
     InitializeSwapChain();
+
+    CreateContext();
 }
 
 void Renderer::Shutdown()
@@ -46,7 +49,21 @@ void Renderer::Shutdown()
 
 void Renderer::Render()
 {
-    
+    ClearRenderTarget();
+    Present();
+    WaitForPresent();
+}
+
+void Renderer::InitializeDebugLayer()
+{
+#if defined(_DEBUG)
+    // Always enable the debug layer before doing anything DX12 related
+    // so all possible errors generated while creating DX12 objects
+    // are caught by the debug layer.
+    wrl::ComPtr<ID3D12Debug> debugInterface;
+    ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)), "Debug Interface");
+    debugInterface->EnableDebugLayer();
+#endif
 }
 
 void Renderer::InitializeAdapter()
@@ -84,11 +101,6 @@ void Renderer::InitializeDevice()
     ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)), GraphicDevice);
 }
 
-void Renderer::InitializeCommandManager()
-{
-    m_CommandManager = std::make_shared<CommandManager>();
-}
-
 void Renderer::InitializeSwapChain()
 {
     LogGraphicsInfo("Creating D3D12 swapchain");
@@ -115,7 +127,7 @@ void Renderer::InitializeSwapChain()
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
-        m_CommandManager->GetGraphicsQueue(),
+        g_CommandManager.GetGraphicsQueue()->Get(),
         Win32::g_hWnd,
         &swapChainDesc,
         nullptr,
@@ -123,6 +135,38 @@ void Renderer::InitializeSwapChain()
         &swapChain1), SwapChain1);
 
     ASSERT_SUCCESS(swapChain1.As(&m_SwapChain), SwapChain4);
+
+    for (uint32_t i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
+    {
+        wrl::ComPtr<ID3D12Resource> bufferTexture;
+        ASSERT_SUCCESS(swapChain1->GetBuffer(i, IID_PPV_ARGS(&bufferTexture)), "SwapChainBuffer");
+        m_FrameBuffers[i] = std::make_shared<TextureResource>(L"Primary SwapChain Buffer", bufferTexture.Detach());
+    }
+}
+
+void Renderer::CreateContext()
+{
+    m_Context = std::make_shared<GraphicContext>();
+}
+
+void Renderer::ClearRenderTarget()
+{
+    m_Context->TransitionResource(*m_FrameBuffers[m_BackBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_Context->ClearColor(*m_FrameBuffers[m_BackBufferIndex], ethVector4(1.0, 0.0, 1.0, 1.0));
+    m_Context->FinalizeAndExecute();
+}
+
+void Renderer::Present()
+{
+    m_Context->TransitionResource(*m_FrameBuffers[m_BackBufferIndex], D3D12_RESOURCE_STATE_PRESENT);
+    m_Context->FinalizeAndExecute();
+    m_SwapChain->Present(0, 0);
+    m_BackBufferIndex = (m_BackBufferIndex + 1) % ETH_NUM_SWAPCHAIN_BUFFERS;
+}
+
+void Renderer::WaitForPresent()
+{
 }
 
 ETH_NAMESPACE_END
+

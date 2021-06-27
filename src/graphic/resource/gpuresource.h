@@ -19,33 +19,29 @@
 
 #pragma once
 
-#include "graphic/commandqueue.h"
-
 ETH_NAMESPACE_BEGIN
 
-class CommandManager : public NonCopyable
+class GPUResource
 {
 public:
-    void Initialize();
-    void Shutdown();
+    GPUResource();
+    ~GPUResource() = default;
 
-    void CreateCommandList(
-        D3D12_COMMAND_LIST_TYPE type,
-        ID3D12GraphicsCommandList** cmdList,
-        ID3D12CommandAllocator** cmdAlloc) const;
+    inline ID3D12Resource* GetResource() const { return m_Resource.Get(); }
+    inline D3D12_GPU_VIRTUAL_ADDRESS GetVirtualAddress() const { return m_VirtualAddress; }
+    inline D3D12_RESOURCE_STATES GetCurrentState() const { return m_CurrentState; }
+    inline D3D12_RESOURCE_STATES GetNextState() const { return m_NextState; }
 
-    void Execute(ID3D12CommandList* cmdLst);
+    inline void SetNextState(D3D12_RESOURCE_STATES state) { m_NextState = state; }
+    inline void TransitionToNextState() { m_CurrentState = m_NextState; }
 
-public:
-    inline std::shared_ptr<CommandQueue> GetGraphicsQueue() const { return m_GraphicsQueue; };
-    inline std::shared_ptr<CommandQueue> GetComputeQueue() const { return m_ComputeQueue; };
-    inline std::shared_ptr<CommandQueue> GetCopyQueue() const { return m_CopyQueue; };
-    inline std::shared_ptr<CommandQueue> GetQueue(D3D12_COMMAND_LIST_TYPE type) const;
+protected:
+    wrl::ComPtr<ID3D12Resource> m_Resource;
 
-private:
-    std::shared_ptr<CommandQueue> m_GraphicsQueue;
-    std::shared_ptr<CommandQueue> m_ComputeQueue;
-    std::shared_ptr<CommandQueue> m_CopyQueue;
+    D3D12_GPU_VIRTUAL_ADDRESS m_VirtualAddress;
+    D3D12_RESOURCE_STATES m_CurrentState;
+    D3D12_RESOURCE_STATES m_NextState; // Exists for implementation of non-immediate resource transitions (TODO)
 };
 
 ETH_NAMESPACE_END
+

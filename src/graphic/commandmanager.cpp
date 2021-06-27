@@ -21,11 +21,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-CommandManager::CommandManager()
+void CommandManager::Initialize()
 {
     m_GraphicsQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
     m_ComputeQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
     m_CopyQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
+}
+
+void CommandManager::Shutdown()
+{
 }
 
 void CommandManager::CreateCommandList(
@@ -36,9 +40,15 @@ void CommandManager::CreateCommandList(
     AssertGraphics(type != D3D12_COMMAND_LIST_TYPE_BUNDLE, "Bundles are not yet supported");
     switch (type)
     {
-    case D3D12_COMMAND_LIST_TYPE_DIRECT: *cmdAlloc = m_GraphicsQueue->RequestAllocator(); break;
-    case D3D12_COMMAND_LIST_TYPE_COMPUTE: *cmdAlloc = m_ComputeQueue->RequestAllocator(); break;
-    case D3D12_COMMAND_LIST_TYPE_COPY: *cmdAlloc = m_CopyQueue->RequestAllocator(); break;
+    case D3D12_COMMAND_LIST_TYPE_DIRECT:
+        *cmdAlloc = m_GraphicsQueue->RequestAllocator(); 
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+        *cmdAlloc = m_ComputeQueue->RequestAllocator();
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COPY:
+        *cmdAlloc = m_CopyQueue->RequestAllocator();
+        break;
     default:
         LogGraphicsError("Unsupported commandlist type requested");
         return;
@@ -48,17 +58,39 @@ void CommandManager::CreateCommandList(
     (*cmdList)->SetName(L"CommandManager::CommandList");
 }
 
-ID3D12CommandQueue* CommandManager::GetQueue(D3D12_COMMAND_LIST_TYPE type) const
+void CommandManager::Execute(ID3D12CommandList* cmdLst)
+{
+    switch (cmdLst->GetType())
+    {
+    case D3D12_COMMAND_LIST_TYPE_DIRECT:
+        m_GraphicsQueue->Execute(cmdLst);
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+        m_ComputeQueue->Execute(cmdLst);
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COPY:
+        m_CopyQueue->Execute(cmdLst);
+        break;
+    default:
+        LogGraphicsError("An unsupported command list type (%s) was sent for execution", cmdLst->GetType());
+        break;
+    }
+}
+
+std::shared_ptr<CommandQueue> CommandManager::GetQueue(D3D12_COMMAND_LIST_TYPE type) const
 {
     switch (type)
     {
-    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        return m_ComputeQueue->m_CommandQueue.Get();
-    case D3D12_COMMAND_LIST_TYPE_COPY:
-        return m_CopyQueue->m_CommandQueue.Get();
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
+        return m_GraphicsQueue;
+    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+        return m_ComputeQueue;
+    case D3D12_COMMAND_LIST_TYPE_COPY:
+        return m_CopyQueue;
     default:
-        return m_GraphicsQueue->m_CommandQueue.Get();
+        LogGraphicsError("An unsupported command list type (%s) was requested", type);
+        return m_GraphicsQueue;
+        break;
     }
 }
 

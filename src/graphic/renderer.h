@@ -20,28 +20,39 @@
 #pragma once
 
 #include "graphic/commandmanager.h"
+#include "graphic/resource/textureresource.h"
 
 ETH_NAMESPACE_BEGIN
 
 class Renderer : public NonCopyable
 {
 public:
+    Renderer() = default;
+    ~Renderer() = default;
+
     void Initialize();
     void Shutdown();
     void Render();
 
 private:
+    /* ======================= INITIALIZATION ========================== */
+    void InitializeDebugLayer();
     void InitializeAdapter();
     void InitializeDevice();
-    void InitializeCommandManager();
     void InitializeSwapChain();
+    void CreateContext();
+
+    /* =========================== RENDER ============================== */
+    void ClearRenderTarget();
+    void Present();
+    void WaitForPresent();
 
 private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
     wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
-    wrl::ComPtr<ID3D12Resource> m_FrameBuffers[ETH_NUM_SWAPCHAIN_BUFFERS];
 
-    std::shared_ptr<CommandManager> m_CommandManager;
+    std::shared_ptr<TextureResource> m_FrameBuffers[ETH_NUM_SWAPCHAIN_BUFFERS];
+    std::shared_ptr<GraphicContext> m_Context;
 
     uint32_t m_FrameBufferWidth;
     uint32_t m_FrameBufferHeight;
