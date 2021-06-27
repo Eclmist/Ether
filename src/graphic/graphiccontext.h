@@ -21,32 +21,22 @@
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
-{
-
-class Window : NonCopyable
+class GraphicContext : NonCopyable
 {
 public:
-    Window(const wchar_t* classname, HINSTANCE hInst);
-    ~Window();
+    GraphicContext();
+    ~GraphicContext() = default;
 
 public:
-    void Show(int cmdShow);
+    inline ethVector4 GetClearColor() const { return m_ClearColor; };
+    inline bool GetRenderWireframe() const { return m_RenderWireframe; };
+
+    inline void SetClearColor(ethVector4 clearColor) { m_ClearColor = clearColor; };
+    inline void SetRenderWireframe(bool shouldRenderWireframe) { m_RenderWireframe = shouldRenderWireframe; };
 
 private:
-    void RegisterWindowClass() const;
-    void PositionWindowRect();
-    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    bool m_IsFullscreen;
-    RECT m_WindowRect;
-
-    HINSTANCE m_hInst;
-    const wchar_t* m_ClassName;
+    ethVector4      m_ClearColor;
+    bool            m_RenderWireframe; // TODO: Move to display options
 };
-
-}
 
 ETH_NAMESPACE_END

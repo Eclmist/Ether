@@ -19,14 +19,27 @@
 
 #pragma once
 
-#include "coreminimal.h"
-
 ETH_NAMESPACE_BEGIN
 
-namespace Win32 
+class Renderer : public Subsystem
 {
-    extern HWND g_hWnd;
-}
+public:
+    void Initialize() override;
+    void Shutdown() override;
+
+    void Render();
+
+private:
+    void InitializeDevice();
+    void InitializeSwapChain();
+
+private:
+    wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
+    wrl::ComPtr<ID3D12Resource> m_FrameBuffers[ETH_NUM_SWAPCHAIN_BUFFERS];
+
+    uint32_t m_FrameBufferWidth;
+    uint32_t m_FrameBufferHeight;
+    uint32_t m_BackBufferIndex;
+};
 
 ETH_NAMESPACE_END
-

@@ -31,3 +31,8 @@ namespace Ether { enum { InEtherNamespace = true }; }
 #define ETH_ENGINE_DLL __declspec(dllimport)
 #endif
 
+#define Assert(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define AssertEngine(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define AssertGraphics(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define AssertWin32(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+
