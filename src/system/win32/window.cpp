@@ -26,10 +26,10 @@ ETH_NAMESPACE_BEGIN
 namespace Win32
 {
 
+HWND g_hWnd = nullptr;
+
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
-
-HWND g_hWnd = nullptr;
 
 Window::Window(const wchar_t* classname, HINSTANCE hInst)
     : m_ClassName(classname)
@@ -89,21 +89,16 @@ void Window::RegisterWindowClass() const
     windowClass.hIconSm = nullptr;
     windowClass.hIcon = LoadIcon(m_hInst, MAKEINTRESOURCE(IDI_ENGINEICON));
 
-    if (RegisterClassExW(&windowClass) == 0)
-    {
-        LogWin32Fatal("Failed to register Window Class");
-        assert(false && "Failed to register Window Class");
-    }
+    AssertWin32(RegisterClassExW(&windowClass) != 0, "Failed to register Window Class");
 }
 
 void Window::PositionWindowRect()
 {
-    HWND desktopHwnd = GetDesktopWindow();
-    RECT screenRect;
-    GetWindowRect(desktopHwnd, &screenRect);
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-    m_WindowRect.left = ((screenRect.right - screenRect.left) / 2 - g_MainApplication->GetClientWidth() / 2);
-    m_WindowRect.top = ((screenRect.bottom - screenRect.top) / 2 - g_MainApplication->GetClientHeight() / 2);
+    m_WindowRect.left = (screenWidth / 2 - g_MainApplication->GetClientWidth() / 2);
+    m_WindowRect.top = (screenHeight / 2 - g_MainApplication->GetClientHeight() / 2);
     m_WindowRect.right = m_WindowRect.left + g_MainApplication->GetClientWidth();
     m_WindowRect.bottom = m_WindowRect.top + g_MainApplication->GetClientHeight();
 }

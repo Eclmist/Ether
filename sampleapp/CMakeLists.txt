@@ -21,6 +21,8 @@
 #                        ADD SOURCE FILES TO PROJECT                          #
 # =========================================================================== #
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 file(GLOB_RECURSE sample_app src/*)
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 
@@ -29,11 +31,11 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 # =========================================================================== #
 
 add_executable(SampleApp WIN32 ${sample_app})
+
 set_target_properties(SampleApp PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}/bin/sampleapp>)
-target_precompile_headers(SampleApp PRIVATE ${CMAKE_SOURCE_DIR}/src/system/pch.h)
 
 add_custom_target(CopyDependencies ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/bin/enginelib/ $<TARGET_FILE_DIR:SampleApp>/)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/bin/ether/ $<TARGET_FILE_DIR:SampleApp>/)
 
 # =========================================================================== #
 #                                LINK LIBRARIES                               #

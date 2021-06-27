@@ -19,22 +19,23 @@
 
 #pragma once
 
-#include "coredefinitions.h"
-
-#include <string>
-#include <vector>
-
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
-
-#include "core/applicationbase.h"
-
-#include "common/logging/logger.h"
-#include "common/time.h"
+#include <imgui/imgui.h>
 
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
+class GuiComponent
+{
+public:
+    GuiComponent();
+    ~GuiComponent() = default;
+
+private:
+    friend class GuiManager;
+    virtual void Draw() = 0;
+
+protected:
+    ImVec2 m_Position;
+    ImVec2 m_Size;
+};
 
 ETH_NAMESPACE_END

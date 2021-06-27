@@ -29,13 +29,13 @@ public:
     ClientConfig(const ClientConfig& copy);
 
 public:
-    inline ETHER_API std::wstring GetClientName() const { return m_ClientName; };
-    inline ETHER_API uint32_t GetClientWidth() const { return m_ClientWidth; };
-    inline ETHER_API uint32_t GetClientHeight() const { return m_ClientHeight; };
+    inline ETH_ENGINE_DLL std::wstring GetClientName() const { return m_ClientName; };
+    inline ETH_ENGINE_DLL uint32_t GetClientWidth() const { return m_ClientWidth; };
+    inline ETH_ENGINE_DLL uint32_t GetClientHeight() const { return m_ClientHeight; };
 
-    inline ETHER_API void SetClientName(std::wstring name) { m_ClientName = name; };
-    inline ETHER_API void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
-    inline ETHER_API void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
+    inline ETH_ENGINE_DLL void SetClientName(std::wstring name) { m_ClientName = name; };
+    inline ETH_ENGINE_DLL void SetClientWidth(uint32_t width) { m_ClientWidth = width; };
+    inline ETH_ENGINE_DLL void SetClientHeight(uint32_t height) { m_ClientHeight = height; };
 
 private:
     std::wstring m_ClientName;

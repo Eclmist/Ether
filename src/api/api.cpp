@@ -18,21 +18,23 @@
 */
 
 #include "api.h"
-#include "core/engine.h"
+#include "graphic/graphic.h"
 #include "system/win32/window.h"
 
 ETH_NAMESPACE_BEGIN
 
+Renderer g_Renderer;
+
 void InitializeApplication()
 {
-    Engine::GetInstance().Initialize();
+    g_Renderer.Initialize();
     g_MainApplication->Initialize();
 }
 
 void TerminateApplication()
 {
     g_MainApplication->Shutdown();
-    Engine::GetInstance().Shutdown();
+    g_Renderer.Shutdown();
     Logger::GetInstance().Serialize();
 }
 
@@ -41,7 +43,6 @@ bool UpdateApplication()
     g_MainApplication->Update();
     g_MainApplication->RenderScene();
     g_MainApplication->RenderGui();
-    Engine::GetInstance().OnRender(RenderEventArgs());
     return !g_MainApplication->IsDone();
 }
 
@@ -76,3 +77,4 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
 }
 
 ETH_NAMESPACE_END
+

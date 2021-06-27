@@ -17,76 +17,41 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine.h"
-#include "system/win32/window.h"
+#pragma once
 
 ETH_NAMESPACE_BEGIN
 
-Engine::Engine()
+enum class LogLevel
 {
-}
+    LOGLEVEL_INFO,
+    LOGLEVEL_WARNING,
+    LOGLEVEL_ERROR,
+    LOGLEVEL_FATAL
+};
 
-void Engine::Initialize()
+enum class LogType
 {
-    LogInfo("Initializing Engine");
-    InitializeSubsystems();
-}
+    LOGTYPE_ENGINE,
+    LOGTYPE_GRAPHICS,
+    LOGTYPE_WIN32,
+    LOGTYPE_NONE,
+};
 
-void Engine::LoadContent()
+class LogEntry
 {
+public:
+    LogEntry(const std::string& text, LogLevel level, LogType type);
 
-}
+    std::string GetText() const;
+    std::string GetLogLevelPrefix() const;
+    std::string GetLogTypePrefix() const;
+    std::string GetTimePrefix() const;
 
-void Engine::UnloadContent()
-{
-
-}
-
-void Engine::Shutdown()
-{
-    UnloadContent();
-    ShutdownSubsystems();
-}
-
-void Engine::OnUpdate(UpdateEventArgs& e)
-{
-}
-
-void Engine::OnRender(RenderEventArgs& e)
-{
-}
-
-void Engine::OnKeyPressed(KeyEventArgs& e)
-{
-}
-
-void Engine::OnKeyReleased(KeyEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseButtonPressed(MouseEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseButtonReleased(MouseEventArgs& e)
-{
-
-}
-
-void Engine::OnMouseMoved(MouseEventArgs& e)
-{
-
-}
-
-void Engine::InitializeSubsystems()
-{
-}
-
-void Engine::ShutdownSubsystems()
-{
-}
+public:
+    const std::string m_Text;
+    const LogLevel m_Level;
+    const LogType m_Type;
+    const time_t m_Time;
+};
 
 ETH_NAMESPACE_END
-
