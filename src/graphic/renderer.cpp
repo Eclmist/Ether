@@ -25,16 +25,18 @@ wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
 
 void Renderer::Initialize()
 {
-    if (m_IsInitialized)
+    if (g_GraphicDevice != nullptr)
     {
         LogGraphicsWarning("An attempt was made to initialize an already initialized Renderer");
         return;
     }
 
-    InitializeDevice();
-    InitializeSwapChain();
+    LogGraphicsInfo("Initializing Renderer");
 
-    m_IsInitialized = true;
+    InitializeAdapter();
+    InitializeDevice();
+    InitializeCommandManager();
+    InitializeSwapChain();
 }
 
 void Renderer::Shutdown()
@@ -44,13 +46,47 @@ void Renderer::Shutdown()
 
 void Renderer::Render()
 {
+    
+}
 
+void Renderer::InitializeAdapter()
+{
+    wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
+
+    wrl::ComPtr<IDXGIFactory4> dxgiFactory;
+    ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)), DXGIFactory);
+
+    SIZE_T maxDedicatedVideoMemory = 0;
+    for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
+    {
+        DXGI_ADAPTER_DESC1 dxgiAdapterDesc1;
+        dxgiAdapter1->GetDesc1(&dxgiAdapterDesc1);
+
+        // Check if adapter is actually a hardware adapter
+        if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0)
+            continue;
+
+        // Check if the DX12 device can be created
+        if (FAILED(D3D12CreateDevice(dxgiAdapter1.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
+            continue;
+
+        // Check if this device has the largest vram so far. Use vram as a indicator of perf for now
+        if (dxgiAdapterDesc1.DedicatedVideoMemory <= maxDedicatedVideoMemory)
+            continue;
+
+        maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
+        ASSERT_SUCCESS(dxgiAdapter1.As(&m_Adapter), DXGIAdapter);
+    }
 }
 
 void Renderer::InitializeDevice()
 {
+    ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)), GraphicDevice);
+}
 
-
+void Renderer::InitializeCommandManager()
+{
+    m_CommandManager = std::make_shared<CommandManager>();
 }
 
 void Renderer::InitializeSwapChain()
@@ -79,7 +115,7 @@ void Renderer::InitializeSwapChain()
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
-        g_CommandManager.GetGraphicsQueue(),
+        m_CommandManager->GetGraphicsQueue(),
         Win32::g_hWnd,
         &swapChainDesc,
         nullptr,

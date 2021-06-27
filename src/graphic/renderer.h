@@ -19,23 +19,29 @@
 
 #pragma once
 
+#include "graphic/commandmanager.h"
+
 ETH_NAMESPACE_BEGIN
 
-class Renderer : public Subsystem
+class Renderer : public NonCopyable
 {
 public:
-    void Initialize() override;
-    void Shutdown() override;
-
+    void Initialize();
+    void Shutdown();
     void Render();
 
 private:
+    void InitializeAdapter();
     void InitializeDevice();
+    void InitializeCommandManager();
     void InitializeSwapChain();
 
 private:
+    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
     wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
     wrl::ComPtr<ID3D12Resource> m_FrameBuffers[ETH_NUM_SWAPCHAIN_BUFFERS];
+
+    std::shared_ptr<CommandManager> m_CommandManager;
 
     uint32_t m_FrameBufferWidth;
     uint32_t m_FrameBufferHeight;

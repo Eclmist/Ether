@@ -23,14 +23,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-class GuiManager : public Subsystem
+class GuiManager : public NonCopyable
 {
 public:
     GuiManager();
     ~GuiManager();
 
-    void Initialize() override;
-    void Shutdown() override;
+    void Initialize();
+    void Shutdown();
 
     void Render();
 
