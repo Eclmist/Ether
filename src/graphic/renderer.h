@@ -27,9 +27,6 @@ ETH_NAMESPACE_BEGIN
 class Renderer : public NonCopyable
 {
 public:
-    Renderer() = default;
-    ~Renderer() = default;
-
     void Initialize();
     void Shutdown();
     void Render();
