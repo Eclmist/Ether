@@ -19,22 +19,25 @@
 
 #pragma once
 
-#include "coredefinitions.h"
-
-#include <string>
-#include <vector>
-
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
-
-#include "core/applicationbase.h"
-
-#include "common/logging/logger.h"
-#include "common/time.h"
-
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
+class CommandAllocatorPool : public NonCopyable
+{
+public:
+    CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE type);
+    ~CommandAllocatorPool();
+
+    ID3D12CommandAllocator* RequestAllocator();
+    void DiscardAllocator(ID3D12CommandAllocator* allocator);
+
+private:
+    ID3D12CommandAllocator* CreateNewAllocator();
+    
+private:
+    const D3D12_COMMAND_LIST_TYPE m_Type;
+
+    std::vector<wrl::ComPtr<ID3D12CommandAllocator>> m_AllocatorPool;
+    std::queue<wrl::ComPtr<ID3D12CommandAllocator>> m_AvailableAllocators;
+};
 
 ETH_NAMESPACE_END

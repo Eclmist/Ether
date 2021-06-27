@@ -17,24 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "coredefinitions.h"
-
-#include <string>
-#include <vector>
-
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
-
-#include "core/applicationbase.h"
-
-#include "common/logging/logger.h"
-#include "common/time.h"
+#include "gpuresource.h"
 
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
+GPUResource::GPUResource()
+    : m_VirtualAddress(D3D12_GPU_VIRTUAL_ADDRESS_NULL)
+    , m_CurrentState(D3D12_RESOURCE_STATE_COMMON)
+    , m_NextState(D3D12_RESOURCE_STATE_UNKNOWN)
+{
+}
 
 ETH_NAMESPACE_END

@@ -33,7 +33,7 @@ void SampleApp::Configure()
 
 void SampleApp::Initialize()
 {
-    LogInfo("Initializing Sample App");
+    //LogInfo("Initializing Sample App");
 }
 
 void SampleApp::Shutdown()

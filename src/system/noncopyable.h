@@ -28,8 +28,8 @@ ETH_NAMESPACE_BEGIN
 class NonCopyable
 {
 public:
-    NonCopyable() {};
-    ~NonCopyable() {};
+    NonCopyable() = default;
+    ~NonCopyable() = default;
 
     NonCopyable(const NonCopyable&) = delete;
     const NonCopyable& operator=(const NonCopyable&) = delete;

@@ -17,24 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "coredefinitions.h"
-
-#include <string>
-#include <vector>
-
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
-
-#include "core/applicationbase.h"
-
-#include "common/logging/logger.h"
-#include "common/time.h"
+#include "guicomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
+GuiComponent::GuiComponent()
+    : m_Size(256, 256)
+    , m_Position(0, 0)
+{
+}
 
 ETH_NAMESPACE_END

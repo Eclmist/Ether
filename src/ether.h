@@ -19,22 +19,39 @@
 
 #pragma once
 
-#include "coredefinitions.h"
+// Win32
+#include "system/win32/ethwin.h"
 
+// STL Headers
+#include <algorithm>
+#include <cassert>
 #include <string>
+#include <memory>
+#include <mutex>
+
+// ComPtr library
+#include <wrl.h>
+namespace wrl = Microsoft::WRL;
+
+// Chrono
+#include <chrono>
+namespace chrono = std::chrono;
+
+// Common Containers
 #include <vector>
+#include <list>
+#include <stack>
+#include <queue>
+#include <deque>
+#include <unordered_set>
+#include <unordered_map>
+#include <set>
+#include <map>
 
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
+// Resources
+#include "../resource/resource.h"
 
-#include "core/applicationbase.h"
+// Useful Ether includes
+#include "core/core.h"
+#include "graphic/graphic.h"
 
-#include "common/logging/logger.h"
-#include "common/time.h"
-
-ETH_NAMESPACE_BEGIN
-
-extern ApplicationBase* g_MainApplication;
-
-ETH_NAMESPACE_END

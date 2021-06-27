@@ -19,22 +19,11 @@
 
 #pragma once
 
-#include "coredefinitions.h"
-
-#include <string>
-#include <vector>
-
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
-
-#include "core/applicationbase.h"
-
-#include "common/logging/logger.h"
-#include "common/time.h"
-
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
+class GraphicScheduler : NonCopyable
+{
+
+};
 
 ETH_NAMESPACE_END

@@ -19,22 +19,32 @@
 
 #pragma once
 
-#include "coredefinitions.h"
-
-#include <string>
-#include <vector>
-
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
-
-#include "core/applicationbase.h"
-
-#include "common/logging/logger.h"
-#include "common/time.h"
+#include "guicomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
+class GuiManager : public NonCopyable
+{
+public:
+    GuiManager();
+    ~GuiManager();
+
+    void Initialize();
+    void Shutdown();
+
+    void Render();
+
+private:
+    inline void ToggleVisibility() { m_IsVisible = !m_IsVisible; }
+
+private:
+    void RegisterComponents();
+    void CreateImGuiContext();
+    void SetImGuiStyle();
+
+private:
+    std::vector<std::shared_ptr<GuiComponent>> m_Components;
+    bool m_IsVisible;
+};
 
 ETH_NAMESPACE_END
