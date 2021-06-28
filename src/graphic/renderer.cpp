@@ -54,6 +54,7 @@ void Renderer::Shutdown()
 
 void Renderer::Render()
 {
+    WaitForPresent();
     RenderScene();
     Present();
 }
@@ -105,6 +106,11 @@ void Renderer::InitializeDevice()
     ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)));
 }
 
+void Renderer::WaitForPresent()
+{
+    m_Context.GetCommandQueue()->StallForFence(m_SwapChain.GetCurrentBackBufferFence());
+}
+
 void Renderer::RenderScene()
 {
     m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -121,6 +127,8 @@ void Renderer::Present()
     m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
+
+    m_SwapChain.SetCurrentBackBufferFence(m_Context.GetCommandQueue()->GetCompletionFence());
     m_SwapChain.Present();
 }
 

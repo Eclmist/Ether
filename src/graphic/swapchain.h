@@ -39,6 +39,9 @@ public:
 public:
     std::shared_ptr<TextureResource> GetCurrentBackBuffer() const;
 
+    inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
+    inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
+
     inline bool IsVsyncEnabled() const { return m_VsyncEnabled; }
     inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
 
@@ -53,6 +56,8 @@ private:
     wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
 
     std::shared_ptr<TextureResource> m_FrameBuffers[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
+    uint64_t m_FrameBufferFences[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
+
     BufferingMode m_BufferingMode;
     uint32_t m_CurrentBackBufferIndex;
 

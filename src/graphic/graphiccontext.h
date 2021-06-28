@@ -24,6 +24,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+class CommandQueue;
+
 /*
 * A graphic context contains all the information to successfully populate (and
 * send for execution) a single command list. In other words, there should be one
@@ -39,6 +41,7 @@ public:
 
 public:
     inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList.Get(); }
+    inline std::shared_ptr<CommandQueue> GetCommandQueue() const { return m_CommandQueue; }
 
 public:
     // TODO: Create resource class that keeps track of the before states
@@ -53,6 +56,8 @@ private:
     // TODO: Handle descriptor heap allocation once we're doing more than just clearing
     // the screen.
     ID3D12DescriptorHeap* m_CurrentDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+    std::shared_ptr<CommandQueue> m_CommandQueue;
 
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
     wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;

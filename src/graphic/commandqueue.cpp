@@ -40,6 +40,20 @@ uint64_t CommandQueue::Execute(ID3D12CommandList* cmdLst)
     return m_FenceValue;
 }
 
+void CommandQueue::StallForFence(uint64_t fenceValue)
+{
+    if (m_Fence->GetCompletedValue() < fenceValue)
+    {
+        ASSERT_SUCCESS(m_Fence->SetEventOnCompletion(fenceValue, m_FenceEventHandle));
+        WaitForSingleObject(m_FenceEventHandle, INFINITE);
+    }
+}
+
+void CommandQueue::Flush()
+{
+    StallForFence(m_FenceValue);
+}
+
 void CommandQueue::InitializeCommandQueue()
 {
     D3D12_COMMAND_QUEUE_DESC desc = {};
@@ -56,6 +70,9 @@ void CommandQueue::InitializeFence()
 {
     ASSERT_SUCCESS(g_GraphicDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
     m_Fence->SetName(L"CommandQueue::m_Fence");
+
+    m_FenceEventHandle = CreateEvent(nullptr, false, false, nullptr);
+    AssertGraphics(m_FenceEventHandle != NULL, "Failed to create fence event");
 }
 
 ID3D12CommandAllocator* CommandQueue::RequestAllocator()
