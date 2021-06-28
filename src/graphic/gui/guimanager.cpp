@@ -31,27 +31,41 @@ void GuiManager::Initialize()
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
+    CreateResourceHeap();
     CreateImGuiContext();
     ImGui_ImplWin32_Init(Win32::g_hWnd);
+    ImGui_ImplDX12_Init(
+        g_GraphicDevice.Get(),
+        ETH_MAX_NUM_SWAPCHAIN_BUFFERS,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        m_SRVDescriptorHeap.Get(),
+        m_SRVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+        m_SRVDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
+    );
+
     SetImGuiStyle();
+
+    m_Context.Initialize();
 }
 
 void GuiManager::Shutdown()
 {
-    m_Components.clear();
 }
 
 void GuiManager::Render()
 {
-    //ImGui_ImplDX12_NewFrame();
-    //ImGui_ImplWin32_NewFrame();
-    //ImGui::NewFrame();
+    ImGui_ImplDX12_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
 
-    //for (auto component : m_Components)
-    //    component->Draw();
+    for (auto component : m_Components)
+        component->Draw();
 
-    //ImGui::Render();
-    //ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get().Get());
+    ImGui::Render();
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context.GetCommandList());
+
+    m_Context.FinalizeAndExecute();
+    m_Context.Reset();
 }
 
 void GuiManager::RegisterComponents()
@@ -59,6 +73,15 @@ void GuiManager::RegisterComponents()
     LogGraphicsInfo("Registering GUI components");
     m_Components.push_back(std::make_shared<LoggingComponent>());
     //m_Components.push_back(std::make_shared<DebugMenuComponent>())
+}
+
+void GuiManager::CreateResourceHeap()
+{
+    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+    desc.NumDescriptors = 3;
+    desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap));
 }
 
 void GuiManager::CreateImGuiContext()

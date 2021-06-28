@@ -38,6 +38,9 @@ public:
     void Reset();
 
 public:
+    inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList.Get(); }
+
+public:
     // TODO: Create resource class that keeps track of the before states
     void ClearColor(TextureResource& texture, ethVector4 color);
     void TransitionResource(GPUResource& resource, D3D12_RESOURCE_STATES newState);

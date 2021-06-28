@@ -22,6 +22,7 @@
 #include "graphic/commandmanager.h"
 #include "graphic/resource/textureresource.h"
 #include "graphic/swapchain.h"
+#include "graphic/gui/guimanager.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -38,12 +39,14 @@ private:
     void InitializeDevice();
 
     void RenderScene();
+    void RenderGui();
     void Present();
 
 private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
 
     GraphicContext m_Context;
+    GuiManager m_GuiManager;
     SwapChain m_SwapChain;
 };
 

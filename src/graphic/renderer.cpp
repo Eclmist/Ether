@@ -41,10 +41,12 @@ void Renderer::Initialize()
     g_CommandManager.Initialize();
     m_SwapChain.Initialize();
     m_Context.Initialize();
+    m_GuiManager.Initialize();
 }
 
 void Renderer::Shutdown()
 {
+    m_GuiManager.Shutdown();
     m_Context.Shutdown();
     m_SwapChain.Shutdown();
     g_CommandManager.Shutdown();
@@ -107,6 +109,11 @@ void Renderer::RenderScene()
 {
     m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
     m_Context.ClearColor(*m_SwapChain.GetCurrentBackBuffer(), ethVector4(1.0, 0.0, 1.0, 1.0));
+}
+
+void Renderer::RenderGui()
+{
+
 }
 
 void Renderer::Present()
