@@ -31,13 +31,18 @@ public:
 
     inline ID3D12CommandQueue* Get() const { return m_CommandQueue.Get(); }
     inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; }
+    inline uint64_t GetCompletionFence() const { return m_FenceValue; }
+
+    void StallForFence(uint64_t fenceValue);
+    void Flush();
     
 private:
     friend class CommandManager;
     friend class GraphicContext;
 
-    uint64_t CommandQueue::Execute(ID3D12CommandList* cmdLst);
+    uint64_t Execute(ID3D12CommandList* cmdLst);
 
+private:
     void InitializeCommandQueue();
     void InitializeFence();
 
@@ -49,9 +54,11 @@ private:
 
     wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
     wrl::ComPtr<ID3D12Fence> m_Fence;
-    uint64_t m_FenceValue; // The *latest* fence value that will be signaled when the command queue is empty.
+    uint64_t m_FenceValue;
 
     CommandAllocatorPool m_AllocatorPool;
+
+    HANDLE m_FenceEventHandle;
 };
 
 ETH_NAMESPACE_END

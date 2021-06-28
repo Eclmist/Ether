@@ -24,6 +24,8 @@ ETH_NAMESPACE_BEGIN
 void GraphicContext::Initialize(D3D12_COMMAND_LIST_TYPE type)
 {
     g_CommandManager.CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
+    m_CommandQueue = g_CommandManager.GetQueue(type);
+    m_Type = type;
 }
 
 void GraphicContext::Shutdown()

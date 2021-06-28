@@ -38,6 +38,7 @@ private:
     void InitializeAdapter();
     void InitializeDevice();
 
+    void WaitForPresent();
     void RenderScene();
     void RenderGui();
     void Present();
