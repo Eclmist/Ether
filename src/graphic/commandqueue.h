@@ -31,8 +31,9 @@ public:
 
     inline ID3D12CommandQueue* Get() const { return m_CommandQueue.Get(); }
     inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; }
-    inline uint64_t GetCompletionFence() const { return m_FenceValue; }
+    inline uint64_t GetCompletionFence() const { return m_CompletionFenceValue; }
 
+    bool IsFenceComplete(uint64_t fenceValue);
     void StallForFence(uint64_t fenceValue);
     void Flush();
     
@@ -47,14 +48,15 @@ private:
     void InitializeFence();
 
     ID3D12CommandAllocator* RequestAllocator();
-    void DiscardAllocator(ID3D12CommandAllocator* allocator);
+    void DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue);
 
 private:
     const D3D12_COMMAND_LIST_TYPE m_Type;
 
     wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
     wrl::ComPtr<ID3D12Fence> m_Fence;
-    uint64_t m_FenceValue;
+    uint64_t m_CompletionFenceValue;
+    uint64_t m_LastKnownFenceValue;
 
     CommandAllocatorPool m_AllocatorPool;
 

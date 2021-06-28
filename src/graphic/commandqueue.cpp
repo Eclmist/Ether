@@ -36,13 +36,21 @@ uint64_t CommandQueue::Execute(ID3D12CommandList* cmdLst)
 {
     ASSERT_SUCCESS(((ID3D12GraphicsCommandList*)cmdLst)->Close());
     m_CommandQueue->ExecuteCommandLists(1, &cmdLst);
-    m_CommandQueue->Signal(m_Fence.Get(), ++m_FenceValue);
-    return m_FenceValue;
+    m_CommandQueue->Signal(m_Fence.Get(), ++m_CompletionFenceValue);
+    return m_CompletionFenceValue;
+}
+
+bool CommandQueue::IsFenceComplete(uint64_t fenceValue)
+{
+    if (fenceValue > m_LastKnownFenceValue)
+        m_LastKnownFenceValue = m_Fence->GetCompletedValue();
+
+    return fenceValue <= m_LastKnownFenceValue;
 }
 
 void CommandQueue::StallForFence(uint64_t fenceValue)
 {
-    if (m_Fence->GetCompletedValue() < fenceValue)
+    if (!IsFenceComplete(fenceValue))
     {
         ASSERT_SUCCESS(m_Fence->SetEventOnCompletion(fenceValue, m_FenceEventHandle));
         WaitForSingleObject(m_FenceEventHandle, INFINITE);
@@ -51,7 +59,7 @@ void CommandQueue::StallForFence(uint64_t fenceValue)
 
 void CommandQueue::Flush()
 {
-    StallForFence(m_FenceValue);
+    StallForFence(m_CompletionFenceValue);
 }
 
 void CommandQueue::InitializeCommandQueue()
@@ -70,19 +78,20 @@ void CommandQueue::InitializeFence()
 {
     ASSERT_SUCCESS(g_GraphicDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
     m_Fence->SetName(L"CommandQueue::m_Fence");
-
+    m_CompletionFenceValue = 0;
+    m_LastKnownFenceValue = 0;
     m_FenceEventHandle = CreateEvent(nullptr, false, false, nullptr);
     AssertGraphics(m_FenceEventHandle != NULL, "Failed to create fence event");
 }
 
 ID3D12CommandAllocator* CommandQueue::RequestAllocator()
 {
-    return m_AllocatorPool.RequestAllocator();
+    return m_AllocatorPool.RequestAllocator(m_Fence->GetCompletedValue());
 }
 
-void CommandQueue::DiscardAllocator(ID3D12CommandAllocator* allocator)
+void CommandQueue::DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue)
 {
-    m_AllocatorPool.DiscardAllocator(allocator);
+    m_AllocatorPool.DiscardAllocator(allocator, fenceValue);
 }
 
 ETH_NAMESPACE_END

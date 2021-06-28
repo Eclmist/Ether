@@ -69,6 +69,7 @@ void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STAT
 void GraphicContext::FinalizeAndExecute()
 {
     g_CommandManager.Execute(m_CommandList.Get());
+    m_CommandQueue->DiscardAllocator(m_CommandAllocator.Get(), m_CommandQueue->GetCompletionFence());
 }
 
 ETH_NAMESPACE_END

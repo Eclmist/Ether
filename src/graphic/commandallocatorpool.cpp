@@ -31,19 +31,23 @@ CommandAllocatorPool::~CommandAllocatorPool()
     m_AllocatorPool.clear();
 }
 
-ID3D12CommandAllocator* CommandAllocatorPool::RequestAllocator()
+ID3D12CommandAllocator* CommandAllocatorPool::RequestAllocator(uint64_t completedFenceValue)
 {
-    if (m_AvailableAllocators.empty())
+    if (m_DiscardedAllocators.empty())
         return CreateNewAllocator();
 
-    ID3D12CommandAllocator* allocator = m_AvailableAllocators.front().Get();
-    m_AvailableAllocators.pop();
+    if (m_DiscardedAllocators.front().second > completedFenceValue)
+        return CreateNewAllocator();
+
+    ID3D12CommandAllocator* allocator = m_DiscardedAllocators.front().first.Get();
+    m_DiscardedAllocators.pop();
+    allocator->Reset();
     return allocator;
 }
 
-void CommandAllocatorPool::DiscardAllocator(ID3D12CommandAllocator* allocator)
+void CommandAllocatorPool::DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue)
 {
-    m_AvailableAllocators.push(allocator);
+    m_DiscardedAllocators.emplace(allocator, fenceValue);
 }
 
 ID3D12CommandAllocator* CommandAllocatorPool::CreateNewAllocator()

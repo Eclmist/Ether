@@ -27,8 +27,8 @@ public:
     CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE type);
     ~CommandAllocatorPool();
 
-    ID3D12CommandAllocator* RequestAllocator();
-    void DiscardAllocator(ID3D12CommandAllocator* allocator);
+    ID3D12CommandAllocator* RequestAllocator(uint64_t completedFenceValue);
+    void DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue);
 
 private:
     ID3D12CommandAllocator* CreateNewAllocator();
@@ -37,7 +37,7 @@ private:
     const D3D12_COMMAND_LIST_TYPE m_Type;
 
     std::vector<wrl::ComPtr<ID3D12CommandAllocator>> m_AllocatorPool;
-    std::queue<wrl::ComPtr<ID3D12CommandAllocator>> m_AvailableAllocators;
+    std::queue<std::pair<wrl::ComPtr<ID3D12CommandAllocator>, uint64_t>> m_DiscardedAllocators;
 };
 
 ETH_NAMESPACE_END
