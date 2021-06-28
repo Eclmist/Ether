@@ -49,7 +49,7 @@ void CommandAllocatorPool::DiscardAllocator(ID3D12CommandAllocator* allocator)
 ID3D12CommandAllocator* CommandAllocatorPool::CreateNewAllocator()
 {
     wrl::ComPtr<ID3D12CommandAllocator> allocator;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandAllocator(m_Type, IID_PPV_ARGS(&allocator)), CommandAllocator);
+    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandAllocator(m_Type, IID_PPV_ARGS(&allocator)));
     std::wstring allocatorName = L"CommandAllocatorPool::CommandAllocator" + m_AllocatorPool.size();
     allocator->SetName(allocatorName.c_str());
     m_AllocatorPool.push_back(allocator);

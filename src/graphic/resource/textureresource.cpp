@@ -30,7 +30,7 @@ TextureResource::TextureResource(const std::wstring & name, D3D12_RESOURCE_DESC 
     ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(
         &heapProp, D3D12_HEAP_FLAG_NONE,
         &desc, D3D12_RESOURCE_STATE_COMMON,
-        &clearColor, IID_PPV_ARGS(&m_Resource)), (L"TextureResource::" + name));
+        &clearColor, IID_PPV_ARGS(&m_Resource)));
 
     CreateDescriptorHeaps();
     CreateViews();
@@ -76,11 +76,11 @@ void TextureResource::CreateDescriptorHeaps()
     desc.NumDescriptors = 1;
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RTVDescriptorHeap)), RTVDescriptorHeap);
+    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RTVDescriptorHeap)));
 
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)), SRVDescriptorHeap);
+    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
 }
 
 void TextureResource::CreateViews()

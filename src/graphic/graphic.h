@@ -20,13 +20,13 @@
 #pragma once
 
 #define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
-#define ETH_NUM_SWAPCHAIN_BUFFERS           2
+#define ETH_MAX_NUM_SWAPCHAIN_BUFFERS       3
 
 #define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
 #define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
 #define D3D12_RESOURCE_STATE_UNKNOWN        ((D3D12_RESOURCE_STATES)-1)
 
-#define ASSERT_SUCCESS(hr, obj)             if (FAILED(hr)) { LogGraphicsFatal("Failed to create %s", #obj); throw std::exception(); }
+#define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("D3D12 operation failed - %s", #hr); throw std::exception(); }
 
 // D3D12 library
 #include <d3d12.h>

@@ -38,7 +38,7 @@ void LoggingComponent::Draw()
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-    auto logEntries = Logger::GetInstance().GetEntries();
+    auto logEntries = g_Logger.GetEntries();
 
     ImGuiListClipper clipper;
     clipper.Begin((int)logEntries.size());

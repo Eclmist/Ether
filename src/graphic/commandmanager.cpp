@@ -54,7 +54,7 @@ void CommandManager::CreateCommandList(
         return;
     }
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandList(1, type, *cmdAlloc, nullptr, IID_PPV_ARGS(cmdList)), CommandList);
+    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandList(1, type, *cmdAlloc, nullptr, IID_PPV_ARGS(cmdList)));
     (*cmdList)->SetName(L"CommandManager::CommandList");
 }
 
@@ -95,3 +95,4 @@ std::shared_ptr<CommandQueue> CommandManager::GetQueue(D3D12_COMMAND_LIST_TYPE t
 }
 
 ETH_NAMESPACE_END
+

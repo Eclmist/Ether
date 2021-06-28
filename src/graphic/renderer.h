@@ -21,6 +21,7 @@
 
 #include "graphic/commandmanager.h"
 #include "graphic/resource/textureresource.h"
+#include "graphic/swapchain.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -32,28 +33,18 @@ public:
     void Render();
 
 private:
-    /* ======================= INITIALIZATION ========================== */
     void InitializeDebugLayer();
     void InitializeAdapter();
     void InitializeDevice();
-    void InitializeSwapChain();
-    void CreateContext();
 
-    /* =========================== RENDER ============================== */
-    void ClearRenderTarget();
+    void RenderScene();
     void Present();
-    void WaitForPresent();
 
 private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
-    wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
 
-    std::shared_ptr<TextureResource> m_FrameBuffers[ETH_NUM_SWAPCHAIN_BUFFERS];
-    std::shared_ptr<GraphicContext> m_Context;
-
-    uint32_t m_FrameBufferWidth;
-    uint32_t m_FrameBufferHeight;
-    uint32_t m_BackBufferIndex;
+    GraphicContext m_Context;
+    SwapChain m_SwapChain;
 };
 
 ETH_NAMESPACE_END

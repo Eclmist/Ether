@@ -19,8 +19,8 @@
 
 #include "logger.h"
 #include <iosfwd>
-#include <fstream>
 #include <ShlObj_core.h>
+#include <iostream>
 
 ETH_NAMESPACE_BEGIN
 
@@ -34,16 +34,29 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
     va_end(args);
 
     std::string formattedText(formattedBuffer);
-    Logger::GetInstance().AddLog(LogEntry(formattedText, level, type));
+    LogEntry entry(formattedText, level, type);
+    g_Logger.AddLog(entry);
+    g_Logger.Serialize(entry);
+    std::cout << entry.GetText() << std::endl;
 }
 
-
-Logger::Logger()
+void Logger::Initialize()
 {
-    Clear();
+    m_LogFileStream.open(std::wstring(GetOutputDirectory() + L"/" + GetTimestampedFileName()), std::ios_base::app);
+
+    if (!m_LogFileStream.is_open())
+    {
+        LogInfo("Unable to open log file for serialization. Logs may be lost.\n");
+        return;
+    }
 }
 
-void Logger::AddLog(const LogEntry&& entry)
+void Logger::Shutdown()
+{
+    m_LogFileStream.close();
+}
+
+void Logger::AddLog(const LogEntry entry)
 {
     m_LogEntries.push_back(entry);
 }
@@ -53,21 +66,13 @@ void Logger::Clear()
     m_LogEntries.clear();
 }
 
-void Logger::Serialize()
+void Logger::Serialize(const LogEntry entry)
 {
-    std::wfstream outfile;
-    outfile.open(std::wstring(GetOutputDirectory() + L"/" + GetTimestampedFileName()), std::ios_base::app);
-
-    if (!outfile.is_open()) 
-    {
-        LogInfo("Unable to open log file for serialization. Logs may be lost.\n");
+    if (!m_LogFileStream.is_open())
         return;
-    }
 
-    for (int i = 0; i < m_LogEntries.size(); ++i)
-        outfile << m_LogEntries[i].GetText().c_str() << '\n';
-
-    outfile.close();
+    m_LogFileStream << entry.GetText().c_str() << "\n";
+    m_LogFileStream.flush();
 }
 
 const std::wstring Logger::GetOutputDirectory() const
@@ -89,9 +94,10 @@ const std::wstring Logger::GetOutputDirectory() const
 const std::wstring Logger::GetTimestampedFileName() const
 {
     wchar_t filename[1024];
-    wcscpy_s(filename, WFormatTime(GetSystemTime(), L"%Y%m%d%H%M%S").c_str()); // TODO: Replace with start time
+    wcscpy_s(filename, WFormatTime(GetSystemTime(), L"%Y%m%d_%H%M%S").c_str());
     wcscat_s(filename, L".log");
     return filename;
 }
 
 ETH_NAMESPACE_END
+
