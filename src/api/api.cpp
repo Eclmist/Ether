@@ -26,21 +26,21 @@ ETH_NAMESPACE_BEGIN
 Logger g_Logger;
 Renderer g_Renderer;
 
-void InitializeApplication()
+void InitializeEngine()
 {
     g_Logger.Initialize();
     g_Renderer.Initialize();
     g_MainApplication->Initialize();
 }
 
-void TerminateApplication()
+void TerminateEngine()
 {
     g_MainApplication->Shutdown();
     g_Renderer.Shutdown();
     g_Logger.Shutdown();
 }
 
-bool UpdateApplication()
+bool UpdateEngine()
 {
     g_Renderer.Render();
 
@@ -59,7 +59,7 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
 
     Win32::Window gameWindow(app.GetClientName(), hInst);
 
-    InitializeApplication();
+    InitializeEngine();
     gameWindow.Show(cmdShow);
 
     do
@@ -74,9 +74,9 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
         if (msg.message == WM_QUIT)
             break;
     } 
-    while (UpdateApplication());
+    while (UpdateEngine());
 
-    TerminateApplication();
+    TerminateEngine();
     return 0;
 }
 
