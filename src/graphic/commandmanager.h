@@ -37,9 +37,9 @@ public:
     void Execute(ID3D12CommandList* cmdLst);
 
 public:
-    inline std::shared_ptr<CommandQueue> GetGraphicsQueue() const { return m_GraphicsQueue; };
-    inline std::shared_ptr<CommandQueue> GetComputeQueue() const { return m_ComputeQueue; };
-    inline std::shared_ptr<CommandQueue> GetCopyQueue() const { return m_CopyQueue; };
+    inline std::shared_ptr<CommandQueue> GetGraphicsQueue() const { return m_GraphicsQueue; }
+    inline std::shared_ptr<CommandQueue> GetComputeQueue() const { return m_ComputeQueue; }
+    inline std::shared_ptr<CommandQueue> GetCopyQueue() const { return m_CopyQueue; }
     std::shared_ptr<CommandQueue> GetQueue(D3D12_COMMAND_LIST_TYPE type) const;
 
 private:
