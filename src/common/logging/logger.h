@@ -20,6 +20,7 @@
 #pragma once
 
 #include "logentry.h"
+#include <fstream>
 
 ETH_NAMESPACE_BEGIN
 
@@ -45,16 +46,14 @@ ETH_NAMESPACE_BEGIN
 
 ETH_ENGINE_DLL void Log(LogLevel level, LogType type, const char* fmt, ...);
 
-class Logger : public Singleton<Logger>
+class Logger : public NonCopyable
 {
 public:
-    Logger();
-    ~Logger() = default;
-
-public:
-    void AddLog(const LogEntry&& entry);
+    void Initialize();
+    void Shutdown();
+    void AddLog(const LogEntry entry);
+    void Serialize(const LogEntry entry);
     void Clear();
-    void Serialize();
 
     inline const std::vector<LogEntry> GetEntries() const { return m_LogEntries; }
 
@@ -64,6 +63,7 @@ private:
 
 private:
     std::vector<LogEntry> m_LogEntries;
+    std::wfstream m_LogFileStream;
 };
 
 ETH_NAMESPACE_END

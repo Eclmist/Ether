@@ -23,10 +23,12 @@
 
 ETH_NAMESPACE_BEGIN
 
+Logger g_Logger;
 Renderer g_Renderer;
 
 void InitializeApplication()
 {
+    g_Logger.Initialize();
     g_Renderer.Initialize();
     g_MainApplication->Initialize();
 }
@@ -35,11 +37,13 @@ void TerminateApplication()
 {
     g_MainApplication->Shutdown();
     g_Renderer.Shutdown();
-    Logger::GetInstance().Serialize();
+    g_Logger.Shutdown();
 }
 
 bool UpdateApplication()
 {
+    g_Renderer.Render();
+
     g_MainApplication->Update();
     g_MainApplication->RenderScene();
     g_MainApplication->RenderGui();

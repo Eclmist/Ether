@@ -21,9 +21,19 @@
 
 ETH_NAMESPACE_BEGIN
 
-GraphicContext::GraphicContext(D3D12_COMMAND_LIST_TYPE type)
+void GraphicContext::Initialize(D3D12_COMMAND_LIST_TYPE type)
 {
     g_CommandManager.CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
+}
+
+void GraphicContext::Shutdown()
+{
+}
+
+void GraphicContext::Reset()
+{
+    m_CommandAllocator = g_CommandManager.GetQueue(m_Type)->RequestAllocator();
+    m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
 }
 
 void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
@@ -41,6 +51,7 @@ void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STAT
 
     D3D12_RESOURCE_BARRIER barrier;
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
     barrier.Transition.pResource = target.GetResource();
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     barrier.Transition.StateBefore = target.GetCurrentState();

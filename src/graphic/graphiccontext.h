@@ -33,8 +33,9 @@ ETH_NAMESPACE_BEGIN
 class GraphicContext : NonCopyable
 {
 public:
-    GraphicContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
-    ~GraphicContext() = default;
+    void Initialize(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+    void Shutdown();
+    void Reset();
 
 public:
     // TODO: Create resource class that keeps track of the before states
@@ -52,6 +53,8 @@ private:
 
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
     wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+
+    D3D12_COMMAND_LIST_TYPE m_Type;
 };
 
 ETH_NAMESPACE_END

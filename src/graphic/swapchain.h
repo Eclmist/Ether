@@ -1,0 +1,65 @@
+/*
+    This file is part of Ether, an open-source DirectX 12 renderer.
+
+    Copyright (c) 2020-2021 Samuel Van Allen - All rights reserved.
+
+    Ether is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+ETH_NAMESPACE_BEGIN
+
+enum class BufferingMode
+{
+    BUFFERINGMODE_SINGLE = 1,
+    BUFFERINGMODE_DOUBLE = 2,
+    BUFFERINGMODE_TRIPLE = 3
+};
+
+class SwapChain : public NonCopyable
+{
+public:
+    void Initialize();
+    void Shutdown();
+    // TODO: Support resize and dynamic update of vsync and buffering mode
+    void Present();
+
+public:
+    std::shared_ptr<TextureResource> GetCurrentBackBuffer() const;
+
+    inline bool IsVsyncEnabled() const { return m_VsyncEnabled; }
+    inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
+
+    inline void SetBufferingMode(BufferingMode mode) { m_BufferingMode = mode; }
+    inline void SetVsyncEnabled(bool enabled) { m_VsyncEnabled = enabled; }
+
+private:
+    void CreateDxgiSwapChain();
+    void InitializeResources();
+
+private:
+    wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
+
+    std::shared_ptr<TextureResource> m_FrameBuffers[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
+    BufferingMode m_BufferingMode;
+    uint32_t m_CurrentBackBufferIndex;
+
+    uint32_t m_FrameBufferWidth;
+    uint32_t m_FrameBufferHeight;
+
+    bool m_VsyncEnabled;
+};
+
+ETH_NAMESPACE_END

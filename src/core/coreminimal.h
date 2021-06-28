@@ -36,5 +36,6 @@
 ETH_NAMESPACE_BEGIN
 
 extern ApplicationBase* g_MainApplication;
+extern Logger g_Logger;
 
 ETH_NAMESPACE_END

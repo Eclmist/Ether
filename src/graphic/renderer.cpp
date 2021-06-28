@@ -34,24 +34,26 @@ void Renderer::Initialize()
 
     LogGraphicsInfo("Initializing Renderer");
 
+    InitializeDebugLayer();
     InitializeAdapter();
     InitializeDevice();
-    g_CommandManager.Initialize();
-    InitializeSwapChain();
 
-    CreateContext();
+    g_CommandManager.Initialize();
+    m_SwapChain.Initialize();
+    m_Context.Initialize();
 }
 
 void Renderer::Shutdown()
 {
-
+    m_Context.Shutdown();
+    m_SwapChain.Shutdown();
+    g_CommandManager.Shutdown();
 }
 
 void Renderer::Render()
 {
-    ClearRenderTarget();
+    RenderScene();
     Present();
-    WaitForPresent();
 }
 
 void Renderer::InitializeDebugLayer()
@@ -61,7 +63,7 @@ void Renderer::InitializeDebugLayer()
     // so all possible errors generated while creating DX12 objects
     // are caught by the debug layer.
     wrl::ComPtr<ID3D12Debug> debugInterface;
-    ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)), "Debug Interface");
+    ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
 #endif
 }
@@ -71,7 +73,7 @@ void Renderer::InitializeAdapter()
     wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
 
     wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-    ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)), DXGIFactory);
+    ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
 
     SIZE_T maxDedicatedVideoMemory = 0;
     for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
@@ -92,80 +94,27 @@ void Renderer::InitializeAdapter()
             continue;
 
         maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
-        ASSERT_SUCCESS(dxgiAdapter1.As(&m_Adapter), DXGIAdapter);
+        ASSERT_SUCCESS(dxgiAdapter1.As(&m_Adapter));
     }
 }
 
 void Renderer::InitializeDevice()
 {
-    ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)), GraphicDevice);
+    ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)));
 }
 
-void Renderer::InitializeSwapChain()
+void Renderer::RenderScene()
 {
-    LogGraphicsInfo("Creating D3D12 swapchain");
-
-    wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-    ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)), DXGIFactory);
-
-    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-    swapChainDesc.Width = m_FrameBufferWidth;
-    swapChainDesc.Height = m_FrameBufferHeight;
-    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapChainDesc.Stereo = FALSE;
-    swapChainDesc.SampleDesc = { 1, 0 };
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = ETH_NUM_SWAPCHAIN_BUFFERS;
-    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    swapChainDesc.Flags = 0;
-
-    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(Win32::g_hWnd, 0), 
-        "window association with DXGI Factory");
-
-    wrl::ComPtr<IDXGISwapChain1> swapChain1;
-
-    ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
-        g_CommandManager.GetGraphicsQueue()->Get(),
-        Win32::g_hWnd,
-        &swapChainDesc,
-        nullptr,
-        nullptr, // TODO: Test out alt-enter?
-        &swapChain1), SwapChain1);
-
-    ASSERT_SUCCESS(swapChain1.As(&m_SwapChain), SwapChain4);
-
-    for (uint32_t i = 0; i < ETH_NUM_SWAPCHAIN_BUFFERS; ++i)
-    {
-        wrl::ComPtr<ID3D12Resource> bufferTexture;
-        ASSERT_SUCCESS(swapChain1->GetBuffer(i, IID_PPV_ARGS(&bufferTexture)), "SwapChainBuffer");
-        m_FrameBuffers[i] = std::make_shared<TextureResource>(L"Primary SwapChain Buffer", bufferTexture.Detach());
-    }
-}
-
-void Renderer::CreateContext()
-{
-    m_Context = std::make_shared<GraphicContext>();
-}
-
-void Renderer::ClearRenderTarget()
-{
-    m_Context->TransitionResource(*m_FrameBuffers[m_BackBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET);
-    m_Context->ClearColor(*m_FrameBuffers[m_BackBufferIndex], ethVector4(1.0, 0.0, 1.0, 1.0));
-    m_Context->FinalizeAndExecute();
+    m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_Context.ClearColor(*m_SwapChain.GetCurrentBackBuffer(), ethVector4(1.0, 0.0, 1.0, 1.0));
 }
 
 void Renderer::Present()
 {
-    m_Context->TransitionResource(*m_FrameBuffers[m_BackBufferIndex], D3D12_RESOURCE_STATE_PRESENT);
-    m_Context->FinalizeAndExecute();
-    m_SwapChain->Present(0, 0);
-    m_BackBufferIndex = (m_BackBufferIndex + 1) % ETH_NUM_SWAPCHAIN_BUFFERS;
-}
-
-void Renderer::WaitForPresent()
-{
+    m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
+    m_Context.FinalizeAndExecute();
+    m_Context.Reset();
+    m_SwapChain.Present();
 }
 
 ETH_NAMESPACE_END

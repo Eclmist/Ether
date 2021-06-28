@@ -34,7 +34,7 @@ CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
 
 uint64_t CommandQueue::Execute(ID3D12CommandList* cmdLst)
 {
-    ASSERT_SUCCESS(((ID3D12GraphicsCommandList*)cmdLst)->Close(), CommandList);
+    ASSERT_SUCCESS(((ID3D12GraphicsCommandList*)cmdLst)->Close());
     m_CommandQueue->ExecuteCommandLists(1, &cmdLst);
     m_CommandQueue->Signal(m_Fence.Get(), ++m_FenceValue);
     return m_FenceValue;
@@ -48,13 +48,13 @@ void CommandQueue::InitializeCommandQueue()
     desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)), CommandQueue);
+    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
     m_CommandQueue->SetName(L"CommandQueue::m_CommandQueue"); // TODO: Set better name
 }
 
 void CommandQueue::InitializeFence()
 {
-    ASSERT_SUCCESS(g_GraphicDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)), Fence);
+    ASSERT_SUCCESS(g_GraphicDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
     m_Fence->SetName(L"CommandQueue::m_Fence");
 }
 
