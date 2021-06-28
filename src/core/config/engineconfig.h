@@ -29,11 +29,11 @@ public:
     EngineConfig(const EngineConfig& copy);
 
 public:
-    inline bool GetIsRunningInEditor() const { return m_IsRunningInEditor; };
-    inline HWND GetEditorHwndHost() const { return m_EditorHwndHost; };
+    inline bool GetIsRunningInEditor() const { return m_IsRunningInEditor; }
+    inline HWND GetEditorHwndHost() const { return m_EditorHwndHost; }
 
-    inline void SetIsRunningInEditor(bool isRunningInEditor) { m_IsRunningInEditor = isRunningInEditor; };
-    inline void SetEditorHwndHost(HWND hWnd) { m_EditorHwndHost = hWnd; };
+    inline void SetIsRunningInEditor(bool isRunningInEditor) { m_IsRunningInEditor = isRunningInEditor; }
+    inline void SetEditorHwndHost(HWND hWnd) { m_EditorHwndHost = hWnd; }
 
 private:
     bool m_IsRunningInEditor;
