@@ -29,10 +29,14 @@ void SampleApp::Initialize()
 
 void SampleApp::LoadContent()
 {
+    m_DebugCube = new Ether::Visual();
+    m_DebugCube->UploadVertexBuffer();
+    m_DebugCube->UploadIndexBuffer();
 }
 
 void SampleApp::UnloadContent()
 {
+    delete m_DebugCube;
 }
 
 void SampleApp::Shutdown()
