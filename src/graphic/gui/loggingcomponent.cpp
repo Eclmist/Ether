@@ -29,8 +29,8 @@ LoggingComponent::LoggingComponent()
 
 void LoggingComponent::Draw()
 {
-    ImGui::SetNextWindowSize(m_Size);
-    ImGui::SetNextWindowPos(m_Position);
+    ImGui::SetNextWindowSize(m_Size, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(m_Position, ImGuiCond_Once);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0);
     ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoCollapse);
