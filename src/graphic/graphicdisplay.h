@@ -21,6 +21,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+#define ETH_MAX_NUM_SWAPCHAIN_BUFFERS       3
+
 enum class BufferingMode
 {
     BUFFERINGMODE_SINGLE = 1,
@@ -28,7 +30,7 @@ enum class BufferingMode
     BUFFERINGMODE_TRIPLE = 3
 };
 
-class SwapChain : public NonCopyable
+class GraphicDisplay : public NonCopyable
 {
 public:
     void Initialize();

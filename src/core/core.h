@@ -19,14 +19,27 @@
 
 #pragma once
 
-#include "coreminimal.h"
+#include "coredefinitions.h"
+
+#include <string>
+#include <vector>
+
+#include "system/noncopyable.h"
+#include "system/singleton.h"
+#include "system/types.h"
+
+#include "core/event/events.h"
+#include "core/config/engineconfig.h"
+#include "core/applicationbase.h"
+
+#include "common/logging/logger.h"
+#include "common/time.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32 
-{
-    extern HWND g_hWnd;
-}
+ETH_ENGINE_DLL extern ApplicationBase* g_MainApplication;
+ETH_ENGINE_DLL extern EngineConfig g_EngineConfig;
+ETH_ENGINE_DLL extern Logger g_Logger;
 
 ETH_NAMESPACE_END
 

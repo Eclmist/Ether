@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "core/coreminimal.h"
+#include "core/core.h"
 
 class SampleApp : public Ether::ApplicationBase
 {

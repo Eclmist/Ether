@@ -44,10 +44,8 @@ public:
     inline std::shared_ptr<CommandQueue> GetCommandQueue() const { return m_CommandQueue; }
 
 public:
-    // TODO: Create resource class that keeps track of the before states
     void ClearColor(TextureResource& texture, ethVector4 color);
     void TransitionResource(GPUResource& resource, D3D12_RESOURCE_STATES newState);
-
     void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv);
 
     void FinalizeAndExecute();

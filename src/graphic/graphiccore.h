@@ -19,26 +19,19 @@
 
 #pragma once
 
-#include "coredefinitions.h"
+// ComPtr library
+#include <wrl.h>
+namespace wrl = Microsoft::WRL;
 
-#include <string>
-#include <vector>
+// D3D12 library
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <DirectXMath.h>
 
-#include "system/noncopyable.h"
-#include "system/singleton.h"
-#include "system/types.h"
+// D3D12 extension library
+#include <d3dx12/d3dx12.h>
 
-#include "core/event/events.h"
-#include "core/config/engineconfig.h"
-#include "core/applicationbase.h"
+// Ether Graphics Library
+#include "graphic/graphiccontext.h"
+#include "graphic/graphicdisplay.h"
 
-#include "common/logging/logger.h"
-#include "common/time.h"
-
-ETH_NAMESPACE_BEGIN
-
-ETH_ENGINE_DLL extern ApplicationBase* g_MainApplication;
-ETH_ENGINE_DLL extern EngineConfig g_EngineConfig;
-ETH_ENGINE_DLL extern Logger g_Logger;
-
-ETH_NAMESPACE_END

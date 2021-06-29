@@ -29,10 +29,6 @@
 #include <memory>
 #include <mutex>
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
 // Chrono
 #include <chrono>
 namespace chrono = std::chrono;
@@ -51,7 +47,13 @@ namespace chrono = std::chrono;
 // Resources
 #include "../resource/resource.h"
 
-// Useful Ether includes
+// Ether includes
 #include "core/core.h"
 #include "graphic/graphic.h"
+
+ETH_NAMESPACE_BEGIN
+
+namespace Win32 { extern HWND g_hWnd; }
+
+ETH_NAMESPACE_END
 
