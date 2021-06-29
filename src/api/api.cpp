@@ -23,31 +23,33 @@
 
 ETH_NAMESPACE_BEGIN
 
+EngineConfig g_EngineConfig;
 Logger g_Logger;
 Renderer g_Renderer;
 
 void InitializeEngine()
 {
+    g_MainApplication->Initialize();
     g_Logger.Initialize();
     g_Renderer.Initialize();
-    g_MainApplication->Initialize();
 }
 
 void TerminateEngine()
 {
-    g_MainApplication->Shutdown();
     g_Renderer.Shutdown();
     g_Logger.Shutdown();
+    g_MainApplication->Shutdown();
 }
 
 bool UpdateEngine()
 {
     g_Renderer.Render();
 
-    g_MainApplication->Update();
-    g_MainApplication->RenderScene();
-    g_MainApplication->RenderGui();
-    return !g_MainApplication->IsDone();
+    // TODO: populate proper event args
+    g_MainApplication->OnUpdate(UpdateEventArgs());
+    g_MainApplication->OnRender(RenderEventArgs());
+
+    return !g_MainApplication->ShouldExit();
 }
 
 int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
@@ -55,9 +57,8 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
 
     g_MainApplication = &app;
-    g_MainApplication->Configure();
 
-    Win32::Window gameWindow(app.GetClientName(), hInst);
+    Win32::Window gameWindow(g_EngineConfig.GetClientName().c_str(), hInst);
 
     InitializeEngine();
     gameWindow.Show(cmdShow);

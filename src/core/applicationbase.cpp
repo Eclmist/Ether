@@ -23,4 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 ApplicationBase* g_MainApplication = nullptr;
 
+void ApplicationBase::Exit()
+{
+    m_ShouldExit = true;
+}
+
 ETH_NAMESPACE_END

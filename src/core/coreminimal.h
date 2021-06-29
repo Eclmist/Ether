@@ -28,6 +28,8 @@
 #include "system/singleton.h"
 #include "system/types.h"
 
+#include "core/event/events.h"
+#include "core/config/engineconfig.h"
 #include "core/applicationbase.h"
 
 #include "common/logging/logger.h"
@@ -35,7 +37,8 @@
 
 ETH_NAMESPACE_BEGIN
 
-extern ApplicationBase* g_MainApplication;
-extern Logger g_Logger;
+ETH_ENGINE_DLL extern ApplicationBase* g_MainApplication;
+ETH_ENGINE_DLL extern EngineConfig g_EngineConfig;
+ETH_ENGINE_DLL extern Logger g_Logger;
 
 ETH_NAMESPACE_END

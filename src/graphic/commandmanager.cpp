@@ -37,7 +37,6 @@ void CommandManager::CreateCommandList(
     ID3D12GraphicsCommandList** cmdList,
     ID3D12CommandAllocator** cmdAlloc) const
 {
-    AssertGraphics(type != D3D12_COMMAND_LIST_TYPE_BUNDLE, "Bundles are not yet supported");
     switch (type)
     {
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
@@ -50,7 +49,7 @@ void CommandManager::CreateCommandList(
         *cmdAlloc = m_CopyQueue->RequestAllocator();
         break;
     default:
-        LogGraphicsError("Unsupported commandlist type requested");
+        LogGraphicsError("Unsupported command list type requested(%s)", type);
         return;
     }
 

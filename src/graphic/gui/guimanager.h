@@ -31,9 +31,6 @@ public:
     void Render();
 
 private:
-    inline void ToggleVisibility() { m_IsVisible = !m_IsVisible; }
-
-private:
     void RegisterComponents();
     void CreateResourceHeap();
     void CreateImGuiContext();
@@ -43,8 +40,6 @@ private:
     GraphicContext* m_Context;
 
     std::vector<std::shared_ptr<GuiComponent>> m_Components;
-    bool m_IsVisible;
-
     wrl::ComPtr<ID3D12DescriptorHeap> m_SRVDescriptorHeap;
 };
 

@@ -32,7 +32,7 @@ public:
         KEYSTATE_KEYUP
     };
 
-    KeyCode m_Key;
+    Win32::KeyCode m_Key;
     uint32_t m_Character;
     KeyState m_State;
 
