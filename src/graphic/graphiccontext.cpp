@@ -49,8 +49,6 @@ void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STAT
     if (target.GetCurrentState() == newState)
         return;
 
-    target.SetNextState(newState);
-
     D3D12_RESOURCE_BARRIER barrier;
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -58,12 +56,8 @@ void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STAT
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     barrier.Transition.StateBefore = target.GetCurrentState();
     barrier.Transition.StateAfter = newState;
-
     m_CommandList->ResourceBarrier(1, &barrier);
-    
-    // Ideally, this should be called only after checking with a fence that
-    // the resource has actually transitioned. (TODO)
-    target.TransitionToNextState();
+    target.TransitionToState(newState);
 }
 
 

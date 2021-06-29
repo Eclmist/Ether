@@ -66,7 +66,7 @@ void GraphicDisplay::CreateDxgiSwapChain()
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     swapChainDesc.Flags = 0;
 
-    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(Win32::g_hWnd, 0));
+    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(Win32::g_hWnd, DXGI_MWA_NO_ALT_ENTER));
 
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
@@ -75,7 +75,7 @@ void GraphicDisplay::CreateDxgiSwapChain()
         Win32::g_hWnd,
         &swapChainDesc,
         nullptr,
-        nullptr, // TODO: Test out alt-enter?
+        nullptr,
         &swapChain1));
 
     ASSERT_SUCCESS(swapChain1.As(&m_SwapChain));

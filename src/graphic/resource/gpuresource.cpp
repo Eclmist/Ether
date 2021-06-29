@@ -24,7 +24,6 @@ ETH_NAMESPACE_BEGIN
 GPUResource::GPUResource()
     : m_VirtualAddress(D3D12_GPU_VIRTUAL_ADDRESS_NULL)
     , m_CurrentState(D3D12_RESOURCE_STATE_COMMON)
-    , m_NextState(D3D12_RESOURCE_STATE_UNKNOWN)
 {
 }
 
