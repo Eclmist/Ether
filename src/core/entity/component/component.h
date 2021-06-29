@@ -17,8 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "entity.h"
+#pragma once
 
 ETH_NAMESPACE_BEGIN
+
+class Component // : public Serializable?
+{
+public:
+    virtual void Update() = 0;
+
+private:
+
+};
 
 ETH_NAMESPACE_END

@@ -26,6 +26,7 @@ ETH_NAMESPACE_BEGIN
 EngineConfig g_EngineConfig;
 Logger g_Logger;
 Renderer g_Renderer;
+World g_World;
 
 void InitializeEngine()
 {

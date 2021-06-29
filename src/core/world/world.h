@@ -19,21 +19,22 @@
 
 #pragma once
 
-#include "graphic/resource/visual.h"
+#include "core/entity/entity.h"
 
 ETH_NAMESPACE_BEGIN
 
 class World : public NonCopyable
 {
 public:
-    World() = default;
+    World();
     ~World() = default;
 
 public:
-    // TODO: This should take in an entity, not a visual
-    ETH_ENGINE_DLL void AddEntity(Visual&& entity, )
+    ETH_ENGINE_DLL void AddEntity(Entity* entity, Entity* parent = nullptr);
 
-
+private:
+    Entity m_RootEntity;
+    std::vector<Entity*> m_AllEntities;
 };
 
 ETH_NAMESPACE_END

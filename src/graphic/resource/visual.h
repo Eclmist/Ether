@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "core/entity/component/component.h"
 #include "graphic/common/vertexformat.h"
 
 ETH_NAMESPACE_BEGIN
@@ -26,9 +27,7 @@ ETH_NAMESPACE_BEGIN
 // Arbitrary max number of vertices
 #define MAX_VERTICES 65536
 
-// TODO: Remove this dll export and move to private or something, for debugging purposes only
-// We probably want a context.uploadresource function of some sort.
-class ETH_ENGINE_DLL Visual
+class ETH_ENGINE_DLL Visual : public Component
 {
 public:
     Visual();
@@ -37,6 +36,7 @@ public:
     void UploadVertexBuffer();
     void UploadIndexBuffer();
 
+    void Update() override {}
 
 private:
     void InitializeDebugVertexData();
