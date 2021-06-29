@@ -34,4 +34,4 @@ namespace wrl = Microsoft::WRL;
 // Ether Graphics Library
 #include "graphic/graphiccontext.h"
 #include "graphic/graphicdisplay.h"
-
+#include "graphic/resource/visual.h" // TODO: do we really need to expose this?

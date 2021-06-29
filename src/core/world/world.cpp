@@ -19,3 +19,19 @@
 
 #include "world.h"
 
+ETH_NAMESPACE_BEGIN
+
+World::World()
+    : m_RootEntity(L"World Root")
+{
+}
+
+ETH_ENGINE_DLL void World::AddEntity(Entity* entity, Entity* parent)
+{
+    parent = parent == nullptr ? &m_RootEntity : parent;
+    entity->SetParent(parent);
+
+    m_AllEntities.push_back(entity);
+}
+
+ETH_NAMESPACE_END

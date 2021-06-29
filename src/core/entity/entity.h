@@ -19,15 +19,36 @@
 
 #pragma once
 
+#include "core/entity/component/component.h"
+
 ETH_NAMESPACE_BEGIN
 
-class Entity // : public Serializable?
+class ETH_ENGINE_DLL Entity // : public Serializable?
 {
 public:
+    Entity(const std::wstring& name);
+    ~Entity();
 
+    inline Entity* GetParent() const { return m_Parent; }
+    inline uint32_t GetNumChildren() const { return (uint32_t)m_Children.size(); }
+    inline bool HasChildren() const { return !m_Children.empty(); }
+    inline std::vector<Entity*> GetChildren() const { return m_Children; }
+
+    Entity* GetFirstChild() const;
+    Entity* GetChildAtIndex(uint32_t i) const;
+
+    bool IsChildOf(Entity* parent);
+    void SetParent(Entity* parent);
+    void RemoveChild(Entity* child);
+
+    void AddComponent(Component* component);
 
 private:
+    Entity* m_Parent;
+    std::vector<Entity*> m_Children;
+    std::vector<Component*> m_Components;
 
+    std::wstring m_Name;
 };
 
 ETH_NAMESPACE_END

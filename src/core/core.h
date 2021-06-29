@@ -30,6 +30,7 @@
 
 #include "core/event/events.h"
 #include "core/config/engineconfig.h"
+#include "core/world/world.h"
 #include "core/applicationbase.h"
 
 #include "common/logging/logger.h"
