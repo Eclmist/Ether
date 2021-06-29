@@ -24,16 +24,17 @@
 class SampleApp : public Ether::ApplicationBase
 {
 public:
-    SampleApp() = default;
-    ~SampleApp() = default;
+    void Initialize() override;
+    void LoadContent() override;
+    void UnloadContent() override;
+    void Shutdown() override;
 
 public:
-    bool IsDone() override;
-
-    void Configure() override;
-    void Initialize() override;
-    void Shutdown() override;
-    void Update() override;
-    void RenderScene() override;
-    void RenderGui() override;
+    void OnUpdate(const Ether::UpdateEventArgs& e) override;
+    void OnRender(const Ether::RenderEventArgs& e) override;
+    void OnKeyPress(const Ether::KeyEventArgs& e) override;
+    void OnKeyRelease(const Ether::KeyEventArgs& e) override;
+    void OnMouseButtonPress(const Ether::MouseEventArgs& e) override;
+    void OnMouseButtonRelease(const Ether::MouseEventArgs& e) override;
+    void OnMouseMove(const Ether::MouseEventArgs& e) override;
 };

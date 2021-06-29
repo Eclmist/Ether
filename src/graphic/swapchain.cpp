@@ -24,8 +24,8 @@ ETH_NAMESPACE_BEGIN
 void SwapChain::Initialize()
 {
     LogGraphicsInfo("Creating D3D12 swapchain");
-    m_FrameBufferWidth = g_MainApplication->GetClientWidth();
-    m_FrameBufferHeight = g_MainApplication->GetClientHeight();
+    m_FrameBufferWidth = g_EngineConfig.GetClientWidth();
+    m_FrameBufferHeight = g_EngineConfig.GetClientHeight();
     m_BufferingMode = BufferingMode::BUFFERINGMODE_TRIPLE;
     m_VsyncEnabled = false;
     CreateDxgiSwapChain();

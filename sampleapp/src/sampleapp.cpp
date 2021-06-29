@@ -19,36 +19,52 @@
 
 #include "sampleapp.h"
 
-bool SampleApp::IsDone()
-{
-    return false;
-}
-
-void SampleApp::Configure()
-{
-    SetClientWidth(1920);
-    SetClientHeight(1080);
-    SetClientName(L"Ether Sample App");
-}
-
 void SampleApp::Initialize()
 {
-    //LogInfo("Initializing Sample App");
+    LogInfo("Initializing Sample App");
+    Ether::g_EngineConfig.SetClientWidth(1920);
+    Ether::g_EngineConfig.SetClientHeight(1080);
+    Ether::g_EngineConfig.SetClientName(L"Ether Sample App");
+}
+
+void SampleApp::LoadContent()
+{
+}
+
+void SampleApp::UnloadContent()
+{
 }
 
 void SampleApp::Shutdown()
 {
 }
 
-void SampleApp::Update()
+void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
 {
 }
 
-void SampleApp::RenderScene()
+void SampleApp::OnRender(const Ether::RenderEventArgs& e)
 {
 }
 
-void SampleApp::RenderGui()
+void SampleApp::OnKeyPress(const Ether::KeyEventArgs& e)
+{
+    if (e.m_Key == Ether::Win32::KEYCODE_F3)
+        Ether::g_EngineConfig.ToggleDebugMode();
+}
+
+void SampleApp::OnKeyRelease(const Ether::KeyEventArgs& e)
 {
 }
 
+void SampleApp::OnMouseButtonPress(const Ether::MouseEventArgs& e)
+{
+}
+
+void SampleApp::OnMouseButtonRelease(const Ether::MouseEventArgs& e)
+{
+}
+
+void SampleApp::OnMouseMove(const Ether::MouseEventArgs& e)
+{
+}

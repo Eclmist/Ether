@@ -84,7 +84,7 @@ const std::wstring Logger::GetOutputDirectory() const
     wcscat_s(path, L"\\Ether");
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\");
-    wcscat_s(path, g_MainApplication->GetClientName());
+    wcscat_s(path, g_EngineConfig.GetClientName().c_str());
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\Logs");
     CreateDirectory(path, NULL);

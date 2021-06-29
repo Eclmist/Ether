@@ -23,8 +23,8 @@ ETH_NAMESPACE_BEGIN
 
 DebugMenuComponent::DebugMenuComponent()
 {
-    m_Size = ImVec2((float)g_MainApplication->GetClientWidth(), 300);
-    m_Position = ImVec2(0, g_MainApplication->GetClientHeight() - m_Size.y);
+    m_Size = ImVec2((float)g_EngineConfig.GetClientWidth(), 300);
+    m_Position = ImVec2(0, g_EngineConfig.GetClientHeight() - m_Size.y);
 }
 
 void DebugMenuComponent::Draw()

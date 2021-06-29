@@ -56,7 +56,8 @@ void Renderer::Render()
 {
     WaitForPresent();
     RenderScene();
-    m_GuiManager.Render();
+    if (g_EngineConfig.IsDebugModeEnabled())
+        m_GuiManager.Render();
     Present();
 }
 

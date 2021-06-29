@@ -22,15 +22,11 @@
 ETH_NAMESPACE_BEGIN
 
 EngineConfig::EngineConfig()
+    : m_ClientName(L"Untitled Ether Application")
+    , m_ClientWidth(1920)
+    , m_ClientHeight(1080)
+    , m_DebugModeEnabled(false)
 {
-    m_IsRunningInEditor = false;
-    m_EditorHwndHost = nullptr;
-}
-
-EngineConfig::EngineConfig(const EngineConfig& copy)
-{
-    m_IsRunningInEditor = copy.m_IsRunningInEditor;
-    m_EditorHwndHost = copy.m_EditorHwndHost;
 }
 
 ETH_NAMESPACE_END

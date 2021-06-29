@@ -18,7 +18,6 @@
 */
 
 #include "window.h"
-#include "core/engine.h"
 #include "imgui/imgui_impl_win32.h"
 
 ETH_NAMESPACE_BEGIN
@@ -97,10 +96,10 @@ void Window::PositionWindowRect()
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-    m_WindowRect.left = (screenWidth / 2 - g_MainApplication->GetClientWidth() / 2);
-    m_WindowRect.top = (screenHeight / 2 - g_MainApplication->GetClientHeight() / 2);
-    m_WindowRect.right = m_WindowRect.left + g_MainApplication->GetClientWidth();
-    m_WindowRect.bottom = m_WindowRect.top + g_MainApplication->GetClientHeight();
+    m_WindowRect.left = (screenWidth / 2 - g_EngineConfig.GetClientWidth() / 2);
+    m_WindowRect.top = (screenHeight / 2 - g_EngineConfig.GetClientHeight() / 2);
+    m_WindowRect.right = m_WindowRect.left + g_EngineConfig.GetClientWidth();
+    m_WindowRect.bottom = m_WindowRect.top + g_EngineConfig.GetClientHeight();
 }
 
 LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -137,13 +136,13 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         KeyEventArgs keydownArgs;
         keydownArgs.m_Key = static_cast<KeyCode>(wParam);
         keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
-        Engine::GetInstance().OnKeyPressed(keydownArgs);
+        g_MainApplication->OnKeyPress(keydownArgs);
         break;
     case WM_KEYUP:
         KeyEventArgs keyupArgs;
         keyupArgs.m_Key = static_cast<KeyCode>(wParam);
         keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
-        Engine::GetInstance().OnKeyReleased(keyupArgs);
+        g_MainApplication->OnKeyRelease(keydownArgs);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);

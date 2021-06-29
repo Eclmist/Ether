@@ -26,18 +26,24 @@ class EngineConfig
 public:
     EngineConfig();
     ~EngineConfig() = default;
-    EngineConfig(const EngineConfig& copy);
 
 public:
-    inline bool GetIsRunningInEditor() const { return m_IsRunningInEditor; }
-    inline HWND GetEditorHwndHost() const { return m_EditorHwndHost; }
+    inline ETH_ENGINE_DLL std::wstring GetClientName() const { return m_ClientName; }
+    inline ETH_ENGINE_DLL uint32_t GetClientWidth() const { return m_ClientWidth; }
+    inline ETH_ENGINE_DLL uint32_t GetClientHeight() const { return m_ClientHeight; }
+    inline ETH_ENGINE_DLL bool IsDebugModeEnabled() const { return m_DebugModeEnabled; }
 
-    inline void SetIsRunningInEditor(bool isRunningInEditor) { m_IsRunningInEditor = isRunningInEditor; }
-    inline void SetEditorHwndHost(HWND hWnd) { m_EditorHwndHost = hWnd; }
+    inline ETH_ENGINE_DLL void SetClientName(std::wstring name) { m_ClientName = name; }
+    inline ETH_ENGINE_DLL void SetClientWidth(uint32_t width) { m_ClientWidth = width; }
+    inline ETH_ENGINE_DLL void SetClientHeight(uint32_t height) { m_ClientHeight = height; }
+    inline ETH_ENGINE_DLL void ToggleDebugMode() { m_DebugModeEnabled = !m_DebugModeEnabled; }
 
 private:
-    bool m_IsRunningInEditor;
-    HWND m_EditorHwndHost;
+    std::wstring m_ClientName;
+    uint32_t m_ClientWidth;
+    uint32_t m_ClientHeight;
+
+    bool m_DebugModeEnabled;
 };
 
 ETH_NAMESPACE_END
