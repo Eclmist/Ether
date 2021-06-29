@@ -30,17 +30,14 @@ public:
     inline ID3D12Resource* GetResource() const { return m_Resource.Get(); }
     inline D3D12_GPU_VIRTUAL_ADDRESS GetVirtualAddress() const { return m_VirtualAddress; }
     inline D3D12_RESOURCE_STATES GetCurrentState() const { return m_CurrentState; }
-    inline D3D12_RESOURCE_STATES GetNextState() const { return m_NextState; }
 
-    inline void SetNextState(D3D12_RESOURCE_STATES state) { m_NextState = state; }
-    inline void TransitionToNextState() { m_CurrentState = m_NextState; }
+    inline void TransitionToState(D3D12_RESOURCE_STATES state) { m_CurrentState = state; }
 
 protected:
     wrl::ComPtr<ID3D12Resource> m_Resource;
 
     D3D12_GPU_VIRTUAL_ADDRESS m_VirtualAddress;
     D3D12_RESOURCE_STATES m_CurrentState;
-    D3D12_RESOURCE_STATES m_NextState; // Exists for implementation of non-immediate resource transitions (TODO)
 };
 
 ETH_NAMESPACE_END

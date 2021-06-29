@@ -71,7 +71,7 @@ void CommandQueue::InitializeCommandQueue()
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
     ASSERT_SUCCESS(g_GraphicDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
-    m_CommandQueue->SetName(L"CommandQueue::m_CommandQueue"); // TODO: Set better name
+    m_CommandQueue->SetName(L"CommandQueue::m_CommandQueue");
 }
 
 void CommandQueue::InitializeFence()
