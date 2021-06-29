@@ -17,23 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphic/resource/visual.h"
+#include "entity.h"
 
 ETH_NAMESPACE_BEGIN
-
-class World : public NonCopyable
-{
-public:
-    World() = default;
-    ~World() = default;
-
-public:
-    // TODO: This should take in an entity, not a visual
-    ETH_ENGINE_DLL void AddEntity(Visual&& entity, )
-
-
-};
 
 ETH_NAMESPACE_END
