@@ -43,11 +43,12 @@ void TerminateEngine()
 
 bool UpdateEngine()
 {
-    g_Renderer.Render();
-
-    // TODO: populate proper event args
     g_MainApplication->OnUpdate(UpdateEventArgs());
-    g_MainApplication->OnRender(RenderEventArgs());
+
+    g_Renderer.WaitForPresent();
+    g_Renderer.Render();
+    g_Renderer.RenderGui();
+    g_Renderer.Present();
 
     return !g_MainApplication->ShouldExit();
 }
@@ -57,7 +58,6 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
 
     g_MainApplication = &app;
-
     Win32::Window gameWindow(g_EngineConfig.GetClientName().c_str(), hInst);
 
     InitializeEngine();

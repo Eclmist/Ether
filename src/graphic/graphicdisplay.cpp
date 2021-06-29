@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "swapchain.h"
+#include "graphicdisplay.h"
 
 ETH_NAMESPACE_BEGIN
 
-void SwapChain::Initialize()
+void GraphicDisplay::Initialize()
 {
     LogGraphicsInfo("Creating D3D12 swapchain");
     m_FrameBufferWidth = g_EngineConfig.GetClientWidth();
@@ -32,23 +32,23 @@ void SwapChain::Initialize()
     InitializeResources();
 }
 
-void SwapChain::Shutdown()
+void GraphicDisplay::Shutdown()
 {
 }
 
-void SwapChain::Present()
+void GraphicDisplay::Present()
 {
     // TODO: Compute v-blank based on frame time and target framerate
     m_SwapChain->Present(m_VsyncEnabled ? 1 : 0, 0);
     m_CurrentBackBufferIndex = (m_CurrentBackBufferIndex + 1) % GetNumBuffers();
 }
 
-std::shared_ptr<TextureResource> SwapChain::GetCurrentBackBuffer() const
+std::shared_ptr<TextureResource> GraphicDisplay::GetCurrentBackBuffer() const
 {
     return m_FrameBuffers[m_CurrentBackBufferIndex];
 }
 
-void SwapChain::CreateDxgiSwapChain()
+void GraphicDisplay::CreateDxgiSwapChain()
 {
     wrl::ComPtr<IDXGIFactory4> dxgiFactory;
     ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
@@ -81,7 +81,7 @@ void SwapChain::CreateDxgiSwapChain()
     ASSERT_SUCCESS(swapChain1.As(&m_SwapChain));
 }
 
-void SwapChain::InitializeResources()
+void GraphicDisplay::InitializeResources()
 {
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {

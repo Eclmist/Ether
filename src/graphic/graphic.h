@@ -20,7 +20,6 @@
 #pragma once
 
 #define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
-#define ETH_MAX_NUM_SWAPCHAIN_BUFFERS       3
 
 #define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
 #define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
@@ -29,16 +28,10 @@
 #define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("D3D12 operation failed - %s", #hr); throw std::exception(); }
 
 // D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
 #include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
 
 // Ether Graphics Library
-#include "graphic/graphiccontext.h"
+#include "graphic/graphiccore.h"
 #include "graphic/commandmanager.h"
 #include "graphic/renderer.h"
 

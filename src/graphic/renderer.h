@@ -21,7 +21,6 @@
 
 #include "graphic/commandmanager.h"
 #include "graphic/resource/textureresource.h"
-#include "graphic/swapchain.h"
 #include "graphic/gui/guimanager.h"
 
 ETH_NAMESPACE_BEGIN
@@ -31,26 +30,25 @@ class Renderer : public NonCopyable
 public:
     void Initialize();
     void Shutdown();
+    void WaitForPresent();
     void Render();
+    void RenderGui();
+    void Present();
 
-    inline GraphicContext* GetGraphicContext() { return &m_Context; }
+    inline GraphicContext& GetGraphicContext() { return m_Context; }
+    inline GraphicDisplay& GetGraphicDisplay() { return m_Display; }
 
 private:
     void InitializeDebugLayer();
     void InitializeAdapter();
     void InitializeDevice();
 
-    void WaitForPresent();
-    void RenderScene();
-    void RenderGui();
-    void Present();
-
 private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
 
     GraphicContext m_Context;
+    GraphicDisplay m_Display;
     GuiManager m_GuiManager;
-    SwapChain m_SwapChain;
 };
 
 ETH_NAMESPACE_END

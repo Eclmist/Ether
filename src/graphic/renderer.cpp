@@ -39,7 +39,7 @@ void Renderer::Initialize()
     InitializeDevice();
 
     g_CommandManager.Initialize();
-    m_SwapChain.Initialize();
+    m_Display.Initialize();
     m_Context.Initialize();
     m_GuiManager.Initialize(&m_Context);
 }
@@ -48,17 +48,35 @@ void Renderer::Shutdown()
 {
     m_GuiManager.Shutdown();
     m_Context.Shutdown();
-    m_SwapChain.Shutdown();
+    m_Display.Shutdown();
     g_CommandManager.Shutdown();
+}
+
+void Renderer::WaitForPresent()
+{
+    m_Context.GetCommandQueue()->StallForFence(m_Display.GetCurrentBackBufferFence());
 }
 
 void Renderer::Render()
 {
-    WaitForPresent();
-    RenderScene();
+    m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_Context.ClearColor(*m_Display.GetCurrentBackBuffer(), Ether::ethVector4(0.0, 0.0, 0.0, 0.0));
+    m_Context.SetRenderTarget(m_Display.GetCurrentBackBuffer()->GetRTV());
+}
+
+void Renderer::RenderGui()
+{
     if (g_EngineConfig.IsDebugModeEnabled())
         m_GuiManager.Render();
-    Present();
+}
+
+void Renderer::Present()
+{
+    m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
+    m_Context.FinalizeAndExecute();
+    m_Context.Reset();
+    m_Display.SetCurrentBackBufferFence(m_Context.GetCommandQueue()->GetCompletionFence());
+    m_Display.Present();
 }
 
 void Renderer::InitializeDebugLayer()
@@ -106,32 +124,6 @@ void Renderer::InitializeAdapter()
 void Renderer::InitializeDevice()
 {
     ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)));
-}
-
-void Renderer::WaitForPresent()
-{
-    m_Context.GetCommandQueue()->StallForFence(m_SwapChain.GetCurrentBackBufferFence());
-}
-
-void Renderer::RenderScene()
-{
-    m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-    m_Context.ClearColor(*m_SwapChain.GetCurrentBackBuffer(), ethVector4(0.0, 0.0, 0.0, 0.0));
-    m_Context.SetRenderTarget(m_SwapChain.GetCurrentBackBuffer()->GetRTV());
-}
-
-void Renderer::RenderGui()
-{
-
-}
-
-void Renderer::Present()
-{
-    m_Context.TransitionResource(*m_SwapChain.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
-    m_Context.FinalizeAndExecute();
-    m_Context.Reset();
-    m_SwapChain.SetCurrentBackBufferFence(m_Context.GetCommandQueue()->GetCompletionFence());
-    m_SwapChain.Present();
 }
 
 ETH_NAMESPACE_END
