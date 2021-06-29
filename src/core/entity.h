@@ -19,20 +19,14 @@
 
 #pragma once
 
-#include "graphic/resource/visual.h"
-
 ETH_NAMESPACE_BEGIN
 
-class World : public NonCopyable
+class Entity // : public Serializable?
 {
 public:
-    World() = default;
-    ~World() = default;
 
-public:
-    // TODO: This should take in an entity, not a visual
-    ETH_ENGINE_DLL void AddEntity(Visual&& entity, )
 
+private:
 
 };
 
