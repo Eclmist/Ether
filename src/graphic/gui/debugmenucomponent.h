@@ -23,29 +23,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-class GuiManager : public NonCopyable
+class DebugMenuComponent : public GuiComponent
 {
 public:
-    void Initialize(GraphicContext* gfxContext);
-    void Shutdown();
-    void Render();
+    DebugMenuComponent();
+    ~DebugMenuComponent() = default;
 
 private:
-    inline void ToggleVisibility() { m_IsVisible = !m_IsVisible; }
-
-private:
-    void RegisterComponents();
-    void CreateResourceHeap();
-    void CreateImGuiContext();
-    void SetImGuiStyle();
-
-private:
-    GraphicContext* m_Context;
-
-    std::vector<std::shared_ptr<GuiComponent>> m_Components;
-    bool m_IsVisible;
-
-    wrl::ComPtr<ID3D12DescriptorHeap> m_SRVDescriptorHeap;
+    void Draw() override;
 };
 
 ETH_NAMESPACE_END

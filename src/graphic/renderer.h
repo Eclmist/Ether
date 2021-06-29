@@ -33,6 +33,8 @@ public:
     void Shutdown();
     void Render();
 
+    inline GraphicContext* GetGraphicContext() { return &m_Context; }
+
 private:
     void InitializeDebugLayer();
     void InitializeAdapter();

@@ -22,15 +22,19 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "graphic/gui/loggingcomponent.h"
+#include "graphic/gui/debugmenucomponent.h"
 
 #include "system/win32/window.h"
 
 ETH_NAMESPACE_BEGIN
 
-void GuiManager::Initialize()
+void GuiManager::Initialize(GraphicContext* gfxContext)
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
+    m_Context = gfxContext;
+
+    RegisterComponents();
     CreateResourceHeap();
     CreateImGuiContext();
     ImGui_ImplWin32_Init(Win32::g_hWnd);
@@ -44,8 +48,6 @@ void GuiManager::Initialize()
     );
 
     SetImGuiStyle();
-
-    m_Context.Initialize();
 }
 
 void GuiManager::Shutdown()
@@ -62,26 +64,24 @@ void GuiManager::Render()
         component->Draw();
 
     ImGui::Render();
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context.GetCommandList());
-
-    m_Context.FinalizeAndExecute();
-    m_Context.Reset();
+    m_Context->GetCommandList()->SetDescriptorHeaps(1, m_SRVDescriptorHeap.GetAddressOf());
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context->GetCommandList());
 }
 
 void GuiManager::RegisterComponents()
 {
     LogGraphicsInfo("Registering GUI components");
     m_Components.push_back(std::make_shared<LoggingComponent>());
-    //m_Components.push_back(std::make_shared<DebugMenuComponent>())
+    m_Components.push_back(std::make_shared<DebugMenuComponent>());
 }
 
 void GuiManager::CreateResourceHeap()
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-    desc.NumDescriptors = 3;
+    desc.NumDescriptors = 1;
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap));
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
 }
 
 void GuiManager::CreateImGuiContext()

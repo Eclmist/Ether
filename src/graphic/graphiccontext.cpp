@@ -66,6 +66,12 @@ void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STAT
     target.TransitionToNextState();
 }
 
+
+void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
+{
+    m_CommandList->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+}
+
 void GraphicContext::FinalizeAndExecute()
 {
     g_CommandManager.Execute(m_CommandList.Get());
