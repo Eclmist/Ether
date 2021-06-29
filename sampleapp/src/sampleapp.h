@@ -20,6 +20,8 @@
 #pragma once
 
 #include "core/core.h"
+#include "graphic/graphiccore.h"
+#include "graphic/resource/visual.h"
 
 class SampleApp : public Ether::ApplicationBase
 {
@@ -37,4 +39,7 @@ public:
     void OnMouseButtonPress(const Ether::MouseEventArgs& e) override;
     void OnMouseButtonRelease(const Ether::MouseEventArgs& e) override;
     void OnMouseMove(const Ether::MouseEventArgs& e) override;
+
+private:
+    Ether::Visual* m_DebugCube;
 };

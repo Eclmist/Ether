@@ -41,7 +41,7 @@ void Renderer::Initialize()
     g_CommandManager.Initialize();
     m_Display.Initialize();
     m_Context.Initialize();
-    m_GuiManager.Initialize(&m_Context);
+    m_GuiManager.Initialize();
 }
 
 void Renderer::Shutdown()
@@ -60,8 +60,9 @@ void Renderer::WaitForPresent()
 void Renderer::Render()
 {
     m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-    m_Context.ClearColor(*m_Display.GetCurrentBackBuffer(), Ether::ethVector4(0.0, 0.0, 0.0, 0.0));
-    m_Context.SetRenderTarget(m_Display.GetCurrentBackBuffer()->GetRTV());
+    m_Context.ClearColor(*m_Display.GetCurrentBackBuffer(), Ether::ethVector4(0.05, 0.0, 0.07, 0.0));
+    m_Context.FinalizeAndExecute();
+    m_Context.Reset();
 }
 
 void Renderer::RenderGui()

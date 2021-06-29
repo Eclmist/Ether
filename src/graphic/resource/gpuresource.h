@@ -35,6 +35,7 @@ public:
 
 protected:
     wrl::ComPtr<ID3D12Resource> m_Resource;
+    wrl::ComPtr<ID3D12Resource> m_IntermediateResource;
 
     D3D12_GPU_VIRTUAL_ADDRESS m_VirtualAddress;
     D3D12_RESOURCE_STATES m_CurrentState;

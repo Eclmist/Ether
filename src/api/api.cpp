@@ -61,6 +61,7 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
     Win32::Window gameWindow(g_EngineConfig.GetClientName().c_str(), hInst);
 
     InitializeEngine();
+    g_MainApplication->LoadContent();
     gameWindow.Show(cmdShow);
 
     do

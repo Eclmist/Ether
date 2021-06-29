@@ -26,9 +26,9 @@ TextureResource::TextureResource(const std::wstring & name, D3D12_RESOURCE_DESC 
     , m_Height(desc.Height)
     , m_NumMips(desc.MipLevels)
 {
-    CD3DX12_HEAP_PROPERTIES heapProp(D3D12_HEAP_TYPE_DEFAULT);
     ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(
-        &heapProp, D3D12_HEAP_FLAG_NONE,
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
         &desc, D3D12_RESOURCE_STATE_COMMON,
         &clearColor, IID_PPV_ARGS(&m_Resource)));
 
@@ -54,19 +54,19 @@ TextureResource::TextureResource(const std::wstring& name, ID3D12Resource* swapC
 D3D12_RESOURCE_DESC TextureResource::CreateResourceDesc(
     uint32_t width, uint32_t height, uint32_t numMips, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags)
 {
-    D3D12_RESOURCE_DESC Desc = {};
-    Desc.Alignment = 0;
-    Desc.DepthOrArraySize = 1;
-    Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    Desc.Flags = flags;
-    Desc.Format = format;
-    Desc.Height = height;
-    Desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    Desc.MipLevels = numMips;
-    Desc.SampleDesc.Count = 1;
-    Desc.SampleDesc.Quality = 0;
-    Desc.Width = width;
-    return Desc;
+    D3D12_RESOURCE_DESC desc = {};
+    desc.Alignment = 0;
+    desc.DepthOrArraySize = 1;
+    desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    desc.Flags = flags;
+    desc.Format = format;
+    desc.Height = height;
+    desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    desc.MipLevels = numMips;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Width = width;
+    return desc;
 }
 
 void TextureResource::CreateDescriptorHeaps()
