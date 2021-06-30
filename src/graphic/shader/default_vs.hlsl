@@ -33,7 +33,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
-    float4 Color : COLOR;
+    float4 Color    : COLOR;
 };
 
 VS_OUTPUT VS_Main(VS_INPUT IN)

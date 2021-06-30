@@ -33,7 +33,7 @@ Create a render target view (RTV) descriptor heap - Display::TextureResource
 Create frame resources (a render target view for each frame) - Display::TextureResource
 Create a command allocator - CommandManager::CommandQueue::CommandAllocatorPool
 */
-void Renderer::Initialize()
+void GraphicManager::Initialize()
 {
     if (g_GraphicDevice != nullptr)
     {
@@ -53,7 +53,7 @@ void Renderer::Initialize()
     m_GuiManager.Initialize();
 }
 
-void Renderer::Shutdown()
+void GraphicManager::Shutdown()
 {
     m_GuiManager.Shutdown();
     m_Context.Shutdown();
@@ -61,12 +61,12 @@ void Renderer::Shutdown()
     g_CommandManager.Shutdown();
 }
 
-void Renderer::WaitForPresent()
+void GraphicManager::WaitForPresent()
 {
     m_Context.GetCommandQueue()->StallForFence(m_Display.GetCurrentBackBufferFence());
 }
 
-void Renderer::Render()
+void GraphicManager::Render()
 {
     m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
     m_Context.ClearColor(*m_Display.GetCurrentBackBuffer(), Ether::ethVector4(0.05, 0.0, 0.07, 0.0));
@@ -74,13 +74,13 @@ void Renderer::Render()
     m_Context.Reset();
 }
 
-void Renderer::RenderGui()
+void GraphicManager::RenderGui()
 {
     if (g_EngineConfig.IsDebugModeEnabled())
         m_GuiManager.Render();
 }
 
-void Renderer::Present()
+void GraphicManager::Present()
 {
     m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
     m_Context.FinalizeAndExecute();
@@ -89,7 +89,7 @@ void Renderer::Present()
     m_Display.Present();
 }
 
-void Renderer::InitializeDebugLayer()
+void GraphicManager::InitializeDebugLayer()
 {
 #if defined(_DEBUG)
     // Always enable the debug layer before doing anything DX12 related
@@ -101,7 +101,7 @@ void Renderer::InitializeDebugLayer()
 #endif
 }
 
-void Renderer::InitializeAdapter()
+void GraphicManager::InitializeAdapter()
 {
     wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
 
@@ -131,7 +131,7 @@ void Renderer::InitializeAdapter()
     }
 }
 
-void Renderer::InitializeDevice()
+void GraphicManager::InitializeDevice()
 {
     ASSERT_SUCCESS(D3D12CreateDevice(m_Adapter.Get(), ETH_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&g_GraphicDevice)));
 }
