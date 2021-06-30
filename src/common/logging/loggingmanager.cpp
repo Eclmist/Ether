@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "logger.h"
+#include "loggingmanager.h"
 #include <iosfwd>
 #include <ShlObj_core.h>
 #include <iostream>
@@ -35,12 +35,12 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
 
     std::string formattedText(formattedBuffer);
     LogEntry entry(formattedText, level, type);
-    g_Logger.AddLog(entry);
-    g_Logger.Serialize(entry);
+    g_LoggingManager.AddLog(entry);
+    g_LoggingManager.Serialize(entry);
     std::cout << entry.GetText() << std::endl;
 }
 
-void Logger::Initialize()
+void LoggingManager::Initialize()
 {
     m_LogFileStream.open(std::wstring(GetOutputDirectory() + L"/" + GetTimestampedFileName()), std::ios_base::app);
 
@@ -51,22 +51,22 @@ void Logger::Initialize()
     }
 }
 
-void Logger::Shutdown()
+void LoggingManager::Shutdown()
 {
     m_LogFileStream.close();
 }
 
-void Logger::AddLog(const LogEntry entry)
+void LoggingManager::AddLog(const LogEntry entry)
 {
     m_LogEntries.push_back(entry);
 }
 
-void Logger::Clear()
+void LoggingManager::Clear()
 {
     m_LogEntries.clear();
 }
 
-void Logger::Serialize(const LogEntry entry)
+void LoggingManager::Serialize(const LogEntry entry)
 {
     if (!m_LogFileStream.is_open())
         return;
@@ -75,7 +75,7 @@ void Logger::Serialize(const LogEntry entry)
     m_LogFileStream.flush();
 }
 
-const std::wstring Logger::GetOutputDirectory() const
+const std::wstring LoggingManager::GetOutputDirectory() const
 {
     wchar_t path[1024];
     wchar_t* appDataLocal;
@@ -91,7 +91,7 @@ const std::wstring Logger::GetOutputDirectory() const
     return path;
 }
 
-const std::wstring Logger::GetTimestampedFileName() const
+const std::wstring LoggingManager::GetTimestampedFileName() const
 {
     wchar_t filename[1024];
     wcscpy_s(filename, WFormatTime(GetSystemTime(), L"%Y%m%d_%H%M%S").c_str());

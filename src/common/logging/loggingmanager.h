@@ -46,7 +46,7 @@ ETH_NAMESPACE_BEGIN
 
 ETH_ENGINE_DLL void Log(LogLevel level, LogType type, const char* fmt, ...);
 
-class Logger : public NonCopyable
+class LoggingManager : public NonCopyable
 {
 public:
     void Initialize();

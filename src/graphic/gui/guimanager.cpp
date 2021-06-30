@@ -65,8 +65,8 @@ void GuiManager::Render()
         component->Draw();
 
     ImGui::Render();
-    m_GuiContext.TransitionResource(*g_Renderer.GetGraphicDisplay().GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-    m_GuiContext.SetRenderTarget(g_Renderer.GetGraphicDisplay().GetCurrentBackBuffer()->GetRTV());
+    m_GuiContext.TransitionResource(*g_GraphicManager.GetGraphicDisplay().GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_GuiContext.SetRenderTarget(g_GraphicManager.GetGraphicDisplay().GetCurrentBackBuffer()->GetRTV());
     m_GuiContext.GetCommandList()->SetDescriptorHeaps(1, m_SRVDescriptorHeap.GetAddressOf());
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_GuiContext.GetCommandList());
     m_GuiContext.FinalizeAndExecute();

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "renderer.h"
+#include "graphicmanager.h"
 
 ETH_NAMESPACE_BEGIN
 
