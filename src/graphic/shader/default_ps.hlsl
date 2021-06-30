@@ -20,7 +20,7 @@
 struct PS_INPUT
 {
     float4 Position : SV_Position;
-    float4 Color : COLOR;
+    float4 Color    : COLOR;
 };
 
 float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target

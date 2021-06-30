@@ -25,7 +25,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class Renderer : public NonCopyable
+class GraphicManager : public NonCopyable
 {
 public:
     void Initialize();
