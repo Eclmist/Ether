@@ -24,6 +24,15 @@ ETH_NAMESPACE_BEGIN
 wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
 CommandManager g_CommandManager;
 
+/*
+Enable the debug layer
+Create the device
+Create the command queue - CommandManager::CommandQueue
+Create the swap chain - Display
+Create a render target view (RTV) descriptor heap - Display::TextureResource
+Create frame resources (a render target view for each frame) - Display::TextureResource
+Create a command allocator - CommandManager::CommandQueue::CommandAllocatorPool
+*/
 void Renderer::Initialize()
 {
     if (g_GraphicDevice != nullptr)
