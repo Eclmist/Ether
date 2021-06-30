@@ -33,13 +33,13 @@
 // Ether Graphics Library
 #include "graphic/graphiccore.h"
 #include "graphic/commandmanager.h"
-#include "graphic/renderer.h"
+#include "graphic/graphicmanager.h"
 
 ETH_NAMESPACE_BEGIN
 
 extern wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
 
 extern CommandManager g_CommandManager;
-extern GraphicManager g_Renderer;
+extern GraphicManager g_GraphicManager;
 
 ETH_NAMESPACE_END

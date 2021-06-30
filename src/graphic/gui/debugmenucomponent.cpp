@@ -30,7 +30,7 @@ DebugMenuComponent::DebugMenuComponent()
 void DebugMenuComponent::Draw()
 {
     static bool showImGuiDemo = false;
-    GraphicContext& gfxContext = g_Renderer.GetGraphicContext();
+    GraphicContext& gfxContext = g_GraphicManager.GetGraphicContext();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));

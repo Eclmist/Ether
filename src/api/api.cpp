@@ -24,21 +24,21 @@
 ETH_NAMESPACE_BEGIN
 
 EngineConfig g_EngineConfig;
-Logger g_Logger;
-GraphicManager g_Renderer;
+LoggingManager g_LoggingManager;
+GraphicManager g_GraphicManager;
 World g_World;
 
 void InitializeEngine()
 {
     g_MainApplication->Initialize();
-    g_Logger.Initialize();
-    g_Renderer.Initialize();
+    g_LoggingManager.Initialize();
+    g_GraphicManager.Initialize();
 }
 
 void TerminateEngine()
 {
-    g_Renderer.Shutdown();
-    g_Logger.Shutdown();
+    g_GraphicManager.Shutdown();
+    g_LoggingManager.Shutdown();
     g_MainApplication->Shutdown();
 }
 
@@ -46,10 +46,10 @@ bool UpdateEngine()
 {
     g_MainApplication->OnUpdate(UpdateEventArgs());
 
-    g_Renderer.WaitForPresent();
-    g_Renderer.Render();
-    g_Renderer.RenderGui();
-    g_Renderer.Present();
+    g_GraphicManager.WaitForPresent();
+    g_GraphicManager.Render();
+    g_GraphicManager.RenderGui();
+    g_GraphicManager.Present();
 
     return !g_MainApplication->ShouldExit();
 }
