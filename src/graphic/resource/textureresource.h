@@ -38,8 +38,8 @@ public:
         DXGI_FORMAT format,
         D3D12_RESOURCE_FLAGS flags);
 
-    const D3D12_CPU_DESCRIPTOR_HANDLE GetSRV(void) const { return m_SRVHandle; }
-    const D3D12_CPU_DESCRIPTOR_HANDLE GetRTV(void) const { return m_RTVHandle; }
+    const D3D12_CPU_DESCRIPTOR_HANDLE GetSRV() const { return m_SRVHandle; }
+    const D3D12_CPU_DESCRIPTOR_HANDLE GetRTV() const { return m_RTVHandle; }
 
 protected:
     void CreateDescriptorHeaps();
