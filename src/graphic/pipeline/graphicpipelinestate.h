@@ -42,7 +42,7 @@ public:
     void SetVertexShader(const void* binary, size_t size);
     void SetPixelShader(const void* binary, size_t size);
 
-    void Finalize(const std::wstring& name);
+    void Finalize();
 
 private:
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_Desc;

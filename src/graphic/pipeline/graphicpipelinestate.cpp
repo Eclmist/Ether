@@ -83,11 +83,11 @@ void GraphicPipelineState::SetPixelShader(const void* binary, size_t size)
     m_Desc.PS = CD3DX12_SHADER_BYTECODE(binary, size);
 }
 
-void GraphicPipelineState::Finalize(const std::wstring& name)
+void GraphicPipelineState::Finalize()
 {
     m_Desc.pRootSignature = m_RootSignature->GetRootSignature();
     ASSERT_SUCCESS(g_GraphicDevice->CreateGraphicsPipelineState(&m_Desc, IID_PPV_ARGS(&m_PipelineState)));
-    m_PipelineState->SetName(name.c_str());
+    m_PipelineState->SetName(m_Name.c_str());
 }
 
 
