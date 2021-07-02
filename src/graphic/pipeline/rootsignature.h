@@ -19,17 +19,27 @@
 
 #pragma once
 
+#include "graphic/pipeline/rootparameter.h"
+
 ETH_NAMESPACE_BEGIN
 
 class RootSignature
 {
 public:
-    RootSignature() = default;
+    RootSignature(int numParameters = 0, int numSamplers = 0);
     ~RootSignature() = default;
 
+    inline RootParameter& operator[] (uint32_t i) { return m_RootParameters[i]; }
+
+    void Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAGS flags);
 
 private:
     wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
+    std::vector<RootParameter> m_RootParameters;
+    std::vector<D3D12_STATIC_SAMPLER_DESC> m_StaticSamplers;
+
+    int m_NumParameters;
+    int m_NumStaticSamplers;
 };
 
 ETH_NAMESPACE_END
