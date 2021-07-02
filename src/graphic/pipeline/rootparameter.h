@@ -27,6 +27,13 @@ public:
     RootParameter() = default;
     ~RootParameter() = default;
 
+    void SetAsConstant(uint32_t numDwords, uint32_t shaderRegister, 
+        D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL, uint32_t registerSpace = 0);
+    void SetAsCommonBufferView(uint32_t shaderRegister,  
+        D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL, uint32_t registerSpace = 0);
+    void SetAsShaderResourceView(uint32_t shaderRegister,  
+        D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL, uint32_t registerSpace = 0);
+
 private:
     D3D12_ROOT_PARAMETER m_Parameter;
 };
