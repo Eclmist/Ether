@@ -31,6 +31,8 @@ public:
     ~GraphicPipelineState() = default;
     
 public:
+    void SetBlendState(const D3D12_BLEND_DESC& desc);
+    void SetRasterizerState(const D3D12_RASTERIZER_DESC& desc);
     void SetNumLayoutElements(uint32_t numLayoutElements);
     void SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* desc);
     void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE type);
@@ -39,6 +41,7 @@ public:
     void SetRenderTargetFormat(DXGI_FORMAT rtvFormat);
     void SetRenderTargetFormats(uint32_t numRtv, const DXGI_FORMAT* rtvFormats);
     void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality);
+    void SetSampleMask(uint32_t sampleMask);
     void SetVertexShader(const void* binary, size_t size);
     void SetPixelShader(const void* binary, size_t size);
 
