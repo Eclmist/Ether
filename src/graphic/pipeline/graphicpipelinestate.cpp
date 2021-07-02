@@ -24,6 +24,17 @@ ETH_NAMESPACE_BEGIN
 GraphicPipelineState::GraphicPipelineState(const std::wstring& name)
     : PipelineState(name)
 {
+    m_Desc = {};
+}
+
+void GraphicPipelineState::SetBlendState(const D3D12_BLEND_DESC& desc)
+{
+    m_Desc.BlendState = desc;
+}
+
+void GraphicPipelineState::SetRasterizerState(const D3D12_RASTERIZER_DESC& desc)
+{
+    m_Desc.RasterizerState = desc;
 }
 
 void GraphicPipelineState::SetNumLayoutElements(uint32_t numLayoutElements)
@@ -58,13 +69,10 @@ void GraphicPipelineState::SetRenderTargetFormat(DXGI_FORMAT rtvFormat)
 
 void GraphicPipelineState::SetRenderTargetFormats(uint32_t numRtv, const DXGI_FORMAT* rtvFormats)
 {
+    m_Desc.NumRenderTargets = numRtv;
+
     for (uint32_t i = 0; i < numRtv; ++i)
         m_Desc.RTVFormats[i] = rtvFormats[i];
-
-    for (uint32_t i = numRtv; i < m_Desc.NumRenderTargets; ++i)
-        m_Desc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
-
-    m_Desc.NumRenderTargets = numRtv;
 }
 
 void GraphicPipelineState::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)
@@ -73,14 +81,21 @@ void GraphicPipelineState::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msa
     m_Desc.SampleDesc.Quality = msaaQuality;
 }
 
+void GraphicPipelineState::SetSampleMask(uint32_t sampleMask)
+{
+    m_Desc.SampleMask = sampleMask;
+}
+
 void GraphicPipelineState::SetVertexShader(const void* binary, size_t size)
 {
-    m_Desc.VS = CD3DX12_SHADER_BYTECODE(binary, size);
+    m_Desc.VS.pShaderBytecode = binary;
+    m_Desc.VS.BytecodeLength = size;
 }
 
 void GraphicPipelineState::SetPixelShader(const void* binary, size_t size)
 {
-    m_Desc.PS = CD3DX12_SHADER_BYTECODE(binary, size);
+    m_Desc.PS.pShaderBytecode = binary;
+    m_Desc.PS.BytecodeLength = size;
 }
 
 void GraphicPipelineState::Finalize()
@@ -90,5 +105,5 @@ void GraphicPipelineState::Finalize()
     m_PipelineState->SetName(m_Name.c_str());
 }
 
-
 ETH_NAMESPACE_END
+
