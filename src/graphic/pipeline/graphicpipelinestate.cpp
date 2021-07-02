@@ -26,10 +26,14 @@ GraphicPipelineState::GraphicPipelineState(const std::wstring& name)
 {
 }
 
-void GraphicPipelineState::SetInputLayout(uint32_t numLayoutElements, const D3D12_INPUT_ELEMENT_DESC& desc)
+void GraphicPipelineState::SetNumLayoutElements(uint32_t numLayoutElements)
 {
     m_Desc.InputLayout.NumElements = numLayoutElements;
-    // TODO
+}
+
+void GraphicPipelineState::SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* desc)
+{
+    m_Desc.InputLayout.pInputElementDescs = desc;
 }
 
 void GraphicPipelineState::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE type)
@@ -79,10 +83,11 @@ void GraphicPipelineState::SetPixelShader(const void* binary, size_t size)
     m_Desc.PS = CD3DX12_SHADER_BYTECODE(binary, size);
 }
 
-void GraphicPipelineState::Finalize()
+void GraphicPipelineState::Finalize(const std::wstring& name)
 {
-    //TODO: Initialize root signature
-
+    m_Desc.pRootSignature = m_RootSignature->GetRootSignature();
+    ASSERT_SUCCESS(g_GraphicDevice->CreateGraphicsPipelineState(&m_Desc, IID_PPV_ARGS(&m_PipelineState)));
+    m_PipelineState->SetName(name.c_str());
 }
 
 

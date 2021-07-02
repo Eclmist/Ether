@@ -34,7 +34,7 @@ public:
 
     inline void SetRootSignature(const RootSignature& rs) { m_RootSignature = &rs; }
 
-private:
+protected:
     std::wstring m_Name;
     wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
     const RootSignature* m_RootSignature;

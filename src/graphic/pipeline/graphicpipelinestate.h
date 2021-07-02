@@ -20,6 +20,7 @@
 #pragma once
 
 #include "pipelinestate.h"
+#include "graphic/pipeline/rootsignature.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -30,7 +31,8 @@ public:
     ~GraphicPipelineState() = default;
     
 public:
-    void SetInputLayout(uint32_t numLayoutElements, const D3D12_INPUT_ELEMENT_DESC& desc);
+    void SetNumLayoutElements(uint32_t numLayoutElements);
+    void SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* desc);
     void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE type);
     void SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& desc);
     void SetDepthTargetFormat(DXGI_FORMAT dsvFormat);
@@ -40,11 +42,10 @@ public:
     void SetVertexShader(const void* binary, size_t size);
     void SetPixelShader(const void* binary, size_t size);
 
-    void Finalize();
+    void Finalize(const std::wstring& name);
 
 private:
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_Desc;
-
 };
 
 ETH_NAMESPACE_END
