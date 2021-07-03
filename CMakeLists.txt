@@ -59,7 +59,6 @@ set_source_files_properties(${project_shaders} PROPERTIES VS_TOOL_OVERRIDE "None
 set_source_files_properties(src/ether.cpp PROPERTIES COMPILE_FLAGS "/Ycether.h")
 
 set(all_files ${project_headers} ${project_cpps} ${project_shaders} ${extern_files} ${resources})
-list(FILTER all_files EXCLUDE REGEX "src/graphic_old/*")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${all_files})
 
 # =========================================================================== #
@@ -92,7 +91,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 # =========================================================================== #
 
 # Link DX12
-target_link_libraries(${PROJECT_NAME} d3d12.lib dxgi.lib dxguid.lib)
+target_link_libraries(${PROJECT_NAME} d3d12.lib dxgi.lib dxguid.lib dxcompiler.lib)
 
 # =========================================================================== #
 #                             INCLUDE SUBPROJECTS                             #
