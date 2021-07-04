@@ -25,6 +25,7 @@ TextureResource::TextureResource(const std::wstring & name, D3D12_RESOURCE_DESC 
     : m_Width((uint32_t)desc.Width)
     , m_Height(desc.Height)
     , m_NumMips(desc.MipLevels)
+    , m_Format(desc.Format)
 {
     ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -77,10 +78,13 @@ void TextureResource::CreateDescriptorHeaps()
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RTVDescriptorHeap)));
+    m_RTVHandle = m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
 
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
+    m_SRVHandle = m_SRVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
 void TextureResource::CreateViews()
