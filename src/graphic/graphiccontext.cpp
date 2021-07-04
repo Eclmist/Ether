@@ -18,6 +18,7 @@
 */
 
 #include "graphiccontext.h"
+#include "graphic/resource/bufferresource.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -44,7 +45,7 @@ void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
     m_CommandList->ClearRenderTargetView(texture.GetRTV(), clearColor, 0, nullptr);
 }
 
-void GraphicContext::TransitionResource(GPUResource& target, D3D12_RESOURCE_STATES newState)
+void GraphicContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STATES newState)
 {
     if (target.GetCurrentState() == newState)
         return;
@@ -66,11 +67,28 @@ void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
     m_CommandList->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
 }
 
-void GraphicContext::FinalizeAndExecute()
+void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 {
     g_CommandManager.Execute(m_CommandList.Get());
     m_CommandQueue->DiscardAllocator(m_CommandAllocator.Get(), m_CommandQueue->GetCompletionFence());
+
+    if (waitForCompletion)
+        m_CommandQueue->Flush();
 }
 
-ETH_NAMESPACE_END
+void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset)
+{
+    GraphicContext context;
+    context.Initialize();
 
+    GpuAllocation alloc = context.m_GpuAllocator.Allocate(size);
+    memcpy(alloc.GetCpuAddress(), data, size);
+
+    context.TransitionResource(dest, D3D12_RESOURCE_STATE_COPY_DEST);
+    context.m_CommandList->CopyBufferRegion(dest.GetResource(), dstOffset, alloc.GetResource(), 0, size);
+    context.TransitionResource(dest, D3D12_RESOURCE_STATE_GENERIC_READ);
+    context.FinalizeAndExecute(true);
+}
+
+
+ETH_NAMESPACE_END

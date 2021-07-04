@@ -27,9 +27,6 @@
 
 #define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("D3D12 operation failed - %s", #hr); throw std::exception(); }
 
-// D3D12 library
-#include <d3dcompiler.h>
-
 // Ether Graphics Library
 #include "graphic/graphiccore.h"
 #include "graphic/commandmanager.h"

@@ -20,18 +20,14 @@
 #pragma once
 
 #include "graphic/resource/gpuresource.h"
+#include "graphic/resource/bufferresource.h"
 #include "graphic/resource/textureresource.h"
+#include "graphic/resource/virtualbuffer/linearallocator.h"
 
 ETH_NAMESPACE_BEGIN
 
 class CommandQueue;
 
-/*
-* A graphic context contains all the information to successfully populate (and
-* send for execution) a single command list. In other words, there should be one
-* context for each rendering thread (one for UI, one for the main rendering thread,
-* one for compute, etc.). 
-*/
 class GraphicContext : NonCopyable
 {
 public:
@@ -45,10 +41,15 @@ public:
 
 public:
     void ClearColor(TextureResource& texture, ethVector4 color);
-    void TransitionResource(GPUResource& resource, D3D12_RESOURCE_STATES newState);
+    void TransitionResource(GpuResource& resource, D3D12_RESOURCE_STATES newState);
     void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv);
 
-    void FinalizeAndExecute();
+    void FinalizeAndExecute(bool waitForCompletion = false);
+
+public:
+    // Resource uploading
+    static void InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset = 0);
+
 
 private:
     // One descriptor heap is certainly not enough for actual rendering. This is why
@@ -63,6 +64,9 @@ private:
     wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
     D3D12_COMMAND_LIST_TYPE m_Type;
+
+private:
+    LinearAllocator m_GpuAllocator;
 };
 
 ETH_NAMESPACE_END
