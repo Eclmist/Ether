@@ -27,10 +27,8 @@ namespace Win32
 class Window : NonCopyable
 {
 public:
-    Window(const wchar_t* classname, HINSTANCE hInst);
-    ~Window();
-
-public:
+    void Initialize();
+    void Shutdown();
     void Show(int cmdShow);
 
 private:
@@ -40,11 +38,7 @@ private:
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
-    bool m_IsFullscreen;
     RECT m_WindowRect;
-
-    HINSTANCE m_hInst;
-    const wchar_t* m_ClassName;
 };
 
 }

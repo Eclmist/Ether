@@ -30,10 +30,9 @@ HWND g_hWnd = nullptr;
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 
-Window::Window(const wchar_t* classname, HINSTANCE hInst)
-    : m_ClassName(classname)
-    , m_hInst(hInst)
-    , m_IsFullscreen(false)
+#include <strsafe.h>
+
+void Window::Initialize()
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -46,8 +45,8 @@ Window::Window(const wchar_t* classname, HINSTANCE hInst)
 
     g_hWnd = CreateWindowExW(
         NULL,
-        classname,
-        classname,
+        g_EngineConfig.GetClientName().c_str(),
+        g_EngineConfig.GetClientName().c_str(),
         ETH_WINDOW_STYLE,
         m_WindowRect.left,
         m_WindowRect.top,
@@ -55,15 +54,15 @@ Window::Window(const wchar_t* classname, HINSTANCE hInst)
         m_WindowRect.bottom - m_WindowRect.top,
         nullptr,
         nullptr,
-        hInst,
+        GetModuleHandle(NULL),
         this
     );
 }
 
-Window::~Window()
+void Window::Shutdown()
 {
     DestroyWindow(g_hWnd);
-    UnregisterClassW(m_ClassName, m_hInst);
+    UnregisterClassW(g_EngineConfig.GetClientName().c_str(), GetModuleHandle(NULL));
 }
 
 void Window::Show(int cmdShow)
@@ -80,13 +79,13 @@ void Window::RegisterWindowClass() const
     windowClass.lpfnWndProc = &WndProcSetup;
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
-    windowClass.hInstance = m_hInst;
+    windowClass.hInstance = GetModuleHandle(NULL);
     windowClass.hCursor = nullptr;
     windowClass.hbrBackground = nullptr;
     windowClass.lpszMenuName = nullptr;
-    windowClass.lpszClassName = m_ClassName;
+    windowClass.lpszClassName = g_EngineConfig.GetClientName().c_str();
     windowClass.hIconSm = nullptr;
-    windowClass.hIcon = LoadIcon(m_hInst, MAKEINTRESOURCE(IDI_ENGINEICON));
+    windowClass.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ENGINEICON));
 
     AssertWin32(RegisterClassExW(&windowClass) != 0, "Failed to register Window Class");
 }
@@ -153,7 +152,6 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     return 0;
 }
-
 }
 
 ETH_NAMESPACE_END
