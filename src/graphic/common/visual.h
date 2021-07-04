@@ -19,31 +19,31 @@
 
 #pragma once
 
-#include "graphic/resource/gpuresource.h"
-#include "gpuallocation.h"
-
 ETH_NAMESPACE_BEGIN
 
-class LinearAllocatorPage : public GpuResource
+class MeshComponent;
+
+class Visual
 {
 public:
-    LinearAllocatorPage(size_t size = 2048);
-    ~LinearAllocatorPage() = default;
+    void Initialize(const MeshComponent& mesh);
 
-public:
-    inline size_t GetSize() const { return m_Size; }
-    inline size_t GetOffset() const { return m_Offset; }
-
-public:
-    bool HasSpace(size_t size, size_t alignment);
-    GpuAllocation Allocate(size_t size, size_t alignment);
-    void Reset();
+    inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return m_VertexBufferView; }
+    inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const { return m_IndexBufferView; }
 
 private:
-    size_t m_Size;
-    size_t m_Offset;
-    void* m_CpuAddress;
+    void UploadVertexBuffer(const void* data, uint16_t numVertices);
+    void UploadIndexBuffer(const void* data, uint16_t numIndices);
+
+    void InitVertexBufferView(size_t bufferSize, size_t stride);
+    void InitIndexBufferView(size_t bufferSize);
+
+private:
+    std::shared_ptr<BufferResource> m_VertexBuffer;
+    std::shared_ptr<BufferResource> m_IndexBuffer;
+
+    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 };
 
 ETH_NAMESPACE_END
-

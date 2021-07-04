@@ -72,3 +72,4 @@ void LinearAllocator::Reset()
 }
 
 ETH_NAMESPACE_END
+
