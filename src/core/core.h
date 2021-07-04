@@ -33,6 +33,8 @@
 #include "core/world/world.h"
 #include "core/applicationbase.h"
 
+#include "core/entity/component/meshcomponent.h"
+
 #include "common/logging/loggingmanager.h"
 #include "common/time.h"
 
