@@ -21,9 +21,10 @@
 
 ETH_NAMESPACE_BEGIN
 
+DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+
 void GraphicDisplay::Initialize()
 {
-    LogGraphicsInfo("Creating D3D12 swapchain");
     m_FrameBufferWidth = g_EngineConfig.GetClientWidth();
     m_FrameBufferHeight = g_EngineConfig.GetClientHeight();
     m_BufferingMode = BufferingMode::BUFFERINGMODE_TRIPLE;
@@ -56,7 +57,7 @@ void GraphicDisplay::CreateDxgiSwapChain()
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width = m_FrameBufferWidth;
     swapChainDesc.Height = m_FrameBufferHeight;
-    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapChainDesc.Format = g_SwapChainFormat;
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc = { 1, 0 };
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
