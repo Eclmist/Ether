@@ -26,6 +26,8 @@ namespace wrl = Microsoft::WRL;
 // D3D12 library
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <d3d12shader.h>
+#include <dxcapi.h>
 #include <DirectXMath.h>
 
 // D3D12 extension library
@@ -34,4 +36,4 @@ namespace wrl = Microsoft::WRL;
 // Ether Graphics Library
 #include "graphic/graphiccontext.h"
 #include "graphic/graphicdisplay.h"
-#include "graphic/resource/visual.h" // TODO: do we really need to expose this?
+
