@@ -24,7 +24,8 @@ ETH_NAMESPACE_BEGIN
 class Component // : public Serializable?
 {
 public:
-    virtual void Update() = 0;
+    Component() = default;
+    virtual ~Component() = default;
 
 private:
 
