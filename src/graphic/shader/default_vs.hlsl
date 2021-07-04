@@ -36,10 +36,12 @@ struct VS_OUTPUT
     float4 Color    : COLOR;
 };
 
-VS_OUTPUT VS_Main(VS_INPUT IN)
+VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
-    o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position, 1.0f));
+    float4 positionOffset = 2.5f * float4(ID % 5, (ID % 25) / 5, ID / 25,0) - float4(3, 3, 3, 0);
+
+    o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position + positionOffset, 1.0f));
     o.Color = float4(IN.Color, 1.0f);
 
     return o;

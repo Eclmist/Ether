@@ -208,8 +208,8 @@ void LoadEngineContent()
 
     D3D12_RASTERIZER_DESC RasterizerDefault = {};
     RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
-    RasterizerDefault.CullMode = D3D12_CULL_MODE_FRONT;
-    RasterizerDefault.FrontCounterClockwise = TRUE;
+    RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
+    RasterizerDefault.FrontCounterClockwise = FALSE;
     RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
     RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
     RasterizerDefault.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
@@ -289,7 +289,7 @@ void GraphicManager::Render()
     mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projectionMatrix);
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
 
-    m_Context.GetCommandList()->DrawIndexedInstanced(36, 1, 0, 0, 0);
+    m_Context.GetCommandList()->DrawIndexedInstanced(36, 100, 0, 0, 0);
 
     /*
     =======================================================================================
