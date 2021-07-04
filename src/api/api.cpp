@@ -23,7 +23,6 @@
 ETH_NAMESPACE_BEGIN
 
 Win32::Window g_MainWindow;
-Win32::CommandLineOptions g_CommandLineOptions;
 
 EngineConfig g_EngineConfig;
 LoggingManager g_LoggingManager;
@@ -32,7 +31,7 @@ World g_World;
 
 void InitializeEngine()
 {
-    g_CommandLineOptions.Initialize();
+    Win32::g_CommandLineOptions.Initialize();
     g_MainApplication->Initialize();
     g_MainWindow.Initialize();
     g_LoggingManager.Initialize();

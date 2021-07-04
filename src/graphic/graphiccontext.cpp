@@ -70,7 +70,7 @@ void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
 void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 {
     g_CommandManager.Execute(m_CommandList.Get());
-    m_CommandQueue->DiscardAllocator(m_CommandAllocator, m_CommandQueue->GetCompletionFence());
+    m_CommandQueue->DiscardAllocator(m_CommandAllocator, m_CommandQueue->GetCompletionFenceValue());
 
     if (waitForCompletion)
         m_CommandQueue->Flush();
@@ -90,5 +90,5 @@ void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, si
     context.FinalizeAndExecute(true);
 }
 
-
 ETH_NAMESPACE_END
+

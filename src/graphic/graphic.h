@@ -21,6 +21,10 @@
 
 #define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
 
+#define ETH_SHADER_DEBUG_DIR                   L"../../src/graphic/shader/"
+#define ETH_SHADER_RELEASE_DIR                 L"./data/shader/"
+
+
 #define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
 #define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
 #define D3D12_RESOURCE_STATE_UNKNOWN        ((D3D12_RESOURCE_STATES)-1)
@@ -31,6 +35,7 @@
 #include "graphic/graphiccore.h"
 #include "graphic/commandmanager.h"
 #include "graphic/graphicmanager.h"
+#include "graphic/common/shaderdaemon.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -38,5 +43,6 @@ extern wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
 
 extern CommandManager g_CommandManager;
 extern GraphicManager g_GraphicManager;
+extern ShaderDaemon g_ShaderDaemon;
 
 ETH_NAMESPACE_END

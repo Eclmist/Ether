@@ -26,6 +26,8 @@ ETH_NAMESPACE_BEGIN
 namespace Win32
 {
 
+CommandLineOptions g_CommandLineOptions;
+
 CommandLineOptions::CommandLineOptions()
     : m_DebugMode(false)
 {
