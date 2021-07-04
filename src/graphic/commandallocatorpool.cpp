@@ -41,7 +41,7 @@ ID3D12CommandAllocator* CommandAllocatorPool::RequestAllocator(uint64_t complete
 
     ID3D12CommandAllocator* allocator = m_DiscardedAllocators.front().first.Get();
     m_DiscardedAllocators.pop();
-    allocator->Reset();
+    ASSERT_SUCCESS(allocator->Reset());
     return allocator;
 }
 
