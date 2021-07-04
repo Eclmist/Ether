@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class DepthStencilResource : public GPUResource
+class DepthStencilResource : public GpuResource
 {
 public:
     DepthStencilResource(const std::wstring& name, D3D12_RESOURCE_DESC desc);
