@@ -50,10 +50,17 @@ namespace chrono = std::chrono;
 // Ether includes
 #include "core/core.h"
 #include "graphic/graphic.h"
+#include "system/win32/window.h"
+#include "system/win32/commandlineoptions.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32 { extern HWND g_hWnd; }
+namespace Win32
+{
+    extern HWND g_hWnd; 
+    extern Window g_ClientWindow;
+    extern CommandLineOptions g_CommandLineOptions;
+}
 
 ETH_NAMESPACE_END
 
