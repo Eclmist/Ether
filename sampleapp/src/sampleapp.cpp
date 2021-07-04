@@ -55,7 +55,7 @@ void SampleApp::OnRender(const Ether::RenderEventArgs& e)
 void SampleApp::OnKeyPress(const Ether::KeyEventArgs& e)
 {
     if (e.m_Key == Ether::Win32::KEYCODE_F3)
-        Ether::g_EngineConfig.ToggleDebugMode();
+        Ether::g_EngineConfig.ToggleDebugGui();
 }
 
 void SampleApp::OnKeyRelease(const Ether::KeyEventArgs& e)

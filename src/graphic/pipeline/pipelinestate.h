@@ -30,13 +30,14 @@ public:
     ~PipelineState() = default;
 
     inline const RootSignature* GetRootSignature() const { return m_RootSignature; }
-    inline ID3D12PipelineState* GetPipelineStateObject() const { return m_PipelineState.Get(); }
+    inline ID3D12PipelineState* GetPipelineStateObject() const { return m_PipelineState; }
 
     inline void SetRootSignature(const RootSignature& rs) { m_RootSignature = &rs; }
 
 protected:
     std::wstring m_Name;
-    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
+    ID3D12PipelineState* m_PipelineState;
+
     const RootSignature* m_RootSignature;
 };
 

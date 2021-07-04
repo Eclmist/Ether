@@ -23,7 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 PipelineState::PipelineState(const std::wstring& name)
     : m_Name(name)
+    , m_PipelineState(nullptr)
 {
 }
 
 ETH_NAMESPACE_END
+

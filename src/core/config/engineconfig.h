@@ -31,19 +31,24 @@ public:
     inline ETH_ENGINE_DLL const std::wstring& GetClientName() const { return m_ClientName; }
     inline ETH_ENGINE_DLL uint32_t GetClientWidth() const { return m_ClientWidth; }
     inline ETH_ENGINE_DLL uint32_t GetClientHeight() const { return m_ClientHeight; }
-    inline ETH_ENGINE_DLL bool IsDebugModeEnabled() const { return m_DebugModeEnabled; }
+    inline ETH_ENGINE_DLL bool IsDebugGuiEnabled() const { return m_DebugGuiEnabled; }
 
     inline ETH_ENGINE_DLL void SetClientName(std::wstring name) { m_ClientName = name; }
     inline ETH_ENGINE_DLL void SetClientWidth(uint32_t width) { m_ClientWidth = width; }
     inline ETH_ENGINE_DLL void SetClientHeight(uint32_t height) { m_ClientHeight = height; }
-    inline ETH_ENGINE_DLL void ToggleDebugMode() { m_DebugModeEnabled = !m_DebugModeEnabled; }
+    inline ETH_ENGINE_DLL void ToggleDebugGui() { m_DebugGuiEnabled = !m_DebugGuiEnabled; }
 
 private:
     std::wstring m_ClientName;
     uint32_t m_ClientWidth;
     uint32_t m_ClientHeight;
 
-    bool m_DebugModeEnabled;
+    bool m_DebugGuiEnabled;
+
+public:
+    // TODO: Move to camera
+    bool m_RenderWireframe = false;
+    ethVector4 m_ClearColor = ethVector4(0.05, 0.0, 0.07, 0.0);
 };
 
 ETH_NAMESPACE_END

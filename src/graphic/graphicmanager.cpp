@@ -23,24 +23,15 @@
 #include "graphic/pipeline/graphicpipelinestate.h"
 #include "graphic/resource/depthstencilresource.h"
 #include "graphic/common/visual.h"
+#include "graphic/common/shader.h"
 
 ETH_NAMESPACE_BEGIN
 
 wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
 CommandManager g_CommandManager;
-
-/*
-Enable the debug layer
-Create the device
-Create the command queue - CommandManager::CommandQueue
-Create the swap chain - Display
-Create a render target view (RTV) descriptor heap - Display::TextureResource
-Create frame resources (a render target view for each frame) - Display::TextureResource
-Create a command allocator - CommandManager::CommandQueue::CommandAllocatorPool
-*/
+ShaderDaemon g_ShaderDaemon;
 
 void LoadEngineContent();
-
 
 void GraphicManager::Initialize()
 {
@@ -57,6 +48,7 @@ void GraphicManager::Initialize()
     InitializeDevice();
 
     g_CommandManager.Initialize();
+    g_ShaderDaemon.Initialize();
     m_Display.Initialize();
     m_Context.Initialize();
     m_GuiManager.Initialize();
@@ -69,15 +61,18 @@ void GraphicManager::Shutdown()
     m_GuiManager.Shutdown();
     m_Context.Shutdown();
     m_Display.Shutdown();
+    g_ShaderDaemon.Shutdown();
     g_CommandManager.Shutdown();
 }
 
 void GraphicManager::WaitForPresent()
 {
     m_Context.GetCommandQueue()->StallForFence(m_Display.GetCurrentBackBufferFence());
+    CleanUp();
 }
 
-GraphicPipelineState pso;
+std::shared_ptr<GraphicPipelineState> pso;
+std::shared_ptr<GraphicPipelineState> wireframePso;
 wrl::ComPtr<ID3D12DescriptorHeap> g_DSVHeap;
 extern DXGI_FORMAT g_SwapChainFormat;
 RootSignature tempRS(1);
@@ -90,93 +85,19 @@ D3D12_INPUT_ELEMENT_DESC tempInputLayout[] =
 std::shared_ptr<DepthStencilResource> m_DepthBuffer;
 Visual debugVisual;
 
+Shader vertexShader(L"default_vs.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS);
+Shader pixelShader(L"default_ps.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS);
+
 void LoadEngineContent()
 {
+    vertexShader.Compile();
+    pixelShader.Compile();
+
     m_DepthBuffer = std::make_shared<DepthStencilResource>(L"Depth Buffer", DepthStencilResource::CreateResourceDesc(
         g_EngineConfig.GetClientWidth(),
         g_EngineConfig.GetClientHeight(),
         DXGI_FORMAT_D32_FLOAT
     ));
-
-    wrl::ComPtr<IDxcBlob> vsBlob;
-    wrl::ComPtr<IDxcBlob> psBlob;
-    wrl::ComPtr<IDxcBlobEncoding> vsShaderBlob;
-    wrl::ComPtr<IDxcBlobEncoding> psShaderBlob;
-
-    // TODO: Update to IDxcUtils once the latest version of DXC has been added to the Windows 10 SDK.
-    wrl::ComPtr<IDxcLibrary> dxc;
-    ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&dxc)));
-
-    wrl::ComPtr<IDxcCompiler> compiler;
-    ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
-
-    // TODO: Can g_CommandLineOptions not be used outside of api.cpp? wtf?
-    //std::wstring shaderDir = Win32::g_CommandLineOptions.IsDebugModeEnabled() ? L"../../src/graphic/shader/" : L"./data/shader";
-    std::wstring shaderDir = L"../../src/graphic/shader/";
-
-    uint32_t codePage = CP_UTF8;
-    ASSERT_SUCCESS(dxc->CreateBlobFromFile((shaderDir + L"default_vs.hlsl").c_str(), &codePage, vsShaderBlob.GetAddressOf()));
-    ASSERT_SUCCESS(dxc->CreateBlobFromFile((shaderDir + L"default_ps.hlsl").c_str(), &codePage, psShaderBlob.GetAddressOf()));
-
-
-    // NOTE FOR TMR
-    // Continue trying to get shader compilation working. Should we continue with IDxcLibrary or move to the later IDxcUtils (right 
-    // now I think stick with the Library). Then continue to work on trying to get some geometry out in this debug function, we'll
-    // figure out how to properly abstract everything once we understand how to correctly set up root signatures, shaders, and pipeline
-    // state.
-
-    wrl::ComPtr<IDxcOperationResult> result;
-    HRESULT hr = compiler->Compile(
-        vsShaderBlob.Get(), // pSource
-        L"default_vs.hlsl", // pSourceName
-        L"VS_Main", // pEntryPoint
-        L"vs_6_0", // pTargetProfile
-        NULL, 0, // pArguments, argCount
-        NULL, 0, // pDefines, defineCount
-        NULL, // pIncludeHandler
-        &result); // ppResult
-    if (SUCCEEDED(hr))
-        result->GetStatus(&hr);
-    if (FAILED(hr))
-    {
-        if (result)
-        {
-            wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
-            hr = result->GetErrorBuffer(&errorsBlob);
-            if (SUCCEEDED(hr) && errorsBlob)
-            {
-                LogGraphicsError("Shader compilation failed. %s", (const char*)errorsBlob->GetBufferPointer());
-            }
-        }
-        // Handle compilation error...
-    }
-    result->GetResult(&vsBlob);
-
-    hr = compiler->Compile(
-        psShaderBlob.Get(), // pSource
-        L"default_ps.hlsl", // pSourceName
-        L"PS_Main", // pEntryPoint
-        L"ps_6_0", // pTargetProfile
-        NULL, 0, // pArguments, argCount
-        NULL, 0, // pDefines, defineCount
-        NULL, // pIncludeHandler
-        &result); // ppResult
-    if (SUCCEEDED(hr))
-        result->GetStatus(&hr);
-    if (FAILED(hr))
-    {
-        if (result)
-        {
-            wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
-            hr = result->GetErrorBuffer(&errorsBlob);
-            if (SUCCEEDED(hr) && errorsBlob)
-            {
-                LogGraphicsError("Shader compilation failed. %s", (const char*)errorsBlob->GetBufferPointer());
-            }
-        }
-        // Handle compilation error...
-    }
-    result->GetResult(&psBlob);
 
     // Add to graphiccommon.h (TODO)
     // along with a bunch of common depth stencil states. 
@@ -222,22 +143,44 @@ void LoadEngineContent()
     tempRS[0].SetAsConstant(16, 0, D3D12_SHADER_VISIBILITY_VERTEX);
     tempRS.Finalize(L"tempRS", rootSignatureFlags);
 
-    pso.SetBlendState(alphaBlend);
-    pso.SetRasterizerState(RasterizerDefault);
-    pso.SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    pso = std::make_shared<GraphicPipelineState>();
+    pso->SetBlendState(alphaBlend);
+    pso->SetRasterizerState(RasterizerDefault);
+    pso->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     // TODO: perhaps pass in IDXCBlob directly?
-    pso.SetVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
-    pso.SetPixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
-    pso.SetRenderTargetFormat(g_SwapChainFormat);
-    pso.SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
-    pso.SetDepthStencilState(depthStateReadWrite);
-    pso.SetSamplingDesc(1, 0);
+    pso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+    pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+    pso->SetRenderTargetFormat(g_SwapChainFormat);
+    pso->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
+    pso->SetDepthStencilState(depthStateReadWrite);
+    pso->SetSamplingDesc(1, 0);
     // Shader must contain input layout
-    pso.SetNumLayoutElements(2);
-    pso.SetInputLayout(tempInputLayout);
-    pso.SetRootSignature(tempRS);
-    pso.SetSampleMask(0xFFFFFFFF);
-    pso.Finalize();
+    pso->SetNumLayoutElements(2);
+    pso->SetInputLayout(tempInputLayout);
+    pso->SetRootSignature(tempRS);
+    pso->SetSampleMask(0xFFFFFFFF);
+    pso->Finalize();
+
+
+    RasterizerDefault.FillMode = D3D12_FILL_MODE_WIREFRAME;
+
+    wireframePso = std::make_shared<GraphicPipelineState>();
+    wireframePso->SetBlendState(alphaBlend);
+    wireframePso->SetRasterizerState(RasterizerDefault);
+    wireframePso->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    // TODO: perhaps pass in IDXCBlob directly?
+    wireframePso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+    wireframePso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+    wireframePso->SetRenderTargetFormat(g_SwapChainFormat);
+    wireframePso->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
+    wireframePso->SetDepthStencilState(depthStateReadWrite);
+    wireframePso->SetSamplingDesc(1, 0);
+    // Shader must contain input layout
+    wireframePso->SetNumLayoutElements(2);
+    wireframePso->SetInputLayout(tempInputLayout);
+    wireframePso->SetRootSignature(tempRS);
+    wireframePso->SetSampleMask(0xFFFFFFFF);
+    wireframePso->Finalize();
 
     auto entities = g_World.GetEntities();
     MeshComponent* mesh = nullptr;
@@ -255,7 +198,7 @@ void LoadEngineContent()
 void GraphicManager::Render()
 {
     m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-    m_Context.ClearColor(*m_Display.GetCurrentBackBuffer(), Ether::ethVector4(0.05, 0.0, 0.07, 0.0));
+    m_Context.ClearColor(*m_Display.GetCurrentBackBuffer(), g_EngineConfig.m_ClearColor);
 
     /*
      TEMP RENDERING CODE FOR DRAWING GEOMETRY =============================================
@@ -263,8 +206,21 @@ void GraphicManager::Render()
     D3D12_RECT m_ScissorRect = (CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX));
     D3D12_VIEWPORT m_Viewport = (CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(g_EngineConfig.GetClientWidth()), static_cast<float>(g_EngineConfig.GetClientHeight())));
 
+    // Shader recompile
+    if (g_ShaderDaemon.HasRecompiled())
+    {
+        pso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+        pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+        pso->Finalize();
+
+        wireframePso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+        wireframePso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+        wireframePso->Finalize();
+        g_ShaderDaemon.ResetRecompileFlag();
+    }
+
     m_Context.GetCommandList()->ClearDepthStencilView(m_DepthBuffer->GetDSV(), D3D12_CLEAR_FLAG_DEPTH, 1.0, 0, 0, nullptr);
-    m_Context.GetCommandList()->SetPipelineState(pso.GetPipelineStateObject());
+    m_Context.GetCommandList()->SetPipelineState(g_EngineConfig.m_RenderWireframe ? wireframePso->GetPipelineStateObject() : pso->GetPipelineStateObject());
     m_Context.GetCommandList()->SetGraphicsRootSignature(tempRS.GetRootSignature());
     m_Context.GetCommandList()->OMSetRenderTargets(1, &m_Display.GetCurrentBackBuffer()->GetRTV(), FALSE, &m_DepthBuffer->GetDSV());
     m_Context.GetCommandList()->RSSetViewports(1, &m_Viewport);
@@ -289,7 +245,7 @@ void GraphicManager::Render()
     mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projectionMatrix);
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
 
-    m_Context.GetCommandList()->DrawIndexedInstanced(36, 100, 0, 0, 0);
+    m_Context.GetCommandList()->DrawIndexedInstanced(36, 1000, 0, 0, 0);
 
     /*
     =======================================================================================
@@ -301,7 +257,7 @@ void GraphicManager::Render()
 
 void GraphicManager::RenderGui()
 {
-    if (g_EngineConfig.IsDebugModeEnabled())
+    if (g_EngineConfig.IsDebugGuiEnabled())
         m_GuiManager.Render();
 }
 
@@ -310,8 +266,13 @@ void GraphicManager::Present()
     m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
-    m_Display.SetCurrentBackBufferFence(m_Context.GetCommandQueue()->GetCompletionFence());
+    m_Display.SetCurrentBackBufferFence(m_Context.GetCommandQueue()->GetCompletionFenceValue());
     m_Display.Present();
+}
+
+void GraphicManager::CleanUp()
+{
+    // TODO: Clean up old PSOs and other resources
 }
 
 void GraphicManager::InitializeDebugLayer()

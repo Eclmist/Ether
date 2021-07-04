@@ -46,8 +46,8 @@ void DebugMenuComponent::Draw()
 
         if (ImGui::CollapsingHeader("Display Options"))
         {
-            //ImGui::ColorEdit3("clear color", (float*)&/*clearColor*/); // Edit 3 floats representing a color
-            //ImGui::Checkbox("Render Wireframe", &renderWireframe);      // Edit bools storing our window open/close state
+            ImGui::ColorEdit3("clear color", (float*)&g_EngineConfig.m_ClearColor); // Edit 3 floats representing a color
+            ImGui::Checkbox("Render Wireframe", &g_EngineConfig.m_RenderWireframe);      // Edit bools storing our window open/close state
         }
 
         if (ImGui::CollapsingHeader("ImGui"))

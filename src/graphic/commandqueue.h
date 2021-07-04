@@ -31,7 +31,8 @@ public:
 
     inline ID3D12CommandQueue* Get() const { return m_CommandQueue.Get(); }
     inline D3D12_COMMAND_LIST_TYPE GetType() const { return m_Type; }
-    inline uint64_t GetCompletionFence() const { return m_CompletionFenceValue; }
+    inline uint64_t GetCompletionFenceValue() const { return m_CompletionFenceValue; }
+    inline uint64_t GetCompletedFenceValue() const { return m_Fence->GetCompletedValue(); }
 
     bool IsFenceComplete(uint64_t fenceValue);
     void StallForFence(uint64_t fenceValue);

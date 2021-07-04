@@ -17,16 +17,50 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engineconfig.h"
+#pragma once
 
 ETH_NAMESPACE_BEGIN
 
-EngineConfig::EngineConfig()
-    : m_ClientName(L"Untitled Ether Application")
-    , m_ClientWidth(1920)
-    , m_ClientHeight(1080)
-    , m_DebugGuiEnabled(false)
+enum class ShaderType
 {
-}
+    SHADERTYPE_VS,
+    SHADERTYPE_PS,
+    SHADERTYPE_CS,
+};
+
+class Shader
+{
+public:
+    Shader(
+        const wchar_t* path,
+        const wchar_t* entrypoint,
+        const wchar_t* targetProfile,
+        ShaderType type,
+        uint32_t encoding = CP_UTF8);
+
+    ~Shader() = default;
+
+    IDxcBlob* GetCompiledShaderBlob();
+
+    bool Compile();
+
+private:
+    std::wstring GetRelativePath();
+    std::wstring GetFullPath();
+
+private:
+    wrl::ComPtr<IDxcLibrary> m_DxcLibrary;
+    wrl::ComPtr<IDxcCompiler> m_DxcCompiler;
+    wrl::ComPtr<IDxcBlob> m_ShaderBlob;
+
+    std::wstring m_Filename;
+    std::wstring m_EntryPoint;
+    std::wstring m_TargetProfile;
+
+    ShaderType m_Type;
+    uint32_t m_Encoding;
+
+    std::mutex m_ShaderBlobMutex;
+};
 
 ETH_NAMESPACE_END

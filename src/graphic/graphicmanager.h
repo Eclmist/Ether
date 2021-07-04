@@ -39,6 +39,7 @@ public:
     inline GraphicDisplay& GetGraphicDisplay() { return m_Display; }
 
 private:
+    void CleanUp();
     void InitializeDebugLayer();
     void InitializeAdapter();
     void InitializeDevice();
