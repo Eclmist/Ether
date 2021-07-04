@@ -19,9 +19,11 @@
 
 #include "api.h"
 #include "graphic/graphic.h"
-#include "system/win32/window.h"
 
 ETH_NAMESPACE_BEGIN
+
+Win32::Window g_MainWindow;
+Win32::CommandLineOptions g_CommandLineOptions;
 
 EngineConfig g_EngineConfig;
 LoggingManager g_LoggingManager;
@@ -30,7 +32,9 @@ World g_World;
 
 void InitializeEngine()
 {
+    g_CommandLineOptions.Initialize();
     g_MainApplication->Initialize();
+    g_MainWindow.Initialize();
     g_LoggingManager.Initialize();
     g_GraphicManager.Initialize();
 }
@@ -40,6 +44,7 @@ void TerminateEngine()
     g_GraphicManager.Shutdown();
     g_LoggingManager.Shutdown();
     g_MainApplication->Shutdown();
+    g_MainWindow.Shutdown();
 }
 
 bool UpdateEngine()
@@ -54,17 +59,8 @@ bool UpdateEngine()
     return !g_MainApplication->ShouldExit();
 }
 
-int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
+void WindowsMessageLoop()
 {
-    LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
-
-    g_MainApplication = &app;
-    Win32::Window gameWindow(g_EngineConfig.GetClientName().c_str(), hInst);
-
-    InitializeEngine();
-    g_MainApplication->LoadContent();
-    gameWindow.Show(cmdShow);
-
     do
     {
         MSG msg = {};
@@ -78,7 +74,19 @@ int Start(ApplicationBase& app, HINSTANCE hInst, int cmdShow)
             break;
     } 
     while (UpdateEngine());
+}
 
+int Start(ApplicationBase& app, int cmdShow)
+{
+    LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
+
+    g_MainApplication = &app;
+
+    g_MainApplication->LoadContent();
+    InitializeEngine();
+    g_MainWindow.Show(cmdShow);
+
+    WindowsMessageLoop();
     TerminateEngine();
     return 0;
 }

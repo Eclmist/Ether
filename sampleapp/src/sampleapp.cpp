@@ -30,10 +30,8 @@ void SampleApp::Initialize()
 void SampleApp::LoadContent()
 {
     m_DebugCube = new Ether::Entity(L"Debug Cube");
-    Ether::Visual* debugVisual = new Ether::Visual();
-    debugVisual->UploadVertexBuffer();
-    debugVisual->UploadIndexBuffer();
-    m_DebugCube->AddComponent(debugVisual);
+    Ether::MeshComponent* debugMeshComponent = new Ether::MeshComponent();
+    m_DebugCube->AddComponent(debugMeshComponent);
     Ether::g_World.AddEntity(m_DebugCube);
 }
 
