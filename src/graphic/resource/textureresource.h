@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class TextureResource : public GPUResource
+class TextureResource : public GpuResource
 {
 public:
     TextureResource(const std::wstring& name, D3D12_RESOURCE_DESC desc, D3D12_CLEAR_VALUE clearColor);
