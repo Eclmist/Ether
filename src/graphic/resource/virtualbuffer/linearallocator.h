@@ -19,30 +19,28 @@
 
 #pragma once
 
-#include "graphic/resource/gpuresource.h"
-#include "gpuallocation.h"
+#include "linearallocatorpage.h"
 
 ETH_NAMESPACE_BEGIN
 
-class LinearAllocatorPage : public GpuResource
+class LinearAllocator
 {
 public:
-    LinearAllocatorPage(size_t size = 2048);
-    ~LinearAllocatorPage() = default;
+    LinearAllocator(size_t pageSize = 2048);
 
-public:
-    inline size_t GetSize() const { return m_Size; }
-    inline size_t GetOffset() const { return m_Offset; }
-
-public:
-    bool HasSpace(size_t size, size_t alignment);
     GpuAllocation Allocate(size_t size, size_t alignment);
     void Reset();
 
 private:
-    size_t m_Size;
-    size_t m_Offset;
-    void* m_CpuAddress;
+    LinearAllocatorPage* RequestPage();
+
+private:
+    size_t m_PageSize;
+
+    std::vector<std::shared_ptr<LinearAllocatorPage>> m_PagePool;
+    std::vector<std::shared_ptr<LinearAllocatorPage>> m_AvaliablePages;
+
+    LinearAllocatorPage* m_CurrentPage;
 };
 
 ETH_NAMESPACE_END

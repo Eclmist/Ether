@@ -41,6 +41,14 @@ LinearAllocatorPage::LinearAllocatorPage(size_t size)
     m_Resource->SetName(L"LinearAllocator::LinearAllocatorPage");
 }
 
+bool LinearAllocatorPage::HasSpace(size_t size, size_t alignment)
+{
+    size_t alignedSize = AlignUp(size, alignment);
+    size_t alignedOffset = AlignUp(m_Offset, alignment);
+
+    return alignedOffset + alignedSize <= m_Size;
+}
+
 GpuAllocation LinearAllocatorPage::Allocate(size_t size, size_t alignment)
 {
     if (!HasSpace(size, alignment))
@@ -61,13 +69,9 @@ GpuAllocation LinearAllocatorPage::Allocate(size_t size, size_t alignment)
     return allocation;
 }
 
-bool LinearAllocatorPage::HasSpace(size_t size, size_t alignment)
+void LinearAllocatorPage::Reset()
 {
-    size_t alignedSize = AlignUp(size, alignment);
-    size_t alignedOffset = AlignUp(m_Offset, alignment);
-
-    return alignedOffset + alignedSize <= m_Size;
+    m_Offset = 0;
 }
 
 ETH_NAMESPACE_END
-
