@@ -24,8 +24,11 @@
 
 ETH_NAMESPACE_BEGIN
 
+std::mutex g_LoggerMutex;
+
 void Log(LogLevel level, LogType type, const char* fmt, ...)
 {
+    std::lock_guard<std::mutex> guard(g_LoggerMutex);
     char formattedBuffer[4096];
 
     va_list args;
