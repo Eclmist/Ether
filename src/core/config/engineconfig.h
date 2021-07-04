@@ -28,7 +28,7 @@ public:
     ~EngineConfig() = default;
 
 public:
-    inline ETH_ENGINE_DLL std::wstring GetClientName() const { return m_ClientName; }
+    inline ETH_ENGINE_DLL const std::wstring& GetClientName() const { return m_ClientName; }
     inline ETH_ENGINE_DLL uint32_t GetClientWidth() const { return m_ClientWidth; }
     inline ETH_ENGINE_DLL uint32_t GetClientHeight() const { return m_ClientHeight; }
     inline ETH_ENGINE_DLL bool IsDebugModeEnabled() const { return m_DebugModeEnabled; }
