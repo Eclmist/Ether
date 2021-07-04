@@ -34,7 +34,7 @@ RootSignature::RootSignature(int numParameters, int numStaticSamplers)
 
 void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAGS flags)
 {
-    D3D12_ROOT_SIGNATURE_DESC desc;
+    D3D12_ROOT_SIGNATURE_DESC desc = {};
     desc.NumParameters = m_NumParameters;
     desc.NumStaticSamplers = m_NumStaticSamplers;
     desc.pParameters = (const D3D12_ROOT_PARAMETER*)m_RootParameters.data();
