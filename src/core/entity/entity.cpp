@@ -18,7 +18,6 @@
 */
 
 #include "entity.h"
-#include "graphic/resource/visual.h" //TODO: Remove together with debug code
 
 ETH_NAMESPACE_BEGIN
 

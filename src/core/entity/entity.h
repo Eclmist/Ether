@@ -43,6 +43,9 @@ public:
 
     void AddComponent(Component* component);
 
+    // TODO: Change to get components of type
+    std::vector<Component*> GetAllComponents() { return m_Components; }
+
 private:
     Entity* m_Parent;
     std::vector<Entity*> m_Children;
