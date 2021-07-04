@@ -61,7 +61,7 @@ private:
     std::shared_ptr<CommandQueue> m_CommandQueue;
 
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
-    wrl::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+    ID3D12CommandAllocator* m_CommandAllocator;
 
     D3D12_COMMAND_LIST_TYPE m_Type;
 

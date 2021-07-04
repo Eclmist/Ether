@@ -36,7 +36,7 @@ void GraphicContext::Shutdown()
 void GraphicContext::Reset()
 {
     m_CommandAllocator = g_CommandManager.GetQueue(m_Type)->RequestAllocator();
-    m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
+    m_CommandList->Reset(m_CommandAllocator, nullptr);
 }
 
 void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
@@ -70,7 +70,7 @@ void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
 void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 {
     g_CommandManager.Execute(m_CommandList.Get());
-    m_CommandQueue->DiscardAllocator(m_CommandAllocator.Get(), m_CommandQueue->GetCompletionFence());
+    m_CommandQueue->DiscardAllocator(m_CommandAllocator, m_CommandQueue->GetCompletionFence());
 
     if (waitForCompletion)
         m_CommandQueue->Flush();
