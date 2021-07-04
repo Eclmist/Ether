@@ -33,7 +33,7 @@ void LoggingComponent::Draw()
     ImGui::SetNextWindowPos(m_Position, ImGuiCond_Once);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0);
-    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
