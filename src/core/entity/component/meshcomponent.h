@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "core/entity/component/component.h"
+#include "component.h"
 #include "graphic/common/vertexformat.h"
 
 ETH_NAMESPACE_BEGIN
@@ -27,34 +27,18 @@ ETH_NAMESPACE_BEGIN
 // Arbitrary max number of vertices
 #define MAX_VERTICES 65536
 
-class ETH_ENGINE_DLL Visual : public Component
+class ETH_ENGINE_DLL MeshComponent : public Component
 {
 public:
-    Visual();
-    ~Visual() = default;
-
-    void UploadVertexBuffer();
-    void UploadIndexBuffer();
-
-    void Update() override {}
+    MeshComponent();
+    ~MeshComponent() = default;
 
 private:
-    void InitializeDebugVertexData();
-    void CreateVertexBuffer();
-    void CreateIndexBuffer();
-
-private:
-    wrl::ComPtr<ID3D12Resource> m_VertexBufferResource;
-    wrl::ComPtr<ID3D12Resource> m_IVertexBufferResource;
-    wrl::ComPtr<ID3D12Resource> m_IndexBufferResource;
-    wrl::ComPtr<ID3D12Resource> m_IIndexBufferResource;
-
-    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
-
+    friend class Visual; // TODO: Is this really the best way to link mesh/visual?
     VertexPositionColor m_VertexBuffer[MAX_VERTICES];
     uint16_t m_IndexBuffer[MAX_VERTICES];
     uint16_t m_NumVertices;
+    uint16_t m_NumIndices;
 };
 
 ETH_NAMESPACE_END

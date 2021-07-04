@@ -23,12 +23,15 @@
 
 ETH_NAMESPACE_BEGIN
 
+// Constant blocks must be multiples of 16 constants @ 16 bytes each
+#define DEFAULT_ALIGN 256
+
 class LinearAllocator
 {
 public:
     LinearAllocator(size_t pageSize = 2048);
 
-    GpuAllocation Allocate(size_t size, size_t alignment);
+    GpuAllocation Allocate(size_t size, size_t alignment = DEFAULT_ALIGN);
     void Reset();
 
 private:
