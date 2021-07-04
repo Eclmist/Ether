@@ -24,8 +24,6 @@
 #include "graphic/gui/loggingcomponent.h"
 #include "graphic/gui/debugmenucomponent.h"
 
-#include "system/win32/window.h"
-
 ETH_NAMESPACE_BEGIN
 
 void GuiManager::Initialize()
@@ -75,7 +73,6 @@ void GuiManager::Render()
 
 void GuiManager::RegisterComponents()
 {
-    LogGraphicsInfo("Registering GUI components");
     m_Components.push_back(std::make_shared<LoggingComponent>());
     m_Components.push_back(std::make_shared<DebugMenuComponent>());
 }
@@ -91,10 +88,8 @@ void GuiManager::CreateResourceHeap()
 
 void GuiManager::CreateImGuiContext()
 {
-    LogGraphicsInfo("Loading ImGui v%s", IMGUI_VERSION);
+    LogGraphicsInfo("Initializing ImGui v%s", IMGUI_VERSION);
     IMGUI_CHECKVERSION();
-
-    LogGraphicsInfo("Creating ImGui Context");
     ImGui::CreateContext();
 }
 
