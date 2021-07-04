@@ -21,8 +21,8 @@
 #include "sampleapp.h"
 #include "api/api.h"
 
-int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int cmdShow)
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 {
-    return Ether::Start(SampleApp(), hInst, cmdShow);
+    return Ether::Start(SampleApp(), cmdShow);
 }
 
