@@ -21,6 +21,7 @@
 #include <iosfwd>
 #include <ShlObj_core.h>
 #include <iostream>
+#include <sstream>
 
 ETH_NAMESPACE_BEGIN
 
