@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 void ShaderDaemon::Initialize()
 {
-    std::thread fileWatcherThread([&]() {
+    m_ShaderDaemonThread = std::thread([&]() {
 
         std::wstring shaderDir = GetShaderDirectory();
         HANDLE hDir = CreateFile(shaderDir.c_str(),  FILE_LIST_DIRECTORY,
@@ -55,13 +55,11 @@ void ShaderDaemon::Initialize()
             } while (info->NextEntryOffset != 0);
         }
     });
-
-    fileWatcherThread.detach();
 }
 
 void ShaderDaemon::Shutdown()
 {
-    // TODO: do we need to join the thread?
+    m_ShaderDaemonThread.join();
 }
 
 void ShaderDaemon::Register(Shader* shader)
