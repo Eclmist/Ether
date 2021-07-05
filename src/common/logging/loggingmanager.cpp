@@ -37,10 +37,16 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
     va_end(args);
 
     std::string formattedText(formattedBuffer);
-    LogEntry entry(formattedText, level, type);
-    g_LoggingManager.AddLog(entry);
-    g_LoggingManager.Serialize(entry);
-    std::cout << entry.GetText() << std::endl;
+
+    std::stringstream ss(formattedText);
+    std::string individualLine;
+
+    while (std::getline(ss, individualLine, '\n')) {
+        LogEntry entry(individualLine, level, type);
+        g_LoggingManager.AddLog(entry);
+        g_LoggingManager.Serialize(entry);
+        std::cout << entry.GetText() << std::endl;
+    }
 }
 
 void LoggingManager::Initialize()

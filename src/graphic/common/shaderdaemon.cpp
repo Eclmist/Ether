@@ -46,7 +46,7 @@ void ShaderDaemon::Initialize()
                 if (m_RegisteredShaders.find(shaderFileName) != m_RegisteredShaders.end() &&
                     info->Action != FILE_ACTION_RENAMED_OLD_NAME)
                 {
-                    LogGraphicsInfo("Shader Daemon: Changes to shaderfile %s detected", shaderFileName.c_str());
+                    LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
                     Sleep(50);
                     m_RegisteredShaders[shaderFileName]->Compile();
                 }
