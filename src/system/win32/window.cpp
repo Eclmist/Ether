@@ -152,6 +152,7 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     return 0;
 }
+
 }
 
 ETH_NAMESPACE_END
