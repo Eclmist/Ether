@@ -47,7 +47,7 @@ IDxcBlob* Shader::GetCompiledShaderBlob()
 
 bool Shader::Compile()
 {
-    LogGraphicsInfo("Compiling shader");
+    LogGraphicsInfo("Compiling shader %s", ToNarrowString(m_Filename).c_str());
 
     wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
 
@@ -67,7 +67,7 @@ bool Shader::Compile()
             wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
             hr = result->GetErrorBuffer(&errorsBlob);
             if (SUCCEEDED(hr) && errorsBlob)
-                LogGraphicsError("Shader compilation failed. %s", (const char*)errorsBlob->GetBufferPointer());
+                LogGraphicsError((const char*)errorsBlob->GetBufferPointer());
         }
 
         return false;
