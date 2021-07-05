@@ -46,5 +46,6 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     o.Color = float4(IN.Color, 1.0f);
     o.Color = float4(sin(objPos.x) / 2 + 0.5, cos(objPos.y) / 2 + 0.5, sin(objPos.z + 2) / 2 + 0.5, 0);
 
+
     return o;
 }

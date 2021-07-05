@@ -207,17 +207,26 @@ void GraphicManager::Render()
     D3D12_VIEWPORT m_Viewport = (CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(g_EngineConfig.GetClientWidth()), static_cast<float>(g_EngineConfig.GetClientHeight())));
 
     // Shader recompile
-    if (g_ShaderDaemon.HasRecompiled())
+    if (vertexShader.HasRecompiled())
     {
         pso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
-        pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
         pso->Finalize();
 
         wireframePso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+        wireframePso->Finalize();
+        vertexShader.SetRecompiled(false);
+    }
+
+    if (pixelShader.HasRecompiled())
+    {
+        pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+        pso->Finalize();
+
         wireframePso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
         wireframePso->Finalize();
-        g_ShaderDaemon.ResetRecompileFlag();
+        pixelShader.SetRecompiled(false);
     }
+
 
     m_Context.GetCommandList()->ClearDepthStencilView(m_DepthBuffer->GetDSV(), D3D12_CLEAR_FLAG_DEPTH, 1.0, 0, 0, nullptr);
     m_Context.GetCommandList()->SetPipelineState(g_EngineConfig.m_RenderWireframe ? wireframePso->GetPipelineStateObject() : pso->GetPipelineStateObject());

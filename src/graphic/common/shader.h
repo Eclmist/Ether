@@ -40,8 +40,11 @@ public:
 
     ~Shader() = default;
 
-    IDxcBlob* GetCompiledShaderBlob();
+    inline std::wstring GetFilename() const { return m_Filename; }
+    inline bool HasRecompiled() const { return m_HasRecompiled; }
+    inline void SetRecompiled(bool recompiled) { m_HasRecompiled = recompiled; }
 
+    IDxcBlob* GetCompiledShaderBlob();
     bool Compile();
 
 private:
@@ -61,6 +64,7 @@ private:
     uint32_t m_Encoding;
 
     std::mutex m_ShaderBlobMutex;
+    bool m_HasRecompiled;
 };
 
 ETH_NAMESPACE_END

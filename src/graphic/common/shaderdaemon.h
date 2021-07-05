@@ -30,15 +30,11 @@ public:
     void Shutdown();
     void Register(Shader* shader);
 
-    inline bool HasRecompiled() const { return m_HasRecompiled; }
-    inline void ResetRecompileFlag() { m_HasRecompiled = false; }
-
 private:
     std::wstring GetShaderDirectory();
 
 private:
-    std::list<Shader*> m_RegisteredShaders;
-    bool m_HasRecompiled;
+    std::unordered_map<std::wstring, Shader*> m_RegisteredShaders;
 
     std::mutex m_Mutex;
     HANDLE m_FileChangedEvent;

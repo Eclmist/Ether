@@ -21,8 +21,8 @@
 
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
-#include "graphic/gui/loggingcomponent.h"
-#include "graphic/gui/debugmenucomponent.h"
+#include "graphic/gui/loggingguicomponent.h"
+#include "graphic/gui/debugmenuguicomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -73,8 +73,8 @@ void GuiManager::Render()
 
 void GuiManager::RegisterComponents()
 {
-    m_Components.push_back(std::make_shared<LoggingComponent>());
-    m_Components.push_back(std::make_shared<DebugMenuComponent>());
+    m_Components.push_back(std::make_shared<LoggingGuiComponent>());
+    m_Components.push_back(std::make_shared<DebugMenuGuiComponent>());
 }
 
 void GuiManager::CreateResourceHeap()
