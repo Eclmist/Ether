@@ -23,14 +23,16 @@
 
 ETH_NAMESPACE_BEGIN
 
-class DebugMenuComponent : public GuiComponent
+class LoggingGuiComponent : public GuiComponent
 {
 public:
-    DebugMenuComponent();
-    ~DebugMenuComponent() = default;
+    LoggingGuiComponent();
+    ~LoggingGuiComponent() = default;
 
 private:
     void Draw() override;
+
+    ImVec4 GetColor(LogLevel level) const;
 };
 
 ETH_NAMESPACE_END

@@ -17,17 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "debugmenucomponent.h"
+#include "debugmenuguicomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-DebugMenuComponent::DebugMenuComponent()
+DebugMenuGuiComponent::DebugMenuGuiComponent()
 {
     m_Size = ImVec2((float)g_EngineConfig.GetClientWidth(), 300);
     m_Position = ImVec2(0, g_EngineConfig.GetClientHeight() - m_Size.y);
 }
 
-void DebugMenuComponent::Draw()
+void DebugMenuGuiComponent::Draw()
 {
     static bool showImGuiDemo = false;
     GraphicContext& gfxContext = g_GraphicManager.GetGraphicContext();

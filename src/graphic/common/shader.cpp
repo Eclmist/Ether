@@ -32,6 +32,7 @@ Shader::Shader(
     , m_TargetProfile(targetProfile)
     , m_Type(type)
     , m_Encoding(encoding)
+    , m_HasRecompiled(false)
 {
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&m_DxcLibrary)));
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_DxcCompiler)));
@@ -74,6 +75,7 @@ bool Shader::Compile()
 
     std::lock_guard<std::mutex> guard(m_ShaderBlobMutex);
     result->GetResult(&m_ShaderBlob);
+    m_HasRecompiled = true; 
     return true;
 }
 

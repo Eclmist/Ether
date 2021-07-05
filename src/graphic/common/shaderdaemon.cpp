@@ -23,27 +23,36 @@ ETH_NAMESPACE_BEGIN
 
 void ShaderDaemon::Initialize()
 {
-    m_HasRecompiled = false;
-
     std::thread fileWatcherThread([&]() {
+
         std::wstring shaderDir = GetShaderDirectory();
-        HANDLE handle = FindFirstChangeNotificationW(shaderDir.c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
-        AssertGraphics(handle != INVALID_HANDLE_VALUE, "Failed to create shader notification handle");
+        HANDLE hDir = CreateFile(shaderDir.c_str(),  FILE_LIST_DIRECTORY,
+            FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS,
+            NULL
+        );
 
-        while (true)
+        char notifyInfo[1024];
+        DWORD bytesReturned;
+        while (ReadDirectoryChangesW(hDir, &notifyInfo, sizeof(notifyInfo),
+            TRUE, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
+            &bytesReturned, NULL, NULL)) 
         {
-            WaitForSingleObject(handle, INFINITE);
+            FILE_NOTIFY_INFORMATION* info;
+            DWORD offset = 0;
 
-            // TODO: This wait is only here because the shader might fail to open the file
-            // if the OS has yet to close it.
-            Sleep(50);
+            do {
+                info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&notifyInfo[offset]);
+                std::wstring shaderFileName(info->FileName, info->FileNameLength / sizeof(WCHAR));
+                if (m_RegisteredShaders.find(shaderFileName) != m_RegisteredShaders.end() &&
+                    info->Action != FILE_ACTION_RENAMED_OLD_NAME)
+                {
+                    LogGraphicsInfo("Shader Daemon: Changes to shaderfile %s detected", shaderFileName.c_str());
+                    Sleep(50);
+                    m_RegisteredShaders[shaderFileName]->Compile();
+                }
 
-            // TODO: Detect the shader that changed and only recompile that shader
-            for (Shader* shader : m_RegisteredShaders)
-                shader->Compile();
-
-            m_HasRecompiled = true;
-            FindNextChangeNotification(handle);
+                offset += info->NextEntryOffset;
+            } while (info->NextEntryOffset != 0);
         }
     });
 
@@ -58,10 +67,10 @@ void ShaderDaemon::Shutdown()
 void ShaderDaemon::Register(Shader* shader)
 {
     std::lock_guard<std::mutex> guard(m_Mutex);
-    m_RegisteredShaders.push_back(shader);
+    m_RegisteredShaders[shader->GetFilename()] = shader;
 }
 
-std::wstring Ether::ShaderDaemon::GetShaderDirectory()
+std::wstring ShaderDaemon::GetShaderDirectory()
 {
     wchar_t fullPath[MAX_PATH];
 
