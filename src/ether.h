@@ -37,8 +37,6 @@ namespace chrono = std::chrono;
 #include <vector>
 #include <list>
 #include <stack>
-#include <queue>
-#include <deque>
 #include <unordered_set>
 #include <unordered_map>
 #include <set>

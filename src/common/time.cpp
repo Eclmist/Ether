@@ -21,13 +21,18 @@
 
 ETH_NAMESPACE_BEGIN
 
+// TODO: Is this really the best way to make this utility thread safe?
+std::mutex g_TimeMutex;
+
 time_t GetSystemTime()
 {
+    std::lock_guard<std::mutex> guard(g_TimeMutex);
     return time(0);
 }
 
 std::string FormatTime(const time_t t, char* format)
 {
+    std::lock_guard<std::mutex> guard(g_TimeMutex);
     char formatted[80];
     tm newTime;
     localtime_s(&newTime, &t);
@@ -37,6 +42,7 @@ std::string FormatTime(const time_t t, char* format)
 
 std::wstring WFormatTime(const time_t t, wchar_t* format)
 {
+    std::lock_guard<std::mutex> guard(g_TimeMutex);
     wchar_t formatted[80];
     tm newTime;
     localtime_s(&newTime, &t);

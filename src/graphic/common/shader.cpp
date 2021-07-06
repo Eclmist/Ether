@@ -51,11 +51,17 @@ bool Shader::Compile()
 
     wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
 
-    ASSERT_SUCCESS(m_DxcLibrary->CreateBlobFromFile(
-        GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf()));
+    HRESULT hr = m_DxcLibrary->CreateBlobFromFile(
+        GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
+
+    if (FAILED(hr))
+    {
+        LogGraphicsError("Unable to open %s for compilation. Please try again", ToNarrowString(m_Filename).c_str());
+        return false;
+    }
 
     wrl::ComPtr<IDxcOperationResult> result;
-    HRESULT hr = m_DxcCompiler->Compile(encodingBlob.Get(), GetRelativePath().c_str(), m_EntryPoint.c_str(),
+    hr = m_DxcCompiler->Compile(encodingBlob.Get(), GetRelativePath().c_str(), m_EntryPoint.c_str(),
         m_TargetProfile.c_str(), NULL, 0, NULL, 0, NULL, &result);
 
     if (SUCCEEDED(hr))

@@ -22,8 +22,8 @@
 void SampleApp::Initialize()
 {
     LogInfo("Initializing Sample App");
-    Ether::g_EngineConfig.SetClientWidth(1920);
-    Ether::g_EngineConfig.SetClientHeight(1080);
+    Ether::g_EngineConfig.SetClientWidth(1366);
+    Ether::g_EngineConfig.SetClientHeight(768);
     Ether::g_EngineConfig.SetClientName(L"Ether Sample App");
 }
 

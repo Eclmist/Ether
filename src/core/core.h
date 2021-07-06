@@ -21,6 +21,8 @@
 
 #include "coredefinitions.h"
 
+#include <deque>
+#include <queue>
 #include <string>
 #include <vector>
 
