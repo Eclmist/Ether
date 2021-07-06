@@ -25,6 +25,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+#define MAX_LOG_ENTRIES 512
+
 std::mutex g_LoggerMutex;
 
 void Log(LogLevel level, LogType type, const char* fmt, ...)
@@ -59,6 +61,8 @@ void LoggingManager::Initialize()
         LogInfo("Unable to open log file for serialization. Logs may be lost.\n");
         return;
     }
+
+    SerializePreInitLogs();
 }
 
 void LoggingManager::Shutdown()
@@ -67,8 +71,11 @@ void LoggingManager::Shutdown()
 }
 
 void LoggingManager::AddLog(const LogEntry entry)
-{
-    m_LogEntries.push_back(entry);
+ {
+    if (m_LogEntries.size() > MAX_LOG_ENTRIES)
+        m_LogEntries.pop_front();
+
+    m_LogEntries.emplace_back(entry);
 }
 
 void LoggingManager::Clear()
@@ -79,10 +86,25 @@ void LoggingManager::Clear()
 void LoggingManager::Serialize(const LogEntry entry)
 {
     if (!m_LogFileStream.is_open())
+    {
+        m_PreInitBuffer.push(entry);
         return;
+    }
 
     m_LogFileStream << entry.GetText().c_str() << "\n";
     m_LogFileStream.flush();
+}
+
+void Ether::LoggingManager::SerializePreInitLogs()
+{
+    while (!m_PreInitBuffer.empty())
+    {
+        LogEntry entry = m_PreInitBuffer.front();
+        m_PreInitBuffer.pop();
+
+        m_LogFileStream << entry.GetText().c_str() << "\n";
+        m_LogFileStream.flush();
+    }
 }
 
 const std::wstring LoggingManager::GetOutputDirectory() const

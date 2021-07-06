@@ -23,6 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 void ShaderDaemon::Initialize()
 {
+    LogGraphicsInfo("Starting Shader Daemon thread");
     m_ShaderDaemonThread = std::thread([&]() {
 
         std::wstring shaderDir = GetShaderDirectory();
@@ -47,7 +48,6 @@ void ShaderDaemon::Initialize()
                     info->Action != FILE_ACTION_RENAMED_OLD_NAME)
                 {
                     LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
-                    Sleep(50);
                     m_RegisteredShaders[shaderFileName]->Compile();
                 }
 

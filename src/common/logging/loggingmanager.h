@@ -55,14 +55,17 @@ public:
     void Serialize(const LogEntry entry);
     void Clear();
 
-    inline const std::vector<LogEntry> GetEntries() const { return m_LogEntries; }
+    inline const std::deque<LogEntry>& GetEntries() const { return m_LogEntries; }
 
 private:
+    void SerializePreInitLogs();
+
     const std::wstring GetOutputDirectory() const;
     const std::wstring GetTimestampedFileName() const;
 
 private:
-    std::vector<LogEntry> m_LogEntries;
+    std::queue<LogEntry> m_PreInitBuffer;
+    std::deque<LogEntry> m_LogEntries;
     std::wfstream m_LogFileStream;
 };
 

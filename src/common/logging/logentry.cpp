@@ -31,7 +31,7 @@ LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
 
 std::string LogEntry::GetText() const
 {
-    return GetTimePrefix() + " " + m_Text;
+    return GetTimePrefix() + " " + GetLogTypePrefix() + " " + m_Text;
 }
 
 std::string LogEntry::GetLogLevelPrefix() const
@@ -56,20 +56,20 @@ std::string LogEntry::GetLogTypePrefix() const
     switch (m_Type)
     {
     case LogType::LOGTYPE_ENGINE:
-        return "Engine:";
+        return "[  Engine  ]";
     case LogType::LOGTYPE_GRAPHICS:
-        return "Graphics:";
+        return "[ Graphics ]";
     case LogType::LOGTYPE_WIN32:
-        return "Win32:";
+        return "[ Platform ]";
     case LogType::LOGTYPE_NONE:
     default:
-        return "";
+        return "[  Engine  ]";
     }
 }
 
 std::string LogEntry::GetTimePrefix() const
 {
-    return "[" + FormatTime(m_Time) + "]";
+    return "[ " + FormatTime(m_Time) + " ]";
 }
 
 ETH_NAMESPACE_END
