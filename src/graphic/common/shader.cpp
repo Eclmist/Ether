@@ -50,13 +50,12 @@ bool Shader::Compile()
     LogGraphicsInfo("Compiling shader %s", ToNarrowString(m_Filename).c_str());
 
     wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
-
     HRESULT hr = m_DxcLibrary->CreateBlobFromFile(
         GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
 
     if (FAILED(hr))
     {
-        LogGraphicsError("Unable to open %s for compilation. Please try again", ToNarrowString(m_Filename).c_str());
+        LogGraphicsError("Failed to open shader %s for compilation", ToNarrowString(m_Filename).c_str());
         return false;
     }
 
