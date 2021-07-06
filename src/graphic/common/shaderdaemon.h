@@ -32,6 +32,7 @@ public:
 
 private:
     std::wstring GetShaderDirectory();
+    void WaitForFileUnlock(const std::wstring& shaderFileName);
 
 private:
     std::unordered_map<std::wstring, Shader*> m_RegisteredShaders;

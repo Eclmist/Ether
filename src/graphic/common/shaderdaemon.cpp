@@ -48,6 +48,7 @@ void ShaderDaemon::Initialize()
                     info->Action != FILE_ACTION_RENAMED_OLD_NAME)
                 {
                     LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
+                    WaitForFileUnlock(shaderFileName);
                     m_RegisteredShaders[shaderFileName]->Compile();
                 }
 
@@ -78,6 +79,29 @@ std::wstring ShaderDaemon::GetShaderDirectory()
         GetFullPathNameW(ETH_SHADER_RELEASE_DIR, MAX_PATH, fullPath, nullptr);
 
     return fullPath;
+}
+
+void ShaderDaemon::WaitForFileUnlock(const std::wstring& shaderFileName)
+{
+    std::wstring shaderDir = GetShaderDirectory();
+    std::wstring fullPathToFile = shaderDir + L"\\" + shaderFileName;
+
+    // Apparently there is no better way to do this..
+    // https://stackoverflow.com/questions/1746781/waiting-until-a-file-is-available-for-reading-with-win32
+    int delay = 64;
+    HANDLE handle;
+    while ((handle = CreateFileW(fullPathToFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE)
+    {
+        if (GetLastError() == ERROR_SHARING_VIOLATION) {
+            Sleep(delay);
+            if (delay <= 1024) // max delay approximately 1 second
+                delay *= 2;
+        }
+        else
+            break; // some other error occurred
+    }
+
+    CloseHandle(handle);
 }
 
 ETH_NAMESPACE_END
