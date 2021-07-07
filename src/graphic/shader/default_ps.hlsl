@@ -17,6 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+struct GlobalConstants
+{
+    float4 Time;
+};
+
+ConstantBuffer<GlobalConstants> CB_GlobalConstants : register(b0);
+
 struct PS_INPUT
 {
     float4 Position : SV_Position;
@@ -27,6 +34,6 @@ float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
 {
     //return float4(sin(IN.Position.x) / 2 + 0.5, cos(IN.Position.y) / 2 + 0.5, sin(IN.Position.z + 2) / 2 + 0.5, 0);
     //return float4(pid / 12.0f, pid / 12.0 + 0.3f, pid / 12.0 + 0.6f, 1.0);
-    return IN.Color * 1.2;
+    return IN.Color * 1.2 ;
 }
 
