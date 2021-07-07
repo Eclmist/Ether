@@ -30,16 +30,19 @@ public:
     void Shutdown();
     void Register(Shader* shader);
 
+    void DaemonThreadMain();
 private:
     std::wstring GetShaderDirectory();
+
     void WaitForFileUnlock(const std::wstring& shaderFileName);
+    void ProcessModifiedShaders(char* notifyInfo);
 
 private:
     std::unordered_map<std::wstring, Shader*> m_RegisteredShaders;
 
     std::thread m_ShaderDaemonThread;
     std::mutex m_Mutex;
-    HANDLE m_FileChangedEvent;
+    HANDLE m_TerminationEvent;
 };
 
 ETH_NAMESPACE_END
