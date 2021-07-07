@@ -24,42 +24,13 @@ ETH_NAMESPACE_BEGIN
 void ShaderDaemon::Initialize()
 {
     LogGraphicsInfo("Starting Shader Daemon thread");
-    m_ShaderDaemonThread = std::thread([&]() {
-
-        std::wstring shaderDir = GetShaderDirectory();
-        HANDLE hDir = CreateFile(shaderDir.c_str(),  FILE_LIST_DIRECTORY,
-            FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS,
-            NULL
-        );
-
-        char notifyInfo[1024];
-        DWORD bytesReturned;
-        while (ReadDirectoryChangesW(hDir, &notifyInfo, sizeof(notifyInfo),
-            TRUE, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
-            &bytesReturned, NULL, NULL)) 
-        {
-            FILE_NOTIFY_INFORMATION* info;
-            DWORD offset = 0;
-
-            do {
-                info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&notifyInfo[offset]);
-                std::wstring shaderFileName(info->FileName, info->FileNameLength / sizeof(WCHAR));
-                if (m_RegisteredShaders.find(shaderFileName) != m_RegisteredShaders.end() &&
-                    info->Action != FILE_ACTION_RENAMED_OLD_NAME)
-                {
-                    LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
-                    WaitForFileUnlock(shaderFileName);
-                    m_RegisteredShaders[shaderFileName]->Compile();
-                }
-
-                offset += info->NextEntryOffset;
-            } while (info->NextEntryOffset != 0);
-        }
-    });
+    m_TerminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    m_ShaderDaemonThread = std::thread(&ShaderDaemon::DaemonThreadMain, this);
 }
 
 void ShaderDaemon::Shutdown()
 {
+    SetEvent(m_TerminationEvent);
     m_ShaderDaemonThread.join();
 }
 
@@ -79,6 +50,46 @@ std::wstring ShaderDaemon::GetShaderDirectory()
         GetFullPathNameW(ETH_SHADER_RELEASE_DIR, MAX_PATH, fullPath, nullptr);
 
     return fullPath;
+}
+
+void ShaderDaemon::DaemonThreadMain()
+{
+    std::wstring shaderDir = GetShaderDirectory();
+    HANDLE hDir = CreateFile(shaderDir.c_str(),  FILE_LIST_DIRECTORY,
+        FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL
+    );
+
+    char notifyInfo[1024];
+    DWORD bytesReturned;
+    OVERLAPPED ovl = {};
+    ASSERT_SUCCESS(ovl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL));
+
+    ReadDirectoryChangesW(hDir,
+        notifyInfo, sizeof(notifyInfo), FALSE,
+        FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
+        NULL, &ovl, NULL);
+
+    HANDLE waitEvents[] = { ovl.hEvent, m_TerminationEvent };
+
+    while (true) 
+    {
+        DWORD result = WaitForMultipleObjects(2, waitEvents, FALSE, INFINITE);
+
+        if (result == WAIT_OBJECT_0 + 1)
+            break;
+
+        if (result != WAIT_OBJECT_0)
+            continue;
+
+        GetOverlappedResult(hDir, &ovl, &bytesReturned, FALSE);
+        ProcessModifiedShaders(notifyInfo);
+        ResetEvent(ovl.hEvent);
+        ReadDirectoryChangesW(hDir,
+            notifyInfo, sizeof(notifyInfo), FALSE,
+            FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
+            NULL, &ovl, NULL);
+    }
 }
 
 void ShaderDaemon::WaitForFileUnlock(const std::wstring& shaderFileName)
@@ -104,4 +115,25 @@ void ShaderDaemon::WaitForFileUnlock(const std::wstring& shaderFileName)
     CloseHandle(handle);
 }
 
+void ShaderDaemon::ProcessModifiedShaders(char* notifyInfo)
+{
+    FILE_NOTIFY_INFORMATION* info;
+    DWORD offset = 0;
+
+    do {
+        info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&notifyInfo[offset]);
+        std::wstring shaderFileName(info->FileName, info->FileNameLength / sizeof(WCHAR));
+        if (m_RegisteredShaders.find(shaderFileName) != m_RegisteredShaders.end() &&
+            info->Action != FILE_ACTION_RENAMED_OLD_NAME)
+        {
+            LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
+            WaitForFileUnlock(shaderFileName);
+            m_RegisteredShaders[shaderFileName]->Compile();
+        }
+
+        offset += info->NextEntryOffset;
+    } while (info->NextEntryOffset != 0);
+}
+
 ETH_NAMESPACE_END
+
