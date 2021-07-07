@@ -75,7 +75,7 @@ std::shared_ptr<GraphicPipelineState> pso;
 std::shared_ptr<GraphicPipelineState> wireframePso;
 wrl::ComPtr<ID3D12DescriptorHeap> g_DSVHeap;
 extern DXGI_FORMAT g_SwapChainFormat;
-RootSignature tempRS(1);
+RootSignature tempRS(2);
 D3D12_INPUT_ELEMENT_DESC tempInputLayout[] =
 {
     { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -112,8 +112,7 @@ void LoadEngineContent()
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
     // Add to graphiccommon.h (TODO)
     D3D12_BLEND_DESC alphaBlend = {};
@@ -140,7 +139,8 @@ void LoadEngineContent()
     RasterizerDefault.ForcedSampleCount = 0;
     RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
-    tempRS[0].SetAsConstant(16, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+    tempRS[0].SetAsConstant(4, 0, D3D12_SHADER_VISIBILITY_ALL);
+    tempRS[1].SetAsConstant(16, 1, D3D12_SHADER_VISIBILITY_ALL);
     tempRS.Finalize(L"tempRS", rootSignatureFlags);
 
     pso = std::make_shared<GraphicPipelineState>();
@@ -239,8 +239,10 @@ void GraphicManager::Render()
     m_Context.GetCommandList()->IASetVertexBuffers(0, 1, &debugVisual.GetVertexBufferView());
     m_Context.GetCommandList()->IASetIndexBuffer(&debugVisual.GetIndexBufferView());
 
+    double timeSinceStart = GetTimeSinceStart();
+
     // Update the model matrix.
-    float angle = static_cast<float>(90.0);
+    float angle = static_cast<float>(timeSinceStart);
     const ethXMVector rotationAxis = DirectX::XMVectorSet(0, 1, 1, 0);
     ethXMMatrix modelMatrix = DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(angle));
     const ethXMVector eyePosition = DirectX::XMVectorSet(0, 0, -10, 1);
@@ -252,8 +254,11 @@ void GraphicManager::Render()
     ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 100.0f);
     ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, viewMatrix);
     mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projectionMatrix);
-    m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
 
+
+    ethXMVector time = DirectX::XMVectorSet(timeSinceStart / 20, timeSinceStart, timeSinceStart * 2, timeSinceStart * 3);
+    m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, 4, &time, 0);
+    m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
     m_Context.GetCommandList()->DrawIndexedInstanced(36, 1000, 0, 0, 0);
 
     /*

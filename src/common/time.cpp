@@ -24,6 +24,11 @@ ETH_NAMESPACE_BEGIN
 // TODO: Is this really the best way to make this utility thread safe?
 std::mutex g_TimeMutex;
 
+using namespace chrono;
+
+time_point g_StartTime = steady_clock::now();
+
+// TODO: Refactor time_t to use chrono
 time_t GetSystemTime()
 {
     std::lock_guard<std::mutex> guard(g_TimeMutex);
@@ -48,6 +53,19 @@ std::wstring WFormatTime(const time_t t, wchar_t* format)
     localtime_s(&newTime, &t);
     wcsftime(formatted, 80, format, &newTime);
     return formatted;
+}
+
+double GetStartTime()
+{
+    std::lock_guard<std::mutex> guard(g_TimeMutex);
+    return duration_cast<milliseconds>(g_StartTime.time_since_epoch()).count() / 1000.0;
+}
+
+double GetTimeSinceStart()
+{
+    std::lock_guard<std::mutex> guard(g_TimeMutex);
+    time_point now = chrono::steady_clock::now();
+    return duration_cast<milliseconds>(now - g_StartTime).count() / 1000.0;
 }
 
 ETH_NAMESPACE_END
