@@ -44,8 +44,9 @@ public:
     inline bool HasRecompiled() const { return m_HasRecompiled; }
     inline void SetRecompiled(bool recompiled) { m_HasRecompiled = recompiled; }
 
-    IDxcBlob* GetCompiledShaderBlob();
     bool Compile();
+    const void* GetCompiledShader() const;
+    size_t GetCompiledShaderSize() const;
 
 private:
     std::wstring GetRelativePath();
@@ -63,7 +64,7 @@ private:
     ShaderType m_Type;
     uint32_t m_Encoding;
 
-    std::mutex m_ShaderBlobMutex;
+    mutable std::mutex m_ShaderBlobMutex;
     bool m_HasRecompiled;
 };
 
