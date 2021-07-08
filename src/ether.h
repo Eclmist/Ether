@@ -24,7 +24,6 @@
 
 // STL Headers
 #include <algorithm>
-#include <cassert>
 #include <string>
 #include <memory>
 #include <mutex>

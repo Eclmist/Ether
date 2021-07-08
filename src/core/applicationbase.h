@@ -32,11 +32,6 @@ public:
 public:
     virtual void OnUpdate(const UpdateEventArgs& e) = 0;
     virtual void OnRender(const RenderEventArgs& e) = 0;
-    virtual void OnKeyPress(const KeyEventArgs& e) = 0;
-    virtual void OnKeyRelease(const KeyEventArgs& e) = 0;
-    virtual void OnMouseButtonPress(const MouseEventArgs& e) = 0;
-    virtual void OnMouseButtonRelease(const MouseEventArgs& e) = 0;
-    virtual void OnMouseMove(const MouseEventArgs& e) = 0;
 
 public:
     inline bool ShouldExit() const { return m_ShouldExit; }

@@ -24,7 +24,9 @@ ETH_NAMESPACE_BEGIN
 namespace Win32
 {
 
-enum KeyCode
+#define NUM_KEYCODES 256
+
+enum class KeyCode
 {
     KEYCODE_None            = 0x00, // No key was pressed
     KEYCODE_LButton         = 0x01, // Left mouse button
@@ -230,7 +232,7 @@ enum KeyCode
     KEYCODE_Zoom            = 0xfb, // The Zoom key
     KEYCODE_NoName          = 0xfc, // Reserved
     KEYCODE_Pa1             = 0xfd, // The PA1 key
-    KEYCODE_OemClear        = 0xfe, // The Clear key
+    KEYCODE_OemClear        = 0xfe  // The Clear key
 };
 
 }

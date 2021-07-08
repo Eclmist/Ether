@@ -51,7 +51,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     offset += cos(CB_GlobalConstants.Time.w + 0.9);
     offset += cos(CB_GlobalConstants.Time.y + 1.4);
     offset += cos(CB_GlobalConstants.Time.x + 9.4);
-    float4 positionOffset = (float4(ID % 10, (ID % 100) / 10, ID / 100, 0) - 5) * 4;
+    float4 positionOffset = (float4(ID % 10, (ID % 100) / 10, ID / 100, 0) - 4.5) * 3;
     positionOffset -= float4(offset * ((ID % 4) + 1), offset * ((ID % 5) + 1), offset * ((ID%6) + 1) * 0.7, 0) * 0.01;
     float4 objPos = float4(IN.Position + positionOffset, 1.0f);
 

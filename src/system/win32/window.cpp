@@ -132,16 +132,35 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         break;
     case WM_KEYDOWN:
         // TODO: Handle Ctrl, Alt, and convert keycode to character
-        KeyEventArgs keydownArgs;
-        keydownArgs.m_Key = static_cast<KeyCode>(wParam);
-        keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
-        g_MainApplication->OnKeyPress(keydownArgs);
+        Input::GetInstance().SetKeyDown(static_cast<KeyCode>(wParam));
         break;
     case WM_KEYUP:
-        KeyEventArgs keyupArgs;
-        keyupArgs.m_Key = static_cast<KeyCode>(wParam);
-        keyupArgs.m_State = KeyEventArgs::KEYSTATE_KEYUP;
-        g_MainApplication->OnKeyRelease(keydownArgs);
+        Input::GetInstance().SetKeyUp(static_cast<KeyCode>(wParam));
+        break;
+    case WM_MOUSEWHEEL:
+        Input::GetInstance().SetMouseWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam));
+        break;
+    case WM_MOUSEMOVE:
+        Input::GetInstance().SetMousePosX((short)LOWORD(lParam));
+        Input::GetInstance().SetMousePosY((short)HIWORD(lParam));
+        break;
+    case WM_LBUTTONDOWN:
+        Input::GetInstance().SetMouseButtonDown(0);
+        break;
+    case WM_LBUTTONUP:
+        Input::GetInstance().SetMouseButtonUp(0);
+        break;
+    case WM_MBUTTONDOWN:
+        Input::GetInstance().SetMouseButtonDown(1);
+        break;
+    case WM_MBUTTONUP:
+        Input::GetInstance().SetMouseButtonUp(1);
+        break;
+    case WM_RBUTTONDOWN:
+        Input::GetInstance().SetMouseButtonDown(2);
+        break;
+    case WM_RBUTTONUP:
+        Input::GetInstance().SetMouseButtonUp(2);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);

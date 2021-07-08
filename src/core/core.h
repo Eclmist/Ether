@@ -21,6 +21,7 @@
 
 #include "coredefinitions.h"
 
+#include <cassert>
 #include <deque>
 #include <queue>
 #include <string>
@@ -34,6 +35,7 @@
 #include "core/config/engineconfig.h"
 #include "core/world/world.h"
 #include "core/applicationbase.h"
+#include "core/input.h"
 
 #include "core/entity/component/meshcomponent.h"
 
