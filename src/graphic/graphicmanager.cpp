@@ -120,9 +120,8 @@ void LoadEngineContent()
     pso->SetBlendState(g_BlendDisabled);
     pso->SetRasterizerState(g_RasterizerDefault);
     pso->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-    // TODO: perhaps pass in IDXCBlob directly?
-    pso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
-    pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+    pso->SetVertexShader(vertexShader.GetCompiledShader(), vertexShader.GetCompiledShaderSize());
+    pso->SetPixelShader(pixelShader.GetCompiledShader(), pixelShader.GetCompiledShaderSize());
     pso->SetRenderTargetFormat(g_SwapChainFormat);
     pso->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
     pso->SetDepthStencilState(g_DepthStateReadWrite);
@@ -139,8 +138,8 @@ void LoadEngineContent()
     wireframePso->SetRasterizerState(g_RasterizerWireframe);
     wireframePso->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     // TODO: perhaps pass in IDXCBlob directly?
-    wireframePso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
-    wireframePso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+    wireframePso->SetVertexShader(vertexShader.GetCompiledShader(), vertexShader.GetCompiledShaderSize());
+    wireframePso->SetPixelShader(pixelShader.GetCompiledShader(), pixelShader.GetCompiledShaderSize());
     wireframePso->SetRenderTargetFormat(g_SwapChainFormat);
     wireframePso->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
     wireframePso->SetDepthStencilState(g_DepthStateReadWrite);
@@ -179,20 +178,18 @@ void GraphicManager::Render()
     // Shader recompile
     if (vertexShader.HasRecompiled())
     {
-        pso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+        pso->SetVertexShader(vertexShader.GetCompiledShader(), vertexShader.GetCompiledShaderSize());
         pso->Finalize();
-
-        wireframePso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
+        wireframePso->SetVertexShader(vertexShader.GetCompiledShader(), vertexShader.GetCompiledShaderSize());
         wireframePso->Finalize();
         vertexShader.SetRecompiled(false);
     }
 
     if (pixelShader.HasRecompiled())
     {
-        pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+        pso->SetPixelShader(pixelShader.GetCompiledShader(), pixelShader.GetCompiledShaderSize());
         pso->Finalize();
-
-        wireframePso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
+        wireframePso->SetPixelShader(pixelShader.GetCompiledShader(), pixelShader.GetCompiledShaderSize());
         wireframePso->Finalize();
         pixelShader.SetRecompiled(false);
     }

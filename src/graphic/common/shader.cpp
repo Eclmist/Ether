@@ -39,12 +39,6 @@ Shader::Shader(
     g_ShaderDaemon.Register(this);
 }
 
-IDxcBlob* Shader::GetCompiledShaderBlob()
-{
-    std::lock_guard<std::mutex> guard(m_ShaderBlobMutex);
-    return m_ShaderBlob.Get();
-}
-
 bool Shader::Compile()
 {
     LogGraphicsInfo("Compiling shader %s", ToNarrowString(m_Filename).c_str());
@@ -82,6 +76,18 @@ bool Shader::Compile()
     result->GetResult(&m_ShaderBlob);
     m_HasRecompiled = true; 
     return true;
+}
+
+size_t Shader::GetCompiledShaderSize() const
+{
+    std::lock_guard<std::mutex> guard(m_ShaderBlobMutex);
+    return m_ShaderBlob->GetBufferSize();
+}
+
+const void* Shader::GetCompiledShader() const
+{
+    std::lock_guard<std::mutex> guard(m_ShaderBlobMutex);
+    return m_ShaderBlob->GetBufferPointer();
 }
 
 std::wstring Shader::GetRelativePath()
