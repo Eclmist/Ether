@@ -50,6 +50,11 @@ bool UpdateEngine()
 {
     g_MainApplication->OnUpdate(UpdateEventArgs());
 
+    RenderEventArgs renderArgs;
+    renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
+    renderArgs.m_GraphicContext = &g_GraphicManager.GetGraphicContext();
+    g_MainApplication->OnRender(renderArgs);
+
     g_GraphicManager.WaitForPresent();
     g_GraphicManager.Render();
     g_GraphicManager.RenderGui();

@@ -18,6 +18,7 @@
 */
 
 #include "entity.h"
+#include "core/entity/component/transformcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -25,6 +26,8 @@ Entity::Entity(const std::wstring& name)
     : m_Name(name)
     , m_Parent(nullptr)
 {
+    m_Transform = new TransformComponent();
+    AddComponent(m_Transform);
 }
 
 Entity::~Entity()

@@ -19,15 +19,15 @@
 
 #pragma once
 
-ETH_NAMESPACE_END
-
-class GraphicNodeRenderer : public NonCopyable
-{
-public:
-    GraphicNodeRenderer();
-    ~GraphicNodeRenderer() = default;
-
-private:
-};
-
-ETH_NAMESPACE_END
+//ETH_NAMESPACE_END
+//
+//class GraphicNodeRenderer : public NonCopyable
+//{
+//public:
+//    GraphicNodeRenderer();
+//    ~GraphicNodeRenderer() = default;
+//
+//private:
+//};
+//
+//ETH_NAMESPACE_END

@@ -19,28 +19,17 @@
 
 #pragma once
 
-#include "core/core.h"
-#include "graphic/graphiccore.h"
+ETH_NAMESPACE_BEGIN
 
-class SampleApp : public Ether::ApplicationBase
+class Camera
 {
 public:
-    void Initialize() override;
-    void LoadContent() override;
-    void UnloadContent() override;
-    void Shutdown() override;
 
-public:
-    void OnUpdate(const Ether::UpdateEventArgs& e) override;
-    void OnRender(const Ether::RenderEventArgs& e) override;
-    void OnKeyPress(const Ether::KeyEventArgs& e) override;
-    void OnKeyRelease(const Ether::KeyEventArgs& e) override;
-    void OnMouseButtonPress(const Ether::MouseEventArgs& e) override;
-    void OnMouseButtonRelease(const Ether::MouseEventArgs& e) override;
-    void OnMouseMove(const Ether::MouseEventArgs& e) override;
+    virtual ethXMMatrix GetViewProjection() = 0;
 
 private:
-    Ether::Entity* m_DebugCube;
-    Ether::ethVector3 m_CameraPos;
-    Ether::ethVector3 m_CameraDir;
+
+
 };
+
+ETH_NAMESPACE_END

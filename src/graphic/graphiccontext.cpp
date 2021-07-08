@@ -27,6 +27,9 @@ void GraphicContext::Initialize(D3D12_COMMAND_LIST_TYPE type)
     g_CommandManager.CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
     m_CommandQueue = g_CommandManager.GetQueue(type);
     m_Type = type;
+
+    m_ViewMatrix = DirectX::XMMatrixIdentity();
+    m_ProjectionMatrix = DirectX::XMMatrixIdentity();
 }
 
 void GraphicContext::Shutdown()

@@ -55,8 +55,8 @@ ethXMMatrix TransformComponent::GetMatrix()
     if (!m_MatrixRequiresUpdate)
         return m_FinalMatrix;
 
-    m_FinalMatrix = XMMatrixMultiply(m_TranslationMatrix, m_RotationMatrix);
-    m_FinalMatrix = XMMatrixMultiply(m_FinalMatrix, m_ScaleMatrix);
+    m_FinalMatrix = XMMatrixMultiply(m_RotationMatrix, m_TranslationMatrix);
+    m_FinalMatrix = XMMatrixMultiply(m_ScaleMatrix, m_FinalMatrix);
     m_MatrixRequiresUpdate = false;
     return m_FinalMatrix;
 }
