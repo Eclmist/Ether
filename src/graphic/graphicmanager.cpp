@@ -35,6 +35,12 @@ void LoadEngineContent();
 
 void GraphicManager::Initialize()
 {
+    // TODO: Move into camera class
+    cameraX = 0;
+    cameraY = 0;
+    cameraZ = -10;
+    lookatX = lookatY = lookatZ = 0;
+
     if (g_GraphicDevice != nullptr)
     {
         LogGraphicsWarning("An attempt was made to initialize an already initialized Renderer");
@@ -46,6 +52,7 @@ void GraphicManager::Initialize()
     InitializeDebugLayer();
     InitializeAdapter();
     InitializeDevice();
+    InitializeCommonStates();
 
     g_CommandManager.Initialize();
     g_ShaderDaemon.Initialize();
@@ -99,60 +106,26 @@ void LoadEngineContent()
         DXGI_FORMAT_D32_FLOAT
     ));
 
-    // Add to graphiccommon.h (TODO)
-    // along with a bunch of common depth stencil states. 
-    // we can reuse these descs in lots of places
-    D3D12_DEPTH_STENCIL_DESC depthStateReadWrite = {};
-    depthStateReadWrite.StencilEnable = false;
-    depthStateReadWrite.DepthEnable = true;
-    depthStateReadWrite.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-    depthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    // Add to graphiccommon.h (TODO)
-    D3D12_BLEND_DESC alphaBlend = {};
-    alphaBlend.IndependentBlendEnable = FALSE;
-    alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    alphaBlend.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-    alphaBlend.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-    alphaBlend.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-    alphaBlend.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
-    alphaBlend.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-    alphaBlend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-    alphaBlend.RenderTarget[0].BlendEnable = FALSE;
-
-    D3D12_RASTERIZER_DESC RasterizerDefault = {};
-    RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
-    RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
-    RasterizerDefault.FrontCounterClockwise = FALSE;
-    RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-    RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-    RasterizerDefault.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-    RasterizerDefault.DepthClipEnable = TRUE;
-    RasterizerDefault.MultisampleEnable = FALSE;
-    RasterizerDefault.AntialiasedLineEnable = FALSE;
-    RasterizerDefault.ForcedSampleCount = 0;
-    RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
     tempRS[0].SetAsConstant(4, 0, D3D12_SHADER_VISIBILITY_ALL);
     tempRS[1].SetAsConstant(16, 1, D3D12_SHADER_VISIBILITY_ALL);
     tempRS.Finalize(L"tempRS", rootSignatureFlags);
 
     pso = std::make_shared<GraphicPipelineState>();
-    pso->SetBlendState(alphaBlend);
-    pso->SetRasterizerState(RasterizerDefault);
+    pso->SetBlendState(g_BlendDisabled);
+    pso->SetRasterizerState(g_RasterizerDefault);
     pso->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     // TODO: perhaps pass in IDXCBlob directly?
     pso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
     pso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
     pso->SetRenderTargetFormat(g_SwapChainFormat);
     pso->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
-    pso->SetDepthStencilState(depthStateReadWrite);
+    pso->SetDepthStencilState(g_DepthStateReadWrite);
     pso->SetSamplingDesc(1, 0);
     // Shader must contain input layout
     pso->SetNumLayoutElements(2);
@@ -161,19 +134,16 @@ void LoadEngineContent()
     pso->SetSampleMask(0xFFFFFFFF);
     pso->Finalize();
 
-
-    RasterizerDefault.FillMode = D3D12_FILL_MODE_WIREFRAME;
-
     wireframePso = std::make_shared<GraphicPipelineState>();
-    wireframePso->SetBlendState(alphaBlend);
-    wireframePso->SetRasterizerState(RasterizerDefault);
+    wireframePso->SetBlendState(g_BlendDisabled);
+    wireframePso->SetRasterizerState(g_RasterizerWireframe);
     wireframePso->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     // TODO: perhaps pass in IDXCBlob directly?
     wireframePso->SetVertexShader(vertexShader.GetCompiledShaderBlob()->GetBufferPointer(), vertexShader.GetCompiledShaderBlob()->GetBufferSize());
     wireframePso->SetPixelShader(pixelShader.GetCompiledShaderBlob()->GetBufferPointer(), pixelShader.GetCompiledShaderBlob()->GetBufferSize());
     wireframePso->SetRenderTargetFormat(g_SwapChainFormat);
     wireframePso->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
-    wireframePso->SetDepthStencilState(depthStateReadWrite);
+    wireframePso->SetDepthStencilState(g_DepthStateReadWrite);
     wireframePso->SetSamplingDesc(1, 0);
     // Shader must contain input layout
     wireframePso->SetNumLayoutElements(2);
@@ -245,7 +215,7 @@ void GraphicManager::Render()
     float angle = static_cast<float>(timeSinceStart);
     const ethXMVector rotationAxis = DirectX::XMVectorSet(0, 1, 1, 0);
     ethXMMatrix modelMatrix = DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(angle));
-    const ethXMVector eyePosition = DirectX::XMVectorSet(0, 0, -10, 1);
+    const ethXMVector eyePosition = DirectX::XMVectorSet(cameraX, cameraY, -10, 1);
     const ethXMVector focusPoint = DirectX::XMVectorSet(0, 0, 0, 1);
     const ethXMVector upDirection = DirectX::XMVectorSet(0, 1, 0, 0);
     ethXMMatrix viewMatrix = DirectX::XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
@@ -292,9 +262,6 @@ void GraphicManager::CleanUp()
 void GraphicManager::InitializeDebugLayer()
 {
 #if defined(_DEBUG)
-    // Always enable the debug layer before doing anything DX12 related
-    // so all possible errors generated while creating DX12 objects
-    // are caught by the debug layer.
     wrl::ComPtr<ID3D12Debug> debugInterface;
     ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
