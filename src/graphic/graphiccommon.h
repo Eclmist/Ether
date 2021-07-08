@@ -19,22 +19,25 @@
 
 #pragma once
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
+ETH_NAMESPACE_BEGIN
 
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3d12shader.h>
-#include <dxcapi.h>
-#include <DirectXMath.h>
+void InitializeCommonStates();
 
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
+extern D3D12_RASTERIZER_DESC g_RasterizerDefault;
+extern D3D12_RASTERIZER_DESC g_RasterizerDefaultCw;
+extern D3D12_RASTERIZER_DESC g_RasterizerWireframe;
+extern D3D12_RASTERIZER_DESC g_RasterizerWireframeCw;
 
-// Ether Graphics Library
-#include "graphic/graphiccommon.h"
-#include "graphic/graphiccontext.h"
-#include "graphic/graphicdisplay.h"
+extern D3D12_BLEND_DESC g_BlendDisabled;
+extern D3D12_BLEND_DESC g_BlendPreMultiplied;
+extern D3D12_BLEND_DESC g_BlendTraditional;
+extern D3D12_BLEND_DESC g_BlendAdditive;
+extern D3D12_BLEND_DESC g_BlendTraditionalAdditive;
+
+extern D3D12_DEPTH_STENCIL_DESC g_DepthStateDisabled;
+extern D3D12_DEPTH_STENCIL_DESC g_DepthStateReadWrite;
+extern D3D12_DEPTH_STENCIL_DESC g_DepthStateReadOnly;
+extern D3D12_DEPTH_STENCIL_DESC g_DepthStateTestEqual;
+
+ETH_NAMESPACE_END
 

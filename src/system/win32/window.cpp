@@ -136,6 +136,17 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         keydownArgs.m_Key = static_cast<KeyCode>(wParam);
         keydownArgs.m_State = KeyEventArgs::KEYSTATE_KEYDOWN;
         g_MainApplication->OnKeyPress(keydownArgs);
+
+        // TODO: Move into camera class
+        if (keydownArgs.m_Key == KEYCODE_Q)
+            g_GraphicManager.cameraY += 0.1;
+        if (keydownArgs.m_Key == KEYCODE_E)
+            g_GraphicManager.cameraY -= 0.1;
+        if (keydownArgs.m_Key == KEYCODE_A)
+            g_GraphicManager.cameraX += 0.1;
+        if (keydownArgs.m_Key == KEYCODE_D)
+            g_GraphicManager.cameraX -= 0.1;
+
         break;
     case WM_KEYUP:
         KeyEventArgs keyupArgs;

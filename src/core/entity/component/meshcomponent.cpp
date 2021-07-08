@@ -36,12 +36,12 @@ MeshComponent::MeshComponent()
     m_VertexBuffer[7] = { ethVector3(1.0f, -1.0f,  1.0f), ethVector3(1.0f, 0.0f, 1.0f) };
 
     uint16_t indices[] = {
-        0, 1, 2, 0, 2, 3,
-        4, 6, 5, 4, 7, 6,
-        4, 5, 1, 4, 1, 0,
-        3, 2, 6, 3, 6, 7,
-        1, 5, 6, 1, 6, 2,
-        4, 0, 3, 4, 3, 7
+        0, 2, 1, 0, 3, 2,
+        4, 5, 6, 4, 6, 7,
+        4, 1, 5, 4, 0, 1,
+        3, 6, 2, 3, 7, 6,
+        1, 6, 5, 1, 2, 6,
+        4, 3, 0, 4, 7, 3
     };
 
     memcpy(m_IndexBuffer, indices, sizeof(uint16_t) * m_NumIndices);

@@ -38,6 +38,9 @@ public:
     inline GraphicContext& GetGraphicContext() { return m_Context; }
     inline GraphicDisplay& GetGraphicDisplay() { return m_Display; }
 
+    float cameraX, cameraY, cameraZ;
+    float lookatX, lookatY, lookatZ;
+
 private:
     void CleanUp();
     void InitializeDebugLayer();
