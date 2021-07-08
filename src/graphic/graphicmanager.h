@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphic/commandmanager.h"
+#include "graphic/graphicnoderenderer.h"
 #include "graphic/resource/textureresource.h"
 #include "graphic/gui/guimanager.h"
 
@@ -37,9 +38,7 @@ public:
 
     inline GraphicContext& GetGraphicContext() { return m_Context; }
     inline GraphicDisplay& GetGraphicDisplay() { return m_Display; }
-
-    float cameraX, cameraY, cameraZ;
-    float lookatX, lookatY, lookatZ;
+    inline GuiManager& GetGuiManager() { return m_GuiManager; }
 
 private:
     void CleanUp();
@@ -53,6 +52,13 @@ private:
     GraphicContext m_Context;
     GraphicDisplay m_Display;
     GuiManager m_GuiManager;
+
+    // TODO: Move into some kind of gbuffer producer?
+public:
+    void SubmitVisualForRender(Visual* visual);
+
+private:
+    std::vector<Visual*> m_Visuals;
 };
 
 ETH_NAMESPACE_END

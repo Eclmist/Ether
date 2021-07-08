@@ -20,8 +20,11 @@
 #pragma once
 
 #include "core/entity/component/component.h"
+#include "core/entity/component/transformcomponent.h"
 
 ETH_NAMESPACE_BEGIN
+
+// TODO: Clean this mess
 
 class ETH_ENGINE_DLL Entity // : public Serializable?
 {
@@ -46,12 +49,17 @@ public:
     // TODO: Change to get components of type
     std::vector<Component*> GetAllComponents() { return m_Components; }
 
+    inline TransformComponent* GetTransform() const { return m_Transform; }
+
 private:
     Entity* m_Parent;
     std::vector<Entity*> m_Children;
     std::vector<Component*> m_Components;
 
     std::wstring m_Name;
+
+private:
+    TransformComponent* m_Transform;
 };
 
 ETH_NAMESPACE_END

@@ -23,10 +23,14 @@
 
 ETH_NAMESPACE_BEGIN
 
+class GraphicContext;
+
 struct RenderEventArgs : public EventArgs
 {
     double m_TotalElapsedTime;
     double m_DeltaTime;
+
+    GraphicContext* m_GraphicContext;
 };
 
 ETH_NAMESPACE_END

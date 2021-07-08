@@ -22,9 +22,12 @@
 void SampleApp::Initialize()
 {
     LogInfo("Initializing Sample App");
-    Ether::g_EngineConfig.SetClientWidth(1366);
-    Ether::g_EngineConfig.SetClientHeight(768);
+    Ether::g_EngineConfig.SetClientWidth(1920);
+    Ether::g_EngineConfig.SetClientHeight(1080);
     Ether::g_EngineConfig.SetClientName(L"Ether Sample App");
+
+    m_CameraPos = { 0, 0, -10 };
+    m_CameraDir = { 0, 0, 1 };
 }
 
 void SampleApp::LoadContent()
@@ -32,6 +35,9 @@ void SampleApp::LoadContent()
     m_DebugCube = new Ether::Entity(L"Debug Cube");
     Ether::MeshComponent* debugMeshComponent = new Ether::MeshComponent();
     m_DebugCube->AddComponent(debugMeshComponent);
+    m_DebugCube->GetTransform()->SetTranslation({ -.0, -.0, 50 });
+    m_DebugCube->GetTransform()->SetRotation({ 
+        DirectX::XMConvertToRadians(45), DirectX::XMConvertToRadians(45), 0 });
     Ether::g_World.AddEntity(m_DebugCube);
 }
 
@@ -50,6 +56,16 @@ void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
 
 void SampleApp::OnRender(const Ether::RenderEventArgs& e)
 {
+    const Ether::ethXMVector eyePos = DirectX::XMLoadFloat3(&m_CameraPos);
+    const Ether::ethXMVector eyeDir = DirectX::XMLoadFloat3(&m_CameraDir);
+    const Ether::ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
+    float aspectRatio = Ether::g_EngineConfig.GetClientWidth() / static_cast<float>(Ether::g_EngineConfig.GetClientHeight());
+
+    Ether::ethXMMatrix viewMatrix = DirectX::XMMatrixLookToLH(eyePos, eyeDir, upDir);
+    Ether::ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 100.0f);
+
+    e.m_GraphicContext->SetViewMatrix(viewMatrix);
+    e.m_GraphicContext->SetProjectionMatrix(projectionMatrix);
 }
 
 void SampleApp::OnKeyPress(const Ether::KeyEventArgs& e)

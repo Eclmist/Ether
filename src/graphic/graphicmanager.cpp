@@ -24,6 +24,7 @@
 #include "graphic/resource/depthstencilresource.h"
 #include "graphic/common/visual.h"
 #include "graphic/common/shader.h"
+#include "core/entity/component/transformcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -35,12 +36,6 @@ void LoadEngineContent();
 
 void GraphicManager::Initialize()
 {
-    // TODO: Move into camera class
-    cameraX = 0;
-    cameraY = 0;
-    cameraZ = -10;
-    lookatX = lookatY = lookatZ = 0;
-
     if (g_GraphicDevice != nullptr)
     {
         LogGraphicsWarning("An attempt was made to initialize an already initialized Renderer");
@@ -91,6 +86,7 @@ D3D12_INPUT_ELEMENT_DESC tempInputLayout[] =
 
 std::shared_ptr<DepthStencilResource> m_DepthBuffer;
 Visual debugVisual;
+TransformComponent* debugTransform;
 
 Shader vertexShader(L"default_vs.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS);
 Shader pixelShader(L"default_ps.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS);
@@ -152,16 +148,9 @@ void LoadEngineContent()
     wireframePso->Finalize();
 
     auto entities = g_World.GetEntities();
-    MeshComponent* mesh = nullptr;
-
-    for (auto e : entities)
-        if (e->GetAllComponents().size() > 0)
-        {
-            mesh = dynamic_cast<MeshComponent*>(e->GetAllComponents()[0]);
-            break;
-        }
-
+    MeshComponent* mesh = dynamic_cast<MeshComponent*>(entities[0]->GetAllComponents()[1]);
     debugVisual.Initialize(*mesh);
+    debugTransform = dynamic_cast<TransformComponent*>(entities[0]->GetAllComponents()[0]);
 }
 
 void GraphicManager::Render()
@@ -174,6 +163,11 @@ void GraphicManager::Render()
     */
     D3D12_RECT m_ScissorRect = (CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX));
     D3D12_VIEWPORT m_Viewport = (CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(g_EngineConfig.GetClientWidth()), static_cast<float>(g_EngineConfig.GetClientHeight())));
+
+    ethXMVector time = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
+    ethXMMatrix modelMatrix = debugTransform->GetMatrix();
+    ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, m_Context.GetViewMatrix());
+    mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_Context.GetProjectionMatrix());
 
     // Shader recompile
     if (vertexShader.HasRecompiled())
@@ -194,44 +188,18 @@ void GraphicManager::Render()
         pixelShader.SetRecompiled(false);
     }
 
-
     m_Context.GetCommandList()->ClearDepthStencilView(m_DepthBuffer->GetDSV(), D3D12_CLEAR_FLAG_DEPTH, 1.0, 0, 0, nullptr);
     m_Context.GetCommandList()->SetPipelineState(g_EngineConfig.m_RenderWireframe ? wireframePso->GetPipelineStateObject() : pso->GetPipelineStateObject());
     m_Context.GetCommandList()->SetGraphicsRootSignature(tempRS.GetRootSignature());
     m_Context.GetCommandList()->OMSetRenderTargets(1, &m_Display.GetCurrentBackBuffer()->GetRTV(), FALSE, &m_DepthBuffer->GetDSV());
     m_Context.GetCommandList()->RSSetViewports(1, &m_Viewport);
     m_Context.GetCommandList()->RSSetScissorRects(1, &m_ScissorRect);
-
     m_Context.GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_Context.GetCommandList()->IASetVertexBuffers(0, 1, &debugVisual.GetVertexBufferView());
     m_Context.GetCommandList()->IASetIndexBuffer(&debugVisual.GetIndexBufferView());
-
-    double timeSinceStart = GetTimeSinceStart();
-
-    // Update the model matrix.
-    float angle = static_cast<float>(timeSinceStart);
-    const ethXMVector rotationAxis = DirectX::XMVectorSet(0, 1, 1, 0);
-    ethXMMatrix modelMatrix = DirectX::XMMatrixRotationAxis(rotationAxis, DirectX::XMConvertToRadians(angle));
-    const ethXMVector eyePosition = DirectX::XMVectorSet(cameraX, cameraY, -10, 1);
-    const ethXMVector focusPoint = DirectX::XMVectorSet(0, 0, 0, 1);
-    const ethXMVector upDirection = DirectX::XMVectorSet(0, 1, 0, 0);
-    ethXMMatrix viewMatrix = DirectX::XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
-
-    float aspectRatio = g_EngineConfig.GetClientWidth() / static_cast<float>(g_EngineConfig.GetClientHeight());
-    ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 100.0f);
-    ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, viewMatrix);
-    mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, projectionMatrix);
-
-
-    ethXMVector time = DirectX::XMVectorSet(timeSinceStart / 20, timeSinceStart, timeSinceStart * 2, timeSinceStart * 3);
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, 4, &time, 0);
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
     m_Context.GetCommandList()->DrawIndexedInstanced(36, 1000, 0, 0, 0);
-
-    /*
-    =======================================================================================
-    */
-
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
 }

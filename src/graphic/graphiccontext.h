@@ -39,17 +39,20 @@ public:
     inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList.Get(); }
     inline std::shared_ptr<CommandQueue> GetCommandQueue() const { return m_CommandQueue; }
 
+    inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
+    inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
+
+    inline void SetViewMatrix(ethXMMatrix viewMatrix) { m_ViewMatrix = viewMatrix; }
+    inline void SetProjectionMatrix(ethXMMatrix projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
+
 public:
     void ClearColor(TextureResource& texture, ethVector4 color);
     void TransitionResource(GpuResource& resource, D3D12_RESOURCE_STATES newState);
     void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv);
-
     void FinalizeAndExecute(bool waitForCompletion = false);
 
 public:
-    // Resource uploading
     static void InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset = 0);
-
 
 private:
     // One descriptor heap is certainly not enough for actual rendering. This is why
@@ -67,6 +70,11 @@ private:
 
 private:
     LinearAllocator m_GpuAllocator;
+
+private:
+    ethXMMatrix m_ViewMatrix;
+    ethXMMatrix m_ProjectionMatrix;
 };
 
 ETH_NAMESPACE_END
+
