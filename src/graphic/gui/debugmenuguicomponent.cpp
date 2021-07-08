@@ -50,6 +50,12 @@ void DebugMenuGuiComponent::Draw()
             ImGui::Checkbox("Render Wireframe", &g_EngineConfig.m_RenderWireframe);      // Edit bools storing our window open/close state
         }
 
+        if (ImGui::CollapsingHeader("Input"))
+        {
+            ImGui::Text("Mouse Position: (%f, %f)", Input::GetMousePosX(), Input::GetMousePosY());
+            ImGui::Text("Mouse Delta: (%f, %f)", Input::GetMouseDeltaX(), Input::GetMouseDeltaY());
+        }
+
         if (ImGui::CollapsingHeader("ImGui"))
         {
             ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo);      // Edit bools storing our window open/close state

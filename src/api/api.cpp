@@ -67,6 +67,8 @@ void WindowsMessageLoop()
 {
     do
     {
+        Input::GetInstance().NewFrame();
+
         MSG msg = {};
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {

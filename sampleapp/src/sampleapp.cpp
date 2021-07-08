@@ -18,6 +18,7 @@
 */
 
 #include "sampleapp.h"
+#include <algorithm> // for std::clamp
 
 void SampleApp::Initialize()
 {
@@ -26,8 +27,8 @@ void SampleApp::Initialize()
     Ether::g_EngineConfig.SetClientHeight(1080);
     Ether::g_EngineConfig.SetClientName(L"Ether Sample App");
 
-    m_CameraPos = { 0, 0, -10 };
-    m_CameraDir = { 0, 0, 1 };
+    m_CameraDistance = 50.0f;
+    m_CameraRotation = { 0, 0, 0 };
 }
 
 void SampleApp::LoadContent()
@@ -35,9 +36,8 @@ void SampleApp::LoadContent()
     m_DebugCube = new Ether::Entity(L"Debug Cube");
     Ether::MeshComponent* debugMeshComponent = new Ether::MeshComponent();
     m_DebugCube->AddComponent(debugMeshComponent);
-    m_DebugCube->GetTransform()->SetTranslation({ -.0, -.0, 50 });
-    m_DebugCube->GetTransform()->SetRotation({ 
-        DirectX::XMConvertToRadians(45), DirectX::XMConvertToRadians(45), 0 });
+    m_DebugCube->GetTransform()->SetTranslation({ -.0, -.0, 0 });
+    m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0 });
     Ether::g_World.AddEntity(m_DebugCube);
 }
 
@@ -52,40 +52,36 @@ void SampleApp::Shutdown()
 
 void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
 {
+    if (Ether::Input::GetKeyDown(Ether::Win32::KeyCode::KEYCODE_F3))
+        Ether::g_EngineConfig.ToggleDebugGui();
+
+    m_CameraDistance -= Ether::Input::GetMouseWheelDelta() / 60;
+    m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
+
+    if (Ether::Input::GetMouseButton(1))
+    {
+        m_CameraRotation.x -= Ether::Input::GetMouseDeltaY() / 500;
+        m_CameraRotation.y -= Ether::Input::GetMouseDeltaX() / 500;
+
+        constexpr float rad90 = DirectX::XMConvertToRadians(80);
+        m_CameraRotation.x = std::clamp(m_CameraRotation.x, -rad90, rad90);
+    }
 }
 
 void SampleApp::OnRender(const Ether::RenderEventArgs& e)
 {
-    const Ether::ethXMVector eyePos = DirectX::XMLoadFloat3(&m_CameraPos);
-    const Ether::ethXMVector eyeDir = DirectX::XMLoadFloat3(&m_CameraDir);
     const Ether::ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
     float aspectRatio = Ether::g_EngineConfig.GetClientWidth() / static_cast<float>(Ether::g_EngineConfig.GetClientHeight());
 
-    Ether::ethXMMatrix viewMatrix = DirectX::XMMatrixLookToLH(eyePos, eyeDir, upDir);
-    Ether::ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 100.0f);
+    Ether::ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
+    Ether::ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
+
+    Ether::ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
+    viewMatrix = DirectX::XMMatrixMultiply(viewMatrix, DirectX::XMMatrixTranslation(0, 0, m_CameraDistance));
+
+    Ether::ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
 
     e.m_GraphicContext->SetViewMatrix(viewMatrix);
     e.m_GraphicContext->SetProjectionMatrix(projectionMatrix);
 }
 
-void SampleApp::OnKeyPress(const Ether::KeyEventArgs& e)
-{
-    if (e.m_Key == Ether::Win32::KEYCODE_F3)
-        Ether::g_EngineConfig.ToggleDebugGui();
-}
-
-void SampleApp::OnKeyRelease(const Ether::KeyEventArgs& e)
-{
-}
-
-void SampleApp::OnMouseButtonPress(const Ether::MouseEventArgs& e)
-{
-}
-
-void SampleApp::OnMouseButtonRelease(const Ether::MouseEventArgs& e)
-{
-}
-
-void SampleApp::OnMouseMove(const Ether::MouseEventArgs& e)
-{
-}

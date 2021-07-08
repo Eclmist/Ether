@@ -33,14 +33,11 @@ public:
 public:
     void OnUpdate(const Ether::UpdateEventArgs& e) override;
     void OnRender(const Ether::RenderEventArgs& e) override;
-    void OnKeyPress(const Ether::KeyEventArgs& e) override;
-    void OnKeyRelease(const Ether::KeyEventArgs& e) override;
-    void OnMouseButtonPress(const Ether::MouseEventArgs& e) override;
-    void OnMouseButtonRelease(const Ether::MouseEventArgs& e) override;
-    void OnMouseMove(const Ether::MouseEventArgs& e) override;
 
 private:
     Ether::Entity* m_DebugCube;
-    Ether::ethVector3 m_CameraPos;
-    Ether::ethVector3 m_CameraDir;
+
+    // ========== Temp Orbit Cam Implementation =========== //
+    Ether::ethVector3 m_CameraRotation;
+    float m_CameraDistance;
 };
