@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-Entity::Entity(const std::wstring& name)
+Entity::Entity(const std::string& name)
     : m_Name(name)
     , m_Parent(nullptr)
 {

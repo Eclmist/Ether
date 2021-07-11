@@ -31,10 +31,14 @@ public:
 
 public:
     inline Shader* GetVertexShader() const { return m_VertexShader; }
+    inline Shader* GetPixelShader() const { return m_PixelShader; }
+
+    inline void SetVertexShader(Shader* shader) { m_VertexShader = shader; }
+    inline void SetPixelShader(Shader* shader) { m_PixelShader = shader; }
 
 private:
-    Shader* const m_VertexShader;
-    Shader* const m_PixelShader;
+    Shader* m_VertexShader;
+    Shader* m_PixelShader;
 };
 
 ETH_NAMESPACE_END

@@ -56,6 +56,23 @@ void DebugMenuGuiComponent::Draw()
             ImGui::Text("Mouse Delta: (%f, %f)", Input::GetMouseDeltaX(), Input::GetMouseDeltaY());
         }
 
+        if (ImGui::CollapsingHeader("Scene"))
+        {
+            for (auto entity : g_World.GetEntities())
+            {
+                ImGui::BulletText(entity->GetName().c_str());
+            }
+
+            if (ImGui::Button("Add entity"))
+            {
+                Entity* newEntity = new Entity("Entity");
+                newEntity->GetTransform()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
+                newEntity->GetTransform()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+                newEntity->AddComponent<VisualComponent>();
+                g_World.AddEntity(newEntity);
+            }
+        }
+
         if (ImGui::CollapsingHeader("ImGui"))
         {
             ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo);      // Edit bools storing our window open/close state

@@ -22,7 +22,7 @@
 ETH_NAMESPACE_BEGIN
 
 World::World()
-    : m_RootEntity(L"World Root")
+    : m_RootEntity("World Root")
 {
 }
 
