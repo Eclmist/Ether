@@ -29,7 +29,9 @@
 
 #include "system/noncopyable.h"
 #include "system/singleton.h"
+#include "system/stringutils.h"
 #include "system/types.h"
+#include "system/win32/keycodes.h"
 
 #include "core/event/events.h"
 #include "core/config/engineconfig.h"

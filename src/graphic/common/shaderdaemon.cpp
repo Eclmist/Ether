@@ -63,7 +63,7 @@ void ShaderDaemon::DaemonThreadMain()
     char notifyInfo[1024];
     DWORD bytesReturned;
     OVERLAPPED ovl = {};
-    ASSERT_SUCCESS(ovl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL));
+    ovl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
     ReadDirectoryChangesW(hDir,
         notifyInfo, sizeof(notifyInfo), FALSE,

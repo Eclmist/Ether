@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "system/win32/keycodes.h"
-
 ETH_NAMESPACE_BEGIN
 
 struct EventArgs

@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "keyeventargs.h"
-#include "mouseeventargs.h"
 #include "updateeventargs.h"
 #include "rendereventargs.h"
 

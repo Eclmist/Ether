@@ -21,6 +21,21 @@
 
 ETH_NAMESPACE_BEGIN
 
+Input::Input()
+    : m_MouseDeltaX(0)
+    , m_MouseDeltaY(0)
+    , m_MousePosX(0)
+    , m_MousePosY(0)
+    , m_MouseWheelDelta(0)
+{
+    memset(m_KeyStates, 0, sizeof(m_KeyStates));
+    memset(m_TransientKeyDownStates, 0, sizeof(m_TransientKeyDownStates));
+    memset(m_TransientKeyUpStates, 0, sizeof(m_TransientKeyUpStates));
+    memset(m_MouseStates, 0, sizeof(m_MouseStates));
+    memset(m_TransientMouseDownStates, 0, sizeof(m_TransientMouseDownStates));
+    memset(m_TransientMouseUpStates, 0, sizeof(m_TransientMouseUpStates));
+}
+
 void Input::SetKeyDown(Win32::KeyCode key)
 {
     m_KeyStates[(int)key] = true;

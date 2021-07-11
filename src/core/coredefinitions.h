@@ -36,4 +36,3 @@ namespace Ether { enum { InEtherNamespace = true }; }
 #define AssertGraphics(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
 #define AssertWin32(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
 
-#define ToNarrowString(wstring) std::string(wstring.begin(), wstring.end())
