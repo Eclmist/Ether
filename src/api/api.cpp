@@ -20,6 +20,8 @@
 #include "api.h"
 #include "graphic/graphic.h"
 
+#include "graphic/common/visual.h"
+
 ETH_NAMESPACE_BEGIN
 
 Win32::Window g_MainWindow;

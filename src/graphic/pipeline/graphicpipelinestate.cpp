@@ -37,14 +37,9 @@ void GraphicPipelineState::SetRasterizerState(const D3D12_RASTERIZER_DESC& desc)
     m_Desc.RasterizerState = desc;
 }
 
-void GraphicPipelineState::SetNumLayoutElements(uint32_t numLayoutElements)
+void GraphicPipelineState::SetInputLayout(const D3D12_INPUT_LAYOUT_DESC& desc)
 {
-    m_Desc.InputLayout.NumElements = numLayoutElements;
-}
-
-void GraphicPipelineState::SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* desc)
-{
-    m_Desc.InputLayout.pInputElementDescs = desc;
+    m_Desc.InputLayout = desc;
 }
 
 void GraphicPipelineState::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE type)

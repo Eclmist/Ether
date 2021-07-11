@@ -21,18 +21,20 @@
 
 ETH_NAMESPACE_BEGIN
 
-class Entity;
+class Shader;
 
-class Component // : public Serializable?
+class Material
 {
 public:
-    Component(Entity* const owner);
-    virtual ~Component() = default;
+    Material();
+    ~Material() = default;
 
-    inline Entity* const GetOwner() const { return m_Owner; }
+public:
+    inline Shader* GetVertexShader() const { return m_VertexShader; }
 
-protected:
-    Entity* const m_Owner;
+private:
+    Shader* const m_VertexShader;
+    Shader* const m_PixelShader;
 };
 
 ETH_NAMESPACE_END

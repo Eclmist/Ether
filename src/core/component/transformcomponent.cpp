@@ -24,8 +24,9 @@ ETH_NAMESPACE_BEGIN
 // TODO: Should our transform class really be tied to the directxmath library?
 using namespace DirectX;
 
-TransformComponent::TransformComponent()
-    : m_MatrixRequiresUpdate(true)
+TransformComponent::TransformComponent(Entity* const owner)
+    : Component(owner)
+    , m_MatrixRequiresUpdate(true)
 {
     SetTranslation({ 0, 0, 0 });
     SetRotation({ 0, 0, 0 });
@@ -36,18 +37,21 @@ void TransformComponent::SetTranslation(const ethVector3& translation)
 {
     m_Translation = translation;
     m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&translation));
+    m_MatrixRequiresUpdate = true;
 }
 
 void TransformComponent::SetRotation(const ethVector3& eulerRotation)
 {
     m_EulerRotation = eulerRotation;
     m_RotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&eulerRotation));
+    m_MatrixRequiresUpdate = true;
 }
 
 void TransformComponent::SetScale(const ethVector3& scale)
 {
     m_Scale = scale;
     m_ScaleMatrix = XMMatrixScalingFromVector(XMLoadFloat3(&scale));
+    m_MatrixRequiresUpdate = true;
 }
 
 ethXMMatrix TransformComponent::GetMatrix()

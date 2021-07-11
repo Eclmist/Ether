@@ -22,6 +22,7 @@
 #include "graphic/resource/gpuresource.h"
 #include "graphic/resource/bufferresource.h"
 #include "graphic/resource/textureresource.h"
+#include "graphic/resource/depthstencilresource.h"
 #include "graphic/resource/virtualbuffer/linearallocator.h"
 
 ETH_NAMESPACE_BEGIN
@@ -47,6 +48,7 @@ public:
 
 public:
     void ClearColor(TextureResource& texture, ethVector4 color);
+    void ClearDepth(DepthStencilResource& depthTex, float val);
     void TransitionResource(GpuResource& resource, D3D12_RESOURCE_STATES newState);
     void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv);
     void FinalizeAndExecute(bool waitForCompletion = false);

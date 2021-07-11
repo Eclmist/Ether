@@ -35,8 +35,6 @@ public:
     void OnRender(const Ether::RenderEventArgs& e) override;
 
 private:
-    Ether::Entity* m_DebugCube;
-
     // ========== Temp Orbit Cam Implementation =========== //
     Ether::ethVector3 m_CameraRotation;
     float m_CameraDistance;

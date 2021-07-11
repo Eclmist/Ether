@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class ETH_ENGINE_DLL TransformComponent : public Component
 {
 public:
-    TransformComponent();
+    TransformComponent(Entity* const owner);
     ~TransformComponent() = default;
 
     inline ethVector3 GetTranslation() const { return m_Translation; }

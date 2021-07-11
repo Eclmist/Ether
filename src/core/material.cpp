@@ -17,22 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "material.h"
 
 ETH_NAMESPACE_BEGIN
 
-class Entity;
-
-class Component // : public Serializable?
+Material::Material()
+    : m_VertexShader(g_DefaultVS)
+    , m_PixelShader(g_DefaultPS)
 {
-public:
-    Component(Entity* const owner);
-    virtual ~Component() = default;
-
-    inline Entity* const GetOwner() const { return m_Owner; }
-
-protected:
-    Entity* const m_Owner;
-};
+}
 
 ETH_NAMESPACE_END

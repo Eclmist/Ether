@@ -22,6 +22,7 @@
 ETH_NAMESPACE_BEGIN
 
 void InitializeCommonStates();
+void DestroyCommonStates();
 
 extern D3D12_RASTERIZER_DESC g_RasterizerDefault;
 extern D3D12_RASTERIZER_DESC g_RasterizerDefaultCw;
@@ -38,6 +39,16 @@ extern D3D12_DEPTH_STENCIL_DESC g_DepthStateDisabled;
 extern D3D12_DEPTH_STENCIL_DESC g_DepthStateReadWrite;
 extern D3D12_DEPTH_STENCIL_DESC g_DepthStateReadOnly;
 extern D3D12_DEPTH_STENCIL_DESC g_DepthStateTestEqual;
+
+extern D3D12_INPUT_LAYOUT_DESC g_DefaultInputLayout;
+
+extern Shader* g_DefaultVS;
+extern Shader* g_DefaultPS;
+
+extern GraphicPipelineState* g_DefaultPSO;
+extern GraphicPipelineState* g_DefaultWireframePSO;
+
+extern RootSignature* g_DefaultRootSignature;
 
 ETH_NAMESPACE_END
 

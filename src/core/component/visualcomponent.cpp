@@ -17,22 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "visualcomponent.h"
+#include "graphic/common/visual.h"
 
 ETH_NAMESPACE_BEGIN
 
-class Entity;
-
-class Component // : public Serializable?
+VisualComponent::VisualComponent(Entity* const owner)
+    : Component(owner)
+    , m_Transform(m_Owner->GetTransform())
+    , m_MeshComponent(m_Owner->GetComponent<MeshComponent>())
+    , m_Material(nullptr)
 {
-public:
-    Component(Entity* const owner);
-    virtual ~Component() = default;
+    if (m_MeshComponent == nullptr)
+        m_MeshComponent = owner->AddComponent<MeshComponent>();
 
-    inline Entity* const GetOwner() const { return m_Owner; }
+    m_Visual = new Visual(*this);
+    g_GraphicManager.RegisterVisual(m_Visual);
+}
 
-protected:
-    Entity* const m_Owner;
-};
+VisualComponent::~VisualComponent()
+{
+    g_GraphicManager.DeregisterVisual(m_Visual);
+    delete m_Visual;
+}
 
 ETH_NAMESPACE_END
+
+

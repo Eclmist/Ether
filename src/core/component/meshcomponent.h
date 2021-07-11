@@ -30,7 +30,7 @@ ETH_NAMESPACE_BEGIN
 class ETH_ENGINE_DLL MeshComponent : public Component
 {
 public:
-    MeshComponent();
+    MeshComponent(Entity* const owner);
     ~MeshComponent() = default;
 
 private:
