@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "core/entity/entity.h"
-
 ETH_NAMESPACE_BEGIN
 
 class World : public NonCopyable

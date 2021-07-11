@@ -24,7 +24,6 @@
 #include "graphic/resource/depthstencilresource.h"
 #include "graphic/common/visual.h"
 #include "graphic/common/shader.h"
-#include "core/entity/component/transformcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 

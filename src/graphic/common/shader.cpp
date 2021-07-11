@@ -43,38 +43,38 @@ bool Shader::Compile()
 {
     LogGraphicsInfo("Compiling shader %s", ToNarrowString(m_Filename).c_str());
 
-    //wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
-    //HRESULT hr = m_DxcLibrary->CreateBlobFromFile(
-    //    GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
+    wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
+    HRESULT hr = m_DxcLibrary->CreateBlobFromFile(
+        GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
 
-    //if (FAILED(hr))
-    //{
-    //    LogGraphicsError("Failed to open shader %s for compilation", ToNarrowString(m_Filename).c_str());
-    //    return false;
-    //}
+    if (FAILED(hr))
+    {
+        LogGraphicsError("Failed to open shader %s for compilation", ToNarrowString(m_Filename).c_str());
+        return false;
+    }
 
-    //wrl::ComPtr<IDxcOperationResult> result;
-    //hr = m_DxcCompiler->Compile(encodingBlob.Get(), GetRelativePath().c_str(), m_EntryPoint.c_str(),
-    //    m_TargetProfile.c_str(), NULL, 0, NULL, 0, NULL, &result);
+    wrl::ComPtr<IDxcOperationResult> result;
+    hr = m_DxcCompiler->Compile(encodingBlob.Get(), GetRelativePath().c_str(), m_EntryPoint.c_str(),
+        m_TargetProfile.c_str(), NULL, 0, NULL, 0, NULL, &result);
 
-    //if (SUCCEEDED(hr))
-    //    result->GetStatus(&hr);
-    //if (FAILED(hr))
-    //{
-    //    if (result)
-    //    {
-    //        wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
-    //        hr = result->GetErrorBuffer(&errorsBlob);
-    //        if (SUCCEEDED(hr) && errorsBlob)
-    //            LogGraphicsError((const char*)errorsBlob->GetBufferPointer());
-    //    }
+    if (SUCCEEDED(hr))
+        result->GetStatus(&hr);
+    if (FAILED(hr))
+    {
+        if (result)
+        {
+            wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
+            hr = result->GetErrorBuffer(&errorsBlob);
+            if (SUCCEEDED(hr) && errorsBlob)
+                LogGraphicsError((const char*)errorsBlob->GetBufferPointer());
+        }
 
-    //    return false;
-    //}
+        return false;
+    }
 
-    //std::lock_guard<std::mutex> guard(m_ShaderBlobMutex);
-    //result->GetResult(&m_ShaderBlob);
-    //m_HasRecompiled = true;
+    std::lock_guard<std::mutex> guard(m_ShaderBlobMutex);
+    result->GetResult(&m_ShaderBlob);
+    m_HasRecompiled = true;
     return true;
 }
 

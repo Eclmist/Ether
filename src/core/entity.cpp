@@ -18,7 +18,6 @@
 */
 
 #include "entity.h"
-#include "core/entity/component/transformcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 

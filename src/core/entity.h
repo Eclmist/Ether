@@ -19,9 +19,6 @@
 
 #pragma once
 
-#include "core/entity/component/component.h"
-#include "core/entity/component/transformcomponent.h"
-
 ETH_NAMESPACE_BEGIN
 
 // TODO: Clean this mess
