@@ -28,6 +28,8 @@ struct PS_INPUT
 {
     float4 Position : SV_Position;
     float4 Color    : COLOR;
+    uint   ID       : TEXCOORD1;
+
 };
 
 float distLine(float2 p, float2 a, float2 b) {
@@ -93,6 +95,14 @@ float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
     float2 fragCoord = IN.Position;
     float2 iResolution = float2(1920, 1080);
     float2 uv = (fragCoord - 0.5 * iResolution.xy) / iResolution.y;
+
+    if (IN.ID != 1000)
+    {
+
+        iTime += 0.7;
+        uv *= 0.8;
+    }
+
     float3 c = sin(iTime * 2.0 * float3(.234, .324, .768)) * 0.4 + 0.6;
     float3 col = float3(0.0, 0.0, 0.0);
 
@@ -108,18 +118,26 @@ float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
 
     for (float i = 0.0; i <= 1.0; i += 1.0 / 4.0) {
         float z = frac(i + iTime * 0.05);
-        float size = lerp(15.0, .1, z) * 1.50;
+        float size = lerp(15.0, .1, z) * 2.50;
         float fade = smoothstep(0.0, 1.0, z) * smoothstep(1.0, 0.9, z);
         m += layer((size * uv) + i * 10.0, iTime) * fade;
     }
 
     col += m * c;
-    return float4(col, 1.0);
+    //return float4(col, 1.0);
 
 
+    if (IN.ID == 1000)
+    {
+        return 1 - (col.xyzz * 0.2);
+    }
+    else
+    {
+        return float4(pid / 12.0f, pid / 12.0 + 0.3f, pid / 12.0 + 0.6f, 1.0) * col.xyzz * 10.0;
+    }
 
-    //return float4(sin(IN.Position.x) / 2 + 0.5, cos(IN.Position.y) / 2 + 0.5, sin(IN.Position.z + 2) / 2 + 0.5, 0);
-    return float4(pid / 12.0f, pid / 12.0 + 0.3f, pid / 12.0 + 0.6f, 1.0);
-    return IN.Color * 2.5 ;
+
+    return float4(sin(IN.Position.x) / 2 + 0.5, cos(IN.Position.y) / 2 + 0.5, sin(IN.Position.z + 2) / 2 + 0.5, 0);
+    return IN.Color * col.xyzz;
 }
 

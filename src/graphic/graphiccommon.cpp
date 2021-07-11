@@ -40,7 +40,7 @@ D3D12_DEPTH_STENCIL_DESC g_DepthStateTestEqual;
 void InitializeRasterizerStates()
 {
     g_RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
-    g_RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
+    g_RasterizerDefault.CullMode = D3D12_CULL_MODE_NONE;
     g_RasterizerDefault.FrontCounterClockwise = TRUE;
     g_RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
     g_RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
