@@ -24,6 +24,10 @@ ETH_NAMESPACE_BEGIN
 class Input : public Singleton<Input>
 {
 public:
+    Input();
+    ~Input() = default;
+
+public:
     ETH_ENGINE_DLL static bool GetKey(Win32::KeyCode key) { return GetInstance().m_KeyStates[(int)key]; }
     ETH_ENGINE_DLL static bool GetKeyDown(Win32::KeyCode key) { return GetInstance().m_TransientKeyDownStates[(int)key]; }
     ETH_ENGINE_DLL static bool GetKeyUp(Win32::KeyCode key) { return GetInstance().m_TransientKeyUpStates[(int)key]; }

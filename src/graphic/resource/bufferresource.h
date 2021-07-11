@@ -26,20 +26,20 @@ ETH_NAMESPACE_BEGIN
 class BufferResource : public GpuResource
 {
 public:
-    BufferResource(const std::wstring& name, uint32_t numElements, uint32_t elementSize, const void* data);
+    BufferResource(const std::wstring& name, size_t numElements, size_t elementSize, const void* data);
     ~BufferResource() = default;
 
 public:
     inline size_t GetBufferSize() const { return m_BufferSize; }
-    inline uint32_t GetNumElements() const { return m_NumElements; }
-    inline uint32_t GetElementSize() const { return m_ElementSize; }
+    inline size_t GetNumElements() const { return m_NumElements; }
+    inline size_t GetElementSize() const { return m_ElementSize; }
     inline const D3D12_CPU_DESCRIPTOR_HANDLE GetSRV() const { return m_SRVHandle; }
     inline const D3D12_CPU_DESCRIPTOR_HANDLE GetUAV() const { return m_UAVHandle; }
 
 protected:
     size_t m_BufferSize;
-    uint32_t m_NumElements;
-    uint32_t m_ElementSize;
+    size_t m_NumElements;
+    size_t m_ElementSize;
     
     D3D12_CPU_DESCRIPTOR_HANDLE m_UAVHandle;
     D3D12_CPU_DESCRIPTOR_HANDLE m_SRVHandle;

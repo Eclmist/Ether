@@ -21,8 +21,8 @@
 
 #define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
 
-#define ETH_SHADER_DEBUG_DIR                   L"../../src/graphic/shader/"
-#define ETH_SHADER_RELEASE_DIR                 L"./data/shader/"
+#define ETH_SHADER_DEBUG_DIR                L"../../src/graphic/shader/"
+#define ETH_SHADER_RELEASE_DIR              L"./data/shader/"
 
 
 #define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
@@ -46,3 +46,4 @@ extern GraphicManager g_GraphicManager;
 extern ShaderDaemon g_ShaderDaemon;
 
 ETH_NAMESPACE_END
+

@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-BufferResource::BufferResource(const std::wstring& name, uint32_t numElements, uint32_t elementSize, const void* data)
+BufferResource::BufferResource(const std::wstring& name, size_t numElements, size_t elementSize, const void* data)
     : m_NumElements(numElements)
     , m_ElementSize(elementSize)
     , m_BufferSize(numElements * elementSize)

@@ -17,8 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "camera.h"
+#pragma once
 
 ETH_NAMESPACE_BEGIN
 
+inline std::string ToNarrowString(const std::wstring& wide)
+{
+    std::string str(wide.length(), 0);
+    std::transform(wide.begin(), wide.end(), str.begin(), [](wchar_t c) {
+        return (char)c;
+        });
+
+    return str;
+}
+
 ETH_NAMESPACE_END
+
