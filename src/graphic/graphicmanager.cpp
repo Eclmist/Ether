@@ -53,6 +53,7 @@ void GraphicManager::Initialize()
     g_ShaderDaemon.Initialize();
     m_Display.Initialize();
     m_Context.Initialize();
+    m_BatchRenderer.Initialize();
     m_GuiManager.Initialize();
 
     LoadEngineContent(); // TODO: Remove
@@ -61,6 +62,7 @@ void GraphicManager::Initialize()
 void GraphicManager::Shutdown()
 {
     m_GuiManager.Shutdown();
+    m_BatchRenderer.Shutdown();
     m_Context.Shutdown();
     m_Display.Shutdown();
     g_ShaderDaemon.Shutdown();
