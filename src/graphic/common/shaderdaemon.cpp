@@ -76,7 +76,7 @@ void ShaderDaemon::DaemonThreadMain()
     {
         DWORD result = WaitForMultipleObjects(2, waitEvents, FALSE, INFINITE);
 
-        if (result == WAIT_OBJECT_0 + 1)
+        if (result == WAIT_OBJECT_0 + 1) 
             break;
 
         if (result != WAIT_OBJECT_0)

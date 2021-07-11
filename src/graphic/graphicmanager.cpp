@@ -178,7 +178,6 @@ void GraphicManager::Render()
         wireframePso->Finalize();
         vertexShader.SetRecompiled(false);
     }
-
     if (pixelShader.HasRecompiled())
     {
         pso->SetPixelShader(pixelShader.GetCompiledShader(), pixelShader.GetCompiledShaderSize());
@@ -199,7 +198,7 @@ void GraphicManager::Render()
     m_Context.GetCommandList()->IASetIndexBuffer(&debugVisual.GetIndexBufferView());
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, 4, &time, 0);
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
-    m_Context.GetCommandList()->DrawIndexedInstanced(36, 1000, 0, 0, 0);
+    m_Context.GetCommandList()->DrawIndexedInstanced(36, 1001, 0, 0, 0);
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
 }
