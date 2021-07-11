@@ -19,12 +19,6 @@
 
 #include "graphicmanager.h"
 
-// TODO: CLEAN
-#include "graphic/pipeline/graphicpipelinestate.h"
-#include "graphic/resource/depthstencilresource.h"
-#include "graphic/common/visual.h"
-#include "graphic/common/shader.h"
-
 ETH_NAMESPACE_BEGIN
 
 wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
@@ -100,7 +94,7 @@ void GraphicManager::Render()
         m_Context.GetCommandList()->IASetVertexBuffers(0, 1, &visual->GetVertexBufferView());
         m_Context.GetCommandList()->IASetIndexBuffer(&visual->GetIndexBufferView());
         m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
-        m_Context.GetCommandList()->DrawIndexedInstanced(36 /*TODO: Get this val from visual*/, 1, 0, 0, 0);
+        m_Context.GetCommandList()->DrawIndexedInstanced(visual->GetNumIndices(), 1, 0, 0, 0);
     }
 
     m_Context.FinalizeAndExecute();

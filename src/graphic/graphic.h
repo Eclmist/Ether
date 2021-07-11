@@ -36,6 +36,7 @@
 #include "graphic/commandmanager.h"
 #include "graphic/graphicmanager.h"
 #include "graphic/common/shaderdaemon.h"
+#include "graphic/common/visual.h"
 
 ETH_NAMESPACE_BEGIN
 

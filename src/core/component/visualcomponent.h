@@ -33,9 +33,9 @@ public:
     ~VisualComponent();
 
 public:
-    inline TransformComponent* const GetTransform() const { return m_Transform; }
-    inline MeshComponent* const GetMesh() const { return m_MeshComponent; }
-    inline Material* const GetMaterial() const { return m_Material; }
+    inline TransformComponent* GetTransform() const { return m_Transform; }
+    inline MeshComponent* GetMesh() const { return m_MeshComponent; }
+    inline Material* GetMaterial() const { return m_Material; }
 
 private:
     TransformComponent* m_Transform;

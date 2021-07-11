@@ -24,15 +24,19 @@ ETH_NAMESPACE_BEGIN
 class ETH_ENGINE_DLL Entity // : public Serializable?
 {
 public:
-    Entity(const std::wstring& name);
+    Entity(const std::string& name);
     ~Entity();
 
 public:
-    inline Entity* GetParent() const { return m_Parent != nullptr ? m_Parent : nullptr; }
+    inline const std::string& GetName() const { return m_Name; }
+    inline void SetName(const std::string& name) { m_Name = name; }
+
     inline Entity* GetFirstChild() const { return !m_Children.empty() ? m_Children[0] : nullptr; }
     inline Entity* GetLastChild() const { return !m_Children.empty() ? m_Children[m_Children.size() - 1] : nullptr; }
     inline size_t GetNumChildren() const { return m_Children.size(); }
     inline Entity* GetChildren() const { return *m_Children.data(); }
+
+    inline Entity* GetParent() const { return m_Parent != nullptr ? m_Parent : nullptr; }
     void SetParent(Entity* parent);
 
 public:
@@ -77,7 +81,7 @@ private:
     void RemoveChild(Entity* child);
 
 private:
-    std::wstring m_Name;
+    std::string m_Name;
 
     Entity* m_Parent;
     std::vector<Entity*> m_Children;

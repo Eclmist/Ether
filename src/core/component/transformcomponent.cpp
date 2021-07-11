@@ -28,15 +28,15 @@ TransformComponent::TransformComponent(Entity* const owner)
     : Component(owner)
     , m_MatrixRequiresUpdate(true)
 {
-    SetTranslation({ 0, 0, 0 });
+    SetPosition({ 0, 0, 0 });
     SetRotation({ 0, 0, 0 });
     SetScale({ 1, 1, 1 });
 }
 
-void TransformComponent::SetTranslation(const ethVector3& translation)
+void TransformComponent::SetPosition(const ethVector3& position)
 {
-    m_Translation = translation;
-    m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&translation));
+    m_Position = position;
+    m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
     m_MatrixRequiresUpdate = true;
 }
 

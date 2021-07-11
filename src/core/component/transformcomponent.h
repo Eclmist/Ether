@@ -29,18 +29,18 @@ public:
     TransformComponent(Entity* const owner);
     ~TransformComponent() = default;
 
-    inline ethVector3 GetTranslation() const { return m_Translation; }
+    inline ethVector3 GetPosition() const { return m_Position; }
     inline ethVector3 GetRotation() const { return m_EulerRotation; }
     inline ethVector3 GetScale() const { return m_Scale; }
 
-    void SetTranslation(const ethVector3& translation);
+    void SetPosition(const ethVector3& position);
     void SetRotation(const ethVector3& eulerRotation);
     void SetScale(const ethVector3& scale);
 
     ethXMMatrix GetMatrix();
 
 private:
-    ethVector3 m_Translation;
+    ethVector3 m_Position;
     ethVector3 m_EulerRotation;
     ethVector3 m_Scale;
 
