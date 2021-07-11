@@ -29,12 +29,12 @@ class GraphicPipelineState : public PipelineState
 public:
     GraphicPipelineState(const std::wstring& name = L"Unnamed Graphic PSO");
     ~GraphicPipelineState() = default;
-    
+
 public:
     void SetBlendState(const D3D12_BLEND_DESC& desc);
     void SetRasterizerState(const D3D12_RASTERIZER_DESC& desc);
     void SetNumLayoutElements(uint32_t numLayoutElements);
-    void SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* desc);
+    void SetInputLayout(const D3D12_INPUT_LAYOUT_DESC& desc);
     void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE type);
     void SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& desc);
     void SetDepthTargetFormat(DXGI_FORMAT dsvFormat);

@@ -21,42 +21,71 @@
 
 ETH_NAMESPACE_BEGIN
 
-// TODO: Clean this mess
-
 class ETH_ENGINE_DLL Entity // : public Serializable?
 {
 public:
     Entity(const std::wstring& name);
     ~Entity();
 
-    inline Entity* GetParent() const { return m_Parent; }
-    inline uint32_t GetNumChildren() const { return (uint32_t)m_Children.size(); }
-    inline bool HasChildren() const { return !m_Children.empty(); }
-    inline std::vector<Entity*> GetChildren() const { return m_Children; }
-
-    Entity* GetFirstChild() const;
-    Entity* GetChildAtIndex(uint32_t i) const;
-
-    bool IsChildOf(Entity* parent);
+public:
+    inline Entity* GetParent() const { return m_Parent != nullptr ? m_Parent : nullptr; }
+    inline Entity* GetFirstChild() const { return !m_Children.empty() ? m_Children[0] : nullptr; }
+    inline Entity* GetLastChild() const { return !m_Children.empty() ? m_Children[m_Children.size() - 1] : nullptr; }
+    inline size_t GetNumChildren() const { return m_Children.size(); }
+    inline Entity* GetChildren() const { return *m_Children.data(); }
     void SetParent(Entity* parent);
-    void RemoveChild(Entity* child);
 
-    void AddComponent(Component* component);
+public:
+    template <typename T>
+    T* AddComponent()
+    {
+        T* newComponent = new T(this);
+        m_Components.push_back(newComponent);
+        return newComponent;
+    }
 
-    // TODO: Change to get components of type
-    std::vector<Component*> GetAllComponents() { return m_Components; }
+    template <typename T>
+    T* GetComponent()
+    {
+        for (auto component : m_Components)
+        {
+            T* targetComponent = dynamic_cast<T*>(component);
+            if (targetComponent != nullptr)
+                return targetComponent;
+        }
 
-    inline TransformComponent* GetTransform() const { return m_Transform; }
+        return nullptr;
+    }
+
+    template <typename T>
+    void GetComponents(T* outArr, size_t numComponents)
+    {
+        for (auto component : m_Components)
+        {
+            T* targetComponent = dynamic_cast<T*>(component);
+            if (targetComponent != nullptr)
+            {
+                outArr = targetComponent;
+                outArr++;
+            }
+        }
+    }
+
+    TransformComponent* GetTransform() const { return m_Transform; }
 
 private:
+    void RemoveChild(Entity* child);
+
+private:
+    std::wstring m_Name;
+
     Entity* m_Parent;
     std::vector<Entity*> m_Children;
     std::vector<Component*> m_Components;
-
-    std::wstring m_Name;
 
 private:
     TransformComponent* m_Transform;
 };
 
 ETH_NAMESPACE_END
+

@@ -21,13 +21,24 @@
 
 ETH_NAMESPACE_BEGIN
 
-void Visual::Initialize(const MeshComponent& mesh)
+Visual::Visual(const VisualComponent& source)
+    : m_VisualComponent(source)
+    , m_Initialized(false)
 {
-    UploadVertexBuffer(mesh.m_VertexBuffer, mesh.m_NumVertices);
-    UploadIndexBuffer(mesh.m_IndexBuffer, mesh.m_NumIndices);
+}
 
-    InitVertexBufferView(mesh.m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
-    InitIndexBufferView(mesh.m_NumIndices * sizeof(uint16_t));
+void Visual::Initialize()
+{
+    MeshComponent* mesh = m_VisualComponent.GetMesh();
+    Material* material = m_VisualComponent.GetMaterial();
+
+    UploadVertexBuffer(mesh->m_VertexBuffer, mesh->m_NumVertices);
+    UploadIndexBuffer(mesh->m_IndexBuffer, mesh->m_NumIndices);
+
+    InitVertexBufferView(mesh->m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
+    InitIndexBufferView(mesh->m_NumIndices * sizeof(uint16_t));
+
+    m_Initialized = true;
 }
 
 void Visual::UploadVertexBuffer(const void* data, uint16_t numVertices)

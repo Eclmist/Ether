@@ -17,27 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+struct ModelViewProjection
+{
+    matrix MVP;
+};
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
+ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b1);
 
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3d12shader.h>
-#include <dxcapi.h>
-#include <DirectXMath.h>
+struct VS_INPUT
+{
+    float3 Position : POSITION;
+    float3 Color    : COLOR;
+};
 
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
+struct VS_OUTPUT
+{
+    float4 Position : SV_Position;
+    float4 Color    : COLOR;
+};
 
-// Ether Graphics Library
-#include "graphic/pipeline/graphicpipelinestate.h"
-#include "graphic/pipeline/rootsignature.h"
+VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
+{
+    VS_OUTPUT o;
 
-#include "graphic/graphiccommon.h"
-#include "graphic/graphiccontext.h"
-#include "graphic/graphicdisplay.h"
+    o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position, 1.0));
+    o.Color = float4(IN.Color, 1.0f);
 
+    return o;
+}

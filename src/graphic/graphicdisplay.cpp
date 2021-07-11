@@ -28,7 +28,10 @@ void GraphicDisplay::Initialize()
     m_FrameBufferWidth = g_EngineConfig.GetClientWidth();
     m_FrameBufferHeight = g_EngineConfig.GetClientHeight();
     m_BufferingMode = BufferingMode::BUFFERINGMODE_TRIPLE;
+    m_ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
+    m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight);
     m_VsyncEnabled = false;
+
     CreateDxgiSwapChain();
     InitializeResources();
 }
@@ -47,6 +50,11 @@ void GraphicDisplay::Present()
 std::shared_ptr<TextureResource> GraphicDisplay::GetCurrentBackBuffer() const
 {
     return m_FrameBuffers[m_CurrentBackBufferIndex];
+}
+
+std::shared_ptr<DepthStencilResource> GraphicDisplay::GetDepthBuffer() const
+{
+    return m_DepthBuffer;
 }
 
 void GraphicDisplay::CreateDxgiSwapChain()
@@ -90,6 +98,12 @@ void GraphicDisplay::InitializeResources()
         ASSERT_SUCCESS(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&framebuffer)));
         m_FrameBuffers[i] = std::make_shared<TextureResource>(L"Primary Frame Buffer", framebuffer.Detach());
     }
+
+    m_DepthBuffer = std::make_shared<DepthStencilResource>(L"Depth Buffer", DepthStencilResource::CreateResourceDesc(
+        m_FrameBufferWidth,
+        m_FrameBufferHeight,
+        DXGI_FORMAT_D32_FLOAT
+    ));
 
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }

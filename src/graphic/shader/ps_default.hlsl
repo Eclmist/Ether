@@ -17,22 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-ETH_NAMESPACE_BEGIN
-
-class Entity;
-
-class Component // : public Serializable?
+struct PS_INPUT
 {
-public:
-    Component(Entity* const owner);
-    virtual ~Component() = default;
-
-    inline Entity* const GetOwner() const { return m_Owner; }
-
-protected:
-    Entity* const m_Owner;
+    float4 Position : SV_Position;
+    float4 Color    : COLOR;
 };
 
-ETH_NAMESPACE_END
+float4 PS_Main(PS_INPUT IN) : SV_Target
+{
+    return IN.Color;
+}
+

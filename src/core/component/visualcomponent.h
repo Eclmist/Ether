@@ -19,20 +19,31 @@
 
 #pragma once
 
+#include "component.h"
+
 ETH_NAMESPACE_BEGIN
 
-class Entity;
+class Material;
+class Visual;
 
-class Component // : public Serializable?
+class ETH_ENGINE_DLL VisualComponent : public Component
 {
 public:
-    Component(Entity* const owner);
-    virtual ~Component() = default;
+    VisualComponent(Entity* const owner);
+    ~VisualComponent();
 
-    inline Entity* const GetOwner() const { return m_Owner; }
+public:
+    inline TransformComponent* const GetTransform() const { return m_Transform; }
+    inline MeshComponent* const GetMesh() const { return m_MeshComponent; }
+    inline Material* const GetMaterial() const { return m_Material; }
 
-protected:
-    Entity* const m_Owner;
+private:
+    TransformComponent* m_Transform;
+    MeshComponent* m_MeshComponent;
+    Material* m_Material;
+
+    Visual* m_Visual;
 };
 
 ETH_NAMESPACE_END
+

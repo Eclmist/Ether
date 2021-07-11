@@ -48,6 +48,12 @@ void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
     m_CommandList->ClearRenderTargetView(texture.GetRTV(), clearColor, 0, nullptr);
 }
 
+
+void GraphicContext::ClearDepth(DepthStencilResource& depthTex, float val)
+{
+    m_CommandList->ClearDepthStencilView(depthTex.GetDSV(), D3D12_CLEAR_FLAG_DEPTH, val, 0, 0, nullptr);
+}
+
 void GraphicContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STATES newState)
 {
     if (target.GetCurrentState() == newState)
@@ -63,7 +69,6 @@ void GraphicContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STAT
     m_CommandList->ResourceBarrier(1, &barrier);
     target.TransitionToState(newState);
 }
-
 
 void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
 {

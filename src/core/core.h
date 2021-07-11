@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include "coredefinitions.h"
-
 #include <cassert>
 #include <deque>
 #include <queue>
 #include <string>
 #include <vector>
+
+#include "coredefinitions.h"
 
 #include "system/noncopyable.h"
 #include "system/singleton.h"
@@ -33,14 +33,15 @@
 #include "system/types.h"
 #include "system/win32/keycodes.h"
 
-#include "core/component/meshcomponent.h"
-#include "core/component/renderercomponent.h"
 #include "core/component/transformcomponent.h"
+#include "core/component/meshcomponent.h"
+#include "core/component/visualcomponent.h"
 
 #include "core/event/events.h"
 #include "core/engineconfig.h"
 #include "core/entity.h"
 #include "core/world.h"
+#include "core/material.h"
 #include "core/applicationbase.h"
 #include "core/input.h"
 

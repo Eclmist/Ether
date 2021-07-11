@@ -40,12 +40,16 @@ public:
 
 public:
     std::shared_ptr<TextureResource> GetCurrentBackBuffer() const;
+    std::shared_ptr<DepthStencilResource> GetDepthBuffer() const;
 
     inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
     inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
 
     inline bool IsVsyncEnabled() const { return m_VsyncEnabled; }
     inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
+
+    inline const D3D12_VIEWPORT& GetViewport() const { return m_Viewport; }
+    inline const D3D12_RECT& GetScissorRect() const { return m_ScissorRect; }
 
     inline void SetBufferingMode(BufferingMode mode) { m_BufferingMode = mode; }
     inline void SetVsyncEnabled(bool enabled) { m_VsyncEnabled = enabled; }
@@ -58,6 +62,8 @@ private:
     wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
 
     std::shared_ptr<TextureResource> m_FrameBuffers[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
+    std::shared_ptr<DepthStencilResource> m_DepthBuffer;
+
     uint64_t m_FrameBufferFences[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
 
     BufferingMode m_BufferingMode;
@@ -65,6 +71,9 @@ private:
 
     uint32_t m_FrameBufferWidth;
     uint32_t m_FrameBufferHeight;
+
+    D3D12_RECT m_ScissorRect;
+    D3D12_VIEWPORT m_Viewport;
 
     bool m_VsyncEnabled;
 };

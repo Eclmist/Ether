@@ -33,6 +33,7 @@ Shader::Shader(
     , m_Type(type)
     , m_Encoding(encoding)
     , m_HasRecompiled(false)
+    , m_InputLayout(g_DefaultInputLayout)
 {
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&m_DxcLibrary)));
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_DxcCompiler)));

@@ -19,6 +19,7 @@
 
 #include "sampleapp.h"
 #include <algorithm> // for std::clamp
+#include <cmath>
 
 void SampleApp::Initialize()
 {
@@ -27,23 +28,31 @@ void SampleApp::Initialize()
     Ether::g_EngineConfig.SetClientHeight(1080);
     Ether::g_EngineConfig.SetClientName(L"Ether Sample App");
 
-    m_CameraDistance = 50.0f;
+    m_CameraDistance = 20.0f;
     m_CameraRotation = { 0, 0, 0 };
 }
 
 void SampleApp::LoadContent()
 {
+    Ether::Entity* m_DebugCube;
+
     m_DebugCube = new Ether::Entity(L"Debug Cube");
-    Ether::MeshComponent* debugMeshComponent = new Ether::MeshComponent();
-    m_DebugCube->AddComponent(debugMeshComponent);
+    m_DebugCube->AddComponent<Ether::MeshComponent>();
+    m_DebugCube->AddComponent<Ether::VisualComponent>();
     m_DebugCube->GetTransform()->SetTranslation({ -.0, -.0, 0 });
     m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0 });
+    Ether::g_World.AddEntity(m_DebugCube);
+
+    m_DebugCube = new Ether::Entity(L"Debug Cube 2");
+    m_DebugCube->AddComponent<Ether::VisualComponent>();
+    m_DebugCube->GetTransform()->SetTranslation({ 2.0, -4.0, 0 });
+    m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0.23f });
+    m_DebugCube->GetTransform()->SetScale({ 1.20f, 1.40f, 1.23f });
     Ether::g_World.AddEntity(m_DebugCube);
 }
 
 void SampleApp::UnloadContent()
 {
-    delete m_DebugCube;
 }
 
 void SampleApp::Shutdown()
@@ -55,7 +64,7 @@ void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
     if (Ether::Input::GetKeyDown(Ether::Win32::KeyCode::KEYCODE_F3))
         Ether::g_EngineConfig.ToggleDebugGui();
 
-    m_CameraDistance -= Ether::Input::GetMouseWheelDelta() / 60;
+    m_CameraDistance -= Ether::Input::GetMouseWheelDelta() / 120;
     m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 
     if (Ether::Input::GetMouseButton(1))
@@ -66,6 +75,9 @@ void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
         constexpr float rad90 = DirectX::XMConvertToRadians(80);
         m_CameraRotation.x = std::clamp(m_CameraRotation.x, -rad90, rad90);
     }
+
+    float x = sin((float)Ether::GetTimeSinceStart());
+    Ether::g_World.GetEntities()[0]->GetTransform()->SetTranslation({ x, 0, 0 });
 }
 
 void SampleApp::OnRender(const Ether::RenderEventArgs& e)

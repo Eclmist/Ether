@@ -25,8 +25,7 @@ Entity::Entity(const std::wstring& name)
     : m_Name(name)
     , m_Parent(nullptr)
 {
-    m_Transform = new TransformComponent();
-    AddComponent(m_Transform);
+    m_Transform = AddComponent<TransformComponent>();
 }
 
 Entity::~Entity()
@@ -38,53 +37,22 @@ Entity::~Entity()
         delete component;
 }
 
-Entity* Entity::GetFirstChild() const
-{
-    if (!HasChildren())
-        return nullptr;
-
-    return m_Children.front();
-}
-
-Entity* Entity::GetChildAtIndex(uint32_t i) const
-{
-    if (i >= GetNumChildren())
-        return nullptr;
-
-    return m_Children[i];
-}
-
-bool Entity::IsChildOf(Entity* parent)
-{
-    for (Entity* child : parent->m_Children)
-        if (child == this)
-            return true;
-
-    return false;
-}
-
 void Entity::SetParent(Entity* parent)
 {
-    AssertEngine(parent != nullptr, "SetParent was called with a nullptr");
-
-    if (IsChildOf(parent))
+    if (m_Parent == parent)
         return;
 
     if (m_Parent != nullptr)
         m_Parent->RemoveChild(this);
 
-    parent->m_Children.push_back(this);
+    if (parent != nullptr)
+        parent->m_Children.push_back(this);
+
     m_Parent = parent;
 }
 
 void Entity::RemoveChild(Entity* child)
 {
-    if (!child->IsChildOf(this))
-    {
-        LogEngineWarning("Failed to remove entity %s from %s: not parent-child", child->m_Name, m_Name);
-        return;
-    }
-
     for (auto iter = m_Children.begin(); iter != m_Children.end(); ++iter)
     {
         if (*iter != child)
@@ -93,13 +61,6 @@ void Entity::RemoveChild(Entity* child)
         m_Children.erase(iter);
         return;
     }
-
-    LogEngineError("Entity::HasChild() check failed (Entity::RemoveChild)");
-}
-
-void Entity::AddComponent(Component* component)
-{
-    m_Components.push_back(component);
 }
 
 ETH_NAMESPACE_END

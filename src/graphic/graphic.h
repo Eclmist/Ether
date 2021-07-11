@@ -45,5 +45,6 @@ extern CommandManager g_CommandManager;
 extern GraphicManager g_GraphicManager;
 extern ShaderDaemon g_ShaderDaemon;
 
+
 ETH_NAMESPACE_END
 
