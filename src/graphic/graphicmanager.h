@@ -20,7 +20,7 @@
 #pragma once
 
 #include "graphic/commandmanager.h"
-#include "graphic/graphicnoderenderer.h"
+#include "graphic/graphicbatchrenderer.h"
 #include "graphic/resource/textureresource.h"
 #include "graphic/gui/guimanager.h"
 
@@ -49,16 +49,10 @@ private:
 private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
 
+    GraphicBatchRenderer m_BatchRenderer;
     GraphicContext m_Context;
     GraphicDisplay m_Display;
     GuiManager m_GuiManager;
-
-    // TODO: Move into some kind of gbuffer producer?
-public:
-    void SubmitVisualForRender(Visual* visual);
-
-private:
-    std::vector<Visual*> m_Visuals;
 };
 
 ETH_NAMESPACE_END
