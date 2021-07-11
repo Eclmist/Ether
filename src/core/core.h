@@ -33,13 +33,16 @@
 #include "system/types.h"
 #include "system/win32/keycodes.h"
 
+#include "core/component/meshcomponent.h"
+#include "core/component/renderercomponent.h"
+#include "core/component/transformcomponent.h"
+
 #include "core/event/events.h"
-#include "core/config/engineconfig.h"
-#include "core/world/world.h"
+#include "core/engineconfig.h"
+#include "core/entity.h"
+#include "core/world.h"
 #include "core/applicationbase.h"
 #include "core/input.h"
-
-#include "core/entity/component/meshcomponent.h"
 
 #include "common/logging/loggingmanager.h"
 #include "common/time.h"

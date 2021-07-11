@@ -18,7 +18,6 @@
 */
 
 #include "visual.h"
-#include "core/entity/component/meshcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
