@@ -32,20 +32,23 @@ public:
     void CreateCommandList(
         D3D12_COMMAND_LIST_TYPE type,
         ID3D12GraphicsCommandList** cmdList,
-        ID3D12CommandAllocator** cmdAlloc) const;
+        ID3D12CommandAllocator** cmdAlloc);
 
     void Execute(ID3D12CommandList* cmdLst);
+    void Flush();
+    ID3D12CommandAllocator* RequestAllocator(D3D12_COMMAND_LIST_TYPE type);
+    void DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* allocator);
 
 public:
-    inline std::shared_ptr<CommandQueue> GetGraphicsQueue() const { return m_GraphicsQueue; }
-    inline std::shared_ptr<CommandQueue> GetComputeQueue() const { return m_ComputeQueue; }
-    inline std::shared_ptr<CommandQueue> GetCopyQueue() const { return m_CopyQueue; }
-    std::shared_ptr<CommandQueue> GetQueue(D3D12_COMMAND_LIST_TYPE type) const;
+    inline CommandQueue& GetGraphicsQueue() { return *m_GraphicsQueue; }
+    inline CommandQueue& GetComputeQueue() { return *m_ComputeQueue; }
+    inline CommandQueue& GetCopyQueue() { return *m_CopyQueue; }
+    CommandQueue& GetQueue(D3D12_COMMAND_LIST_TYPE type);
 
 private:
-    std::shared_ptr<CommandQueue> m_GraphicsQueue;
-    std::shared_ptr<CommandQueue> m_ComputeQueue;
-    std::shared_ptr<CommandQueue> m_CopyQueue;
+    std::unique_ptr<CommandQueue> m_GraphicsQueue;
+    std::unique_ptr<CommandQueue> m_ComputeQueue;
+    std::unique_ptr<CommandQueue> m_CopyQueue;
 };
 
 ETH_NAMESPACE_END

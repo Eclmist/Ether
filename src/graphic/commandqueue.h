@@ -40,7 +40,6 @@ public:
     
 private:
     friend class CommandManager;
-    friend class GraphicContext;
 
     uint64_t Execute(ID3D12CommandList* cmdLst);
 
@@ -59,7 +58,7 @@ private:
     uint64_t m_CompletionFenceValue;
     uint64_t m_LastKnownFenceValue;
 
-    CommandAllocatorPool m_AllocatorPool;
+    const std::unique_ptr<CommandAllocatorPool> m_AllocatorPool;
 
     HANDLE m_FenceEventHandle;
 };

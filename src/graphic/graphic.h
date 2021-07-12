@@ -40,7 +40,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-extern wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
+extern ID3D12Device3* g_GraphicDevice;
 
 extern CommandManager g_CommandManager;
 extern GraphicManager g_GraphicManager;

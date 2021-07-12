@@ -41,19 +41,19 @@ void SampleApp::LoadContent()
     m_DebugCube->AddComponent<Ether::VisualComponent>();
     m_DebugCube->GetTransform()->SetPosition({ -.0, -.0, 0 });
     m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0 });
-    Ether::g_World.AddEntity(m_DebugCube);
+    Ether::g_World->AddEntity(m_DebugCube);
 
     m_DebugCube = new Ether::Entity("Debug Cube 2");
     m_DebugCube->AddComponent<Ether::VisualComponent>();
     m_DebugCube->GetTransform()->SetPosition({ 2.0, -4.0, 0 });
     m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0.23f });
     m_DebugCube->GetTransform()->SetScale({ 1.20f, 1.40f, 1.23f });
-    Ether::g_World.AddEntity(m_DebugCube);
+    Ether::g_World->AddEntity(m_DebugCube);
 
     m_DebugCube = new Ether::Entity("Toolmode::Grid");
     auto vis = m_DebugCube->AddComponent<Ether::VisualComponent>();
     m_DebugCube->GetTransform()->SetScale({ 1000, 0.01f, 1000 });
-    Ether::g_World.AddEntity(m_DebugCube);
+    Ether::g_World->AddEntity(m_DebugCube);
 }
 
 void SampleApp::UnloadContent()
@@ -82,7 +82,7 @@ void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
     }
 
     float x = sin((float)Ether::GetTimeSinceStart());
-    Ether::g_World.GetEntities()[0]->GetTransform()->SetPosition({ x, 0, 0 });
+    Ether::g_World->GetEntities()[0]->GetTransform()->SetPosition({ x, 0, 0 });
 }
 
 void SampleApp::OnRender(const Ether::RenderEventArgs& e)

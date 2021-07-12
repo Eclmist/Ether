@@ -28,7 +28,7 @@ namespace Win32
 HWND g_hWnd = nullptr;
 
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
-#define ETH_WINDOW_STYLE        WS_OVERLAPPEDWINDOW
+#define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 
 #include <strsafe.h>
 
@@ -44,6 +44,7 @@ void Window::Initialize()
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
     g_hWnd = CreateWindowExW(
+
         NULL,
         g_EngineConfig.GetClientName().c_str(),
         g_EngineConfig.GetClientName().c_str(),
@@ -126,6 +127,8 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg)
     {
     case WM_SIZE:
+        g_EngineConfig.SetClientWidth(LOWORD(lParam));
+        g_EngineConfig.SetClientHeight(HIWORD(lParam));
         g_GraphicManager.GetGraphicDisplay().Resize(LOWORD(lParam), HIWORD(lParam));
         break;
     case WM_KEYDOWN:

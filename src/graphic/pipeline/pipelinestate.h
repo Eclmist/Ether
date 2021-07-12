@@ -27,7 +27,7 @@ class PipelineState
 {
 public:
     PipelineState(const std::wstring& name);
-    ~PipelineState() = default;
+    ~PipelineState();
 
     inline const RootSignature* GetRootSignature() const { return m_RootSignature; }
     inline ID3D12PipelineState* GetPipelineStateObject() const { return m_PipelineState; }

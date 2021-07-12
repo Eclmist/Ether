@@ -55,6 +55,7 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
 
     m_FrameBufferWidth = width;
     m_FrameBufferHeight = height;
+    m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight);
 
     g_CommandManager.Flush();
 

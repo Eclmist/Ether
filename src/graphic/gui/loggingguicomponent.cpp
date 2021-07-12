@@ -21,16 +21,13 @@
 
 ETH_NAMESPACE_BEGIN
 
-LoggingGuiComponent::LoggingGuiComponent()
-{
-    m_Size = ImVec2((float) g_EngineConfig.GetClientWidth(), 300);
-    m_Position = ImVec2(0, g_EngineConfig.GetClientHeight() - m_Size.y);
-}
-
 void LoggingGuiComponent::Draw()
 {
-    ImGui::SetNextWindowSize(m_Size, ImGuiCond_Once);
-    ImGui::SetNextWindowPos(m_Position, ImGuiCond_Once);
+    m_Size = ImVec2((float)g_EngineConfig.GetClientWidth(), 300);
+    m_Position = ImVec2(0, g_EngineConfig.GetClientHeight() - m_Size.y);
+
+    ImGui::SetNextWindowSize(m_Size);
+    ImGui::SetNextWindowPos(m_Position);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0);
     ImGui::Begin("Debug Output", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);

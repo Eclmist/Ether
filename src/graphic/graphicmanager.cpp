@@ -19,9 +19,13 @@
 
 #include "graphicmanager.h"
 
+#ifdef _DEBUG
+#include <dxgidebug.h>
+#endif
+
 ETH_NAMESPACE_BEGIN
 
-wrl::ComPtr<ID3D12Device3> g_GraphicDevice;
+ID3D12Device3* g_GraphicDevice;
 CommandManager g_CommandManager;
 ShaderDaemon g_ShaderDaemon;
 
@@ -50,19 +54,22 @@ void GraphicManager::Initialize()
 
 void GraphicManager::Shutdown()
 {
+    g_CommandManager.Flush();
+
     DestroyCommonStates();
 
     m_GuiManager.Shutdown();
     m_BatchRenderer.Shutdown();
-    m_Context.Shutdown();
     m_Display.Shutdown();
     g_ShaderDaemon.Shutdown();
     g_CommandManager.Shutdown();
+
+    g_GraphicDevice->Release();
 }
 
 void GraphicManager::WaitForPresent()
 {
-    m_Context.GetCommandQueue()->StallForFence(m_Display.GetCurrentBackBufferFence());
+    m_Context.GetCommandQueue().StallForFence(m_Display.GetCurrentBackBufferFence());
     CleanUp();
 }
 
@@ -112,7 +119,7 @@ void GraphicManager::Present()
     m_Context.TransitionResource(*m_Display.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
-    m_Display.SetCurrentBackBufferFence(m_Context.GetCommandQueue()->GetCompletionFenceValue());
+    m_Display.SetCurrentBackBufferFence(m_Context.GetCompletionFenceValue());
     m_Display.Present();
 }
 

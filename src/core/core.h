@@ -53,7 +53,7 @@ ETH_NAMESPACE_BEGIN
 ETH_ENGINE_DLL extern ApplicationBase* g_MainApplication;
 ETH_ENGINE_DLL extern EngineConfig g_EngineConfig;
 ETH_ENGINE_DLL extern LoggingManager g_LoggingManager;
-ETH_ENGINE_DLL extern World g_World;
+ETH_ENGINE_DLL extern World* g_World;
 
 ETH_NAMESPACE_END
 
