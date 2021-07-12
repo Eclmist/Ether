@@ -28,7 +28,7 @@ namespace Win32
 HWND g_hWnd = nullptr;
 
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
-#define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
+#define ETH_WINDOW_STYLE        WS_OVERLAPPEDWINDOW
 
 #include <strsafe.h>
 
@@ -125,10 +125,8 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     switch (msg)
     {
-    case WM_PAINT:
-        // TODO: Figure out how to populate args
-        //RenderEventArgs renderArgs;
-        //m_Engine->OnRender(renderArgs);
+    case WM_SIZE:
+        g_GraphicManager.GetGraphicDisplay().Resize(LOWORD(lParam), HIWORD(lParam));
         break;
     case WM_KEYDOWN:
         // TODO: Handle Ctrl, Alt, and convert keycode to character

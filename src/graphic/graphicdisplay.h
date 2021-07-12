@@ -37,6 +37,7 @@ public:
     void Shutdown();
     // TODO: Support resize and dynamic update of vsync and buffering mode
     void Present();
+    void Resize(uint32_t width, uint32_t height);
 
 public:
     std::shared_ptr<TextureResource> GetCurrentBackBuffer() const;

@@ -38,6 +38,7 @@ void GraphicDisplay::Initialize()
 
 void GraphicDisplay::Shutdown()
 {
+    m_SwapChain.Reset();
 }
 
 void GraphicDisplay::Present()
@@ -45,6 +46,34 @@ void GraphicDisplay::Present()
     // TODO: Compute v-blank based on frame time and target framerate
     m_SwapChain->Present(m_VsyncEnabled ? 1 : 0, 0);
     m_CurrentBackBufferIndex = (m_CurrentBackBufferIndex + 1) % GetNumBuffers();
+}
+
+void GraphicDisplay::Resize(uint32_t width, uint32_t height)
+{
+    if (m_FrameBufferWidth == width && m_FrameBufferHeight == height)
+        return;
+
+    m_FrameBufferWidth = width;
+    m_FrameBufferHeight = height;
+
+    g_CommandManager.Flush();
+
+    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+        m_FrameBuffers[i].reset();
+
+    m_DepthBuffer.reset();
+
+    DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+    ASSERT_SUCCESS(m_SwapChain->GetDesc(&swapChainDesc));
+    ASSERT_SUCCESS(m_SwapChain->ResizeBuffers(
+        GetNumBuffers(),
+        m_FrameBufferWidth,
+        m_FrameBufferHeight,
+        swapChainDesc.BufferDesc.Format,
+        swapChainDesc.Flags));
+
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+    InitializeResources();
 }
 
 std::shared_ptr<TextureResource> GraphicDisplay::GetCurrentBackBuffer() const
@@ -80,7 +109,7 @@ void GraphicDisplay::CreateDxgiSwapChain()
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
-        g_CommandManager.GetGraphicsQueue()->Get(),
+        g_CommandManager.GetGraphicsQueue().Get(),
         Win32::g_hWnd,
         &swapChainDesc,
         nullptr,
