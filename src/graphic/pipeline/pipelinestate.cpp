@@ -27,5 +27,10 @@ PipelineState::PipelineState(const std::wstring& name)
 {
 }
 
+PipelineState::~PipelineState()
+{
+    m_PipelineState->Release();
+}
+
 ETH_NAMESPACE_END
 

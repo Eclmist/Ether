@@ -58,7 +58,7 @@ void DebugMenuGuiComponent::Draw()
 
         if (ImGui::CollapsingHeader("Scene"))
         {
-            for (auto entity : g_World.GetEntities())
+            for (auto entity : g_World->GetEntities())
             {
                 ImGui::BulletText(entity->GetName().c_str());
             }
@@ -69,7 +69,7 @@ void DebugMenuGuiComponent::Draw()
                 newEntity->GetTransform()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
                 newEntity->GetTransform()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
                 newEntity->AddComponent<VisualComponent>();
-                g_World.AddEntity(newEntity);
+                g_World->AddEntity(newEntity);
             }
         }
 

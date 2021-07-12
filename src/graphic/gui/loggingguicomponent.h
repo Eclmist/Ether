@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class LoggingGuiComponent : public GuiComponent
 {
 public:
-    LoggingGuiComponent();
+    LoggingGuiComponent() = default;
     ~LoggingGuiComponent() = default;
 
 private:

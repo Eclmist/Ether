@@ -37,7 +37,7 @@ void GuiManager::Initialize()
     CreateImGuiContext();
     ImGui_ImplWin32_Init(Win32::g_hWnd);
     ImGui_ImplDX12_Init(
-        g_GraphicDevice.Get(),
+        g_GraphicDevice,
         ETH_MAX_NUM_SWAPCHAIN_BUFFERS,
         DXGI_FORMAT_R8G8B8A8_UNORM,
         m_SRVDescriptorHeap.Get(),
@@ -50,7 +50,6 @@ void GuiManager::Initialize()
 
 void GuiManager::Shutdown()
 {
-    m_GuiContext.Shutdown();
 }
 
 void GuiManager::Render()

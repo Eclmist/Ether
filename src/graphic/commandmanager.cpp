@@ -23,9 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 void CommandManager::Initialize()
 {
-    m_GraphicsQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_ComputeQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
-    m_CopyQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
+    m_GraphicsQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
+    m_ComputeQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    m_CopyQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
 void CommandManager::Shutdown()
@@ -35,7 +35,7 @@ void CommandManager::Shutdown()
 void CommandManager::CreateCommandList(
     D3D12_COMMAND_LIST_TYPE type,
     ID3D12GraphicsCommandList** cmdList,
-    ID3D12CommandAllocator** cmdAlloc) const
+    ID3D12CommandAllocator** cmdAlloc)
 {
     switch (type)
     {
@@ -76,19 +76,37 @@ void CommandManager::Execute(ID3D12CommandList* cmdLst)
     }
 }
 
-std::shared_ptr<CommandQueue> CommandManager::GetQueue(D3D12_COMMAND_LIST_TYPE type) const
+void CommandManager::Flush()
+{
+    m_GraphicsQueue->Flush();
+    m_ComputeQueue->Flush();
+    m_CopyQueue->Flush();
+}
+
+ID3D12CommandAllocator* CommandManager::RequestAllocator(D3D12_COMMAND_LIST_TYPE type)
+{
+    return GetQueue(type).RequestAllocator();
+}
+
+void CommandManager::DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* allocator)
+{
+    CommandQueue& queue = GetQueue(type);
+    queue.DiscardAllocator(allocator, queue.GetCompletionFenceValue());
+}
+
+CommandQueue& CommandManager::GetQueue(D3D12_COMMAND_LIST_TYPE type)
 {
     switch (type)
     {
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
-        return m_GraphicsQueue;
+        return *m_GraphicsQueue;
     case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        return m_ComputeQueue;
+        return *m_ComputeQueue;
     case D3D12_COMMAND_LIST_TYPE_COPY:
-        return m_CopyQueue;
+        return *m_CopyQueue;
     default:
         LogGraphicsError("An unsupported command list type (%s) was requested", type);
-        return m_GraphicsQueue;
+        return *m_GraphicsQueue;
         break;
     }
 }

@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
     : m_Type(type)
-    , m_AllocatorPool(type)
+    , m_AllocatorPool(std::make_unique<CommandAllocatorPool>(type))
 {
     AssertGraphics(g_GraphicDevice != nullptr,
         "An attempt was made to create a command queue before initializing the graphics device");
@@ -59,6 +59,7 @@ void CommandQueue::StallForFence(uint64_t fenceValue)
 
 void CommandQueue::Flush()
 {
+    m_CommandQueue->Signal(m_Fence.Get(), ++m_CompletionFenceValue);
     StallForFence(m_CompletionFenceValue);
 }
 
@@ -86,12 +87,12 @@ void CommandQueue::InitializeFence()
 
 ID3D12CommandAllocator* CommandQueue::RequestAllocator()
 {
-    return m_AllocatorPool.RequestAllocator(m_Fence->GetCompletedValue());
+    return m_AllocatorPool->RequestAllocator(m_Fence->GetCompletedValue());
 }
 
 void CommandQueue::DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue)
 {
-    m_AllocatorPool.DiscardAllocator(allocator, fenceValue);
+    m_AllocatorPool->DiscardAllocator(allocator, fenceValue);
 }
 
 ETH_NAMESPACE_END

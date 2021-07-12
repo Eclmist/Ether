@@ -25,7 +25,6 @@ ETH_NAMESPACE_BEGIN
 void GraphicContext::Initialize(D3D12_COMMAND_LIST_TYPE type)
 {
     g_CommandManager.CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
-    m_CommandQueue = g_CommandManager.GetQueue(type);
     m_Type = type;
 
     m_ViewMatrix = DirectX::XMMatrixIdentity();
@@ -38,8 +37,18 @@ void GraphicContext::Shutdown()
 
 void GraphicContext::Reset()
 {
-    m_CommandAllocator = g_CommandManager.GetQueue(m_Type)->RequestAllocator();
+    m_CommandAllocator = g_CommandManager.RequestAllocator(m_Type);
     m_CommandList->Reset(m_CommandAllocator, nullptr);
+}
+
+CommandQueue& GraphicContext::GetCommandQueue() const
+{
+    return g_CommandManager.GetQueue(m_Type); 
+}
+
+uint64_t GraphicContext::GetCompletionFenceValue() const
+{
+    return GetCommandQueue().GetCompletionFenceValue();
 }
 
 void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
@@ -78,10 +87,10 @@ void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
 void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 {
     g_CommandManager.Execute(m_CommandList.Get());
-    m_CommandQueue->DiscardAllocator(m_CommandAllocator, m_CommandQueue->GetCompletionFenceValue());
+    g_CommandManager.DiscardAllocator(m_Type, m_CommandAllocator);
 
     if (waitForCompletion)
-        m_CommandQueue->Flush();
+        GetCommandQueue().Flush();
 }
 
 void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset)

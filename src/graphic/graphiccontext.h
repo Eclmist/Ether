@@ -36,9 +36,11 @@ public:
     void Shutdown();
     void Reset();
 
+    CommandQueue& GetCommandQueue() const;
+    uint64_t GetCompletionFenceValue() const;
+
 public:
     inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList.Get(); }
-    inline std::shared_ptr<CommandQueue> GetCommandQueue() const { return m_CommandQueue; }
 
     inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
     inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
@@ -63,11 +65,8 @@ private:
     // the screen.
     ID3D12DescriptorHeap* m_CurrentDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-    std::shared_ptr<CommandQueue> m_CommandQueue;
-
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
     ID3D12CommandAllocator* m_CommandAllocator;
-
     D3D12_COMMAND_LIST_TYPE m_Type;
 
 private:
