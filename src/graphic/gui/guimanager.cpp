@@ -26,7 +26,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-void GuiManager::Initialize()
+GuiManager::GuiManager()
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
@@ -48,17 +48,23 @@ void GuiManager::Initialize()
     SetImGuiStyle();
 }
 
-void GuiManager::Shutdown()
+GuiManager::~GuiManager()
 {
+    ImGui_ImplDX12_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void GuiManager::Render()
 {
+    if (m_Components.empty())
+        return;
+
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    for (auto component : m_Components)
+    for (auto&& component : m_Components)
         component->Draw();
 
     ImGui::Render();
@@ -72,8 +78,8 @@ void GuiManager::Render()
 
 void GuiManager::RegisterComponents()
 {
-    m_Components.push_back(std::make_shared<LoggingGuiComponent>());
-    m_Components.push_back(std::make_shared<DebugMenuGuiComponent>());
+    m_Components.push_back(std::make_unique<LoggingGuiComponent>());
+    m_Components.push_back(std::make_unique<DebugMenuGuiComponent>());
 }
 
 void GuiManager::CreateResourceHeap()

@@ -33,7 +33,6 @@ GraphicRenderer::GraphicRenderer()
 
     m_Context.Initialize();
     m_BatchRenderer.Initialize();
-    m_GuiManager.Initialize();
 }
 
 GraphicRenderer::~GraphicRenderer()
@@ -42,7 +41,6 @@ GraphicRenderer::~GraphicRenderer()
 
     DestroyCommonStates();
 
-    m_GuiManager.Shutdown();
     m_BatchRenderer.Shutdown();
 }
 

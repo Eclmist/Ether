@@ -26,8 +26,9 @@ ETH_NAMESPACE_BEGIN
 class GuiManager : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
+    GuiManager();
+    ~GuiManager();
+
     void Render();
 
 private:
@@ -39,7 +40,7 @@ private:
 private:
     GraphicContext m_GuiContext;
 
-    std::vector<std::shared_ptr<GuiComponent>> m_Components;
+    std::vector<std::unique_ptr<GuiComponent>> m_Components;
     wrl::ComPtr<ID3D12DescriptorHeap> m_SRVDescriptorHeap;
 };
 
