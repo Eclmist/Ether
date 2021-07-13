@@ -27,7 +27,7 @@ TextureResource::TextureResource(const std::wstring & name, D3D12_RESOURCE_DESC 
     , m_NumMips(desc.MipLevels)
     , m_Format(desc.Format)
 {
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
         D3D12_HEAP_FLAG_NONE,
         &desc, D3D12_RESOURCE_STATE_COMMON,
@@ -49,7 +49,7 @@ TextureResource::TextureResource(const std::wstring& name, ID3D12Resource* swapC
 
     CreateDescriptorHeaps();
     m_RTVHandle = m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    g_GraphicDevice->CreateRenderTargetView(m_Resource.Get(), nullptr, m_RTVHandle);
+    GraphicCore::GetDevice().CreateRenderTargetView(m_Resource.Get(), nullptr, m_RTVHandle);
 }
 
 D3D12_RESOURCE_DESC TextureResource::CreateResourceDesc(
@@ -77,13 +77,13 @@ void TextureResource::CreateDescriptorHeaps()
     desc.NumDescriptors = 1;
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RTVDescriptorHeap)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RTVDescriptorHeap)));
     m_RTVHandle = m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
     m_SRVHandle = m_SRVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
@@ -101,8 +101,8 @@ void TextureResource::CreateViews()
     SRVDesc.Texture2D.MipLevels = m_NumMips;
     SRVDesc.Texture2D.MostDetailedMip = 0;
 
-    g_GraphicDevice->CreateRenderTargetView(m_Resource.Get(), &RTVDesc, m_RTVHandle);
-    g_GraphicDevice->CreateShaderResourceView(m_Resource.Get(), &SRVDesc, m_SRVHandle);
+    GraphicCore::GetDevice().CreateRenderTargetView(m_Resource.Get(), &RTVDesc, m_RTVHandle);
+    GraphicCore::GetDevice().CreateShaderResourceView(m_Resource.Get(), &SRVDesc, m_SRVHandle);
 }
 
 ETH_NAMESPACE_END

@@ -37,7 +37,48 @@ namespace wrl = Microsoft::WRL;
 #include "graphic/pipeline/graphicpipelinestate.h"
 #include "graphic/pipeline/rootsignature.h"
 
+#include "graphic/commandmanager.h"
 #include "graphic/graphiccommon.h"
 #include "graphic/graphiccontext.h"
 #include "graphic/graphicdisplay.h"
+#include "graphic/graphicrenderer.h"
+
+#include "graphic/common/shaderdaemon.h"
+
+ETH_NAMESPACE_BEGIN
+
+class GraphicCore : public Singleton<GraphicCore>
+{
+public:
+    static void Initialize();
+    static void Render();
+    static void Shutdown();
+
+    static CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
+    static GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
+    static GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
+    static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
+
+    static IDXGIAdapter4& GetAdapter() { return *Instance().m_Adapter.Get(); }
+    static ID3D12Device3& GetDevice() { return *Instance().m_GraphicDevice.Get(); }
+
+public:
+    static void FlushGPU();
+
+private:
+    void InitializeDebugLayer();
+    void InitializeAdapter();
+    void InitializeDevice();
+
+public:
+    std::unique_ptr<CommandManager> m_CommandManager;
+    std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
+    std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
+    std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
+
+    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
+    wrl::ComPtr<ID3D12Device3> m_GraphicDevice;
+};
+
+ETH_NAMESPACE_END
 

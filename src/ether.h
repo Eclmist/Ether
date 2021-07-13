@@ -19,14 +19,10 @@
 
 #pragma once
 
-// Win32
-#include "system/win32/ethwin.h"
-
 // STL Headers
 #include <algorithm>
 #include <string>
 #include <memory>
-#include <mutex>
 
 // Chrono
 #include <chrono>
@@ -37,7 +33,6 @@ namespace chrono = std::chrono;
 #include <list>
 #include <stack>
 #include <unordered_set>
-#include <unordered_map>
 #include <set>
 #include <map>
 
@@ -47,16 +42,11 @@ namespace chrono = std::chrono;
 // Ether includes
 #include "core/core.h"
 #include "graphic/graphic.h"
-#include "system/win32/window.h"
-#include "system/win32/commandlineoptions.h"
 
 ETH_NAMESPACE_BEGIN
 
 namespace Win32
 {
-    extern HWND g_hWnd; 
-    extern Window g_ClientWindow;
-    extern CommandLineOptions g_CommandLineOptions;
 }
 
 ETH_NAMESPACE_END

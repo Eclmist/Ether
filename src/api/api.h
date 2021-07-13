@@ -21,8 +21,6 @@
 
 ETH_NAMESPACE_BEGIN
 
-class iApplication;
-
-int ETH_ENGINE_DLL Start(ApplicationBase& app, int cmdShow);
+int ETH_ENGINE_DLL Start(IApplicationBase& app, int cmdShow);
 
 ETH_NAMESPACE_END

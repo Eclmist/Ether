@@ -19,29 +19,28 @@
 
 #pragma once
 
+#include "system/win32/ethwin.h"
+
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
-{
-
-class CommandLineOptions
+class Window : NonCopyable
 {
 public:
-    CommandLineOptions();
-    ~CommandLineOptions() = default;
+    Window();
+    ~Window();
+    void Show(int cmdShow);
 
-    void Initialize();
-
-public:
-    inline bool IsDebugModeEnabled() const { return m_DebugMode; }
+    inline HWND GetHwnd() const { return m_hWnd; }
 
 private:
-    void InitializeArg(const std::wstring& arg);
+    void RegisterWindowClass() const;
+    void PositionWindowRect();
+    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
-    bool m_DebugMode;
+    RECT m_WindowRect;
+    HWND m_hWnd;
 };
- 
-}
 
 ETH_NAMESPACE_END

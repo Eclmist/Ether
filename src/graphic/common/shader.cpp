@@ -37,7 +37,7 @@ Shader::Shader(
 {
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&m_DxcLibrary)));
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_DxcCompiler)));
-    g_ShaderDaemon.Register(this);
+    GraphicCore::GetShaderDaemon().RegisterShader(this);
 }
 
 bool Shader::Compile()
@@ -93,7 +93,7 @@ const void* Shader::GetCompiledShader() const
 
 std::wstring Shader::GetRelativePath()
 {
-    if (Win32::g_CommandLineOptions.IsDebugModeEnabled())
+    if (EngineCore::GetCommandLineOptions().IsDebugModeEnabled())
         return ETH_SHADER_DEBUG_DIR + m_Filename;
     else
         return ETH_SHADER_RELEASE_DIR + m_Filename;

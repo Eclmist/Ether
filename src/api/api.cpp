@@ -19,63 +19,29 @@
 
 #include "api.h"
 #include "graphic/graphic.h"
-
-#include "graphic/common/visual.h"
 #include <dxgidebug.h>
 
 ETH_NAMESPACE_BEGIN
 
-Win32::Window g_MainWindow;
-
-EngineConfig g_EngineConfig;
-LoggingManager g_LoggingManager;
-GraphicManager g_GraphicManager;
-World* g_World; // TODO: Store this somewhere
-
-void InitializeEngine()
-{
-    Win32::g_CommandLineOptions.Initialize();
-    g_MainApplication->Initialize();
-    g_MainWindow.Initialize();
-    g_LoggingManager.Initialize();
-    g_GraphicManager.Initialize();
-}
-
-void TerminateEngine()
-{
-    delete g_World;
-    g_GraphicManager.Shutdown();
-    g_LoggingManager.Shutdown();
-    g_MainApplication->Shutdown();
-    g_MainWindow.Shutdown();
-
-    wrl::ComPtr<IDXGIDebug1> dxgiDebug;
-    DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug));
-    dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
-}
-
 bool UpdateEngine()
 {
-    g_MainApplication->OnUpdate(UpdateEventArgs());
+    EngineCore::GetMainApplication().OnUpdate(UpdateEventArgs());
 
     RenderEventArgs renderArgs;
     renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
-    renderArgs.m_GraphicContext = &g_GraphicManager.GetGraphicContext();
-    g_MainApplication->OnRender(renderArgs);
+    renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
 
-    g_GraphicManager.WaitForPresent();
-    g_GraphicManager.Render();
-    g_GraphicManager.RenderGui();
-    g_GraphicManager.Present();
+    EngineCore::GetMainApplication().OnRender(renderArgs);
+    GraphicCore::Render();
 
-    return !g_MainApplication->ShouldExit();
+    return !EngineCore::Instance().GetMainApplication().ShouldExit();
 }
 
-void WindowsMessageLoop()
+void WindowsUpdateLoop()
 {
     do
     {
-        Input::GetInstance().NewFrame();
+        Input::Instance().NewFrame(); // Todo: make it Input::Newframe();
 
         MSG msg = {};
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -90,19 +56,27 @@ void WindowsMessageLoop()
     while (UpdateEngine());
 }
 
-int Start(ApplicationBase& app, int cmdShow)
+int Start(IApplicationBase& app, int cmdShow)
 {
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
 
-    g_World = new World();
-    g_MainApplication = &app;
+    EngineCore::Initialize(app);
+    GraphicCore::Initialize();
 
-    g_MainApplication->LoadContent();
-    InitializeEngine();
-    g_MainWindow.Show(cmdShow);
+    EngineCore::LoadContent();
+    EngineCore::GetMainWindow().Show(cmdShow);
 
-    WindowsMessageLoop();
-    TerminateEngine();
+    WindowsUpdateLoop();
+
+    EngineCore::Shutdown();
+    GraphicCore::Shutdown();
+
+#ifdef _DEBUG
+    wrl::ComPtr<IDXGIDebug1> dxgiDebug;
+    DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug));
+    dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+#endif
+
     return 0;
 }
 

@@ -30,7 +30,7 @@ DepthStencilResource::DepthStencilResource(const std::wstring & name, D3D12_RESO
     optimizedClearValue.Format = desc.Format;
     optimizedClearValue.DepthStencil = { 1.0f, 0 };
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
         D3D12_HEAP_FLAG_NONE,
         &desc, D3D12_RESOURCE_STATE_DEPTH_WRITE,
@@ -65,7 +65,7 @@ void DepthStencilResource::CreateDescriptorHeaps()
     desc.NumDescriptors = 1;
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DSVDescriptorHeap)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DSVDescriptorHeap)));
     m_DSVHandle = m_DSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
@@ -76,7 +76,7 @@ void DepthStencilResource::CreateViews()
     DSVDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
     DSVDesc.Texture2D.MipSlice = 0;
     DSVDesc.Flags = D3D12_DSV_FLAG_NONE;
-    g_GraphicDevice->CreateDepthStencilView(m_Resource.Get(), &DSVDesc, m_DSVHandle);
+    GraphicCore::GetDevice().CreateDepthStencilView(m_Resource.Get(), &DSVDesc, m_DSVHandle);
 }
 
 ETH_NAMESPACE_END

@@ -21,26 +21,21 @@
 
 ETH_NAMESPACE_BEGIN
 
-class ApplicationBase
+class CommandLineOptions
 {
 public:
-    virtual void Initialize() = 0;
-    virtual void LoadContent() = 0;
-    virtual void UnloadContent() = 0;
-    virtual void Shutdown() = 0;
+    CommandLineOptions();
+    ~CommandLineOptions() = default;
 
 public:
-    virtual void OnUpdate(const UpdateEventArgs& e) = 0;
-    virtual void OnRender(const RenderEventArgs& e) = 0;
-
-public:
-    inline bool ShouldExit() const { return m_ShouldExit; }
-
-protected:
-    void Exit();
+    inline bool IsDebugModeEnabled() const { return m_DebugMode; }
 
 private:
-    bool m_ShouldExit;
-};
+    void InitializeArg(const std::wstring& arg);
 
+private:
+    bool m_DebugMode;
+};
+ 
 ETH_NAMESPACE_END
+

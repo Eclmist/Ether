@@ -22,7 +22,7 @@
 #include "core/core.h"
 #include "graphic/graphiccore.h"
 
-class SampleApp : public Ether::ApplicationBase
+class SampleApp : public Ether::IApplicationBase
 {
 public:
     void Initialize() override;

@@ -46,7 +46,7 @@ BufferResource::BufferResource(const std::wstring& name, size_t numElements, siz
     heapProp.CreationNodeMask = 1;
     heapProp.VisibleNodeMask = 1;
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE,
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE,
         &desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_Resource)));
 
     m_Resource->SetName(name.c_str());

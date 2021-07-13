@@ -27,7 +27,7 @@ LinearAllocatorPage::LinearAllocatorPage(size_t size)
     , m_Offset(0)
     , m_CpuAddress(nullptr)
 {
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommittedResource(
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
         D3D12_HEAP_FLAG_NONE,
         &CD3DX12_RESOURCE_DESC::Buffer(size),

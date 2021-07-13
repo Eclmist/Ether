@@ -28,19 +28,19 @@ public:
     ~Input() = default;
 
 public:
-    ETH_ENGINE_DLL static bool GetKey(Win32::KeyCode key) { return GetInstance().m_KeyStates[(int)key]; }
-    ETH_ENGINE_DLL static bool GetKeyDown(Win32::KeyCode key) { return GetInstance().m_TransientKeyDownStates[(int)key]; }
-    ETH_ENGINE_DLL static bool GetKeyUp(Win32::KeyCode key) { return GetInstance().m_TransientKeyUpStates[(int)key]; }
+    ETH_ENGINE_DLL static bool GetKey(Win32::KeyCode key) { return Instance().m_KeyStates[(int)key]; }
+    ETH_ENGINE_DLL static bool GetKeyDown(Win32::KeyCode key) { return Instance().m_TransientKeyDownStates[(int)key]; }
+    ETH_ENGINE_DLL static bool GetKeyUp(Win32::KeyCode key) { return Instance().m_TransientKeyUpStates[(int)key]; }
 
-    ETH_ENGINE_DLL static bool GetMouseButton(int index) { return GetInstance().m_MouseStates[index]; }
-    ETH_ENGINE_DLL static bool GetMouseButtonDown(int index) { return GetInstance().m_TransientMouseDownStates[index]; }
-    ETH_ENGINE_DLL static bool GetMouseButtonUp(int index) { return GetInstance().m_TransientMouseUpStates[index]; }
+    ETH_ENGINE_DLL static bool GetMouseButton(int index) { return Instance().m_MouseStates[index]; }
+    ETH_ENGINE_DLL static bool GetMouseButtonDown(int index) { return Instance().m_TransientMouseDownStates[index]; }
+    ETH_ENGINE_DLL static bool GetMouseButtonUp(int index) { return Instance().m_TransientMouseUpStates[index]; }
 
-    ETH_ENGINE_DLL static double GetMouseWheelDelta() { return GetInstance().m_MouseWheelDelta; }
-    ETH_ENGINE_DLL static double GetMousePosX() { return GetInstance().m_MousePosX; }
-    ETH_ENGINE_DLL static double GetMousePosY() { return GetInstance().m_MousePosY; }
-    ETH_ENGINE_DLL static double GetMouseDeltaX() { return GetInstance().m_MouseDeltaX; }
-    ETH_ENGINE_DLL static double GetMouseDeltaY() { return GetInstance().m_MouseDeltaY; }
+    ETH_ENGINE_DLL static double GetMouseWheelDelta() { return Instance().m_MouseWheelDelta; }
+    ETH_ENGINE_DLL static double GetMousePosX() { return Instance().m_MousePosX; }
+    ETH_ENGINE_DLL static double GetMousePosY() { return Instance().m_MousePosY; }
+    ETH_ENGINE_DLL static double GetMouseDeltaX() { return Instance().m_MouseDeltaX; }
+    ETH_ENGINE_DLL static double GetMouseDeltaY() { return Instance().m_MouseDeltaY; }
 
 public:
     void SetKeyDown(Win32::KeyCode key);

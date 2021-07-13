@@ -27,11 +27,8 @@ ETH_NAMESPACE_BEGIN
 
 #define MAX_LOG_ENTRIES 512
 
-std::mutex g_LoggerMutex;
-
 void Log(LogLevel level, LogType type, const char* fmt, ...)
 {
-    std::lock_guard<std::mutex> guard(g_LoggerMutex);
     char formattedBuffer[4096];
 
     va_list args;
@@ -46,13 +43,13 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
 
     while (std::getline(ss, individualLine, '\n')) {
         LogEntry entry(individualLine, level, type);
-        g_LoggingManager.AddLog(entry);
-        g_LoggingManager.Serialize(entry);
+        EngineCore::Instance().GetLoggingManager().AddLog(entry);
+        EngineCore::Instance().GetLoggingManager().Serialize(entry);
         std::cout << entry.GetText() << std::endl;
     }
 }
 
-void LoggingManager::Initialize()
+LoggingManager::LoggingManager()
 {
     m_LogFileStream.open(std::wstring(GetOutputDirectory() + L"/" + GetTimestampedFileName()), std::ios_base::app);
 
@@ -65,13 +62,15 @@ void LoggingManager::Initialize()
     SerializePreInitLogs();
 }
 
-void LoggingManager::Shutdown()
+LoggingManager::~LoggingManager()
 {
     m_LogFileStream.close();
 }
 
 void LoggingManager::AddLog(const LogEntry entry)
  {
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
     if (m_LogEntries.size() > MAX_LOG_ENTRIES)
         m_LogEntries.pop_front();
 
@@ -85,6 +84,8 @@ void LoggingManager::Clear()
 
 void LoggingManager::Serialize(const LogEntry entry)
 {
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
     if (!m_LogFileStream.is_open())
     {
         m_PreInitBuffer.push(entry);
@@ -95,7 +96,7 @@ void LoggingManager::Serialize(const LogEntry entry)
     m_LogFileStream.flush();
 }
 
-void Ether::LoggingManager::SerializePreInitLogs()
+void LoggingManager::SerializePreInitLogs()
 {
     while (!m_PreInitBuffer.empty())
     {
@@ -116,7 +117,7 @@ const std::wstring LoggingManager::GetOutputDirectory() const
     wcscat_s(path, L"\\Ether");
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\");
-    wcscat_s(path, g_EngineConfig.GetClientName().c_str());
+    wcscat_s(path, L"TEMP");// EngineCore::GetEngineConfig().GetClientName().c_str());
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\Logs");
     CreateDirectory(path, NULL);
