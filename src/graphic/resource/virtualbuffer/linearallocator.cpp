@@ -36,36 +36,35 @@ GpuAllocation LinearAllocator::Allocate(size_t size, size_t alignment)
     }
 
     if (m_CurrentPage == nullptr)
-        m_CurrentPage = RequestPage();
+        m_CurrentPage = &RequestPage();
 
     if (!m_CurrentPage->HasSpace(size, alignment))
-        m_CurrentPage = RequestPage();
+        m_CurrentPage = &RequestPage();
 
     return m_CurrentPage->Allocate(size, alignment);
 }
 
-LinearAllocatorPage* LinearAllocator::RequestPage()
+LinearAllocatorPage& LinearAllocator::RequestPage()
 {
-    LinearAllocatorPage* page;
-
     if (m_AvaliablePages.empty())
     {
-        m_AvaliablePages.emplace_back(std::make_shared<LinearAllocatorPage>(m_PageSize));
-        return RequestPage();
+        auto newPage = std::make_shared<LinearAllocatorPage>(m_PageSize);
+        m_InFlightPages.emplace_back(newPage);
+        return *newPage;
     }
 
-    page = m_AvaliablePages.back().get();
-    m_PagePool.push_back(m_AvaliablePages.back());
+    auto page = m_AvaliablePages.back();
     m_AvaliablePages.pop_back();
+    m_InFlightPages.push_back(page);
 
     AssertGraphics(page != nullptr, "LinearAllocatorPage::RequestPage failed to produce a valid page");
-    return page;
+    return *page;
 }
 
 void LinearAllocator::Reset()
 {
     m_CurrentPage = nullptr;
-    m_AvaliablePages = m_PagePool;
+    m_AvaliablePages = m_InFlightPages;
 
     for (auto page : m_AvaliablePages)
         page->Reset();

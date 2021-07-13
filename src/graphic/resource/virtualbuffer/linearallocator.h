@@ -35,12 +35,12 @@ public:
     void Reset();
 
 private:
-    LinearAllocatorPage* RequestPage();
+    LinearAllocatorPage& RequestPage();
 
 private:
     size_t m_PageSize;
 
-    std::vector<std::shared_ptr<LinearAllocatorPage>> m_PagePool;
+    std::vector<std::shared_ptr<LinearAllocatorPage>> m_InFlightPages;
     std::vector<std::shared_ptr<LinearAllocatorPage>> m_AvaliablePages;
 
     LinearAllocatorPage* m_CurrentPage;
