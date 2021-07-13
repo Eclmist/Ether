@@ -31,14 +31,13 @@ VisualComponent::VisualComponent(Entity* const owner)
     if (m_MeshComponent == nullptr)
         m_MeshComponent = owner->AddComponent<MeshComponent>();
 
-    m_Visual = new Visual(*this);
-    GraphicCore::GetGraphicRenderer().RegisterVisual(m_Visual);
+    GraphicCore::GetGraphicRenderer().RegisterVisual(std::make_unique<Visual>(*this));
 }
 
 VisualComponent::~VisualComponent()
 {
-    GraphicCore::GetGraphicRenderer().DeregisterVisual(m_Visual);
-    delete m_Visual;
+    if (GraphicCore::HasInstance())
+        GraphicCore::GetGraphicRenderer().DeregisterVisual(std::make_unique<Visual>(*this));
 }
 
 ETH_NAMESPACE_END

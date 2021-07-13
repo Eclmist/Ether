@@ -27,6 +27,8 @@ ETH_NAMESPACE_BEGIN
 
 #define MAX_LOG_ENTRIES 512
 
+std::queue<LogEntry> g_PreInitBuffer;
+
 void Log(LogLevel level, LogType type, const char* fmt, ...)
 {
     char formattedBuffer[4096];
@@ -43,9 +45,14 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
 
     while (std::getline(ss, individualLine, '\n')) {
         LogEntry entry(individualLine, level, type);
-        EngineCore::Instance().GetLoggingManager().AddLog(entry);
-        EngineCore::Instance().GetLoggingManager().Serialize(entry);
-        std::cout << entry.GetText() << std::endl;
+
+        if (EngineCore::HasInstance())
+        {
+            EngineCore::GetLoggingManager().AddLog(entry);
+            EngineCore::GetLoggingManager().Serialize(entry);
+        }
+        else
+            g_PreInitBuffer.push(entry);
     }
 }
 
@@ -88,7 +95,6 @@ void LoggingManager::Serialize(const LogEntry entry)
 
     if (!m_LogFileStream.is_open())
     {
-        m_PreInitBuffer.push(entry);
         return;
     }
 
@@ -98,10 +104,10 @@ void LoggingManager::Serialize(const LogEntry entry)
 
 void LoggingManager::SerializePreInitLogs()
 {
-    while (!m_PreInitBuffer.empty())
+    while (!g_PreInitBuffer.empty())
     {
-        LogEntry entry = m_PreInitBuffer.front();
-        m_PreInitBuffer.pop();
+        LogEntry entry = g_PreInitBuffer.front();
+        g_PreInitBuffer.pop();
 
         m_LogFileStream << entry.GetText().c_str() << "\n";
         m_LogFileStream.flush();
@@ -117,7 +123,7 @@ const std::wstring LoggingManager::GetOutputDirectory() const
     wcscat_s(path, L"\\Ether");
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\");
-    wcscat_s(path, L"TEMP");// EngineCore::GetEngineConfig().GetClientName().c_str());
+    wcscat_s(path, EngineCore::GetEngineConfig().GetClientName().c_str());
     CreateDirectory(path, NULL);
     wcscat_s(path, L"\\Logs");
     CreateDirectory(path, NULL);
@@ -133,4 +139,3 @@ const std::wstring LoggingManager::GetTimestampedFileName() const
 }
 
 ETH_NAMESPACE_END
-

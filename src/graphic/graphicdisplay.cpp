@@ -107,13 +107,13 @@ void GraphicDisplay::CreateDxgiSwapChain()
     swapChainDesc.Flags = 0;
 
     ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(
-        EngineCore::Instance().GetMainWindow().GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
+        EngineCore::GetMainWindow().GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
 
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
         GraphicCore::GetCommandManager().GetGraphicsQueue().Get(),
-        EngineCore::Instance().GetMainWindow().GetHwnd(),
+        EngineCore::GetMainWindow().GetHwnd(),
         &swapChainDesc,
         nullptr,
         nullptr,

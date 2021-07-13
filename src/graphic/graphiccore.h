@@ -47,6 +47,8 @@ namespace wrl = Microsoft::WRL;
 
 ETH_NAMESPACE_BEGIN
 
+#define g_Device GraphicCore::GetDevice();
+
 class GraphicCore : public Singleton<GraphicCore>
 {
 public:

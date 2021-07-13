@@ -37,8 +37,8 @@ public:
     void Present();
 
     //TODO: maybe move into batch renderer?
-    void RegisterVisual(Visual* visual);
-    void DeregisterVisual(Visual* visual);
+    void RegisterVisual(std::unique_ptr<Visual> visual);
+    void DeregisterVisual(std::unique_ptr<Visual> visual);
 
     inline GraphicContext& GetGraphicContext() { return m_Context; }
     inline GuiManager& GetGuiManager() { return m_GuiManager; }
@@ -51,7 +51,7 @@ private:
     GraphicContext m_Context;
     GuiManager m_GuiManager;
 
-    std::vector<Visual*> m_Visuals;
+    std::vector<std::unique_ptr<Visual>> m_Visuals;
 };
 
 ETH_NAMESPACE_END

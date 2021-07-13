@@ -21,7 +21,9 @@ ETH_NAMESPACE_BEGIN
 
 void EngineCore::Initialize(IApplicationBase& app)
 {
+    app.Initialize();
     Instance().m_MainApplication = &app;
+    Instance().m_LoggingManager = std::make_unique<LoggingManager>();
     Instance().m_MainWindow = std::make_unique<Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
 }
@@ -36,6 +38,7 @@ void EngineCore::Shutdown()
 {
     Instance().m_ActiveWorld.reset();
     Instance().m_MainWindow.reset();
+    Instance().m_LoggingManager.reset();
     Reset();
 }
 
