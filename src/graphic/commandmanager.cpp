@@ -21,14 +21,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-void CommandManager::Initialize()
+CommandManager::CommandManager()
 {
     m_GraphicsQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
     m_ComputeQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
     m_CopyQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
-void CommandManager::Shutdown()
+CommandManager::~CommandManager()
 {
 }
 
@@ -53,7 +53,7 @@ void CommandManager::CreateCommandList(
         return;
     }
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandList(1, type, *cmdAlloc, nullptr, IID_PPV_ARGS(cmdList)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommandList(1, type, *cmdAlloc, nullptr, IID_PPV_ARGS(cmdList)));
     (*cmdList)->SetName(L"CommandManager::CommandList");
 }
 

@@ -25,11 +25,12 @@
 
 ETH_NAMESPACE_BEGIN
 
-class GraphicManager : public NonCopyable
+class GraphicRenderer : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
+    GraphicRenderer();
+    ~GraphicRenderer();
+
     void WaitForPresent();
     void Render();
     void RenderGui();
@@ -40,21 +41,14 @@ public:
     void DeregisterVisual(Visual* visual);
 
     inline GraphicContext& GetGraphicContext() { return m_Context; }
-    inline GraphicDisplay& GetGraphicDisplay() { return m_Display; }
     inline GuiManager& GetGuiManager() { return m_GuiManager; }
 
 private:
     void CleanUp();
-    void InitializeDebugLayer();
-    void InitializeAdapter();
-    void InitializeDevice();
 
 private:
-    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
-
     GraphicBatchRenderer m_BatchRenderer;
     GraphicContext m_Context;
-    GraphicDisplay m_Display;
     GuiManager m_GuiManager;
 
     std::vector<Visual*> m_Visuals;

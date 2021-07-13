@@ -21,12 +21,14 @@
 #include <algorithm> // for std::clamp
 #include <cmath>
 
+using namespace Ether;
+
 void SampleApp::Initialize()
 {
     LogInfo("Initializing Sample App");
-    Ether::g_EngineConfig.SetClientWidth(1920);
-    Ether::g_EngineConfig.SetClientHeight(1080);
-    Ether::g_EngineConfig.SetClientName(L"Ether Sample App");
+    EngineCore::GetEngineConfig().SetClientWidth(1920);
+    EngineCore::GetEngineConfig().SetClientHeight(1080);
+    EngineCore::GetEngineConfig().SetClientName(L"Ether Sample App");
 
     m_CameraDistance = 20.0f;
     m_CameraRotation = { 0, 0, 0 };
@@ -34,26 +36,26 @@ void SampleApp::Initialize()
 
 void SampleApp::LoadContent()
 {
-    Ether::Entity* m_DebugCube;
+    Entity* m_DebugCube;
 
-    m_DebugCube = new Ether::Entity("Debug Cube");
-    m_DebugCube->AddComponent<Ether::MeshComponent>();
-    m_DebugCube->AddComponent<Ether::VisualComponent>();
+    m_DebugCube = new Entity("Debug Cube");
+    m_DebugCube->AddComponent<MeshComponent>();
+    m_DebugCube->AddComponent<VisualComponent>();
     m_DebugCube->GetTransform()->SetPosition({ -.0, -.0, 0 });
     m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0 });
-    Ether::g_World->AddEntity(m_DebugCube);
+    EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
 
-    m_DebugCube = new Ether::Entity("Debug Cube 2");
-    m_DebugCube->AddComponent<Ether::VisualComponent>();
+    m_DebugCube = new Entity("Debug Cube 2");
+    m_DebugCube->AddComponent<VisualComponent>();
     m_DebugCube->GetTransform()->SetPosition({ 2.0, -4.0, 0 });
     m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0.23f });
     m_DebugCube->GetTransform()->SetScale({ 1.20f, 1.40f, 1.23f });
-    Ether::g_World->AddEntity(m_DebugCube);
+    EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
 
-    m_DebugCube = new Ether::Entity("Toolmode::Grid");
-    auto vis = m_DebugCube->AddComponent<Ether::VisualComponent>();
+    m_DebugCube = new Entity("Toolmode::Grid");
+    auto vis = m_DebugCube->AddComponent<VisualComponent>();
     m_DebugCube->GetTransform()->SetScale({ 1000, 0.01f, 1000 });
-    Ether::g_World->AddEntity(m_DebugCube);
+    EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
 }
 
 void SampleApp::UnloadContent()
@@ -64,39 +66,39 @@ void SampleApp::Shutdown()
 {
 }
 
-void SampleApp::OnUpdate(const Ether::UpdateEventArgs& e)
+void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
-    if (Ether::Input::GetKeyDown(Ether::Win32::KeyCode::KEYCODE_F3))
-        Ether::g_EngineConfig.ToggleDebugGui();
+    if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F3))
+        EngineCore::GetEngineConfig().ToggleDebugGui();
 
-    m_CameraDistance -= Ether::Input::GetMouseWheelDelta() / 120;
+    m_CameraDistance -= Input::GetMouseWheelDelta() / 120;
     m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 
-    if (Ether::Input::GetMouseButton(1))
+    if (Input::GetMouseButton(1))
     {
-        m_CameraRotation.x -= Ether::Input::GetMouseDeltaY() / 500;
-        m_CameraRotation.y -= Ether::Input::GetMouseDeltaX() / 500;
+        m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+        m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
 
         constexpr float rad90 = DirectX::XMConvertToRadians(80);
         m_CameraRotation.x = std::clamp(m_CameraRotation.x, -rad90, rad90);
     }
 
-    float x = sin((float)Ether::GetTimeSinceStart());
-    Ether::g_World->GetEntities()[0]->GetTransform()->SetPosition({ x, 0, 0 });
+    float x = sin((float)GetTimeSinceStart());
+    EngineCore::GetActiveWorld().GetEntities()[0]->GetTransform()->SetPosition({ x, 0, 0 });
 }
 
-void SampleApp::OnRender(const Ether::RenderEventArgs& e)
+void SampleApp::OnRender(const RenderEventArgs& e)
 {
-    const Ether::ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
-    float aspectRatio = Ether::g_EngineConfig.GetClientWidth() / static_cast<float>(Ether::g_EngineConfig.GetClientHeight());
+    const ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
+    float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
 
-    Ether::ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
-    Ether::ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
+    ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
+    ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
 
-    Ether::ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
+    ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
     viewMatrix = DirectX::XMMatrixMultiply(viewMatrix, DirectX::XMMatrixTranslation(0, 0, m_CameraDistance));
 
-    Ether::ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
+    ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
 
     e.m_GraphicContext->SetViewMatrix(viewMatrix);
     e.m_GraphicContext->SetProjectionMatrix(projectionMatrix);

@@ -26,12 +26,13 @@ ETH_NAMESPACE_BEGIN
 class ShaderDaemon : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
-    void Register(Shader* shader);
+    ShaderDaemon();
+    ~ShaderDaemon();
 
-    void DaemonThreadMain();
+    void RegisterShader(Shader* shader);
+
 private:
+    void DaemonThreadMain();
     std::wstring GetShaderDirectory();
 
     void WaitForFileUnlock(const std::wstring& shaderFileName);

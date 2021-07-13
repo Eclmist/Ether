@@ -23,8 +23,8 @@ ETH_NAMESPACE_BEGIN
 
 void LoggingGuiComponent::Draw()
 {
-    m_Size = ImVec2((float)g_EngineConfig.GetClientWidth(), 300);
-    m_Position = ImVec2(0, g_EngineConfig.GetClientHeight() - m_Size.y);
+    m_Size = ImVec2((float)EngineCore::GetEngineConfig().GetClientWidth(), 300);
+    m_Position = ImVec2(0, EngineCore::GetEngineConfig().GetClientHeight() - m_Size.y);
 
     ImGui::SetNextWindowSize(m_Size);
     ImGui::SetNextWindowPos(m_Position);
@@ -35,7 +35,7 @@ void LoggingGuiComponent::Draw()
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-    auto logEntries = g_LoggingManager.GetEntries();
+    auto logEntries = EngineCore::GetLoggingManager().GetEntries();
 
     ImGuiListClipper clipper;
     clipper.Begin((int)logEntries.size());

@@ -17,37 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "commandlineoptions.h"
-#include <shellapi.h>
-#include <iostream>
-
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
+void EngineCore::Initialize(IApplicationBase& app)
 {
-
-CommandLineOptions g_CommandLineOptions;
-
-CommandLineOptions::CommandLineOptions()
-    : m_DebugMode(false)
-{
+    Instance().m_MainApplication = &app;
+    Instance().m_MainWindow = std::make_unique<Window>();
+    Instance().m_ActiveWorld = std::make_unique<World>();
 }
 
-void CommandLineOptions::Initialize()
+void EngineCore::LoadContent()
 {
-    int argc;
-    LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
-
-    for (int i = 0; i < argc; ++i)
-        InitializeArg(argv[i]);
+    // Other engine content can be loaded here before or after main application
+    Instance().m_MainApplication->LoadContent();
 }
 
-void CommandLineOptions::InitializeArg(const std::wstring& arg)
+void EngineCore::Shutdown()
 {
-    if (arg == L"-debug")
-        m_DebugMode = true;
-}
-
+    Instance().m_ActiveWorld.reset();
+    Instance().m_MainWindow.reset();
+    Reset();
 }
 
 ETH_NAMESPACE_END
+

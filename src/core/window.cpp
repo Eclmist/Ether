@@ -22,17 +22,12 @@
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
-{
-
-HWND g_hWnd = nullptr;
-
 #define ETH_WINDOWCLASS_STYLE   CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 
 #include <strsafe.h>
 
-void Window::Initialize()
+Window::Window()
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -43,11 +38,10 @@ void Window::Initialize()
     PositionWindowRect();
     AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
 
-    g_hWnd = CreateWindowExW(
-
+    m_hWnd = CreateWindowExW(
         NULL,
-        g_EngineConfig.GetClientName().c_str(),
-        g_EngineConfig.GetClientName().c_str(),
+        EngineCore::GetEngineConfig().GetClientName().c_str(),
+        EngineCore::GetEngineConfig().GetClientName().c_str(),
         ETH_WINDOW_STYLE,
         m_WindowRect.left,
         m_WindowRect.top,
@@ -60,15 +54,15 @@ void Window::Initialize()
     );
 }
 
-void Window::Shutdown()
+Window::~Window()
 {
-    DestroyWindow(g_hWnd);
-    UnregisterClassW(g_EngineConfig.GetClientName().c_str(), GetModuleHandle(NULL));
+    DestroyWindow(m_hWnd);
+    UnregisterClassW(EngineCore::GetEngineConfig().GetClientName().c_str(), GetModuleHandle(NULL));
 }
 
 void Window::Show(int cmdShow)
 {
-    ShowWindow(g_hWnd, cmdShow);
+    ShowWindow(m_hWnd, cmdShow);
 }
 
 void Window::RegisterWindowClass() const
@@ -84,7 +78,7 @@ void Window::RegisterWindowClass() const
     windowClass.hCursor = nullptr;
     windowClass.hbrBackground = nullptr;
     windowClass.lpszMenuName = nullptr;
-    windowClass.lpszClassName = g_EngineConfig.GetClientName().c_str();
+    windowClass.lpszClassName = EngineCore::GetEngineConfig().GetClientName().c_str();
     windowClass.hIconSm = nullptr;
     windowClass.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ENGINEICON));
 
@@ -96,10 +90,10 @@ void Window::PositionWindowRect()
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-    m_WindowRect.left = (screenWidth / 2 - g_EngineConfig.GetClientWidth() / 2);
-    m_WindowRect.top = (screenHeight / 2 - g_EngineConfig.GetClientHeight() / 2);
-    m_WindowRect.right = m_WindowRect.left + g_EngineConfig.GetClientWidth();
-    m_WindowRect.bottom = m_WindowRect.top + g_EngineConfig.GetClientHeight();
+    m_WindowRect.left = (screenWidth / 2 - EngineCore::GetEngineConfig().GetClientWidth() / 2);
+    m_WindowRect.top = (screenHeight / 2 - EngineCore::GetEngineConfig().GetClientHeight() / 2);
+    m_WindowRect.right = m_WindowRect.left + EngineCore::GetEngineConfig().GetClientWidth();
+    m_WindowRect.bottom = m_WindowRect.top + EngineCore::GetEngineConfig().GetClientHeight();
 }
 
 LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -127,41 +121,41 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg)
     {
     case WM_SIZE:
-        g_EngineConfig.SetClientWidth(LOWORD(lParam));
-        g_EngineConfig.SetClientHeight(HIWORD(lParam));
-        g_GraphicManager.GetGraphicDisplay().Resize(LOWORD(lParam), HIWORD(lParam));
+        EngineCore::GetEngineConfig().SetClientWidth(LOWORD(lParam));
+        EngineCore::GetEngineConfig().SetClientHeight(HIWORD(lParam));
+        GraphicCore::GetGraphicDisplay().Resize(LOWORD(lParam), HIWORD(lParam));
         break;
     case WM_KEYDOWN:
         // TODO: Handle Ctrl, Alt, and convert keycode to character
-        Input::GetInstance().SetKeyDown(static_cast<KeyCode>(wParam));
+        Input::Instance().SetKeyDown(static_cast<Win32::KeyCode>(wParam));
         break;
     case WM_KEYUP:
-        Input::GetInstance().SetKeyUp(static_cast<KeyCode>(wParam));
+        Input::Instance().SetKeyUp(static_cast<Win32::KeyCode>(wParam));
         break;
     case WM_MOUSEWHEEL:
-        Input::GetInstance().SetMouseWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam));
+        Input::Instance().SetMouseWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam));
         break;
     case WM_MOUSEMOVE:
-        Input::GetInstance().SetMousePosX((short)LOWORD(lParam));
-        Input::GetInstance().SetMousePosY((short)HIWORD(lParam));
+        Input::Instance().SetMousePosX((short)LOWORD(lParam));
+        Input::Instance().SetMousePosY((short)HIWORD(lParam));
         break;
     case WM_LBUTTONDOWN:
-        Input::GetInstance().SetMouseButtonDown(0);
+        Input::Instance().SetMouseButtonDown(0);
         break;
     case WM_LBUTTONUP:
-        Input::GetInstance().SetMouseButtonUp(0);
+        Input::Instance().SetMouseButtonUp(0);
         break;
     case WM_MBUTTONDOWN:
-        Input::GetInstance().SetMouseButtonDown(1);
+        Input::Instance().SetMouseButtonDown(1);
         break;
     case WM_MBUTTONUP:
-        Input::GetInstance().SetMouseButtonUp(1);
+        Input::Instance().SetMouseButtonUp(1);
         break;
     case WM_RBUTTONDOWN:
-        Input::GetInstance().SetMouseButtonDown(2);
+        Input::Instance().SetMouseButtonDown(2);
         break;
     case WM_RBUTTONUP:
-        Input::GetInstance().SetMouseButtonUp(2);
+        Input::Instance().SetMouseButtonUp(2);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -173,6 +167,5 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-}
-
 ETH_NAMESPACE_END
+

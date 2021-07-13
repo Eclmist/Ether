@@ -33,8 +33,9 @@ enum class BufferingMode
 class GraphicDisplay : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
+    GraphicDisplay();
+    ~GraphicDisplay();
+
     // TODO: Support resize and dynamic update of vsync and buffering mode
     void Present();
     void Resize(uint32_t width, uint32_t height);

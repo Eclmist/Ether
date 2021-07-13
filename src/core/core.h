@@ -20,6 +20,8 @@
 #pragma once
 
 #include <cassert>
+#include <mutex>
+#include <unordered_map>
 #include <deque>
 #include <queue>
 #include <string>
@@ -37,12 +39,14 @@
 #include "core/component/meshcomponent.h"
 #include "core/component/visualcomponent.h"
 
+#include "core/window.h"
+#include "core/commandlineoptions.h"
 #include "core/event/events.h"
 #include "core/engineconfig.h"
 #include "core/entity.h"
 #include "core/world.h"
 #include "core/material.h"
-#include "core/applicationbase.h"
+#include "core/iapplicationbase.h"
 #include "core/input.h"
 
 #include "common/logging/loggingmanager.h"
@@ -50,10 +54,32 @@
 
 ETH_NAMESPACE_BEGIN
 
-ETH_ENGINE_DLL extern ApplicationBase* g_MainApplication;
-ETH_ENGINE_DLL extern EngineConfig g_EngineConfig;
-ETH_ENGINE_DLL extern LoggingManager g_LoggingManager;
-ETH_ENGINE_DLL extern World* g_World;
+class ETH_ENGINE_DLL EngineCore : public Singleton<EngineCore>
+{
+public:
+    static void Initialize(IApplicationBase& app);
+    static void LoadContent();
+    static void Shutdown();
+
+    static IApplicationBase& GetMainApplication() { return *Instance().m_MainApplication; }
+
+    static Window& GetMainWindow() { return *Instance().m_MainWindow; }
+    static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
+
+    static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
+    static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
+    static LoggingManager& GetLoggingManager() { return Instance().m_LoggingManager; }
+
+private:
+    IApplicationBase* m_MainApplication;
+
+    std::unique_ptr<World> m_ActiveWorld;
+    std::unique_ptr<Window> m_MainWindow;
+
+    CommandLineOptions m_CommandLineOptions;
+    EngineConfig m_EngineConfig;
+    LoggingManager m_LoggingManager;
+};
 
 ETH_NAMESPACE_END
 

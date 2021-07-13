@@ -17,15 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "applicationbase.h"
+#pragma once
 
 ETH_NAMESPACE_BEGIN
 
-ApplicationBase* g_MainApplication = nullptr;
-
-void ApplicationBase::Exit()
+class IApplicationBase
 {
-    m_ShouldExit = true;
-}
+public:
+    virtual void Initialize() = 0;
+    virtual void LoadContent() = 0;
+    virtual void UnloadContent() = 0;
+    virtual void Shutdown() = 0;
+
+public:
+    virtual void OnUpdate(const UpdateEventArgs& e) = 0;
+    virtual void OnRender(const RenderEventArgs& e) = 0;
+
+public:
+    inline bool ShouldExit() const { return m_ShouldExit; }
+
+protected:
+    void Exit();
+
+private:
+    bool m_ShouldExit;
+};
 
 ETH_NAMESPACE_END

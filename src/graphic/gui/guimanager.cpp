@@ -35,9 +35,9 @@ void GuiManager::Initialize()
     RegisterComponents();
     CreateResourceHeap();
     CreateImGuiContext();
-    ImGui_ImplWin32_Init(Win32::g_hWnd);
+    ImGui_ImplWin32_Init(EngineCore::GetMainWindow().GetHwnd());
     ImGui_ImplDX12_Init(
-        g_GraphicDevice,
+        &GraphicCore::GetDevice(),
         ETH_MAX_NUM_SWAPCHAIN_BUFFERS,
         DXGI_FORMAT_R8G8B8A8_UNORM,
         m_SRVDescriptorHeap.Get(),
@@ -62,8 +62,8 @@ void GuiManager::Render()
         component->Draw();
 
     ImGui::Render();
-    m_GuiContext.TransitionResource(*g_GraphicManager.GetGraphicDisplay().GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-    m_GuiContext.SetRenderTarget(g_GraphicManager.GetGraphicDisplay().GetCurrentBackBuffer()->GetRTV());
+    m_GuiContext.TransitionResource(*GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_GuiContext.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer()->GetRTV());
     m_GuiContext.GetCommandList()->SetDescriptorHeaps(1, m_SRVDescriptorHeap.GetAddressOf());
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_GuiContext.GetCommandList());
     m_GuiContext.FinalizeAndExecute();
@@ -82,7 +82,7 @@ void GuiManager::CreateResourceHeap()
     desc.NumDescriptors = 1;
     desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    ASSERT_SUCCESS(g_GraphicDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
 }
 
 void GuiManager::CreateImGuiContext()

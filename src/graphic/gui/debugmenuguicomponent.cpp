@@ -23,14 +23,14 @@ ETH_NAMESPACE_BEGIN
 
 DebugMenuGuiComponent::DebugMenuGuiComponent()
 {
-    m_Size = ImVec2((float)g_EngineConfig.GetClientWidth(), 300);
-    m_Position = ImVec2(0, g_EngineConfig.GetClientHeight() - m_Size.y);
+    m_Size = ImVec2((float)EngineCore::GetEngineConfig().GetClientWidth(), 300);
+    m_Position = ImVec2(0, EngineCore::GetEngineConfig().GetClientHeight() - m_Size.y);
 }
 
 void DebugMenuGuiComponent::Draw()
 {
     static bool showImGuiDemo = false;
-    GraphicContext& gfxContext = g_GraphicManager.GetGraphicContext();
+    GraphicContext& gfxContext = GraphicCore::GetGraphicRenderer().GetGraphicContext();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
@@ -46,8 +46,8 @@ void DebugMenuGuiComponent::Draw()
 
         if (ImGui::CollapsingHeader("Display Options"))
         {
-            ImGui::ColorEdit3("clear color", (float*)&g_EngineConfig.m_ClearColor); // Edit 3 floats representing a color
-            ImGui::Checkbox("Render Wireframe", &g_EngineConfig.m_RenderWireframe);      // Edit bools storing our window open/close state
+            ImGui::ColorEdit3("clear color", (float*)&EngineCore::GetEngineConfig().m_ClearColor); // Edit 3 floats representing a color
+            ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      // Edit bools storing our window open/close state
         }
 
         if (ImGui::CollapsingHeader("Input"))
@@ -58,7 +58,7 @@ void DebugMenuGuiComponent::Draw()
 
         if (ImGui::CollapsingHeader("Scene"))
         {
-            for (auto entity : g_World->GetEntities())
+            for (auto entity : EngineCore::GetActiveWorld().GetEntities())
             {
                 ImGui::BulletText(entity->GetName().c_str());
             }
@@ -69,7 +69,7 @@ void DebugMenuGuiComponent::Draw()
                 newEntity->GetTransform()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
                 newEntity->GetTransform()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
                 newEntity->AddComponent<VisualComponent>();
-                g_World->AddEntity(newEntity);
+                EngineCore::GetActiveWorld().AddEntity(newEntity);
             }
         }
 

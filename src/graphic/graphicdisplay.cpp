@@ -23,22 +23,23 @@ ETH_NAMESPACE_BEGIN
 
 DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-void GraphicDisplay::Initialize()
+GraphicDisplay::GraphicDisplay()
+    : m_FrameBufferWidth(800)
+    , m_FrameBufferHeight(480)
+    , m_BufferingMode(BufferingMode::BUFFERINGMODE_TRIPLE)
+    , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
+    , m_Viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight))
+    , m_VsyncEnabled(false)
 {
-    m_FrameBufferWidth = g_EngineConfig.GetClientWidth();
-    m_FrameBufferHeight = g_EngineConfig.GetClientHeight();
-    m_BufferingMode = BufferingMode::BUFFERINGMODE_TRIPLE;
-    m_ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
-    m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight);
-    m_VsyncEnabled = false;
-
     CreateDxgiSwapChain();
     InitializeResources();
+
+    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+        m_FrameBufferFences[i] = 0;
 }
 
-void GraphicDisplay::Shutdown()
+GraphicDisplay::~GraphicDisplay()
 {
-    m_SwapChain.Reset();
 }
 
 void GraphicDisplay::Present()
@@ -57,7 +58,7 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
     m_FrameBufferHeight = height;
     m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight);
 
-    g_CommandManager.Flush();
+    GraphicCore::FlushGPU();
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
         m_FrameBuffers[i].reset();
@@ -105,13 +106,14 @@ void GraphicDisplay::CreateDxgiSwapChain()
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     swapChainDesc.Flags = 0;
 
-    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(Win32::g_hWnd, DXGI_MWA_NO_ALT_ENTER));
+    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(
+        EngineCore::Instance().GetMainWindow().GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
 
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
-        g_CommandManager.GetGraphicsQueue().Get(),
-        Win32::g_hWnd,
+        GraphicCore::GetCommandManager().GetGraphicsQueue().Get(),
+        EngineCore::Instance().GetMainWindow().GetHwnd(),
         &swapChainDesc,
         nullptr,
         nullptr,

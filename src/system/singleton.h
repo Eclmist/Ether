@@ -37,7 +37,7 @@ public:
         return m_Instance != nullptr;
     }
 
-    static T& GetInstance()
+    static T& Instance()
     {
         if (m_Instance != nullptr)
             return *m_Instance;
@@ -48,7 +48,7 @@ public:
         return *m_Instance;
     };
 
-    static void DestroySingleton()
+    static void Reset()
     {
         assert(m_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
         m_IsDestroying = true;

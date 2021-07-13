@@ -17,21 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "commandlineoptions.h"
+#include <shellapi.h>
+#include <iostream>
 
-#define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
+ETH_NAMESPACE_BEGIN
 
-#define ETH_SHADER_DEBUG_DIR                L"../../src/graphic/shader/"
-#define ETH_SHADER_RELEASE_DIR              L"./data/shader/"
+CommandLineOptions::CommandLineOptions()
+    : m_DebugMode(false)
+{
+    int argc;
+    LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
 
+    for (int i = 0; i < argc; ++i)
+        InitializeArg(argv[i]);
+}
 
-#define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
-#define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
-#define D3D12_RESOURCE_STATE_UNKNOWN        ((D3D12_RESOURCE_STATES)-1)
+void CommandLineOptions::InitializeArg(const std::wstring& arg)
+{
+    if (arg == L"-debug")
+        m_DebugMode = true;
+}
 
-#define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("D3D12 operation failed - %s", #hr); throw std::exception(); }
-
-// Ether Graphics Library
-#include "graphic/graphiccore.h"
-#include "graphic/common/visual.h"
+ETH_NAMESPACE_END
 

@@ -26,8 +26,8 @@ ETH_NAMESPACE_BEGIN
 class CommandManager : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
+    CommandManager();
+    ~CommandManager();
 
     void CreateCommandList(
         D3D12_COMMAND_LIST_TYPE type,

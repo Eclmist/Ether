@@ -21,20 +21,20 @@
 
 ETH_NAMESPACE_BEGIN
 
-void ShaderDaemon::Initialize()
+ShaderDaemon::ShaderDaemon()
 {
     LogGraphicsInfo("Starting Shader Daemon thread");
     m_TerminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     m_ShaderDaemonThread = std::thread(&ShaderDaemon::DaemonThreadMain, this);
 }
 
-void ShaderDaemon::Shutdown()
+ShaderDaemon::~ShaderDaemon()
 {
     SetEvent(m_TerminationEvent);
     m_ShaderDaemonThread.join();
 }
 
-void ShaderDaemon::Register(Shader* shader)
+void ShaderDaemon::RegisterShader(Shader* shader)
 {
     std::lock_guard<std::mutex> guard(m_Mutex);
     m_RegisteredShaders[shader->GetFilename()] = shader;
@@ -44,7 +44,8 @@ std::wstring ShaderDaemon::GetShaderDirectory()
 {
     wchar_t fullPath[MAX_PATH];
 
-    if (Win32::g_CommandLineOptions.IsDebugModeEnabled())
+    // TODO: move to graphic options
+    if (EngineCore::Instance().GetCommandLineOptions().IsDebugModeEnabled())
         GetFullPathNameW(ETH_SHADER_DEBUG_DIR, MAX_PATH, fullPath, nullptr);
     else
         GetFullPathNameW(ETH_SHADER_RELEASE_DIR, MAX_PATH, fullPath, nullptr);

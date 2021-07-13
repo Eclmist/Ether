@@ -46,7 +46,7 @@ void RootSignature::Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAG
     ASSERT_SUCCESS(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, 
         rsBlob.GetAddressOf(), errBlob.GetAddressOf()));
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateRootSignature(1, rsBlob->GetBufferPointer(), rsBlob->GetBufferSize(),
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateRootSignature(1, rsBlob->GetBufferPointer(), rsBlob->GetBufferSize(),
         IID_PPV_ARGS(&m_RootSignature)));
 
     m_RootSignature->SetName(name.c_str());

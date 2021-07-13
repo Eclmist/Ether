@@ -97,7 +97,7 @@ void GraphicPipelineState::Finalize()
 {
     m_Desc.pRootSignature = m_RootSignature->GetRootSignature();
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateGraphicsPipelineState(&m_Desc, IID_PPV_ARGS(&m_PipelineState)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateGraphicsPipelineState(&m_Desc, IID_PPV_ARGS(&m_PipelineState)));
     m_PipelineState->SetName(m_Name.c_str());
 }
 

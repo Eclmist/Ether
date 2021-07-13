@@ -17,30 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "iapplicationbase.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
+void IApplicationBase::Exit()
 {
-
-class Window : NonCopyable
-{
-public:
-    void Initialize();
-    void Shutdown();
-    void Show(int cmdShow);
-
-private:
-    void RegisterWindowClass() const;
-    void PositionWindowRect();
-    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    RECT m_WindowRect;
-};
-
+    m_ShouldExit = true;
 }
 
 ETH_NAMESPACE_END

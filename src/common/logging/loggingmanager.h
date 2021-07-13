@@ -49,8 +49,9 @@ ETH_ENGINE_DLL void Log(LogLevel level, LogType type, const char* fmt, ...);
 class LoggingManager : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
+    LoggingManager();
+    ~LoggingManager();
+
     void AddLog(const LogEntry entry);
     void Serialize(const LogEntry entry);
     void Clear();
@@ -67,6 +68,7 @@ private:
     std::queue<LogEntry> m_PreInitBuffer;
     std::deque<LogEntry> m_LogEntries;
     std::wfstream m_LogFileStream;
+    std::mutex m_Mutex;
 };
 
 ETH_NAMESPACE_END

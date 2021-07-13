@@ -32,12 +32,12 @@ VisualComponent::VisualComponent(Entity* const owner)
         m_MeshComponent = owner->AddComponent<MeshComponent>();
 
     m_Visual = new Visual(*this);
-    g_GraphicManager.RegisterVisual(m_Visual);
+    GraphicCore::GetGraphicRenderer().RegisterVisual(m_Visual);
 }
 
 VisualComponent::~VisualComponent()
 {
-    g_GraphicManager.DeregisterVisual(m_Visual);
+    GraphicCore::GetGraphicRenderer().DeregisterVisual(m_Visual);
     delete m_Visual;
 }
 

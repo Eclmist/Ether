@@ -25,9 +25,6 @@ CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
     : m_Type(type)
     , m_AllocatorPool(std::make_unique<CommandAllocatorPool>(type))
 {
-    AssertGraphics(g_GraphicDevice != nullptr,
-        "An attempt was made to create a command queue before initializing the graphics device");
-
     InitializeCommandQueue();
     InitializeFence();
 }
@@ -71,13 +68,13 @@ void CommandQueue::InitializeCommandQueue()
     desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-    ASSERT_SUCCESS(g_GraphicDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue)));
     m_CommandQueue->SetName(L"CommandQueue::m_CommandQueue");
 }
 
 void CommandQueue::InitializeFence()
 {
-    ASSERT_SUCCESS(g_GraphicDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
     m_Fence->SetName(L"CommandQueue::m_Fence");
     m_CompletionFenceValue = 0;
     m_LastKnownFenceValue = 0;
