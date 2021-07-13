@@ -36,26 +36,24 @@ void SampleApp::Initialize()
 
 void SampleApp::LoadContent()
 {
-    Entity* m_DebugCube;
+    Entity* debugCube = new Entity("Debug Cube");
+    debugCube->AddComponent<MeshComponent>();
+    debugCube->AddComponent<VisualComponent>();
+    debugCube->GetTransform().SetPosition({ 0, 1, 0 });
+    debugCube->GetTransform().SetRotation({ 0, 0, 0 });
+    EngineCore::GetActiveWorld().AddEntity(std::move(*debugCube));
 
-    m_DebugCube = new Entity("Debug Cube");
-    m_DebugCube->AddComponent<MeshComponent>();
-    m_DebugCube->AddComponent<VisualComponent>();
-    m_DebugCube->GetTransform()->SetPosition({ 0, 1, 0 });
-    m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0 });
-    EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
+    Entity* debugCubeAnim = new Entity("Debug Cube (Animated)");
+    debugCubeAnim->AddComponent<VisualComponent>();
+    debugCubeAnim->GetTransform().SetPosition({ 2.0, -4.0, 0 });
+    debugCubeAnim->GetTransform().SetRotation({ 0, 0, 0.23f });
+    debugCubeAnim->GetTransform().SetScale({ 1.20f, 1.40f, 1.23f });
+    EngineCore::GetActiveWorld().AddEntity(std::move(*debugCubeAnim));
 
-    m_DebugCube = new Entity("Debug Cube 2");
-    m_DebugCube->AddComponent<VisualComponent>();
-    m_DebugCube->GetTransform()->SetPosition({ 2.0, -4.0, 0 });
-    m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0.23f });
-    m_DebugCube->GetTransform()->SetScale({ 1.20f, 1.40f, 1.23f });
-    EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
-
-    m_DebugCube = new Entity("Toolmode::Grid");
-    auto vis = m_DebugCube->AddComponent<VisualComponent>();
-    m_DebugCube->GetTransform()->SetScale({ 1000, 0.01f, 1000 });
-    EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
+    Entity* groundPlane = new Entity("Ground Plane");
+    auto vis = groundPlane->AddComponent<VisualComponent>();
+    groundPlane->GetTransform().SetScale({ 1000, 0.01f, 1000 });
+    EngineCore::GetActiveWorld().AddEntity(std::move(*groundPlane));
 }
 
 void SampleApp::UnloadContent()
@@ -84,7 +82,7 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     }
 
     float x = sin((float)GetTimeSinceStart());
-    EngineCore::GetActiveWorld().GetEntities()[1]->GetTransform()->SetPosition({ x, 5, 5 });
+    EngineCore::GetActiveWorld().GetEntities()[1]->GetTransform().SetPosition({ x, 5, 5 });
 }
 
 void SampleApp::OnRender(const RenderEventArgs& e)

@@ -28,7 +28,7 @@ public:
     ~World() = default;
 
 public:
-    ETH_ENGINE_DLL void AddEntity(Entity* entity, Entity* parent = nullptr);
+    ETH_ENGINE_DLL void AddEntity(Entity&& entity, Entity* parent = nullptr);
     //TODO: Remove or change to get all visuals
     std::vector<Entity*>& GetEntities() { return m_AllEntities; }
 

@@ -26,13 +26,13 @@ class Entity;
 class Component // : public Serializable?
 {
 public:
-    Component(Entity* const owner);
+    Component(Entity& owner);
     virtual ~Component() = default;
 
-    inline Entity* const GetOwner() const { return m_Owner; }
+    inline Entity& GetOwner() { return m_Owner; }
 
 protected:
-    Entity* const m_Owner;
+    Entity& m_Owner;
 };
 
 ETH_NAMESPACE_END

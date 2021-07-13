@@ -70,9 +70,6 @@ void GraphicRenderer::Render()
 
     for (auto&& visual : m_Visuals)
     {
-        if (!visual->IsInitialized())
-            visual->Initialize();
-
         ethXMMatrix modelMatrix = visual->GetModelMatrix();
         ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, m_Context.GetViewMatrix());
         mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_Context.GetProjectionMatrix());

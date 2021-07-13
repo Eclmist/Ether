@@ -23,33 +23,26 @@ ETH_NAMESPACE_BEGIN
 
 Visual::Visual(const VisualComponent& source)
     : m_VisualComponent(source)
-    , m_Initialized(false)
 {
-}
+    MeshComponent& mesh = m_VisualComponent.GetMesh();
+    Material& material = m_VisualComponent.GetMaterial();
 
-void Visual::Initialize()
-{
-    MeshComponent* mesh = m_VisualComponent.GetMesh();
-    Material* material = m_VisualComponent.GetMaterial();
+    UploadVertexBuffer(mesh.m_VertexBuffer, mesh.m_NumVertices);
+    UploadIndexBuffer(mesh.m_IndexBuffer, mesh.m_NumIndices);
 
-    UploadVertexBuffer(mesh->m_VertexBuffer, mesh->m_NumVertices);
-    UploadIndexBuffer(mesh->m_IndexBuffer, mesh->m_NumIndices);
-
-    InitVertexBufferView(mesh->m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
-    InitIndexBufferView(mesh->m_NumIndices * sizeof(uint16_t));
-
-    m_Initialized = true;
+    InitVertexBufferView(mesh.m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
+    InitIndexBufferView(mesh.m_NumIndices * sizeof(uint16_t));
 }
 
 void Visual::UploadVertexBuffer(const void* data, uint16_t numVertices)
 {
-    m_VertexBuffer = std::make_shared<BufferResource>(L"Visual::VertexBuffer",
+    m_VertexBuffer = std::make_unique<BufferResource>(L"Visual::VertexBuffer",
         numVertices, sizeof(VertexPositionColor), data);
 }
 
 void Visual::UploadIndexBuffer(const void* data, uint16_t numIndices)
 { 
-    m_IndexBuffer = std::make_shared<BufferResource>(L"Visual::IndexBuffer",
+    m_IndexBuffer = std::make_unique<BufferResource>(L"Visual::IndexBuffer",
         numIndices, sizeof(uint16_t), data);
 }
 

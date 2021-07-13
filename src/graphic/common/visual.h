@@ -27,13 +27,10 @@ public:
     Visual(const VisualComponent& source);
     ~Visual() = default;
 
-    void Initialize();
-
-    inline bool IsInitialized() const { return m_Initialized; }
     inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return m_VertexBufferView; }
     inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const { return m_IndexBufferView; }
-    inline ethXMMatrix GetModelMatrix() const { return m_VisualComponent.GetTransform()->GetMatrix(); }
-    inline uint16_t GetNumIndices() const { return m_VisualComponent.GetMesh()->m_NumIndices; }
+    inline ethXMMatrix GetModelMatrix() const { return m_VisualComponent.GetTransform().GetMatrix(); }
+    inline uint16_t GetNumIndices() const { return m_VisualComponent.GetMesh().m_NumIndices; }
 
 private:
     void UploadVertexBuffer(const void* data, uint16_t numVertices);
@@ -43,14 +40,13 @@ private:
     void InitIndexBufferView(size_t bufferSize);
 
 private:
-    std::shared_ptr<BufferResource> m_VertexBuffer;
-    std::shared_ptr<BufferResource> m_IndexBuffer;
+    std::unique_ptr<BufferResource> m_VertexBuffer;
+    std::unique_ptr<BufferResource> m_IndexBuffer;
 
     D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
     D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
     const VisualComponent& m_VisualComponent;
-    bool m_Initialized;
 };
 
 ETH_NAMESPACE_END

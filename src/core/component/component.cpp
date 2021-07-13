@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-Component::Component(Entity* const owner)
+Component::Component(Entity& owner)
     : m_Owner(owner)
 {
 }

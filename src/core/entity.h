@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL Entity // : public Serializable?
+class ETH_ENGINE_DLL Entity : public NonCopyable // : public Serializable?
 {
 public:
     Entity(const std::string& name);
@@ -31,29 +31,27 @@ public:
     inline const std::string& GetName() const { return m_Name; }
     inline void SetName(const std::string& name) { m_Name = name; }
 
-    inline Entity* GetFirstChild() const { return !m_Children.empty() ? m_Children[0] : nullptr; }
-    inline Entity* GetLastChild() const { return !m_Children.empty() ? m_Children[m_Children.size() - 1] : nullptr; }
-    inline size_t GetNumChildren() const { return m_Children.size(); }
-    inline Entity* GetChildren() const { return *m_Children.data(); }
+    inline Entity* const GetParent() { return m_Parent != nullptr ? m_Parent : nullptr; }
+    void SetParent(Entity& parent);
 
-    inline Entity* GetParent() const { return m_Parent != nullptr ? m_Parent : nullptr; }
-    void SetParent(Entity* parent);
+    inline Entity* const GetFirstChild() { return !m_Children.empty() ? m_Children[0].get() : nullptr; }
+    inline Entity* const GetLastChild() { return !m_Children.empty() ? m_Children[m_Children.size() - 1].get() : nullptr; }
+    inline std::vector<std::unique_ptr<Entity>>& GetChildren() { return m_Children; }
 
 public:
     template <typename T>
-    T* AddComponent()
+    T* const AddComponent()
     {
-        T* newComponent = new T(this);
-        m_Components.push_back(newComponent);
-        return newComponent;
+        m_Components.emplace_back(std::make_unique<T>(*this));
+        return dynamic_cast<T*>(m_Components.back().get());
     }
 
     template <typename T>
-    T* GetComponent()
+    T* const GetComponent()
     {
-        for (auto component : m_Components)
+        for (auto&& component : m_Components)
         {
-            T* targetComponent = dynamic_cast<T*>(component);
+            T* targetComponent = dynamic_cast<T*>(component.get());
             if (targetComponent != nullptr)
                 return targetComponent;
         }
@@ -61,34 +59,20 @@ public:
         return nullptr;
     }
 
-    template <typename T>
-    void GetComponents(T* outArr, size_t numComponents)
-    {
-        for (auto component : m_Components)
-        {
-            T* targetComponent = dynamic_cast<T*>(component);
-            if (targetComponent != nullptr)
-            {
-                outArr = targetComponent;
-                outArr++;
-            }
-        }
-    }
-
-    TransformComponent* GetTransform() const { return m_Transform; }
+    TransformComponent& GetTransform() { return m_Transform; }
 
 private:
-    void RemoveChild(Entity* child);
+    void RemoveChild(const Entity& child);
 
 private:
     std::string m_Name;
 
     Entity* m_Parent;
-    std::vector<Entity*> m_Children;
-    std::vector<Component*> m_Components;
+    std::vector<std::unique_ptr<Entity>> m_Children;
+    std::vector<std::unique_ptr<Component>> m_Components;
 
 private:
-    TransformComponent* m_Transform;
+    TransformComponent& m_Transform;
 };
 
 ETH_NAMESPACE_END
