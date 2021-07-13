@@ -27,7 +27,7 @@ public:
     GpuResource();
     ~GpuResource() = default;
 
-    inline ID3D12Resource* GetResource() const { return m_Resource.Get(); }
+    inline ID3D12Resource& GetResource() const { return *m_Resource.Get(); }
     inline D3D12_GPU_VIRTUAL_ADDRESS GetVirtualAddress() const { return m_GpuAddress; }
     inline D3D12_RESOURCE_STATES GetCurrentState() const { return m_CurrentState; }
 

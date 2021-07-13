@@ -71,7 +71,7 @@ void GraphicContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STAT
     D3D12_RESOURCE_BARRIER barrier;
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = target.GetResource();
+    barrier.Transition.pResource = &target.GetResource();
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     barrier.Transition.StateBefore = target.GetCurrentState();
     barrier.Transition.StateAfter = newState;
@@ -102,7 +102,7 @@ void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, si
     memcpy(alloc.GetCpuAddress(), data, size);
 
     context.TransitionResource(dest, D3D12_RESOURCE_STATE_COPY_DEST);
-    context.m_CommandList->CopyBufferRegion(dest.GetResource(), dstOffset, alloc.GetResource(), 0, size);
+    context.m_CommandList->CopyBufferRegion(&dest.GetResource(), dstOffset, &alloc.GetResource(), 0, size);
     context.TransitionResource(dest, D3D12_RESOURCE_STATE_GENERIC_READ);
     context.FinalizeAndExecute(true);
 }
