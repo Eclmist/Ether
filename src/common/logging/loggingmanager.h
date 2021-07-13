@@ -59,8 +59,6 @@ public:
     inline const std::deque<LogEntry>& GetEntries() const { return m_LogEntries; }
 
 private:
-    void SerializePreInitLogs();
-
     const std::wstring GetOutputDirectory() const;
     const std::wstring GetTimestampedFileName() const;
 

@@ -66,7 +66,12 @@ LoggingManager::LoggingManager()
         return;
     }
 
-    SerializePreInitLogs();
+    while (!g_PreInitBuffer.empty())
+    {
+        AddLog(g_PreInitBuffer.front());
+        Serialize(g_PreInitBuffer.front());
+        g_PreInitBuffer.pop();
+    }
 }
 
 LoggingManager::~LoggingManager()
@@ -92,26 +97,8 @@ void LoggingManager::Clear()
 void LoggingManager::Serialize(const LogEntry entry)
 {
     std::lock_guard<std::mutex> guard(m_Mutex);
-
-    if (!m_LogFileStream.is_open())
-    {
-        return;
-    }
-
     m_LogFileStream << entry.GetText().c_str() << "\n";
     m_LogFileStream.flush();
-}
-
-void LoggingManager::SerializePreInitLogs()
-{
-    while (!g_PreInitBuffer.empty())
-    {
-        LogEntry entry = g_PreInitBuffer.front();
-        g_PreInitBuffer.pop();
-
-        m_LogFileStream << entry.GetText().c_str() << "\n";
-        m_LogFileStream.flush();
-    }
 }
 
 const std::wstring LoggingManager::GetOutputDirectory() const
