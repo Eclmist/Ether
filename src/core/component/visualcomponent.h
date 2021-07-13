@@ -29,13 +29,13 @@ class Visual;
 class ETH_ENGINE_DLL VisualComponent : public Component
 {
 public:
-    VisualComponent(Entity* const owner);
+    VisualComponent(Entity& owner);
     ~VisualComponent();
 
 public:
-    inline TransformComponent* GetTransform() const { return m_Transform; }
-    inline MeshComponent* GetMesh() const { return m_MeshComponent; }
-    inline Material* GetMaterial() const { return m_Material; }
+    inline TransformComponent& GetTransform() const { return *m_Transform; }
+    inline MeshComponent& GetMesh() const { return *m_MeshComponent; }
+    inline Material& GetMaterial() const { return *m_Material; }
 
 private:
     TransformComponent* m_Transform;

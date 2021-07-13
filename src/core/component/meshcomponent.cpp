@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-MeshComponent::MeshComponent(Entity* const owner)
+MeshComponent::MeshComponent(Entity& owner)
     : Component(owner)
 {
     m_NumVertices = 8;

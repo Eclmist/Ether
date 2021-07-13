@@ -66,10 +66,10 @@ void DebugMenuGuiComponent::Draw()
             if (ImGui::Button("Add entity"))
             {
                 Entity* newEntity = new Entity("Entity");
-                newEntity->GetTransform()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
-                newEntity->GetTransform()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+                newEntity->GetTransform().SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
+                newEntity->GetTransform().SetRotation({ (float)rand(), (float)rand(), (float)rand() });
                 newEntity->AddComponent<VisualComponent>();
-                EngineCore::GetActiveWorld().AddEntity(newEntity);
+                EngineCore::GetActiveWorld().AddEntity(std::move(*newEntity));
             }
         }
 

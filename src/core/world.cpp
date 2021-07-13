@@ -26,12 +26,12 @@ World::World()
 {
 }
 
-ETH_ENGINE_DLL void World::AddEntity(Entity* entity, Entity* parent)
+ETH_ENGINE_DLL void World::AddEntity(Entity&& entity, Entity* parent)
 {
-    parent = parent == nullptr ? &m_RootEntity : parent;
-    entity->SetParent(parent);
-
-    m_AllEntities.push_back(entity);
+    if (parent == nullptr)
+        parent = &m_RootEntity;
+    entity.SetParent(*parent);
+    m_AllEntities.push_back(parent->GetLastChild());
 }
 
 ETH_NAMESPACE_END

@@ -22,14 +22,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-VisualComponent::VisualComponent(Entity* const owner)
+VisualComponent::VisualComponent(Entity& owner)
     : Component(owner)
-    , m_Transform(m_Owner->GetTransform())
-    , m_MeshComponent(m_Owner->GetComponent<MeshComponent>())
+    , m_Transform(&m_Owner.GetTransform())
+    , m_MeshComponent(m_Owner.GetComponent<MeshComponent>())
     , m_Material(nullptr)
 {
     if (m_MeshComponent == nullptr)
-        m_MeshComponent = owner->AddComponent<MeshComponent>();
+        m_MeshComponent = m_Owner.AddComponent<MeshComponent>();
 
     GraphicCore::GetGraphicRenderer().RegisterVisual(std::make_unique<Visual>(*this));
 }
