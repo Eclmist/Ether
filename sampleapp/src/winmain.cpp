@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <Windows.h>
 #include "sampleapp.h"
 #include "api/api.h"
 
