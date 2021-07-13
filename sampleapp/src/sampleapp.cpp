@@ -30,8 +30,8 @@ void SampleApp::Initialize()
     EngineCore::GetEngineConfig().SetClientHeight(1080);
     EngineCore::GetEngineConfig().SetClientName(L"Ether Sample App");
 
-    m_CameraDistance = 20.0f;
-    m_CameraRotation = { 0, 0, 0 };
+    m_CameraDistance = 10.0f;
+    m_CameraRotation = { -0.4, 0.785398, 0 };
 }
 
 void SampleApp::LoadContent()
@@ -41,7 +41,7 @@ void SampleApp::LoadContent()
     m_DebugCube = new Entity("Debug Cube");
     m_DebugCube->AddComponent<MeshComponent>();
     m_DebugCube->AddComponent<VisualComponent>();
-    m_DebugCube->GetTransform()->SetPosition({ -.0, -.0, 0 });
+    m_DebugCube->GetTransform()->SetPosition({ 0, 1, 0 });
     m_DebugCube->GetTransform()->SetRotation({ 0, 0, 0 });
     EngineCore::GetActiveWorld().AddEntity(m_DebugCube);
 
@@ -84,7 +84,7 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     }
 
     float x = sin((float)GetTimeSinceStart());
-    EngineCore::GetActiveWorld().GetEntities()[0]->GetTransform()->SetPosition({ x, 0, 0 });
+    EngineCore::GetActiveWorld().GetEntities()[1]->GetTransform()->SetPosition({ x, 5, 5 });
 }
 
 void SampleApp::OnRender(const RenderEventArgs& e)
