@@ -34,7 +34,7 @@ bool UpdateEngine()
     EngineCore::GetMainApplication().OnRender(renderArgs);
     GraphicCore::Render();
 
-    return !EngineCore::Instance().GetMainApplication().ShouldExit();
+    return !EngineCore::GetMainApplication().ShouldExit();
 }
 
 void WindowsUpdateLoop()
@@ -68,8 +68,8 @@ int Start(IApplicationBase& app, int cmdShow)
 
     WindowsUpdateLoop();
 
-    EngineCore::Shutdown();
     GraphicCore::Shutdown();
+    EngineCore::Shutdown();
 
 #ifdef _DEBUG
     wrl::ComPtr<IDXGIDebug1> dxgiDebug;

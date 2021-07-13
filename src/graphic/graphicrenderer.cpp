@@ -70,7 +70,7 @@ void GraphicRenderer::Render()
     m_Context.GetCommandList()->RSSetScissorRects(1, &gfxDisplay.GetScissorRect());
     m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, 4, &globalTime, 0);
 
-    for (Visual* visual : m_Visuals)
+    for (auto&& visual : m_Visuals)
     {
         if (!visual->IsInitialized())
             visual->Initialize();
@@ -107,12 +107,12 @@ void GraphicRenderer::Present()
     gfxDisplay.Present();
 }
 
-void GraphicRenderer::RegisterVisual(Visual* visual)
+void GraphicRenderer::RegisterVisual(std::unique_ptr<Visual> visual)
 {
-    m_Visuals.push_back(visual);
+    m_Visuals.push_back(std::move(visual));
 }
 
-void GraphicRenderer::DeregisterVisual(Visual* visual)
+void GraphicRenderer::DeregisterVisual(std::unique_ptr<Visual> visual)
 {
     for (auto iter = m_Visuals.begin(); iter != m_Visuals.end(); ++iter)
     {

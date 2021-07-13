@@ -63,22 +63,22 @@ public:
 
     static IApplicationBase& GetMainApplication() { return *Instance().m_MainApplication; }
 
+    static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
     static Window& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
 
     static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
     static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
-    static LoggingManager& GetLoggingManager() { return Instance().m_LoggingManager; }
 
 private:
     IApplicationBase* m_MainApplication;
 
+    std::unique_ptr<LoggingManager> m_LoggingManager;
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<Window> m_MainWindow;
 
     CommandLineOptions m_CommandLineOptions;
     EngineConfig m_EngineConfig;
-    LoggingManager m_LoggingManager;
 };
 
 ETH_NAMESPACE_END

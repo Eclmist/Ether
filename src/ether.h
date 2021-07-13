@@ -43,11 +43,3 @@ namespace chrono = std::chrono;
 #include "core/core.h"
 #include "graphic/graphic.h"
 
-ETH_NAMESPACE_BEGIN
-
-namespace Win32
-{
-}
-
-ETH_NAMESPACE_END
-

@@ -41,8 +41,6 @@ private:
     TransformComponent* m_Transform;
     MeshComponent* m_MeshComponent;
     Material* m_Material;
-
-    Visual* m_Visual;
 };
 
 ETH_NAMESPACE_END

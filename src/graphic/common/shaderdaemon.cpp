@@ -45,7 +45,7 @@ std::wstring ShaderDaemon::GetShaderDirectory()
     wchar_t fullPath[MAX_PATH];
 
     // TODO: move to graphic options
-    if (EngineCore::Instance().GetCommandLineOptions().IsDebugModeEnabled())
+    if (EngineCore::GetCommandLineOptions().IsDebugModeEnabled())
         GetFullPathNameW(ETH_SHADER_DEBUG_DIR, MAX_PATH, fullPath, nullptr);
     else
         GetFullPathNameW(ETH_SHADER_RELEASE_DIR, MAX_PATH, fullPath, nullptr);

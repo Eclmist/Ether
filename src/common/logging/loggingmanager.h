@@ -65,7 +65,6 @@ private:
     const std::wstring GetTimestampedFileName() const;
 
 private:
-    std::queue<LogEntry> m_PreInitBuffer;
     std::deque<LogEntry> m_LogEntries;
     std::wfstream m_LogFileStream;
     std::mutex m_Mutex;
