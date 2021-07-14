@@ -21,7 +21,7 @@
 
 #include "graphic/commandmanager.h"
 #include "graphic/graphicbatchrenderer.h"
-#include "graphic/gui/guimanager.h"
+#include "graphic/gui/guirenderer.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -33,7 +33,6 @@ public:
 
     void WaitForPresent();
     void Render();
-    void RenderGui();
     void Present();
 
     //TODO: maybe move into batch renderer?
@@ -41,16 +40,12 @@ public:
     void DeregisterVisual(std::unique_ptr<Visual> visual);
 
     inline GraphicContext& GetGraphicContext() { return m_Context; }
-    inline GuiManager& GetGuiManager() { return m_GuiManager; }
 
 private:
     void CleanUp();
 
 private:
-    GraphicBatchRenderer m_BatchRenderer;
     GraphicContext m_Context;
-    GuiManager m_GuiManager;
-
     std::vector<std::unique_ptr<Visual>> m_Visuals;
 };
 

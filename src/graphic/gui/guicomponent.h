@@ -30,7 +30,7 @@ public:
     ~GuiComponent() = default;
 
 private:
-    friend class GuiManager;
+    friend class GuiRenderer;
     virtual void Draw() = 0;
 
 protected:

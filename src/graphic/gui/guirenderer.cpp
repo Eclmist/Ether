@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "guimanager.h"
+#include "guirenderer.h"
 
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
@@ -26,7 +26,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-GuiManager::GuiManager()
+GuiRenderer::GuiRenderer()
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
@@ -46,16 +46,19 @@ GuiManager::GuiManager()
     SetImGuiStyle();
 }
 
-GuiManager::~GuiManager()
+GuiRenderer::~GuiRenderer()
 {
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 }
 
-void GuiManager::Render()
+void GuiRenderer::Render()
 {
     if (m_Components.empty())
+        return;
+
+    if (!EngineCore::GetEngineConfig().IsDebugGuiEnabled())
         return;
 
     ImGui_ImplDX12_NewFrame();
@@ -74,13 +77,13 @@ void GuiManager::Render()
     m_GuiContext.Reset();
 }
 
-void GuiManager::RegisterComponents()
+void GuiRenderer::RegisterComponents()
 {
     m_Components.push_back(std::make_unique<LoggingGuiComponent>());
     m_Components.push_back(std::make_unique<DebugMenuGuiComponent>());
 }
 
-void GuiManager::CreateResourceHeap()
+void GuiRenderer::CreateResourceHeap()
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.NumDescriptors = 1;
@@ -89,14 +92,14 @@ void GuiManager::CreateResourceHeap()
     ASSERT_SUCCESS(GraphicCore::GetDevice().CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_SRVDescriptorHeap)));
 }
 
-void GuiManager::CreateImGuiContext()
+void GuiRenderer::CreateImGuiContext()
 {
     LogGraphicsInfo("Initializing ImGui v%s", IMGUI_VERSION);
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 }
 
-void GuiManager::SetImGuiStyle()
+void GuiRenderer::SetImGuiStyle()
 {
     ImGuiStyle* style = &ImGui::GetStyle();
     style->WindowBorderSize = 0.0f;

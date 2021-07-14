@@ -23,11 +23,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-class GuiManager : public NonCopyable
+class GuiRenderer : public NonCopyable
 {
 public:
-    GuiManager();
-    ~GuiManager();
+    GuiRenderer();
+    ~GuiRenderer();
 
     void Render();
 

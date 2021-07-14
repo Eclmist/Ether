@@ -76,12 +76,6 @@ void GraphicRenderer::Render()
     m_Context.Reset();
 }
 
-void GraphicRenderer::RenderGui()
-{
-    if (EngineCore::GetEngineConfig().IsDebugGuiEnabled())
-        m_GuiManager.Render();
-}
-
 void GraphicRenderer::Present()
 {
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
