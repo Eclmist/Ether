@@ -37,6 +37,8 @@ GraphicDisplay::GraphicDisplay()
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
         m_FrameBufferFences[i] = 0;
+
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
 GraphicDisplay::~GraphicDisplay()
@@ -45,7 +47,9 @@ GraphicDisplay::~GraphicDisplay()
 
 void GraphicDisplay::Present()
 {
-    m_SwapChain->Present(m_VSyncEnabled ? m_VSyncVBlanks : 0, 0);
+    HRESULT hr = m_SwapChain->Present(
+        m_VSyncEnabled ? m_VSyncVBlanks : 0,
+        m_VSyncEnabled ? 0 : DXGI_PRESENT_ALLOW_TEARING);
     m_CurrentBackBufferIndex = (m_CurrentBackBufferIndex + 1) % GetNumBuffers();
 }
 
@@ -62,7 +66,7 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
         m_FrameBuffers[i].reset();
-
+ 
     m_DepthBuffer.reset();
 
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -74,8 +78,8 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
         swapChainDesc.BufferDesc.Format,
         swapChainDesc.Flags));
 
-    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
     InitializeResources();
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
 std::shared_ptr<TextureResource> GraphicDisplay::GetCurrentBackBuffer() const
@@ -104,9 +108,12 @@ void GraphicDisplay::CreateDxgiSwapChain()
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    swapChainDesc.Flags = 0;
+    swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
+
+    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(
+        EngineCore::GetMainWindow().GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
         GraphicCore::GetCommandManager().GetGraphicsQueue().Get(),
@@ -133,8 +140,6 @@ void GraphicDisplay::InitializeResources()
         m_FrameBufferHeight,
         DXGI_FORMAT_D32_FLOAT
     ));
-
-    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
 ETH_NAMESPACE_END

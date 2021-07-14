@@ -69,6 +69,9 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F3))
         EngineCore::GetEngineConfig().ToggleDebugGui();
 
+    if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F11))
+        EngineCore::GetMainWindow().ToggleFullscreen();
+
     m_CameraDistance -= Input::GetMouseWheelDelta() / 120;
     m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 

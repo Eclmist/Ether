@@ -31,15 +31,18 @@ public:
     void Show(int cmdShow);
     inline HWND GetHwnd() const { return m_hWnd; }
 
+    void ETH_ENGINE_DLL ToggleFullscreen();
+
 private:
     void RegisterWindowClass() const;
-    void PositionWindowRect();
+    void CenterWindowRect();
     static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
-    RECT m_WindowRect;
+    RECT m_WindowedRect;
     HWND m_hWnd;
+    bool m_IsFullscreen;
 };
 
 ETH_NAMESPACE_END
