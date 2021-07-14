@@ -27,11 +27,11 @@ public:
     CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE type);
     ~CommandAllocatorPool();
 
-    ID3D12CommandAllocator* RequestAllocator(uint64_t completedFenceValue);
-    void DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue);
+    ID3D12CommandAllocator& RequestAllocator(uint64_t completedFenceValue);
+    void DiscardAllocator(ID3D12CommandAllocator& allocator, uint64_t fenceValue);
 
 private:
-    ID3D12CommandAllocator* CreateNewAllocator();
+    ID3D12CommandAllocator& CreateNewAllocator();
     
 private:
     const D3D12_COMMAND_LIST_TYPE m_Type;

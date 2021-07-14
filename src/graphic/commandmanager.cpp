@@ -40,13 +40,13 @@ void CommandManager::CreateCommandList(
     switch (type)
     {
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
-        *cmdAlloc = m_GraphicsQueue->RequestAllocator(); 
+        *cmdAlloc = &m_GraphicsQueue->RequestAllocator(); 
         break;
     case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        *cmdAlloc = m_ComputeQueue->RequestAllocator();
+        *cmdAlloc = &m_ComputeQueue->RequestAllocator();
         break;
     case D3D12_COMMAND_LIST_TYPE_COPY:
-        *cmdAlloc = m_CopyQueue->RequestAllocator();
+        *cmdAlloc = &m_CopyQueue->RequestAllocator();
         break;
     default:
         LogGraphicsError("Unsupported command list type requested(%s)", type);
@@ -83,12 +83,12 @@ void CommandManager::Flush()
     m_CopyQueue->Flush();
 }
 
-ID3D12CommandAllocator* CommandManager::RequestAllocator(D3D12_COMMAND_LIST_TYPE type)
+ID3D12CommandAllocator& CommandManager::RequestAllocator(D3D12_COMMAND_LIST_TYPE type)
 {
     return GetQueue(type).RequestAllocator();
 }
 
-void CommandManager::DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* allocator)
+void CommandManager::DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator& allocator)
 {
     CommandQueue& queue = GetQueue(type);
     queue.DiscardAllocator(allocator, queue.GetCompletionFenceValue());

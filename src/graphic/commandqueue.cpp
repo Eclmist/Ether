@@ -82,12 +82,12 @@ void CommandQueue::InitializeFence()
     AssertGraphics(m_FenceEventHandle != NULL, "Failed to create fence event");
 }
 
-ID3D12CommandAllocator* CommandQueue::RequestAllocator()
+ID3D12CommandAllocator& CommandQueue::RequestAllocator()
 {
     return m_AllocatorPool->RequestAllocator(m_Fence->GetCompletedValue());
 }
 
-void CommandQueue::DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue)
+void CommandQueue::DiscardAllocator(ID3D12CommandAllocator& allocator, uint64_t fenceValue)
 {
     m_AllocatorPool->DiscardAllocator(allocator, fenceValue);
 }

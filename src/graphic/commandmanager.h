@@ -36,8 +36,8 @@ public:
 
     void Execute(ID3D12CommandList* cmdLst);
     void Flush();
-    ID3D12CommandAllocator* RequestAllocator(D3D12_COMMAND_LIST_TYPE type);
-    void DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator* allocator);
+    ID3D12CommandAllocator& RequestAllocator(D3D12_COMMAND_LIST_TYPE type);
+    void DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator& allocator);
 
 public:
     inline CommandQueue& GetGraphicsQueue() { return *m_GraphicsQueue; }
