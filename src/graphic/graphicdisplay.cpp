@@ -106,9 +106,6 @@ void GraphicDisplay::CreateDxgiSwapChain()
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     swapChainDesc.Flags = 0;
 
-    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(
-        EngineCore::GetMainWindow().GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
-
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
 
     ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(

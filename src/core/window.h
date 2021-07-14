@@ -29,7 +29,6 @@ public:
     Window();
     ~Window();
     void Show(int cmdShow);
-
     inline HWND GetHwnd() const { return m_hWnd; }
 
 private:
