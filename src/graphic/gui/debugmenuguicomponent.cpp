@@ -48,6 +48,21 @@ void DebugMenuGuiComponent::Draw()
         {
             ImGui::ColorEdit3("clear color", (float*)&EngineCore::GetEngineConfig().m_ClearColor); // Edit 3 floats representing a color
             ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      // Edit bools storing our window open/close state
+
+            static bool vSync;
+            ImGui::Checkbox("VSync Enabled", &vSync);
+            GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
+
+            static int numVblanks = 1;
+            if (vSync)
+            {
+                ImGui::SameLine(180);
+                ImGui::PushItemWidth(100);
+                ImGui::InputInt("Num V-Blanks", &numVblanks, 1, 1);
+                ImGui::PopItemWidth();
+                numVblanks = std::clamp(numVblanks, 1, 4);
+                GraphicCore::GetGraphicDisplay().SetVSyncVBlanks(numVblanks);
+            }
         }
 
         if (ImGui::CollapsingHeader("Input"))

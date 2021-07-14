@@ -36,7 +36,6 @@ public:
     GraphicDisplay();
     ~GraphicDisplay();
 
-    // TODO: Support resize and dynamic update of vsync and buffering mode
     void Present();
     void Resize(uint32_t width, uint32_t height);
 
@@ -47,14 +46,14 @@ public:
     inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
     inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
 
-    inline bool IsVsyncEnabled() const { return m_VsyncEnabled; }
+    inline bool IsVsyncEnabled() const { return m_VSyncEnabled; }
     inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
 
     inline const D3D12_VIEWPORT& GetViewport() const { return m_Viewport; }
     inline const D3D12_RECT& GetScissorRect() const { return m_ScissorRect; }
 
-    inline void SetBufferingMode(BufferingMode mode) { m_BufferingMode = mode; }
-    inline void SetVsyncEnabled(bool enabled) { m_VsyncEnabled = enabled; }
+    inline void SetVSyncEnabled(bool enabled) { m_VSyncEnabled = enabled; }
+    inline void SetVSyncVBlanks(int numVblanks) { m_VSyncVBlanks = numVblanks; }
 
 private:
     void CreateDxgiSwapChain();
@@ -68,7 +67,7 @@ private:
 
     uint64_t m_FrameBufferFences[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
 
-    BufferingMode m_BufferingMode;
+    const BufferingMode m_BufferingMode;
     uint32_t m_CurrentBackBufferIndex;
 
     uint32_t m_FrameBufferWidth;
@@ -77,7 +76,8 @@ private:
     D3D12_RECT m_ScissorRect;
     D3D12_VIEWPORT m_Viewport;
 
-    bool m_VsyncEnabled;
+    bool m_VSyncEnabled;
+    uint8_t m_VSyncVBlanks;
 };
 
 ETH_NAMESPACE_END
