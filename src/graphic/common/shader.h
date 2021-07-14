@@ -36,6 +36,7 @@ public:
         const wchar_t* entrypoint,
         const wchar_t* targetProfile,
         ShaderType type,
+        D3D12_INPUT_LAYOUT_DESC& inputLayout,
         uint32_t encoding = CP_UTF8);
 
     ~Shader() = default;

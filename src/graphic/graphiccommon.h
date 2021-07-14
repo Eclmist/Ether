@@ -21,34 +21,45 @@
 
 ETH_NAMESPACE_BEGIN
 
-void InitializeCommonStates();
-void DestroyCommonStates();
+class GraphicCommon : public NonCopyable
+{
+public:
+    GraphicCommon();
+    ~GraphicCommon();
 
-extern D3D12_RASTERIZER_DESC g_RasterizerDefault;
-extern D3D12_RASTERIZER_DESC g_RasterizerDefaultCw;
-extern D3D12_RASTERIZER_DESC g_RasterizerWireframe;
-extern D3D12_RASTERIZER_DESC g_RasterizerWireframeCw;
+public:
+    void InitializeRasterizerStates();
+    void InitializeDepthStates();
+    void InitializeBlendingStates();
+    void InitializeRootSignatures();
+    void InitializeShaders();
+    void InitializePipelineStates();
 
-extern D3D12_BLEND_DESC g_BlendDisabled;
-extern D3D12_BLEND_DESC g_BlendPreMultiplied;
-extern D3D12_BLEND_DESC g_BlendTraditional;
-extern D3D12_BLEND_DESC g_BlendAdditive;
-extern D3D12_BLEND_DESC g_BlendTraditionalAdditive;
+public:
+    D3D12_RASTERIZER_DESC m_RasterizerDefault;
+    D3D12_RASTERIZER_DESC m_RasterizerDefaultCw;
+    D3D12_RASTERIZER_DESC m_RasterizerWireframe;
+    D3D12_RASTERIZER_DESC m_RasterizerWireframeCw;
 
-extern D3D12_DEPTH_STENCIL_DESC g_DepthStateDisabled;
-extern D3D12_DEPTH_STENCIL_DESC g_DepthStateReadWrite;
-extern D3D12_DEPTH_STENCIL_DESC g_DepthStateReadOnly;
-extern D3D12_DEPTH_STENCIL_DESC g_DepthStateTestEqual;
+    D3D12_BLEND_DESC m_BlendDisabled;
+    D3D12_BLEND_DESC m_BlendPreMultiplied;
+    D3D12_BLEND_DESC m_BlendTraditional;
+    D3D12_BLEND_DESC m_BlendAdditive;
+    D3D12_BLEND_DESC m_BlendTraditionalAdditive;
 
-extern D3D12_INPUT_LAYOUT_DESC g_DefaultInputLayout;
+    D3D12_DEPTH_STENCIL_DESC m_DepthStateDisabled;
+    D3D12_DEPTH_STENCIL_DESC m_DepthStateReadWrite;
+    D3D12_DEPTH_STENCIL_DESC m_DepthStateReadOnly;
+    D3D12_DEPTH_STENCIL_DESC m_DepthStateTestEqual;
 
-extern Shader* g_DefaultVS;
-extern Shader* g_DefaultPS;
+    D3D12_INPUT_LAYOUT_DESC m_DefaultInputLayout;
 
-extern GraphicPipelineState* g_DefaultPSO;
-extern GraphicPipelineState* g_DefaultWireframePSO;
-
-extern RootSignature* g_DefaultRootSignature;
+    std::unique_ptr<Shader> m_DefaultVS;
+    std::unique_ptr<Shader> m_DefaultPS;
+    std::unique_ptr<GraphicPipelineState> m_DefaultPSO;
+    std::unique_ptr<GraphicPipelineState> m_DefaultWireframePSO;
+    std::unique_ptr<RootSignature> m_DefaultRootSignature;
+};
 
 ETH_NAMESPACE_END
 

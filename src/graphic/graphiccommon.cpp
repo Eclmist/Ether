@@ -21,88 +21,71 @@
 
 ETH_NAMESPACE_BEGIN
 
-D3D12_RASTERIZER_DESC g_RasterizerDefault;
-D3D12_RASTERIZER_DESC g_RasterizerDefaultCw;
-D3D12_RASTERIZER_DESC g_RasterizerWireframe;
-D3D12_RASTERIZER_DESC g_RasterizerWireframeCw;
-
-D3D12_BLEND_DESC g_BlendDisabled;
-D3D12_BLEND_DESC g_BlendPreMultiplied;
-D3D12_BLEND_DESC g_BlendTraditional;
-D3D12_BLEND_DESC g_BlendAdditive;
-D3D12_BLEND_DESC g_BlendTraditionalAdditive;
-
-D3D12_DEPTH_STENCIL_DESC g_DepthStateDisabled;
-D3D12_DEPTH_STENCIL_DESC g_DepthStateReadWrite;
-D3D12_DEPTH_STENCIL_DESC g_DepthStateReadOnly;
-D3D12_DEPTH_STENCIL_DESC g_DepthStateTestEqual;
-
-D3D12_INPUT_LAYOUT_DESC g_DefaultInputLayout;
-D3D12_INPUT_ELEMENT_DESC g_DefaultInputElements[] =
+GraphicCommon::GraphicCommon()
 {
-    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-};
-
-Shader* g_DefaultPS;
-Shader* g_DefaultVS;
-
-GraphicPipelineState* g_DefaultPSO;
-GraphicPipelineState* g_DefaultWireframePSO;
-
-RootSignature* g_DefaultRootSignature;
-
-void InitializeRasterizerStates()
-{
-    g_RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
-    g_RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
-    g_RasterizerDefault.FrontCounterClockwise = TRUE;
-    g_RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-    g_RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-    g_RasterizerDefault.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-    g_RasterizerDefault.DepthClipEnable = TRUE;
-    g_RasterizerDefault.MultisampleEnable = FALSE;
-    g_RasterizerDefault.AntialiasedLineEnable = FALSE;
-    g_RasterizerDefault.ForcedSampleCount = 0;
-    g_RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-    g_RasterizerDefaultCw = g_RasterizerDefault;
-    g_RasterizerDefaultCw.FrontCounterClockwise = FALSE;
-
-    g_RasterizerWireframe = g_RasterizerDefault;
-    g_RasterizerWireframe.FillMode = D3D12_FILL_MODE_WIREFRAME;
-
-    g_RasterizerWireframeCw = g_RasterizerWireframe;
-    g_RasterizerWireframeCw.FrontCounterClockwise = FALSE;
+    InitializeRasterizerStates();
+    InitializeDepthStates();
+    InitializeBlendingStates();
+    InitializeRootSignatures();
+    InitializeShaders();
+    InitializePipelineStates();
 }
 
-void InitializeDepthStates()
+GraphicCommon::~GraphicCommon()
 {
-    g_DepthStateDisabled.DepthEnable = FALSE;
-    g_DepthStateDisabled.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-    g_DepthStateDisabled.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    g_DepthStateDisabled.StencilEnable = FALSE;
-    g_DepthStateDisabled.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-    g_DepthStateDisabled.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-    g_DepthStateDisabled.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-    g_DepthStateDisabled.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-    g_DepthStateDisabled.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-    g_DepthStateDisabled.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-    g_DepthStateDisabled.BackFace = g_DepthStateDisabled.FrontFace;
-
-    g_DepthStateReadWrite = g_DepthStateDisabled;
-    g_DepthStateReadWrite.DepthEnable = TRUE;
-    g_DepthStateReadWrite.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-    g_DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-    g_DepthStateReadOnly = g_DepthStateReadWrite;
-    g_DepthStateReadOnly.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-
-    g_DepthStateTestEqual = g_DepthStateReadOnly;
-    g_DepthStateTestEqual.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
 }
 
-void InitializeBlendingStates()
+void GraphicCommon::InitializeRasterizerStates()
+{
+    m_RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
+    m_RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
+    m_RasterizerDefault.FrontCounterClockwise = TRUE;
+    m_RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+    m_RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+    m_RasterizerDefault.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+    m_RasterizerDefault.DepthClipEnable = TRUE;
+    m_RasterizerDefault.MultisampleEnable = FALSE;
+    m_RasterizerDefault.AntialiasedLineEnable = FALSE;
+    m_RasterizerDefault.ForcedSampleCount = 0;
+    m_RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+    m_RasterizerDefaultCw = m_RasterizerDefault;
+    m_RasterizerDefaultCw.FrontCounterClockwise = FALSE;
+
+    m_RasterizerWireframe = m_RasterizerDefault;
+    m_RasterizerWireframe.FillMode = D3D12_FILL_MODE_WIREFRAME;
+
+    m_RasterizerWireframeCw = m_RasterizerWireframe;
+    m_RasterizerWireframeCw.FrontCounterClockwise = FALSE;
+}
+
+void GraphicCommon::InitializeDepthStates()
+{
+    m_DepthStateDisabled.DepthEnable = FALSE;
+    m_DepthStateDisabled.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+    m_DepthStateDisabled.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    m_DepthStateDisabled.StencilEnable = FALSE;
+    m_DepthStateDisabled.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+    m_DepthStateDisabled.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+    m_DepthStateDisabled.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    m_DepthStateDisabled.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+    m_DepthStateDisabled.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+    m_DepthStateDisabled.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+    m_DepthStateDisabled.BackFace = m_DepthStateDisabled.FrontFace;
+
+    m_DepthStateReadWrite = m_DepthStateDisabled;
+    m_DepthStateReadWrite.DepthEnable = TRUE;
+    m_DepthStateReadWrite.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+    m_DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+    m_DepthStateReadOnly = m_DepthStateReadWrite;
+    m_DepthStateReadOnly.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+    m_DepthStateTestEqual = m_DepthStateReadOnly;
+    m_DepthStateTestEqual.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+}
+
+void GraphicCommon::InitializeBlendingStates()
 {
     D3D12_BLEND_DESC alphaBlend = {};
     alphaBlend.IndependentBlendEnable = FALSE;
@@ -114,22 +97,22 @@ void InitializeBlendingStates()
     alphaBlend.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
     alphaBlend.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
     alphaBlend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-    g_BlendDisabled = alphaBlend;
+    m_BlendDisabled = alphaBlend;
 
     alphaBlend.RenderTarget[0].BlendEnable = TRUE;
-    g_BlendTraditional = alphaBlend;
+    m_BlendTraditional = alphaBlend;
 
     alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-    g_BlendPreMultiplied = alphaBlend;
+    m_BlendPreMultiplied = alphaBlend;
 
     alphaBlend.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-    g_BlendAdditive = alphaBlend;
+    m_BlendAdditive = alphaBlend;
 
     alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    g_BlendTraditionalAdditive = alphaBlend;
+    m_BlendTraditionalAdditive = alphaBlend;
 }
 
-void InitializeRootSignatures()
+void GraphicCommon::InitializeRootSignatures()
 {
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -137,90 +120,62 @@ void InitializeRootSignatures()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    g_DefaultRootSignature = new RootSignature(2, 0);
+    m_DefaultRootSignature = std::make_unique<RootSignature>(2, 0);
 
-    (*g_DefaultRootSignature)[0].SetAsConstant(4, 0, D3D12_SHADER_VISIBILITY_ALL);
-    (*g_DefaultRootSignature)[1].SetAsConstant(16, 1, D3D12_SHADER_VISIBILITY_ALL);
-    g_DefaultRootSignature->Finalize(L"Default Root Signature", rootSignatureFlags);
+    (*m_DefaultRootSignature)[0].SetAsConstant(4, 0, D3D12_SHADER_VISIBILITY_ALL);
+    (*m_DefaultRootSignature)[1].SetAsConstant(16, 1, D3D12_SHADER_VISIBILITY_ALL);
+    m_DefaultRootSignature->Finalize(L"Default Root Signature", rootSignatureFlags);
 }
 
-void InitializeShaders()
+D3D12_INPUT_ELEMENT_DESC inputElementDesc[2] = 
 {
-    g_DefaultVS = new Shader(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS);
-    g_DefaultPS = new Shader(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS);
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+};
 
-    g_DefaultVS->Compile();
-    g_DefaultPS->Compile();
+void GraphicCommon::InitializeShaders()
+{
+    m_DefaultInputLayout.NumElements = 2;
+    m_DefaultInputLayout.pInputElementDescs = inputElementDesc;
 
-    g_DefaultInputLayout.NumElements = 2;
-    g_DefaultInputLayout.pInputElementDescs = g_DefaultInputElements;
+    m_DefaultVS = std::make_unique<Shader>(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS, m_DefaultInputLayout);
+    m_DefaultPS = std::make_unique<Shader>(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS, m_DefaultInputLayout);
+
+    m_DefaultVS->Compile();
+    m_DefaultPS->Compile();
 }
 
-void InitializePipelineStates()
+void GraphicCommon::InitializePipelineStates()
 {
-    g_DefaultPSO = new GraphicPipelineState(L"Default PSO");
-    g_DefaultPSO->SetBlendState(g_BlendDisabled);
-    g_DefaultPSO->SetRasterizerState(g_RasterizerDefault);
-    g_DefaultPSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-    g_DefaultPSO->SetVertexShader(g_DefaultVS->GetCompiledShader(), g_DefaultVS->GetCompiledShaderSize());
-    g_DefaultPSO->SetPixelShader(g_DefaultPS->GetCompiledShader(), g_DefaultPS->GetCompiledShaderSize());
-    g_DefaultPSO->SetInputLayout(g_DefaultVS->GetInputLayout());
-    g_DefaultPSO->SetRenderTargetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
-    g_DefaultPSO->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
-    g_DefaultPSO->SetDepthStencilState(g_DepthStateReadWrite);
-    g_DefaultPSO->SetSamplingDesc(1, 0);
-    g_DefaultPSO->SetRootSignature(*g_DefaultRootSignature);
-    g_DefaultPSO->SetSampleMask(0xFFFFFFFF);
-    g_DefaultPSO->Finalize();
+    m_DefaultPSO = std::make_unique<GraphicPipelineState>(L"Default PSO");
+    m_DefaultPSO->SetBlendState(m_BlendDisabled);
+    m_DefaultPSO->SetRasterizerState(m_RasterizerDefault);
+    m_DefaultPSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    m_DefaultPSO->SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
+    m_DefaultPSO->SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
+    m_DefaultPSO->SetInputLayout(m_DefaultVS->GetInputLayout());
+    m_DefaultPSO->SetRenderTargetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+    m_DefaultPSO->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
+    m_DefaultPSO->SetDepthStencilState(m_DepthStateReadWrite);
+    m_DefaultPSO->SetSamplingDesc(1, 0);
+    m_DefaultPSO->SetRootSignature(*m_DefaultRootSignature);
+    m_DefaultPSO->SetSampleMask(0xFFFFFFFF);
+    m_DefaultPSO->Finalize();
 
-    g_DefaultWireframePSO = new GraphicPipelineState(L"Default Wireframe PSO");
-    g_DefaultWireframePSO->SetBlendState(g_BlendDisabled);
-    g_DefaultWireframePSO->SetRasterizerState(g_RasterizerWireframe);
-    g_DefaultWireframePSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-    g_DefaultWireframePSO->SetVertexShader(g_DefaultVS->GetCompiledShader(), g_DefaultVS->GetCompiledShaderSize());
-    g_DefaultWireframePSO->SetPixelShader(g_DefaultPS->GetCompiledShader(), g_DefaultPS->GetCompiledShaderSize());
-    g_DefaultWireframePSO->SetInputLayout(g_DefaultVS->GetInputLayout());
-    g_DefaultWireframePSO->SetRenderTargetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
-    g_DefaultWireframePSO->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
-    g_DefaultWireframePSO->SetDepthStencilState(g_DepthStateReadWrite);
-    g_DefaultWireframePSO->SetSamplingDesc(1, 0);
-    g_DefaultWireframePSO->SetRootSignature(*g_DefaultRootSignature);
-    g_DefaultWireframePSO->SetSampleMask(0xFFFFFFFF);
-    g_DefaultWireframePSO->Finalize();
-}
-
-void DestroyRootSignatures()
-{
-    delete g_DefaultRootSignature;
-}
-
-void DestroyShaders()
-{
-    delete g_DefaultVS;
-    delete g_DefaultPS;
-}
-
-void DestroyPipelineStates()
-{
-    delete g_DefaultPSO;
-    delete g_DefaultWireframePSO;
-}
-
-void InitializeCommonStates()
-{
-    InitializeRasterizerStates();
-    InitializeDepthStates();
-    InitializeBlendingStates();
-    InitializeRootSignatures();
-    InitializeShaders();
-    InitializePipelineStates();
-}
-
-void DestroyCommonStates()
-{
-    DestroyRootSignatures();
-    DestroyShaders();
-    DestroyPipelineStates();
+    m_DefaultWireframePSO = std::make_unique<GraphicPipelineState>(L"Default Wireframe PSO");
+    m_DefaultWireframePSO->SetBlendState(m_BlendDisabled);
+    m_DefaultWireframePSO->SetRasterizerState(m_RasterizerWireframe);
+    m_DefaultWireframePSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    m_DefaultWireframePSO->SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
+    m_DefaultWireframePSO->SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
+    m_DefaultWireframePSO->SetInputLayout(m_DefaultVS->GetInputLayout());
+    m_DefaultWireframePSO->SetRenderTargetFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+    m_DefaultWireframePSO->SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
+    m_DefaultWireframePSO->SetDepthStencilState(m_DepthStateReadWrite);
+    m_DefaultWireframePSO->SetSamplingDesc(1, 0);
+    m_DefaultWireframePSO->SetRootSignature(*m_DefaultRootSignature);
+    m_DefaultWireframePSO->SetSampleMask(0xFFFFFFFF);
+    m_DefaultWireframePSO->Finalize();
 }
 
 ETH_NAMESPACE_END

@@ -47,8 +47,6 @@ namespace wrl = Microsoft::WRL;
 
 ETH_NAMESPACE_BEGIN
 
-#define g_Device GraphicCore::GetDevice();
-
 class GraphicCore : public Singleton<GraphicCore>
 {
 public:
@@ -57,6 +55,7 @@ public:
     static void Shutdown();
 
     static CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
+    static GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
     static GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
     static GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
     static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
@@ -74,6 +73,7 @@ private:
 
 public:
     std::unique_ptr<CommandManager> m_CommandManager;
+    std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
