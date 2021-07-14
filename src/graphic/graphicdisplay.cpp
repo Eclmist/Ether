@@ -24,12 +24,13 @@ ETH_NAMESPACE_BEGIN
 DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 GraphicDisplay::GraphicDisplay()
-    : m_FrameBufferWidth(800)
-    , m_FrameBufferHeight(480)
+    : m_FrameBufferWidth(1920)
+    , m_FrameBufferHeight(1080)
     , m_BufferingMode(BufferingMode::BUFFERINGMODE_TRIPLE)
     , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
     , m_Viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight))
-    , m_VsyncEnabled(false)
+    , m_VSyncEnabled(false)
+    , m_VSyncVBlanks(1)
 {
     CreateDxgiSwapChain();
     InitializeResources();
@@ -44,8 +45,7 @@ GraphicDisplay::~GraphicDisplay()
 
 void GraphicDisplay::Present()
 {
-    // TODO: Compute v-blank based on frame time and target framerate
-    m_SwapChain->Present(m_VsyncEnabled ? 1 : 0, 0);
+    m_SwapChain->Present(m_VSyncEnabled ? m_VSyncVBlanks : 0, 0);
     m_CurrentBackBufferIndex = (m_CurrentBackBufferIndex + 1) % GetNumBuffers();
 }
 
@@ -125,7 +125,7 @@ void GraphicDisplay::InitializeResources()
     {
         wrl::ComPtr<ID3D12Resource> framebuffer;
         ASSERT_SUCCESS(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&framebuffer)));
-        m_FrameBuffers[i] = std::make_shared<TextureResource>(L"Primary Frame Buffer", framebuffer.Detach());
+        m_FrameBuffers[i] = std::make_shared<TextureResource>(L"Frame Buffer", framebuffer.Detach());
     }
 
     m_DepthBuffer = std::make_shared<DepthStencilResource>(L"Depth Buffer", DepthStencilResource::CreateResourceDesc(
