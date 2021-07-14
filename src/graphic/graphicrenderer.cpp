@@ -61,7 +61,7 @@ void GraphicRenderer::Render()
 
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
-    m_Context.GetCommandList()->SetPipelineState(config.m_RenderWireframe ? g_DefaultWireframePSO->GetPipelineStateObject() : g_DefaultPSO->GetPipelineStateObject());
+    m_Context.GetCommandList()->SetPipelineState(config.m_RenderWireframe ? &g_DefaultWireframePSO->GetPipelineStateObject() : &g_DefaultPSO->GetPipelineStateObject());
     m_Context.GetCommandList()->SetGraphicsRootSignature(g_DefaultRootSignature->GetRootSignature());
     m_Context.GetCommandList()->OMSetRenderTargets(1, &gfxDisplay.GetCurrentBackBuffer()->GetRTV(), FALSE, &gfxDisplay.GetDepthBuffer()->GetDSV());
     m_Context.GetCommandList()->RSSetViewports(1, &gfxDisplay.GetViewport());

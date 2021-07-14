@@ -23,13 +23,11 @@ ETH_NAMESPACE_BEGIN
 
 PipelineState::PipelineState(const std::wstring& name)
     : m_Name(name)
-    , m_PipelineState(nullptr)
 {
 }
 
 PipelineState::~PipelineState()
 {
-    m_PipelineState->Release();
 }
 
 ETH_NAMESPACE_END

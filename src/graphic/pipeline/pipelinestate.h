@@ -29,15 +29,15 @@ public:
     PipelineState(const std::wstring& name);
     ~PipelineState();
 
-    inline const RootSignature* GetRootSignature() const { return m_RootSignature; }
-    inline ID3D12PipelineState* GetPipelineStateObject() const { return m_PipelineState; }
+    inline const RootSignature& GetRootSignature() const { return *m_RootSignature; }
+    inline ID3D12PipelineState& GetPipelineStateObject() const { return *m_PipelineState.Get(); }
 
     inline void SetRootSignature(const RootSignature& rs) { m_RootSignature = &rs; }
 
 protected:
-    std::wstring m_Name;
-    ID3D12PipelineState* m_PipelineState;
+    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
 
+    std::wstring m_Name;
     const RootSignature* m_RootSignature;
 };
 
