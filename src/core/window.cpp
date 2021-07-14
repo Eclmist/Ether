@@ -24,10 +24,12 @@ ETH_NAMESPACE_BEGIN
 
 #define ETH_WINDOWCLASS_STYLE               CS_HREDRAW | CS_VREDRAW
 #define ETH_WINDOW_STYLE                    WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
+#define ETH_WINDOW_STYLE_FULLSCREEN         WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
 
 #include <strsafe.h>
 
 Window::Window()
+    : m_IsFullscreen(false)
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -35,18 +37,18 @@ Window::Window()
     // be rendered in a DPI sensitive fashion.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     RegisterWindowClass();
-    PositionWindowRect();
-    AdjustWindowRect(&m_WindowRect, ETH_WINDOW_STYLE, FALSE);
+    CenterWindowRect();
+    AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
     m_hWnd = CreateWindowExW(
         NULL,
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         ETH_WINDOW_STYLE,
-        m_WindowRect.left,
-        m_WindowRect.top,
-        m_WindowRect.right - m_WindowRect.left,
-        m_WindowRect.bottom - m_WindowRect.top,
+        m_WindowedRect.left,
+        m_WindowedRect.top,
+        m_WindowedRect.right - m_WindowedRect.left,
+        m_WindowedRect.bottom - m_WindowedRect.top,
         nullptr,
         nullptr,
         GetModuleHandle(NULL),
@@ -63,6 +65,32 @@ Window::~Window()
 void Window::Show(int cmdShow)
 {
     ShowWindow(m_hWnd, cmdShow);
+}
+
+
+void Window::ToggleFullscreen()
+{
+    m_IsFullscreen = !m_IsFullscreen;
+
+    if (m_IsFullscreen)
+    {
+        SetWindowLongW(m_hWnd, GWL_STYLE, ETH_WINDOW_STYLE_FULLSCREEN);
+        GetWindowRect(m_hWnd, &m_WindowedRect);
+        SetWindowPos(m_hWnd, HWND_TOP,
+            0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+            SWP_FRAMECHANGED | SWP_NOACTIVATE);
+        ShowWindow(m_hWnd, SW_MAXIMIZE);
+    }
+    else
+    {
+        SetWindowLong(m_hWnd, GWL_STYLE, ETH_WINDOW_STYLE);
+        SetWindowPos(m_hWnd, HWND_TOP,
+            m_WindowedRect.left, m_WindowedRect.top, 
+            m_WindowedRect.right - m_WindowedRect.left,
+            m_WindowedRect.bottom - m_WindowedRect.top,
+            SWP_FRAMECHANGED | SWP_NOACTIVATE);
+        ShowWindow(m_hWnd, SW_NORMAL);
+    }
 }
 
 void Window::RegisterWindowClass() const
@@ -85,15 +113,15 @@ void Window::RegisterWindowClass() const
     AssertWin32(RegisterClassExW(&windowClass) != 0, "Failed to register Window Class");
 }
 
-void Window::PositionWindowRect()
+void Window::CenterWindowRect()
 {
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-    m_WindowRect.left = (screenWidth / 2 - EngineCore::GetEngineConfig().GetClientWidth() / 2);
-    m_WindowRect.top = (screenHeight / 2 - EngineCore::GetEngineConfig().GetClientHeight() / 2);
-    m_WindowRect.right = m_WindowRect.left + EngineCore::GetEngineConfig().GetClientWidth();
-    m_WindowRect.bottom = m_WindowRect.top + EngineCore::GetEngineConfig().GetClientHeight();
+    m_WindowedRect.left = (screenWidth / 2 - EngineCore::GetEngineConfig().GetClientWidth() / 2);
+    m_WindowedRect.top = (screenHeight / 2 - EngineCore::GetEngineConfig().GetClientHeight() / 2);
+    m_WindowedRect.right = m_WindowedRect.left + EngineCore::GetEngineConfig().GetClientWidth();
+    m_WindowedRect.bottom = m_WindowedRect.top + EngineCore::GetEngineConfig().GetClientHeight();
 }
 
 LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
