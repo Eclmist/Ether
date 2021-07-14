@@ -30,7 +30,7 @@ public:
     ~RootSignature() = default;
 
     inline RootParameter& operator[] (uint32_t i) { return m_RootParameters[i]; }
-    inline ID3D12RootSignature* GetRootSignature() const { return m_RootSignature.Get(); }
+    inline ID3D12RootSignature& GetRootSignature() const { return *m_RootSignature.Get(); }
 
     void Finalize(const std::wstring& name, D3D12_ROOT_SIGNATURE_FLAGS flags);
 
