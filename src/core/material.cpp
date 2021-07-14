@@ -22,8 +22,6 @@
 ETH_NAMESPACE_BEGIN
 
 Material::Material()
-    : m_VertexShader(g_DefaultVS)
-    , m_PixelShader(g_DefaultPS)
 {
 }
 
