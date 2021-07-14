@@ -35,6 +35,7 @@ void GraphicCore::Initialize()
     Instance().m_CommandManager = std::make_unique<CommandManager>();
     Instance().m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     Instance().m_GraphicRenderer = std::make_unique<GraphicRenderer>();
+    Instance().m_GraphicCommon = std::make_unique<GraphicCommon>();
 }
 
 void GraphicCore::Render()
@@ -47,6 +48,7 @@ void GraphicCore::Render()
 
 void GraphicCore::Shutdown()
 {
+    Instance().m_GraphicCommon.reset();
     Instance().m_GraphicRenderer.reset();
     Instance().m_GraphicDisplay.reset();
     Instance().m_CommandManager.reset();
