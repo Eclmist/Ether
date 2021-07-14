@@ -21,15 +21,5 @@
 
 ETH_NAMESPACE_BEGIN
 
-void GraphicBatchRenderer::Initialize()
-{
-
-}
-
-void GraphicBatchRenderer::Shutdown()
-{
-
-}
-
 ETH_NAMESPACE_END
 

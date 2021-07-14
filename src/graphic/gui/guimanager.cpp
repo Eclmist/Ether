@@ -30,8 +30,6 @@ GuiManager::GuiManager()
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
-    m_GuiContext.Initialize();
-
     RegisterComponents();
     CreateResourceHeap();
     CreateImGuiContext();
@@ -70,8 +68,8 @@ void GuiManager::Render()
     ImGui::Render();
     m_GuiContext.TransitionResource(*GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
     m_GuiContext.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer()->GetRTV());
-    m_GuiContext.GetCommandList()->SetDescriptorHeaps(1, m_SRVDescriptorHeap.GetAddressOf());
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_GuiContext.GetCommandList());
+    m_GuiContext.GetCommandList().SetDescriptorHeaps(1, m_SRVDescriptorHeap.GetAddressOf());
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), &m_GuiContext.GetCommandList());
     m_GuiContext.FinalizeAndExecute();
     m_GuiContext.Reset();
 }

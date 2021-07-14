@@ -24,8 +24,6 @@ ETH_NAMESPACE_BEGIN
 class GraphicBatchRenderer : public NonCopyable
 {
 public:
-    void Initialize();
-    void Shutdown();
 
 private:
 };

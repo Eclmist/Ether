@@ -32,15 +32,15 @@ class CommandQueue;
 class GraphicContext : NonCopyable
 {
 public:
-    void Initialize(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
-    void Shutdown();
+    GraphicContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+    ~GraphicContext();
     void Reset();
 
     CommandQueue& GetCommandQueue() const;
     uint64_t GetCompletionFenceValue() const;
 
 public:
-    inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList.Get(); }
+    inline ID3D12GraphicsCommandList& GetCommandList() const { return *m_CommandList.Get(); }
 
     inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
     inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
@@ -59,12 +59,6 @@ public:
     static void InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset = 0);
 
 private:
-    // One descriptor heap is certainly not enough for actual rendering. This is why
-    // most D3D12 apps create some kind of allocator to get just enough descriptor heaps.
-    // TODO: Handle descriptor heap allocation once we're doing more than just clearing
-    // the screen.
-    ID3D12DescriptorHeap* m_CurrentDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
     ID3D12CommandAllocator* m_CommandAllocator;
     D3D12_COMMAND_LIST_TYPE m_Type;

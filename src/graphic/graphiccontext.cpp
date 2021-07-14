@@ -22,22 +22,21 @@
 
 ETH_NAMESPACE_BEGIN
 
-void GraphicContext::Initialize(D3D12_COMMAND_LIST_TYPE type)
+GraphicContext::GraphicContext(D3D12_COMMAND_LIST_TYPE type)
+    : m_Type(type)
+    , m_ViewMatrix(DirectX::XMMatrixIdentity())
+    , m_ProjectionMatrix(DirectX::XMMatrixIdentity())
 {
     GraphicCore::GetCommandManager().CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
-    m_Type = type;
-
-    m_ViewMatrix = DirectX::XMMatrixIdentity();
-    m_ProjectionMatrix = DirectX::XMMatrixIdentity();
 }
 
-void GraphicContext::Shutdown()
+GraphicContext::~GraphicContext()
 {
 }
 
 void GraphicContext::Reset()
 {
-    m_CommandAllocator = GraphicCore::GetCommandManager().RequestAllocator(m_Type);
+    m_CommandAllocator = &GraphicCore::GetCommandManager().RequestAllocator(m_Type);
     m_CommandList->Reset(m_CommandAllocator, nullptr);
 }
 
@@ -87,7 +86,7 @@ void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
 void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 {
     GraphicCore::GetCommandManager().Execute(m_CommandList.Get());
-    GraphicCore::GetCommandManager().DiscardAllocator(m_Type, m_CommandAllocator);
+    GraphicCore::GetCommandManager().DiscardAllocator(m_Type, *m_CommandAllocator);
 
     if (waitForCompletion)
         GetCommandQueue().Flush();
@@ -96,7 +95,6 @@ void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset)
 {
     GraphicContext context;
-    context.Initialize();
 
     GpuAllocation alloc = context.m_GpuAllocator.Allocate(size);
     memcpy(alloc.GetCpuAddress(), data, size);
