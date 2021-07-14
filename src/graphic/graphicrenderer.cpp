@@ -28,20 +28,13 @@ ETH_NAMESPACE_BEGIN
 GraphicRenderer::GraphicRenderer()
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
-
     InitializeCommonStates();
-
-    m_Context.Initialize();
-    m_BatchRenderer.Initialize();
 }
 
 GraphicRenderer::~GraphicRenderer()
 {
     GraphicCore::FlushGPU();
-
     DestroyCommonStates();
-
-    m_BatchRenderer.Shutdown();
 }
 
 void GraphicRenderer::WaitForPresent()
@@ -61,12 +54,12 @@ void GraphicRenderer::Render()
 
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
-    m_Context.GetCommandList()->SetPipelineState(config.m_RenderWireframe ? &g_DefaultWireframePSO->GetPipelineStateObject() : &g_DefaultPSO->GetPipelineStateObject());
-    m_Context.GetCommandList()->SetGraphicsRootSignature(&g_DefaultRootSignature->GetRootSignature());
-    m_Context.GetCommandList()->OMSetRenderTargets(1, &gfxDisplay.GetCurrentBackBuffer()->GetRTV(), FALSE, &gfxDisplay.GetDepthBuffer()->GetDSV());
-    m_Context.GetCommandList()->RSSetViewports(1, &gfxDisplay.GetViewport());
-    m_Context.GetCommandList()->RSSetScissorRects(1, &gfxDisplay.GetScissorRect());
-    m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(0, 4, &globalTime, 0);
+    m_Context.GetCommandList().SetPipelineState(config.m_RenderWireframe ? &g_DefaultWireframePSO->GetPipelineStateObject() : &g_DefaultPSO->GetPipelineStateObject());
+    m_Context.GetCommandList().SetGraphicsRootSignature(&g_DefaultRootSignature->GetRootSignature());
+    m_Context.GetCommandList().OMSetRenderTargets(1, &gfxDisplay.GetCurrentBackBuffer()->GetRTV(), FALSE, &gfxDisplay.GetDepthBuffer()->GetDSV());
+    m_Context.GetCommandList().RSSetViewports(1, &gfxDisplay.GetViewport());
+    m_Context.GetCommandList().RSSetScissorRects(1, &gfxDisplay.GetScissorRect());
+    m_Context.GetCommandList().SetGraphicsRoot32BitConstants(0, 4, &globalTime, 0);
 
     for (auto&& visual : m_Visuals)
     {
@@ -74,11 +67,11 @@ void GraphicRenderer::Render()
         ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, m_Context.GetViewMatrix());
         mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_Context.GetProjectionMatrix());
 
-        m_Context.GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        m_Context.GetCommandList()->IASetVertexBuffers(0, 1, &visual->GetVertexBufferView());
-        m_Context.GetCommandList()->IASetIndexBuffer(&visual->GetIndexBufferView());
-        m_Context.GetCommandList()->SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
-        m_Context.GetCommandList()->DrawIndexedInstanced(visual->GetNumIndices(), 1, 0, 0, 0);
+        m_Context.GetCommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        m_Context.GetCommandList().IASetVertexBuffers(0, 1, &visual->GetVertexBufferView());
+        m_Context.GetCommandList().IASetIndexBuffer(&visual->GetIndexBufferView());
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
+        m_Context.GetCommandList().DrawIndexedInstanced(visual->GetNumIndices(), 1, 0, 0, 0);
     }
 
     m_Context.FinalizeAndExecute();
