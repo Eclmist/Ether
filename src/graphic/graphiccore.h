@@ -76,6 +76,7 @@ public:
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
+    std::unique_ptr<GuiRenderer> m_GuiRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
