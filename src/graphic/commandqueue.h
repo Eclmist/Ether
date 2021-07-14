@@ -47,8 +47,8 @@ private:
     void InitializeCommandQueue();
     void InitializeFence();
 
-    ID3D12CommandAllocator* RequestAllocator();
-    void DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue);
+    ID3D12CommandAllocator& RequestAllocator();
+    void DiscardAllocator(ID3D12CommandAllocator& allocator, uint64_t fenceValue);
 
 private:
     const D3D12_COMMAND_LIST_TYPE m_Type;

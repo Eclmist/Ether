@@ -31,7 +31,7 @@ CommandAllocatorPool::~CommandAllocatorPool()
     m_AllocatorPool.clear();
 }
 
-ID3D12CommandAllocator* CommandAllocatorPool::RequestAllocator(uint64_t completedFenceValue)
+ID3D12CommandAllocator& CommandAllocatorPool::RequestAllocator(uint64_t completedFenceValue)
 {
     if (m_DiscardedAllocators.empty())
         return CreateNewAllocator();
@@ -42,22 +42,22 @@ ID3D12CommandAllocator* CommandAllocatorPool::RequestAllocator(uint64_t complete
     ID3D12CommandAllocator* allocator = m_DiscardedAllocators.front().first.Get();
     m_DiscardedAllocators.pop();
     ASSERT_SUCCESS(allocator->Reset());
-    return allocator;
+    return *allocator;
 }
 
-void CommandAllocatorPool::DiscardAllocator(ID3D12CommandAllocator* allocator, uint64_t fenceValue)
+void CommandAllocatorPool::DiscardAllocator(ID3D12CommandAllocator& allocator, uint64_t fenceValue)
 {
-    m_DiscardedAllocators.emplace(allocator, fenceValue);
+    m_DiscardedAllocators.emplace(&allocator, fenceValue);
 }
 
-ID3D12CommandAllocator* CommandAllocatorPool::CreateNewAllocator()
+ID3D12CommandAllocator& CommandAllocatorPool::CreateNewAllocator()
 {
     wrl::ComPtr<ID3D12CommandAllocator> allocator;
     ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommandAllocator(m_Type, IID_PPV_ARGS(&allocator)));
     std::wstring allocatorName = L"CommandAllocatorPool::CommandAllocator" + m_AllocatorPool.size();
     allocator->SetName(allocatorName.c_str());
     m_AllocatorPool.push_back(allocator);
-    return allocator.Get();
+    return *allocator.Get();
 }
 
 ETH_NAMESPACE_END
