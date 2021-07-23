@@ -58,6 +58,7 @@ public:
         groundPlane->GetTransform().SetScale({ 1000, 0.01f, 1000 });
         EngineCore::GetActiveWorld().AddEntity(std::move(*groundPlane));
 
+        EngineCore::GetEngineConfig().ToggleDebugGui();
     };
 
     void UnloadContent() override {};

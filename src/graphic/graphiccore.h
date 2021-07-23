@@ -71,7 +71,7 @@ private:
     void InitializeAdapter();
     void InitializeDevice();
 
-public:
+private:
     std::unique_ptr<CommandManager> m_CommandManager;
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;

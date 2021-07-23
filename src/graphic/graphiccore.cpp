@@ -49,6 +49,7 @@ void GraphicCore::Render()
 
 void GraphicCore::Shutdown()
 {
+    FlushGPU();
     Instance().m_GraphicCommon.reset();
     Instance().m_GuiRenderer.reset();
     Instance().m_GraphicRenderer.reset();

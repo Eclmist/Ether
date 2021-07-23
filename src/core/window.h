@@ -26,10 +26,12 @@ ETH_NAMESPACE_BEGIN
 class Window : NonCopyable
 {
 public:
-    Window();
+    Window(HWND parentHwnd = nullptr);
     ~Window();
     void Show(int cmdShow);
-    inline HWND GetHwnd() const { return m_hWnd; }
+
+    inline HWND GetHwnd() const { return m_Hwnd; }
+    inline void SetHwndParent(HWND parent) { m_HwndParent = parent; }
 
     void ETH_ENGINE_DLL ToggleFullscreen();
 
@@ -41,7 +43,9 @@ private:
 
 private:
     RECT m_WindowedRect;
-    HWND m_hWnd;
+    HWND m_Hwnd;
+    HWND m_HwndParent;
+
     bool m_IsFullscreen;
 };
 
