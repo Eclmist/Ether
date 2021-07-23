@@ -23,7 +23,13 @@ ETH_NAMESPACE_BEGIN
 
 ShaderDaemon::ShaderDaemon()
 {
+    if (!EngineCore::GetCommandLineOptions().GetUseSourceShaders())
+    {
+        LogGraphicsInfo("To enable shader daemon, run with -usesourceshaders");
+    }
+
     LogGraphicsInfo("Starting Shader Daemon thread");
+
     m_TerminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     m_ShaderDaemonThread = std::thread(&ShaderDaemon::DaemonThreadMain, this);
 }
@@ -44,11 +50,7 @@ std::wstring ShaderDaemon::GetShaderDirectory()
 {
     wchar_t fullPath[MAX_PATH];
 
-    // TODO: move to graphic options
-    if (EngineCore::GetCommandLineOptions().IsDebugModeEnabled())
-        GetFullPathNameW(ETH_SHADER_DEBUG_DIR, MAX_PATH, fullPath, nullptr);
-    else
-        GetFullPathNameW(ETH_SHADER_RELEASE_DIR, MAX_PATH, fullPath, nullptr);
+        GetFullPathNameW(ETH_SHADER_SOURCE_DIR, MAX_PATH, fullPath, nullptr);
 
     return fullPath;
 }

@@ -24,19 +24,30 @@
 ETH_NAMESPACE_BEGIN
 
 CommandLineOptions::CommandLineOptions()
-    : m_DebugMode(false)
+    : m_UseSourceShaders(false)
 {
     int argc;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
 
     for (int i = 0; i < argc; ++i)
-        InitializeArg(argv[i]);
+    {
+        std::wstring flag = argv[i];
+        std::wstring arg = L"";
+
+        if (i + 1 < argc && argv[i + 1][0] != '-')
+        {
+            arg = argv[i + 1];
+            i++;
+        }
+
+        InitializeArg(flag, arg);
+    }
 }
 
-void CommandLineOptions::InitializeArg(const std::wstring& arg)
+void CommandLineOptions::InitializeArg(const std::wstring& flag, const std::wstring& arg)
 {
-    if (arg == L"-debug")
-        m_DebugMode = true;
+    if (flag == L"-sourceshaders")
+        m_UseSourceShaders = true;
 }
 
 ETH_NAMESPACE_END

@@ -28,13 +28,13 @@ public:
     ~CommandLineOptions() = default;
 
 public:
-    inline bool IsDebugModeEnabled() const { return m_DebugMode; }
+    inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
 
 private:
-    void InitializeArg(const std::wstring& arg);
+    void InitializeArg(const std::wstring& flag, const std::wstring& arg = L"");
 
 private:
-    bool m_DebugMode;
+    bool m_UseSourceShaders;
 };
  
 ETH_NAMESPACE_END

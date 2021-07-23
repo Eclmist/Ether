@@ -19,20 +19,40 @@
 
 #pragma once
 
+#define Assert(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define AssertEngine(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define AssertGraphics(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define AssertWin32(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+
 // Namespace Utils
 enum { InEtherNamespace = false };
 namespace Ether { enum { InEtherNamespace = true }; }
 #define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
 #define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
 
+// Engine/Toolmode/Final Macros
+#if defined(ETH_ENGINE) && defined(ETH_TOOLMODE)
+static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the same project");
+#endif
+
+#ifdef ETH_ENGINE
+#define ETH_ENGINE_ONLY(code) code
+#define ETH_ENGINE_OR_TOOL(engine, tool) engine
+#else
+#define ETH_ENGINE_ONLY(code) ((void)0)
+#endif
+
+#ifdef ETH_TOOLMODE
+#define ETH_TOOL_ONLY(code) code
+#define ETH_ENGINE_OR_TOOL(engine, tool) tool
+#else
+#define ETH_TOOL_ONLY(code) ((void)0)
+#endif
+
 #if defined(ETH_ENGINE) || defined(ETH_TOOLMODE)
 #define ETH_ENGINE_DLL __declspec(dllexport)
 #else
 #define ETH_ENGINE_DLL __declspec(dllimport)
+#define ETH_ENGINE_OR_TOOL(code) ((void)0)
 #endif
-
-#define Assert(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
-#define AssertEngine(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
-#define AssertGraphics(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
-#define AssertWin32(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
 
