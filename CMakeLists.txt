@@ -100,6 +100,9 @@ target_compile_definitions(${TOOLMODE_PROJECT} PRIVATE ETH_TOOLMODE)
 target_compile_options(${TOOLMODE_PROJECT} PRIVATE "/Yuether.h")
 target_compile_options(${TOOLMODE_PROJECT} PRIVATE "/FIether.h")
 
+set_property(TARGET ${TOOLMODE_PROJECT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
+
 # =========================================================================== #
 #                          LINK EXTERNAL LIBRARIES                            #
 # =========================================================================== #
