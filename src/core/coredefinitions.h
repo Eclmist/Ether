@@ -25,7 +25,7 @@ namespace Ether { enum { InEtherNamespace = true }; }
 #define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
 #define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
 
-#ifdef ETH_ENGINE_BUILD
+#if defined(ETH_ENGINE) || defined(ETH_TOOLMODE)
 #define ETH_ENGINE_DLL __declspec(dllexport)
 #else
 #define ETH_ENGINE_DLL __declspec(dllimport)
