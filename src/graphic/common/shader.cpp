@@ -94,10 +94,12 @@ const void* Shader::GetCompiledShader() const
 
 std::wstring Shader::GetRelativePath()
 {
-    if (EngineCore::GetCommandLineOptions().IsDebugModeEnabled())
-        return ETH_SHADER_DEBUG_DIR + m_Filename;
-    else
-        return ETH_SHADER_RELEASE_DIR + m_Filename;
+    if (EngineCore::GetCommandLineOptions().GetUseSourceShaders())
+        return ETH_SHADER_SOURCE_DIR + m_Filename;
+
+    // TODO: Support binarization
+    LogGraphicsFatal("Binarized shaders are not yet supported. Run with -sourceshaders for now");
+    exit(EXIT_FAILURE);
 }
 
 std::wstring Shader::GetFullPath()
