@@ -32,14 +32,9 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 
 add_executable(SampleApp WIN32 ${sample_app})
 
-set_target_properties(SampleApp PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}/bin/sampleapp>)
-
-add_custom_target(CopyDependencies ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/bin/ether/ $<TARGET_FILE_DIR:SampleApp>/)
-
 # =========================================================================== #
 #                                LINK LIBRARIES                               #
 # =========================================================================== #
 
-target_link_libraries(SampleApp Ether)
+target_link_libraries(SampleApp ${ENGINE_PROJECT})
 set_target_properties(SampleApp PROPERTIES LINK_FLAGS ${CMAKE_SOURCE_DIR}/resource/Ether.res)
