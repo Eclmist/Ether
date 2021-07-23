@@ -25,6 +25,7 @@ ETH_NAMESPACE_BEGIN
 
 CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
+    , m_CauldronHwnd(nullptr)
 {
     int argc;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
@@ -48,6 +49,10 @@ void CommandLineOptions::InitializeArg(const std::wstring& flag, const std::wstr
 {
     if (flag == L"-sourceshaders")
         m_UseSourceShaders = true;
+
+    // TODO: This should be set over IPC instead of as a cmdarg. For debugging with cauldron only.
+    if (flag == L"-cauldron")
+        m_CauldronHwnd = (HWND)stoi(arg);
 }
 
 ETH_NAMESPACE_END
