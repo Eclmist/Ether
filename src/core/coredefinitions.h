@@ -19,10 +19,10 @@
 
 #pragma once
 
-#define Assert(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
-#define AssertEngine(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
-#define AssertGraphics(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
-#define AssertWin32(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false); }
+#define Assert(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false && msg); }
+#define AssertEngine(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false && msg); }
+#define AssertGraphics(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false && msg); }
+#define AssertWin32(cond, msg, ...) if (!(cond)) { LogFatal(msg, ##__VA_ARGS__); assert(false && msg); }
 
 // Namespace Utils
 enum { InEtherNamespace = false };
