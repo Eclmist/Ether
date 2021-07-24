@@ -47,6 +47,8 @@ Window::Window(HWND parentHwnd)
     CenterWindowRect();
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
+    ETH_TOOLONLY(AssertWin32(parentHwnd != nullptr, "Toolmode cannot be run without a parent HWND"));
+
     m_Hwnd = CreateWindowExW(
         NULL,
         EngineCore::GetEngineConfig().GetClientName().c_str(),
@@ -158,7 +160,9 @@ LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    // ImGui should read the message first.
+    if (!EngineCore::IsInitialized() || !GraphicCore::IsInitialized())
+        return DefWindowProcW(hWnd, msg, wParam, lParam);
+
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;
 

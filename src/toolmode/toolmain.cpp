@@ -31,7 +31,7 @@ public:
         LogInfo("Initializing Ether Toolmode");
         EngineCore::GetEngineConfig().SetClientWidth(1920);
         EngineCore::GetEngineConfig().SetClientHeight(1080);
-        EngineCore::GetEngineConfig().SetClientName(L"Ether");
+        EngineCore::GetEngineConfig().SetClientName(L"Ether Toolmode");
 
         m_CameraDistance = 10.0f;
         m_CameraRotation = { -0.4, 0.785398, 0 };

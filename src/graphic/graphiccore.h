@@ -53,6 +53,7 @@ public:
     static void Initialize();
     static void Render();
     static void Shutdown();
+    static bool IsInitialized();
 
     static CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
     static GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
@@ -81,6 +82,9 @@ private:
 
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;
     wrl::ComPtr<ID3D12Device3> m_GraphicDevice;
+
+private:
+    bool m_IsInitialized;
 };
 
 ETH_NAMESPACE_END

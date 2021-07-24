@@ -17,35 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "networksocket.h"
+#include <winsock2.h>
+
 ETH_NAMESPACE_BEGIN
 
-void EngineCore::Initialize(IApplicationBase& app)
+#define ETH_TOOLMODE_PORT 2134
+
+NetworkSocket::NetworkSocket()
 {
-    app.Initialize();
-    Instance().m_MainApplication = &app;
-    Instance().m_LoggingManager = std::make_unique<LoggingManager>();
-    Instance().m_MainWindow = std::make_unique<Window>(ETH_ENGINE_OR_TOOL(nullptr, GetCommandLineOptions().GetCauldronHwnd()));
-    Instance().m_ActiveWorld = std::make_unique<World>();
-    Instance().m_IsInitialized = true;
+    //m_SocketFd = socket(AF_INET, SOCK_STREAM, 0);
+    //AssertEngine(m_SocketFd != 0, "Failed to create toolmode IPC socket");
+
+    //sockaddr_in address;
+    //address.sin_family = AF_INET;
+    //address.sin_addr.s_addr = INADDR_ANY;
+    //address.sin_port = htons(ETH_TOOLMODE_PORT);
 }
 
-void EngineCore::LoadContent()
+NetworkSocket::~NetworkSocket()
 {
-    // Other engine content can be loaded here before or after main application
-    Instance().m_MainApplication->LoadContent();
-}
 
-void EngineCore::Shutdown()
-{
-    Instance().m_ActiveWorld.reset();
-    Instance().m_MainWindow.reset();
-    Instance().m_LoggingManager.reset();
-    Reset();
-}
-
-bool EngineCore::IsInitialized()
-{
-    return HasInstance() && Instance().m_IsInitialized;
 }
 
 ETH_NAMESPACE_END

@@ -37,6 +37,7 @@ void GraphicCore::Initialize()
     Instance().m_GraphicRenderer = std::make_unique<GraphicRenderer>();
     Instance().m_GuiRenderer = std::make_unique<GuiRenderer>();
     Instance().m_GraphicCommon = std::make_unique<GraphicCommon>();
+    Instance().m_IsInitialized = true;
 }
 
 void GraphicCore::Render()
@@ -57,6 +58,11 @@ void GraphicCore::Shutdown()
     Instance().m_CommandManager.reset();
     Instance().m_ShaderDaemon.reset();
     Reset();
+}
+
+bool GraphicCore::IsInitialized()
+{
+    return HasInstance() && Instance().m_IsInitialized;
 }
 
 void GraphicCore::FlushGPU()
