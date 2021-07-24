@@ -24,7 +24,7 @@ void EngineCore::Initialize(IApplicationBase& app)
     app.Initialize();
     Instance().m_MainApplication = &app;
     Instance().m_LoggingManager = std::make_unique<LoggingManager>();
-    Instance().m_MainWindow = std::make_unique<Window>(ETH_ENGINE_OR_TOOL(nullptr, GetCommandLineOptions().GetCauldronHwnd()));
+    Instance().m_MainWindow = std::make_unique<Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
     Instance().m_IsInitialized = true;
 }

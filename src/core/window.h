@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class Window : NonCopyable
 {
 public:
-    Window(HWND parentHwnd = nullptr);
+    Window();
     ~Window();
     void Show(int cmdShow);
 

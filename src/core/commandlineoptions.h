@@ -29,14 +29,12 @@ public:
 
 public:
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
-    inline HWND GetCauldronHwnd() const { return m_CauldronHwnd; }
 
 private:
     void InitializeArg(const std::wstring& flag, const std::wstring& arg = L"");
 
 private:
     bool m_UseSourceShaders;
-    HWND m_CauldronHwnd;
 };
  
 ETH_NAMESPACE_END

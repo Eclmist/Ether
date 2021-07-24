@@ -17,7 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
 #include "api/api.h"
+#include "toolmode/ipc/ipcmanager.h"
 
 #ifdef ETH_TOOLMODE
 
@@ -28,7 +30,12 @@ class EtherToolmode : public IApplicationBase
 public:
     void Initialize() override
     {
-        LogInfo("Initializing Ether Toolmode");
+        LogInfo("Initializing Application: Ether Toolmode");
+
+        m_IpcManager = std::make_unique<IpcManager>();
+        //uint64_t hwnd = m_IpcManager.WaitForEditor();
+
+        //EngineCore::SetEditorHwnd((HWND)hwnd);
         EngineCore::GetEngineConfig().SetClientWidth(1920);
         EngineCore::GetEngineConfig().SetClientHeight(1080);
         EngineCore::GetEngineConfig().SetClientName(L"Ether Toolmode");
@@ -109,6 +116,7 @@ public:
 private:
     ethVector3 m_CameraRotation;
     float m_CameraDistance;
+    std::unique_ptr<IpcManager> m_IpcManager;
 };
 
 ETH_NAMESPACE_END
