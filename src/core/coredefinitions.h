@@ -36,17 +36,17 @@ static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the
 #endif
 
 #ifdef ETH_ENGINE
-#define ETH_ENGINE_ONLY(code) code
+#define ETH_ENGINEONLY(code) code
 #define ETH_ENGINE_OR_TOOL(engine, tool) engine
 #else
-#define ETH_ENGINE_ONLY(code) ((void)0)
+#define ETH_ENGINEONLY(code) ((void)0)
 #endif
 
 #ifdef ETH_TOOLMODE
-#define ETH_TOOL_ONLY(code) code
+#define ETH_TOOLONLY(code) code
 #define ETH_ENGINE_OR_TOOL(engine, tool) tool
 #else
-#define ETH_TOOL_ONLY(code) ((void)0)
+#define ETH_TOOLONLY(code) ((void)0)
 #endif
 
 #if defined(ETH_ENGINE) || defined(ETH_TOOLMODE)

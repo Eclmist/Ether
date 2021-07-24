@@ -52,7 +52,7 @@ void CommandLineOptions::InitializeArg(const std::wstring& flag, const std::wstr
 
     // TODO: This should be set over IPC instead of as a cmdarg. For debugging with cauldron only.
     if (flag == L"-cauldron")
-        m_CauldronHwnd = (HWND)stoi(arg);
+        m_CauldronHwnd = (HWND)stoull(arg);
 }
 
 ETH_NAMESPACE_END

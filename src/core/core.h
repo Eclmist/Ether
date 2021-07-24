@@ -60,6 +60,7 @@ public:
     static void Initialize(IApplicationBase& app);
     static void LoadContent();
     static void Shutdown();
+    static bool IsInitialized();
 
     static IApplicationBase& GetMainApplication() { return *Instance().m_MainApplication; }
 
@@ -79,6 +80,9 @@ private:
 
     CommandLineOptions m_CommandLineOptions;
     EngineConfig m_EngineConfig;
+
+private:
+    bool m_IsInitialized;
 };
 
 ETH_NAMESPACE_END

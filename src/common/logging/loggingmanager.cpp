@@ -58,11 +58,16 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
 
 LoggingManager::LoggingManager()
 {
-    m_LogFileStream.open(std::wstring(GetOutputDirectory() + L"/" + GetTimestampedFileName()), std::ios_base::app);
+    m_LogFileStream.open(std::wstring(GetOutputDirectory() + GetTimestampedFileName()), std::ios_base::app);
 
     if (!m_LogFileStream.is_open())
     {
-        LogInfo("Unable to open log file for serialization. Logs may be lost.\n");
+        // Warning must push to the pre-init buffer manually instead of calling any of the
+        // Logging functions because the logging manager is in the middle of initialization.
+        g_PreInitBuffer.emplace(
+            "Unable to open log file for serialization. Logs may be lost",
+            LogLevel::LOGLEVEL_WARNING, LogType::LOGTYPE_ENGINE);
+
         return;
     }
 
@@ -104,16 +109,9 @@ void LoggingManager::Serialize(const LogEntry entry)
 const std::wstring LoggingManager::GetOutputDirectory() const
 {
     wchar_t path[1024];
-    wchar_t* appDataLocal;
-    SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &appDataLocal);
-    wcscpy_s(path, appDataLocal);
-    wcscat_s(path, L"\\Ether");
+    wcscpy_s(path, L"./Logs");
     CreateDirectory(path, NULL);
-    wcscat_s(path, L"\\");
-    wcscat_s(path, EngineCore::GetEngineConfig().GetClientName().c_str());
-    CreateDirectory(path, NULL);
-    wcscat_s(path, L"\\Logs");
-    CreateDirectory(path, NULL);
+    wcscat_s(path, L"/");
     return path;
 }
 
@@ -126,3 +124,4 @@ const std::wstring LoggingManager::GetTimestampedFileName() const
 }
 
 ETH_NAMESPACE_END
+
