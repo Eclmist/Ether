@@ -21,8 +21,6 @@
 #include "api/api.h"
 #include "toolmode/ipc/ipcmanager.h"
 
-#ifdef ETH_TOOLMODE
-
 ETH_NAMESPACE_BEGIN
 
 class EtherToolmode : public IApplicationBase
@@ -33,9 +31,9 @@ public:
         LogInfo("Initializing Application: Ether Toolmode");
 
         m_IpcManager = std::make_unique<IpcManager>();
-        //uint64_t hwnd = m_IpcManager.WaitForEditor();
+        uint64_t hwnd = m_IpcManager->WaitForEditor();
 
-        //EngineCore::SetEditorHwnd((HWND)hwnd);
+        EngineCore::SetEditorHwnd((HWND)hwnd);
         EngineCore::GetEngineConfig().SetClientWidth(1920);
         EngineCore::GetEngineConfig().SetClientHeight(1080);
         EngineCore::GetEngineConfig().SetClientName(L"Ether Toolmode");
@@ -125,6 +123,4 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 {
     return Start(Ether::EtherToolmode(), cmdShow);
 }
-
-#endif
 

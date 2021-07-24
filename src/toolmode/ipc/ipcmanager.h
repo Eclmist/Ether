@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "toolmode/ipc/tcpsocket.h"
+
 ETH_NAMESPACE_BEGIN
 
 class IpcManager : public NonCopyable
@@ -28,23 +30,16 @@ public:
     ~IpcManager();
 
 public:
-    inline bool IsInitialized() const { return m_IsInitialized; }
-    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
-
-public:
     uint64_t WaitForEditor();
 
 private:
-    bool StartWsa();
     void IpcMainThread();
+    //void ParseRequest(const std::string& request) const;
+    //void SendResponse() const;
 
 private:
-    int m_SocketFd;
-
-    bool m_IsInitialized;
-    bool m_HasActiveConnection;
-
     std::thread m_IpcThread;
+    TcpSocket m_Socket;
 };
  
 ETH_NAMESPACE_END

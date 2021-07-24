@@ -71,6 +71,8 @@ public:
     static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
     static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
 
+    ETH_TOOLONLY(static HWND GetEditorHwnd() { return Instance().m_EditorHwnd; })
+    ETH_TOOLONLY(static void SetEditorHwnd(HWND hwnd) { Instance().m_EditorHwnd = hwnd; })
 
 private:
     IApplicationBase* m_MainApplication;
@@ -84,15 +86,7 @@ private:
 
 private:
     bool m_IsInitialized;
-
-#ifdef ETH_TOOLMODE
-public:
-    static HWND GetEditorHwnd() { return Instance().m_EditorHwnd; }
-    static void SetEditorHwnd(HWND hwnd) { Instance().m_EditorHwnd = hwnd; }
-
-private:
-    HWND m_EditorHwnd;
-#endif
+    ETH_TOOLONLY(HWND m_EditorHwnd;)
 };
 
 ETH_NAMESPACE_END

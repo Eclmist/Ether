@@ -25,9 +25,7 @@ ETH_NAMESPACE_BEGIN
 #define ETH_WINDOWCLASS_STYLE               CS_HREDRAW | CS_VREDRAW
 
 #ifdef ETH_TOOLMODE
- // TODO: Remove fallback style after cauldon is done
 #define ETH_WINDOW_STYLE                    WS_CHILD
-#define ETH_WINDOW_FALLBACK_STYLE           WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #else
 #define ETH_WINDOW_STYLE                    WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #endif
@@ -49,13 +47,13 @@ Window::Window()
     CenterWindowRect();
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
-    //ETH_TOOLONLY(AssertWin32(m_HwndParent != nullptr, "Toolmode cannot be run without a parent HWND"));
+    ETH_TOOLONLY(AssertWin32(m_HwndParent != nullptr, "Toolmode cannot be run without a parent HWND"));
 
     m_Hwnd = CreateWindowExW(
         NULL,
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         EngineCore::GetEngineConfig().GetClientName().c_str(),
-        ETH_ENGINE_OR_TOOL(ETH_WINDOW_STYLE, m_HwndParent == nullptr ? ETH_WINDOW_FALLBACK_STYLE : ETH_WINDOW_STYLE),
+        ETH_WINDOW_STYLE,
         m_WindowedRect.left,
         m_WindowedRect.top,
         m_WindowedRect.right - m_WindowedRect.left,
