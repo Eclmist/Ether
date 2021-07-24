@@ -21,14 +21,23 @@
 
 ETH_NAMESPACE_BEGIN
 
-class NetworkSocket : public NonCopyable
+class IpcManager : public NonCopyable
 {
 public:
-    NetworkSocket();
-    ~NetworkSocket();
+    IpcManager();
+    ~IpcManager();
+
+public:
+    inline bool IsInitialized() const { return m_Initialized; }
+
+private:
+    bool InitializeSocket();
+    bool BindSocket();
+    bool Listen();
 
 private:
     int m_SocketFd;
+    bool m_Initialized;
 };
  
 ETH_NAMESPACE_END

@@ -34,6 +34,7 @@ enum class LogType
     LOGTYPE_ENGINE,
     LOGTYPE_GRAPHICS,
     LOGTYPE_WIN32,
+    LOGTYPE_TOOLMODE,
     LOGTYPE_NONE,
 };
 
