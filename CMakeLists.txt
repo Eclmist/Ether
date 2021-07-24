@@ -38,7 +38,7 @@ if (NOT WIN32)
 endif ()
 
 if (NOT MSVC)
-    message(FATAL_ERROR "${PROJECT_NAME} can only be built on VisualStudios! CMake will exit.")
+    message(FATAL_ERROR "${PROJECT_NAME} can only be built on Visual Studio! CMake will exit.")
 endif ()
 
 # Sets the C++ versions
