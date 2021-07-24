@@ -62,7 +62,7 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
     m_FrameBufferHeight = height;
     m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight);
 
-    GraphicCore::FlushGPU();
+    GraphicCore::FlushGpu();
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
         m_FrameBuffers[i].reset();

@@ -32,7 +32,7 @@ GraphicRenderer::GraphicRenderer()
 
 GraphicRenderer::~GraphicRenderer()
 {
-    GraphicCore::FlushGPU();
+    GraphicCore::FlushGpu();
 }
 
 void GraphicRenderer::WaitForPresent()
