@@ -109,7 +109,7 @@ set_property(TARGET ${TOOLMODE_PROJECT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "
 
 # Link DX12
 target_link_libraries(${ENGINE_PROJECT} d3d12.lib dxgi.lib dxguid.lib dxcompiler.lib)
-target_link_libraries(${TOOLMODE_PROJECT} d3d12.lib dxgi.lib dxguid.lib dxcompiler.lib)
+target_link_libraries(${TOOLMODE_PROJECT} d3d12.lib dxgi.lib dxguid.lib dxcompiler.lib ws2_32.lib)
 
 # =========================================================================== #
 #                             INCLUDE SUBPROJECTS                             #

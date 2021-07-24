@@ -61,6 +61,8 @@ std::string LogEntry::GetLogTypePrefix() const
         return "[ Graphics ]";
     case LogType::LOGTYPE_WIN32:
         return "[ Platform ]";
+    case LogType::LOGTYPE_TOOLMODE:
+        return "[ Toolmode ]";
     case LogType::LOGTYPE_NONE:
     default:
         return "[  Engine  ]";

@@ -44,6 +44,13 @@ ETH_NAMESPACE_BEGIN
 #define LogWin32Error(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
 #define LogWin32Fatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
 
+#ifdef ETH_TOOLMODE
+#define LogToolmodeInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
+#define LogToolmodeWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
+#define LogToolmodeError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
+#define LogToolmodeFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
+#endif
+
 ETH_ENGINE_DLL void Log(LogLevel level, LogType type, const char* fmt, ...);
 
 class LoggingManager : public NonCopyable
