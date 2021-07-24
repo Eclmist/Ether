@@ -26,69 +26,105 @@ ETH_NAMESPACE_BEGIN
 
 IpcManager::IpcManager()
     : m_SocketFd(0)
-    , m_Initialized(false)
+    , m_IsInitialized(false)
 {
     LogToolmodeInfo("Initializing network socket for IPC");
 
-    if (!InitializeSocket())
-        return;
-
-    if (!BindSocket())
-        return;
-
-    if (!Listen())
-        return;
-
-    m_Initialized = true;
-}
-
-IpcManager::~IpcManager()
-{
-    if (!m_Initialized)
-        return;
-
-    closesocket(m_SocketFd);
-}
-
-bool IpcManager::InitializeSocket()
-{
-    m_SocketFd = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (m_SocketFd == INVALID_SOCKET)
-    {
-        LogToolmodeWarning("Failed to create a network socket for IPC. Editors will not be able to connect");
-        return false;
-    }
-
-    return true;
-}
-
-bool IpcManager::BindSocket()
-{
-    sockaddr_in address;
+    struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(ETH_TOOLMODE_PORT);
 
-    if (bind(m_SocketFd, (struct sockaddr*)&address, sizeof(address)) == SOCKET_ERROR)
+    if (!StartWsa())
     {
-        LogToolmodeWarning("Failed to bind a network socket for IPC on port %d. Editors will not be able to connect", ETH_TOOLMODE_PORT);
-        return false;
+        LogToolmodeWarning("Could not find a suitable WinSock DLL. Editor will not be available");
+        return;
     }
 
-    return true;
-}
+    if ((m_SocketFd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+    {
+        LogToolmodeWarning("Failed to create a network socket for IPC (%d). Editor will not be available", WSAGetLastError());
+        return;
+    }
 
-bool IpcManager::Listen()
-{
+    if (bind(m_SocketFd, (struct sockaddr*)&address, sizeof(address)) == SOCKET_ERROR)
+    {
+        LogToolmodeWarning("Failed to bind network socket on port %d. Editor will not be available", ETH_TOOLMODE_PORT);
+        return;
+    }
+
     if (listen(m_SocketFd, SOMAXCONN) == SOCKET_ERROR)
     {
-        LogToolmodeWarning("Failed to listen to network socket for IPC. Editors will not be able to connect", ETH_TOOLMODE_PORT);
-        return false;
+        LogToolmodeWarning("Failed to set network socket to LISTEN state (%d). Editor will not be available", WSAGetLastError());
+        return;
     }
 
     LogToolmodeInfo("IPC network socket listening on port %d", ETH_TOOLMODE_PORT);
-    return true;
+    LogToolmodeError("Stalling for Cauldron to implment blocking IPC calls", ETH_TOOLMODE_PORT);
+
+    m_IsInitialized = true;
+    m_IpcThread = std::thread(&IpcManager::IpcMainThread, this);
+}
+
+IpcManager::~IpcManager()
+{
+    if (!m_IsInitialized)
+        return;
+
+    m_IpcThread.join();
+    closesocket(m_SocketFd);
+    WSACleanup();
+}
+
+uint64_t IpcManager::WaitForEditor()
+{
+    while (true)
+    {
+        // Just stall for now since keng iuan is slow
+    }
+
+    return 0;
+}
+
+bool IpcManager::StartWsa()
+{
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+
+    /* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
+    wVersionRequested = MAKEWORD(2, 2);
+
+    err = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    return err == 0;
+}
+
+void IpcManager::IpcMainThread()
+{
+    AssertToolmode(m_IsInitialized, "IPC main thread started without IPC Manager being initialized");
+    SOCKET currentSocket = accept(m_SocketFd, nullptr, nullptr);
+
+    if (currentSocket == INVALID_SOCKET)
+    {
+        LogToolmodeFatal("Failed to accept incoming IPC connection. Editor will not be available");
+        return;
+    }
+
+    LogToolmodeInfo("IPC network socket connected on port %d", ETH_TOOLMODE_PORT);
+
+    while (true)
+    {
+        char bytes[64];
+        int numBytesReceived = recv(currentSocket, bytes, 64, 0);
+        
+        if (numBytesReceived == SOCKET_ERROR)
+        {
+            LogToolmodeError("IPC: Failed to receive bytes");
+            continue;
+        }
+
+        LogToolmodeInfo("IPC: Received %d bytes - %s", numBytesReceived, std::string(bytes, numBytesReceived));
+    }
 }
 
 ETH_NAMESPACE_END

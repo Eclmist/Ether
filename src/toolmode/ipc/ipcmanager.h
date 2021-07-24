@@ -28,16 +28,23 @@ public:
     ~IpcManager();
 
 public:
-    inline bool IsInitialized() const { return m_Initialized; }
+    inline bool IsInitialized() const { return m_IsInitialized; }
+    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
+
+public:
+    uint64_t WaitForEditor();
 
 private:
-    bool InitializeSocket();
-    bool BindSocket();
-    bool Listen();
+    bool StartWsa();
+    void IpcMainThread();
 
 private:
     int m_SocketFd;
-    bool m_Initialized;
+
+    bool m_IsInitialized;
+    bool m_HasActiveConnection;
+
+    std::thread m_IpcThread;
 };
  
 ETH_NAMESPACE_END

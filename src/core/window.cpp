@@ -25,7 +25,9 @@ ETH_NAMESPACE_BEGIN
 #define ETH_WINDOWCLASS_STYLE               CS_HREDRAW | CS_VREDRAW
 
 #ifdef ETH_TOOLMODE
+ // TODO: Remove fallback style after cauldon is done
 #define ETH_WINDOW_STYLE                    WS_CHILD
+#define ETH_WINDOW_FALLBACK_STYLE           WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #else
 #define ETH_WINDOW_STYLE                    WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #endif
@@ -34,8 +36,8 @@ ETH_NAMESPACE_BEGIN
 
 #include <strsafe.h>
 
-Window::Window(HWND parentHwnd)
-    : m_HwndParent(parentHwnd)
+Window::Window()
+    : m_HwndParent(ETH_ENGINE_OR_TOOL(nullptr, EngineCore::GetEditorHwnd()))
     , m_IsFullscreen(false)
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
@@ -47,13 +49,13 @@ Window::Window(HWND parentHwnd)
     CenterWindowRect();
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
-    ETH_TOOLONLY(AssertWin32(parentHwnd != nullptr, "Toolmode cannot be run without a parent HWND"));
+    //ETH_TOOLONLY(AssertWin32(m_HwndParent != nullptr, "Toolmode cannot be run without a parent HWND"));
 
     m_Hwnd = CreateWindowExW(
         NULL,
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         EngineCore::GetEngineConfig().GetClientName().c_str(),
-        ETH_WINDOW_STYLE,
+        ETH_ENGINE_OR_TOOL(ETH_WINDOW_STYLE, m_HwndParent == nullptr ? ETH_WINDOW_FALLBACK_STYLE : ETH_WINDOW_STYLE),
         m_WindowedRect.left,
         m_WindowedRect.top,
         m_WindowedRect.right - m_WindowedRect.left,

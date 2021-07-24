@@ -25,7 +25,7 @@ using namespace Ether;
 
 void SampleApp::Initialize()
 {
-    LogInfo("Initializing Sample App");
+    LogInfo("Initializing Application: Sample App");
     EngineCore::GetEngineConfig().SetClientWidth(1920);
     EngineCore::GetEngineConfig().SetClientHeight(1080);
     EngineCore::GetEngineConfig().SetClientName(L"Ether Sample App");
