@@ -46,6 +46,7 @@ private:
     int m_SocketFd;
     int m_Port;
     sockaddr_in m_Address;
+    bool m_IsInitialized;
     bool m_HasActiveConnection;
     SOCKET m_ActiveSocket;
 };

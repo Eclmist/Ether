@@ -28,6 +28,7 @@ ETH_NAMESPACE_BEGIN
 TcpSocket::TcpSocket()
     : m_SocketFd(0)
     , m_Port(EngineCore::GetCommandLineOptions().GetToolmodePort())
+    , m_IsInitialized(false)
     , m_HasActiveConnection(false)
     , m_ActiveSocket(INVALID_SOCKET)
 {
@@ -49,6 +50,7 @@ TcpSocket::TcpSocket()
     if (!SetSocketListenState())
         return;
 
+    m_IsInitialized = true;
     LogToolmodeInfo("IPC network socket listening on port %d", m_Port);
 }
 
@@ -60,6 +62,9 @@ TcpSocket::~TcpSocket()
 
 bool TcpSocket::WaitForConnection()
 {
+    if (!m_IsInitialized)
+        return false;
+
     if (m_HasActiveConnection)
         return true;
 

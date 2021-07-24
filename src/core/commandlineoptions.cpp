@@ -25,7 +25,9 @@ ETH_NAMESPACE_BEGIN
 
 CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
-    ETH_TOOLONLY(, m_ToolmodePort(2134))
+#ifdef ETH_TOOLMODE
+    , m_ToolmodePort(2134)
+#endif
 {
     int argc;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
