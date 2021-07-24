@@ -36,21 +36,20 @@ static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the
 #define ETH_ENGINEONLY(code) code
 #define ETH_ENGINE_OR_TOOL(engine, tool) engine
 #else
-#define ETH_ENGINEONLY(code) ((void)0)
+#define ETH_ENGINEONLY(code) 
 #endif
 
 #ifdef ETH_TOOLMODE
 #define ETH_TOOLONLY(code) code
 #define ETH_ENGINE_OR_TOOL(engine, tool) tool
 #else
-#define ETH_TOOLONLY(code) ((void)0)
+#define ETH_TOOLONLY(code)
 #endif
 
 #if defined(ETH_ENGINE) || defined(ETH_TOOLMODE)
 #define ETH_ENGINE_DLL __declspec(dllexport)
 #else
 #define ETH_ENGINE_DLL __declspec(dllimport)
-#define ETH_ENGINE_OR_TOOL(code) ((void)0)
 #endif
 
 // Namespace Utils

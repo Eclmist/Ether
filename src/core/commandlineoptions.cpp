@@ -25,6 +25,7 @@ ETH_NAMESPACE_BEGIN
 
 CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
+    ETH_TOOLONLY(, m_ToolmodePort(2134))
 {
     int argc;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
@@ -48,6 +49,10 @@ void CommandLineOptions::InitializeArg(const std::wstring& flag, const std::wstr
 {
     if (flag == L"-sourceshaders")
         m_UseSourceShaders = true;
+#ifdef ETH_TOOLMODE
+    else if (flag == L"-port")
+        m_ToolmodePort = stoi(arg);
+#endif
 }
 
 ETH_NAMESPACE_END

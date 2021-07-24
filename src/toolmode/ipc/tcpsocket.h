@@ -19,24 +19,35 @@
 
 #pragma once
 
+#include <winsock2.h>
+
 ETH_NAMESPACE_BEGIN
 
-class CommandLineOptions
+class TcpSocket : public NonCopyable
 {
 public:
-    CommandLineOptions();
-    ~CommandLineOptions() = default;
+    TcpSocket();
+    ~TcpSocket();
 
 public:
-    inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
-    ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
+    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
+
+    bool WaitForConnection();
+    std::string GetNext() const;
+    void Send(const std::string& message) const;
 
 private:
-    void InitializeArg(const std::wstring& flag, const std::wstring& arg = L"");
+    bool StartWsa();
+    bool RequestPlatformSocket();
+    bool BindSocket() const;
+    bool SetSocketListenState() const;
 
 private:
-    bool m_UseSourceShaders;
-    ETH_TOOLONLY(uint16_t m_ToolmodePort);
+    int m_SocketFd;
+    int m_Port;
+    sockaddr_in m_Address;
+    bool m_HasActiveConnection;
+    SOCKET m_ActiveSocket;
 };
  
 ETH_NAMESPACE_END
