@@ -65,7 +65,7 @@ public:
     static ID3D12Device3& GetDevice() { return *Instance().m_GraphicDevice.Get(); }
 
 public:
-    static void FlushGPU();
+    static void FlushGpu();
 
 private:
     void InitializeDebugLayer();

@@ -50,7 +50,7 @@ void GraphicCore::Render()
 
 void GraphicCore::Shutdown()
 {
-    FlushGPU();
+    FlushGpu();
     Instance().m_GraphicCommon.reset();
     Instance().m_GuiRenderer.reset();
     Instance().m_GraphicRenderer.reset();
@@ -65,7 +65,7 @@ bool GraphicCore::IsInitialized()
     return HasInstance() && Instance().m_IsInitialized;
 }
 
-void GraphicCore::FlushGPU()
+void GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
 }
