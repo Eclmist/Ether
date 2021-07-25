@@ -19,6 +19,9 @@
 
 #pragma once
 
+// Absolute first thing to include. Since we are not sure were someone might include a <Window.h>
+#include "system/platform/win32/ethwin.h"
+
 // STL Headers
 #include <algorithm>
 #include <string>

@@ -19,44 +19,29 @@
 
 #pragma once
 
-/**
- * The follow preprocessors excludes a bunch of junk from being included when
- * we include <Windows.h>. Since Ether will only use Windows as a surface for
- * D3D12, these are all unused.
- */
+#include "system/win32/ethwin.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define NOGDICAPMASKS
-#define NOMENUS
-#define NOICONS
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define OEMRESOURCE
-#define NOATOM
-#define NOCOLOR
-#define NODRAWTEXT
-#define NOKERNEL
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOMINMAX
-#define NORPC
-#define NOPROXYSTUB
-#define NOIMAGE
-#define NOTAPE
-#define STRICT
-#define UNICODE
+ETH_NAMESPACE_BEGIN
 
-#include <Windows.h>
+class Window : NonCopyable
+{
+public:
+    Window();
+    ~Window();
+    void Show(int cmdShow);
 
+    inline HWND GetHwnd() const { return m_Hwnd; }
+    inline void SetHwndParent(HWND parent) { m_HwndParent = parent; }
+
+    void ETH_ENGINE_DLL ToggleFullscreen();
+
+private:
+
+private:
+    bool m_IsFullscreen;
+
+    void* m_WindowHandle;
+    void* m_ParentWindowHandle;
+};
+
+ETH_NAMESPACE_END

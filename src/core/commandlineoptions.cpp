@@ -20,6 +20,7 @@
 #include "commandlineoptions.h"
 #include <shellapi.h>
 #include <iostream>
+#include <processenv.h>
 
 ETH_NAMESPACE_BEGIN
 
@@ -30,7 +31,7 @@ CommandLineOptions::CommandLineOptions()
 #endif
 {
     int argc;
-    LPWSTR* argv = CommandLineToArgvW(GetCommandLine(), &argc);
+    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
     for (int i = 0; i < argc; ++i)
     {

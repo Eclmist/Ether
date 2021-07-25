@@ -99,7 +99,7 @@ std::wstring Shader::GetRelativePath()
 
     // TODO: Support binarization
     LogGraphicsFatal("Binarized shaders are not yet supported. Run with -sourceshaders for now");
-    MessageBox(EngineCore::GetMainWindow().GetHwnd(), L"Binarized shaders are not yet supported. Run with -sourceshaders for now", L"Ether", MB_OK | MB_ICONEXCLAMATION);
+    MessageBoxW(NULL, L"Binarized shaders are not yet supported. Run with -sourceshaders for now", L"Ether", MB_OK | MB_ICONEXCLAMATION);
     exit(EXIT_FAILURE);
 }
 

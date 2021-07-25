@@ -19,21 +19,22 @@
 
 #pragma once
 
-#include "system/win32/ethwin.h"
+#include "system/platform/platformwindow.h"
 
 ETH_NAMESPACE_BEGIN
 
-class Window : NonCopyable
+namespace Win32
+{
+
+class Window : public PlatformWindow
 {
 public:
     Window();
     ~Window();
-    void Show(int cmdShow);
 
-    inline HWND GetHwnd() const { return m_Hwnd; }
-    inline void SetHwndParent(HWND parent) { m_HwndParent = parent; }
-
-    void ETH_ENGINE_DLL ToggleFullscreen();
+    void Show() override;
+    void Hide() override;
+    void SetFullscreen(bool isFullscreen) override;
 
 private:
     void RegisterWindowClass() const;
@@ -43,10 +44,9 @@ private:
 
 private:
     RECT m_WindowedRect;
-    HWND m_Hwnd;
-    HWND m_HwndParent;
-
-    bool m_IsFullscreen;
 };
 
+}
+
 ETH_NAMESPACE_END
+

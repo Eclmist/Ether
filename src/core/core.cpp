@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "system/platform/win32/window.h"
+
 ETH_NAMESPACE_BEGIN
 
 void EngineCore::Initialize(IApplicationBase& app)
@@ -24,7 +26,7 @@ void EngineCore::Initialize(IApplicationBase& app)
     app.Initialize();
     Instance().m_MainApplication = &app;
     Instance().m_LoggingManager = std::make_unique<LoggingManager>();
-    Instance().m_MainWindow = std::make_unique<Window>();
+    Instance().m_MainWindow = std::make_unique<Win32::Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
     Instance().m_IsInitialized = true;
 }

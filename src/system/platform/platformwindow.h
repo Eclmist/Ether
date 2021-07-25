@@ -19,37 +19,30 @@
 
 #pragma once
 
-#include <WinSock2.h>
-
 ETH_NAMESPACE_BEGIN
 
-class TcpSocket : public NonCopyable
+class PlatformWindow : public NonCopyable
 {
 public:
-    TcpSocket();
-    ~TcpSocket();
+    PlatformWindow();
+    virtual ~PlatformWindow() = default;
 
-public:
-    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
+    virtual void Show() = 0;
+    virtual void Hide() = 0;
+    virtual void SetFullscreen(bool isFullscreen) = 0;
+    inline bool GetFullscreen() const { return m_IsFullscreen; }
 
-    bool WaitForConnection();
-    std::string GetNext() const;
-    void Send(const std::string& message) const;
+    inline void* GetWindowHandle() const { return m_WindowHandle; }
+    inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
+    inline void SetParentWindowHandle(void* handle) { m_ParentWindowHandle = handle; }
 
-private:
-    bool StartWsa();
-    bool RequestPlatformSocket();
-    bool BindSocket() const;
-    bool SetSocketListenState() const;
+protected:
+    bool m_IsFullscreen;
 
-private:
-    int m_SocketFd;
-    int m_Port;
-    sockaddr_in m_Address;
-    bool m_IsInitialized;
-    bool m_HasActiveConnection;
-    SOCKET m_ActiveSocket;
+    void* m_WindowHandle;
+    void* m_ParentWindowHandle;
 };
- 
+
+
 ETH_NAMESPACE_END
 
