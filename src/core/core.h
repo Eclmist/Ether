@@ -54,6 +54,10 @@
 #include "common/logging/loggingmanager.h"
 #include "common/time.h"
 
+#ifdef ETH_TOOLMODE
+#include "toolmode/ipc/ipcmanager.h"
+#endif
+
 ETH_NAMESPACE_BEGIN
 
 class ETH_ENGINE_DLL EngineCore : public Singleton<EngineCore>
@@ -84,8 +88,11 @@ private:
     std::unique_ptr<PlatformWindow> m_MainWindow;
     std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
 
+    ETH_TOOLONLY(std::unique_ptr<IpcManager> m_IpcManager;)
+
     CommandLineOptions m_CommandLineOptions;
     EngineConfig m_EngineConfig;
+
 
 private:
     bool m_IsInitialized;

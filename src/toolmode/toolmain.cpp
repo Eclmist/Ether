@@ -19,7 +19,6 @@
 
 #include <string>
 #include "api/api.h"
-#include "toolmode/ipc/ipcmanager.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -29,9 +28,6 @@ public:
     void Initialize() override
     {
         LogInfo("Initializing Application: Ether Toolmode");
-
-        m_IpcManager = std::make_unique<IpcManager>();
-        m_IpcManager->WaitForEditor();
 
         EngineCore::GetEngineConfig().SetClientWidth(1920);
         EngineCore::GetEngineConfig().SetClientHeight(1080);
@@ -113,7 +109,6 @@ public:
 private:
     ethVector3 m_CameraRotation;
     float m_CameraDistance;
-    std::unique_ptr<IpcManager> m_IpcManager;
 };
 
 ETH_NAMESPACE_END
