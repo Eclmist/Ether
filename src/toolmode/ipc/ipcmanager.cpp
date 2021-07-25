@@ -18,8 +18,6 @@
 */
 
 #include "ipcmanager.h"
-
-#include <winsock2.h>
 #include "json/json.hpp"
 
 ETH_NAMESPACE_BEGIN

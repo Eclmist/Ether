@@ -110,7 +110,7 @@ const std::wstring LoggingManager::GetOutputDirectory() const
 {
     wchar_t path[1024];
     wcscpy_s(path, L"./Logs");
-    CreateDirectory(path, NULL);
+    CreateDirectoryW(path, NULL);
     wcscat_s(path, L"/");
     return path;
 }

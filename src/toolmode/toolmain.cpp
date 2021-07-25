@@ -33,7 +33,7 @@ public:
         m_IpcManager = std::make_unique<IpcManager>();
         uint64_t hwnd = m_IpcManager->WaitForEditor();
 
-        EngineCore::SetEditorHwnd((HWND)hwnd);
+        EngineCore::SetEditorWindowHandle((void*)hwnd);
         EngineCore::GetEngineConfig().SetClientWidth(1920);
         EngineCore::GetEngineConfig().SetClientHeight(1080);
         EngineCore::GetEngineConfig().SetClientName(L"Ether Toolmode");
@@ -76,7 +76,7 @@ public:
             EngineCore::GetEngineConfig().ToggleDebugGui();
 
         if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F11))
-            EngineCore::GetMainWindow().ToggleFullscreen();
+            EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
         m_CameraDistance -= Input::GetMouseWheelDelta() / 120;
         m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);

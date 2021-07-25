@@ -33,13 +33,14 @@
 #include "system/singleton.h"
 #include "system/stringutils.h"
 #include "system/types.h"
-#include "system/win32/keycodes.h"
+
+#include "system/platform/platformwindow.h"
+#include "system/platform/win32/keycodes.h"
 
 #include "core/component/transformcomponent.h"
 #include "core/component/meshcomponent.h"
 #include "core/component/visualcomponent.h"
 
-#include "core/window.h"
 #include "core/commandlineoptions.h"
 #include "core/event/events.h"
 #include "core/engineconfig.h"
@@ -65,28 +66,28 @@ public:
     static IApplicationBase& GetMainApplication() { return *Instance().m_MainApplication; }
 
     static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
-    static Window& GetMainWindow() { return *Instance().m_MainWindow; }
+    static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
 
     static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
     static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
 
-    ETH_TOOLONLY(static HWND GetEditorHwnd() { return Instance().m_EditorHwnd; })
-    ETH_TOOLONLY(static void SetEditorHwnd(HWND hwnd) { Instance().m_EditorHwnd = hwnd; })
+    ETH_TOOLONLY(static void* GetEditorWindowHandle() { return Instance().m_EditorWindowHandle; })
+    ETH_TOOLONLY(static void SetEditorWindowHandle(void* handle) { Instance().m_EditorWindowHandle = handle; })
 
 private:
     IApplicationBase* m_MainApplication;
 
     std::unique_ptr<LoggingManager> m_LoggingManager;
     std::unique_ptr<World> m_ActiveWorld;
-    std::unique_ptr<Window> m_MainWindow;
+    std::unique_ptr<PlatformWindow> m_MainWindow;
 
     CommandLineOptions m_CommandLineOptions;
     EngineConfig m_EngineConfig;
 
 private:
     bool m_IsInitialized;
-    ETH_TOOLONLY(HWND m_EditorHwnd;)
+    ETH_TOOLONLY(void* m_EditorWindowHandle;)
 };
 
 ETH_NAMESPACE_END

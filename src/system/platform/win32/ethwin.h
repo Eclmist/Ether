@@ -19,37 +19,41 @@
 
 #pragma once
 
-#include <WinSock2.h>
+/**
+ * The follow preprocessors excludes a bunch of junk from being included when
+ * we include <Windows.h>. Since Ether will only use Windows as a surface for
+ * D3D12, these are all unused.
+ */
 
-ETH_NAMESPACE_BEGIN
+#define WIN32_LEAN_AND_MEAN
+#define NOGDICAPMASKS
+#define NOSYSCOMMANDS
+#define NORASTEROPS
+#define OEMRESOURCE
+#define NOATOM
+#define NOCOLOR
+#define NODRAWTEXT
+#define NOKERNEL
+#define NOMEMMGR
+#define NOMETAFILE
+#define NOOPENFILE
+#define NOSCROLL
+#define NOSERVICE
+#define NOSOUND
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NODEFERWINDOWPOS
+#define NOMCX
+#define NOMINMAX
+#define NORPC
+#define NOPROXYSTUB
+#define NOIMAGE
+#define NOTAPE
+#define UNICODE
 
-class TcpSocket : public NonCopyable
-{
-public:
-    TcpSocket();
-    ~TcpSocket();
-
-public:
-    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
-
-    bool WaitForConnection();
-    std::string GetNext() const;
-    void Send(const std::string& message) const;
-
-private:
-    bool StartWsa();
-    bool RequestPlatformSocket();
-    bool BindSocket() const;
-    bool SetSocketListenState() const;
-
-private:
-    int m_SocketFd;
-    int m_Port;
-    sockaddr_in m_Address;
-    bool m_IsInitialized;
-    bool m_HasActiveConnection;
-    SOCKET m_ActiveSocket;
-};
- 
-ETH_NAMESPACE_END
+#include <Windows.h>
 

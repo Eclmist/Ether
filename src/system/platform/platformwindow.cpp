@@ -17,39 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include <WinSock2.h>
+#include "platformwindow.h"
 
 ETH_NAMESPACE_BEGIN
 
-class TcpSocket : public NonCopyable
+PlatformWindow::PlatformWindow()
+    : m_IsFullscreen(false)
+    , m_WindowHandle(nullptr)
+    , m_ParentWindowHandle(nullptr)
 {
-public:
-    TcpSocket();
-    ~TcpSocket();
+}
 
-public:
-    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
-
-    bool WaitForConnection();
-    std::string GetNext() const;
-    void Send(const std::string& message) const;
-
-private:
-    bool StartWsa();
-    bool RequestPlatformSocket();
-    bool BindSocket() const;
-    bool SetSocketListenState() const;
-
-private:
-    int m_SocketFd;
-    int m_Port;
-    sockaddr_in m_Address;
-    bool m_IsInitialized;
-    bool m_HasActiveConnection;
-    SOCKET m_ActiveSocket;
-};
- 
 ETH_NAMESPACE_END
 

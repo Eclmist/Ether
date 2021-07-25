@@ -64,7 +64,7 @@ int Start(IApplicationBase& app, int cmdShow)
     GraphicCore::Initialize();
 
     EngineCore::LoadContent();
-    EngineCore::GetMainWindow().Show(cmdShow);
+    EngineCore::GetMainWindow().Show();
 
     WindowsUpdateLoop();
 

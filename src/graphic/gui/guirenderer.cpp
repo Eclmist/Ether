@@ -33,7 +33,7 @@ GuiRenderer::GuiRenderer()
     RegisterComponents();
     CreateResourceHeap();
     CreateImGuiContext();
-    ImGui_ImplWin32_Init(EngineCore::GetMainWindow().GetHwnd());
+    ImGui_ImplWin32_Init(EngineCore::GetMainWindow().GetWindowHandle());
     ImGui_ImplDX12_Init(
         &GraphicCore::GetDevice(),
         ETH_MAX_NUM_SWAPCHAIN_BUFFERS,

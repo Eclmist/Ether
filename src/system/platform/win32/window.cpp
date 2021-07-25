@@ -19,6 +19,9 @@
 
 #include "window.h"
 #include "imgui/imgui_impl_win32.h"
+#include <strsafe.h>
+#include <shellapi.h>
+#include <winuser.h>
 
 ETH_NAMESPACE_BEGIN
 
@@ -32,11 +35,10 @@ ETH_NAMESPACE_BEGIN
 
 #define ETH_WINDOW_STYLE_FULLSCREEN         WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
 
-#include <strsafe.h>
+namespace Win32
+{
 
 Window::Window()
-    : m_HwndParent(ETH_ENGINE_OR_TOOL(nullptr, EngineCore::GetEditorHwnd()))
-    , m_IsFullscreen(false)
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -47,9 +49,10 @@ Window::Window()
     CenterWindowRect();
     AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
 
-    ETH_TOOLONLY(AssertWin32(m_HwndParent != nullptr, "Toolmode cannot be run without a parent HWND"));
+    ETH_TOOLONLY(m_ParentWindowHandle = EngineCore::GetEditorWindowHandle());
+    ETH_TOOLONLY(AssertWin32(m_ParentWindowHandle != nullptr, "Toolmode cannot be run without a parent HWND"));
 
-    m_Hwnd = CreateWindowExW(
+    m_WindowHandle = (void*)CreateWindowExW(
         NULL,
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         EngineCore::GetEngineConfig().GetClientName().c_str(),
@@ -58,49 +61,51 @@ Window::Window()
         m_WindowedRect.top,
         m_WindowedRect.right - m_WindowedRect.left,
         m_WindowedRect.bottom - m_WindowedRect.top,
-        m_HwndParent,
+        (HWND)m_ParentWindowHandle,
         nullptr,
         GetModuleHandle(NULL),
         this
     );
 
-    AssertWin32(m_Hwnd != nullptr, "Failed to create a Win32 handle");
+    AssertWin32(m_WindowHandle != nullptr, "Failed to create a Win32 handle");
 }
 
 Window::~Window()
 {
-    DestroyWindow(m_Hwnd);
+    DestroyWindow((HWND)m_WindowHandle);
     UnregisterClassW(EngineCore::GetEngineConfig().GetClientName().c_str(), GetModuleHandle(NULL));
 }
 
-void Window::Show(int cmdShow)
+void Window::Show()
 {
-    ShowWindow(m_Hwnd, cmdShow);
+    ShowWindow((HWND)m_WindowHandle, SW_SHOW);
 }
 
-
-void Window::ToggleFullscreen()
+void Window::Hide()
 {
-    m_IsFullscreen = !m_IsFullscreen;
+    ShowWindow((HWND)m_WindowHandle, SW_HIDE);
+}
 
-    if (m_IsFullscreen)
+void Window::SetFullscreen(bool isFullscreen)
+{
+    if (isFullscreen)
     {
-        SetWindowLongW(m_Hwnd, GWL_STYLE, ETH_WINDOW_STYLE_FULLSCREEN);
-        GetWindowRect(m_Hwnd, &m_WindowedRect);
-        SetWindowPos(m_Hwnd, HWND_TOP,
+        SetWindowLongW((HWND)m_WindowHandle, GWL_STYLE, ETH_WINDOW_STYLE_FULLSCREEN);
+        GetWindowRect((HWND)m_WindowHandle, &m_WindowedRect);
+        SetWindowPos((HWND)m_WindowHandle, HWND_TOP,
             0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
-        ShowWindow(m_Hwnd, SW_MAXIMIZE);
+        ShowWindow((HWND)m_WindowHandle, SW_MAXIMIZE);
     }
     else
     {
-        SetWindowLong(m_Hwnd, GWL_STYLE, ETH_WINDOW_STYLE);
-        SetWindowPos(m_Hwnd, HWND_TOP,
-            m_WindowedRect.left, m_WindowedRect.top, 
+        SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, ETH_WINDOW_STYLE);
+        SetWindowPos((HWND)m_WindowHandle, HWND_TOP,
+            m_WindowedRect.left, m_WindowedRect.top,
             m_WindowedRect.right - m_WindowedRect.left,
             m_WindowedRect.bottom - m_WindowedRect.top,
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
-        ShowWindow(m_Hwnd, SW_NORMAL);
+        ShowWindow((HWND)m_WindowHandle, SW_NORMAL);
     }
 }
 
@@ -213,6 +218,8 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 
     return 0;
+}
+
 }
 
 ETH_NAMESPACE_END
