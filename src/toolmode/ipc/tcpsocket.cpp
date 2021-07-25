@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 // Arbitrary max buffer size. Might be worth profiling the average size of requests from
 // Cauldron to optimize this value.
-#define MAX_BUFFER_SIZE         256
+#define MAX_BUFFER_SIZE         512
 
 TcpSocket::TcpSocket()
     : m_SocketFd(0)
@@ -81,8 +81,10 @@ bool TcpSocket::WaitForConnection()
     return true;
 }
 
-std::string TcpSocket::GetNext() const
+std::string TcpSocket::GetNext()
 {
+    std::lock_guard guard(m_SocketMutex);
+
     if (!m_HasActiveConnection)
     {
         LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
@@ -97,11 +99,7 @@ std::string TcpSocket::GetNext() const
         int numBytesReceived = recv(m_ActiveSocket, bytes, sizeof(bytes), 0);
         
         if (numBytesReceived == SOCKET_ERROR)
-        {
-            LogToolmodeInfo("The remote has closed the IPC connection (%d)", WSAGetLastError());
-            LogToolmodeError("TODO: Shut down the engine properly when the connection has been terminated");
-            return "";
-        }
+            OnConnectionBroken(WSAGetLastError());
 
         if (numBytesReceived == 1 && bytes[0] == NULL)
             break;
@@ -115,9 +113,13 @@ std::string TcpSocket::GetNext() const
     return fullPacket;
 }
 
-void TcpSocket::Send(const std::string& message) const
+void TcpSocket::Send(const std::string& message)
 {
-    LogToolmodeWarning("TCP Sending has not yet been implemented. Unable to send \"%s\"", message.c_str());
+    std::lock_guard guard(m_SocketMutex);
+
+    int result = send(m_ActiveSocket, message.c_str(), message.size(), 0);
+    if (result == SOCKET_ERROR)
+        OnConnectionBroken(WSAGetLastError());
 }
 
 bool TcpSocket::StartWsa()
@@ -170,5 +172,12 @@ bool TcpSocket::SetSocketListenState() const
     return true;
 }
 
-ETH_NAMESPACE_END
+void TcpSocket::OnConnectionBroken(int error)
+{
+    LogToolmodeError("The IPC connection was closed unexpectedly (%d)", error);
+    m_HasActiveConnection = false;
+    EngineCore::GetMainApplication().ScheduleExit();
+}
 
+
+ETH_NAMESPACE_END

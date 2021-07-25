@@ -31,9 +31,8 @@ public:
         LogInfo("Initializing Application: Ether Toolmode");
 
         m_IpcManager = std::make_unique<IpcManager>();
-        uint64_t hwnd = m_IpcManager->WaitForEditor();
+        m_IpcManager->WaitForEditor();
 
-        EngineCore::SetEditorWindowHandle((void*)hwnd);
         EngineCore::GetEngineConfig().SetClientWidth(1920);
         EngineCore::GetEngineConfig().SetClientHeight(1080);
         EngineCore::GetEngineConfig().SetClientName(L"Ether Toolmode");

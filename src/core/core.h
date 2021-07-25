@@ -80,9 +80,9 @@ private:
     IApplicationBase* m_MainApplication;
 
     std::unique_ptr<LoggingManager> m_LoggingManager;
-    std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;
+    std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
 
     CommandLineOptions m_CommandLineOptions;
     EngineConfig m_EngineConfig;
