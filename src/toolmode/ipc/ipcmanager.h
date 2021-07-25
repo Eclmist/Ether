@@ -34,8 +34,8 @@ public:
 
 private:
     void IpcMainThread();
-    //void ParseRequest(const std::string& request) const;
-    //void SendResponse() const;
+    void ParseRequest(const std::string& request) const;
+    void SendResponse() const;
 
 private:
     std::thread m_IpcThread;

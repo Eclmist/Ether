@@ -37,10 +37,10 @@ NotificationTray::NotificationTray()
     wc.lpszClassName = TEXT("Ether::NotificationTray");
     AssertWin32(RegisterClass(&wc) != 0, "Failed to register notification tray Window Class");
 
-    m_TrayHwnd = CreateWindowEx(0, TEXT("Ether::NotificationTray"),
+    m_Handle = (void*)CreateWindowEx(0, TEXT("Ether::NotificationTray"),
         NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, GetModuleHandle(NULL), NULL);
     
-    if (!m_TrayHwnd)
+    if (!m_Handle)
     {
         LogWin32Error("Failed to create a Win32 handle for the notification tray icon");
         return;
@@ -52,14 +52,14 @@ NotificationTray::NotificationTray()
 NotificationTray::~NotificationTray()
 {
     RemoveTrayIcon();
-    DestroyWindow(m_TrayHwnd);
+    DestroyWindow((HWND)m_Handle);
 }
 
 void NotificationTray::AddTrayIcon()
 {
     NOTIFYICONDATA nid = {};
     nid.cbSize = sizeof(nid);
-    nid.hWnd = m_TrayHwnd;
+    nid.hWnd = (HWND)m_Handle;
     nid.uID = NOTIFICATION_TRAY_UID;
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = NOTIFICATION_TRAY_ICON_MSG;
@@ -74,7 +74,7 @@ void NotificationTray::RemoveTrayIcon()
 {
     NOTIFYICONDATA nid = {};
     nid.cbSize = sizeof(nid);
-    nid.hWnd = m_TrayHwnd;
+    nid.hWnd = (HWND)m_Handle;
     nid.uID = NOTIFICATION_TRAY_UID;
 
     Shell_NotifyIcon(NIM_DELETE, &nid);
@@ -95,7 +95,7 @@ LRESULT CALLBACK NotificationTray::SysTrayWndProc(HWND hWnd, UINT uMsg, WPARAM w
             POINT pt;
             GetCursorPos(&pt);
             HMENU hmenu = CreatePopupMenu();
-            InsertMenu(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, L"Exit (Debug)");
+            InsertMenu(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, L"Force Quit (Debug)");
             SetForegroundWindow(hWnd);
             int cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
             PostMessage(hWnd, WM_NULL, 0, 0);
@@ -108,7 +108,7 @@ LRESULT CALLBACK NotificationTray::SysTrayWndProc(HWND hWnd, UINT uMsg, WPARAM w
 
     case WM_COMMAND:
         if (lParam == 0 && LOWORD(wParam) == IDM_EXIT)
-            EngineCore::GetMainApplication().ScheduleExit();
+            EngineCore::GetMainApplication().ScheduleExitImmdiate();
 
         break;
     }

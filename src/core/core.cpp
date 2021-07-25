@@ -18,14 +18,22 @@
 */
 
 #include "system/platform/win32/window.h"
+#include "system/platform/win32/notificationtray.h"
 
 ETH_NAMESPACE_BEGIN
 
 void EngineCore::Initialize(IApplicationBase& app)
 {
+    // Logger needs to be the very first thing to be initialized, as logs that were made
+    // prior might be lost if the engine stalls or crashes before initialization!
+    Instance().m_LoggingManager = std::make_unique<LoggingManager>();
+
+    // Notification tray needs to be shown before app.Initialize, as Initialize may stall
+    // for editor connection in toolmode.
+    Instance().m_NotificationTray = std::make_unique<Win32::NotificationTray>();
+
     app.Initialize();
     Instance().m_MainApplication = &app;
-    Instance().m_LoggingManager = std::make_unique<LoggingManager>();
     Instance().m_MainWindow = std::make_unique<Win32::Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
     Instance().m_IsInitialized = true;

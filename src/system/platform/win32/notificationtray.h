@@ -24,19 +24,16 @@ ETH_NAMESPACE_BEGIN
 namespace Win32
 {
 
-class NotificationTray
+class NotificationTray : public PlatformNotificationTray
 {
 public:
     NotificationTray();
-    ~NotificationTray();
+    ~NotificationTray() override;
 
 private:
     void AddTrayIcon();
     void RemoveTrayIcon();
     static LRESULT CALLBACK SysTrayWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    HWND m_TrayHwnd;
 };
 
 }
