@@ -102,7 +102,7 @@ void LoggingManager::Clear()
 void LoggingManager::Serialize(const LogEntry entry)
 {
     std::lock_guard<std::mutex> guard(m_Mutex);
-    m_LogFileStream << entry.GetText().c_str() << "\n";
+    m_LogFileStream << entry.GetFullText().c_str() << "\n";
     m_LogFileStream.flush();
 }
 
