@@ -121,6 +121,13 @@ ETH_NAMESPACE_END
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 {
+    CreateMutexA(0, false, "Local\\Ether.Toolmode");
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        MessageBox(nullptr, L"An instance of Ether is already running.", L"Ether", MB_OK | MB_ICONEXCLAMATION);
+        return EXIT_FAILURE;
+    }
+
     return Start(Ether::EtherToolmode(), cmdShow);
 }
 
