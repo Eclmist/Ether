@@ -31,6 +31,7 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 # =========================================================================== #
 
 add_executable(SampleApp WIN32 ${sample_app})
+set_property(TARGET SampleApp PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
 # =========================================================================== #
 #                                LINK LIBRARIES                               #
