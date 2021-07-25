@@ -26,4 +26,10 @@ void IApplicationBase::Exit()
     m_ShouldExit = true;
 }
 
+void IApplicationBase::ScheduleExitImmdiate()
+{
+    exit(EXIT_FAILURE);
+}
+
 ETH_NAMESPACE_END
+

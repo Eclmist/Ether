@@ -36,6 +36,9 @@ public:
 public:
     inline bool ShouldExit() const { return m_ShouldExit; }
 
+    inline void ScheduleExit() { m_ShouldExit = true; }
+    void ScheduleExitImmdiate();
+
 protected:
     void Exit();
 
