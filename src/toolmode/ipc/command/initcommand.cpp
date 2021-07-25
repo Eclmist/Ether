@@ -30,7 +30,7 @@ InitCommand::InitCommand(const nlohmann::json& command)
 
 void InitCommand::Execute()
 {
-    EngineCore::GetMainWindow().SetParentWindowHandle(m_Hwnd);
+    EngineCore::SetEditorWindowHandle(m_Hwnd);
 }
 
 InitCommandResponse::InitCommandResponse(void* newWindowHandle)
