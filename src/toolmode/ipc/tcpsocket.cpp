@@ -76,7 +76,7 @@ bool TcpSocket::WaitForConnection()
         return false;
     }
 
-    LogToolmodeInfo("IPC network socket connected on port %d", );
+    LogToolmodeInfo("IPC network socket connected on port %d", m_Port);
     m_HasActiveConnection = true;
     return true;
 }
@@ -108,8 +108,10 @@ std::string TcpSocket::GetNext() const
 
         fullPacket += std::string(bytes, numBytesReceived);
         LogToolmodeInfo("IPC: Received %d bytes - %s", numBytesReceived, bytes);
+        LogToolmodeInfo("IPC: Command still incomplete, waiting for delimiter...", numBytesReceived, bytes);
     }
 
+    LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
     return fullPacket;
 }
 

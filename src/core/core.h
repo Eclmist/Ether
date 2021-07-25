@@ -35,6 +35,7 @@
 #include "system/types.h"
 
 #include "system/platform/platformwindow.h"
+#include "system/platform/platformnotificationtray.h"
 #include "system/platform/win32/keycodes.h"
 
 #include "core/component/transformcomponent.h"
@@ -79,6 +80,7 @@ private:
     IApplicationBase* m_MainApplication;
 
     std::unique_ptr<LoggingManager> m_LoggingManager;
+    std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;
 

@@ -37,19 +37,20 @@ IpcManager::~IpcManager()
 
 uint64_t IpcManager::WaitForEditor()
 {
+    LogToolmodeInfo("Waiting for incoming editor connection");
 
     if (!m_Socket.HasActiveConnection())
         m_Socket.WaitForConnection();
 
-    //TODO: Create proper command handler classes
+    nlohmann::json command;
+    do
+    {
+        std::string initCommand;
+        initCommand = m_Socket.GetNext();
+        command = nlohmann::json::parse(initCommand.c_str());
+    } while (command["command"] != "initialize");
 
-    std::string initCommand = m_Socket.GetNext();
-    if (initCommand == "")
-        return 0;
-
-    auto request = nlohmann::json::parse(initCommand.c_str());
-    AssertToolmode(request["command"] == "initialize", "First command not an initialization command?");
-    return request["args"]["hwnd"];
+    return command["args"]["hwnd"];
 }
 
 void IpcManager::IpcMainThread()

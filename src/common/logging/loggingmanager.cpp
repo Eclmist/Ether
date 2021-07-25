@@ -46,7 +46,7 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
     while (std::getline(ss, individualLine, '\n')) {
         LogEntry entry(individualLine, level, type);
 
-        if (EngineCore::IsInitialized())
+        if (EngineCore::HasInstance())
         {
             EngineCore::GetLoggingManager().AddLog(entry);
             EngineCore::GetLoggingManager().Serialize(entry);

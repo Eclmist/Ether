@@ -21,30 +21,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
-{
-
-class Window : public PlatformWindow
+class PlatformNotificationTray : public NonCopyable
 {
 public:
-    Window();
-    ~Window();
+    PlatformNotificationTray();
+    virtual ~PlatformNotificationTray() = default;
 
-    void Show() override;
-    void Hide() override;
-    void SetFullscreen(bool isFullscreen) override;
-
-private:
-    void RegisterWindowClass() const;
-    void CenterWindowRect();
-    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    RECT m_WindowedRect;
+protected:
+    void* m_Handle;
 };
-
-}
 
 ETH_NAMESPACE_END
 

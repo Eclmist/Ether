@@ -17,33 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "platformnotificationtray.h"
 
 ETH_NAMESPACE_BEGIN
 
-namespace Win32
+PlatformNotificationTray::PlatformNotificationTray()
+    : m_Handle(nullptr)
 {
-
-class Window : public PlatformWindow
-{
-public:
-    Window();
-    ~Window();
-
-    void Show() override;
-    void Hide() override;
-    void SetFullscreen(bool isFullscreen) override;
-
-private:
-    void RegisterWindowClass() const;
-    void CenterWindowRect();
-    static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-private:
-    RECT m_WindowedRect;
-};
-
 }
 
 ETH_NAMESPACE_END
