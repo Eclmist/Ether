@@ -44,6 +44,7 @@ public:
     LogEntry(const std::string& text, LogLevel level, LogType type);
 
     std::string GetText() const;
+    std::string GetFullText() const;
     std::string GetLogLevelPrefix() const;
     std::string GetLogTypePrefix() const;
     std::string GetTimePrefix() const;

@@ -34,20 +34,24 @@ std::string LogEntry::GetText() const
     return GetTimePrefix() + " " + GetLogTypePrefix() + " " + m_Text;
 }
 
+std::string LogEntry::GetFullText() const
+{
+    return GetTimePrefix() + " " + GetLogTypePrefix() + " " + GetLogLevelPrefix() + " " + m_Text;
+}
+
 std::string LogEntry::GetLogLevelPrefix() const
 {
     switch (m_Level)
     {
-    case LogLevel::LOGLEVEL_INFO:
-        return "[  INFO   ]";
     case LogLevel::LOGLEVEL_WARNING:
-        return "[ WARNING ]";
+        return " WARN -";
     case LogLevel::LOGLEVEL_ERROR:
-        return "[  ERROR  ]";
+        return "ERROR -";
     case LogLevel::LOGLEVEL_FATAL:
-        return "[  FATAL  ]";
+        return "FATAL -";
+    case LogLevel::LOGLEVEL_INFO:
     default:
-        return "";
+        return " INFO -";
     }
 }
 
