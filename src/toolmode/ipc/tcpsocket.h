@@ -33,14 +33,15 @@ public:
     inline bool HasActiveConnection() const { return m_HasActiveConnection; }
 
     bool WaitForConnection();
-    std::string GetNext() const;
-    void Send(const std::string& message) const;
+    std::string GetNext();
+    void Send(const std::string& message);
 
 private:
     bool StartWsa();
     bool RequestPlatformSocket();
     bool BindSocket() const;
     bool SetSocketListenState() const;
+    void OnConnectionBroken(int error);
 
 private:
     int m_SocketFd;
@@ -49,6 +50,8 @@ private:
     bool m_IsInitialized;
     bool m_HasActiveConnection;
     SOCKET m_ActiveSocket;
+
+    std::mutex m_SocketMutex;
 };
  
 ETH_NAMESPACE_END

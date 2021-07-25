@@ -20,6 +20,7 @@
 #pragma once
 
 #include "toolmode/ipc/tcpsocket.h"
+#include "toolmode/ipc/command/command.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -30,16 +31,29 @@ public:
     ~IpcManager();
 
 public:
-    uint64_t WaitForEditor();
+    void WaitForEditor();
+
+    std::shared_ptr<RequestCommand> PopRequestCommand();
+    void QueueResponseCommand(std::shared_ptr<ResponseCommand> command);
 
 private:
-    void IpcMainThread();
-    void ParseRequest(const std::string& request) const;
-    void SendResponse() const;
+    std::shared_ptr<ResponseCommand> PopResponseCommand();
+    void QueueRequestCommand(std::shared_ptr<RequestCommand> command);
 
 private:
-    std::thread m_IpcThread;
+    void RequestThread();
+    void ResponseThread();
+    std::shared_ptr<RequestCommand> ParseRequest(const std::string& rawRequest) const;
+
+private:
+    std::thread m_RequestThread;
+    std::thread m_ResponseThread;
+
     TcpSocket m_Socket;
+
+    std::mutex m_RequestMutex, m_ResponseMutex;
+    std::queue<std::shared_ptr<RequestCommand>> m_RequestCommandQueue;
+    std::queue<std::shared_ptr<ResponseCommand>> m_ResponseCommandQueue;
 };
  
 ETH_NAMESPACE_END
