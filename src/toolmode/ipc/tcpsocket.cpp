@@ -120,6 +120,11 @@ void TcpSocket::Send(const std::string& message)
     int result = send(m_ActiveSocket, message.c_str(), message.size(), 0);
     if (result == SOCKET_ERROR)
         OnConnectionBroken(WSAGetLastError());
+
+    // Send delimiter
+    result = send(m_ActiveSocket, "0", 1, 0);
+    if (result == SOCKET_ERROR)
+        OnConnectionBroken(WSAGetLastError());
 }
 
 bool TcpSocket::StartWsa()
