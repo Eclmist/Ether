@@ -181,7 +181,7 @@ void TcpSocket::OnConnectionBroken(int error)
 {
     LogToolmodeError("The IPC connection was closed unexpectedly (%d)", error);
     m_HasActiveConnection = false;
-    EngineCore::GetMainApplication().ScheduleExit();
+    EngineCore::GetMainApplication().ScheduleExitImmdiate();
 }
 
 
