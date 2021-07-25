@@ -18,3 +18,28 @@
 */
 
 #pragma once
+
+ETH_NAMESPACE_BEGIN
+
+namespace Win32
+{
+
+class NotificationTray
+{
+public:
+    NotificationTray();
+    ~NotificationTray();
+
+private:
+    void AddTrayIcon();
+    void RemoveTrayIcon();
+    static LRESULT CALLBACK SysTrayWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+private:
+    HWND m_TrayHwnd;
+};
+
+}
+
+ETH_NAMESPACE_END
+

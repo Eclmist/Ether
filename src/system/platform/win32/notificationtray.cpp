@@ -16,3 +16,107 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "notificationtray.h"
+#include <shellapi.h>
+
+ETH_NAMESPACE_BEGIN
+
+namespace Win32
+{
+
+#define NOTIFICATION_TRAY_ICON_MSG      (WM_USER + 0x100)
+#define NOTIFICATION_TRAY_UID           1
+#define IDM_EXIT                        100
+
+NotificationTray::NotificationTray()
+{
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = &SysTrayWndProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = TEXT("Ether::NotificationTray");
+    AssertWin32(RegisterClass(&wc) != 0, "Failed to register notification tray Window Class");
+
+    m_TrayHwnd = CreateWindowEx(0, TEXT("Ether::NotificationTray"),
+        NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, GetModuleHandle(NULL), NULL);
+    
+    if (!m_TrayHwnd)
+    {
+        LogWin32Error("Failed to create a Win32 handle for the notification tray icon");
+        return;
+    }
+
+    AddTrayIcon();
+}
+
+NotificationTray::~NotificationTray()
+{
+    RemoveTrayIcon();
+    DestroyWindow(m_TrayHwnd);
+}
+
+void NotificationTray::AddTrayIcon()
+{
+    NOTIFYICONDATA nid = {};
+    nid.cbSize = sizeof(nid);
+    nid.hWnd = m_TrayHwnd;
+    nid.uID = NOTIFICATION_TRAY_UID;
+    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    nid.uCallbackMessage = NOTIFICATION_TRAY_ICON_MSG;
+    nid.uVersion = NOTIFYICON_VERSION_4;
+    nid.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ENGINEICON));
+
+    if (Shell_NotifyIcon(NIM_ADD, &nid))
+        Shell_NotifyIcon(NIM_SETVERSION, &nid);
+}
+
+void NotificationTray::RemoveTrayIcon()
+{
+    NOTIFYICONDATA nid = {};
+    nid.cbSize = sizeof(nid);
+    nid.hWnd = m_TrayHwnd;
+    nid.uID = NOTIFICATION_TRAY_UID;
+
+    Shell_NotifyIcon(NIM_DELETE, &nid);
+}
+
+LRESULT CALLBACK NotificationTray::SysTrayWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case NOTIFICATION_TRAY_ICON_MSG:
+    {
+        switch (LOWORD(lParam))
+        {
+        case NIN_SELECT:
+        case NIN_KEYSELECT:
+        case WM_CONTEXTMENU:
+        {
+            POINT pt;
+            GetCursorPos(&pt);
+            HMENU hmenu = CreatePopupMenu();
+            InsertMenu(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, L"Exit (Debug)");
+            SetForegroundWindow(hWnd);
+            int cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
+            PostMessage(hWnd, WM_NULL, 0, 0);
+            break;
+        }
+        }
+
+        return 0;
+    }
+
+    case WM_COMMAND:
+        if (lParam == 0 && LOWORD(wParam) == IDM_EXIT)
+            EngineCore::GetMainApplication().ScheduleExit();
+
+        break;
+    }
+
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+}
+
+ETH_NAMESPACE_END
+

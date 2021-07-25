@@ -20,6 +20,7 @@
 #pragma once
 
 #include "system/platform/platformwindow.h"
+#include "system/platform/win32/notificationtray.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -44,6 +45,7 @@ private:
 
 private:
     RECT m_WindowedRect;
+    ETH_TOOLONLY(NotificationTray m_NotificationTray;)
 };
 
 }
