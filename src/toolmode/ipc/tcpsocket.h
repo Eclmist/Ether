@@ -42,6 +42,7 @@ private:
     bool BindSocket() const;
     bool SetSocketListenState() const;
     void OnConnectionBroken(int error);
+    void SendDelimiter();
 
 private:
     int m_SocketFd;

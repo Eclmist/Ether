@@ -28,6 +28,9 @@ IpcManager::IpcManager()
     LogToolmodeInfo("Initializing IPC Manager");
     m_RequestThread = std::thread(&IpcManager::RequestThread, this);
     m_ResponseThread = std::thread(&IpcManager::ResponseThread, this);
+
+    SetThreadPriority(m_RequestThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
+    SetThreadPriority(m_ResponseThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
 }
 
 IpcManager::~IpcManager()
