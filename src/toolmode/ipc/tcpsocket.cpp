@@ -24,6 +24,7 @@ ETH_NAMESPACE_BEGIN
 // Arbitrary max buffer size. Might be worth profiling the average size of requests from
 // Cauldron to optimize this value.
 #define MAX_BUFFER_SIZE         512
+#define TCP_FAILED(res)         (res == 0 || res == SOCKET_ERROR)
 
 TcpSocket::TcpSocket()
     : m_SocketFd(0)
@@ -98,8 +99,11 @@ std::string TcpSocket::GetNext()
         memset(bytes, 0, sizeof(bytes));
         int numBytesReceived = recv(m_ActiveSocket, bytes, sizeof(bytes), 0);
         
-        if (numBytesReceived == SOCKET_ERROR)
+        if (TCP_FAILED(numBytesReceived))
+        {
             OnConnectionBroken(WSAGetLastError());
+            return "";
+        }
 
         if (numBytesReceived == 1 && bytes[0] == NULL)
             break;
@@ -118,13 +122,14 @@ void TcpSocket::Send(const std::string& message)
     std::lock_guard guard(m_SocketMutex);
 
     int result = send(m_ActiveSocket, message.c_str(), message.size(), 0);
-    if (result == SOCKET_ERROR)
-        OnConnectionBroken(WSAGetLastError());
 
-    // Send delimiter
-    result = send(m_ActiveSocket, "0", 1, 0);
-    if (result == SOCKET_ERROR)
+    if (TCP_FAILED(result))
+    {
         OnConnectionBroken(WSAGetLastError());
+        return;
+    }
+
+    SendDelimiter();
 }
 
 bool TcpSocket::StartWsa()
@@ -179,10 +184,24 @@ bool TcpSocket::SetSocketListenState() const
 
 void TcpSocket::OnConnectionBroken(int error)
 {
-    LogToolmodeError("The IPC connection was closed unexpectedly (%d)", error);
-    m_HasActiveConnection = false;
+    if (error == 0)
+    {
+        LogToolmodeInfo("The IPC connection was closed by the remote host");
+        m_HasActiveConnection = false;
+        EngineCore::GetMainApplication().ScheduleExit();
+        return;
+    }
+
+    LogToolmodeError("The IPC connection was forcibly closed by the remote host (%d)", error);
     EngineCore::GetMainApplication().ScheduleExitImmdiate();
 }
 
+void TcpSocket::SendDelimiter()
+{
+    int result = send(m_ActiveSocket, "0", 1, 0);
+    if (TCP_FAILED(result))
+        OnConnectionBroken(WSAGetLastError());
+}
 
 ETH_NAMESPACE_END
+
