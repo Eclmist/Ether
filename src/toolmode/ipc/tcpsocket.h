@@ -51,8 +51,6 @@ private:
     bool m_IsInitialized;
     bool m_HasActiveConnection;
     SOCKET m_ActiveSocket;
-
-    std::mutex m_SocketMutex;
 };
  
 ETH_NAMESPACE_END

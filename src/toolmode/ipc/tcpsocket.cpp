@@ -84,8 +84,6 @@ bool TcpSocket::WaitForConnection()
 
 std::string TcpSocket::GetNext()
 {
-    std::lock_guard guard(m_SocketMutex);
-
     if (!m_HasActiveConnection)
     {
         LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
@@ -119,8 +117,7 @@ std::string TcpSocket::GetNext()
 
 void TcpSocket::Send(const std::string& message)
 {
-    std::lock_guard guard(m_SocketMutex);
-
+    LogToolmodeInfo("Sending response: %s", message.c_str());
     int result = send(m_ActiveSocket, message.c_str(), message.size(), 0);
 
     if (TCP_FAILED(result))
