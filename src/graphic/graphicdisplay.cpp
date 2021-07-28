@@ -24,8 +24,8 @@ ETH_NAMESPACE_BEGIN
 DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 GraphicDisplay::GraphicDisplay()
-    : m_FrameBufferWidth(1920)
-    , m_FrameBufferHeight(1080)
+    : m_FrameBufferWidth(EngineCore::GetEngineConfig().GetClientWidth())
+    , m_FrameBufferHeight(EngineCore::GetEngineConfig().GetClientHeight())
     , m_BufferingMode(BufferingMode::BUFFERINGMODE_TRIPLE)
     , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
     , m_Viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight))
