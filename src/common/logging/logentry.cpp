@@ -75,7 +75,7 @@ std::string LogEntry::GetLogTypePrefix() const
 
 std::string LogEntry::GetTimePrefix() const
 {
-    return "[ " + FormatTime(m_Time) + " ]";
+    return "[ " + FormatTime(m_Time, "%Y/%m/%d %X") + " ]";
 }
 
 ETH_NAMESPACE_END

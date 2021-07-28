@@ -24,7 +24,7 @@ ETH_NAMESPACE_BEGIN
 
 namespace GraphicLinkSpace
 {
-    HardCodedRenderPass g_HardCodedRenderPass;
+    HardCodedRenderPass g_HardCodedRenderPass("Test Render Pass");
 }
 
 void GraphicScheduler::BuildSchedule()
