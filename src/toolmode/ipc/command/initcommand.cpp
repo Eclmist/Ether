@@ -43,7 +43,7 @@ std::string InitCommandResponse::GetResponseData() const
     nlohmann::json command = {
         { "command", "initialize" },
         { "args", {
-            { "childhwnd", (uint16_t)m_Hwnd }
+            { "childhwnd", (uint64_t)m_Hwnd }
         }}
     };
 
