@@ -79,3 +79,4 @@ std::string LogEntry::GetTimePrefix() const
 }
 
 ETH_NAMESPACE_END
+
