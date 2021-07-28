@@ -198,7 +198,7 @@ void TcpSocket::OnConnectionBroken(int error)
 
 void TcpSocket::SendDelimiter()
 {
-    int result = send(m_ActiveSocket, "0", 1, 0);
+    int result = send(m_ActiveSocket, "\0", 1, 0);
     if (TCP_FAILED(result))
         OnConnectionBroken(WSAGetLastError());
 }
