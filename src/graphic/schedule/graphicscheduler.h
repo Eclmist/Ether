@@ -19,10 +19,23 @@
 
 #pragma once
 
+#include "graphic/schedule/renderpass/renderpass.h"
+
 ETH_NAMESPACE_BEGIN
 
-class GraphicScheduler : NonCopyable
+class GraphicScheduler : public NonCopyable
 {
+public:
+    GraphicScheduler() = default;
+    ~GraphicScheduler() = default;
+
+    void BuildSchedule();
+    void ScheduleRenderPasses();
+    void Render(GraphicContext& context);
+
+private:
+    std::vector<RenderPass*> m_RegisteredRenderPasses;
+    std::vector<RenderPass*> m_OrderedRenderPasses;
 
 };
 
