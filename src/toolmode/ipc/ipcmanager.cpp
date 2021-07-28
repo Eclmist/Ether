@@ -114,7 +114,6 @@ void IpcManager::ResponseThread()
         if (command == nullptr)
             continue;
 
-        LogToolmodeInfo("Sending response: %s", command->GetResponseData().c_str());
         m_Socket.Send(command->GetResponseData());
     }
 }
@@ -126,6 +125,8 @@ std::shared_ptr<RequestCommand> IpcManager::ParseRequest(const std::string& rawR
 
     if (commandType == "initialize")
         return std::make_shared<InitCommand>(request);
+
+    return nullptr;
 }
 
 ETH_NAMESPACE_END
