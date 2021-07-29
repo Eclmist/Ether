@@ -32,7 +32,7 @@ public:
 public:
     inline bool HasActiveConnection() const { return m_HasActiveConnection; }
 
-    bool WaitForConnection();
+    void WaitForConnection();
     std::string GetNext();
     void Send(const std::string& message);
 
@@ -41,14 +41,13 @@ private:
     bool RequestPlatformSocket();
     bool BindSocket() const;
     bool SetSocketListenState() const;
-    void OnConnectionBroken(int error);
     void SendDelimiter();
 
 private:
     int m_SocketFd;
     int m_Port;
     sockaddr_in m_Address;
-    bool m_IsInitialized;
+    bool m_IsSocketListening;
     bool m_HasActiveConnection;
     SOCKET m_ActiveSocket;
 };

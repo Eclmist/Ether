@@ -32,7 +32,9 @@ public:
 
     void Show() override;
     void Hide() override;
+    void SetSize(uint32_t width, uint32_t height) override;
     void SetFullscreen(bool isFullscreen) override;
+    void SetParentWindowHandle(void* parentHandle) override;
 
 private:
     void RegisterWindowClass() const;

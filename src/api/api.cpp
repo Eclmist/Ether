@@ -34,6 +34,8 @@ bool UpdateEngine()
     EngineCore::GetMainApplication().OnRender(renderArgs);
     GraphicCore::Render();
 
+    ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingRequests());
+
     return !EngineCore::GetMainApplication().ShouldExit();
 }
 
@@ -64,7 +66,7 @@ int Start(IApplicationBase& app, int cmdShow)
     GraphicCore::Initialize();
 
     EngineCore::LoadContent();
-    EngineCore::GetMainWindow().Show();
+    ETH_ENGINEONLY(EngineCore::GetMainWindow().Show());
 
     WindowsUpdateLoop();
 

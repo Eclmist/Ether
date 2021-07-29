@@ -73,12 +73,10 @@ public:
     static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
     static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
+    ETH_TOOLONLY(static IpcManager& GetIpcManager() { return *Instance().m_IpcManager; })
 
     static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
     static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
-
-    ETH_TOOLONLY(static void* GetEditorWindowHandle() { return Instance().m_EditorWindowHandle; })
-    ETH_TOOLONLY(static void SetEditorWindowHandle(void* handle) { Instance().m_EditorWindowHandle = handle; })
 
 private:
     IApplicationBase* m_MainApplication;
@@ -87,17 +85,13 @@ private:
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;
     std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
-
     ETH_TOOLONLY(std::unique_ptr<IpcManager> m_IpcManager;)
 
     CommandLineOptions m_CommandLineOptions;
     EngineConfig m_EngineConfig;
 
-
 private:
     bool m_IsInitialized;
-    ETH_TOOLONLY(void* m_EditorWindowHandle;)
 };
 
 ETH_NAMESPACE_END
-

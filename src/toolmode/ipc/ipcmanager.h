@@ -30,26 +30,26 @@ public:
     IpcManager();
     ~IpcManager();
 
-public:
-    void WaitForEditor();
-
-    std::shared_ptr<RequestCommand> PopRequestCommand();
+    void ProcessPendingRequests();
     void QueueResponseCommand(std::shared_ptr<ResponseCommand> command);
 
 private:
-    std::shared_ptr<ResponseCommand> PopResponseCommand();
     void QueueRequestCommand(std::shared_ptr<RequestCommand> command);
+    std::shared_ptr<ResponseCommand> PopResponseCommand();
+
+    void ClearResponseQueue();
 
 private:
     void RequestThread();
     void ResponseThread();
+    void TryExecute(const std::string& rawRequest) const;
     std::shared_ptr<RequestCommand> ParseRequest(const std::string& rawRequest) const;
 
 private:
+    TcpSocket m_Socket;
+
     std::thread m_RequestThread;
     std::thread m_ResponseThread;
-
-    TcpSocket m_Socket;
 
     std::mutex m_RequestMutex, m_ResponseMutex;
     std::queue<std::shared_ptr<RequestCommand>> m_RequestCommandQueue;
