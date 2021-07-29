@@ -23,28 +23,17 @@
 
 ETH_NAMESPACE_BEGIN
 
-class InitCommand : public RequestCommand
+class ResizeCommand : public RequestCommand
 {
 public:
-    InitCommand(const nlohmann::json& command);
-    ~InitCommand() = default;
+    ResizeCommand(const nlohmann::json& command);
+    ~ResizeCommand() = default;
 
     void Execute() override;
 
 private:
-    void* m_ParentWindowHandle;
-};
-
-class InitCommandResponse : public ResponseCommand
-{
-public:
-    InitCommandResponse(void* engineWindowHandle);
-    ~InitCommandResponse() = default;
-
-    std::string GetResponseData() const override;
-
-private:
-    void* m_EngineWindowHandle;
+    uint32_t m_Width;
+    uint32_t m_Height;
 };
 
 ETH_NAMESPACE_END

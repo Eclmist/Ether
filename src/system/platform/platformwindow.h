@@ -29,12 +29,14 @@ public:
 
     virtual void Show() = 0;
     virtual void Hide() = 0;
+    virtual void SetSize(uint32_t width, uint32_t height) = 0;
     virtual void SetFullscreen(bool isFullscreen) = 0;
+    virtual void SetParentWindowHandle(void* parentHandle) = 0;
+
     inline bool GetFullscreen() const { return m_IsFullscreen; }
 
     inline void* GetWindowHandle() const { return m_WindowHandle; }
     inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
-    inline void SetParentWindowHandle(void* handle) { m_ParentWindowHandle = handle; }
 
 protected:
     bool m_IsFullscreen;

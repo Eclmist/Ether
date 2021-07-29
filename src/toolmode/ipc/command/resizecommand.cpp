@@ -19,37 +19,19 @@
 
 #pragma once
 
-#include "initcommand.h"
+#include "resizecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-InitCommand::InitCommand(const nlohmann::json & command)
-    : m_ParentWindowHandle((void*)(uint64_t)command["args"]["hwnd"]) {
-}
-
-void InitCommand::Execute()
-{
-    EngineCore::GetMainWindow().SetParentWindowHandle(m_ParentWindowHandle);
-    EngineCore::GetMainWindow().Show();
-    auto initResponse = std::make_shared<InitCommandResponse>(EngineCore::GetMainWindow().GetWindowHandle());
-    EngineCore::GetIpcManager().QueueResponseCommand(initResponse);
-}
-
-InitCommandResponse::InitCommandResponse(void* engineWindowHandle)
-    : m_EngineWindowHandle(engineWindowHandle)
+ResizeCommand::ResizeCommand(const nlohmann::json & command)
+    : m_Width((uint32_t)command["args"]["width"])
+    , m_Height((uint32_t)command["args"]["height"])
 {
 }
 
-std::string InitCommandResponse::GetResponseData() const
+void ResizeCommand::Execute()
 {
-    nlohmann::json command = {
-        { "command", "initialize" },
-        { "args", {
-            { "childhwnd", (uint64_t)m_EngineWindowHandle }
-        }}
-    };
-
-    return command.dump();
+    EngineCore::GetMainWindow().SetSize(m_Width, m_Height);
 }
 
 ETH_NAMESPACE_END

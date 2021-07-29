@@ -28,27 +28,17 @@ ETH_NAMESPACE_BEGIN
 
 void EngineCore::Initialize(IApplicationBase& app)
 {
-    // Logger needs to be the very first thing to be initialized, as logs that were made
-    // prior might be lost if the engine stalls or crashes before initialization!
-    Instance().m_LoggingManager = std::make_unique<LoggingManager>();
-
     app.Initialize();
     Instance().m_MainApplication = &app;
+    Instance().m_LoggingManager = std::make_unique<LoggingManager>();
+    Instance().m_MainWindow = std::make_unique<Win32::Window>();
+    Instance().m_ActiveWorld = std::make_unique<World>();
 
 #ifdef ETH_TOOLMODE
     Instance().m_NotificationTray = std::make_unique<Win32::NotificationTray>();
     Instance().m_IpcManager = std::make_unique<IpcManager>();
-    Instance().m_IpcManager->WaitForEditor();
 #endif
 
-    Instance().m_MainWindow = std::make_unique<Win32::Window>();
-
-#ifdef ETH_TOOLMODE
-    auto initResponse = std::make_shared<InitCommandResponse>((void*)Instance().m_MainWindow->GetWindowHandle());
-    Instance().m_IpcManager->QueueResponseCommand(initResponse);
-#endif
-
-    Instance().m_ActiveWorld = std::make_unique<World>();
     Instance().m_IsInitialized = true;
 }
 

@@ -25,11 +25,12 @@ ETH_NAMESPACE_BEGIN
 // Cauldron to optimize this value.
 #define MAX_BUFFER_SIZE         512
 #define TCP_FAILED(res)         (res == 0 || res == SOCKET_ERROR)
+#define INVALID_REQUEST         ""
 
 TcpSocket::TcpSocket()
     : m_SocketFd(0)
     , m_Port(EngineCore::GetCommandLineOptions().GetToolmodePort())
-    , m_IsInitialized(false)
+    , m_IsSocketListening(false)
     , m_HasActiveConnection(false)
     , m_ActiveSocket(INVALID_SOCKET)
 {
@@ -51,7 +52,7 @@ TcpSocket::TcpSocket()
     if (!SetSocketListenState())
         return;
 
-    m_IsInitialized = true;
+    m_IsSocketListening = true;
     LogToolmodeInfo("IPC network socket listening on port %d", m_Port);
 }
 
@@ -61,25 +62,25 @@ TcpSocket::~TcpSocket()
     WSACleanup();
 }
 
-bool TcpSocket::WaitForConnection()
+void TcpSocket::WaitForConnection()
 {
-    if (!m_IsInitialized)
-        return false;
+    if (!m_IsSocketListening)
+        return;
 
     if (m_HasActiveConnection)
-        return true;
+        return;
 
     m_ActiveSocket = accept(m_SocketFd, nullptr, nullptr);
 
     if (m_ActiveSocket == INVALID_SOCKET)
     {
         LogToolmodeFatal("Failed to accept incoming IPC connection (%d)", WSAGetLastError());
-        return false;
+        return;
     }
 
     LogToolmodeInfo("IPC network socket connected on port %d", m_Port);
     m_HasActiveConnection = true;
-    return true;
+    return;
 }
 
 std::string TcpSocket::GetNext()
@@ -87,7 +88,7 @@ std::string TcpSocket::GetNext()
     if (!m_HasActiveConnection)
     {
         LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
-        return "";
+        return INVALID_REQUEST;
     }
 
     std::string fullPacket;
@@ -99,8 +100,8 @@ std::string TcpSocket::GetNext()
         
         if (TCP_FAILED(numBytesReceived))
         {
-            OnConnectionBroken(WSAGetLastError());
-            return "";
+            m_HasActiveConnection = false;
+            return INVALID_REQUEST;
         }
 
         if (numBytesReceived == 1 && bytes[0] == NULL)
@@ -122,7 +123,7 @@ void TcpSocket::Send(const std::string& message)
 
     if (TCP_FAILED(result))
     {
-        OnConnectionBroken(WSAGetLastError());
+        m_HasActiveConnection = false;
         return;
     }
 
@@ -179,25 +180,11 @@ bool TcpSocket::SetSocketListenState() const
     return true;
 }
 
-void TcpSocket::OnConnectionBroken(int error)
-{
-    if (error == 0)
-    {
-        LogToolmodeInfo("The IPC connection was closed by the remote host");
-        m_HasActiveConnection = false;
-        EngineCore::GetMainApplication().ScheduleExit();
-        return;
-    }
-
-    LogToolmodeError("The IPC connection was forcibly closed by the remote host (%d)", error);
-    EngineCore::GetMainApplication().ScheduleExitImmdiate();
-}
-
 void TcpSocket::SendDelimiter()
 {
     int result = send(m_ActiveSocket, "\0", 1, 0);
     if (TCP_FAILED(result))
-        OnConnectionBroken(WSAGetLastError());
+        m_HasActiveConnection = false;
 }
 
 ETH_NAMESPACE_END

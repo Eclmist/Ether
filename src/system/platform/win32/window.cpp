@@ -28,7 +28,7 @@ ETH_NAMESPACE_BEGIN
 #define ETH_WINDOWCLASS_STYLE               CS_HREDRAW | CS_VREDRAW
 
 #ifdef ETH_TOOLMODE
-#define ETH_WINDOW_STYLE                    WS_CHILD
+#define ETH_WINDOW_STYLE                    WS_POPUP
 #else
 #define ETH_WINDOW_STYLE                    WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
 #endif
@@ -39,6 +39,7 @@ namespace Win32
 {
 
 Window::Window()
+    : m_WindowedRect({0, 0, 1920, 1080})
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -46,14 +47,11 @@ Window::Window()
     // be rendered in a DPI sensitive fashion.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     RegisterWindowClass();
-    CenterWindowRect();
-    AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE);
-
-    ETH_TOOLONLY(m_ParentWindowHandle = EngineCore::GetEditorWindowHandle());
-    ETH_TOOLONLY(AssertWin32(m_ParentWindowHandle != nullptr, "Toolmode cannot be run without a parent HWND"));
+    ETH_ENGINEONLY(CenterWindowRect());
+    ETH_ENGINEONLY(AdjustWindowRect(&m_WindowedRect, ETH_WINDOW_STYLE, FALSE));
 
     m_WindowHandle = (void*)CreateWindowExW(
-        NULL,
+        WS_EX_NOREDIRECTIONBITMAP,
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         EngineCore::GetEngineConfig().GetClientName().c_str(),
         ETH_WINDOW_STYLE,
@@ -61,7 +59,7 @@ Window::Window()
         m_WindowedRect.top,
         m_WindowedRect.right - m_WindowedRect.left,
         m_WindowedRect.bottom - m_WindowedRect.top,
-        (HWND)m_ParentWindowHandle,
+        nullptr,
         nullptr,
         GetModuleHandle(NULL),
         this
@@ -84,6 +82,13 @@ void Window::Show()
 void Window::Hide()
 {
     ShowWindow((HWND)m_WindowHandle, SW_HIDE);
+}
+
+void Window::SetSize(uint32_t width, uint32_t height)
+{
+    m_WindowedRect.right = m_WindowedRect.left + width;
+    m_WindowedRect.bottom = m_WindowedRect.top + height;
+    MoveWindow((HWND)m_WindowHandle, m_WindowedRect.left, m_WindowedRect.top, width, height, true);
 }
 
 void Window::SetFullscreen(bool isFullscreen)
@@ -109,6 +114,13 @@ void Window::SetFullscreen(bool isFullscreen)
     }
 }
 
+void Window::SetParentWindowHandle(void* parentHandle)
+{
+    m_ParentWindowHandle = parentHandle;
+    SetParent((HWND)m_WindowHandle, (HWND)m_ParentWindowHandle);
+    SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, m_ParentWindowHandle == nullptr ? ETH_WINDOW_STYLE : WS_CHILD);
+}
+
 void Window::RegisterWindowClass() const
 {
     WNDCLASSEXW windowClass;
@@ -131,12 +143,6 @@ void Window::RegisterWindowClass() const
 
 void Window::CenterWindowRect()
 {
-#ifdef ETH_TOOLMODE
-    m_WindowedRect.left = 0;
-    m_WindowedRect.top = 0;
-    m_WindowedRect.right = EngineCore::GetEngineConfig().GetClientWidth();
-    m_WindowedRect.bottom = EngineCore::GetEngineConfig().GetClientHeight();
-#else
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
@@ -144,7 +150,6 @@ void Window::CenterWindowRect()
     m_WindowedRect.top = (screenHeight / 2 - EngineCore::GetEngineConfig().GetClientHeight() / 2);
     m_WindowedRect.right = m_WindowedRect.left + EngineCore::GetEngineConfig().GetClientWidth();
     m_WindowedRect.bottom = m_WindowedRect.top + EngineCore::GetEngineConfig().GetClientHeight();
-#endif
 }
 
 LRESULT CALLBACK Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -213,6 +218,8 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_ERASEBKGND:
+        return 1;
     default:
         return DefWindowProcW(hWnd, msg, wParam, lParam);
     }

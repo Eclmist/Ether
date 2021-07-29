@@ -19,7 +19,9 @@
 
 #include "ipcmanager.h"
 #include "json/json.hpp"
+
 #include "command/initcommand.h"
+#include "command/resizecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -39,37 +41,32 @@ IpcManager::~IpcManager()
     m_ResponseThread.join();
 }
 
-void IpcManager::WaitForEditor()
-{
-    LogToolmodeInfo("Waiting for incoming editor connection");
-    m_Socket.WaitForConnection();
-    while (true)
-    {
-        std::shared_ptr<RequestCommand> initCommand = PopRequestCommand();
-        if (initCommand == nullptr)
-            continue;
-
-        initCommand->Execute();
-        break;
-    }
-}
-
-std::shared_ptr<RequestCommand> IpcManager::PopRequestCommand()
+void IpcManager::ProcessPendingRequests()
 {
     std::lock_guard guard(m_RequestMutex);
-
-    if (m_RequestCommandQueue.empty())
-        return nullptr;
-
-    std::shared_ptr<RequestCommand> command = m_RequestCommandQueue.front();
-    m_RequestCommandQueue.pop();
-    return command;
+    while (!m_RequestCommandQueue.empty())
+    {
+        m_RequestCommandQueue.front()->Execute();
+        m_RequestCommandQueue.pop();
+    }
 }
 
 void IpcManager::QueueResponseCommand(std::shared_ptr<ResponseCommand> command)
 {
+    if (command == nullptr)
+        return;
+
     std::lock_guard guard(m_ResponseMutex);
     m_ResponseCommandQueue.push(command);
+}
+
+void IpcManager::QueueRequestCommand(std::shared_ptr<RequestCommand> command)
+{
+    if (command == nullptr)
+        return;
+
+    std::lock_guard guard(m_RequestMutex);
+    m_RequestCommandQueue.push(command);
 }
 
 std::shared_ptr<ResponseCommand> IpcManager::PopResponseCommand()
@@ -84,10 +81,11 @@ std::shared_ptr<ResponseCommand> IpcManager::PopResponseCommand()
     return command;
 }
 
-void IpcManager::QueueRequestCommand(std::shared_ptr<RequestCommand> command)
+void IpcManager::ClearResponseQueue()
 {
-    std::lock_guard guard(m_RequestMutex);
-    m_RequestCommandQueue.push(command);
+    std::lock_guard guard(m_ResponseMutex);
+    while (!m_ResponseCommandQueue.empty())
+        m_ResponseCommandQueue.pop();
 }
 
 void IpcManager::RequestThread()
@@ -95,11 +93,17 @@ void IpcManager::RequestThread()
     while (true)
     {
         if (!m_Socket.HasActiveConnection())
-            continue;
+        {
+            ClearResponseQueue();
+            EngineCore::GetMainWindow().SetParentWindowHandle(nullptr);
+            EngineCore::GetMainWindow().Hide();
+            LogToolmodeInfo("Waiting for incoming editor connection");
+            m_Socket.WaitForConnection();
+        }
 
-        std::string next = m_Socket.GetNext();
-        std::shared_ptr<RequestCommand> command = ParseRequest(next);
-        QueueRequestCommand(command);
+        auto next = m_Socket.GetNext();
+        auto request = ParseRequest(next);
+        QueueRequestCommand(request);
     }
 }
 
@@ -118,13 +122,29 @@ void IpcManager::ResponseThread()
     }
 }
 
+void IpcManager::TryExecute(const std::string& rawRequest) const
+{
+    std::shared_ptr<RequestCommand> command = ParseRequest(rawRequest);
+    if (command != nullptr)
+        command->Execute();
+}
+
 std::shared_ptr<RequestCommand> IpcManager::ParseRequest(const std::string& rawRequest) const
 {
-    nlohmann::json request = nlohmann::json::parse(rawRequest);
-    std::string commandType = request["command"];
+    try 
+    {
+        nlohmann::json request = nlohmann::json::parse(rawRequest);
+        std::string commandType = request["command"];
 
-    if (commandType == "initialize")
-        return std::make_shared<InitCommand>(request);
+        if (commandType == "initialize")
+            return std::make_shared<InitCommand>(request);
+        if (commandType == "resize")
+            return std::make_shared<ResizeCommand>(request);
+    }
+    catch (...) 
+    {
+        LogToolmodeWarning("Received invalid request from connected editor: \"%s\"", rawRequest.c_str());
+    }
 
     return nullptr;
 }
