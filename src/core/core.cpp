@@ -20,10 +20,6 @@
 #include "system/platform/win32/window.h"
 #include "system/platform/win32/notificationtray.h"
 
-#ifdef ETH_TOOLMODE
-#include "toolmode/ipc/command/initcommand.h"
-#endif
-
 ETH_NAMESPACE_BEGIN
 
 void EngineCore::Initialize(IApplicationBase& app)

@@ -19,38 +19,35 @@
 
 #pragma once
 
-#include "initcommand.h"
+#include "command.h"
+#include "sendablecommand.h"
+#include "commandfactory.h"
 
 ETH_NAMESPACE_BEGIN
 
-InitCommand::InitCommand(const nlohmann::json & command)
-    : m_ParentWindowHandle((void*)(uint64_t)command["args"]["hwnd"]) {
-}
-
-void InitCommand::Execute()
+class InitializeCommand : public Command
 {
-    EngineCore::GetMainWindow().SetParentWindowHandle(m_ParentWindowHandle);
-    EngineCore::GetMainWindow().Show();
-    auto initResponse = std::make_shared<InitCommandResponse>(EngineCore::GetMainWindow().GetWindowHandle());
-    EngineCore::GetIpcManager().QueueResponseCommand(initResponse);
-}
+public:
+    InitializeCommand(const CommandData& data);
+    ~InitializeCommand() = default;
 
-InitCommandResponse::InitCommandResponse(void* engineWindowHandle)
-    : m_EngineWindowHandle(engineWindowHandle)
+    void Execute() override;
+
+private:
+    void* m_ParentWindowHandle;
+};
+
+class InitCommandResponse : public SendableCommand
 {
-}
+public:
+    InitCommandResponse(void* engineWindowHandle);
+    ~InitCommandResponse() = default;
 
-std::string InitCommandResponse::GetResponseData() const
-{
-    nlohmann::json command = {
-        { "command", "initialize" },
-        { "args", {
-            { "childhwnd", (uint64_t)m_EngineWindowHandle }
-        }}
-    };
+    std::string GetSendableData() const override;
 
-    return command.dump();
-}
+private:
+    void* m_EngineWindowHandle;
+};
 
 ETH_NAMESPACE_END
 

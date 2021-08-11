@@ -19,19 +19,38 @@
 
 #pragma once
 
+#include "commandfactory.h"
+
+#include "initializecommand.h"
 #include "resizecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-ResizeCommand::ResizeCommand(const CommandData& data)
-    : m_Width((uint32_t)data["args"]["width"])
-    , m_Height((uint32_t)data["args"]["height"])
+#define REGISTER_COMMAND(id, T) RegisterCommand(id, [](const CommandData& c) { return std::make_unique<T>(c); })
+
+CommandFactory::CommandFactory()
 {
+    REGISTER_COMMAND("initialize", InitializeCommand);
+    REGISTER_COMMAND("resize", ResizeCommand);
 }
 
-void ResizeCommand::Execute()
+std::unique_ptr<Command> CommandFactory::CreateCommand(const std::string& commandID, const CommandData& data) const
 {
-    EngineCore::GetMainWindow().SetSize(m_Width, m_Height);
+    if (m_FactoryMap.find(commandID) == m_FactoryMap.end())
+        return nullptr;
+
+    return (m_FactoryMap.find(commandID)->second)(data);
+}
+
+void CommandFactory::RegisterCommand(const std::string& commandID, FactoryFunction factoryFunction)
+{
+    if (m_FactoryMap.find(commandID) != m_FactoryMap.end())
+    {
+        LogToolmodeError("The command %s has already been registered", commandID);
+        return;
+    }
+
+    m_FactoryMap[commandID] = factoryFunction;
 }
 
 ETH_NAMESPACE_END

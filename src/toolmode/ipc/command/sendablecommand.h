@@ -20,22 +20,17 @@
 #pragma once
 
 #include "command.h"
-#include "sendablecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-class ResizeCommand : public Command
+class SendableCommand : public Command
 {
 public:
-    ResizeCommand(const CommandData& data);
-    ~ResizeCommand() = default;
+    SendableCommand() = default;
+    ~SendableCommand() = default;
 
     void Execute() override;
-
-private:
-    uint32_t m_Width;
-    uint32_t m_Height;
+    virtual std::string GetSendableData() const = 0;
 };
 
 ETH_NAMESPACE_END
-

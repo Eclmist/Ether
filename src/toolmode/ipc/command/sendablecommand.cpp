@@ -19,33 +19,13 @@
 
 #pragma once
 
-#include "command.h"
+#include "sendablecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-class InitCommand : public RequestCommand
+void SendableCommand::Execute()
 {
-public:
-    InitCommand(const nlohmann::json& command);
-    ~InitCommand() = default;
-
-    void Execute() override;
-
-private:
-    void* m_ParentWindowHandle;
-};
-
-class InitCommandResponse : public ResponseCommand
-{
-public:
-    InitCommandResponse(void* engineWindowHandle);
-    ~InitCommandResponse() = default;
-
-    std::string GetResponseData() const override;
-
-private:
-    void* m_EngineWindowHandle;
-};
+    EngineCore::GetIpcManager().QueueMessage(GetSendableData());
+}
 
 ETH_NAMESPACE_END
-
