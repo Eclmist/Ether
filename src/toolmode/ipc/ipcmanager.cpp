@@ -20,81 +20,78 @@
 #include "ipcmanager.h"
 #include "json/json.hpp"
 
-#include "command/initcommand.h"
-#include "command/resizecommand.h"
+#include "command/commandfactory.h"
 
 ETH_NAMESPACE_BEGIN
 
 IpcManager::IpcManager()
 {
     LogToolmodeInfo("Initializing IPC Manager");
-    m_RequestThread = std::thread(&IpcManager::RequestThread, this);
-    m_ResponseThread = std::thread(&IpcManager::ResponseThread, this);
+    m_IncomingMessageHandlerThread = std::thread(&IpcManager::IncomingMessageHandler, this);
+    m_OutgoingMessageHandlerThread = std::thread(&IpcManager::OutgoingMessageHandler, this);
 
-    SetThreadPriority(m_RequestThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
-    SetThreadPriority(m_ResponseThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
+    SetThreadPriority(m_IncomingMessageHandlerThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
+    SetThreadPriority(m_OutgoingMessageHandlerThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
 }
 
 IpcManager::~IpcManager()
 {
-    m_RequestThread.join();
-    m_ResponseThread.join();
+    m_IncomingMessageHandlerThread.join();
+    m_OutgoingMessageHandlerThread.join();
 }
 
-void IpcManager::ProcessPendingRequests()
+void IpcManager::ProcessPendingCommands()
 {
-    std::lock_guard guard(m_RequestMutex);
-    while (!m_RequestCommandQueue.empty())
+    std::queue<std::shared_ptr<Command>> commandQueueCopy;
+
     {
-        m_RequestCommandQueue.front()->Execute();
-        m_RequestCommandQueue.pop();
+        std::lock_guard guard(m_CommandMutex);
+
+        // Make a copy and flush the real queue because more commands may be added
+        // by command.execute(), usually because adding response commands
+        while (!m_CommandQueue.empty())
+        {
+            commandQueueCopy.emplace(m_CommandQueue.front());
+            m_CommandQueue.pop();
+        }
+    }
+
+    while (!commandQueueCopy.empty())
+    {
+        commandQueueCopy.front()->Execute();
+        commandQueueCopy.pop();
     }
 }
 
-void IpcManager::QueueResponseCommand(std::shared_ptr<ResponseCommand> command)
+void IpcManager::QueueCommand(std::shared_ptr<Command> command)
 {
     if (command == nullptr)
         return;
 
-    std::lock_guard guard(m_ResponseMutex);
-    m_ResponseCommandQueue.push(command);
+    std::lock_guard guard(m_CommandMutex);
+    m_CommandQueue.push(command);
 }
 
-void IpcManager::QueueRequestCommand(std::shared_ptr<RequestCommand> command)
+void IpcManager::QueueMessage(const std::string& message)
 {
-    if (command == nullptr)
-        return;
-
-    std::lock_guard guard(m_RequestMutex);
-    m_RequestCommandQueue.push(command);
+    std::lock_guard guard(m_MessageMutex);
+    m_OutgoingMessageQueue.push(message);
 }
 
-std::shared_ptr<ResponseCommand> IpcManager::PopResponseCommand()
+void IpcManager::ClearMessageQueue()
 {
-    std::lock_guard guard(m_ResponseMutex);
-
-    if (m_ResponseCommandQueue.empty())
-        return nullptr;
-
-    std::shared_ptr<ResponseCommand> command = m_ResponseCommandQueue.front();
-    m_ResponseCommandQueue.pop();
-    return command;
+    std::lock_guard guard(m_MessageMutex);
+    while (!m_OutgoingMessageQueue.empty())
+        m_OutgoingMessageQueue.pop();
 }
 
-void IpcManager::ClearResponseQueue()
-{
-    std::lock_guard guard(m_ResponseMutex);
-    while (!m_ResponseCommandQueue.empty())
-        m_ResponseCommandQueue.pop();
-}
-
-void IpcManager::RequestThread()
+void IpcManager::IncomingMessageHandler()
 {
     while (true)
     {
         if (!m_Socket.HasActiveConnection())
         {
-            ClearResponseQueue();
+            ClearMessageQueue();
             EngineCore::GetMainWindow().SetParentWindowHandle(nullptr);
             EngineCore::GetMainWindow().Hide();
             LogToolmodeInfo("Waiting for incoming editor connection");
@@ -102,44 +99,36 @@ void IpcManager::RequestThread()
         }
 
         auto next = m_Socket.GetNext();
-        auto request = ParseRequest(next);
-        QueueRequestCommand(request);
+        auto request = ParseMessage(next);
+        QueueCommand(request);
     }
 }
 
-void IpcManager::ResponseThread()
+void IpcManager::OutgoingMessageHandler()
 {
     while (true)
     {
         if (!m_Socket.HasActiveConnection())
             continue;
 
-        std::shared_ptr<ResponseCommand> command = PopResponseCommand();
-        if (command == nullptr)
+        std::lock_guard guard(m_MessageMutex);
+
+        if (m_OutgoingMessageQueue.empty())
             continue;
 
-        m_Socket.Send(command->GetResponseData());
+        m_Socket.Send(m_OutgoingMessageQueue.front());
+        m_OutgoingMessageQueue.pop();
     }
 }
 
-void IpcManager::TryExecute(const std::string& rawRequest) const
-{
-    std::shared_ptr<RequestCommand> command = ParseRequest(rawRequest);
-    if (command != nullptr)
-        command->Execute();
-}
-
-std::shared_ptr<RequestCommand> IpcManager::ParseRequest(const std::string& rawRequest) const
+std::shared_ptr<Command> IpcManager::ParseMessage(const std::string& rawRequest) const
 {
     try 
     {
-        nlohmann::json request = nlohmann::json::parse(rawRequest);
-        std::string commandType = request["command"];
+        CommandData data = CommandData::parse(rawRequest);
+        std::string commandID = data["command"];
 
-        if (commandType == "initialize")
-            return std::make_shared<InitCommand>(request);
-        if (commandType == "resize")
-            return std::make_shared<ResizeCommand>(request);
+        return std::move(m_CommandFactory.CreateCommand(commandID, data));
     }
     catch (...) 
     {

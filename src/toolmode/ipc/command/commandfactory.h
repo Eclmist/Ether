@@ -20,22 +20,23 @@
 #pragma once
 
 #include "command.h"
-#include "sendablecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-class ResizeCommand : public Command
+class CommandFactory
 {
 public:
-    ResizeCommand(const CommandData& data);
-    ~ResizeCommand() = default;
+    CommandFactory();
+    ~CommandFactory() = default;
 
-    void Execute() override;
+    std::unique_ptr<Command> CreateCommand(const std::string& commandID, const CommandData& data) const;
 
 private:
-    uint32_t m_Width;
-    uint32_t m_Height;
+    using FactoryFunction = std::function<std::unique_ptr<Command>(const CommandData& command)>;
+    void RegisterCommand(const std::string& commandID, FactoryFunction factoryFunction);
+
+private:
+    std::unordered_map<std::string, FactoryFunction> m_FactoryMap;
 };
 
 ETH_NAMESPACE_END
-

@@ -20,7 +20,7 @@
 #pragma once
 
 #include "toolmode/ipc/tcpsocket.h"
-#include "toolmode/ipc/command/command.h"
+#include "toolmode/ipc/command/commandfactory.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -30,30 +30,26 @@ public:
     IpcManager();
     ~IpcManager();
 
-    void ProcessPendingRequests();
-    void QueueResponseCommand(std::shared_ptr<ResponseCommand> command);
+    void ProcessPendingCommands();
+    void QueueCommand(std::shared_ptr<Command> command);
+    void QueueMessage(const std::string& message);
 
 private:
-    void QueueRequestCommand(std::shared_ptr<RequestCommand> command);
-    std::shared_ptr<ResponseCommand> PopResponseCommand();
-
-    void ClearResponseQueue();
-
-private:
-    void RequestThread();
-    void ResponseThread();
-    void TryExecute(const std::string& rawRequest) const;
-    std::shared_ptr<RequestCommand> ParseRequest(const std::string& rawRequest) const;
+    void ClearMessageQueue();
+    void IncomingMessageHandler();
+    void OutgoingMessageHandler();
+    std::shared_ptr<Command> ParseMessage(const std::string& rawRequest) const;
 
 private:
+    CommandFactory m_CommandFactory;
     TcpSocket m_Socket;
 
-    std::thread m_RequestThread;
-    std::thread m_ResponseThread;
+    std::thread m_IncomingMessageHandlerThread;
+    std::thread m_OutgoingMessageHandlerThread;
 
-    std::mutex m_RequestMutex, m_ResponseMutex;
-    std::queue<std::shared_ptr<RequestCommand>> m_RequestCommandQueue;
-    std::queue<std::shared_ptr<ResponseCommand>> m_ResponseCommandQueue;
+    std::mutex m_CommandMutex, m_MessageMutex;
+    std::queue<std::shared_ptr<Command>> m_CommandQueue;
+    std::queue<std::string> m_OutgoingMessageQueue;
 };
  
 ETH_NAMESPACE_END

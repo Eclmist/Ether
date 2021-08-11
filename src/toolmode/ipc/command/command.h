@@ -23,22 +23,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RequestCommand
+using CommandData = nlohmann::json;
+
+class Command
 {
 public:
-    RequestCommand() = default;
-    ~RequestCommand() = default;
+    Command() = default;
+    ~Command() = default;
 
     virtual void Execute() = 0;
-};
-
-class ResponseCommand
-{
-public:
-    ResponseCommand() = default;
-    ~ResponseCommand() = default;
-
-    virtual std::string GetResponseData() const = 0;
 };
 
 ETH_NAMESPACE_END

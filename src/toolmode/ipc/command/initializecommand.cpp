@@ -19,19 +19,37 @@
 
 #pragma once
 
-#include "resizecommand.h"
+#include "initializecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-ResizeCommand::ResizeCommand(const CommandData& data)
-    : m_Width((uint32_t)data["args"]["width"])
-    , m_Height((uint32_t)data["args"]["height"])
+InitializeCommand::InitializeCommand(const CommandData& data)
+    : m_ParentWindowHandle((void*)(uint64_t)data["args"]["hwnd"]) {
+}
+
+void InitializeCommand::Execute()
+{
+    EngineCore::GetMainWindow().SetParentWindowHandle(m_ParentWindowHandle);
+    EngineCore::GetMainWindow().Show();
+    auto initResponse = std::make_shared<InitCommandResponse>(EngineCore::GetMainWindow().GetWindowHandle());
+    EngineCore::GetIpcManager().QueueCommand(initResponse);
+}
+
+InitCommandResponse::InitCommandResponse(void* engineWindowHandle)
+    : m_EngineWindowHandle(engineWindowHandle)
 {
 }
 
-void ResizeCommand::Execute()
+std::string InitCommandResponse::GetSendableData() const
 {
-    EngineCore::GetMainWindow().SetSize(m_Width, m_Height);
+    CommandData command = {
+        { "command", "initialize" },
+        { "args", {
+            { "childhwnd", (uint64_t)m_EngineWindowHandle }
+        }}
+    };
+
+    return command.dump();
 }
 
 ETH_NAMESPACE_END

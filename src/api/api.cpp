@@ -34,7 +34,7 @@ bool UpdateEngine()
     EngineCore::GetMainApplication().OnRender(renderArgs);
     GraphicCore::Render();
 
-    ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingRequests());
+    ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
 
     return !EngineCore::GetMainApplication().ShouldExit();
 }
