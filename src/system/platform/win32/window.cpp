@@ -117,8 +117,8 @@ void Window::SetFullscreen(bool isFullscreen)
 void Window::SetParentWindowHandle(void* parentHandle)
 {
     m_ParentWindowHandle = parentHandle;
-    SetParent((HWND)m_WindowHandle, (HWND)m_ParentWindowHandle);
     SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, m_ParentWindowHandle == nullptr ? ETH_WINDOW_STYLE : WS_CHILD);
+    SetParent((HWND)m_WindowHandle, (HWND)m_ParentWindowHandle);
 }
 
 void Window::RegisterWindowClass() const
