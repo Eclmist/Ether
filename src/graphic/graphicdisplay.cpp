@@ -50,7 +50,10 @@ void GraphicDisplay::Present()
     HRESULT hr = m_SwapChain->Present(
         m_VSyncEnabled ? m_VSyncVBlanks : 0,
         m_VSyncEnabled ? 0 : DXGI_PRESENT_ALLOW_TEARING);
-    m_CurrentBackBufferIndex = (m_CurrentBackBufferIndex + 1) % GetNumBuffers();
+
+    // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model, 
+    // the order of back buffer indices are not guaranteed to be sequential
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
 void GraphicDisplay::Resize(uint32_t width, uint32_t height)
