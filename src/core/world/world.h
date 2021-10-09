@@ -19,22 +19,22 @@
 
 #pragma once
 
+#include "core/entity/entitymanager.h"
+#include "core/world/scenegraph.h"
+
 ETH_NAMESPACE_BEGIN
 
 class World : public NonCopyable
 {
 public:
-    World();
+    World() = default;
     ~World() = default;
 
 public:
-    ETH_ENGINE_DLL void AddEntity(Entity&& entity, Entity* parent = nullptr);
-    //TODO: Remove or change to get all visuals
-    std::vector<Entity*>& GetEntities() { return m_AllEntities; }
+    inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
 
 private:
-    Entity m_RootEntity;
-    std::vector<Entity*> m_AllEntities;
+    SceneGraph m_SceneGraph;
 };
 
 ETH_NAMESPACE_END
