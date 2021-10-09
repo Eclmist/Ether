@@ -42,6 +42,7 @@ Entity* EntityManager::CreateEntity(const std::string& name)
     }
 
     m_LiveEntities[newID] = std::make_unique<Entity>(newID, name);
+    EngineCore::GetActiveWorld().GetSceneGraph().Register(newID);
     return m_LiveEntities[newID].get();
 }
 
@@ -49,9 +50,7 @@ void EntityManager::DestroyEntity(EntityID id)
 {
     m_LiveEntities[id] = nullptr; // unique ptr should deallocate on its own
     ReleaseEntityID(id);
-
-    // TODO: Should we update the scene graph? or should the world call this in the
-    // first place?
+    EngineCore::GetActiveWorld().GetSceneGraph().Deregister(id);
 }
 
 EntityID EntityManager::ReserveNextEntityID()
