@@ -21,18 +21,5 @@
 
 ETH_NAMESPACE_BEGIN
 
-World::World()
-    : m_RootEntity("World Root")
-{
-}
-
-ETH_ENGINE_DLL void World::AddEntity(Entity&& entity, Entity* parent)
-{
-    if (parent == nullptr)
-        parent = &m_RootEntity;
-    entity.SetParent(*parent);
-    m_AllEntities.push_back(parent->GetLastChild());
-}
-
 ETH_NAMESPACE_END
 
