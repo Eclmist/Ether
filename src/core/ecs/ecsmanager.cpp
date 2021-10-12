@@ -19,29 +19,44 @@
 
 #pragma once
 
-#include "component.h"
+#include "ecsmanager.h"
 
 ETH_NAMESPACE_BEGIN
 
-class Material;
-class Visual;
-
-class ETH_ENGINE_DLL VisualComponent : public Component
+ECSManager::ECSManager()
 {
-public:
-    VisualComponent(Entity& owner);
-    ~VisualComponent();
+    m_ComponentManager = std::make_unique<ComponentManager>();
+    m_EntityManager = std::make_unique<EntityManager>();
+    m_SystemManager = std::make_unique<SystemManager>();
+}
 
-public:
-    inline TransformComponent& GetTransform() const { return *m_Transform; }
-    inline MeshComponent& GetMesh() const { return *m_MeshComponent; }
-    inline Material& GetMaterial() const { return *m_Material; }
+void ECSManager::OnInitialize()
+{
+    m_SystemManager->InitializeSystems();
+}
 
-private:
-    TransformComponent* m_Transform;
-    MeshComponent* m_MeshComponent;
-    Material* m_Material;
-};
+void ECSManager::OnUpdate()
+{
+    for (auto& system : m_SystemManager->GetSystems())
+    {
+        system.second->OnUpdate();
+    }
+}
+
+Entity* ECSManager::GetEntity(EntityID id)
+{
+    return m_EntityManager->GetEntity(id);
+}
+
+Entity* ECSManager::CreateEntity(const std::string& name)
+{
+    return m_EntityManager->CreateEntity(name);
+}
+
+void ECSManager::DestroyEntity(EntityID id)
+{
+    return m_EntityManager->DestroyEntity(id);
+}
 
 ETH_NAMESPACE_END
 

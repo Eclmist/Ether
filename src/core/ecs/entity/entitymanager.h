@@ -19,20 +19,31 @@
 
 #pragma once
 
+#include "entity.h"
+
 ETH_NAMESPACE_BEGIN
 
-class Entity;
-
-class Component // : public Serializable?
+class ETH_ENGINE_DLL EntityManager : public NonCopyable // : public Serializable?
 {
 public:
-    Component(Entity& owner);
-    virtual ~Component() = default;
+    EntityManager();
+    ~EntityManager();
 
-    inline Entity& GetOwner() { return m_Owner; }
+private:
+    friend class ECSManager;
+    inline Entity* GetEntity(EntityID id) const { return m_LiveEntities[id].get(); }
 
-protected:
-    Entity& m_Owner;
+    Entity* CreateEntity(const std::string& name);
+    void DestroyEntity(EntityID id);
+
+private:
+    EntityID ReserveNextEntityID();
+    void ReleaseEntityID(EntityID id);
+
+private:
+    std::queue<EntityID> m_AvailableEntityIDs;
+    std::unique_ptr<Entity> m_LiveEntities[ETH_ECS_MAX_ENTITIES];
 };
 
 ETH_NAMESPACE_END
+

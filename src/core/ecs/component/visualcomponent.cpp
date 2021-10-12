@@ -17,47 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "entity.h"
+#include "visualcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-Entity::Entity(const std::string& name)
-    : m_Name(name)
-    , m_Parent(nullptr)
-    , m_Transform(*AddComponent<TransformComponent>())
+VisualComponent::VisualComponent(EntityID owner)
+    : Component(owner)
 {
 }
 
-Entity::~Entity()
+VisualComponent::~VisualComponent()
 {
-}
-
-void Entity::SetParent(Entity& parent)
-{
-    if (m_Parent == &parent)
-        return;
-
-    // While all entity should have a parent (except World::m_RootEntity), during the initial
-    // construction of entity it may still not have a parent.
-    if (m_Parent != nullptr)
-        m_Parent->RemoveChild(*this);
-
-    parent.m_Children.emplace_back(this);
-    m_Parent = &parent;
-}
-
-void Entity::RemoveChild(const Entity& child)
-{
-    for (auto iter = m_Children.begin(); iter != m_Children.end(); ++iter)
-    {
-        if ((*iter).get() != &child)
-            continue;
-
-        (*iter).release();
-        m_Children.erase(iter);
-        return;
-    }
 }
 
 ETH_NAMESPACE_END
+
 

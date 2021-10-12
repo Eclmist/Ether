@@ -36,24 +36,33 @@ void SampleApp::Initialize()
 
 void SampleApp::LoadContent()
 {
-    Entity* debugCube = new Entity("Debug Cube");
+    Entity* debugCube = EngineCore::GetECSManager().CreateEntity("Debug Cube");
+
     debugCube->AddComponent<MeshComponent>();
     debugCube->AddComponent<VisualComponent>();
-    debugCube->GetTransform().SetPosition({ 0, 1, 0 });
-    debugCube->GetTransform().SetRotation({ 0, 0, 0 });
-    EngineCore::GetActiveWorld().AddEntity(std::move(*debugCube));
+    debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 1, 0 });
+    debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
 
-    Entity* debugCubeAnim = new Entity("Debug Cube (Animated)");
+    Entity* debugCubeAnim = EngineCore::GetECSManager().CreateEntity("Debug Cube (Animated)");
+    debugCubeAnim->AddComponent<MeshComponent>();
     debugCubeAnim->AddComponent<VisualComponent>();
-    debugCubeAnim->GetTransform().SetPosition({ 2.0, -4.0, 0 });
-    debugCubeAnim->GetTransform().SetRotation({ 0, 0, 0.23f });
-    debugCubeAnim->GetTransform().SetScale({ 1.20f, 1.40f, 1.23f });
-    EngineCore::GetActiveWorld().AddEntity(std::move(*debugCubeAnim));
+    debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
+    debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
+    debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 1.20f, 1.40f, 1.23f });
 
-    Entity* groundPlane = new Entity("Ground Plane");
-    auto vis = groundPlane->AddComponent<VisualComponent>();
-    groundPlane->GetTransform().SetScale({ 1000, 0.01f, 1000 });
-    EngineCore::GetActiveWorld().AddEntity(std::move(*groundPlane));
+    Entity* groundPlane = EngineCore::GetECSManager().CreateEntity("Ground Plane");
+    groundPlane->AddComponent<MeshComponent>();
+    groundPlane->AddComponent<VisualComponent>();
+    groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
+
+    for (int i = 0; i < 1000; ++i)
+    {
+        Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
+        newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
+        newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+        newEntity->AddComponent<MeshComponent>();
+        newEntity->AddComponent<VisualComponent>();
+    }
 }
 
 void SampleApp::UnloadContent()
@@ -85,7 +94,19 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     }
 
     float x = sin((float)GetTimeSinceStart());
-    EngineCore::GetActiveWorld().GetEntities()[1]->GetTransform().SetPosition({ x, 5, 5 });
+    EngineCore::GetECSManager().GetEntity(1)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
+
+    for (int i = 3; i < 1000; ++i)
+    {
+        auto transform = EngineCore::GetECSManager().GetEntity(i)->GetComponent<TransformComponent>();
+        float y = transform->GetPosition().y - 0.1;
+
+        EngineCore::GetECSManager().GetEntity(i)->GetComponent<TransformComponent>()->SetPosition({ 
+            transform->GetPosition().x,
+            y,
+            transform->GetPosition().z
+            });
+    }
 }
 
 void SampleApp::OnRender(const RenderEventArgs& e)

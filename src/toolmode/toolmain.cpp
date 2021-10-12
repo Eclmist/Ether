@@ -39,26 +39,24 @@ public:
 
     void LoadContent() override 
     {
-        Entity* debugCube = new Entity("Debug Cube");
+        Entity* debugCube = EngineCore::GetECSManager().CreateEntity("Debug Cube");
+
         debugCube->AddComponent<MeshComponent>();
         debugCube->AddComponent<VisualComponent>();
-        debugCube->GetTransform().SetPosition({ 0, 1, 0 });
-        debugCube->GetTransform().SetRotation({ 0, 0, 0 });
-        EngineCore::GetActiveWorld().AddEntity(std::move(*debugCube));
+        debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 1, 0 });
+        debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
 
-        Entity* debugCubeAnim = new Entity("Debug Cube (Animated)");
-        debugCubeAnim->AddComponent<VisualComponent>();
-        debugCubeAnim->GetTransform().SetPosition({ 2.0, -4.0, 0 });
-        debugCubeAnim->GetTransform().SetRotation({ 0, 0, 0.23f });
-        debugCubeAnim->GetTransform().SetScale({ 1.20f, 1.40f, 1.23f });
-        EngineCore::GetActiveWorld().AddEntity(std::move(*debugCubeAnim));
+        //Entity* debugCubeAnim = EngineCore::GetEntityManager().CreateEntity("Debug Cube (Animated)");
+        //debugCubeAnim->AddComponent<MeshComponent>();
+        //debugCubeAnim->AddComponent<VisualComponent>();
+        //debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
+        //debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
+        //debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 1.20f, 1.40f, 1.23f });
 
-        Entity* groundPlane = new Entity("Ground Plane");
-        auto vis = groundPlane->AddComponent<VisualComponent>();
-        groundPlane->GetTransform().SetScale({ 1000, 0.01f, 1000 });
-        EngineCore::GetActiveWorld().AddEntity(std::move(*groundPlane));
-
-        EngineCore::GetEngineConfig().ToggleDebugGui();
+        //Entity* groundPlane = EngineCore::GetEntityManager().CreateEntity("Ground Plane");
+        //groundPlane->AddComponent<MeshComponent>();
+        //groundPlane->AddComponent<VisualComponent>();
+        //groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
     };
 
     void UnloadContent() override {};
@@ -86,7 +84,7 @@ public:
         }
 
         float x = sin((float)GetTimeSinceStart());
-        EngineCore::GetActiveWorld().GetEntities()[1]->GetTransform().SetPosition({ x, 5, 5 });
+        EngineCore::GetECSManager().GetEntity(0)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
     };
 
     void OnRender(const RenderEventArgs& e) override 

@@ -31,5 +31,5 @@
 
 // Ether Graphics Library
 #include "graphic/graphiccore.h"
-#include "graphic/common/visual.h"
+
 

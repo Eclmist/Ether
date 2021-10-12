@@ -19,20 +19,35 @@
 
 #pragma once
 
-#include "renderpass.h"
+#include "system.h"
 
 ETH_NAMESPACE_BEGIN
 
-class HardCodedRenderPass : public RenderPass
+using SystemsArray = std::unordered_map<std::string, std::shared_ptr<System>>;
+
+class SystemManager : public NonCopyable
 {
 public:
-    HardCodedRenderPass(const std::string& name);
+    SystemManager() = default;
+    ~SystemManager() = default;
 
-    void RegisterInputOutput() override;
-    void Render(GraphicContext& context) override;
+public:
+    inline const SystemsArray GetSystems() const { return m_Systems; }
+
+public:
+    void InitializeSystems();
+    ETH_ENGINE_DLL void AssignEntityToSystems(EntityID id, ComponentSignature signature);
 
 private:
-    std::vector<VisualNode*> m_PendingVisualNodes;
+    template <typename T>
+    void RegisterSystem()
+    {
+        const char* typeName = typeid(T).name();
+        m_Systems.insert({ typeName, std::make_shared<T>() });
+    }
+
+private:
+    SystemsArray m_Systems;
 };
 
 ETH_NAMESPACE_END

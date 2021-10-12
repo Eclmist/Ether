@@ -17,23 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "systemmanager.h"
 
-#include "renderpass.h"
+#include "core/ecs/system/renderingsystem.h"
 
 ETH_NAMESPACE_BEGIN
 
-class HardCodedRenderPass : public RenderPass
+void SystemManager::AssignEntityToSystems(EntityID id, ComponentSignature signature)
 {
-public:
-    HardCodedRenderPass(const std::string& name);
+    for (auto& pair : m_Systems)
+    {
+        auto& system = pair.second;
+        auto systemSign = system->GetSignature();
+        if ((signature & systemSign) == systemSign)
+        {
+            system->m_MatchingEntities.insert(id);
+            system->OnEntityRegister(id);
+        }
+        else
+        {
+            system->OnEntityDeregister(id);
+            system->m_MatchingEntities.erase(id);
+        }
+    }
+}
 
-    void RegisterInputOutput() override;
-    void Render(GraphicContext& context) override;
-
-private:
-    std::vector<VisualNode*> m_PendingVisualNodes;
-};
+void SystemManager::InitializeSystems()
+{
+    RegisterSystem<RenderingSystem>();
+}
 
 ETH_NAMESPACE_END
 

@@ -30,11 +30,17 @@ ETH_NAMESPACE_BEGIN
 class ETH_ENGINE_DLL MeshComponent : public Component
 {
 public:
-    MeshComponent(Entity& owner);
+    MeshComponent(EntityID owner);
     ~MeshComponent() = default;
 
+public:
+    inline uint16_t GetNumVertices() const { return m_NumVertices; }
+    inline uint16_t GetNumIndices() const { return m_NumIndices; }
+
+    inline const VertexPositionColor* GetVertexBuffer() const { return m_VertexBuffer; }
+    inline const uint16_t* GetIndexBuffer() const { return m_IndexBuffer; }
+
 private:
-    friend class Visual; // TODO: Is this really the best way to link mesh/visual?
     VertexPositionColor m_VertexBuffer[MAX_VERTICES];
     uint16_t m_IndexBuffer[MAX_VERTICES];
     uint16_t m_NumVertices;

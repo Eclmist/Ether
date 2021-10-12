@@ -17,23 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "core/world/scenegraph.h"
+#include "component.h"
 
 ETH_NAMESPACE_BEGIN
 
-class World : public NonCopyable
+Component::Component(EntityID owner)
+    : m_Owner(owner)
 {
-public:
-    World() = default;
-    ~World() = default;
-
-public:
-    inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
-
-private:
-    SceneGraph m_SceneGraph;
-};
+}
 
 ETH_NAMESPACE_END
+

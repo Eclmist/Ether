@@ -26,6 +26,7 @@ ETH_NAMESPACE_BEGIN
 bool UpdateEngine()
 {
     EngineCore::GetMainApplication().OnUpdate(UpdateEventArgs());
+    EngineCore::Update();
 
     RenderEventArgs renderArgs;
     renderArgs.m_TotalElapsedTime = GetTimeSinceStart();

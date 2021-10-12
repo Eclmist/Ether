@@ -24,55 +24,45 @@ ETH_NAMESPACE_BEGIN
 class ETH_ENGINE_DLL Entity : public NonCopyable // : public Serializable?
 {
 public:
-    Entity(const std::string& name);
+    Entity(const EntityID id, const std::string& name);
     ~Entity();
 
 public:
+    inline const EntityID GetID() const { return m_ID; }
+
     inline const std::string& GetName() const { return m_Name; }
     inline void SetName(const std::string& name) { m_Name = name; }
 
-    inline Entity* const GetParent() { return m_Parent != nullptr ? m_Parent : nullptr; }
-    void SetParent(Entity& parent);
-
-    inline Entity* const GetFirstChild() { return !m_Children.empty() ? m_Children[0].get() : nullptr; }
-    inline Entity* const GetLastChild() { return !m_Children.empty() ? m_Children[m_Children.size() - 1].get() : nullptr; }
-    inline std::vector<std::unique_ptr<Entity>>& GetChildren() { return m_Children; }
+    inline ComponentSignature GetComponentSignature() const { return m_ComponentSignature; }
+    inline void SetComponentSignature(ComponentID id, bool isSet) { m_ComponentSignature.set(id, isSet); }
 
 public:
     template <typename T>
-    T* const AddComponent()
+    T* const GetComponent()
     {
-        m_Components.emplace_back(std::make_unique<T>(*this));
-        return dynamic_cast<T*>(m_Components.back().get());
+        return EngineCore::GetECSManager().GetComponent<T>(m_ID);
     }
 
     template <typename T>
-    T* const GetComponent()
+    T* const AddComponent()
     {
-        for (auto&& component : m_Components)
-        {
-            T* targetComponent = dynamic_cast<T*>(component.get());
-            if (targetComponent != nullptr)
-                return targetComponent;
-        }
-
-        return nullptr;
+        return EngineCore::GetECSManager().AddComponent<T>(m_ID);
     }
 
-    TransformComponent& GetTransform() { return m_Transform; }
+    template <typename T>
+    T* const RemoveComponent()
+    {
+        return EngineCore::GetECSManager().RemoveComponent()<T>(m_ID);
+    }
 
 private:
-    void RemoveChild(const Entity& child);
+    friend class EntityManager;
+    void AddMandatoryComponents();
 
 private:
+    EntityID m_ID;
+    ComponentSignature m_ComponentSignature;
     std::string m_Name;
-
-    Entity* m_Parent;
-    std::vector<std::unique_ptr<Entity>> m_Children;
-    std::vector<std::unique_ptr<Component>> m_Components;
-
-private:
-    TransformComponent& m_Transform;
 };
 
 ETH_NAMESPACE_END

@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 EntityManager::EntityManager()
 {
-    for (EntityID id = 0; id < ETH_MAX_ENTITIES; ++id)
+    for (EntityID id = 0; id < ETH_ECS_MAX_ENTITIES; ++id)
         m_AvailableEntityIDs.push(id);
 }
 
@@ -35,13 +35,14 @@ Entity* EntityManager::CreateEntity(const std::string& name)
 {
     EntityID newID = ReserveNextEntityID();
 
-    if (newID == ETH_INVALID_ENTITYID)
+    if (newID == ETH_ECS_INVALID_ID)
     {
         LogEngineError("Max entity count reached, cannot reserve any more IDs");
         return nullptr;
     }
 
     m_LiveEntities[newID] = std::make_unique<Entity>(newID, name);
+    m_LiveEntities[newID]->AddMandatoryComponents();
     EngineCore::GetActiveWorld().GetSceneGraph().Register(newID);
     return m_LiveEntities[newID].get();
 }
@@ -56,7 +57,7 @@ void EntityManager::DestroyEntity(EntityID id)
 EntityID EntityManager::ReserveNextEntityID()
 {
     if (m_AvailableEntityIDs.empty())
-        return ETH_INVALID_ENTITYID;
+        return ETH_ECS_INVALID_ID;
 
     EntityID nextID = m_AvailableEntityIDs.front();
     m_AvailableEntityIDs.pop();

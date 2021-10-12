@@ -46,6 +46,7 @@ void GraphicCore::Render()
     Instance().m_GraphicRenderer->Render();
     Instance().m_GuiRenderer->Render();
     Instance().m_GraphicRenderer->Present();
+    Instance().m_GraphicRenderer->CleanUp();
 }
 
 void GraphicCore::Shutdown()

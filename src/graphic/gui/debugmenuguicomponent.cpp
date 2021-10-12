@@ -73,18 +73,20 @@ void DebugMenuGuiComponent::Draw()
 
         if (ImGui::CollapsingHeader("Scene"))
         {
-            for (auto entity : EngineCore::GetActiveWorld().GetEntities())
+            for (int i = 0; i < ETH_ECS_MAX_ENTITIES; ++i)
             {
-                ImGui::BulletText(entity->GetName().c_str());
+                auto entity = EngineCore::GetECSManager().GetEntity(i);
+                if (entity != nullptr)
+                    ImGui::BulletText(entity->GetName().c_str());
             }
 
             if (ImGui::Button("Add entity"))
             {
-                Entity* newEntity = new Entity("Entity");
-                newEntity->GetTransform().SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
-                newEntity->GetTransform().SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+                Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
+                newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
+                newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+                newEntity->AddComponent<MeshComponent>();
                 newEntity->AddComponent<VisualComponent>();
-                EngineCore::GetActiveWorld().AddEntity(std::move(*newEntity));
             }
         }
 
