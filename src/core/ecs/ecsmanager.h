@@ -27,6 +27,7 @@ ETH_NAMESPACE_BEGIN
 // allocated memory for systems. 
 #define ETH_ECS_MAX_ENTITIES 4096
 #define ETH_ECS_MAX_COMPONENTS 32
+#define ETH_ECS_ROOT_ENTITY_ID (ETH_ECS_MAX_ENTITIES)
 #define ETH_ECS_INVALID_ID -1
 
 using EntityID = uint32_t;

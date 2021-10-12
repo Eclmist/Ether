@@ -32,7 +32,7 @@ struct SceneGraphNode
 class SceneGraph
 {
 public:
-    SceneGraph() = default;
+    SceneGraph();
     ~SceneGraph() = default;
 
 public:
@@ -41,12 +41,12 @@ public:
     inline EntityID GetLastChild(EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
     inline const std::vector<EntityID>& GetChildren(EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
 
-    void Register(EntityID id, EntityID parent = ETH_ECS_INVALID_ID);
+    void Register(EntityID id, EntityID parent = ETH_ECS_ROOT_ENTITY_ID);
     void Deregister(EntityID id);
     void SetParent(EntityID id, EntityID parent);
 
 private:
-    SceneGraphNode m_Nodes[ETH_ECS_MAX_ENTITIES];
+    SceneGraphNode m_Nodes[ETH_ECS_MAX_ENTITIES + 1]; // +1 for the virtual root entity
 };
 
 ETH_NAMESPACE_END
