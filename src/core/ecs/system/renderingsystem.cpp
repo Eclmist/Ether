@@ -49,6 +49,8 @@ void RenderingSystem::OnEntityDeregister(EntityID id)
 
 void RenderingSystem::OnUpdate()
 {
+    OPTICK_EVENT("ECS - Rendering System - Update");
+
     for (EntityID id : m_MatchingEntities)
     {
         auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);

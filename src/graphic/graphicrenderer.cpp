@@ -37,11 +37,13 @@ GraphicRenderer::~GraphicRenderer()
 
 void GraphicRenderer::WaitForPresent()
 {
+    OPTICK_EVENT("Renderer - WaitForPresent");
     m_Context.GetCommandQueue().StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
 }
 
 void GraphicRenderer::Render()
 {
+    OPTICK_EVENT("Renderer - Render");
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
@@ -60,6 +62,7 @@ void GraphicRenderer::Render()
 
     for (auto&& visualNodes : m_PendingVisualNodes)
     {
+        OPTICK_EVENT("Renderer - Render Pending Visual Nodes");
         ethXMMatrix modelMatrix = visualNodes->GetModelMatrix();
         ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, m_Context.GetViewMatrix());
         mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_Context.GetProjectionMatrix());
@@ -71,12 +74,16 @@ void GraphicRenderer::Render()
         m_Context.GetCommandList().DrawIndexedInstanced(visualNodes->GetNumIndices(), 1, 0, 0, 0);
     }
 
-    m_Context.FinalizeAndExecute();
-    m_Context.Reset();
+    {
+        OPTICK_EVENT("Renderer - Finalize and execute");
+        m_Context.FinalizeAndExecute();
+        m_Context.Reset();
+    }
 }
 
 void GraphicRenderer::Present()
 {
+    OPTICK_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
     m_Context.TransitionResource(*gfxDisplay.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
@@ -88,12 +95,14 @@ void GraphicRenderer::Present()
 
 void GraphicRenderer::CleanUp()
 {
+    OPTICK_EVENT("Renderer - CleanUp");
     // TODO: Clean up old PSOs and other resources
     m_PendingVisualNodes.clear();
 }
 
 void GraphicRenderer::DrawNode(VisualNode* node)
 {
+    OPTICK_EVENT("Renderer - DrawNode");
     m_PendingVisualNodes.push_back(node);
 }
 

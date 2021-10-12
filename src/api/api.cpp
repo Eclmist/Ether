@@ -34,8 +34,14 @@ bool UpdateEngine()
     renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
     renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
 
-    EngineCore::GetMainApplication().OnRender(renderArgs);
-    GraphicCore::Render();
+    {
+        OPTICK_EVENT("Application - OnRender");
+        EngineCore::GetMainApplication().OnRender(renderArgs);
+    }
+    {
+        OPTICK_EVENT("Graphic Core - Render");
+        GraphicCore::Render();
+    }
 
     ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
 

@@ -48,6 +48,7 @@ void EngineCore::LoadContent()
 
 void EngineCore::Update()
 {
+    OPTICK_EVENT("Engine Core - Update");
     Instance().m_ECSManager->OnUpdate();
 }
 
