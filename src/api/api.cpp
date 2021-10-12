@@ -25,6 +25,8 @@ ETH_NAMESPACE_BEGIN
 
 bool UpdateEngine()
 {
+    OPTICK_FRAME("Engine - MainThread");
+
     EngineCore::GetMainApplication().OnUpdate(UpdateEventArgs());
     EngineCore::Update();
 
