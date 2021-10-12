@@ -26,7 +26,6 @@ using namespace DirectX;
 
 TransformComponent::TransformComponent(EntityID owner)
     : Component(owner)
-    , m_MatrixRequiresUpdate(true)
 {
     SetPosition({ 0, 0, 0 });
     SetRotation({ 0, 0, 0 });
@@ -37,32 +36,27 @@ void TransformComponent::SetPosition(const ethVector3& position)
 {
     m_Position = position;
     m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
-    m_MatrixRequiresUpdate = true;
+    UpdateModelMatrix();
 }
 
 void TransformComponent::SetRotation(const ethVector3& eulerRotation)
 {
     m_EulerRotation = eulerRotation;
     m_RotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&eulerRotation));
-    m_MatrixRequiresUpdate = true;
+    UpdateModelMatrix();
 }
 
 void TransformComponent::SetScale(const ethVector3& scale)
 {
     m_Scale = scale;
     m_ScaleMatrix = XMMatrixScalingFromVector(XMLoadFloat3(&scale));
-    m_MatrixRequiresUpdate = true;
+    UpdateModelMatrix();
 }
 
-ethXMMatrix TransformComponent::GetMatrix()
+void TransformComponent::UpdateModelMatrix()
 {
-    if (!m_MatrixRequiresUpdate)
-        return m_FinalMatrix;
-
-    m_FinalMatrix = XMMatrixMultiply(m_RotationMatrix, m_TranslationMatrix);
-    m_FinalMatrix = XMMatrixMultiply(m_ScaleMatrix, m_FinalMatrix);
-    m_MatrixRequiresUpdate = false;
-    return m_FinalMatrix;
+    m_ModelMatrix = XMMatrixMultiply(m_RotationMatrix, m_TranslationMatrix);
+    m_ModelMatrix = XMMatrixMultiply(m_ScaleMatrix, m_ModelMatrix);
 }
 
 ETH_NAMESPACE_END

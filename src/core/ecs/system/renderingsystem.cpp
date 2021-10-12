@@ -32,12 +32,14 @@ void RenderingSystem::OnEntityRegister(EntityID id)
 {
     //VisualComponent* visual = EngineCore::GetComponentManager().GetComponent<VisualComponent>(id);
     auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
+    auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
 
-    VisualNodeStaticData data;
+    VisualNodeData data;
     data.m_VertexBuffer = mesh->GetVertexBuffer();
     data.m_IndexBuffer = mesh->GetIndexBuffer();
     data.m_NumIndices = mesh->GetNumIndices();
     data.m_NumVertices = mesh->GetNumVertices();
+    data.m_ModelMatrix = transform->GetRawMatrix();
 
     m_VisualNodes[id] = std::make_unique<VisualNode>(data);
 }
@@ -53,12 +55,6 @@ void RenderingSystem::OnUpdate()
 
     for (EntityID id : m_MatchingEntities)
     {
-        auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
-
-        VisualNodeDynamicData data;
-        data.m_ModelMatrix = transform->GetMatrix();
-        m_VisualNodes[id]->UpdateDynamicData(data);
-
         GraphicCore::GetGraphicRenderer().DrawNode(m_VisualNodes[id].get());
     }
 }

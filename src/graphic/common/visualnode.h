@@ -21,32 +21,27 @@
 
 ETH_NAMESPACE_BEGIN
 
-struct VisualNodeStaticData
+struct VisualNodeData
 {
     const void* m_VertexBuffer;
     const void* m_IndexBuffer;
 
     uint16_t m_NumVertices;
     uint16_t m_NumIndices;
-};
 
-struct VisualNodeDynamicData
-{
-    ethXMMatrix m_ModelMatrix;
+    const ethXMMatrix* m_ModelMatrix;
 };
 
 class VisualNode
 {
 public:
-    VisualNode(const VisualNodeStaticData data);
+    VisualNode(const VisualNodeData data);
     ~VisualNode() = default;
 
     inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return m_VertexBufferView; }
     inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const { return m_IndexBufferView; }
     inline uint16_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
-    inline ethXMMatrix GetModelMatrix() const { return m_DynamicData.m_ModelMatrix; }
-
-    inline void UpdateDynamicData(VisualNodeDynamicData data) { m_DynamicData = data; }
+    inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
 
 private:
     void UploadVertexBuffer(const void* data, uint16_t numVertices);
@@ -62,8 +57,7 @@ private:
     D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
     D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
-    VisualNodeStaticData m_StaticData;
-    VisualNodeDynamicData m_DynamicData;
+    VisualNodeData m_StaticData;
 };
 
 ETH_NAMESPACE_END
