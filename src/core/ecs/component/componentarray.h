@@ -35,9 +35,6 @@ public:
     ~ComponentArray() = default;
 
 public:
-    inline std::vector<T>& Get() { return m_Components; }
-
-public:
     T* GetComponent(EntityID id); 
     T* AddComponent(EntityID id);
     void RemoveComponent(EntityID id);
@@ -45,7 +42,7 @@ public:
 private:
     std::unordered_map<EntityID, uint32_t> m_EntityToIndexMap;
     std::unordered_map<uint32_t, EntityID> m_IndexToEntityMap;
-    std::vector<T> m_Components;
+    std::vector<std::unique_ptr<T>> m_Components;
 };
 
 template <typename T>
@@ -54,18 +51,18 @@ T* ComponentArray<T>::GetComponent(EntityID id)
     if (m_EntityToIndexMap.find(id) == m_EntityToIndexMap.end())
         return nullptr;
 
-    return &m_Components[m_EntityToIndexMap[id]];
+    return m_Components[m_EntityToIndexMap[id]].get();
 }
 
 template <typename T>
 T* ComponentArray<T>::AddComponent(EntityID id)
 {
-    m_Components.emplace_back(id);
+    m_Components.emplace_back(std::make_unique<T>(id));
     uint32_t index = m_Components.size() - 1;
 
     m_EntityToIndexMap[id] = index;
     m_IndexToEntityMap[index] = id;
-    return &m_Components.back();
+    return m_Components.back().get();
 }
 
 template <typename T>

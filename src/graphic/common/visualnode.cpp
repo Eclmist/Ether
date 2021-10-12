@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-VisualNode::VisualNode(const VisualNodeStaticData data)
+VisualNode::VisualNode(const VisualNodeData data)
     : m_StaticData(data)
 {
     UploadVertexBuffer(m_StaticData.m_VertexBuffer, m_StaticData.m_NumVertices);

@@ -37,7 +37,11 @@ public:
     void SetRotation(const ethVector3& eulerRotation);
     void SetScale(const ethVector3& scale);
 
-    ethXMMatrix GetMatrix();
+    inline ethXMMatrix GetMatrix() const { return m_ModelMatrix; }
+    inline const ethXMMatrix* GetRawMatrix() const { return &m_ModelMatrix; }
+
+private:
+    void UpdateModelMatrix();
 
 private:
     ethVector3 m_Position;
@@ -47,9 +51,8 @@ private:
     ethXMMatrix m_TranslationMatrix;
     ethXMMatrix m_RotationMatrix;
     ethXMMatrix m_ScaleMatrix;
-    ethXMMatrix m_FinalMatrix;
 
-    bool m_MatrixRequiresUpdate;
+    ethXMMatrix m_ModelMatrix;
 };
 
 ETH_NAMESPACE_END
