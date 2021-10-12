@@ -17,36 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "visual.h"
+#include "visualnode.h"
 
 ETH_NAMESPACE_BEGIN
 
-Visual::Visual(const VisualComponent& source)
-    : m_VisualComponent(source)
+VisualNode::VisualNode(const VisualNodeStaticData data)
+    : m_StaticData(data)
 {
-    MeshComponent& mesh = m_VisualComponent.GetMesh();
-    Material& material = m_VisualComponent.GetMaterial();
+    UploadVertexBuffer(m_StaticData.m_VertexBuffer, m_StaticData.m_NumVertices);
+    UploadIndexBuffer(m_StaticData.m_IndexBuffer, m_StaticData.m_NumIndices);
 
-    UploadVertexBuffer(mesh.m_VertexBuffer, mesh.m_NumVertices);
-    UploadIndexBuffer(mesh.m_IndexBuffer, mesh.m_NumIndices);
-
-    InitVertexBufferView(mesh.m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
-    InitIndexBufferView(mesh.m_NumIndices * sizeof(uint16_t));
+    InitVertexBufferView(m_StaticData.m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
+    InitIndexBufferView(m_StaticData.m_NumIndices * sizeof(uint16_t));
 }
 
-void Visual::UploadVertexBuffer(const void* data, uint16_t numVertices)
+void VisualNode::UploadVertexBuffer(const void* data, uint16_t numVertices)
 {
     m_VertexBuffer = std::make_unique<BufferResource>(L"Visual::VertexBuffer",
         numVertices, sizeof(VertexPositionColor), data);
 }
 
-void Visual::UploadIndexBuffer(const void* data, uint16_t numIndices)
+void VisualNode::UploadIndexBuffer(const void* data, uint16_t numIndices)
 { 
     m_IndexBuffer = std::make_unique<BufferResource>(L"Visual::IndexBuffer",
         numIndices, sizeof(uint16_t), data);
 }
 
-void Visual::InitVertexBufferView(size_t bufferSize, size_t stride)
+void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)
 {
     m_VertexBufferView = {};
     m_VertexBufferView.BufferLocation = m_VertexBuffer->GetVirtualAddress();
@@ -54,7 +51,7 @@ void Visual::InitVertexBufferView(size_t bufferSize, size_t stride)
     m_VertexBufferView.StrideInBytes = stride;
 }
 
-void Visual::InitIndexBufferView(size_t bufferSize)
+void VisualNode::InitIndexBufferView(size_t bufferSize)
 {
     m_IndexBufferView = {};
     m_IndexBufferView.BufferLocation = m_IndexBuffer->GetVirtualAddress();

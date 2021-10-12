@@ -17,29 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "visualcomponent.h"
-#include "graphic/common/visual.h"
+#pragma once
+
+#include "component.h"
 
 ETH_NAMESPACE_BEGIN
 
-VisualComponent::VisualComponent(Entity& owner)
-    : Component(owner)
-    , m_Transform(&m_Owner.GetTransform())
-    , m_MeshComponent(m_Owner.GetComponent<MeshComponent>())
-    , m_Material(nullptr)
+class ETH_ENGINE_DLL VisualComponent : public Component
 {
-    if (m_MeshComponent == nullptr)
-        m_MeshComponent = m_Owner.AddComponent<MeshComponent>();
-
-    GraphicCore::GetGraphicRenderer().RegisterVisual(std::make_unique<Visual>(*this));
-}
-
-VisualComponent::~VisualComponent()
-{
-    if (GraphicCore::HasInstance())
-        GraphicCore::GetGraphicRenderer().DeregisterVisual(std::make_unique<Visual>(*this));
-}
+public:
+    VisualComponent(EntityID owner);
+    ~VisualComponent();
+};
 
 ETH_NAMESPACE_END
-
 

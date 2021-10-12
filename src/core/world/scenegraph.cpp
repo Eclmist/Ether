@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 void SceneGraph::SetParent(EntityID id, EntityID parent)
 {
-    if (m_Nodes[id].m_ParentIndex != ETH_INVALID_ENTITYID)
+    if (m_Nodes[id].m_ParentIndex != ETH_ECS_INVALID_ID)
     {
         SceneGraphNode oldParent = m_Nodes[m_Nodes[id].m_ParentIndex];
 
@@ -42,7 +42,7 @@ void SceneGraph::Register(EntityID id, EntityID parent)
     m_Nodes[id].m_IsRegistered = true;
     m_Nodes[id].m_ParentIndex = parent;
 
-    if (parent != ETH_INVALID_ENTITYID)
+    if (parent != ETH_ECS_INVALID_ID)
         m_Nodes[parent].m_ChildrenIndices.push_back(id);
 }
 
@@ -50,10 +50,10 @@ void SceneGraph::Deregister(EntityID id)
 {
     AssertEngine(m_Nodes[id].m_IsRegistered, "EntityID was never registered to the scene graph");
     m_Nodes[id].m_IsRegistered = false;
-    SetParent(id, ETH_INVALID_ENTITYID);
+    SetParent(id, ETH_ECS_INVALID_ID);
 
     for (EntityID childIdx : m_Nodes[id].m_ChildrenIndices)
-        m_Nodes[childIdx].m_ParentIndex = ETH_INVALID_ENTITYID;
+        m_Nodes[childIdx].m_ParentIndex = ETH_ECS_INVALID_ID;
 
     m_Nodes[id].m_ChildrenIndices.clear();
 }

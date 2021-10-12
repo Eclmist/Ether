@@ -19,21 +19,25 @@
 
 #pragma once
 
-#include "renderpass.h"
+#include "system.h"
 
 ETH_NAMESPACE_BEGIN
 
-class HardCodedRenderPass : public RenderPass
+class VisualNode;
+
+class RenderingSystem : public System
 {
 public:
-    HardCodedRenderPass(const std::string& name);
+    RenderingSystem();
+    ~RenderingSystem() = default;
 
-    void RegisterInputOutput() override;
-    void Render(GraphicContext& context) override;
+protected:
+    void OnEntityRegister(EntityID id) override;
+    void OnEntityDeregister(EntityID id) override;
+    void OnUpdate() override;
 
-private:
-    std::vector<VisualNode*> m_PendingVisualNodes;
+protected:
+    std::unordered_map<EntityID, std::unique_ptr<VisualNode>> m_VisualNodes;
 };
 
 ETH_NAMESPACE_END
-

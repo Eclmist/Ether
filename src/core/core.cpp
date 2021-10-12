@@ -29,6 +29,8 @@ void EngineCore::Initialize(IApplicationBase& app)
     Instance().m_LoggingManager = std::make_unique<LoggingManager>();
     Instance().m_MainWindow = std::make_unique<Win32::Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
+    Instance().m_ECSManager = std::make_unique<ECSManager>();
+    Instance().m_ECSManager->OnInitialize(); // TODO: This looks ugly, can we move this away?
 
 #ifdef ETH_TOOLMODE
     Instance().m_NotificationTray = std::make_unique<Win32::NotificationTray>();
@@ -44,8 +46,14 @@ void EngineCore::LoadContent()
     Instance().m_MainApplication->LoadContent();
 }
 
+void EngineCore::Update()
+{
+    Instance().m_ECSManager->OnUpdate();
+}
+
 void EngineCore::Shutdown()
 {
+    Instance().m_ECSManager.reset();
     Instance().m_ActiveWorld.reset();
     Instance().m_MainWindow.reset();
     Instance().m_LoggingManager.reset();

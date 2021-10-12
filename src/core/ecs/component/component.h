@@ -19,21 +19,18 @@
 
 #pragma once
 
-#include "core/world/scenegraph.h"
-
 ETH_NAMESPACE_BEGIN
 
-class World : public NonCopyable
+class Component // : public Serializable?
 {
 public:
-    World() = default;
-    ~World() = default;
+    Component(EntityID owner);
+    virtual ~Component() = default;
 
-public:
-    inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
+    inline EntityID GetOwner() { return m_Owner; }
 
-private:
-    SceneGraph m_SceneGraph;
+protected:
+    EntityID m_Owner;
 };
 
 ETH_NAMESPACE_END

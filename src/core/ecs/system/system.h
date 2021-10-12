@@ -19,20 +19,26 @@
 
 #pragma once
 
-#include "renderpass.h"
-
 ETH_NAMESPACE_BEGIN
 
-class HardCodedRenderPass : public RenderPass
+class System : public NonCopyable
 {
 public:
-    HardCodedRenderPass(const std::string& name);
+    System() = default;
+    ~System() = default;
 
-    void RegisterInputOutput() override;
-    void Render(GraphicContext& context) override;
+public:
+    virtual void OnEntityRegister(EntityID id) = 0;
+    virtual void OnEntityDeregister(EntityID id) = 0;
+    virtual void OnUpdate() = 0;
 
-private:
-    std::vector<VisualNode*> m_PendingVisualNodes;
+public:
+    inline ComponentSignature GetSignature() const { return m_Signature; }
+
+protected:
+    friend class SystemManager;
+    std::set<EntityID> m_MatchingEntities;
+    ComponentSignature m_Signature;
 };
 
 ETH_NAMESPACE_END

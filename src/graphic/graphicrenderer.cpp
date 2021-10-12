@@ -38,7 +38,6 @@ GraphicRenderer::~GraphicRenderer()
 void GraphicRenderer::WaitForPresent()
 {
     m_Context.GetCommandQueue().StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
-    CleanUp();
 }
 
 void GraphicRenderer::Render()
@@ -59,17 +58,17 @@ void GraphicRenderer::Render()
     m_Context.GetCommandList().RSSetScissorRects(1, &gfxDisplay.GetScissorRect());
     m_Context.GetCommandList().SetGraphicsRoot32BitConstants(0, 4, &globalTime, 0);
 
-    for (auto&& visual : m_Visuals)
+    for (auto&& visualNodes : m_PendingVisualNodes)
     {
-        ethXMMatrix modelMatrix = visual->GetModelMatrix();
+        ethXMMatrix modelMatrix = visualNodes->GetModelMatrix();
         ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, m_Context.GetViewMatrix());
         mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_Context.GetProjectionMatrix());
 
         m_Context.GetCommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        m_Context.GetCommandList().IASetVertexBuffers(0, 1, &visual->GetVertexBufferView());
-        m_Context.GetCommandList().IASetIndexBuffer(&visual->GetIndexBufferView());
+        m_Context.GetCommandList().IASetVertexBuffers(0, 1, &visualNodes->GetVertexBufferView());
+        m_Context.GetCommandList().IASetIndexBuffer(&visualNodes->GetIndexBufferView());
         m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
-        m_Context.GetCommandList().DrawIndexedInstanced(visual->GetNumIndices(), 1, 0, 0, 0);
+        m_Context.GetCommandList().DrawIndexedInstanced(visualNodes->GetNumIndices(), 1, 0, 0, 0);
     }
 
     m_Context.FinalizeAndExecute();
@@ -87,26 +86,15 @@ void GraphicRenderer::Present()
     gfxDisplay.Present();
 }
 
-void GraphicRenderer::RegisterVisual(std::unique_ptr<Visual> visual)
-{
-    m_Visuals.push_back(std::move(visual));
-}
-
-void GraphicRenderer::DeregisterVisual(std::unique_ptr<Visual> visual)
-{
-    for (auto iter = m_Visuals.begin(); iter != m_Visuals.end(); ++iter)
-    {
-        if (*iter != visual)
-            continue;
-
-        m_Visuals.erase(iter);
-        return;
-    }
-}
-
 void GraphicRenderer::CleanUp()
 {
     // TODO: Clean up old PSOs and other resources
+    m_PendingVisualNodes.clear();
+}
+
+void GraphicRenderer::DrawNode(VisualNode* node)
+{
+    m_PendingVisualNodes.push_back(node);
 }
 
 ETH_NAMESPACE_END

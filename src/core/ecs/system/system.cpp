@@ -17,23 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "renderpass.h"
+#include "system.h"
 
 ETH_NAMESPACE_BEGIN
-
-class HardCodedRenderPass : public RenderPass
-{
-public:
-    HardCodedRenderPass(const std::string& name);
-
-    void RegisterInputOutput() override;
-    void Render(GraphicContext& context) override;
-
-private:
-    std::vector<VisualNode*> m_PendingVisualNodes;
-};
 
 ETH_NAMESPACE_END
 

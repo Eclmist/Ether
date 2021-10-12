@@ -49,7 +49,7 @@ void HardCodedRenderPass::Render(GraphicContext& context)
     context.GetCommandList().RSSetScissorRects(1, &gfxDisplay.GetScissorRect());
     context.GetCommandList().SetGraphicsRoot32BitConstants(0, 4, &globalTime, 0);
 
-    for (auto&& visual : m_Visuals)
+    for (auto&& visual : m_PendingVisualNodes)
     {
         ethXMMatrix modelMatrix = visual->GetModelMatrix();
         ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, context.GetViewMatrix());

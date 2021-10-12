@@ -17,39 +17,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "entity.h"
 
 ETH_NAMESPACE_BEGIN
 
-// Arbitrarily defined max entities. This value will affect the 
-// allocated memory for systems. 
-#define ETH_MAX_ENTITIES 4096
-#define ETH_INVALID_ENTITYID -1
-
-class EntityManager : public NonCopyable // : public Serializable?
+Entity::Entity(const EntityID id, const std::string& name)
+    : m_ID(id)
+    , m_Name(name)
 {
-public:
-    EntityManager();
-    ~EntityManager();
+}
 
-public:
-    inline Entity* GetEntity(EntityID id) const { return m_LiveEntities[id].get(); }
+Entity::~Entity()
+{
+}
 
-private:
-    friend class World;
-    Entity* CreateEntity(const std::string& name);
-    void DestroyEntity(EntityID id);
-
-private:
-    EntityID ReserveNextEntityID();
-    void ReleaseEntityID(EntityID id);
-
-private:
-    std::queue<EntityID> m_AvailableEntityIDs;
-    std::unique_ptr<Entity> m_LiveEntities[ETH_MAX_ENTITIES];
-};
+void Entity::AddMandatoryComponents()
+{
+    AddComponent<TransformComponent>();
+}
 
 ETH_NAMESPACE_END
 

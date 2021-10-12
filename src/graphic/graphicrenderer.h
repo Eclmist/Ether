@@ -23,6 +23,8 @@
 #include "graphic/graphicbatchrenderer.h"
 #include "graphic/gui/guirenderer.h"
 
+#include "graphic/common/visualnode.h"
+
 ETH_NAMESPACE_BEGIN
 
 class GraphicRenderer : public NonCopyable
@@ -34,19 +36,17 @@ public:
     void WaitForPresent();
     void Render();
     void Present();
-
-    //TODO: maybe move into batch renderer?
-    void RegisterVisual(std::unique_ptr<Visual> visual);
-    void DeregisterVisual(std::unique_ptr<Visual> visual);
+    void CleanUp();
 
     inline GraphicContext& GetGraphicContext() { return m_Context; }
 
-private:
-    void CleanUp();
+public:
+    void DrawNode(VisualNode*); // TODO: Move this responsibility into the various render passes
 
 private:
     GraphicContext m_Context;
-    std::vector<std::unique_ptr<Visual>> m_Visuals;
+    std::vector<VisualNode*> m_PendingVisualNodes;
 };
 
 ETH_NAMESPACE_END
+

@@ -17,39 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "componentmanager.h"
 
-#include "component.h"
+#include "core/ecs/component/transformcomponent.h"
+#include "core/ecs/component/meshcomponent.h"
+#include "core/ecs/component/visualcomponent.h"
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL TransformComponent : public Component
+ComponentManager::ComponentManager()
+    : m_NextComponentType(0)
 {
-public:
-    TransformComponent(Entity& owner);
-    ~TransformComponent() = default;
-
-    inline ethVector3 GetPosition() const { return m_Position; }
-    inline ethVector3 GetRotation() const { return m_EulerRotation; }
-    inline ethVector3 GetScale() const { return m_Scale; }
-
-    void SetPosition(const ethVector3& position);
-    void SetRotation(const ethVector3& eulerRotation);
-    void SetScale(const ethVector3& scale);
-
-    ethXMMatrix GetMatrix();
-
-private:
-    ethVector3 m_Position;
-    ethVector3 m_EulerRotation;
-    ethVector3 m_Scale;
-
-    ethXMMatrix m_TranslationMatrix;
-    ethXMMatrix m_RotationMatrix;
-    ethXMMatrix m_ScaleMatrix;
-    ethXMMatrix m_FinalMatrix;
-
-    bool m_MatrixRequiresUpdate;
+    RegisterComponent<TransformComponent>();
+    RegisterComponent<MeshComponent>();
+    RegisterComponent<VisualComponent>();
 };
 
 ETH_NAMESPACE_END

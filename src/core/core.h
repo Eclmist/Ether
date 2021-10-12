@@ -25,6 +25,7 @@
 #include <deque>
 #include <queue>
 #include <string>
+#include <set>
 #include <vector>
 
 #include "coredefinitions.h"
@@ -38,15 +39,12 @@
 #include "system/platform/platformnotificationtray.h"
 #include "system/platform/win32/keycodes.h"
 
-#include "core/component/transformcomponent.h"
-#include "core/component/meshcomponent.h"
-#include "core/component/visualcomponent.h"
+#include "core/ecs/ecsmanager.h"
+#include "core/world/world.h"
 
 #include "core/commandlineoptions.h"
 #include "core/event/events.h"
 #include "core/engineconfig.h"
-#include "core/entity.h"
-#include "core/world.h"
 #include "core/material.h"
 #include "core/iapplicationbase.h"
 #include "core/input.h"
@@ -65,11 +63,12 @@ class ETH_ENGINE_DLL EngineCore : public Singleton<EngineCore>
 public:
     static void Initialize(IApplicationBase& app);
     static void LoadContent();
+    static void Update();
     static void Shutdown();
     static bool IsInitialized();
 
     static IApplicationBase& GetMainApplication() { return *Instance().m_MainApplication; }
-
+    static ECSManager& GetECSManager() { return *Instance().m_ECSManager; }
     static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
     static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
@@ -81,6 +80,7 @@ public:
 private:
     IApplicationBase* m_MainApplication;
 
+    std::unique_ptr<ECSManager> m_ECSManager;
     std::unique_ptr<LoggingManager> m_LoggingManager;
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;

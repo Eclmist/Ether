@@ -24,7 +24,7 @@ ETH_NAMESPACE_BEGIN
 // TODO: Should our transform class really be tied to the directxmath library?
 using namespace DirectX;
 
-TransformComponent::TransformComponent(Entity& owner)
+TransformComponent::TransformComponent(EntityID owner)
     : Component(owner)
     , m_MatrixRequiresUpdate(true)
 {
