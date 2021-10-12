@@ -95,18 +95,6 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
 
     float x = sin((float)GetTimeSinceStart());
     EngineCore::GetECSManager().GetEntity(1)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
-
-    for (int i = 3; i < 1000; ++i)
-    {
-        auto transform = EngineCore::GetECSManager().GetEntity(i)->GetComponent<TransformComponent>();
-        float y = transform->GetPosition().y - 0.1;
-
-        EngineCore::GetECSManager().GetEntity(i)->GetComponent<TransformComponent>()->SetPosition({ 
-            transform->GetPosition().x,
-            y,
-            transform->GetPosition().z
-            });
-    }
 }
 
 void SampleApp::OnRender(const RenderEventArgs& e)
