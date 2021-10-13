@@ -31,6 +31,7 @@
 #include "coredefinitions.h"
 
 #include "system/noncopyable.h"
+#include "system/serializable.h"
 #include "system/singleton.h"
 #include "system/stringutils.h"
 #include "system/types.h"

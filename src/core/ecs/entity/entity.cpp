@@ -24,7 +24,9 @@ ETH_NAMESPACE_BEGIN
 Entity::Entity(const EntityID id, const std::string& name)
     : m_ID(id)
     , m_Name(name)
+    , m_Enabled(true)
 {
+    ETH_TOOLONLY(memset(m_Components, 0, sizeof(m_Components)));
 }
 
 Entity::~Entity()

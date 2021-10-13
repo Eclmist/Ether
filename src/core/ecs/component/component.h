@@ -19,18 +19,41 @@
 
 #pragma once
 
+#ifdef ETH_TOOLMODE
+#include "toolmode/property/property.h"
+#include "toolmode/property/intproperty.h"
+#include "toolmode/property/floatproperty.h"
+#include "toolmode/property/vector2property.h"
+#include "toolmode/property/vector3property.h"
+#include "toolmode/property/vector4property.h"
+#include "toolmode/property/stringproperty.h"
+
+#define EDITOR_PROPERTY(var, name, Type) m_EditorProperties.push_back(std::make_unique<Type>(name, &var))
+#endif
+
 ETH_NAMESPACE_BEGIN
 
-class Component // : public Serializable?
+class Component : public Serializable
 {
 public:
     Component(EntityID owner);
     virtual ~Component() = default;
 
-    inline EntityID GetOwner() { return m_Owner; }
+    inline EntityID GetOwner() const { return m_Owner; }
+
+    inline bool IsEnabled() const { return m_Enabled; }
+    inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
+
+    virtual std::string GetName() const = 0;
+    
+    ETH_TOOLONLY(inline std::vector<std::shared_ptr<Property>> GetEditorProperties() const { return m_EditorProperties; })
+
+protected:
+    ETH_TOOLONLY(std::vector<std::shared_ptr<Property>> m_EditorProperties);
 
 protected:
     EntityID m_Owner;
+    bool m_Enabled;
 };
 
 ETH_NAMESPACE_END

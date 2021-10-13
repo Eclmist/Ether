@@ -40,6 +40,9 @@ public:
     inline const VertexPositionColor* GetVertexBuffer() const { return m_VertexBuffer; }
     inline const uint16_t* GetIndexBuffer() const { return m_IndexBuffer; }
 
+public:
+    inline std::string GetName() const override { return "Mesh"; }
+
 private:
     VertexPositionColor m_VertexBuffer[MAX_VERTICES];
     uint16_t m_IndexBuffer[MAX_VERTICES];

@@ -27,11 +27,15 @@ ETH_NAMESPACE_BEGIN
 // allocated memory for systems. 
 #define ETH_ECS_MAX_ENTITIES 4096
 #define ETH_ECS_MAX_COMPONENTS 32
+#define ETH_ECS_ROOT_ENTITY_ID (ETH_ECS_MAX_ENTITIES)
 #define ETH_ECS_INVALID_ID -1
 
 using EntityID = uint32_t;
 using ComponentID = uint32_t;
 using ComponentSignature = std::bitset<ETH_ECS_MAX_COMPONENTS>;
+
+class Entity;
+class Component;
 
 ETH_NAMESPACE_END
 
@@ -67,6 +71,7 @@ public:
         T* component = m_ComponentManager->AddComponent<T>(id);
 
         Entity* entity = m_EntityManager->GetEntity(id);
+        ETH_TOOLONLY(entity->m_Components[GetComponentID<T>()] = component);
         entity->SetComponentSignature(GetComponentID<T>() , true);
         m_SystemManager->AssignEntityToSystems(id, entity->GetComponentSignature());
 
@@ -83,22 +88,25 @@ public:
     }
 
     template <typename T>
-    T* GetComponent(EntityID id)
+    T* GetComponent(EntityID id) const
     {
         return m_ComponentManager->GetComponent<T>(id);
     }
 
     template <typename T>
-    std::shared_ptr<ComponentArray<T>> GetComponents()
+    std::shared_ptr<ComponentArray<T>> GetComponents() const
     {
         return m_ComponentManager->GetComponent<T>();
     }
 
     template <typename T>
-    ComponentID GetComponentID()
+    ComponentID GetComponentID() const
     {
         return m_ComponentManager->GetComponentID<T>();
     }
+
+public:
+    ETH_TOOLONLY(EntityID GetEntityID(std::string guid) const);
 
 private:
     std::unique_ptr<ComponentManager> m_ComponentManager;

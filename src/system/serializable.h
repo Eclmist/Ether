@@ -19,18 +19,40 @@
 
 #pragma once
 
-#include "component.h"
+#include <Combaseapi.h>
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL VisualComponent : public Component
+/*
+    Derive from this class to make your classes serializable
+    
+    TODO: Actually support serialization/deserialization. Right now this class
+    only stores the GUID to be serialized through toolmode IPC
+*/
+
+class Serializable
 {
 public:
-    VisualComponent(EntityID owner);
-    ~VisualComponent();
+    Serializable()
+    {
+        CoCreateGuid(&m_GUID);
+    };
 
-public:
-    inline std::string GetName() const override { return "Visual"; }
+    ~Serializable() = default;
+
+    inline GUID GetGuid() const { return m_GUID; }
+
+    inline std::string GetGuidString() const {
+        char output[40];
+        snprintf(output, 40, "%08X-%04hX-%04hX-%02X%02X-%02X%02X%02X%02X%02X%02X",
+            m_GUID.Data1, m_GUID.Data2, m_GUID.Data3,
+            m_GUID.Data4[0], m_GUID.Data4[1], m_GUID.Data4[2], m_GUID.Data4[3],
+            m_GUID.Data4[4], m_GUID.Data4[5], m_GUID.Data4[6], m_GUID.Data4[7]);
+        return std::string(output);
+    }
+
+protected:
+    GUID m_GUID;
 };
 
 ETH_NAMESPACE_END

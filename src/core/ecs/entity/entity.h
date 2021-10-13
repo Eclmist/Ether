@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL Entity : public NonCopyable // : public Serializable?
+class ETH_ENGINE_DLL Entity : public Serializable
 {
 public:
     Entity(const EntityID id, const std::string& name);
@@ -36,24 +36,30 @@ public:
     inline ComponentSignature GetComponentSignature() const { return m_ComponentSignature; }
     inline void SetComponentSignature(ComponentID id, bool isSet) { m_ComponentSignature.set(id, isSet); }
 
+    inline bool IsEnabled() const { return m_Enabled; }
+    inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
+
 public:
     template <typename T>
-    T* const GetComponent()
+    T* const GetComponent() const
     {
         return EngineCore::GetECSManager().GetComponent<T>(m_ID);
     }
 
     template <typename T>
-    T* const AddComponent()
+    T* const AddComponent() const
     {
         return EngineCore::GetECSManager().AddComponent<T>(m_ID);
     }
 
     template <typename T>
-    T* const RemoveComponent()
+    T* const RemoveComponent() const
     {
         return EngineCore::GetECSManager().RemoveComponent()<T>(m_ID);
     }
+
+public:
+    ETH_TOOLONLY(Component* m_Components[ETH_ECS_MAX_COMPONENTS]);
 
 private:
     friend class EntityManager;
@@ -61,8 +67,10 @@ private:
 
 private:
     EntityID m_ID;
-    ComponentSignature m_ComponentSignature;
     std::string m_Name;
+    bool m_Enabled;
+
+    ComponentSignature m_ComponentSignature;
 };
 
 ETH_NAMESPACE_END

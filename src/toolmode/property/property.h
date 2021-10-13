@@ -19,18 +19,20 @@
 
 #pragma once
 
-#include "component.h"
-
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL VisualComponent : public Component
+class Property
 {
 public:
-    VisualComponent(EntityID owner);
-    ~VisualComponent();
+    Property(std::string name = "Unnamed Property")
+        : m_Name(name)
+    {
+    }
 
-public:
-    inline std::string GetName() const override { return "Visual"; }
+    virtual std::string GetData() = 0;
+
+protected:
+    std::string m_Name;
 };
 
 ETH_NAMESPACE_END
