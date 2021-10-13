@@ -43,6 +43,7 @@ Entity* EntityManager::CreateEntity(const std::string& name)
 
     m_LiveEntities[newID] = std::make_unique<Entity>(newID, name);
     m_LiveEntities[newID]->AddMandatoryComponents();
+    m_GuidToEntityIDMap[m_LiveEntities[newID]->GetGuidString()] = newID;
     EngineCore::GetActiveWorld().GetSceneGraph().Register(newID);
     return m_LiveEntities[newID].get();
 }

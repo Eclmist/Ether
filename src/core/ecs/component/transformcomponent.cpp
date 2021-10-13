@@ -30,6 +30,13 @@ TransformComponent::TransformComponent(EntityID owner)
     SetPosition({ 0, 0, 0 });
     SetRotation({ 0, 0, 0 });
     SetScale({ 1, 1, 1 });
+
+#ifdef ETH_TOOLMODE
+    // TODO: Change to "Vector3Property"
+    EDITOR_PROPERTY(m_Position, "Position", Vector3Property);
+    EDITOR_PROPERTY(m_EulerRotation, "Rotation", Vector3Property);
+    EDITOR_PROPERTY(m_Scale, "Scale", Vector3Property);
+#endif
 }
 
 void TransformComponent::SetPosition(const ethVector3& position)

@@ -19,18 +19,35 @@
 
 #pragma once
 
-#include "component.h"
+#include "property.h"
+#include "json/json.hpp"
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL VisualComponent : public Component
+class Vector4Property : public Property
 {
 public:
-    VisualComponent(EntityID owner);
-    ~VisualComponent();
+    Vector4Property(std::string name, const ethVector4* data)
+        : Property(name)
+        , m_Data(data)
+    {
+    }
+    ~Vector4Property() = default;
 
-public:
-    inline std::string GetName() const override { return "Visual"; }
+    std::string GetData() override
+    {
+        nlohmann::json data;
+        data["name"] = m_Name;
+        data["type"] = "Vector4";
+        data["values"][0] = std::to_string(m_Data->x);
+        data["values"][1] = std::to_string(m_Data->y);
+        data["values"][2] = std::to_string(m_Data->z);
+        data["values"][3] = std::to_string(m_Data->w);
+        return data.dump();
+    }
+
+private:
+    const ethVector4* m_Data;
 };
 
 ETH_NAMESPACE_END

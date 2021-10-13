@@ -36,7 +36,7 @@ CommandFactory::CommandFactory()
     REGISTER_COMMAND("initialize", InitializeCommand);
     REGISTER_COMMAND("resize", ResizeCommand);
     REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
-    //REGISTER_COMMAND("getcomponents", GetComponentsCommand);
+    REGISTER_COMMAND("getcomponents", GetComponentsCommand);
 }
 
 std::unique_ptr<Command> CommandFactory::CreateCommand(const std::string& commandID, const CommandData& data) const

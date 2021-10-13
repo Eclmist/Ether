@@ -35,7 +35,7 @@ public:
     ~ComponentArray() = default;
 
 public:
-    T* GetComponent(EntityID id); 
+    T* GetComponent(EntityID id) const; 
     T* AddComponent(EntityID id);
     void RemoveComponent(EntityID id);
 
@@ -46,12 +46,12 @@ private:
 };
 
 template <typename T>
-T* ComponentArray<T>::GetComponent(EntityID id)
+T* ComponentArray<T>::GetComponent(EntityID id) const
 {
     if (m_EntityToIndexMap.find(id) == m_EntityToIndexMap.end())
         return nullptr;
 
-    return m_Components[m_EntityToIndexMap[id]].get();
+    return m_Components[m_EntityToIndexMap.at(id)].get();
 }
 
 template <typename T>

@@ -35,49 +35,37 @@ void GetComponentsCommand::Execute()
     EngineCore::GetIpcManager().QueueCommand(response);
 }
 
-GetComponentsCommandResponse::GetComponentsCommandResponse(EntityID guid)
+GetComponentsCommandResponse::GetComponentsCommandResponse(const std::string& guid)
     : m_EntityGuid(guid)
 {
 }
 
 std::string GetComponentsCommandResponse::GetSendableData() const
 {
-    //CommandData command;
-    //command["command"] = "getcomponents";
+    CommandData command;
+    command["command"] = "getcomponents";
 
-    //auto entity = EngineCore::GetECSManager().GetEntity(m_EntityGuid);
-    ////auto signature = entity->GetComponentSignature();
+    auto entityID = EngineCore::GetECSManager().GetEntityID(m_EntityGuid);
+    auto entity = EngineCore::GetECSManager().GetEntity(entityID);
+    auto components = entity->m_Components;
 
-    ////for (int i = 0; i < ETH_ECS_MAX_COMPONENTS; ++i)
-    ////{
-    ////    if (signature.test(i))
-    ////    {
+    for (int i = 0; i < ETH_ECS_MAX_COMPONENTS; ++i)
+    {
+        if (components[i] == nullptr)
+            continue;
 
-    //auto components = entity->GetComponents();
+        command["args"]["components"][i]["guid"] = components[i]->GetGuidString();
+        command["args"]["components"][i]["name"] = components[i]->GetName();
+        command["args"]["components"][i]["entityGuid"] = m_EntityGuid;
+        command["args"]["components"][i]["enabled"] = components[i]->IsEnabled();
 
-    //for (int i = 0; i < components.size(); ++i)
-    //{
-    //    //command["args"]["components"][i]["guid"] = component->GetGuid();
-    //    //command["args"]["components"][i]["type"] = components[i].;
-    //    //command["args"]["components"][i]["entityGuid"] = components[i]->GetOwner();
-    //    //command["args"]["components"][i]["enabled"] = true;// component->GetGuid(); TODO
-    //}
+        // Send an empty array if there are no properties
+        auto properties = components[i]->GetEditorProperties();
+        for (int j = 0; j < properties.size(); ++j)
+            command["args"]["components"][i]["properties"][j] = CommandData::parse(properties[j]->GetData());
+    }
 
-    //    }
-    //}
-    
-
-
-    //for (int i = 0; i < topLevelEntities.size(); ++i)
-    //{
-    //    command["args"]["entities"][i]["name"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetName();
-    //    command["args"]["entities"][i]["guid"] = std::to_string(EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetID());
-    //    command["args"]["entities"][i]["parent"] = "";
-    //    command["args"]["entities"][i]["enabled"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->IsEnabled();
-    //}
-    //return command.dump();
-
-    return "";
+    return command.dump();
 }
 
 ETH_NAMESPACE_END
