@@ -118,7 +118,7 @@ std::string TcpSocket::GetNext()
 
 void TcpSocket::Send(const std::string& message)
 {
-    LogToolmodeInfo("Sending response: %s", message.c_str());
+    //LogToolmodeInfo("Sending response: %s", message.c_str());
     int result = send(m_ActiveSocket, message.c_str(), message.size(), 0);
 
     if (TCP_FAILED(result))
