@@ -24,6 +24,7 @@ ETH_NAMESPACE_BEGIN
 Entity::Entity(const EntityID id, const std::string& name)
     : m_ID(id)
     , m_Name(name)
+    , m_Enabled(true)
 {
 }
 
