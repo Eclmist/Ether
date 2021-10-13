@@ -33,19 +33,19 @@ public:
     void Execute() override;
 
 private:
-    EntityID m_EntityGuid; // Replace ID with GUID
+    std::string m_EntityGuid;
 };
 
 class GetComponentsCommandResponse : public SendableCommand
 {
 public:
-    GetComponentsCommandResponse(EntityID guid);
+    GetComponentsCommandResponse(const std::string& guid);
     ~GetComponentsCommandResponse() = default;
 
     std::string GetSendableData() const override;
 
 private:
-    EntityID m_EntityGuid; // Replace ID with GUID
+    std::string m_EntityGuid;
 };
 
 ETH_NAMESPACE_END

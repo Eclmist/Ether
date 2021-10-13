@@ -3,7 +3,7 @@
 
     Copyright (c) 2020-2021 Samuel Van Allen - All rights reserved.
 
-    Ether is free software: you can redistribute it and/or modify
+    Ether is free software: you can redistribute it jand/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -19,18 +19,33 @@
 
 #pragma once
 
-#include "component.h"
+#include "property.h"
+#include "json/json.hpp"
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL VisualComponent : public Component
+class Vector2Property : public Property
 {
 public:
-    VisualComponent(EntityID owner);
-    ~VisualComponent();
+    Vector2Property(std::string name, const ethVector2* data)
+        : Property(name)
+        , m_Data(data)
+    {
+    }
+    ~Vector2Property() = default;
 
-public:
-    inline std::string GetName() const override { return "Visual"; }
+    std::string GetData() override
+    {
+        nlohmann::json data;
+        data["name"] = m_Name;
+        data["type"] = "Vector2";
+        data["values"][0] = std::to_string(m_Data->x);
+        data["values"][1] = std::to_string(m_Data->y);
+        return data.dump();
+    }
+
+private:
+    const ethVector2* m_Data;
 };
 
 ETH_NAMESPACE_END

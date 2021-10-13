@@ -23,6 +23,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+class Component;
+
 class ComponentManager : public NonCopyable // : public Serializable?
 {
 public:
@@ -33,14 +35,14 @@ private:
     friend class ECSManager;
     
     template <typename T>
-    std::shared_ptr<ComponentArray<T>> GetComponents()
+    std::shared_ptr<ComponentArray<T>> GetComponents() const
     {
         const char* typeName = typeid(T).name();
-        return std::static_pointer_cast<ComponentArray<T>>(m_ComponentArrays[typeName]);
+        return std::static_pointer_cast<ComponentArray<T>>(m_ComponentArrays.at(typeName));
     }
 
     template <typename T>
-    T* GetComponent(EntityID id)
+    T* GetComponent(EntityID id) const
     {
         return GetComponents<T>()->GetComponent(id);
     }
@@ -58,10 +60,10 @@ private:
     }
 
     template <typename T>
-    ComponentID GetComponentID()
+    ComponentID GetComponentID() const
     {
         const char* typeName = typeid(T).name();
-        return m_ComponentIDs[typeName];
+        return m_ComponentIDs.at(typeName);
     }
 
 private:

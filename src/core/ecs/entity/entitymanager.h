@@ -36,13 +36,13 @@ private:
     Entity* CreateEntity(const std::string& name);
     void DestroyEntity(EntityID id);
 
-private:
     EntityID ReserveNextEntityID();
     void ReleaseEntityID(EntityID id);
 
 private:
     std::queue<EntityID> m_AvailableEntityIDs;
     std::unique_ptr<Entity> m_LiveEntities[ETH_ECS_MAX_ENTITIES];
+    std::unordered_map<std::string, EntityID> m_GuidToEntityIDMap;
 };
 
 ETH_NAMESPACE_END

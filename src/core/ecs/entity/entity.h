@@ -41,22 +41,25 @@ public:
 
 public:
     template <typename T>
-    T* const GetComponent()
+    T* const GetComponent() const
     {
         return EngineCore::GetECSManager().GetComponent<T>(m_ID);
     }
 
     template <typename T>
-    T* const AddComponent()
+    T* const AddComponent() const
     {
         return EngineCore::GetECSManager().AddComponent<T>(m_ID);
     }
 
     template <typename T>
-    T* const RemoveComponent()
+    T* const RemoveComponent() const
     {
         return EngineCore::GetECSManager().RemoveComponent()<T>(m_ID);
     }
+
+public:
+    ETH_TOOLONLY(Component* m_Components[ETH_ECS_MAX_COMPONENTS]);
 
 private:
     friend class EntityManager;
