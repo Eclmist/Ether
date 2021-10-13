@@ -46,17 +46,26 @@ public:
         debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 1, 0 });
         debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
 
-        //Entity* debugCubeAnim = EngineCore::GetEntityManager().CreateEntity("Debug Cube (Animated)");
-        //debugCubeAnim->AddComponent<MeshComponent>();
-        //debugCubeAnim->AddComponent<VisualComponent>();
-        //debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
-        //debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
-        //debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 1.20f, 1.40f, 1.23f });
+        Entity* debugCubeAnim = EngineCore::GetECSManager().CreateEntity("Debug Cube (Animated)");
+        debugCubeAnim->AddComponent<MeshComponent>();
+        debugCubeAnim->AddComponent<VisualComponent>();
+        debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
+        debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
+        debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 1.20f, 1.40f, 1.23f });
 
-        //Entity* groundPlane = EngineCore::GetEntityManager().CreateEntity("Ground Plane");
-        //groundPlane->AddComponent<MeshComponent>();
-        //groundPlane->AddComponent<VisualComponent>();
-        //groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
+        Entity* groundPlane = EngineCore::GetECSManager().CreateEntity("Ground Plane");
+        groundPlane->AddComponent<MeshComponent>();
+        groundPlane->AddComponent<VisualComponent>();
+        groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
+
+        //for (int i = 0; i < 20; ++i)
+        //{
+        //    Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
+        //    newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
+        //    newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+        //    newEntity->AddComponent<MeshComponent>();
+        //    newEntity->AddComponent<VisualComponent>();
+        //}
     };
 
     void UnloadContent() override {};
@@ -84,7 +93,8 @@ public:
         }
 
         float x = sin((float)GetTimeSinceStart());
-        EngineCore::GetECSManager().GetEntity(0)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
+        EngineCore::GetECSManager().GetEntity(1)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
+        EngineCore::GetECSManager().GetEntity(1)->SetName("Debug Cube (" + std::to_string(x) + ")");
     };
 
     void OnRender(const RenderEventArgs& e) override 

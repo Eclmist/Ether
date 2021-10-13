@@ -21,16 +21,23 @@
 
 ETH_NAMESPACE_BEGIN
 
-class Component // : public Serializable?
+class Component : public Serializable
 {
 public:
     Component(EntityID owner);
     virtual ~Component() = default;
 
-    inline EntityID GetOwner() { return m_Owner; }
+
+    inline EntityID GetOwner() const { return m_Owner; }
+
+    inline bool IsEnabled() const { return m_Enabled; }
+    inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
+
+    //virtual std::string GetName() = 0;
 
 protected:
     EntityID m_Owner;
+    bool m_Enabled;
 };
 
 ETH_NAMESPACE_END
