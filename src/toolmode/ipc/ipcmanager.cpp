@@ -27,6 +27,7 @@ ETH_NAMESPACE_BEGIN
 IpcManager::IpcManager()
 {
     LogToolmodeInfo("Initializing IPC Manager");
+    m_Socket = std::make_unique<TcpSocket>();
     m_IncomingMessageHandlerThread = std::thread(&IpcManager::IncomingMessageHandler, this);
     m_OutgoingMessageHandlerThread = std::thread(&IpcManager::OutgoingMessageHandler, this);
 
@@ -78,6 +79,13 @@ void IpcManager::QueueMessage(const std::string& message)
     m_OutgoingMessageQueue.push(message);
 }
 
+void IpcManager::Disconnect()
+{
+    ClearMessageQueue();
+    m_Socket->Close();
+    m_Socket = std::make_unique<TcpSocket>();
+}
+
 void IpcManager::ClearMessageQueue()
 {
     std::lock_guard guard(m_MessageMutex);
@@ -89,16 +97,16 @@ void IpcManager::IncomingMessageHandler()
 {
     while (true)
     {
-        if (!m_Socket.HasActiveConnection())
+        if (!m_Socket->HasActiveConnection())
         {
             ClearMessageQueue();
             EngineCore::GetMainWindow().SetParentWindowHandle(nullptr);
             EngineCore::GetMainWindow().Hide();
             LogToolmodeInfo("Waiting for incoming editor connection");
-            m_Socket.WaitForConnection();
+            m_Socket->WaitForConnection();
         }
 
-        auto next = m_Socket.GetNext();
+        auto next = m_Socket->GetNext();
         auto request = ParseMessage(next);
         QueueCommand(request);
     }
@@ -108,7 +116,7 @@ void IpcManager::OutgoingMessageHandler()
 {
     while (true)
     {
-        if (!m_Socket.HasActiveConnection())
+        if (!m_Socket->HasActiveConnection())
             continue;
 
         std::lock_guard guard(m_MessageMutex);
@@ -116,7 +124,7 @@ void IpcManager::OutgoingMessageHandler()
         if (m_OutgoingMessageQueue.empty())
             continue;
 
-        m_Socket.Send(m_OutgoingMessageQueue.front());
+        m_Socket->Send(m_OutgoingMessageQueue.front());
         m_OutgoingMessageQueue.pop();
     }
 }

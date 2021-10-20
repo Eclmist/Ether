@@ -56,7 +56,7 @@ std::string GetComponentsCommandResponse::GetSendableData() const
 
         command["args"]["components"][i]["guid"] = components[i]->GetGuidString();
         command["args"]["components"][i]["name"] = components[i]->GetName();
-        command["args"]["components"][i]["entityGuid"] = m_EntityGuid;
+        command["args"]["components"][i]["ownerguid"] = m_EntityGuid;
         command["args"]["components"][i]["enabled"] = components[i]->IsEnabled();
 
         // Send an empty array if there are no properties

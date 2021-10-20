@@ -138,8 +138,8 @@ void GraphicCommon::InitializeShaders()
     m_DefaultInputLayout.NumElements = 2;
     m_DefaultInputLayout.pInputElementDescs = inputElementDesc;
 
-    m_DefaultVS = std::make_unique<Shader>(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS, m_DefaultInputLayout);
-    m_DefaultPS = std::make_unique<Shader>(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS, m_DefaultInputLayout);
+    m_DefaultVS = std::make_unique<Shader>(L"vs_plexus.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS, m_DefaultInputLayout);
+    m_DefaultPS = std::make_unique<Shader>(L"ps_plexus.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS, m_DefaultInputLayout);
 
     m_DefaultVS->Compile();
     m_DefaultPS->Compile();

@@ -178,6 +178,9 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     switch (msg)
     {
+    case WM_MOUSEACTIVATE:
+        ETH_TOOLONLY(SetFocus((HWND)m_WindowHandle));
+        break;
     case WM_SIZE:
         EngineCore::GetEngineConfig().SetClientWidth(LOWORD(lParam));
         EngineCore::GetEngineConfig().SetClientHeight(HIWORD(lParam));
@@ -226,7 +229,6 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     return 0;
 }
-
 }
 
 ETH_NAMESPACE_END
