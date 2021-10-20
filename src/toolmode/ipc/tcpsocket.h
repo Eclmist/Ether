@@ -35,6 +35,7 @@ public:
     void WaitForConnection();
     std::string GetNext();
     void Send(const std::string& message);
+    void Close();
 
 private:
     bool StartWsa();

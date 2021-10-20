@@ -33,6 +33,7 @@ public:
     void ProcessPendingCommands();
     void QueueCommand(std::shared_ptr<Command> command);
     void QueueMessage(const std::string& message);
+    void Disconnect();
 
 private:
     void ClearMessageQueue();
@@ -42,7 +43,7 @@ private:
 
 private:
     CommandFactory m_CommandFactory;
-    TcpSocket m_Socket;
+    std::unique_ptr<TcpSocket> m_Socket;
 
     std::thread m_IncomingMessageHandlerThread;
     std::thread m_OutgoingMessageHandlerThread;

@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 // Arbitrary max buffer size. Might be worth profiling the average size of requests from
 // Cauldron to optimize this value.
-#define MAX_BUFFER_SIZE         512
+#define MAX_BUFFER_SIZE         2048
 #define TCP_FAILED(res)         (res == 0 || res == SOCKET_ERROR)
 #define INVALID_REQUEST         ""
 
@@ -128,6 +128,11 @@ void TcpSocket::Send(const std::string& message)
     }
 
     SendDelimiter();
+}
+
+void TcpSocket::Close()
+{
+    closesocket(m_SocketFd);
 }
 
 bool TcpSocket::StartWsa()

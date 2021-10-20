@@ -103,6 +103,7 @@ float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
         uv *= 0.8;
     }
 
+
     float3 c = sin(iTime * 2.0 * float3(.234, .324, .768)) * 0.4 + 0.6;
     float3 col = float3(0.0, 0.0, 0.0);
 

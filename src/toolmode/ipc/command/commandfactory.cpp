@@ -22,6 +22,7 @@
 #include "commandfactory.h"
 
 #include "initializecommand.h"
+#include "detachcommand.h"
 #include "resizecommand.h"
 
 #include "ecs/gettoplevelentitiescommand.h"
@@ -34,6 +35,7 @@ ETH_NAMESPACE_BEGIN
 CommandFactory::CommandFactory()
 {
     REGISTER_COMMAND("initialize", InitializeCommand);
+    REGISTER_COMMAND("detach", DetachCommand);
     REGISTER_COMMAND("resize", ResizeCommand);
     REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
     REGISTER_COMMAND("getcomponents", GetComponentsCommand);

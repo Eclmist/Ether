@@ -35,6 +35,8 @@ public:
 
         m_CameraDistance = 10.0f;
         m_CameraRotation = { -0.4, 0.785398, 0 };
+        EngineCore::GetEngineConfig().ToggleDebugGui();
+
     };
 
     void LoadContent() override 
@@ -58,14 +60,14 @@ public:
         groundPlane->AddComponent<VisualComponent>();
         groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
 
-        //for (int i = 0; i < 20; ++i)
-        //{
-        //    Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
-        //    newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
-        //    newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
-        //    newEntity->AddComponent<MeshComponent>();
-        //    newEntity->AddComponent<VisualComponent>();
-        //}
+        for (int i = 0; i < 10; ++i)
+        {
+            Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
+            newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
+            newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
+            newEntity->AddComponent<MeshComponent>();
+            newEntity->AddComponent<VisualComponent>();
+        }
     };
 
     void UnloadContent() override {};
