@@ -53,12 +53,12 @@ public:
         debugCubeAnim->AddComponent<VisualComponent>();
         debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
         debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
-        debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 1.20f, 1.40f, 1.23f });
+        debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 5.20f, 1.40f, 1.23f });
 
         Entity* groundPlane = EngineCore::GetECSManager().CreateEntity("Ground Plane");
         groundPlane->AddComponent<MeshComponent>();
         groundPlane->AddComponent<VisualComponent>();
-        groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
+        groundPlane->GetComponent<TransformComponent>()->SetScale({ 100, 0.1f, 100 });
 
         for (int i = 0; i < 10; ++i)
         {
@@ -82,7 +82,7 @@ public:
         if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F11))
             EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
-        m_CameraDistance -= Input::GetMouseWheelDelta() / 120;
+        m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
         m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 
         if (Input::GetMouseButton(1))
