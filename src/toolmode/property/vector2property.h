@@ -39,8 +39,8 @@ public:
         nlohmann::json data;
         data["name"] = m_Name;
         data["type"] = "Vector2";
-        data["values"][0] = std::to_string(m_Data->x);
-        data["values"][1] = std::to_string(m_Data->y);
+        data["values"][0] = m_Data->x;
+        data["values"][1] = m_Data->y;
         return data.dump();
     }
 

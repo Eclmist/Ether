@@ -39,10 +39,10 @@ public:
         nlohmann::json data;
         data["name"] = m_Name;
         data["type"] = "Vector4";
-        data["values"][0] = std::to_string(m_Data->x);
-        data["values"][1] = std::to_string(m_Data->y);
-        data["values"][2] = std::to_string(m_Data->z);
-        data["values"][3] = std::to_string(m_Data->w);
+        data["values"][0] = m_Data->x;
+        data["values"][1] = m_Data->y;
+        data["values"][2] = m_Data->z;
+        data["values"][3] = m_Data->w;
         return data.dump();
     }
 
