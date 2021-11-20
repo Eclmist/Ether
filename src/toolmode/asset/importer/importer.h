@@ -19,24 +19,15 @@
 
 #pragma once
 
+#include "toolmode/utility/pathutils.h"
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+class Importer : public NonCopyable
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
-
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+    virtual bool HasSupport(const std::string& extension) = 0;
+    virtual void Import(const std::string& path) = 0;
 };
 
 ETH_NAMESPACE_END

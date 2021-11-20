@@ -19,19 +19,26 @@
 
 #pragma once
 
-#include "command.h"
-#include "sendablecommand.h"
+#include "importmanager.h"
+#include "meshimporter.h"
 
 ETH_NAMESPACE_BEGIN
 
-class DetachCommand : public Command
+ImportManager::ImportManager()
 {
-public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
+    m_Importers.push_back(std::make_shared<MeshImporter>());
+}
 
-    void Execute() override;
-};
+std::shared_ptr<Importer> ImportManager::GetImporter(const std::string& path)
+{
+    auto extension = PathUtils::GetFileExtension(path);
+
+    for (auto importer : m_Importers)
+        if (importer->HasSupport(extension))
+            return importer;
+
+    return nullptr;
+}
 
 ETH_NAMESPACE_END
 

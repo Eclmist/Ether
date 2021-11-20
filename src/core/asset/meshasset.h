@@ -19,48 +19,48 @@
 
 #pragma once
 
-#include "component.h"
-#include "graphic/common/vertexformat.h"
+#include "asset.h"
+
+#ifdef ETH_TOOLMODE
+#include "toolmode/asset/intermediate/rawmesh.h"
+#endif
 
 ETH_NAMESPACE_BEGIN
 
 // Arbitrary max number of vertices
 #define MAX_VERTICES 65536
 
-class ETH_ENGINE_DLL MeshComponent : public Component
+class MeshAsset : public Asset
 {
 public:
-    MeshComponent(EntityID owner);
-    ~MeshComponent() = default;
+    MeshAsset();
+    ~MeshAsset() = default;
 
 public:
+    ETH_TOOLONLY(void UpdateBuffers());
+    ETH_TOOLONLY(inline RawMesh& GetRawMesh() { return m_RawMesh; });
+
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
 
-    inline const VertexFormats::VertexFormatStatic* GetVertexBuffer() const { return m_VertexBuffer; }
-    inline const uint32_t* GetIndexBuffer() const { return m_IndexBuffer; }
-
-    inline bool HasMesh() const { return m_Mesh != nullptr; }
-    inline MeshAsset* GetMeshAsset() const { return m_Mesh.get(); }
-
-    inline bool IsMeshChanged() const { return m_MeshChanged; }
-    inline void SetMeshChanged(bool updated) { m_MeshChanged = updated; }
-
-public:
-    inline std::string GetName() const override { return "Mesh"; }
-
-public:
-    void SetMeshAsset(std::shared_ptr<MeshAsset> mesh);
+    inline void* GetVertexBuffer() const { return m_VertexBuffer; }
+    inline size_t GetVertexBufferSize() const { return m_VertexBufferSize; }
+    inline uint32_t* GetIndexBuffer() const { return (uint32_t*)m_IndexBuffer; }
 
 private:
-    std::shared_ptr<MeshAsset> m_Mesh;
+    ETH_TOOLONLY(void SetVertexBuffer(void* vertices, size_t size));
+    ETH_TOOLONLY(void SetIndexBuffer(uint32_t indices[], size_t size));
 
-    VertexFormats::VertexFormatStatic m_VertexBuffer[MAX_VERTICES];
+private:
+    void* m_VertexBuffer;
+    size_t m_VertexBufferSize;
     uint32_t m_IndexBuffer[MAX_VERTICES];
+
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;
 
-    bool m_MeshChanged;
+    ETH_TOOLONLY(RawMesh m_RawMesh);
 };
 
 ETH_NAMESPACE_END
+

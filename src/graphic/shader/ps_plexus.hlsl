@@ -28,6 +28,7 @@ struct PS_INPUT
 {
     float4 Position : SV_Position;
     float4 Color    : COLOR;
+    float3 Normal   : NORMAL;
     uint   ID       : TEXCOORD1;
 
 };

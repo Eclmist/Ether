@@ -19,24 +19,14 @@
 
 #pragma once
 
+#include "fileparser.h"
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+class ObjFileParser : public FileParser
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
-
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+    void Parse(const std::string& path, Asset* asset) override;
 };
 
 ETH_NAMESPACE_END

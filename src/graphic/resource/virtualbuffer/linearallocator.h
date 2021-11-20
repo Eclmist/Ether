@@ -29,7 +29,7 @@ ETH_NAMESPACE_BEGIN
 class LinearAllocator
 {
 public:
-    LinearAllocator(size_t pageSize = 2048);
+    LinearAllocator(size_t pageSize = 2097152);
 
     GpuAllocation Allocate(size_t size, size_t alignment = DEFAULT_ALIGN);
     void Reset();

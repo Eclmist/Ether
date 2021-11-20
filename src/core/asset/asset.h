@@ -21,22 +21,32 @@
 
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+enum AssetType
+{
+    ASSETTYPE_MESH,
+    ASSETTYPE_TEXTURE,
+    ASSETTYPE_SHADER,
+};
+
+class Asset : public Serializable
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
+    Asset() = default;
+    ~Asset() = default;
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+    inline void* GetData() const { return m_Data; }
+    inline size_t GetSize() const { return m_Size; }
+    inline std::string GetName() const { return m_Name; }
+    inline AssetType GetType() const { return m_Type; }
+
+    inline void SetData(void* data, size_t size) { m_Data = data; m_Size = size; }
+    inline void SetName(const std::string& name) { m_Name = name; }
+
+protected:
+    void* m_Data;
+    size_t m_Size;
+    std::string m_Name;
+    AssetType m_Type;
 };
 
 ETH_NAMESPACE_END

@@ -19,24 +19,21 @@
 
 #pragma once
 
+#include "importer.h"
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+class ImportManager : public NonCopyable
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
+    ImportManager();
+    ~ImportManager() = default;
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+public:
+    std::shared_ptr<Importer> GetImporter(const std::string& path);
+
+private:
+    std::vector<std::shared_ptr<Importer>> m_Importers;
 };
 
 ETH_NAMESPACE_END

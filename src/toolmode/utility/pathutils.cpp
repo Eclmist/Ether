@@ -17,21 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "command.h"
-#include "sendablecommand.h"
+#include "time.h"
+#include "pathutils.h"
+#include <filesystem>
 
 ETH_NAMESPACE_BEGIN
 
-class DetachCommand : public Command
+namespace PathUtils
 {
-public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
 
-    void Execute() override;
-};
+bool IsValidPath(const std::string& path)
+{
+    return std::filesystem::exists(path);
+}
+
+std::string GetFileExtension(const std::string& path)
+{
+    return std::filesystem::path(path).extension().string();
+}
+
+std::string PathUtils::GetFileName(const std::string& path)
+{
+    return std::filesystem::path(path).filename().string();
+}
+
+}
 
 ETH_NAMESPACE_END
 

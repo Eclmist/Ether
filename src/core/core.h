@@ -40,6 +40,8 @@
 #include "system/platform/platformnotificationtray.h"
 #include "system/platform/win32/keycodes.h"
 
+#include "core/asset/meshasset.h"
+
 #include "core/ecs/ecsmanager.h"
 #include "core/world/world.h"
 
@@ -54,6 +56,7 @@
 #include "common/time.h"
 
 #ifdef ETH_TOOLMODE
+#include "toolmode/asset/assetdatabase.h"
 #include "toolmode/ipc/ipcmanager.h"
 #endif
 
@@ -75,6 +78,7 @@ public:
     static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
     static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
+    ETH_TOOLONLY(static AssetDatabase& GetAssetDatabase() { return *Instance().m_AssetDatabase; })
     ETH_TOOLONLY(static IpcManager& GetIpcManager() { return *Instance().m_IpcManager; })
 
     static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
@@ -87,7 +91,8 @@ private:
     std::unique_ptr<LoggingManager> m_LoggingManager;
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;
-    std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
+    ETH_TOOLONLY(std::unique_ptr<PlatformNotificationTray> m_NotificationTray;)
+	ETH_TOOLONLY(std::unique_ptr<AssetDatabase> m_AssetDatabase;)
     ETH_TOOLONLY(std::unique_ptr<IpcManager> m_IpcManager;)
 
     CommandLineOptions m_CommandLineOptions;

@@ -17,33 +17,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "meshcomponent.h"
+#include "meshasset.h"
 
 ETH_NAMESPACE_BEGIN
 
-MeshComponent::MeshComponent(EntityID owner)
-    : Component(owner)
-    , m_MeshChanged(false)
+MeshAsset::MeshAsset()
+    : m_VertexBuffer(nullptr)
+    , m_VertexBufferSize(0)
     , m_NumVertices(0)
     , m_NumIndices(0)
-    , m_Mesh(nullptr)
 {
-    memset(m_VertexBuffer, 0, sizeof(m_VertexBuffer));
-    memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
+    m_Type = ASSETTYPE_MESH;
 }
 
-void MeshComponent::SetMeshAsset(std::shared_ptr<MeshAsset> mesh)
+#ifdef ETH_TOOLMODE
+void MeshAsset::UpdateBuffers()
 {
-    m_Mesh = mesh;
-    m_NumVertices = mesh->GetNumVertices();
-    m_NumIndices = mesh->GetNumIndices();
+    SetVertexBuffer(m_RawMesh.m_Vertices.data(), m_RawMesh.m_Vertices.size() * sizeof(m_RawMesh.m_Vertices[0]));
+    SetIndexBuffer(m_RawMesh.m_Indices.data(), m_RawMesh.m_Indices.size() * sizeof(m_RawMesh.m_Indices[0]));
+    m_NumVertices = m_RawMesh.m_Vertices.size();
+    m_NumIndices = m_RawMesh.m_Indices.size();
 
-    memset(m_VertexBuffer, 0, sizeof(m_VertexBuffer));
-    memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
-    memcpy(m_VertexBuffer, mesh->GetVertexBuffer(), mesh->GetVertexBufferSize());
-    memcpy(m_IndexBuffer, mesh->GetIndexBuffer(), mesh->GetNumIndices() * sizeof(uint32_t));
-    m_MeshChanged = true;
 }
+
+void MeshAsset::SetVertexBuffer(void* vertices, size_t size)
+{
+    if (m_VertexBuffer != nullptr)
+        free(m_VertexBuffer);
+
+    m_VertexBuffer = malloc(size);
+    m_VertexBufferSize = size;
+    memcpy(m_VertexBuffer, vertices, size);
+}
+
+void MeshAsset::SetIndexBuffer(uint32_t indices[], size_t size)
+{
+    memcpy(m_IndexBuffer, indices, size);
+}
+#endif // ETH_TOOLMODE
 
 ETH_NAMESPACE_END
 

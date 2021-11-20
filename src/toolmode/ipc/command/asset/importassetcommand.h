@@ -19,18 +19,21 @@
 
 #pragma once
 
-#include "command.h"
-#include "sendablecommand.h"
+#include "toolmode/ipc/command/command.h"
+#include "toolmode/ipc/command/sendablecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-class DetachCommand : public Command
+class ImportAssetCommand : public Command
 {
 public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
+    ImportAssetCommand(const CommandData& data);
+    ~ImportAssetCommand() = default;
 
     void Execute() override;
+
+private:
+    std::string m_Path;
 };
 
 ETH_NAMESPACE_END

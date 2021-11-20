@@ -21,23 +21,13 @@
 
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+namespace PathUtils
 {
-public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
-};
+bool IsValidPath(const std::string& path);
+std::string GetFileExtension(const std::string& path);
+std::string GetFileName(const std::string& path);
+
+}
 
 ETH_NAMESPACE_END
-

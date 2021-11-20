@@ -19,25 +19,30 @@
 
 #pragma once
 
+#include "assetdatabase.h"
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+void AssetDatabase::Import(const std::string& path)
 {
-public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
+    LogToolmodeInfo("Importing asset: %s", path.c_str());
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
-};
+    if (!PathUtils::IsValidPath(path))
+    {
+		LogToolmodeError("Failed to import asset - the path is invalid (%s)", path.c_str());
+        return;
+    }
+
+    auto importer = m_ImportManager.GetImporter(path);
+
+    if (importer == nullptr)
+    {
+		LogToolmodeError("Failed to find compatible importer", path.c_str());
+        return;
+    }
+
+    importer->Import(path);
+}
 
 ETH_NAMESPACE_END
 

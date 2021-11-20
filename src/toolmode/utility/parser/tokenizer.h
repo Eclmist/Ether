@@ -21,22 +21,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+class Tokenizer : public NonCopyable
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
-
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+    Tokenizer() = default;
+    ~Tokenizer() = default;
 };
 
 ETH_NAMESPACE_END

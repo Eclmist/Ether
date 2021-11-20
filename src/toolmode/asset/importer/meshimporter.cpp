@@ -17,21 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "command.h"
-#include "sendablecommand.h"
+#include "meshimporter.h"
+#include "toolmode/utility/parser/objfileparser.h"
 
 ETH_NAMESPACE_BEGIN
 
-class DetachCommand : public Command
+MeshImporter::MeshImporter()
 {
-public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
+    m_Parsers[".obj"] = std::make_shared<ObjFileParser>();
+}
 
-    void Execute() override;
-};
+bool MeshImporter::HasSupport(const std::string& extension)
+{
+    return m_Parsers.find(extension) != m_Parsers.end();
+}
+
+void MeshImporter::Import(const std::string& path)
+{
+    MeshAsset* newAsset = new MeshAsset();
+    newAsset->SetName(PathUtils::GetFileName(path));
+
+    auto parser = m_Parsers[PathUtils::GetFileExtension(path)];
+    parser->Parse(path, newAsset);
+    //newAsset.Serialize(path);
+
+    // Temp code to test:
+    EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetMeshAsset(std::make_shared<MeshAsset>(*newAsset));
+}
 
 ETH_NAMESPACE_END
 

@@ -21,7 +21,6 @@
 
 #include "command.h"
 #include "sendablecommand.h"
-#include "commandfactory.h"
 
 ETH_NAMESPACE_BEGIN
 

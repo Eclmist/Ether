@@ -19,24 +19,42 @@
 
 #pragma once
 
+#include "graphic/common/vertexformat.h"
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+struct Vertex
+{
+    ethVector3 m_Position;
+    ethVector3 m_Normal;
+    ethVector4 m_Tangent;
+    ethVector2 m_TexCoord;
+};
+
+class RawMesh
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
+    RawMesh() = default;
+    ~RawMesh() = default;
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+public:
+    void Format();
+
+private:
+    void CalculateNormals();
+    void ProcessVertices();
+    void PackVertices();
+
+public:
+    std::vector<ethVector3> m_Positions;
+    std::vector<ethVector3> m_Normals;
+    std::vector<ethVector4> m_Tangents;
+    std::vector<ethVector2> m_TexCoords;
+    std::vector<uint32_t> m_Indices;
+    std::vector<Vertex> m_Vertices;
+
+private:
+    std::vector<VertexFormats::VertexFormatStatic> m_PackedData;
 };
 
 ETH_NAMESPACE_END
