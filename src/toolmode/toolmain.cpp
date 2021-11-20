@@ -45,7 +45,7 @@ public:
 
         debugCube->AddComponent<MeshComponent>();
         debugCube->AddComponent<VisualComponent>();
-        debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 1, 0 });
+        debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
         debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
 
         Entity* debugCubeAnim = EngineCore::GetECSManager().CreateEntity("Debug Cube (Animated)");

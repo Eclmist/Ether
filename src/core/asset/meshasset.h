@@ -22,7 +22,7 @@
 #include "asset.h"
 
 #ifdef ETH_TOOLMODE
-#include "toolmode/asset/intermediate/rawmesh.h"
+#include "toolmode/asset/intermediate/staticmesh.h"
 #endif
 
 ETH_NAMESPACE_BEGIN
@@ -38,7 +38,7 @@ public:
 
 public:
     ETH_TOOLONLY(void UpdateBuffers());
-    ETH_TOOLONLY(inline RawMesh& GetRawMesh() { return m_RawMesh; });
+    ETH_TOOLONLY(inline StaticMesh& GetStaticMesh() { return m_StaticMesh; });
 
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
@@ -49,7 +49,7 @@ public:
 
 private:
     ETH_TOOLONLY(void SetVertexBuffer(void* vertices, size_t size));
-    ETH_TOOLONLY(void SetIndexBuffer(uint32_t indices[], size_t size));
+    ETH_TOOLONLY(void SetIndexBuffer(uint32_t* indices, size_t size));
 
 private:
     void* m_VertexBuffer;
@@ -59,7 +59,7 @@ private:
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;
 
-    ETH_TOOLONLY(RawMesh m_RawMesh);
+    ETH_TOOLONLY(StaticMesh m_StaticMesh);
 };
 
 ETH_NAMESPACE_END

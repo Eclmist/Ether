@@ -19,7 +19,8 @@
 
 struct ModelViewProjection
 {
-    matrix MVP;
+    matrix ModelView;
+    matrix ModelViewProjection;
 };
 
 struct GlobalConstants
@@ -52,7 +53,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position, 1.0));
+    o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(IN.Position, 1.0));
     o.Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
     o.Normal = IN.Normal;
     o.ID = ID;

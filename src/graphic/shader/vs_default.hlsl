@@ -19,29 +19,39 @@
 
 struct ModelViewProjection
 {
-    matrix MVP;
+    matrix ModelView;
+    matrix ModelViewTI;
+    matrix ModelViewProjection;
 };
 
+struct GlobalConstants
+{
+    float4 Time;
+};
+
+ConstantBuffer<GlobalConstants> CB_GlobalConstants : register(b0);
 ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b1);
 
 struct VS_INPUT
 {
     float3 Position : POSITION;
-    float3 Color    : COLOR;
+    float3 Normal : NORMAL;
+    float4 Tangent : TANGENT0;
+    float2 TexCoord : TEXCOORD0;
 };
 
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
-    float4 Color    : COLOR;
+    float4 Normal   : NORMAL;
 };
 
 VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position, 1.0));
-    o.Color = float4(IN.Color, 1.0f);
+    o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(IN.Position, 1.0));
+    o.Normal = mul(CB_ModelViewProj.ModelViewTI, normalize(float4(IN.Normal, 1.0)));
 
     return o;
 }

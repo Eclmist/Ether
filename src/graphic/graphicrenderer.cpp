@@ -51,6 +51,13 @@ void GraphicRenderer::Render()
     m_Context.ClearColor(*gfxDisplay.GetCurrentBackBuffer(), config.m_ClearColor);
     m_Context.ClearDepth(*gfxDisplay.GetDepthBuffer(), 1.0f);
 
+    // TODO: Properly support shader hot reload - each PSO should check their own shaders
+    if (GraphicCore::GetGraphicCommon().m_DefaultVS->HasRecompiled() || GraphicCore::GetGraphicCommon().m_DefaultPS->HasRecompiled())
+    {
+        m_Context.GetCommandQueue().Flush();
+        GraphicCore::GetGraphicCommon().InitializePipelineStates();
+    }
+
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
     m_Context.GetCommandList().SetPipelineState(config.m_RenderWireframe ? &GraphicCore::GetGraphicCommon().m_DefaultWireframePSO->GetPipelineStateObject() : &GraphicCore::GetGraphicCommon().m_DefaultPSO->GetPipelineStateObject());
@@ -63,14 +70,19 @@ void GraphicRenderer::Render()
     for (auto&& visualNodes : m_PendingVisualNodes)
     {
         OPTICK_EVENT("Renderer - Render Pending Visual Nodes");
-        ethXMMatrix modelMatrix = visualNodes->GetModelMatrix();
-        ethXMMatrix mvpMatrix = DirectX::XMMatrixMultiply(modelMatrix, m_Context.GetViewMatrix());
-        mvpMatrix = DirectX::XMMatrixMultiply(mvpMatrix, m_Context.GetProjectionMatrix());
+        ethXMMatrix modelMat = visualNodes->GetModelMatrix();
+        ethXMMatrix modelViewMat = DirectX::XMMatrixMultiply(modelMat, m_Context.GetViewMatrix());
+        ethXMMatrix modelViewProjMat = DirectX::XMMatrixMultiply(modelViewMat, m_Context.GetProjectionMatrix());
+
+        ethXMMatrix modelViewTransposeInvMat = DirectX::XMMatrixInverse(nullptr, modelViewMat);
+        modelViewTransposeInvMat = DirectX::XMMatrixTranspose(modelViewTransposeInvMat);
 
         m_Context.GetCommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         m_Context.GetCommandList().IASetVertexBuffers(0, 1, &visualNodes->GetVertexBufferView());
         m_Context.GetCommandList().IASetIndexBuffer(&visualNodes->GetIndexBufferView());
-        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &mvpMatrix, 0);
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewMat, 0);
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewTransposeInvMat, 16);
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewProjMat, 32);
         m_Context.GetCommandList().DrawIndexedInstanced(visualNodes->GetNumIndices(), 1, 0, 0, 0);
     }
 

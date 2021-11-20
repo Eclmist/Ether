@@ -23,6 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 Component::Component(EntityID owner)
     : m_Owner(owner)
+    , m_Enabled(true)
 {
 }
 
