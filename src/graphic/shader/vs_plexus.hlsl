@@ -33,13 +33,18 @@ ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b1);
 struct VS_INPUT
 {
     float3 Position : POSITION;
-    float3 Color    : COLOR;
+    //float3 Color    : COLOR;
+
+    float3 Normal : NORMAL;
+    float4 Tangent : TANGENT0;
+    float2 TexCoord : TEXCOORD0;
 };
 
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
     float4 Color    : COLOR;
+    float3 Normal   : NORMAL;
     uint   ID       : TEXCOORD1;
 };
 
@@ -48,7 +53,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     VS_OUTPUT o;
 
     o.Position = mul(CB_ModelViewProj.MVP, float4(IN.Position, 1.0));
-    o.Color = float4(IN.Color, 1.0f);
+    o.Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    o.Normal = IN.Normal;
     o.ID = ID;
 
     return o;

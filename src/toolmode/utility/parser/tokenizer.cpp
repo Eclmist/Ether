@@ -17,21 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "command.h"
-#include "sendablecommand.h"
+#include "tokenizer.h"
 
 ETH_NAMESPACE_BEGIN
-
-class DetachCommand : public Command
-{
-public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
-
-    void Execute() override;
-};
 
 ETH_NAMESPACE_END
 

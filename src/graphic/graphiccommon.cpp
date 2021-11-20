@@ -127,15 +127,17 @@ void GraphicCommon::InitializeRootSignatures()
     m_DefaultRootSignature->Finalize(L"Default Root Signature", rootSignatureFlags);
 }
 
-D3D12_INPUT_ELEMENT_DESC inputElementDesc[2] = 
+D3D12_INPUT_ELEMENT_DESC inputElementDesc[4] = 
 {
     { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
 void GraphicCommon::InitializeShaders()
 {
-    m_DefaultInputLayout.NumElements = 2;
+    m_DefaultInputLayout.NumElements = 4;
     m_DefaultInputLayout.pInputElementDescs = inputElementDesc;
 
     m_DefaultVS = std::make_unique<Shader>(L"vs_plexus.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS, m_DefaultInputLayout);

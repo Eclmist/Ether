@@ -19,24 +19,26 @@
 
 #pragma once
 
+#include "toolmode/asset/importer/importer.h"
+#include "toolmode/asset/intermediate/rawmesh.h"
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
-{
-public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
+class FileParser;
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+class MeshImporter : public Importer
+{
+
+public:
+    MeshImporter();
+    ~MeshImporter() = default;
+
+public:
+    bool HasSupport(const std::string& extension) override;
+    void Import(const std::string& path) override;
+
+private:
+    std::unordered_map<std::string, std::shared_ptr<FileParser>> m_Parsers;
 };
 
 ETH_NAMESPACE_END

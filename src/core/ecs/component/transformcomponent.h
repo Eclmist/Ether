@@ -38,7 +38,7 @@ public:
     void SetScale(const ethVector3& scale);
 
     inline ethXMMatrix GetMatrix() const { return m_ModelMatrix; }
-    inline const ethXMMatrix* GetRawMatrix() const { return &m_ModelMatrix; }
+    inline const ethXMMatrix* GetMatrixReference() const { return &m_ModelMatrix; }
 
 public:
     inline std::string GetName() const override { return "Transform"; }

@@ -27,20 +27,20 @@ VisualNode::VisualNode(const VisualNodeData data)
     UploadVertexBuffer(m_StaticData.m_VertexBuffer, m_StaticData.m_NumVertices);
     UploadIndexBuffer(m_StaticData.m_IndexBuffer, m_StaticData.m_NumIndices);
 
-    InitVertexBufferView(m_StaticData.m_NumVertices * sizeof(VertexPositionColor), sizeof(VertexPositionColor));
-    InitIndexBufferView(m_StaticData.m_NumIndices * sizeof(uint16_t));
+    InitVertexBufferView(m_StaticData.m_NumVertices * sizeof(VertexFormats::VertexFormatStatic), sizeof(VertexFormats::VertexFormatStatic));
+    InitIndexBufferView(m_StaticData.m_NumIndices * sizeof(uint32_t));
 }
 
-void VisualNode::UploadVertexBuffer(const void* data, uint16_t numVertices)
+void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
 {
     m_VertexBuffer = std::make_unique<BufferResource>(L"Visual::VertexBuffer",
-        numVertices, sizeof(VertexPositionColor), data);
+        numVertices, sizeof(VertexFormats::VertexFormatStatic), data);
 }
 
-void VisualNode::UploadIndexBuffer(const void* data, uint16_t numIndices)
+void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
 { 
     m_IndexBuffer = std::make_unique<BufferResource>(L"Visual::IndexBuffer",
-        numIndices, sizeof(uint16_t), data);
+        numIndices, sizeof(uint32_t), data);
 }
 
 void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)
@@ -55,7 +55,7 @@ void VisualNode::InitIndexBufferView(size_t bufferSize)
 {
     m_IndexBufferView = {};
     m_IndexBufferView.BufferLocation = m_IndexBuffer->GetVirtualAddress();
-    m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
+    m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
     m_IndexBufferView.SizeInBytes = bufferSize;
 }
 

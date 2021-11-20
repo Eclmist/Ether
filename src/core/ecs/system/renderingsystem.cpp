@@ -30,18 +30,6 @@ RenderingSystem::RenderingSystem()
 
 void RenderingSystem::OnEntityRegister(EntityID id)
 {
-    //VisualComponent* visual = EngineCore::GetComponentManager().GetComponent<VisualComponent>(id);
-    auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
-    auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
-
-    VisualNodeData data;
-    data.m_VertexBuffer = mesh->GetVertexBuffer();
-    data.m_IndexBuffer = mesh->GetIndexBuffer();
-    data.m_NumIndices = mesh->GetNumIndices();
-    data.m_NumVertices = mesh->GetNumVertices();
-    data.m_ModelMatrix = transform->GetRawMatrix();
-
-    m_VisualNodes[id] = std::make_unique<VisualNode>(data);
 }
 
 void RenderingSystem::OnEntityDeregister(EntityID id)
@@ -55,6 +43,27 @@ void RenderingSystem::OnUpdate()
 
     for (EntityID id : m_MatchingEntities)
     {
+		auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
+		auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
+
+		if (!mesh->IsEnabled())
+			return;
+
+		if (!mesh->HasMesh())
+			return;
+
+        if (mesh->IsMeshChanged())
+        {
+            VisualNodeData data;
+            data.m_VertexBuffer = mesh->GetVertexBuffer();
+            data.m_IndexBuffer = mesh->GetIndexBuffer();
+            data.m_NumIndices = mesh->GetNumIndices();
+            data.m_NumVertices = mesh->GetNumVertices();
+            data.m_ModelMatrix = transform->GetMatrixReference();
+            m_VisualNodes[id] = std::make_unique<VisualNode>(data);
+            mesh->SetMeshChanged(false);
+        }
+
         GraphicCore::GetGraphicRenderer().DrawNode(m_VisualNodes[id].get());
     }
 }

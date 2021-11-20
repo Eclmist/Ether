@@ -19,19 +19,19 @@
 
 #pragma once
 
-#include "command.h"
-#include "sendablecommand.h"
+#include "importassetcommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-class DetachCommand : public Command
+ImportAssetCommand::ImportAssetCommand(const CommandData& data)
+    : m_Path(data["args"]["path"])
 {
-public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
+}
 
-    void Execute() override;
-};
+void ImportAssetCommand::Execute()
+{
+    EngineCore::GetAssetDatabase().Import(m_Path);
+}
 
 ETH_NAMESPACE_END
 

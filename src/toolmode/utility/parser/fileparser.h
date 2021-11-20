@@ -19,24 +19,15 @@
 
 #pragma once
 
+#include <sstream>
+#include <fstream>
+
 ETH_NAMESPACE_BEGIN
 
-class VertexFormats
+class FileParser : public NonCopyable
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
-
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+    virtual void Parse(const std::string& path, Asset* asset) = 0;
 };
 
 ETH_NAMESPACE_END

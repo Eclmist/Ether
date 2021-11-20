@@ -79,7 +79,7 @@ void GuiRenderer::Render()
 
 void GuiRenderer::RegisterComponents()
 {
-    ETH_ENGINEONLY(m_Components.push_back(std::make_unique<LoggingGuiComponent>()));
+    m_Components.push_back(std::make_unique<LoggingGuiComponent>());
     m_Components.push_back(std::make_unique<DebugMenuGuiComponent>());
 }
 

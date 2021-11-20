@@ -96,7 +96,6 @@ void GraphicRenderer::Present()
 void GraphicRenderer::CleanUp()
 {
     OPTICK_EVENT("Renderer - CleanUp");
-    // TODO: Clean up old PSOs and other resources
     m_PendingVisualNodes.clear();
 }
 

@@ -25,8 +25,11 @@
 #include "detachcommand.h"
 #include "resizecommand.h"
 
+#include "asset/importassetcommand.h"
+
 #include "ecs/gettoplevelentitiescommand.h"
 #include "ecs/getcomponentscommand.h"
+
 
 ETH_NAMESPACE_BEGIN
 
@@ -39,6 +42,7 @@ CommandFactory::CommandFactory()
     REGISTER_COMMAND("resize", ResizeCommand);
     REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
     REGISTER_COMMAND("getcomponents", GetComponentsCommand);
+    REGISTER_COMMAND("importasset", ImportAssetCommand);
 }
 
 std::unique_ptr<Command> CommandFactory::CreateCommand(const std::string& commandID, const CommandData& data) const
