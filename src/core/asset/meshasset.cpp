@@ -33,11 +33,10 @@ MeshAsset::MeshAsset()
 #ifdef ETH_TOOLMODE
 void MeshAsset::UpdateBuffers()
 {
-    SetVertexBuffer(m_RawMesh.m_Vertices.data(), m_RawMesh.m_Vertices.size() * sizeof(m_RawMesh.m_Vertices[0]));
-    SetIndexBuffer(m_RawMesh.m_Indices.data(), m_RawMesh.m_Indices.size() * sizeof(m_RawMesh.m_Indices[0]));
-    m_NumVertices = m_RawMesh.m_Vertices.size();
-    m_NumIndices = m_RawMesh.m_Indices.size();
-
+    SetVertexBuffer(m_StaticMesh.GetPackedVertexData(), m_StaticMesh.GetPackedVertexDataSize());
+    SetIndexBuffer(m_StaticMesh.GetIndices(), m_StaticMesh.GetIndicesSize());
+    m_NumVertices = m_StaticMesh.GetNumVertices();
+    m_NumIndices = m_StaticMesh.GetNumIndices();
 }
 
 void MeshAsset::SetVertexBuffer(void* vertices, size_t size)
@@ -50,7 +49,7 @@ void MeshAsset::SetVertexBuffer(void* vertices, size_t size)
     memcpy(m_VertexBuffer, vertices, size);
 }
 
-void MeshAsset::SetIndexBuffer(uint32_t indices[], size_t size)
+void MeshAsset::SetIndexBuffer(uint32_t* indices, size_t size)
 {
     memcpy(m_IndexBuffer, indices, size);
 }

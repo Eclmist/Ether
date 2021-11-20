@@ -126,20 +126,7 @@ float4 PS_Main(PS_INPUT IN, uint pid : SV_PrimitiveID) : SV_Target
     }
 
     col += m * c;
-    //return float4(col, 1.0);
-
-
-    if (IN.ID == 1000)
-    {
-        return 1 - (col.xyzz * 0.2);
-    }
-    else
-    {
-        return float4(pid / 12.0f, pid / 12.0 + 0.3f, pid / 12.0 + 0.6f, 1.0) * col.xyzz * 10.0;
-    }
-
-
-    return float4(sin(IN.Position.x) / 2 + 0.5, cos(IN.Position.y) / 2 + 0.5, sin(IN.Position.z + 2) / 2 + 0.5, 0);
-    return IN.Color * col.xyzz;
+    return float4(IN.Normal, 1.0);
+    return float4(col * IN.Normal * 5.0, 1.0);
 }
 

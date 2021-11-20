@@ -38,7 +38,7 @@ GraphicCommon::~GraphicCommon()
 void GraphicCommon::InitializeRasterizerStates()
 {
     m_RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
-    m_RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
+    m_RasterizerDefault.CullMode = D3D12_CULL_MODE_NONE;
     m_RasterizerDefault.FrontCounterClockwise = TRUE;
     m_RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
     m_RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
@@ -123,7 +123,7 @@ void GraphicCommon::InitializeRootSignatures()
     m_DefaultRootSignature = std::make_unique<RootSignature>(2, 0);
 
     (*m_DefaultRootSignature)[0].SetAsConstant(4, 0, D3D12_SHADER_VISIBILITY_ALL);
-    (*m_DefaultRootSignature)[1].SetAsConstant(16, 1, D3D12_SHADER_VISIBILITY_ALL);
+    (*m_DefaultRootSignature)[1].SetAsConstant(48, 1, D3D12_SHADER_VISIBILITY_ALL);
     m_DefaultRootSignature->Finalize(L"Default Root Signature", rootSignatureFlags);
 }
 
@@ -140,18 +140,20 @@ void GraphicCommon::InitializeShaders()
     m_DefaultInputLayout.NumElements = 4;
     m_DefaultInputLayout.pInputElementDescs = inputElementDesc;
 
-    m_DefaultVS = std::make_unique<Shader>(L"vs_plexus.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS, m_DefaultInputLayout);
-    m_DefaultPS = std::make_unique<Shader>(L"ps_plexus.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS, m_DefaultInputLayout);
+    m_DefaultVS = std::make_unique<Shader>(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::SHADERTYPE_VS, m_DefaultInputLayout);
+    m_DefaultPS = std::make_unique<Shader>(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::SHADERTYPE_PS, m_DefaultInputLayout);
 
     m_DefaultVS->Compile();
     m_DefaultPS->Compile();
+    m_DefaultVS->SetRecompiled(false);
+    m_DefaultPS->SetRecompiled(false);
 }
 
 void GraphicCommon::InitializePipelineStates()
 {
     m_DefaultPSO = std::make_unique<GraphicPipelineState>(L"Default PSO");
     m_DefaultPSO->SetBlendState(m_BlendDisabled);
-    m_DefaultPSO->SetRasterizerState(m_RasterizerDefault);
+    m_DefaultPSO->SetRasterizerState(m_RasterizerDefaultCw);
     m_DefaultPSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     m_DefaultPSO->SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     m_DefaultPSO->SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
@@ -166,7 +168,7 @@ void GraphicCommon::InitializePipelineStates()
 
     m_DefaultWireframePSO = std::make_unique<GraphicPipelineState>(L"Default Wireframe PSO");
     m_DefaultWireframePSO->SetBlendState(m_BlendDisabled);
-    m_DefaultWireframePSO->SetRasterizerState(m_RasterizerWireframe);
+    m_DefaultWireframePSO->SetRasterizerState(m_RasterizerWireframeCw);
     m_DefaultWireframePSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     m_DefaultWireframePSO->SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     m_DefaultWireframePSO->SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());

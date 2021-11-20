@@ -18,7 +18,7 @@
 */
 
 #include "objfileparser.h"
-#include "toolmode/asset/intermediate/rawmesh.h"
+#include "toolmode/asset/intermediate/staticmesh.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "parser/tiny_obj_loader.h"
@@ -28,7 +28,7 @@ ETH_NAMESPACE_BEGIN
 void ObjFileParser::Parse(const std::string& path, Asset* asset)
 {
     MeshAsset* meshAsset = static_cast<MeshAsset*>(asset);
-    RawMesh& mesh = meshAsset->GetRawMesh();
+    StaticMesh& mesh = meshAsset->GetStaticMesh();
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -56,8 +56,22 @@ void ObjFileParser::Parse(const std::string& path, Asset* asset)
         mesh.m_TexCoords.emplace_back(attrib.texcoords[i], attrib.texcoords[i + 1]);
 
     for (auto shape = shapes.begin(); shape < shapes.end(); ++shape)
+    {
         for (auto i = 0; i < shape->mesh.indices.size(); ++i)
-            mesh.m_Indices.emplace_back(shape->mesh.indices[i].vertex_index);
+        {
+            mesh.m_PositionIndices.emplace_back(shape->mesh.indices[i].vertex_index);
+
+            if (shape->mesh.indices[i].normal_index != -1)
+				mesh.m_NormalIndices.emplace_back(shape->mesh.indices[i].normal_index);
+            else
+				mesh.m_NormalIndices.emplace_back(0);
+
+            if (shape->mesh.indices[i].texcoord_index != -1)
+				mesh.m_TexCoordIndices.emplace_back(shape->mesh.indices[i].texcoord_index);
+            else
+				mesh.m_TexCoordIndices.emplace_back(0);
+        }
+    }
 
     mesh.Format();
     meshAsset->UpdateBuffers();
