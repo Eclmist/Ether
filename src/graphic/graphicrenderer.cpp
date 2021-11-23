@@ -74,15 +74,23 @@ void GraphicRenderer::Render()
         ethXMMatrix modelViewMat = DirectX::XMMatrixMultiply(modelMat, m_Context.GetViewMatrix());
         ethXMMatrix modelViewProjMat = DirectX::XMMatrixMultiply(modelViewMat, m_Context.GetProjectionMatrix());
 
-        ethXMMatrix modelViewTransposeInvMat = DirectX::XMMatrixInverse(nullptr, modelViewMat);
-        modelViewTransposeInvMat = DirectX::XMMatrixTranspose(modelViewTransposeInvMat);
+        ethMatrix3x3 upper3x3;
+        DirectX::XMStoreFloat3x3(&upper3x3, modelViewMat);
+
+        ethXMMatrix normalMat = DirectX::XMLoadFloat3x3(&upper3x3);
+        normalMat = DirectX::XMMatrixInverse(nullptr, normalMat);
+        normalMat = DirectX::XMMatrixTranspose(normalMat);
 
         m_Context.GetCommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         m_Context.GetCommandList().IASetVertexBuffers(0, 1, &visualNodes->GetVertexBufferView());
         m_Context.GetCommandList().IASetIndexBuffer(&visualNodes->GetIndexBufferView());
         m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewMat, 0);
-        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewTransposeInvMat, 16);
-        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewProjMat, 32);
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewProjMat, 16);
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &normalMat, 32);
+
+        ethVector4 lightDirWS(0.7, -1, 0.4, 0);
+        ethXMVector lightDirES = DirectX::XMVector4Transform(DirectX::XMLoadFloat4(&lightDirWS), m_Context.GetViewMatrix());
+        m_Context.GetCommandList().SetGraphicsRoot32BitConstants(2, 4, &lightDirES, 0);
         m_Context.GetCommandList().DrawIndexedInstanced(visualNodes->GetNumIndices(), 1, 0, 0, 0);
     }
 

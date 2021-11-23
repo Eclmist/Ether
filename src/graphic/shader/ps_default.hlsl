@@ -20,8 +20,13 @@
 struct ModelViewProjection
 {
     matrix ModelView;
-    matrix ModelViewTI;
     matrix ModelViewProjection;
+    matrix Normal;
+};
+
+struct CommonConstants
+{
+    float4 LightDirection;
 };
 
 struct GlobalConstants
@@ -31,26 +36,33 @@ struct GlobalConstants
 
 ConstantBuffer<GlobalConstants> CB_GlobalConstants : register(b0);
 ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b1);
+ConstantBuffer<CommonConstants> CB_CommonConstants : register(b2);
 
 struct PS_INPUT
 {
     float4 Position : SV_Position;
-    float4 Normal   : NORMAL;
+    float3 Normal   : NORMAL;
+    float3 PositionES : TEXCOORD0;
+    float3 EyeDir   : TEXCOORD1;
 };
 
 float4 PS_Main(PS_INPUT IN) : SV_Target
 {
-    float4 lightDir = normalize(mul(CB_ModelViewProj.ModelViewTI, normalize(float4(1., 1., 0., 0.))));// float4(4.0 * sin(CB_GlobalConstants.Time.y), 10, -4, 1.0)));
-    float4 col = float4(0.99, 0.99, 0.99, 1.0);
-    float ndotl = max(0, dot(IN.Normal.xyz, lightDir.xyz));
+    float3 lightDir = -normalize(CB_CommonConstants.LightDirection).xyz;
+    float3 eyeDir = -normalize(IN.PositionES);
+    float3 normal = normalize(IN.Normal);
+    float4 col = float4(0.9, 0.9, 0.9, 1.0);
+    float ndotl = saturate(dot(normal, lightDir));
 
-    float3 r = reflect(-lightDir, IN.Normal.xyz);
-    float3 v = float3(0, 0, -1);
-    float rdotv = max(0, dot(r, v));
-    float n = 2.0;
+    float3 r = reflect(-lightDir, normal);
+    float rdotv = saturate(dot(r, eyeDir));
+    float n = 10000.2;
 
     float4 ambient = float4(0.0, 0.1, 0.0, 0.1);
-
-    return (col * ndotl + col * pow(rdotv, n) * 3.0 + ambient * 1.5);
+    float4 diffuse = col * ndotl;
+    float4 specular = col * ndotl * pow(rdotv, n) * 0.5;
+   
+    //return eyeDir.xyzz;
+    return diffuse + specular + ambient;
 }
 

@@ -120,10 +120,11 @@ void GraphicCommon::InitializeRootSignatures()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    m_DefaultRootSignature = std::make_unique<RootSignature>(2, 0);
+    m_DefaultRootSignature = std::make_unique<RootSignature>(3, 0);
 
     (*m_DefaultRootSignature)[0].SetAsConstant(4, 0, D3D12_SHADER_VISIBILITY_ALL);
     (*m_DefaultRootSignature)[1].SetAsConstant(48, 1, D3D12_SHADER_VISIBILITY_ALL);
+    (*m_DefaultRootSignature)[2].SetAsConstant(4, 2, D3D12_SHADER_VISIBILITY_ALL);
     m_DefaultRootSignature->Finalize(L"Default Root Signature", rootSignatureFlags);
 }
 
@@ -153,7 +154,7 @@ void GraphicCommon::InitializePipelineStates()
 {
     m_DefaultPSO = std::make_unique<GraphicPipelineState>(L"Default PSO");
     m_DefaultPSO->SetBlendState(m_BlendDisabled);
-    m_DefaultPSO->SetRasterizerState(m_RasterizerDefaultCw);
+    m_DefaultPSO->SetRasterizerState(m_RasterizerDefault);
     m_DefaultPSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     m_DefaultPSO->SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     m_DefaultPSO->SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
@@ -168,7 +169,7 @@ void GraphicCommon::InitializePipelineStates()
 
     m_DefaultWireframePSO = std::make_unique<GraphicPipelineState>(L"Default Wireframe PSO");
     m_DefaultWireframePSO->SetBlendState(m_BlendDisabled);
-    m_DefaultWireframePSO->SetRasterizerState(m_RasterizerWireframeCw);
+    m_DefaultWireframePSO->SetRasterizerState(m_RasterizerWireframe);
     m_DefaultWireframePSO->SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     m_DefaultWireframePSO->SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     m_DefaultWireframePSO->SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());

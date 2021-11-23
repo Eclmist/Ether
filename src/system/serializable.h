@@ -30,6 +30,12 @@ ETH_NAMESPACE_BEGIN
     only stores the GUID to be serialized through toolmode IPC
 */
 
+struct SerializableField
+{
+    void* m_Data;
+    size_t m_Size;
+};
+
 class Serializable
 {
 public:
@@ -51,8 +57,18 @@ public:
         return std::string(output);
     }
 
+    void Serialize(const std::string& path);
+    void Deserialize(const std::string& path);
+
 protected:
+    void RegisterField(const std::string& key, SerializableField field);
+    void Serialize(void** data, size_t* size);
+
+private:
     GUID m_GUID;
+    uint32_t m_Version;
+
+    std::unordered_map<std::string, SerializableField> m_Fields;
 };
 
 ETH_NAMESPACE_END

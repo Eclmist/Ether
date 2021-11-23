@@ -28,7 +28,7 @@
 ETH_NAMESPACE_BEGIN
 
 // Arbitrary max number of vertices
-#define MAX_VERTICES 65536
+#define MAX_VERTICES 65536 
 
 class MeshAsset : public Asset
 {
@@ -38,7 +38,7 @@ public:
 
 public:
     ETH_TOOLONLY(void UpdateBuffers());
-    ETH_TOOLONLY(inline StaticMesh& GetStaticMesh() { return m_StaticMesh; });
+    ETH_TOOLONLY(inline StaticMesh& GetStaticMesh() { return m_StaticMesh; })
 
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
@@ -47,9 +47,12 @@ public:
     inline size_t GetVertexBufferSize() const { return m_VertexBufferSize; }
     inline uint32_t* GetIndexBuffer() const { return (uint32_t*)m_IndexBuffer; }
 
+    inline bool IsValid() const { return m_VertexBuffer != nullptr; }
+
 private:
     ETH_TOOLONLY(void SetVertexBuffer(void* vertices, size_t size));
     ETH_TOOLONLY(void SetIndexBuffer(uint32_t* indices, size_t size));
+    ETH_TOOLONLY(void ClearBuffers());
 
 private:
     void* m_VertexBuffer;

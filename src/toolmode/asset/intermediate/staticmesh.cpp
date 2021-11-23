@@ -74,6 +74,7 @@ void StaticMesh::GenerateVertices()
     for (uint32_t i = 0; i < numPositions; ++i)
     {
         ethVector3 position = m_Positions[i];
+        std::vector<Vertex> uniqueVerts;
 
         for (uint32_t j = 0; j < indexRef[i].size(); ++j)
         {
@@ -87,9 +88,9 @@ void StaticMesh::GenerateVertices()
             bool vertexExists = false;
             uint32_t vertexIndex = -1;
 
-            for (uint32_t k = 0; k < m_Vertices.size(); ++k)
+            for (uint32_t k = 0; k < uniqueVerts.size(); ++k)
             {
-                if (newVertex == m_Vertices[k])
+                if (newVertex == uniqueVerts[k])
                 {
                     vertexExists = true;
                     vertexIndex = k;
@@ -97,8 +98,13 @@ void StaticMesh::GenerateVertices()
                 }
             }
 
-            if (!vertexExists)
+            if (vertexExists)
             {
+                vertexIndex = m_Vertices.size() - uniqueVerts.size() + vertexIndex;
+            }
+            else 
+            {
+                uniqueVerts.emplace_back(newVertex);
                 m_Vertices.emplace_back(newVertex);
                 vertexIndex = m_Vertices.size() - 1;
             }
