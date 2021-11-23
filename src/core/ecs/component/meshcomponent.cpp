@@ -34,6 +34,12 @@ MeshComponent::MeshComponent(EntityID owner)
 
 void MeshComponent::SetMeshAsset(std::shared_ptr<MeshAsset> mesh)
 {
+    if (mesh->GetNumVertices() > MAX_VERTICES)
+    {
+        LogEngineError("Failed to set mesh asset - max vertex count exceeded");
+        return;
+    }
+
     m_Mesh = mesh;
     m_NumVertices = mesh->GetNumVertices();
     m_NumIndices = mesh->GetNumIndices();

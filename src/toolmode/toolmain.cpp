@@ -53,7 +53,6 @@ public:
         debugCubeAnim->AddComponent<VisualComponent>();
         debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
         debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
-        debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 5.20f, 1.40f, 1.23f });
 
         Entity* groundPlane = EngineCore::GetECSManager().CreateEntity("Ground Plane");
         groundPlane->AddComponent<MeshComponent>();

@@ -52,6 +52,9 @@ void RenderingSystem::OnUpdate()
 		if (!mesh->HasMesh())
 			return;
 
+        if (!mesh->GetMeshAsset()->IsValid())
+            return;
+
         if (mesh->IsMeshChanged())
         {
             VisualNodeData data;

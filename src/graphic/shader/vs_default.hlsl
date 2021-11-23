@@ -20,8 +20,8 @@
 struct ModelViewProjection
 {
     matrix ModelView;
-    matrix ModelViewTI;
     matrix ModelViewProjection;
+    matrix Normal;
 };
 
 struct GlobalConstants
@@ -43,15 +43,25 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
-    float4 Normal   : NORMAL;
+    float3 Normal   : NORMAL;
+    float3 PositionES : TEXCOORD0;
+    float3 EyeDir   : TEXCOORD1;
 };
 
 VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(IN.Position, 1.0));
-    o.Normal = mul(CB_ModelViewProj.ModelViewTI, normalize(float4(IN.Normal, 1.0)));
+    float3 pos = IN.Position;
+    //pos.x = -pos.x;
+    
+    //pos.y += sin(pos.x * CB_GlobalConstants.Time.w) * 0.01;
+    //pos.y += sin(pos.z * CB_GlobalConstants.Time.z) * 0.03;
+
+    o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(pos, 1.0));
+    o.PositionES = mul(CB_ModelViewProj.ModelView, float4(IN.Position,1.0)).xyz;
+    o.Normal = normalize(mul(CB_ModelViewProj.Normal, normalize(IN.Normal)));
+    o.EyeDir = normalize(-o.PositionES);
 
     return o;
 }

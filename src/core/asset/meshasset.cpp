@@ -33,6 +33,13 @@ MeshAsset::MeshAsset()
 #ifdef ETH_TOOLMODE
 void MeshAsset::UpdateBuffers()
 {
+    if (m_StaticMesh.GetNumIndices() >= MAX_VERTICES)
+    {
+		LogToolmodeError("Failed to load mesh asset - max vertex count exceeded");
+        ClearBuffers();
+        return;
+    }
+
     SetVertexBuffer(m_StaticMesh.GetPackedVertexData(), m_StaticMesh.GetPackedVertexDataSize());
     SetIndexBuffer(m_StaticMesh.GetIndices(), m_StaticMesh.GetIndicesSize());
     m_NumVertices = m_StaticMesh.GetNumVertices();
@@ -53,6 +60,17 @@ void MeshAsset::SetIndexBuffer(uint32_t* indices, size_t size)
 {
     memcpy(m_IndexBuffer, indices, size);
 }
+
+void MeshAsset::ClearBuffers()
+{
+    memset(m_VertexBuffer, 0, m_VertexBufferSize);
+    memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
+    m_VertexBuffer = nullptr;
+	m_VertexBufferSize = 0;
+	m_NumVertices = 0;
+    m_NumIndices = 0;
+}
+
 #endif // ETH_TOOLMODE
 
 ETH_NAMESPACE_END

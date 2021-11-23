@@ -17,34 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "linearallocatorpage.h"
+#include "serializable.h"
+#include <fstream>
 
 ETH_NAMESPACE_BEGIN
 
-// Constant blocks must be multiples of 16 constants @ 16 bytes each
-#define DEFAULT_ALIGN 256
-#define DEFAULT_PAGE_SIZE 0x200000 // 2MB
-
-class LinearAllocator
+void Serializable::Serialize(const std::string& path)
 {
-public:
-    LinearAllocator(size_t pageSize = DEFAULT_PAGE_SIZE);
+    
 
-    GpuAllocation Allocate(size_t size, size_t alignment = DEFAULT_ALIGN);
-    void Reset();
+}
 
-private:
-    LinearAllocatorPage& RequestPage();
+void Serializable::Deserialize(const std::string& path)
+{
+}
 
-private:
-    size_t m_PageSize;
+void Serializable::RegisterField(const std::string& key, SerializableField field)
+{
+    m_Fields[key] = field;
+}
 
-    std::vector<std::shared_ptr<LinearAllocatorPage>> m_InFlightPages;
-    std::vector<std::shared_ptr<LinearAllocatorPage>> m_AvaliablePages;
 
-    LinearAllocatorPage* m_CurrentPage;
-};
+void Serializable::Serialize(void** data, size_t* size)
+{
+    uint32_t version = m_Version;
+    //uint32_t classID = 
+}
 
 ETH_NAMESPACE_END
