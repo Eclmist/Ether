@@ -26,7 +26,7 @@ class GpuAllocation
 public:
     GpuAllocation(GpuResource& baseResource);
 
-    inline ID3D12Resource& GetResource() const { return m_Resource.GetResource(); }
+    inline GpuResource& GetResource() const { return m_Resource; }
     inline void* GetCpuAddress() const { return m_CpuAddress; }
     inline D3D12_GPU_VIRTUAL_ADDRESS GetGpuAddress() const { return m_GpuAddress; }
     inline size_t GetSize() const { return m_Size; }
