@@ -34,17 +34,30 @@ namespace wrl = Microsoft::WRL;
 #include <d3dx12/d3dx12.h>
 
 // Ether Graphics Library
+// Resources
+#include "graphic/resource/gpuresource.h"
+#include "graphic/resource/bufferresource.h"
+#include "graphic/resource/textureresource.h"
+#include "graphic/resource/depthstencilresource.h"
+
+// Contexts
+#include "graphic/context/commandcontext.h"
+#include "graphic/context/graphiccontext.h"
+
+// Pipeline
 #include "graphic/pipeline/graphicpipelinestate.h"
 #include "graphic/pipeline/rootsignature.h"
 
+// Common
 #include "graphic/commandmanager.h"
 #include "graphic/graphiccommon.h"
-#include "graphic/graphiccontext.h"
 #include "graphic/graphicdisplay.h"
 #include "graphic/graphicrenderer.h"
 
+// Shader Daemon
 #include "graphic/common/shaderdaemon.h"
 
+// Scheduler
 #include "graphic/schedule/graphicscheduler.h"
 
 ETH_NAMESPACE_BEGIN

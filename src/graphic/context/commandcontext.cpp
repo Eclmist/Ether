@@ -17,52 +17,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphiccontext.h"
-#include "graphic/resource/bufferresource.h"
+#include "commandcontext.h"
 
 ETH_NAMESPACE_BEGIN
 
-GraphicContext::GraphicContext(D3D12_COMMAND_LIST_TYPE type)
+CommandContext::CommandContext(D3D12_COMMAND_LIST_TYPE type)
     : m_Type(type)
-    , m_ViewMatrix(DirectX::XMMatrixIdentity())
-    , m_ProjectionMatrix(DirectX::XMMatrixIdentity())
 {
     GraphicCore::GetCommandManager().CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
 }
 
-GraphicContext::~GraphicContext()
+CommandContext::~CommandContext()
 {
 }
 
-void GraphicContext::Reset()
+void CommandContext::Reset()
 {
     m_CommandAllocator = &GraphicCore::GetCommandManager().RequestAllocator(m_Type);
     m_CommandList->Reset(m_CommandAllocator, nullptr);
 }
 
-CommandQueue& GraphicContext::GetCommandQueue() const
+CommandQueue& CommandContext::GetCommandQueue() const
 {
     return GraphicCore::GetCommandManager().GetQueue(m_Type);
 }
 
-uint64_t GraphicContext::GetCompletionFenceValue() const
+uint64_t CommandContext::GetCompletionFenceValue() const
 {
     return GetCommandQueue().GetCompletionFenceValue();
 }
 
-void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
-{
-    float clearColor[] = { color.x, color.y, color.z, color.w };
-    m_CommandList->ClearRenderTargetView(texture.GetRTV(), clearColor, 0, nullptr);
-}
-
-
-void GraphicContext::ClearDepth(DepthStencilResource& depthTex, float val)
-{
-    m_CommandList->ClearDepthStencilView(depthTex.GetDSV(), D3D12_CLEAR_FLAG_DEPTH, val, 0, 0, nullptr);
-}
-
-void GraphicContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STATES newState)
+void CommandContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STATES newState)
 {
     if (target.GetCurrentState() == newState)
         return;
@@ -78,12 +63,13 @@ void GraphicContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STAT
     target.TransitionToState(newState);
 }
 
-void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
+void CommandContext::CopyBufferRegion(GpuResource& dest, GpuResource& src, size_t size, size_t dstOffset)
 {
-    m_CommandList->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+    TransitionResource(dest, D3D12_RESOURCE_STATE_COPY_DEST);
+    m_CommandList->CopyBufferRegion(&dest.GetResource(), dstOffset, &src.GetResource(), 0, size);
 }
 
-void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
+void CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
     GraphicCore::GetCommandManager().Execute(m_CommandList.Get());
     GraphicCore::GetCommandManager().DiscardAllocator(m_Type, *m_CommandAllocator);
@@ -92,14 +78,13 @@ void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
         GetCommandQueue().Flush();
 }
 
-void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset)
+void CommandContext::InitializeBuffer(GpuResource& dest, const void* data, size_t size, size_t dstOffset)
 {
-    GraphicContext context;
+    CommandContext context;
     GpuAllocation alloc = context.m_GpuAllocator.Allocate(size);
     memcpy(alloc.GetCpuAddress(), data, size);
 
-    context.TransitionResource(dest, D3D12_RESOURCE_STATE_COPY_DEST);
-    context.m_CommandList->CopyBufferRegion(&dest.GetResource(), dstOffset, &alloc.GetResource(), 0, size);
+    context.CopyBufferRegion(dest, alloc.GetResource(), size, dstOffset);
     context.TransitionResource(dest, D3D12_RESOURCE_STATE_GENERIC_READ);
     context.FinalizeAndExecute(true);
 }

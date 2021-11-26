@@ -51,7 +51,7 @@ BufferResource::BufferResource(const std::wstring& name, size_t numElements, siz
 
     m_Resource->SetName(name.c_str());
     m_GpuAddress = m_Resource->GetGPUVirtualAddress();
-    GraphicContext::InitializeBuffer(*this, data, m_BufferSize);
+    CommandContext::InitializeBuffer(*this, data, m_BufferSize);
 }
 
 ETH_NAMESPACE_END

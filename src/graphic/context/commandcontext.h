@@ -19,21 +19,17 @@
 
 #pragma once
 
-#include "graphic/resource/gpuresource.h"
-#include "graphic/resource/bufferresource.h"
-#include "graphic/resource/textureresource.h"
-#include "graphic/resource/depthstencilresource.h"
 #include "graphic/resource/virtualbuffer/linearallocator.h"
 
 ETH_NAMESPACE_BEGIN
 
 class CommandQueue;
 
-class GraphicContext : NonCopyable
+class CommandContext : public NonCopyable
 {
 public:
-    GraphicContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
-    ~GraphicContext();
+    CommandContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+    ~CommandContext();
     void Reset();
 
     CommandQueue& GetCommandQueue() const;
@@ -42,33 +38,19 @@ public:
 public:
     inline ID3D12GraphicsCommandList& GetCommandList() const { return *m_CommandList.Get(); }
 
-    inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
-    inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
-
-    inline void SetViewMatrix(ethXMMatrix viewMatrix) { m_ViewMatrix = viewMatrix; }
-    inline void SetProjectionMatrix(ethXMMatrix projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
-
 public:
-    void ClearColor(TextureResource& texture, ethVector4 color);
-    void ClearDepth(DepthStencilResource& depthTex, float val);
     void TransitionResource(GpuResource& resource, D3D12_RESOURCE_STATES newState);
-    void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv);
+    void CopyBufferRegion(GpuResource& dest, GpuResource& src, size_t size, size_t dstOffset = 0);
     void FinalizeAndExecute(bool waitForCompletion = false);
 
 public:
-    static void InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset = 0);
+    static void InitializeBuffer(GpuResource& dest, const void* data, size_t size, size_t dstOffset = 0);
 
-private:
+protected:
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
     ID3D12CommandAllocator* m_CommandAllocator;
     D3D12_COMMAND_LIST_TYPE m_Type;
-
-private:
     LinearAllocator m_GpuAllocator;
-
-private:
-    ethXMMatrix m_ViewMatrix;
-    ethXMMatrix m_ProjectionMatrix;
 };
 
 ETH_NAMESPACE_END
