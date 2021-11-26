@@ -95,7 +95,6 @@ void GraphicContext::FinalizeAndExecute(bool waitForCompletion)
 void GraphicContext::InitializeBuffer(BufferResource& dest, const void* data, size_t size, size_t dstOffset)
 {
     GraphicContext context;
-
     GpuAllocation alloc = context.m_GpuAllocator.Allocate(size);
     memcpy(alloc.GetCpuAddress(), data, size);
 

@@ -45,6 +45,8 @@ public:
 
 private:
     GraphicContext m_Context;
+
+public: // TODO: Move into some kind of geometry render pass. Right now accessed by HardCodedRenderPass as a POC
     std::vector<VisualNode*> m_PendingVisualNodes;
 };
 

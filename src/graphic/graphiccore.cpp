@@ -35,6 +35,7 @@ void GraphicCore::Initialize()
     Instance().m_CommandManager = std::make_unique<CommandManager>();
     Instance().m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     Instance().m_GraphicRenderer = std::make_unique<GraphicRenderer>();
+    Instance().m_GraphicScheduler = std::make_unique<GraphicScheduler>();
     Instance().m_GuiRenderer = std::make_unique<GuiRenderer>();
     Instance().m_GraphicCommon = std::make_unique<GraphicCommon>();
     Instance().m_IsInitialized = true;

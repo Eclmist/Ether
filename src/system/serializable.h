@@ -67,6 +67,7 @@ protected:
 private:
     GUID m_GUID;
     uint32_t m_Version;
+    uint32_t m_ClassID;
 
     std::unordered_map<std::string, SerializableField> m_Fields;
 };

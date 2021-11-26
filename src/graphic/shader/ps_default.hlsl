@@ -56,9 +56,9 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
 
     float3 r = reflect(-lightDir, normal);
     float rdotv = saturate(dot(r, eyeDir));
-    float n = 10000.2;
+    float n = 1000.2;
 
-    float4 ambient = float4(0.0, 0.1, 0.0, 0.1);
+    float4 ambient = float4(0.4, 0.7, 0.4, 0.1) * 0.3;
     float4 diffuse = col * ndotl;
     float4 specular = col * ndotl * pow(rdotv, n) * 0.5;
    

@@ -39,7 +39,7 @@ void MeshImporter::Import(const std::string& path)
 
     auto parser = m_Parsers[PathUtils::GetFileExtension(path)];
     parser->Parse(path, newAsset);
-    //newAsset.Serialize(path);
+    newAsset->Serialize(path);
 
     // Temp code to test:
     EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetMeshAsset(std::make_shared<MeshAsset>(*newAsset));
