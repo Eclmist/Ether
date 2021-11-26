@@ -18,28 +18,37 @@
 */
 
 #include "graphicscheduler.h"
+#include "graphic/schedule/renderpass/clearframebufferpass.h"
 #include "graphic/schedule/renderpass/hardcodedrenderpass.h"
 
 ETH_NAMESPACE_BEGIN
 
 namespace GraphicLinkSpace
 {
-    HardCodedRenderPass g_HardCodedRenderPass("Test Render Pass");
+    ClearFrameBufferPass g_ClearFrameBufferPass;
+    HardCodedRenderPass g_HardCodedRenderPass;
 }
 
-void GraphicScheduler::BuildSchedule()
+GraphicScheduler::GraphicScheduler()
+{
+    RegisterRenderPasses();
+    ScheduleRenderPasses();
+}
+
+void GraphicScheduler::RegisterRenderPasses()
+{
+    m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_ClearFrameBufferPass);
+    m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_HardCodedRenderPass);
+}
+
+void GraphicScheduler::ScheduleRenderPasses()
 {
     // [ETH-3] No scheduling yet, as a minimum POC
     for (int i = 0; i < m_RegisteredRenderPasses.size(); ++i)
         m_OrderedRenderPasses.push_back(m_RegisteredRenderPasses[i]);
 }
 
-void GraphicScheduler::ScheduleRenderPasses()
-{
-    m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_HardCodedRenderPass);
-}
-
-void GraphicScheduler::Render(GraphicContext& context)
+void GraphicScheduler::RenderPasses(GraphicContext& context)
 {
     for (int i = 0; i < m_OrderedRenderPasses.size(); ++i)
         m_OrderedRenderPasses[i]->Render(context);

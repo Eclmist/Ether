@@ -26,13 +26,10 @@ ETH_NAMESPACE_BEGIN
 class HardCodedRenderPass : public RenderPass
 {
 public:
-    HardCodedRenderPass(const std::string& name);
+    HardCodedRenderPass();
 
     void RegisterInputOutput() override;
     void Render(GraphicContext& context) override;
-
-private:
-    std::vector<VisualNode*> m_PendingVisualNodes;
 };
 
 ETH_NAMESPACE_END

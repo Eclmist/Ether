@@ -28,7 +28,7 @@
 ETH_NAMESPACE_BEGIN
 
 // Arbitrary max number of vertices
-#define MAX_VERTICES 65536 
+#define MAX_VERTICES 655360 
 
 class MeshAsset : public Asset
 {

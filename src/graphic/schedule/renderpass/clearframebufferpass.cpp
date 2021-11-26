@@ -17,26 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphic/schedule/renderpass/renderpass.h"
+#include "clearframebufferpass.h"
 
 ETH_NAMESPACE_BEGIN
 
-class GraphicScheduler : public NonCopyable
+ClearFrameBufferPass::ClearFrameBufferPass()
+    : RenderPass("Clear Frame Buffer Pass")
 {
-public:
-    GraphicScheduler();
-    ~GraphicScheduler() = default;
+}
 
-    void RegisterRenderPasses();
-    void ScheduleRenderPasses();
-    void RenderPasses(GraphicContext& context);
+void ClearFrameBufferPass::RegisterInputOutput()
+{
 
-private:
-    std::vector<RenderPass*> m_RegisteredRenderPasses;
-    std::vector<RenderPass*> m_OrderedRenderPasses;
+}
 
-};
+void ClearFrameBufferPass::Render(GraphicContext& context)
+{
+    OPTICK_EVENT("ClearFrameBufferPass - Render");
+
+    EngineConfig& config = EngineCore::GetEngineConfig();
+    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    context.ClearColor(*gfxDisplay.GetCurrentBackBuffer(), config.m_ClearColor);
+    context.ClearDepth(*gfxDisplay.GetDepthBuffer(), 1.0f);
+    context.FinalizeAndExecute();
+    context.Reset();
+}
 
 ETH_NAMESPACE_END
+

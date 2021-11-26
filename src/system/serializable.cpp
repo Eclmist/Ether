@@ -24,8 +24,12 @@ ETH_NAMESPACE_BEGIN
 
 void Serializable::Serialize(const std::string& path)
 {
-    
+    uint32_t version = m_Version;
+    uint32_t classID = typeid(this).hash_code();
 
+    for (auto fieldPair : m_Fields)
+    {
+    }
 }
 
 void Serializable::Deserialize(const std::string& path)
@@ -41,7 +45,11 @@ void Serializable::RegisterField(const std::string& key, SerializableField field
 void Serializable::Serialize(void** data, size_t* size)
 {
     uint32_t version = m_Version;
-    //uint32_t classID = 
+    uint32_t classID = typeid(this).hash_code();
+
+    for (auto fieldPair : m_Fields)
+    {
+    }
 }
 
 ETH_NAMESPACE_END
