@@ -46,8 +46,8 @@ public:
     void Deserialize(IStream& istream);
 
 protected:
-    void Serialize_Impl(OStream& ostream);
-    void Deserialize_Impl(IStream& istream);
+    //virtual void Serialize_Impl(OStream& ostream) = 0;
+    //virtual void Deserialize_Impl(IStream& istream) = 0;
 
 private:
     std::string m_Guid;

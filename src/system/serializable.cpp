@@ -26,28 +26,28 @@ Serializable::Serializable()
     : m_ClassID(typeid(this).hash_code())
     , m_Version(1)
 {
+    GUID guid;
+    CoCreateGuid(&guid);
+    char output[40];
+    snprintf(output, 40, "%08X-%04hX-%04hX-%02X%02X-%02X%02X%02X%02X%02X%02X",
+        guid.Data1, guid.Data2, guid.Data3,
+        guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+        guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+    m_Guid = std::string(output);
 }
 
 void Serializable::Serialize(OStream& ostream)
 {
     ostream << m_Version;
     ostream << m_ClassID;
-    Serialize_Impl(ostream);
+    //Serialize_Impl(ostream);
 }
 
 void Serializable::Deserialize(IStream& istream)
 {
     istream >> m_Version;
     istream >> m_ClassID;
-    Deserialize_Impl(istream);
-}
-
-void Serializable::Serialize_Impl(OStream& ostream)
-{
-}
-
-void Serializable::Deserialize_Impl(IStream& istream)
-{
+    //Deserialize_Impl(istream);
 }
 
 ETH_NAMESPACE_END
