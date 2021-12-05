@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-MeshAsset::MeshAsset()
+CompiledMeshAsset::CompiledMeshAsset()
     : m_VertexBuffer(nullptr)
     , m_VertexBufferSize(0)
     , m_NumVertices(0)
@@ -31,22 +31,14 @@ MeshAsset::MeshAsset()
 }
 
 #ifdef ETH_TOOLMODE
-void MeshAsset::UpdateBuffers()
-{
-    if (m_StaticMesh.GetNumIndices() >= MAX_VERTICES)
-    {
-		LogToolmodeError("Failed to load mesh asset - max vertex count exceeded");
-        ClearBuffers();
-        return;
-    }
 
-    SetVertexBuffer(m_StaticMesh.GetPackedVertexData(), m_StaticMesh.GetPackedVertexDataSize());
-    SetIndexBuffer(m_StaticMesh.GetIndices(), m_StaticMesh.GetIndicesSize());
-    m_NumVertices = m_StaticMesh.GetNumVertices();
-    m_NumIndices = m_StaticMesh.GetNumIndices();
+void CompiledMeshAsset::SetRawMesh(std::shared_ptr<RawMeshAsset> rawMesh)
+{
+    m_RawMesh = rawMesh;
+    UpdateBuffers();
 }
 
-void MeshAsset::SetVertexBuffer(void* vertices, size_t size)
+void CompiledMeshAsset::SetVertexBuffer(void* vertices, size_t size)
 {
     if (m_VertexBuffer != nullptr)
         free(m_VertexBuffer);
@@ -56,12 +48,12 @@ void MeshAsset::SetVertexBuffer(void* vertices, size_t size)
     memcpy(m_VertexBuffer, vertices, size);
 }
 
-void MeshAsset::SetIndexBuffer(uint32_t* indices, size_t size)
+void CompiledMeshAsset::SetIndexBuffer(uint32_t* indices, size_t size)
 {
     memcpy(m_IndexBuffer, indices, size);
 }
 
-void MeshAsset::ClearBuffers()
+void CompiledMeshAsset::ClearBuffers()
 {
     memset(m_VertexBuffer, 0, m_VertexBufferSize);
     memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
@@ -69,6 +61,21 @@ void MeshAsset::ClearBuffers()
 	m_VertexBufferSize = 0;
 	m_NumVertices = 0;
     m_NumIndices = 0;
+}
+
+void CompiledMeshAsset::UpdateBuffers()
+{
+    if (m_RawMesh->GetNumIndices() >= MAX_VERTICES)
+    {
+		LogToolmodeError("Failed to load mesh asset - max vertex count exceeded");
+        ClearBuffers();
+        return;
+    }
+
+    SetVertexBuffer(m_RawMesh->GetPackedVertexData(), m_RawMesh->GetPackedVertexDataSize());
+    SetIndexBuffer(m_RawMesh->GetIndices(), m_RawMesh->GetIndicesSize());
+    m_NumVertices = m_RawMesh->GetNumVertices();
+    m_NumIndices = m_RawMesh->GetNumIndices();
 }
 
 #endif // ETH_TOOLMODE

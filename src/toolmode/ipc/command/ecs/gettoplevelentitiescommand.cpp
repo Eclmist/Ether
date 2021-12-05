@@ -46,7 +46,7 @@ std::string GetTopLevelEntitiesCommandResponse::GetSendableData() const
     for (int i = 0; i < topLevelEntities.size(); ++i)
     {
         command["args"]["entities"][i]["name"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetName();
-        command["args"]["entities"][i]["guid"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetGuidString();
+        command["args"]["entities"][i]["guid"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetGuid();
         command["args"]["entities"][i]["parent"] = "";
         command["args"]["entities"][i]["enabled"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->IsEnabled();
     }

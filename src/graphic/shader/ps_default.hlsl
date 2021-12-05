@@ -62,7 +62,6 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     float4 diffuse = col * ndotl;
     float4 specular = col * ndotl * pow(rdotv, n) * 0.5;
    
-    //return eyeDir.xyzz;
     return diffuse + specular + ambient;
 }
 

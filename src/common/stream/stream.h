@@ -25,10 +25,12 @@ class Stream : public NonCopyable
 {
 public:
     virtual ~Stream() {}
+    virtual std::string GetPath() = 0;
 };
 
 class IStream : public Stream
 {
+public:
     virtual IStream& operator>>(float& v) = 0;
     virtual IStream& operator>>(int& v) = 0;
     virtual IStream& operator>>(char& v) = 0;
@@ -39,6 +41,7 @@ class IStream : public Stream
 
 class OStream : public Stream
 {
+public:
     virtual OStream& operator<<(const float v) = 0;
     virtual OStream& operator<<(const int v) = 0;
     virtual OStream& operator<<(const char v) = 0;

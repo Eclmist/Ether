@@ -59,7 +59,7 @@ void ECSManager::DestroyEntity(EntityID id)
 }
 
 #ifdef ETH_TOOLMODE
-EntityID ECSManager::GetEntityID(std::string guid) const
+EntityID ECSManager::GetEntityID(const std::string& guid) const
 {
     return m_EntityManager->m_GuidToEntityIDMap[guid];
 }

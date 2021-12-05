@@ -30,6 +30,8 @@ public:
     IFileStream(const std::string& path);
     ~IFileStream();
 
+    std::string GetPath() override final;
+
     IFileStream& operator>>(float& v) override final;
     IFileStream& operator>>(int& v) override final;
     IFileStream& operator>>(char& v) override final;
@@ -39,6 +41,7 @@ public:
 
 private:
     std::ifstream m_File;
+    std::string m_Path;
 };
 
 class OFileStream : public OStream
@@ -46,6 +49,8 @@ class OFileStream : public OStream
 public:
     OFileStream(const std::string& path);
     ~OFileStream();
+
+    std::string GetPath() override final;
 
     OFileStream& operator<<(const float v) override final;
     OFileStream& operator<<(const int v) override final;
@@ -56,6 +61,7 @@ public:
 
 private:
     std::ofstream m_File;
+    std::string m_Path;
 };
 
 ETH_NAMESPACE_END

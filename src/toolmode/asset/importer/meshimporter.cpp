@@ -32,17 +32,26 @@ bool MeshImporter::HasSupport(const std::string& extension)
     return m_Parsers.find(extension) != m_Parsers.end();
 }
 
-void MeshImporter::Import(const std::string& path)
+FileParser* MeshImporter::GetCompatibleParser(const std::string& extension)
 {
-    MeshAsset* newAsset = new MeshAsset();
-    newAsset->SetName(PathUtils::GetFileName(path));
+    if (m_Parsers.find(extension) == m_Parsers.end())
+        return nullptr;
 
-    auto parser = m_Parsers[PathUtils::GetFileExtension(path)];
-    parser->Parse(path, newAsset);
-    newAsset->Serialize(path);
+    return m_Parsers[extension].get();
+}
 
-    // Temp code to test:
-    EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetMeshAsset(std::make_shared<MeshAsset>(*newAsset));
+std::shared_ptr<Asset> MeshImporter::Compile(IStream& istream)
+{
+    std::string extension = PathUtils::GetFileExtension(istream.GetPath());
+    FileParser* parser = GetCompatibleParser(extension);
+    parser->Parse(istream.GetPath());
+
+    std::shared_ptr<RawMeshAsset> rawMesh = std::dynamic_pointer_cast<RawMeshAsset>(parser->GetRawAsset());
+    rawMesh->Compile();
+
+	std::shared_ptr<CompiledMeshAsset> compiledMesh = std::make_shared<CompiledMeshAsset>();
+    compiledMesh->SetRawMesh(rawMesh);
+    return compiledMesh;
 }
 
 ETH_NAMESPACE_END

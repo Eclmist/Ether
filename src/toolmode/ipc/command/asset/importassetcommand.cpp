@@ -30,7 +30,9 @@ ImportAssetCommand::ImportAssetCommand(const CommandData& data)
 
 void ImportAssetCommand::Execute()
 {
-    EngineCore::GetAssetDatabase().Import(m_Path);
+    // TODO: Setup "Workspace" folder for target destination folder
+    std::string dst = m_Path + ".ether";
+    EngineCore::GetAssetCompiler().Compile(m_Path, dst);
 }
 
 ETH_NAMESPACE_END

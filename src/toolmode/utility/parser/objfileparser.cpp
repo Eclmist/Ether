@@ -18,17 +18,15 @@
 */
 
 #include "objfileparser.h"
-#include "toolmode/asset/intermediate/staticmesh.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "parser/tiny_obj_loader.h"
 
 ETH_NAMESPACE_BEGIN
 
-void ObjFileParser::Parse(const std::string& path, Asset* asset)
+void ObjFileParser::Parse(const std::string& path)
 {
-    MeshAsset* meshAsset = static_cast<MeshAsset*>(asset);
-    StaticMesh& mesh = meshAsset->GetStaticMesh();
+    m_RawMesh = std::make_shared<RawMeshAsset>();
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -47,34 +45,36 @@ void ObjFileParser::Parse(const std::string& path, Asset* asset)
     }
 
     for (size_t i = 0; i < attrib.vertices.size(); i += 3)
-        mesh.m_Positions.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
+        m_RawMesh->m_Positions.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], -attrib.vertices[i + 2]);
 
     for (size_t i = 0; i < attrib.normals.size(); i += 3)
-        mesh.m_Normals.emplace_back(attrib.normals[i], attrib.normals[i + 1], attrib.normals[i + 2]);
+        m_RawMesh->m_Normals.emplace_back(attrib.normals[i], attrib.normals[i + 1], attrib.normals[i + 2]);
 
     for (size_t i = 0; i < attrib.texcoords.size(); i += 2)
-        mesh.m_TexCoords.emplace_back(attrib.texcoords[i], attrib.texcoords[i + 1]);
+        m_RawMesh->m_TexCoords.emplace_back(attrib.texcoords[i], attrib.texcoords[i + 1]);
 
     for (auto shape = shapes.begin(); shape < shapes.end(); ++shape)
     {
         for (auto i = 0; i < shape->mesh.indices.size(); ++i)
         {
-            mesh.m_PositionIndices.emplace_back(shape->mesh.indices[i].vertex_index);
+            m_RawMesh->m_PositionIndices.emplace_back(shape->mesh.indices[i].vertex_index);
 
             if (shape->mesh.indices[i].normal_index != -1)
-				mesh.m_NormalIndices.emplace_back(shape->mesh.indices[i].normal_index);
+                m_RawMesh->m_NormalIndices.emplace_back(shape->mesh.indices[i].normal_index);
             else
-				mesh.m_NormalIndices.emplace_back(0);
+                m_RawMesh->m_NormalIndices.emplace_back(0);
 
             if (shape->mesh.indices[i].texcoord_index != -1)
-				mesh.m_TexCoordIndices.emplace_back(shape->mesh.indices[i].texcoord_index);
+                m_RawMesh->m_TexCoordIndices.emplace_back(shape->mesh.indices[i].texcoord_index);
             else
-				mesh.m_TexCoordIndices.emplace_back(0);
+                m_RawMesh->m_TexCoordIndices.emplace_back(0);
         }
     }
+}
 
-    mesh.Format();
-    meshAsset->UpdateBuffers();
+std::shared_ptr<RawAsset> ObjFileParser::GetRawAsset() const
+{
+    return std::dynamic_pointer_cast<RawAsset>(m_RawMesh);
 }
 
 ETH_NAMESPACE_END

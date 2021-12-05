@@ -18,38 +18,37 @@
 */
 
 #include "serializable.h"
-#include <fstream>
+#include "common/stream/filestream.h"
 
 ETH_NAMESPACE_BEGIN
 
-void Serializable::Serialize(const std::string& path)
-{
-    uint32_t version = m_Version;
-    uint32_t classID = typeid(this).hash_code();
-
-    for (auto fieldPair : m_Fields)
-    {
-    }
-}
-
-void Serializable::Deserialize(const std::string& path)
+Serializable::Serializable()
+    : m_ClassID(typeid(this).hash_code())
+    , m_Version(1)
 {
 }
 
-void Serializable::RegisterField(const std::string& key, SerializableField field)
+void Serializable::Serialize(OStream& ostream)
 {
-    m_Fields[key] = field;
+    ostream << m_Version;
+    ostream << m_ClassID;
+    Serialize_Impl(ostream);
 }
 
-
-void Serializable::Serialize(void** data, size_t* size)
+void Serializable::Deserialize(IStream& istream)
 {
-    uint32_t version = m_Version;
-    uint32_t classID = typeid(this).hash_code();
+    istream >> m_Version;
+    istream >> m_ClassID;
+    Deserialize_Impl(istream);
+}
 
-    for (auto fieldPair : m_Fields)
-    {
-    }
+void Serializable::Serialize_Impl(OStream& ostream)
+{
+}
+
+void Serializable::Deserialize_Impl(IStream& istream)
+{
 }
 
 ETH_NAMESPACE_END
+

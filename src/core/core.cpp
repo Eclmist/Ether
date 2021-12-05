@@ -34,7 +34,7 @@ void EngineCore::Initialize(IApplicationBase& app)
 
 #ifdef ETH_TOOLMODE
     Instance().m_NotificationTray = std::make_unique<Win32::NotificationTray>();
-    Instance().m_AssetDatabase = std::make_unique<AssetDatabase>();
+    Instance().m_AssetCompiler = std::make_unique<AssetCompiler>();
     Instance().m_IpcManager = std::make_unique<IpcManager>();
 #endif
 

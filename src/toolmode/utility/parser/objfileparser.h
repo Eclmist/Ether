@@ -20,13 +20,21 @@
 #pragma once
 
 #include "fileparser.h"
+#include <toolmode/asset/intermediate/rawmeshasset.h>
 
 ETH_NAMESPACE_BEGIN
 
 class ObjFileParser : public FileParser
 {
 public:
-    void Parse(const std::string& path, Asset* asset) override;
+    ObjFileParser() = default;
+    ~ObjFileParser() = default;
+
+    void Parse(const std::string& path) override;
+    std::shared_ptr<RawAsset> GetRawAsset() const override;
+
+private:
+    std::shared_ptr<RawMeshAsset> m_RawMesh;
 };
 
 ETH_NAMESPACE_END

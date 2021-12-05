@@ -17,28 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "importmanager.h"
-#include "meshimporter.h"
+#include "rawasset.h"
 
 ETH_NAMESPACE_BEGIN
 
-ImportManager::ImportManager()
-{
-    m_Importers.push_back(std::make_shared<MeshImporter>());
-}
-
-std::shared_ptr<Importer> ImportManager::GetImporter(const std::string& path)
-{
-    auto extension = PathUtils::GetFileExtension(path);
-
-    for (auto importer : m_Importers)
-        if (importer->HasSupport(extension))
-            return importer;
-
-    return nullptr;
-}
-
 ETH_NAMESPACE_END
-

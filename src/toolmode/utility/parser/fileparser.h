@@ -19,15 +19,15 @@
 
 #pragma once
 
-#include <sstream>
-#include <fstream>
+#include <toolmode/asset/intermediate/rawasset.h>
 
 ETH_NAMESPACE_BEGIN
 
 class FileParser : public NonCopyable
 {
 public:
-    virtual void Parse(const std::string& path, Asset* asset) = 0;
+    virtual void Parse(const std::string& path) = 0;
+    virtual std::shared_ptr<RawAsset> GetRawAsset() const = 0;
 };
 
 ETH_NAMESPACE_END

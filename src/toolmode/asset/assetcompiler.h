@@ -19,22 +19,22 @@
 
 #pragma once
 
-#include "importer/importmanager.h"
-
 ETH_NAMESPACE_BEGIN
 
-class AssetDatabase : public NonCopyable
+class Importer;
+
+class AssetCompiler : public NonCopyable
 {
 public:
-    AssetDatabase() = default;
-    ~AssetDatabase() = default;
+    AssetCompiler();
+    ~AssetCompiler() = default;
 
 public:
-    void Import(const std::string& path);
-    std::shared_ptr<Asset> Load(GUID guid);
+    void Compile(const std::string& path, const std::string& dest);
+    std::shared_ptr<Importer> GetImporter(const std::string& ext);
 
 private:
-    ImportManager m_ImportManager;
+    std::vector<std::shared_ptr<Importer>> m_Importers;
 };
 
 ETH_NAMESPACE_END

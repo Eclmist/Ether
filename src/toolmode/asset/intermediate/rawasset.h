@@ -19,21 +19,16 @@
 
 #pragma once
 
-#include "importer.h"
-
 ETH_NAMESPACE_BEGIN
 
-class ImportManager : public NonCopyable
+class RawAsset
 {
 public:
-    ImportManager();
-    ~ImportManager() = default;
+    RawAsset() = default;
+    ~RawAsset() = default;
 
 public:
-    std::shared_ptr<Importer> GetImporter(const std::string& path);
-
-private:
-    std::vector<std::shared_ptr<Importer>> m_Importers;
+    virtual void Compile() = 0;
 };
 
 ETH_NAMESPACE_END

@@ -22,6 +22,7 @@
 ETH_NAMESPACE_BEGIN
 
 IFileStream::IFileStream(const std::string& path)
+    : m_Path(path)
 {
     m_File.open(path, std::ios::in | std::ios::binary);
     if (!m_File.is_open())
@@ -31,6 +32,11 @@ IFileStream::IFileStream(const std::string& path)
 IFileStream::~IFileStream()
 {
     m_File.close();
+}
+
+std::string IFileStream::GetPath()
+{
+    return m_Path;
 }
 
 IFileStream& IFileStream::operator>>(float& value)
@@ -78,6 +84,7 @@ IFileStream& IFileStream::operator>>(bool& value)
 
 
 OFileStream::OFileStream(const std::string& path)
+    : m_Path(path)
 {
     m_File.open(path, std::ios::out | std::ios::binary);
     if (!m_File.is_open())
@@ -87,6 +94,11 @@ OFileStream::OFileStream(const std::string& path)
 OFileStream::~OFileStream()
 {
     m_File.close();
+}
+
+std::string OFileStream::GetPath()
+{
+    return m_Path;
 }
 
 OFileStream& OFileStream::operator<<(const float value)

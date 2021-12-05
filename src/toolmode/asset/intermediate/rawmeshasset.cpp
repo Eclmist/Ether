@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "staticmesh.h"
+#include "rawmeshasset.h"
 
 ETH_NAMESPACE_BEGIN
 
-void StaticMesh::CalculateNormals()
+void RawMeshAsset::CalculateNormals()
 {
     const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
     m_Normals.resize(numIndices);
@@ -47,7 +47,7 @@ void StaticMesh::CalculateNormals()
     }
 }
 
-void StaticMesh::CalculateTexCoords()
+void RawMeshAsset::CalculateTexCoords()
 {
     const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
     m_TexCoords.resize(numIndices);
@@ -60,7 +60,7 @@ void StaticMesh::CalculateTexCoords()
     }
 }
 
-void StaticMesh::GenerateVertices()
+void RawMeshAsset::GenerateVertices()
 {
     const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
     const uint32_t numPositions = (uint32_t)m_Positions.size();
@@ -114,12 +114,12 @@ void StaticMesh::GenerateVertices()
     }
 }
 
-void StaticMesh::PackVertices()
+void RawMeshAsset::PackVertices()
 {
     const uint32_t numVertices = (uint32_t)m_Vertices.size();
     assert(numVertices != 0);
 
-    m_PackedData.resize(numVertices);
+    m_PackedVertexData.resize(numVertices);
 
     for (uint32_t i = 0; i < numVertices; ++i)
     {
@@ -131,11 +131,11 @@ void StaticMesh::PackVertices()
         packedVertex.m_Normal = m_Vertices[i].m_Normal;
         packedVertex.m_Tangent = ethVector4();
         packedVertex.m_UV = m_Vertices[i].m_TexCoord;
-        m_PackedData[i] = packedVertex;
+        m_PackedVertexData[i] = packedVertex;
     }
 }
 
-void StaticMesh::Format()
+void RawMeshAsset::Compile()
 {
     AssertToolmode(m_PositionIndices.size() != 0, "Cannot pack empty mesh");
     AssertToolmode((m_PositionIndices.size() % 3) == 0, "Cannot pack non-triangle meshes");
@@ -151,3 +151,4 @@ void StaticMesh::Format()
 }
 
 ETH_NAMESPACE_END
+

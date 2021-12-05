@@ -27,6 +27,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <functional>
 
 #include "coredefinitions.h"
 
@@ -52,11 +53,14 @@
 #include "core/iapplicationbase.h"
 #include "core/input.h"
 
+#include "common/hash.h"
 #include "common/logging/loggingmanager.h"
+#include "common/stream/stream.h"
+#include "common/stringid.h"
 #include "common/time.h"
 
 #ifdef ETH_TOOLMODE
-#include "toolmode/asset/assetdatabase.h"
+#include "toolmode/asset/assetcompiler.h"
 #include "toolmode/ipc/ipcmanager.h"
 #endif
 
@@ -78,7 +82,7 @@ public:
     static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
     static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
-    ETH_TOOLONLY(static AssetDatabase& GetAssetDatabase() { return *Instance().m_AssetDatabase; })
+    ETH_TOOLONLY(static AssetCompiler& GetAssetCompiler() { return *Instance().m_AssetCompiler; })
     ETH_TOOLONLY(static IpcManager& GetIpcManager() { return *Instance().m_IpcManager; })
 
     static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
@@ -92,7 +96,7 @@ private:
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;
     ETH_TOOLONLY(std::unique_ptr<PlatformNotificationTray> m_NotificationTray;)
-	ETH_TOOLONLY(std::unique_ptr<AssetDatabase> m_AssetDatabase;)
+	ETH_TOOLONLY(std::unique_ptr<AssetCompiler> m_AssetCompiler;)
     ETH_TOOLONLY(std::unique_ptr<IpcManager> m_IpcManager;)
 
     CommandLineOptions m_CommandLineOptions;

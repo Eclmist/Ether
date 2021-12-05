@@ -19,9 +19,12 @@
 
 #pragma once
 
+#include "rawasset.h"
 #include "graphic/common/vertexformat.h"
 
 ETH_NAMESPACE_BEGIN
+
+class CompiledMeshAsset;
 
 struct Vertex
 {
@@ -49,21 +52,21 @@ struct Vertex
     }
 };
 
-class StaticMesh
+class RawMeshAsset : public RawAsset
 {
 public:
-    StaticMesh() = default;
-    ~StaticMesh() = default;
+    RawMeshAsset() = default;
+    ~RawMeshAsset() = default;
 
 public:
-    void Format();
+    void Compile() override;
 
-    inline void* GetPackedVertexData() const { return (void*)m_PackedData.data(); }
-    inline size_t GetPackedVertexDataSize() const { return m_PackedData.size() * sizeof(m_PackedData[0]); }
+    inline void* GetPackedVertexData() const { return (void*)m_PackedVertexData.data(); }
+    inline size_t GetPackedVertexDataSize() const { return m_PackedVertexData.size() * sizeof(m_PackedVertexData[0]); }
     inline uint32_t* GetIndices() const { return (uint32_t*)m_Indices.data(); }
     inline size_t GetIndicesSize() const { return m_Indices.size() * sizeof(m_Indices[0]); }
 
-    inline uint32_t GetNumVertices() const { return m_PackedData.size(); }
+    inline uint32_t GetNumVertices() const { return m_PackedVertexData.size(); }
     inline uint32_t GetNumIndices() const { return m_Indices.size(); }
 
 private:
@@ -85,7 +88,7 @@ private:
 
     std::vector<Vertex> m_Vertices;
 
-    std::vector<VertexFormats::VertexFormatStatic> m_PackedData;
+    std::vector<VertexFormats::VertexFormatStatic> m_PackedVertexData;
     std::vector<uint32_t> m_Indices;
 };
 

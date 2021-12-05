@@ -22,7 +22,7 @@
 #include "asset.h"
 
 #ifdef ETH_TOOLMODE
-#include "toolmode/asset/intermediate/staticmesh.h"
+#include "toolmode/asset/intermediate/rawmeshasset.h"
 #endif
 
 ETH_NAMESPACE_BEGIN
@@ -30,16 +30,13 @@ ETH_NAMESPACE_BEGIN
 // Arbitrary max number of vertices
 #define MAX_VERTICES 655360 
 
-class MeshAsset : public Asset
+class CompiledMeshAsset : public Asset
 {
 public:
-    MeshAsset();
-    ~MeshAsset() = default;
+    CompiledMeshAsset();
+    ~CompiledMeshAsset() = default;
 
 public:
-    ETH_TOOLONLY(void UpdateBuffers());
-    ETH_TOOLONLY(inline StaticMesh& GetStaticMesh() { return m_StaticMesh; })
-
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
 
@@ -49,10 +46,14 @@ public:
 
     inline bool IsValid() const { return m_VertexBuffer != nullptr; }
 
+public:
+    ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<RawMeshAsset> rawMesh));
+
 private:
     ETH_TOOLONLY(void SetVertexBuffer(void* vertices, size_t size));
     ETH_TOOLONLY(void SetIndexBuffer(uint32_t* indices, size_t size));
     ETH_TOOLONLY(void ClearBuffers());
+    ETH_TOOLONLY(void UpdateBuffers());
 
 private:
     void* m_VertexBuffer;
@@ -62,7 +63,7 @@ private:
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;
 
-    ETH_TOOLONLY(StaticMesh m_StaticMesh);
+    ETH_TOOLONLY(std::shared_ptr<RawMeshAsset> m_RawMesh);
 };
 
 ETH_NAMESPACE_END
