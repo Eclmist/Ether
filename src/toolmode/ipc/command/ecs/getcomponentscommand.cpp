@@ -54,7 +54,7 @@ std::string GetComponentsCommandResponse::GetSendableData() const
         if (components[i] == nullptr)
             continue;
 
-        command["args"]["components"][i]["guid"] = components[i]->GetGuidString();
+        command["args"]["components"][i]["guid"] = components[i]->GetGuid();
         command["args"]["components"][i]["name"] = components[i]->GetName();
         command["args"]["components"][i]["ownerguid"] = m_EntityGuid;
         command["args"]["components"][i]["enabled"] = components[i]->IsEnabled();

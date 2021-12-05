@@ -21,25 +21,6 @@
 
 ETH_NAMESPACE_BEGIN
 
-// Fast CRC32
-// https://create.stephan-brumme.com/crc32/#bitwise
-constexpr unsigned int crc32_bitwise(const char* data, std::size_t length) {
-    unsigned int crc = 0;
-    while (length--) {
-        crc ^= *data++;
-
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
-    }
-    return ~crc;
-}
-
 StringID::StringID(sid_t sid)
     : m_Hash(sid)
 {

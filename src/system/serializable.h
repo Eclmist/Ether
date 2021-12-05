@@ -19,15 +19,10 @@
 
 #pragma once
 
-#include <Combaseapi.h>
-
 ETH_NAMESPACE_BEGIN
 
 /*
-    Derive from this class to make your classes serializable
-    
-    TODO: Actually support serialization/deserialization. Right now this class
-    only stores the GUID to be serialized through toolmode IPC
+    Derive from this class to make other classes serializable
 */
 
 struct SerializableField
@@ -36,36 +31,26 @@ struct SerializableField
     size_t m_Size;
 };
 
+class OStream;
+class IStream;
+
 class Serializable
 {
 public:
-    Serializable()
-    {
-        CoCreateGuid(&m_GUID);
-    };
-
+    Serializable();
     ~Serializable() = default;
 
-    inline GUID GetGuid() const { return m_GUID; }
+    inline std::string GetGuid() const { return m_Guid; }
 
-    inline std::string GetGuidString() const {
-        char output[40];
-        snprintf(output, 40, "%08X-%04hX-%04hX-%02X%02X-%02X%02X%02X%02X%02X%02X",
-            m_GUID.Data1, m_GUID.Data2, m_GUID.Data3,
-            m_GUID.Data4[0], m_GUID.Data4[1], m_GUID.Data4[2], m_GUID.Data4[3],
-            m_GUID.Data4[4], m_GUID.Data4[5], m_GUID.Data4[6], m_GUID.Data4[7]);
-        return std::string(output);
-    }
-
-    void Serialize(const std::string& path);
-    void Deserialize(const std::string& path);
+    void Serialize(OStream& ostream);
+    void Deserialize(IStream& istream);
 
 protected:
-    void RegisterField(const std::string& key, SerializableField field);
-    void Serialize(void** data, size_t* size);
+    void Serialize_Impl(OStream& ostream);
+    void Deserialize_Impl(IStream& istream);
 
 private:
-    GUID m_GUID;
+    std::string m_Guid;
     uint32_t m_Version;
     uint32_t m_ClassID;
 

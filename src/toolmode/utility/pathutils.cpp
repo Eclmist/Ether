@@ -25,22 +25,20 @@ ETH_NAMESPACE_BEGIN
 
 namespace PathUtils
 {
+	bool IsValidPath(const std::string& path)
+	{
+		return std::filesystem::exists(path);
+	}
 
-bool IsValidPath(const std::string& path)
-{
-    return std::filesystem::exists(path);
-}
+	std::string GetFileExtension(const std::string& path)
+	{
+		return std::filesystem::path(path).extension().string();
+	}
 
-std::string GetFileExtension(const std::string& path)
-{
-    return std::filesystem::path(path).extension().string();
-}
-
-std::string PathUtils::GetFileName(const std::string& path)
-{
-    return std::filesystem::path(path).filename().string();
-}
-
+	std::string PathUtils::GetFileName(const std::string& path)
+	{
+		return std::filesystem::path(path).filename().string();
+	}
 }
 
 ETH_NAMESPACE_END

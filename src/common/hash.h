@@ -19,29 +19,28 @@
 
 #pragma once
 
-#include "assetdatabase.h"
 
 ETH_NAMESPACE_BEGIN
 
-void AssetDatabase::Import(const std::string& path)
-{
-    LogToolmodeInfo("Importing asset: %s", path.c_str());
+constexpr unsigned int Polynomial = 0xEDB88320;
 
-    if (!PathUtils::IsValidPath(path))
-    {
-		LogToolmodeError("Failed to import asset - the path is invalid (%s)", path.c_str());
-        return;
+// Fast CRC32
+// https://create.stephan-brumme.com/crc32/#bitwise
+constexpr unsigned int crc32_bitwise(const char* data, std::size_t length) {
+    unsigned int crc = 0;
+    while (length--) {
+        crc ^= *data++;
+
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
+        crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
     }
-
-    auto importer = m_ImportManager.GetImporter(path);
-
-    if (importer == nullptr)
-    {
-		LogToolmodeError("Failed to find compatible importer", path.c_str());
-        return;
-    }
-
-    importer->Import(path);
+    return ~crc;
 }
 
 ETH_NAMESPACE_END

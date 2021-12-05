@@ -32,7 +32,7 @@ MeshComponent::MeshComponent(EntityID owner)
     memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
 }
 
-void MeshComponent::SetMeshAsset(std::shared_ptr<MeshAsset> mesh)
+void MeshComponent::SetMeshAsset(std::shared_ptr<CompiledMeshAsset> mesh)
 {
     if (mesh->GetNumVertices() > MAX_VERTICES)
     {

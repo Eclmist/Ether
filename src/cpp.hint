@@ -20,3 +20,7 @@
 #define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
 #define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
 
+#define ETH_ENGINEONLY(code)
+#define ETH_TOOLONLY(code) 
+#define ETH_ENGINE_OR_TOOL(engine, tool)
+

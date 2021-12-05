@@ -61,7 +61,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(pos, 1.0));
     o.PositionES = mul(CB_ModelViewProj.ModelView, float4(IN.Position,1.0)).xyz;
     o.Normal = normalize(mul(CB_ModelViewProj.Normal, normalize(IN.Normal)));
-    o.EyeDir = normalize(-o.PositionES);
+    o.EyeDir = IN.Position;
 
     return o;
 }

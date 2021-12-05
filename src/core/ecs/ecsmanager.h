@@ -106,7 +106,7 @@ public:
     }
 
 public:
-    ETH_TOOLONLY(EntityID GetEntityID(std::string guid) const);
+    ETH_TOOLONLY(EntityID GetEntityID(const std::string& guid) const);
 
 private:
     std::unique_ptr<ComponentManager> m_ComponentManager;

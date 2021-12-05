@@ -23,11 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 namespace PathUtils
 {
-
-bool IsValidPath(const std::string& path);
-std::string GetFileExtension(const std::string& path);
-std::string GetFileName(const std::string& path);
-
+	bool IsValidPath(const std::string& path);
+	std::string GetFileExtension(const std::string& path);
+	std::string GetFileName(const std::string& path);
 }
 
 ETH_NAMESPACE_END

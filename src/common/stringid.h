@@ -20,14 +20,13 @@
 #pragma once
 
 #include <string>
+#include "common/hash.h"
 
 ETH_NAMESPACE_BEGIN
 
 using sid_t = uint32_t;
 
 #define INVALID_SID sid_t(0xFFFFFFFF)
-
-constexpr unsigned int Polynomial = 0xEDB88320;
 
 class StringID
 {
@@ -41,6 +40,8 @@ public:
     bool operator==(const StringID& other) const;
     bool operator!=(const StringID& other) const;
 
+    inline sid_t GetHash() const { return m_Hash; }
+
 private:
     static sid_t Hash(const char* str);
 
@@ -52,3 +53,12 @@ private:
 static_assert(sizeof(StringID) == sizeof(sid_t), "StringID size is incorrect, it should be 32bits.");
 
 ETH_NAMESPACE_END
+
+template <>
+struct std::hash<Ether::StringID> {
+    std::size_t operator()(const Ether::StringID& key) const
+    {
+        return (std::size_t)(key.GetHash());
+    }
+};
+

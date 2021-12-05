@@ -23,11 +23,14 @@
 
 ETH_NAMESPACE_BEGIN
 
+class FileParser;
+
 class Importer : public NonCopyable
 {
 public:
     virtual bool HasSupport(const std::string& extension) = 0;
-    virtual void Import(const std::string& path) = 0;
+    virtual FileParser* GetCompatibleParser(const std::string& extension) = 0;
+    virtual std::shared_ptr<Asset> Compile(IStream& istream) = 0;
 };
 
 ETH_NAMESPACE_END

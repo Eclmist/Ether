@@ -20,7 +20,7 @@
 #pragma once
 
 #include "toolmode/asset/importer/importer.h"
-#include "toolmode/asset/intermediate/staticmesh.h"
+#include "toolmode/asset/intermediate/rawmeshasset.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -35,7 +35,8 @@ public:
 
 public:
     bool HasSupport(const std::string& extension) override;
-    void Import(const std::string& path) override;
+    FileParser* GetCompatibleParser(const std::string& extension) override;
+    std::shared_ptr<Asset> Compile(IStream& istream) override;
 
 private:
     std::unordered_map<std::string, std::shared_ptr<FileParser>> m_Parsers;
