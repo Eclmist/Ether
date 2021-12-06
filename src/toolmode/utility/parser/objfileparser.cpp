@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 
 void ObjFileParser::Parse(const std::string& path)
 {
-    m_RawMesh = std::make_shared<RawMeshAsset>();
+    m_RawMesh = std::make_shared<Mesh>();
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -72,9 +72,9 @@ void ObjFileParser::Parse(const std::string& path)
     }
 }
 
-std::shared_ptr<RawAsset> ObjFileParser::GetRawAsset() const
+std::shared_ptr<Asset> ObjFileParser::GetRawAsset() const
 {
-    return std::dynamic_pointer_cast<RawAsset>(m_RawMesh);
+    return std::dynamic_pointer_cast<Asset>(m_RawMesh);
 }
 
 ETH_NAMESPACE_END

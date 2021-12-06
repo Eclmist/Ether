@@ -52,16 +52,16 @@ void RenderingSystem::OnUpdate()
 		if (!mesh->HasMesh())
 			return;
 
-        if (!mesh->GetMeshAsset()->IsValid())
+        if (!mesh->GetCompiledMesh()->IsValid())
             return;
 
         if (mesh->IsMeshChanged())
         {
             VisualNodeData data;
-            data.m_VertexBuffer = mesh->GetVertexBuffer();
-            data.m_IndexBuffer = mesh->GetIndexBuffer();
-            data.m_NumIndices = mesh->GetNumIndices();
-            data.m_NumVertices = mesh->GetNumVertices();
+            data.m_VertexBuffer = mesh->GetCompiledMesh()->GetVertexBuffer();
+            data.m_IndexBuffer = mesh->GetCompiledMesh()->GetIndexBuffer();
+            data.m_NumIndices = mesh->GetCompiledMesh()->GetNumIndices();
+            data.m_NumVertices = mesh->GetCompiledMesh()->GetNumVertices();
             data.m_ModelMatrix = transform->GetMatrixReference();
             m_VisualNodes[id] = std::make_unique<VisualNode>(data);
             mesh->SetMeshChanged(false);

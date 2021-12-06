@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "rawmeshasset.h"
+#include "mesh.h"
 
 ETH_NAMESPACE_BEGIN
 
-void RawMeshAsset::CalculateNormals()
+void Mesh::CalculateNormals()
 {
     const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
     m_Normals.resize(numIndices);
@@ -47,7 +47,7 @@ void RawMeshAsset::CalculateNormals()
     }
 }
 
-void RawMeshAsset::CalculateTexCoords()
+void Mesh::CalculateTexCoords()
 {
     const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
     m_TexCoords.resize(numIndices);
@@ -60,7 +60,7 @@ void RawMeshAsset::CalculateTexCoords()
     }
 }
 
-void RawMeshAsset::GenerateVertices()
+void Mesh::GenerateVertices()
 {
     const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
     const uint32_t numPositions = (uint32_t)m_Positions.size();
@@ -114,7 +114,7 @@ void RawMeshAsset::GenerateVertices()
     }
 }
 
-void RawMeshAsset::PackVertices()
+void Mesh::PackVertices()
 {
     const uint32_t numVertices = (uint32_t)m_Vertices.size();
     assert(numVertices != 0);
@@ -135,7 +135,7 @@ void RawMeshAsset::PackVertices()
     }
 }
 
-void RawMeshAsset::Compile()
+void Mesh::Compile()
 {
     AssertToolmode(m_PositionIndices.size() != 0, "Cannot pack empty mesh");
     AssertToolmode((m_PositionIndices.size() % 3) == 0, "Cannot pack non-triangle meshes");

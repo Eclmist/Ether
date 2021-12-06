@@ -20,7 +20,7 @@
 #pragma once
 
 #include "fileparser.h"
-#include <toolmode/asset/intermediate/rawmeshasset.h>
+#include <toolmode/asset/intermediate/mesh.h>
 
 ETH_NAMESPACE_BEGIN
 
@@ -31,10 +31,10 @@ public:
     ~ObjFileParser() = default;
 
     void Parse(const std::string& path) override;
-    std::shared_ptr<RawAsset> GetRawAsset() const override;
+    std::shared_ptr<Asset> GetRawAsset() const override;
 
 private:
-    std::shared_ptr<RawMeshAsset> m_RawMesh;
+    std::shared_ptr<Mesh> m_RawMesh;
 };
 
 ETH_NAMESPACE_END

@@ -42,12 +42,8 @@ public:
 
     inline std::string GetGuid() const { return m_Guid; }
 
-    void Serialize(OStream& ostream);
-    void Deserialize(IStream& istream);
-
-protected:
-    //virtual void Serialize_Impl(OStream& ostream) = 0;
-    //virtual void Deserialize_Impl(IStream& istream) = 0;
+    virtual void Serialize(OStream& ostream);
+    virtual void Deserialize(IStream& istream);
 
 private:
     std::string m_Guid;

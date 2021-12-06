@@ -24,15 +24,24 @@ ETH_NAMESPACE_BEGIN
 MeshComponent::MeshComponent(EntityID owner)
     : Component(owner)
     , m_MeshChanged(false)
-    , m_NumVertices(0)
-    , m_NumIndices(0)
     , m_Mesh(nullptr)
 {
-    memset(m_VertexBuffer, 0, sizeof(m_VertexBuffer));
-    memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
 }
 
-void MeshComponent::SetMeshAsset(std::shared_ptr<CompiledMeshAsset> mesh)
+void MeshComponent::Serialize(OStream& ostream)
+{
+    Component::Serialize(ostream);
+    m_Mesh->Serialize(ostream);
+}
+
+void MeshComponent::Deserialize(IStream& istream)
+{
+    Component::Deserialize(istream);
+    m_Mesh = std::make_shared<CompiledMesh>();
+    m_Mesh->Deserialize(istream);
+}
+
+void MeshComponent::SetCompiledMesh(std::shared_ptr<CompiledMesh> mesh)
 {
     if (mesh->GetNumVertices() > MAX_VERTICES)
     {
@@ -41,13 +50,6 @@ void MeshComponent::SetMeshAsset(std::shared_ptr<CompiledMeshAsset> mesh)
     }
 
     m_Mesh = mesh;
-    m_NumVertices = mesh->GetNumVertices();
-    m_NumIndices = mesh->GetNumIndices();
-
-    memset(m_VertexBuffer, 0, sizeof(m_VertexBuffer));
-    memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
-    memcpy(m_VertexBuffer, mesh->GetVertexBuffer(), mesh->GetVertexBufferSize());
-    memcpy(m_IndexBuffer, mesh->GetIndexBuffer(), mesh->GetNumIndices() * sizeof(uint32_t));
     m_MeshChanged = true;
 }
 

@@ -21,32 +21,21 @@
 
 ETH_NAMESPACE_BEGIN
 
-enum AssetType
-{
-    ASSETTYPE_MESH,
-    ASSETTYPE_TEXTURE,
-    ASSETTYPE_SHADER,
-};
-
 class Asset : public Serializable
 {
 public:
     Asset() = default;
     ~Asset() = default;
 
-    inline void* GetData() const { return m_Data; }
-    inline size_t GetSize() const { return m_Size; }
     inline std::string GetName() const { return m_Name; }
-    inline AssetType GetType() const { return m_Type; }
-
-    inline void SetData(void* data, size_t size) { m_Data = data; m_Size = size; }
     inline void SetName(const std::string& name) { m_Name = name; }
 
+public:
+    virtual void Serialize(OStream& ostream) override;
+    virtual void Deserialize(IStream& istream) override;
+
 protected:
-    void* m_Data;
-    size_t m_Size;
     std::string m_Name;
-    AssetType m_Type;
 };
 
 ETH_NAMESPACE_END

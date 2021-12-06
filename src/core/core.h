@@ -41,7 +41,7 @@
 #include "system/platform/platformnotificationtray.h"
 #include "system/platform/win32/keycodes.h"
 
-#include "core/asset/meshasset.h"
+#include "core/asset/compiledmesh.h"
 
 #include "core/ecs/ecsmanager.h"
 #include "core/world/world.h"

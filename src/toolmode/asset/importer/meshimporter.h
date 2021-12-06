@@ -20,7 +20,6 @@
 #pragma once
 
 #include "toolmode/asset/importer/importer.h"
-#include "toolmode/asset/intermediate/rawmeshasset.h"
 
 ETH_NAMESPACE_BEGIN
 

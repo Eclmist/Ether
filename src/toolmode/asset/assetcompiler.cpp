@@ -48,11 +48,18 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
         return;
     }
 
-    IFileStream istream(path);
-    OFileStream ostream(dest);
-    std::shared_ptr<Asset> compiledAsset = importer->Compile(istream);
-    compiledAsset->SetName(PathUtils::GetFileName(path));
-    compiledAsset->Serialize(ostream);
+    {
+		IFileStream istream(path);
+		OFileStream ostream(dest);
+		std::shared_ptr<Asset> compiledAsset = importer->Compile(istream);
+		compiledAsset->SetName(PathUtils::GetFileName(path));
+		compiledAsset->Serialize(ostream);
+    }
+
+    std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+    IFileStream iistream(dest);
+    compiledMesh->Deserialize(iistream);
+    EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
 }
 
 std::shared_ptr<Importer> AssetCompiler::GetImporter(const std::string& ext)
