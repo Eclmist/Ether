@@ -1,8 +1,6 @@
 *.c linguist-language=c++
 *.h linguist-language=c++
 
-extern/* linguist-vendored
-
+include/* linguist-vendored
 docs/* linguist-documentation
-
 build/* linguist-generated
