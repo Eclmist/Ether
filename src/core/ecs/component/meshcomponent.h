@@ -30,16 +30,15 @@ public:
     MeshComponent(EntityID owner);
     ~MeshComponent() = default;
 
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
+
 public:
     inline bool HasMesh() const { return m_Mesh != nullptr; }
     inline CompiledMesh* GetCompiledMesh() const { return m_Mesh.get(); }
 
     inline bool IsMeshChanged() const { return m_MeshChanged; }
     inline void SetMeshChanged(bool updated) { m_MeshChanged = updated; }
-
-public:
-    void Serialize(OStream& ostream) ;
-    void Deserialize(IStream& istream) ;
 
 public:
     inline std::string GetName() const override { return "Mesh"; }

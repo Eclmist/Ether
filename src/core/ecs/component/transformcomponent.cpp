@@ -38,6 +38,18 @@ TransformComponent::TransformComponent(EntityID owner)
 #endif
 }
 
+void TransformComponent::Serialize(OStream& ostream)
+{
+    Component::Serialize(ostream);
+    // TODO
+}
+
+void TransformComponent::Deserialize(IStream& istream)
+{
+    Component::Deserialize(istream);
+    // TODO
+}
+
 void TransformComponent::SetPosition(const ethVector3& position)
 {
     m_Position = position;

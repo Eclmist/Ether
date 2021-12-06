@@ -27,12 +27,12 @@ public:
     Asset() = default;
     ~Asset() = default;
 
-    inline std::string GetName() const { return m_Name; }
-    inline void SetName(const std::string& name) { m_Name = name; }
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
 
 public:
-    virtual void Serialize(OStream& ostream) override;
-    virtual void Deserialize(IStream& istream) override;
+    inline std::string GetName() const { return m_Name; }
+    inline void SetName(const std::string& name) { m_Name = name; }
 
 protected:
     std::string m_Name;

@@ -30,6 +30,18 @@ VisualComponent::~VisualComponent()
 {
 }
 
+void VisualComponent::Serialize(OStream& ostream)
+{
+    Component::Serialize(ostream);
+    // TODO
+}
+
+void VisualComponent::Deserialize(IStream& istream)
+{
+    Component::Deserialize(istream);
+    // TODO
+}
+
 ETH_NAMESPACE_END
 
 

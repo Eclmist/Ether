@@ -29,6 +29,9 @@ public:
     VisualComponent(EntityID owner);
     ~VisualComponent();
 
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
+
 public:
     inline std::string GetName() const override { return "Visual"; }
 };

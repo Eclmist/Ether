@@ -36,6 +36,9 @@ public:
     CompiledMesh();
     ~CompiledMesh() = default;
 
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
+
 public:
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
@@ -45,10 +48,6 @@ public:
     inline uint32_t* GetIndexBuffer() const { return (uint32_t*)m_IndexBuffer; }
 
     inline bool IsValid() const { return m_VertexBuffer != nullptr; }
-
-public:
-    virtual void Serialize(OStream& ostream) override;
-    virtual void Deserialize(IStream& istream) override;
 
 public:
     ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<Mesh> rawMesh));
