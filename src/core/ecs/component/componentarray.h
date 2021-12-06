@@ -31,38 +31,46 @@ template <typename T>
 class ComponentArray : public IComponentArray
 {
 public:
-    ComponentArray() = default;
+    ComponentArray();
     ~ComponentArray() = default;
 
 public:
-    T* GetComponent(EntityID id) const; 
+    T* GetComponent(EntityID id); 
     T* AddComponent(EntityID id);
     void RemoveComponent(EntityID id);
 
 private:
     std::unordered_map<EntityID, uint32_t> m_EntityToIndexMap;
     std::unordered_map<uint32_t, EntityID> m_IndexToEntityMap;
-    std::vector<std::unique_ptr<T>> m_Components;
+    std::vector<T> m_Components;
 };
 
+template<typename T>
+inline ComponentArray<T>::ComponentArray()
+{
+    m_Components.reserve(ETH_ECS_MAX_ENTITIES);
+}
+
 template <typename T>
-T* ComponentArray<T>::GetComponent(EntityID id) const
+T* ComponentArray<T>::GetComponent(EntityID id)
 {
     if (m_EntityToIndexMap.find(id) == m_EntityToIndexMap.end())
         return nullptr;
 
-    return m_Components[m_EntityToIndexMap.at(id)].get();
+    auto iter = m_Components.begin() + m_EntityToIndexMap.at(id);
+    return &(*iter);
 }
 
 template <typename T>
 T* ComponentArray<T>::AddComponent(EntityID id)
 {
-    m_Components.emplace_back(std::make_unique<T>(id));
+    m_Components.emplace_back(id);
     uint32_t index = m_Components.size() - 1;
 
     m_EntityToIndexMap[id] = index;
     m_IndexToEntityMap[index] = id;
-    return m_Components.back().get();
+    auto iter = m_Components.end() - 1;
+    return &(*iter);
 }
 
 template <typename T>
