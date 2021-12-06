@@ -27,6 +27,9 @@ public:
     Entity(const EntityID id, const std::string& name);
     ~Entity();
 
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
+
 public:
     inline const EntityID GetID() const { return m_ID; }
 
@@ -38,10 +41,6 @@ public:
 
     inline bool IsEnabled() const { return m_Enabled; }
     inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
-
-public:
-    virtual void Serialize(OStream& ostream) override;
-    virtual void Deserialize(IStream& istream) override;
 
 public:
     template <typename T>

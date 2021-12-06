@@ -29,6 +29,10 @@ public:
     TransformComponent(EntityID owner);
     ~TransformComponent() = default;
 
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
+
+public:
     inline ethVector3 GetPosition() const { return m_Position; }
     inline ethVector3 GetRotation() const { return m_EulerRotation; }
     inline ethVector3 GetScale() const { return m_Scale; }
