@@ -34,8 +34,10 @@ public:
 
     IFileStream& operator>>(float& v) override final;
     IFileStream& operator>>(int& v) override final;
+    IFileStream& operator>>(long& v) override final;
     IFileStream& operator>>(char& v) override final;
     IFileStream& operator>>(unsigned int& v) override final;
+    IFileStream& operator>>(unsigned long& v) override final;
     IFileStream& operator>>(std::string& v) override final;
     IFileStream& operator>>(bool& v) override final;
 
@@ -54,8 +56,10 @@ public:
 
     OFileStream& operator<<(const float v) override final;
     OFileStream& operator<<(const int v) override final;
+    OFileStream& operator<<(const long v) override final;
     OFileStream& operator<<(const char v) override final;
     OFileStream& operator<<(const unsigned int v) override final;
+    OFileStream& operator<<(const unsigned long v) override final;
     OFileStream& operator<<(const std::string& v) override final;
     OFileStream& operator<<(const bool v) override final;
 

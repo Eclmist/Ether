@@ -22,7 +22,7 @@
 #include "asset.h"
 
 #ifdef ETH_TOOLMODE
-#include "toolmode/asset/intermediate/rawmeshasset.h"
+#include "toolmode/asset/intermediate/mesh.h"
 #endif
 
 ETH_NAMESPACE_BEGIN
@@ -30,11 +30,11 @@ ETH_NAMESPACE_BEGIN
 // Arbitrary max number of vertices
 #define MAX_VERTICES 655360 
 
-class CompiledMeshAsset : public Asset
+class CompiledMesh : public Asset
 {
 public:
-    CompiledMeshAsset();
-    ~CompiledMeshAsset() = default;
+    CompiledMesh();
+    ~CompiledMesh() = default;
 
 public:
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
@@ -47,7 +47,11 @@ public:
     inline bool IsValid() const { return m_VertexBuffer != nullptr; }
 
 public:
-    ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<RawMeshAsset> rawMesh));
+    virtual void Serialize(OStream& ostream) override;
+    virtual void Deserialize(IStream& istream) override;
+
+public:
+    ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<Mesh> rawMesh));
 
 private:
     ETH_TOOLONLY(void SetVertexBuffer(void* vertices, size_t size));
@@ -57,13 +61,13 @@ private:
 
 private:
     void* m_VertexBuffer;
-    size_t m_VertexBufferSize;
+    uint32_t m_VertexBufferSize;
     uint32_t m_IndexBuffer[MAX_VERTICES];
 
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;
 
-    ETH_TOOLONLY(std::shared_ptr<RawMeshAsset> m_RawMesh);
+    ETH_TOOLONLY(std::shared_ptr<Mesh> m_RawMesh);
 };
 
 ETH_NAMESPACE_END

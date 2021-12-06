@@ -40,14 +40,12 @@ void Serializable::Serialize(OStream& ostream)
 {
     ostream << m_Version;
     ostream << m_ClassID;
-    //Serialize_Impl(ostream);
 }
 
 void Serializable::Deserialize(IStream& istream)
 {
     istream >> m_Version;
     istream >> m_ClassID;
-    //Deserialize_Impl(istream);
 }
 
 ETH_NAMESPACE_END

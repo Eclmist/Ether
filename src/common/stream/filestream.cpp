@@ -51,6 +51,12 @@ IFileStream& IFileStream::operator>>(int& value)
     return *this;
 }
 
+IFileStream& IFileStream::operator>>(long& value)
+{
+    m_File.read(reinterpret_cast<char*>(&value), sizeof(long));
+    return *this;
+}
+
 IFileStream& IFileStream::operator>>(char& value)
 {
     m_File.read(reinterpret_cast<char*>(&value), sizeof(char));
@@ -60,6 +66,12 @@ IFileStream& IFileStream::operator>>(char& value)
 IFileStream& IFileStream::operator>>(unsigned int& value)
 {
     m_File.read(reinterpret_cast<char*>(&value), sizeof(unsigned int));
+    return *this;
+}
+
+IFileStream& IFileStream::operator>>(unsigned long& value)
+{
+    m_File.read(reinterpret_cast<char*>(&value), sizeof(unsigned long));
     return *this;
 }
 
@@ -113,6 +125,12 @@ OFileStream& OFileStream::operator<<(const int value)
     return *this;
 }
 
+OFileStream& OFileStream::operator<<(const long value)
+{
+    m_File.write(reinterpret_cast<const char*>(&value), sizeof(long));
+    return *this;
+}
+
 OFileStream& OFileStream::operator<<(const char value)
 {
     m_File.write(reinterpret_cast<const char*>(&value), sizeof(char));
@@ -122,6 +140,12 @@ OFileStream& OFileStream::operator<<(const char value)
 OFileStream& OFileStream::operator<<(const unsigned int value)
 {
     m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned int));
+    return *this;
+}
+
+OFileStream& OFileStream::operator<<(const unsigned long value)
+{
+    m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned long));
     return *this;
 }
 

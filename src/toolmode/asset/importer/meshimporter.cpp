@@ -46,11 +46,11 @@ std::shared_ptr<Asset> MeshImporter::Compile(IStream& istream)
     FileParser* parser = GetCompatibleParser(extension);
     parser->Parse(istream.GetPath());
 
-    std::shared_ptr<RawMeshAsset> rawMesh = std::dynamic_pointer_cast<RawMeshAsset>(parser->GetRawAsset());
-    rawMesh->Compile();
+    std::shared_ptr<Mesh> mesh = std::dynamic_pointer_cast<Mesh>(parser->GetRawAsset());
+    mesh->Compile();
 
-	std::shared_ptr<CompiledMeshAsset> compiledMesh = std::make_shared<CompiledMeshAsset>();
-    compiledMesh->SetRawMesh(rawMesh);
+	std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+    compiledMesh->SetRawMesh(mesh);
     return compiledMesh;
 }
 

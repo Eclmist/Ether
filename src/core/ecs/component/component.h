@@ -40,12 +40,16 @@ public:
     virtual ~Component() = default;
 
     inline EntityID GetOwner() const { return m_Owner; }
-
     inline bool IsEnabled() const { return m_Enabled; }
     inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
 
     virtual std::string GetName() const = 0;
+
+public:
+    void Serialize(OStream& ostream) override;
+    void Deserialize(IStream& istream) override;
     
+public:
     ETH_TOOLONLY(inline std::vector<std::shared_ptr<Property>> GetEditorProperties() const { return m_EditorProperties; })
 
 protected:

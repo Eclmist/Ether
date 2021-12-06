@@ -33,6 +33,22 @@ Entity::~Entity()
 {
 }
 
+void Entity::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+    ostream << m_ID;
+    ostream << m_Name;
+    ostream << m_Enabled;
+}
+
+void Entity::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+    istream >> m_ID;
+    istream >> m_Name;
+    istream >> m_Enabled;
+}
+
 void Entity::AddMandatoryComponents()
 {
     AddComponent<TransformComponent>();

@@ -17,28 +17,58 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "meshasset.h"
+#include "compiledmesh.h"
 
 ETH_NAMESPACE_BEGIN
 
-CompiledMeshAsset::CompiledMeshAsset()
+CompiledMesh::CompiledMesh()
     : m_VertexBuffer(nullptr)
     , m_VertexBufferSize(0)
     , m_NumVertices(0)
     , m_NumIndices(0)
 {
-    m_Type = ASSETTYPE_MESH;
+}
+
+void CompiledMesh::Serialize(OStream& ostream)
+{
+    Asset::Serialize(ostream);
+
+    ostream << m_VertexBufferSize;
+    ostream << m_NumVertices;
+    ostream << m_NumIndices;
+
+    for (int i = 0; i < m_VertexBufferSize; ++i)
+        ostream << reinterpret_cast<char*>(m_VertexBuffer)[i];
+
+    for (int i = 0; i < m_NumIndices; ++i)
+        ostream << m_IndexBuffer[i];
+}
+
+void CompiledMesh::Deserialize(IStream& istream)
+{
+    Asset::Deserialize(istream);
+
+    istream >> m_VertexBufferSize;
+    istream >> m_NumVertices;
+    istream >> m_NumIndices;
+
+    m_VertexBuffer = malloc(m_VertexBufferSize);
+    for (int i = 0; i < m_VertexBufferSize; ++i)
+        istream >> reinterpret_cast<char*>(m_VertexBuffer)[i];
+
+    for (int i = 0; i < m_NumIndices; ++i)
+        istream >> m_IndexBuffer[i];
 }
 
 #ifdef ETH_TOOLMODE
 
-void CompiledMeshAsset::SetRawMesh(std::shared_ptr<RawMeshAsset> rawMesh)
+void CompiledMesh::SetRawMesh(std::shared_ptr<Mesh> rawMesh)
 {
     m_RawMesh = rawMesh;
     UpdateBuffers();
 }
 
-void CompiledMeshAsset::SetVertexBuffer(void* vertices, size_t size)
+void CompiledMesh::SetVertexBuffer(void* vertices, size_t size)
 {
     if (m_VertexBuffer != nullptr)
         free(m_VertexBuffer);
@@ -48,12 +78,12 @@ void CompiledMeshAsset::SetVertexBuffer(void* vertices, size_t size)
     memcpy(m_VertexBuffer, vertices, size);
 }
 
-void CompiledMeshAsset::SetIndexBuffer(uint32_t* indices, size_t size)
+void CompiledMesh::SetIndexBuffer(uint32_t* indices, size_t size)
 {
     memcpy(m_IndexBuffer, indices, size);
 }
 
-void CompiledMeshAsset::ClearBuffers()
+void CompiledMesh::ClearBuffers()
 {
     memset(m_VertexBuffer, 0, m_VertexBufferSize);
     memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
@@ -63,7 +93,7 @@ void CompiledMeshAsset::ClearBuffers()
     m_NumIndices = 0;
 }
 
-void CompiledMeshAsset::UpdateBuffers()
+void CompiledMesh::UpdateBuffers()
 {
     if (m_RawMesh->GetNumIndices() >= MAX_VERTICES)
     {

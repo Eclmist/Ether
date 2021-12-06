@@ -40,6 +40,10 @@ public:
     inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
 
 public:
+    virtual void Serialize(OStream& ostream) override;
+    virtual void Deserialize(IStream& istream) override;
+
+public:
     template <typename T>
     T* const GetComponent() const
     {

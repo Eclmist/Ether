@@ -17,8 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "rawasset.h"
+#include "asset.h"
 
 ETH_NAMESPACE_BEGIN
 
+void Asset::Serialize(OStream& ostream)
+{
+    ostream << m_Name;
+}
+
+void Asset::Deserialize(IStream& istream)
+{
+    istream >> m_Name;
+}
+
 ETH_NAMESPACE_END
+

@@ -33,8 +33,10 @@ class IStream : public Stream
 public:
     virtual IStream& operator>>(float& v) = 0;
     virtual IStream& operator>>(int& v) = 0;
+    virtual IStream& operator>>(long& v) = 0;
     virtual IStream& operator>>(char& v) = 0;
     virtual IStream& operator>>(unsigned int& v) = 0;
+    virtual IStream& operator>>(unsigned long& v) = 0;
     virtual IStream& operator>>(std::string& v) = 0;
     virtual IStream& operator>>(bool& v) = 0;
 };
@@ -44,8 +46,10 @@ class OStream : public Stream
 public:
     virtual OStream& operator<<(const float v) = 0;
     virtual OStream& operator<<(const int v) = 0;
+    virtual OStream& operator<<(const long v) = 0;
     virtual OStream& operator<<(const char v) = 0;
     virtual OStream& operator<<(const unsigned int v) = 0;
+    virtual OStream& operator<<(const unsigned long v) = 0;
     virtual OStream& operator<<(const std::string& v) = 0;
     virtual OStream& operator<<(const bool v) = 0;
 };

@@ -19,12 +19,11 @@
 
 #pragma once
 
-#include "rawasset.h"
 #include "graphic/common/vertexformat.h"
 
 ETH_NAMESPACE_BEGIN
 
-class CompiledMeshAsset;
+class CompiledMesh;
 
 struct Vertex
 {
@@ -52,14 +51,14 @@ struct Vertex
     }
 };
 
-class RawMeshAsset : public RawAsset
+class Mesh : public Asset
 {
 public:
-    RawMeshAsset() = default;
-    ~RawMeshAsset() = default;
+    Mesh() = default;
+    ~Mesh() = default;
 
 public:
-    void Compile() override;
+    void Compile();
 
     inline void* GetPackedVertexData() const { return (void*)m_PackedVertexData.data(); }
     inline size_t GetPackedVertexDataSize() const { return m_PackedVertexData.size() * sizeof(m_PackedVertexData[0]); }

@@ -27,5 +27,19 @@ Component::Component(EntityID owner)
 {
 }
 
+void Component::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+    ostream << m_Owner;
+    ostream << m_Enabled;
+}
+
+void Component::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+    istream >> m_Owner;
+    istream >> m_Enabled;
+}
+
 ETH_NAMESPACE_END
 

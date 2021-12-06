@@ -31,33 +31,26 @@ public:
     ~MeshComponent() = default;
 
 public:
-    inline uint32_t GetNumVertices() const { return m_NumVertices; }
-    inline uint32_t GetNumIndices() const { return m_NumIndices; }
-
-    inline const VertexFormats::VertexFormatStatic* GetVertexBuffer() const { return m_VertexBuffer; }
-    inline const uint32_t* GetIndexBuffer() const { return m_IndexBuffer; }
-
     inline bool HasMesh() const { return m_Mesh != nullptr; }
-    inline CompiledMeshAsset* GetMeshAsset() const { return m_Mesh.get(); }
+    inline CompiledMesh* GetCompiledMesh() const { return m_Mesh.get(); }
 
     inline bool IsMeshChanged() const { return m_MeshChanged; }
     inline void SetMeshChanged(bool updated) { m_MeshChanged = updated; }
 
 public:
+    void Serialize(OStream& ostream) ;
+    void Deserialize(IStream& istream) ;
+
+public:
     inline std::string GetName() const override { return "Mesh"; }
 
 public:
-    void SetMeshAsset(std::shared_ptr<CompiledMeshAsset> mesh);
+    void SetCompiledMesh(std::shared_ptr<CompiledMesh> mesh);
 
 private:
-    std::shared_ptr<CompiledMeshAsset> m_Mesh;
-
-    VertexFormats::VertexFormatStatic m_VertexBuffer[MAX_VERTICES];
-    uint32_t m_IndexBuffer[MAX_VERTICES];
-    uint32_t m_NumVertices;
-    uint32_t m_NumIndices;
-
+    std::shared_ptr<CompiledMesh> m_Mesh;
     bool m_MeshChanged;
 };
 
 ETH_NAMESPACE_END
+
