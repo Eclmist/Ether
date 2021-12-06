@@ -56,10 +56,14 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
 		compiledAsset->Serialize(ostream);
     }
 
+    // TEMP Code for testing : TODO REMOVE
     std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
     IFileStream iistream(dest);
     compiledMesh->Deserialize(iistream);
-    EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
+
+    for (int i = 0; i < 100; ++i)
+        if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
+			EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledMesh);
 }
 
 std::shared_ptr<Importer> AssetCompiler::GetImporter(const std::string& ext)

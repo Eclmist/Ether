@@ -55,7 +55,7 @@ void SampleApp::LoadContent()
     groundPlane->AddComponent<VisualComponent>();
     groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
 
-    for (int i = 0; i < 1000; ++i)
+    for (int i = 0; i < 100; ++i)
     {
         Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
         newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
