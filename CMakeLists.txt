@@ -74,12 +74,6 @@ list(FILTER engine_files_only EXCLUDE REGEX "src/toolmode/*")
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${all_files})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${engine_files_only})
-# =========================================================================== #
-#                   SETUP THIRD PARTY/EXTERN DEPENDENCIES                     #
-# =========================================================================== #
-
-file(GLOB_RECURSE imgui include/imgui/*)
-set(imgui_files ${imgui})
 
 # =========================================================================== #
 #                          SET COMPILATION TARGETS                            #
