@@ -63,14 +63,14 @@ ImVec4 LoggingGuiComponent::GetColor(LogLevel level) const
 {
     switch (level)
     {
-    case LogLevel::LOGLEVEL_INFO:
+    case LogLevel::Info:
         return ImVec4(1, 1, 1, 1);
         break;
-    case LogLevel::LOGLEVEL_WARNING:
+    case LogLevel::Warning:
         return ImVec4(1, 1, 0, 1);
-    case LogLevel::LOGLEVEL_ERROR:
+    case LogLevel::Error:
         return ImVec4(1, 0.4f, 0.4f, 1);
-    case LogLevel::LOGLEVEL_FATAL:
+    case LogLevel::Fatal:
         return ImVec4(1, 0.2f, 0.2f, 1);
     default:
         return ImVec4(1, 1, 1, 1);

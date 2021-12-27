@@ -19,15 +19,9 @@
 
 #pragma once
 
-#define ETH_MINIMUM_FEATURE_LEVEL           D3D_FEATURE_LEVEL_11_0
-
 #define ETH_SHADER_SOURCE_DIR               L"../../src/graphic/shader/"
 
-#define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
-#define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
-#define D3D12_RESOURCE_STATE_UNKNOWN        ((D3D12_RESOURCE_STATES)-1)
-
-#define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("D3D12 operation failed - %s", #hr); throw std::exception(); }
+#define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("Graphic API operation failed - %s", #hr); throw std::exception(); }
 
 // Ether Graphics Library
 #include "graphic/graphiccore.h"

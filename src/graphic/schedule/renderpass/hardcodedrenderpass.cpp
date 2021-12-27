@@ -18,6 +18,10 @@
 */
 
 #include "hardcodedrenderpass.h"
+#include "graphic/rhi/rhicommandlist.h"
+#include "graphic/rhi/rhicommandqueue.h"
+#include "graphic/rhi/rhipipelinestate.h"
+#include "graphic/rhi/rhirootsignature.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -41,18 +45,19 @@ void HardCodedRenderPass::Render(GraphicContext& context)
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (GraphicCore::GetGraphicCommon().m_DefaultVS->HasRecompiled() || GraphicCore::GetGraphicCommon().m_DefaultPS->HasRecompiled())
     {
-        context.GetCommandQueue().Flush();
+        context.GetCommandQueue()->Flush();
         GraphicCore::GetGraphicCommon().InitializePipelineStates();
     }
 
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV() /* , DSVfromSomewhere */);
+
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
-    context.GetCommandList().SetPipelineState(config.m_RenderWireframe ? &GraphicCore::GetGraphicCommon().m_DefaultWireframePSO->GetPipelineStateObject() : &GraphicCore::GetGraphicCommon().m_DefaultPSO->GetPipelineStateObject());
-    context.GetCommandList().SetGraphicsRootSignature(&GraphicCore::GetGraphicCommon().m_DefaultRootSignature->GetRootSignature());
-    context.GetCommandList().OMSetRenderTargets(1, &gfxDisplay.GetCurrentBackBuffer()->GetRTV(), FALSE, &gfxDisplay.GetDepthBuffer()->GetDSV());
-    context.GetCommandList().RSSetViewports(1, &gfxDisplay.GetViewport());
-    context.GetCommandList().RSSetScissorRects(1, &gfxDisplay.GetScissorRect());
-    context.GetCommandList().SetGraphicsRoot32BitConstants(0, 4, &globalTime, 0);
+    context.GetCommandList()->SetPipelineState(config.m_RenderWireframe ? GraphicCore::GetGraphicCommon().m_DefaultWireframePSO : GraphicCore::GetGraphicCommon().m_DefaultPSO);
+    context.GetCommandList()->SetGraphicRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
+    context.GetCommandList()->SetViewport(gfxDisplay.GetViewport());
+    context.GetCommandList()->SetScissor(gfxDisplay.GetScissorRect());
+    context.GetCommandList()->SetRootConstants({ 0, 4, 0, &globalTime });
 
     for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
@@ -67,17 +72,19 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         normalMat = DirectX::XMMatrixInverse(nullptr, normalMat);
         normalMat = DirectX::XMMatrixTranspose(normalMat);
 
-        context.GetCommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        context.GetCommandList().IASetVertexBuffers(0, 1, &visual->GetVertexBufferView());
-        context.GetCommandList().IASetIndexBuffer(&visual->GetIndexBufferView());
-        context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewMat, 0);
-        context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &modelViewProjMat, 16);
-        context.GetCommandList().SetGraphicsRoot32BitConstants(1, sizeof(ethXMMatrix) / 4, &normalMat, 32);
+        context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleList);
+        //context.GetCommandList()->SetVertexBuffer(0, 1, &visual->GetVertexBufferView());
+        //context.GetCommandList()->SetIndexBuffer(&visual->GetIndexBufferView());
+
+		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &globalTime });
+		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &globalTime });
+		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 32, &globalTime });
 
         ethVector4 lightDirWS(0.7, -1, 0.4, 0);
         ethXMVector lightDirES = DirectX::XMVector4Transform(DirectX::XMLoadFloat4(&lightDirWS), context.GetViewMatrix());
-        context.GetCommandList().SetGraphicsRoot32BitConstants(2, 4, &lightDirES, 0);
-        context.GetCommandList().DrawIndexedInstanced(visual->GetNumIndices(), 1, 0, 0, 0);
+		context.GetCommandList()->SetRootConstants({ 2, 4, 0, &lightDirES});
+        context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
+
     }
 
     context.FinalizeAndExecute();

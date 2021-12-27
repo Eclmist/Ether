@@ -41,6 +41,8 @@ void RenderingSystem::OnUpdate()
 {
     OPTICK_EVENT("ECS - Rendering System - Update");
 
+    bool hasMeshChanges = false;
+
     for (EntityID id : m_MatchingEntities)
     {
 		auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
@@ -55,6 +57,11 @@ void RenderingSystem::OnUpdate()
         if (!mesh->GetCompiledMesh()->IsValid())
             return;
 
+		// TODO: Right now visual nodes are recreated when mesh changes -> This is because
+        // on the user level you should be able to swap out meshes of particular mesh components.
+        // However, the ECS "registration" mechanism works on a component level. If some mechanism
+        // like "reregister entity" can be added, then we don't need the following check and
+        // visuals can be created in "onregister" once only.
         if (mesh->IsMeshChanged())
         {
             VisualNodeData data;
@@ -65,7 +72,14 @@ void RenderingSystem::OnUpdate()
             data.m_ModelMatrix = transform->GetMatrixReference();
             m_VisualNodes[id] = std::make_unique<VisualNode>(data);
             mesh->SetMeshChanged(false);
+            hasMeshChanges = true;
         }
+
+        // TODO: Add proper place to upload data - the current implementation in bufferresource is incorrect.
+        //if (hasMeshChanges)
+        //{
+        //    GraphicCore::GetGraphicRenderer().GetGraphicContext().
+        //}
 
         GraphicCore::GetGraphicRenderer().DrawNode(m_VisualNodes[id].get());
     }

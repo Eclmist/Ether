@@ -26,7 +26,7 @@ Shader::Shader(
     const wchar_t* entrypoint,
     const wchar_t* targetProfile,
     ShaderType type,
-    D3D12_INPUT_LAYOUT_DESC& inputLayout,
+    const RHIInputLayoutDesc& inputLayout,
     uint32_t encoding)
     : m_Filename(filename)
     , m_EntryPoint(entrypoint)

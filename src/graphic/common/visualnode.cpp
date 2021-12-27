@@ -18,6 +18,7 @@
 */
 
 #include "visualnode.h"
+#include "graphic/rhi/rhiresource.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -33,30 +34,32 @@ VisualNode::VisualNode(const VisualNodeData data)
 
 void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
 {
-    m_VertexBuffer = std::make_unique<BufferResource>(L"Visual::VertexBuffer",
-        numVertices, sizeof(VertexFormats::VertexFormatStatic), data);
+    // TODO: [RHI] Implement
+    //m_VertexBuffer = std::make_unique<BufferResource>(L"Visual::VertexBuffer",
+    //    numVertices, sizeof(VertexFormats::VertexFormatStatic), data);
 }
 
 void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
 { 
-    m_IndexBuffer = std::make_unique<BufferResource>(L"Visual::IndexBuffer",
-        numIndices, sizeof(uint32_t), data);
+    // TODO: [RHI] Implement
+    //m_IndexBuffer = std::make_unique<BufferResource>(L"Visual::IndexBuffer",
+    //    numIndices, sizeof(uint32_t), data);
 }
 
 void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)
 {
-    m_VertexBufferView = {};
-    m_VertexBufferView.BufferLocation = m_VertexBuffer->GetVirtualAddress();
-    m_VertexBufferView.SizeInBytes = bufferSize;
-    m_VertexBufferView.StrideInBytes = stride;
+    //m_VertexBufferView = {};
+    //m_VertexBufferView->BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
+    //m_VertexBufferView.SizeInBytes = bufferSize;
+    //m_VertexBufferView.StrideInBytes = stride;
 }
 
 void VisualNode::InitIndexBufferView(size_t bufferSize)
 {
-    m_IndexBufferView = {};
-    m_IndexBufferView.BufferLocation = m_IndexBuffer->GetVirtualAddress();
-    m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-    m_IndexBufferView.SizeInBytes = bufferSize;
+    //m_IndexBufferView = {};
+    //m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
+    //m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    //m_IndexBufferView.SizeInBytes = bufferSize;
 }
 
 ETH_NAMESPACE_END

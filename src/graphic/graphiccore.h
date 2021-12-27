@@ -19,34 +19,13 @@
 
 #pragma once
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
-
-// D3D12 library
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3d12shader.h>
-#include <dxcapi.h>
-#include <DirectXMath.h>
-
-// D3D12 extension library
-#include <d3dx12/d3dx12.h>
-
-// Ether Graphics Library
-// Resources
-#include "graphic/resource/gpuresource.h"
-#include "graphic/resource/bufferresource.h"
-#include "graphic/resource/textureresource.h"
-#include "graphic/resource/depthstencilresource.h"
+// Rendering Hardware Interfaces
+#include "graphic/rhi/rhicommon.h"
+#include "graphic/rhi/rhimodule.h"
 
 // Contexts
 #include "graphic/context/commandcontext.h"
 #include "graphic/context/graphiccontext.h"
-
-// Pipeline
-#include "graphic/pipeline/graphicpipelinestate.h"
-#include "graphic/pipeline/rootsignature.h"
 
 // Common
 #include "graphic/commandmanager.h"
@@ -65,6 +44,9 @@ ETH_NAMESPACE_BEGIN
 class GraphicCore : public Singleton<GraphicCore>
 {
 public:
+    GraphicCore() = default;
+    ~GraphicCore() = default;
+
     static void Initialize();
     static void Render();
     static void Shutdown();
@@ -77,16 +59,14 @@ public:
     static GraphicScheduler& GetGraphicScheduler() { return *Instance().m_GraphicScheduler; }
     static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
-    static IDXGIAdapter4& GetAdapter() { return *Instance().m_Adapter.Get(); }
-    static ID3D12Device3& GetDevice() { return *Instance().m_GraphicDevice.Get(); }
+    static RHIDeviceHandle GetDevice() { return Instance().m_RHIDevice; }
+    static RHIModuleHandle GetModule() { return Instance().m_RHIModule; }
 
 public:
     static void FlushGpu();
 
 private:
     void InitializeDebugLayer();
-    void InitializeAdapter();
-    void InitializeDevice();
 
 private:
     std::unique_ptr<CommandManager> m_CommandManager;
@@ -94,11 +74,11 @@ private:
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
     std::unique_ptr<GraphicScheduler> m_GraphicScheduler;
-    std::unique_ptr<GuiRenderer> m_GuiRenderer;
+    //std::unique_ptr<GuiRenderer> m_GuiRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
-    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
-    wrl::ComPtr<ID3D12Device3> m_GraphicDevice;
+    RHIDeviceHandle m_RHIDevice;
+    RHIModuleHandle m_RHIModule;
 
 private:
     bool m_IsInitialized;

@@ -37,8 +37,8 @@ void ClearFrameBufferPass::Render(GraphicContext& context)
 
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    context.ClearColor(*gfxDisplay.GetCurrentBackBuffer(), config.m_ClearColor);
-    context.ClearDepth(*gfxDisplay.GetDepthBuffer(), 1.0f);
+    context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
+    //context.ClearDepth(*gfxDisplay.GetDepthBuffer(), 1.0f);
     context.FinalizeAndExecute();
     context.Reset();
 }

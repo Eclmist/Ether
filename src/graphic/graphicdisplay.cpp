@@ -18,38 +18,40 @@
 */
 
 #include "graphicdisplay.h"
+#include "graphic/rhi/rhidevice.h"
+#include "graphic/rhi/rhiswapchain.h"
 
 ETH_NAMESPACE_BEGIN
-
-DXGI_FORMAT g_SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 GraphicDisplay::GraphicDisplay()
     : m_FrameBufferWidth(EngineCore::GetEngineConfig().GetClientWidth())
     , m_FrameBufferHeight(EngineCore::GetEngineConfig().GetClientHeight())
-    , m_BufferingMode(BufferingMode::BUFFERINGMODE_TRIPLE)
-    , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
-    , m_Viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight))
+    , m_BufferingMode(BufferingMode::Triple)
+    , m_ScissorRect({ 0, 0, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight })
+    , m_Viewport({ 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight })
     , m_VSyncEnabled(false)
     , m_VSyncVBlanks(1)
 {
-    CreateDxgiSwapChain();
-    InitializeResources();
-
-    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
-        m_FrameBufferFences[i] = 0;
-
-    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+    CreateSwapChain();
+    CreateResourcesFromSwapChain();
+    CreateViewsFromSwapChain();
+    ResetFences();
 }
 
 GraphicDisplay::~GraphicDisplay()
 {
+    m_SwapChain.Destroy();
+
+    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+    {
+        m_RenderTargets[i].Destroy();
+        m_RenderTargetViews[i].Destroy();
+    }
 }
 
 void GraphicDisplay::Present()
 {
-    HRESULT hr = m_SwapChain->Present(
-        m_VSyncEnabled ? m_VSyncVBlanks : 0,
-        m_VSyncEnabled ? 0 : DXGI_PRESENT_ALLOW_TEARING);
+    m_SwapChain->Present(m_VSyncEnabled ? m_VSyncVBlanks : 0);
 
     // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model, 
     // the order of back buffer indices are not guaranteed to be sequential
@@ -63,86 +65,71 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
 
     m_FrameBufferWidth = width;
     m_FrameBufferHeight = height;
-    m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight);
+    m_Viewport = { 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight };
 
     GraphicCore::FlushGpu();
 
-    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
-        m_FrameBuffers[i].reset();
- 
-    m_DepthBuffer.reset();
+    RHIResizeDesc resizeDesc = {};
+    resizeDesc.m_Width = m_FrameBufferWidth;
+    resizeDesc.m_Height = m_FrameBufferHeight;
+    ASSERT_SUCCESS(m_SwapChain->ResizeBuffers(resizeDesc));
 
-    DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-    ASSERT_SUCCESS(m_SwapChain->GetDesc(&swapChainDesc));
-    ASSERT_SUCCESS(m_SwapChain->ResizeBuffers(
-        GetNumBuffers(),
-        m_FrameBufferWidth,
-        m_FrameBufferHeight,
-        swapChainDesc.BufferDesc.Format,
-        swapChainDesc.Flags));
+    // TODO: do views need to be recreated? do resources need to be re-get?
+    CreateViewsFromSwapChain();
+}
 
-    InitializeResources();
+RHIResourceHandle GraphicDisplay::GetCurrentBackBuffer() const
+{
+    return m_RenderTargets[m_CurrentBackBufferIndex];
+}
+
+RHIRenderTargetViewHandle GraphicDisplay::GetCurrentBackBufferRTV() const
+{
+    return m_RenderTargetViews[m_CurrentBackBufferIndex];
+}
+
+void GraphicDisplay::CreateSwapChain()
+{
+    RHISwapChainDesc desc = {};
+    desc.m_Width = m_FrameBufferWidth;
+    desc.m_Height = m_FrameBufferHeight;
+    desc.m_Format = BackBufferFormat;
+    desc.m_SampleDesc = { 1, 0 };
+    desc.m_BufferCount = GetNumBuffers();
+    desc.m_ScalingMode = RHIScalingMode::Stretch;
+    desc.m_SwapEffect = RHISwapEffect::FlipDiscard;
+    desc.m_Flags = (RHISwapChainFlags)RHISwapChainFlag::AllowTearing;
+    desc.m_CommandQueue = GraphicCore::GetCommandManager().GetGraphicsQueue();
+    desc.m_WindowHandle = EngineCore::GetMainWindow().GetWindowHandle();
+
+    GraphicCore::GetDevice()->CreateSwapChain(desc, m_SwapChain);
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
-std::shared_ptr<TextureResource> GraphicDisplay::GetCurrentBackBuffer() const
+void GraphicDisplay::CreateResourcesFromSwapChain()
 {
-    return m_FrameBuffers[m_CurrentBackBufferIndex];
+	for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+	{
+        m_RenderTargets[i].Destroy();
+        m_RenderTargets[i] = m_SwapChain->GetBuffer(i);
+	}
 }
 
-std::shared_ptr<DepthStencilResource> GraphicDisplay::GetDepthBuffer() const
+void GraphicDisplay::CreateViewsFromSwapChain()
 {
-    return m_DepthBuffer;
+	for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+	{
+        RHIRenderTargetViewDesc desc = {};
+        desc.m_Format = BackBufferFormat;
+        desc.m_Resource = m_RenderTargets[i];
+        GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
+	}
 }
 
-void GraphicDisplay::CreateDxgiSwapChain()
-{
-    wrl::ComPtr<IDXGIFactory4> dxgiFactory;
-    ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
-
-    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-    swapChainDesc.Width = m_FrameBufferWidth;
-    swapChainDesc.Height = m_FrameBufferHeight;
-    swapChainDesc.Format = g_SwapChainFormat;
-    swapChainDesc.Stereo = FALSE;
-    swapChainDesc.SampleDesc = { 1, 0 };
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = GetNumBuffers();
-    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-    wrl::ComPtr<IDXGISwapChain1> swapChain1;
-
-    ASSERT_SUCCESS(dxgiFactory->MakeWindowAssociation(
-        (HWND)EngineCore::GetMainWindow().GetWindowHandle(), DXGI_MWA_NO_ALT_ENTER));
-
-    ASSERT_SUCCESS(dxgiFactory->CreateSwapChainForHwnd(
-        GraphicCore::GetCommandManager().GetGraphicsQueue().Get(),
-        (HWND)EngineCore::GetMainWindow().GetWindowHandle(),
-        &swapChainDesc,
-        nullptr,
-        nullptr,
-        &swapChain1));
-
-    ASSERT_SUCCESS(swapChain1.As(&m_SwapChain));
-}
-
-void GraphicDisplay::InitializeResources()
+void GraphicDisplay::ResetFences()
 {
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
-    {
-        wrl::ComPtr<ID3D12Resource> framebuffer;
-        ASSERT_SUCCESS(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&framebuffer)));
-        m_FrameBuffers[i] = std::make_shared<TextureResource>(L"Frame Buffer", framebuffer.Detach());
-    }
-
-    m_DepthBuffer = std::make_shared<DepthStencilResource>(L"Depth Buffer", DepthStencilResource::CreateResourceDesc(
-        m_FrameBufferWidth,
-        m_FrameBufferHeight,
-        DXGI_FORMAT_D32_FLOAT
-    ));
+        m_FrameBufferFences[i] = 0;
 }
 
 ETH_NAMESPACE_END

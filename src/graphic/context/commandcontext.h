@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "graphic/resource/virtualbuffer/linearallocator.h"
+#include "graphic/memory/uploadbufferallocator.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -28,29 +28,31 @@ class CommandQueue;
 class CommandContext : public NonCopyable
 {
 public:
-    CommandContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+    CommandContext(RHICommandListType type = RHICommandListType::Graphic);
     ~CommandContext();
     void Reset();
 
-    CommandQueue& GetCommandQueue() const;
-    uint64_t GetCompletionFenceValue() const;
+    RHIFenceValue GetCompletionFenceValue() const;
 
 public:
-    inline ID3D12GraphicsCommandList& GetCommandList() const { return *m_CommandList.Get(); }
+    inline RHICommandListHandle GetCommandList() const { return m_CommandList; }
+    inline RHICommandQueueHandle GetCommandQueue() const { return m_CommandQueue; }
 
 public:
-    void TransitionResource(GpuResource& resource, D3D12_RESOURCE_STATES newState);
-    void CopyBufferRegion(GpuResource& dest, GpuResource& src, size_t size, size_t dstOffset = 0);
+    void TransitionResource(RHIResourceHandle resource, RHIResourceState newState);
+    void CopyBufferRegion(RHIResourceHandle dest, RHIResourceHandle src, size_t size, size_t dstOffset = 0);
     void FinalizeAndExecute(bool waitForCompletion = false);
 
 public:
-    static void InitializeBuffer(GpuResource& dest, const void* data, size_t size, size_t dstOffset = 0);
+    static void InitializeBuffer(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset = 0);
 
 protected:
-    wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
-    ID3D12CommandAllocator* m_CommandAllocator;
-    D3D12_COMMAND_LIST_TYPE m_Type;
-    LinearAllocator m_GpuAllocator;
+    RHICommandAllocatorHandle m_CommandAllocator;
+    RHICommandListHandle m_CommandList;
+    RHICommandListType m_Type;
+    RHICommandQueueHandle m_CommandQueue;
+
+    UploadBufferAllocator m_UploadBufferAllocator;
 };
 
 ETH_NAMESPACE_END

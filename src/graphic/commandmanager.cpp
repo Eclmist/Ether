@@ -18,60 +18,73 @@
 */
 
 #include "commandmanager.h"
+#include "graphic/rhi/rhicommandlist.h"
+#include "graphic/rhi/rhicommandqueue.h"
+#include "graphic/rhi/rhidevice.h"
 
 ETH_NAMESPACE_BEGIN
 
 CommandManager::CommandManager()
 {
-    m_GraphicsQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_ComputeQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
-    m_CopyQueue = std::make_unique<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
+    GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Graphic }, m_GraphicsQueue);
+    GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Compute }, m_ComputeQueue);
+    GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Copy }, m_CopyQueue);
+
+    m_GraphicAllocatorPool = std::make_unique<CommandAllocatorPool>(RHICommandListType::Graphic);
+    m_ComputeAllocatorPool = std::make_unique<CommandAllocatorPool>(RHICommandListType::Compute);
+    m_CopyAllocatorPool = std::make_unique<CommandAllocatorPool>(RHICommandListType::Copy);
 }
 
 CommandManager::~CommandManager()
 {
+    m_GraphicsQueue.Destroy();
+    m_ComputeQueue.Destroy();
+    m_CopyQueue.Destroy();
 }
 
 void CommandManager::CreateCommandList(
-    D3D12_COMMAND_LIST_TYPE type,
-    ID3D12GraphicsCommandList** cmdList,
-    ID3D12CommandAllocator** cmdAlloc)
+    RHICommandListType type,
+    RHICommandListHandle& cmdList,
+    RHICommandAllocatorHandle& cmdAlloc)
 {
     switch (type)
     {
-    case D3D12_COMMAND_LIST_TYPE_DIRECT:
-        *cmdAlloc = &m_GraphicsQueue->RequestAllocator(); 
+    case RHICommandListType::Graphic:
+        cmdAlloc = m_GraphicAllocatorPool->RequestAllocator(m_GraphicsQueue->GetCompletedFenceValue());
         break;
-    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        *cmdAlloc = &m_ComputeQueue->RequestAllocator();
+    case RHICommandListType::Compute:
+        cmdAlloc = m_ComputeAllocatorPool->RequestAllocator(m_ComputeQueue->GetCompletedFenceValue());
         break;
-    case D3D12_COMMAND_LIST_TYPE_COPY:
-        *cmdAlloc = &m_CopyQueue->RequestAllocator();
+    case RHICommandListType::Copy:
+        cmdAlloc = m_CopyAllocatorPool->RequestAllocator(m_CopyQueue->GetCompletedFenceValue());
         break;
     default:
         LogGraphicsError("Unsupported command list type requested(%s)", type);
         return;
     }
 
-    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommandList(1, type, *cmdAlloc, nullptr, IID_PPV_ARGS(cmdList)));
-    (*cmdList)->SetName(L"CommandManager::CommandList");
+    RHICommandListDesc desc;
+    desc.m_Allocator = cmdAlloc;
+    desc.m_Type = type;
+
+    ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommandList(desc, cmdList));
 }
 
-void CommandManager::Execute(ID3D12CommandList* cmdLst)
+void CommandManager::Execute(RHICommandListHandle cmdList)
 {
-    switch (cmdLst->GetType())
+    switch (cmdList->GetType())
     {
-    case D3D12_COMMAND_LIST_TYPE_DIRECT:
-        m_GraphicsQueue->Execute(cmdLst);
+    case RHICommandListType::Graphic:
+        m_GraphicsQueue->Execute(cmdList);
         break;
-    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        m_ComputeQueue->Execute(cmdLst);
+    case RHICommandListType::Compute:
+        m_ComputeQueue->Execute(cmdList);
         break;
-    case D3D12_COMMAND_LIST_TYPE_COPY:
-        m_CopyQueue->Execute(cmdLst);
+    case RHICommandListType::Copy:
+        m_CopyQueue->Execute(cmdList);
         break;
     default:
-        LogGraphicsError("An unsupported command list type (%s) was sent for execution", cmdLst->GetType());
+        LogGraphicsError("An unsupported command list type (%s) was sent for execution", cmdList->GetType());
         break;
     }
 }
@@ -83,30 +96,36 @@ void CommandManager::Flush()
     m_CopyQueue->Flush();
 }
 
-ID3D12CommandAllocator& CommandManager::RequestAllocator(D3D12_COMMAND_LIST_TYPE type)
-{
-    return GetQueue(type).RequestAllocator();
-}
-
-void CommandManager::DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator& allocator)
-{
-    CommandQueue& queue = GetQueue(type);
-    queue.DiscardAllocator(allocator, queue.GetCompletionFenceValue());
-}
-
-CommandQueue& CommandManager::GetQueue(D3D12_COMMAND_LIST_TYPE type)
+RHICommandQueueHandle CommandManager::GetQueue(RHICommandListType type) const
 {
     switch (type)
     {
-    case D3D12_COMMAND_LIST_TYPE_DIRECT:
-        return *m_GraphicsQueue;
-    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        return *m_ComputeQueue;
-    case D3D12_COMMAND_LIST_TYPE_COPY:
-        return *m_CopyQueue;
+    case RHICommandListType::Graphic:
+        return m_GraphicsQueue;
+    case RHICommandListType::Compute:
+        return m_ComputeQueue;
+    case RHICommandListType::Copy:
+        return m_CopyQueue;
     default:
         LogGraphicsError("An unsupported command list type (%s) was requested", type);
-        return *m_GraphicsQueue;
+        return m_GraphicsQueue;
+        break;
+    }
+}
+
+CommandAllocatorPool& CommandManager::GetAllocatorPool(RHICommandListType type) const
+{
+    switch (type)
+    {
+    case RHICommandListType::Graphic:
+        return *m_GraphicAllocatorPool;
+    case RHICommandListType::Compute:
+        return *m_ComputeAllocatorPool;
+    case RHICommandListType::Copy:
+        return *m_CopyAllocatorPool;
+    default:
+        LogGraphicsError("An unsupported command list type (%s) was requested", type);
+        return *m_GraphicAllocatorPool;
         break;
     }
 }

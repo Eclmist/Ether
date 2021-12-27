@@ -18,74 +18,81 @@
 */
 
 #include "commandcontext.h"
+#include "graphic/rhi/rhicommandlist.h"
+#include "graphic/rhi/rhicommandqueue.h"
+#include "graphic/rhi/rhiresource.h"
 
 ETH_NAMESPACE_BEGIN
 
-CommandContext::CommandContext(D3D12_COMMAND_LIST_TYPE type)
+CommandContext::CommandContext(RHICommandListType type)
     : m_Type(type)
 {
-    GraphicCore::GetCommandManager().CreateCommandList(type, &m_CommandList, &m_CommandAllocator);
+    GraphicCore::GetCommandManager().CreateCommandList(type, m_CommandList, m_CommandAllocator);
+    m_CommandQueue = GraphicCore::GetCommandManager().GetQueue(m_Type);
 }
 
 CommandContext::~CommandContext()
 {
+    m_CommandList.Destroy();
 }
 
 void CommandContext::Reset()
 {
-    m_CommandAllocator = &GraphicCore::GetCommandManager().RequestAllocator(m_Type);
-    m_CommandList->Reset(m_CommandAllocator, nullptr);
+    CommandAllocatorPool& allocatorPool = GraphicCore::GetCommandManager().GetAllocatorPool(m_Type);
+    m_CommandAllocator = allocatorPool.RequestAllocator(m_CommandQueue->GetCompletedFenceValue());
+    m_CommandList->Reset(m_CommandAllocator);
 }
 
-CommandQueue& CommandContext::GetCommandQueue() const
+RHIFenceValue CommandContext::GetCompletionFenceValue() const
 {
-    return GraphicCore::GetCommandManager().GetQueue(m_Type);
+    return GetCommandQueue()->GetCompletionFenceValue();
 }
 
-uint64_t CommandContext::GetCompletionFenceValue() const
+void CommandContext::TransitionResource(RHIResourceHandle target, RHIResourceState newState)
 {
-    return GetCommandQueue().GetCompletionFenceValue();
-}
-
-void CommandContext::TransitionResource(GpuResource& target, D3D12_RESOURCE_STATES newState)
-{
-    if (target.GetCurrentState() == newState)
+    if (target->GetCurrentState() == newState)
         return;
 
-    D3D12_RESOURCE_BARRIER barrier;
-    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrier.Transition.pResource = &target.GetResource();
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    barrier.Transition.StateBefore = target.GetCurrentState();
-    barrier.Transition.StateAfter = newState;
-    m_CommandList->ResourceBarrier(1, &barrier);
-    target.TransitionToState(newState);
+    RHIResourceTransitionDesc transitionDesc = {};
+    transitionDesc.m_FromState = target->GetCurrentState();
+    transitionDesc.m_ToState = newState;
+    m_CommandList->TransitionResource(transitionDesc);
+    target->SetState(newState);
 }
 
-void CommandContext::CopyBufferRegion(GpuResource& dest, GpuResource& src, size_t size, size_t dstOffset)
+void CommandContext::CopyBufferRegion(RHIResourceHandle dest, RHIResourceHandle src, size_t size, size_t dstOffset)
 {
-    TransitionResource(dest, D3D12_RESOURCE_STATE_COPY_DEST);
-    m_CommandList->CopyBufferRegion(&dest.GetResource(), dstOffset, &src.GetResource(), 0, size);
+    RHICopyBufferRegionDesc desc = {};
+    desc.m_Source = src;
+    desc.m_SourceOffset = 0;
+    desc.m_Destination = dest;
+    desc.m_DestinationOffset = dstOffset;
+    desc.m_Size = size;
+
+    TransitionResource(dest, RHIResourceState::CopyDest);
+    m_CommandList->CopyBufferRegion(desc);
 }
 
 void CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
-    GraphicCore::GetCommandManager().Execute(m_CommandList.Get());
-    GraphicCore::GetCommandManager().DiscardAllocator(m_Type, *m_CommandAllocator);
+    GraphicCore::GetCommandManager().Execute(m_CommandList);
+
+    CommandAllocatorPool& allocatorPool = GraphicCore::GetCommandManager().GetAllocatorPool(m_Type);
+    allocatorPool.DiscardAllocator(m_CommandAllocator, m_CommandQueue->GetCompletionFenceValue());
 
     if (waitForCompletion)
-        GetCommandQueue().Flush();
+        m_CommandQueue->Flush();
 }
 
-void CommandContext::InitializeBuffer(GpuResource& dest, const void* data, size_t size, size_t dstOffset)
+void CommandContext::InitializeBuffer(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset)
 {
     CommandContext context;
-    GpuAllocation alloc = context.m_GpuAllocator.Allocate(size);
-    memcpy(alloc.GetCpuAddress(), data, size);
+    UploadBufferAllocation alloc = context.m_UploadBufferAllocator.Allocate(size);
+    alloc.SetBufferData(data, size);
 
-    context.CopyBufferRegion(dest, alloc.GetResource(), size, dstOffset);
-    context.TransitionResource(dest, D3D12_RESOURCE_STATE_GENERIC_READ);
+    // TODO: Add proper place to upload data - the current implementation in bufferresource is incorrect.
+    context.CopyBufferRegion(dest, alloc.GetUploadBuffer().GetResource(), size, dstOffset);
+    context.TransitionResource(dest, RHIResourceState::GenericRead);
     context.FinalizeAndExecute(true);
 }
 
