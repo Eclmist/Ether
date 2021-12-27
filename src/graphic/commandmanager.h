@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "graphic/commandqueue.h"
+#include "graphic/commandallocatorpool.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -30,25 +30,34 @@ public:
     ~CommandManager();
 
     void CreateCommandList(
-        D3D12_COMMAND_LIST_TYPE type,
-        ID3D12GraphicsCommandList** cmdList,
-        ID3D12CommandAllocator** cmdAlloc);
+        RHICommandListType type,
+        RHICommandListHandle& cmdList,
+        RHICommandAllocatorHandle& cmdAlloc);
 
-    void Execute(ID3D12CommandList* cmdLst);
+    void Execute(RHICommandListHandle cmdList);
     void Flush();
-    ID3D12CommandAllocator& RequestAllocator(D3D12_COMMAND_LIST_TYPE type);
-    void DiscardAllocator(D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator& allocator);
 
 public:
-    inline CommandQueue& GetGraphicsQueue() { return *m_GraphicsQueue; }
-    inline CommandQueue& GetComputeQueue() { return *m_ComputeQueue; }
-    inline CommandQueue& GetCopyQueue() { return *m_CopyQueue; }
-    CommandQueue& GetQueue(D3D12_COMMAND_LIST_TYPE type);
+    inline RHICommandQueueHandle GetGraphicsQueue() const { return m_GraphicsQueue; }
+    inline RHICommandQueueHandle GetComputeQueue() const { return m_ComputeQueue; }
+    inline RHICommandQueueHandle GetCopyQueue() const { return m_CopyQueue; }
+
+    inline CommandAllocatorPool& GetGraphicAllocatorPool() const { return *m_GraphicAllocatorPool; }
+    inline CommandAllocatorPool& GetComputeAllocatorPool() const { return *m_ComputeAllocatorPool; }
+    inline CommandAllocatorPool& GetCopyAllocatorPool() const { return *m_CopyAllocatorPool; }
+
+    RHICommandQueueHandle GetQueue(RHICommandListType type) const;
+    CommandAllocatorPool& GetAllocatorPool(RHICommandListType type) const;
 
 private:
-    std::unique_ptr<CommandQueue> m_GraphicsQueue;
-    std::unique_ptr<CommandQueue> m_ComputeQueue;
-    std::unique_ptr<CommandQueue> m_CopyQueue;
+    RHICommandQueueHandle m_GraphicsQueue;
+    RHICommandQueueHandle m_ComputeQueue;
+    RHICommandQueueHandle m_CopyQueue;
+
+    std::unique_ptr<CommandAllocatorPool> m_GraphicAllocatorPool;
+    std::unique_ptr<CommandAllocatorPool> m_ComputeAllocatorPool;
+    std::unique_ptr<CommandAllocatorPool> m_CopyAllocatorPool;
 };
 
 ETH_NAMESPACE_END
+

@@ -23,9 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 enum class ShaderType
 {
-    SHADERTYPE_VS,
-    SHADERTYPE_PS,
-    SHADERTYPE_CS,
+    Vertex,
+    Pixel,
+    Compute,
 };
 
 class Shader
@@ -36,7 +36,7 @@ public:
         const wchar_t* entrypoint,
         const wchar_t* targetProfile,
         ShaderType type,
-        D3D12_INPUT_LAYOUT_DESC& inputLayout,
+        const RHIInputLayoutDesc& inputLayout,
         uint32_t encoding = CP_UTF8);
 
     ~Shader() = default;
@@ -44,7 +44,7 @@ public:
     inline std::wstring GetFilename() const { return m_Filename; }
     inline bool HasRecompiled() const { return m_HasRecompiled; }
     inline void SetRecompiled(bool recompiled) { m_HasRecompiled = recompiled; }
-    inline D3D12_INPUT_LAYOUT_DESC GetInputLayout() const { return m_InputLayout; }
+    inline RHIInputLayoutDesc GetInputLayout() const { return m_InputLayout; }
 
     bool Compile();
     const void* GetCompiledShader() const;
@@ -63,7 +63,7 @@ private:
     std::wstring m_EntryPoint;
     std::wstring m_TargetProfile;
 
-    D3D12_INPUT_LAYOUT_DESC& m_InputLayout;
+    RHIInputLayoutDesc m_InputLayout;
 
     ShaderType m_Type;
     uint32_t m_Encoding;

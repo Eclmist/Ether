@@ -26,10 +26,15 @@ ETH_NAMESPACE_BEGIN
 class GraphicContext : public CommandContext
 {
 public:
-    GraphicContext(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+    GraphicContext(RHICommandListType type = RHICommandListType::Graphic);
     ~GraphicContext();
 
 public:
+    inline RHIDescriptorHeapHandle GetRTVDescriptorHeap() { return m_RTVDescriptorHeap; }
+    inline RHIDescriptorHeapHandle GetDSVDescriptorHeap() { return m_DSVDescriptorHeap; }
+    inline RHIDescriptorHeapHandle GetSRVDescriptorHeap() { return m_SRVDescriptorHeap; }
+    inline RHIDescriptorHeapHandle GetSamplerDescriptorHeap() { return m_SamplerDescriptorHeap; }
+
     inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
     inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
 
@@ -37,13 +42,21 @@ public:
     inline void SetProjectionMatrix(ethXMMatrix projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
 
 public:
-    void ClearColor(TextureResource& texture, ethVector4 color);
-    void ClearDepth(DepthStencilResource& depthTex, float val);
-    void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv);
+    void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color);
+    void ClearDepthStencil(RHIDepthStencilViewHandle depthTex, float depth, float stencil);
+
+    void SetRenderTarget(RHIRenderTargetViewHandle rtv);
+    void SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv);
+    void SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle* dsv);
 
 private:
     ethXMMatrix m_ViewMatrix;
     ethXMMatrix m_ProjectionMatrix;
+
+    RHIDescriptorHeapHandle m_RTVDescriptorHeap;
+    RHIDescriptorHeapHandle m_DSVDescriptorHeap;
+    RHIDescriptorHeapHandle m_SRVDescriptorHeap;
+    RHIDescriptorHeapHandle m_SamplerDescriptorHeap;
 };
 
 ETH_NAMESPACE_END

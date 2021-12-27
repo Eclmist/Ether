@@ -36,29 +36,30 @@ public:
     void InitializePipelineStates();
 
 public:
-    D3D12_RASTERIZER_DESC m_RasterizerDefault;
-    D3D12_RASTERIZER_DESC m_RasterizerDefaultCw;
-    D3D12_RASTERIZER_DESC m_RasterizerWireframe;
-    D3D12_RASTERIZER_DESC m_RasterizerWireframeCw;
+    RHIRasterizerDesc m_RasterizerDefault;
+    RHIRasterizerDesc m_RasterizerDefaultCw;
+    RHIRasterizerDesc m_RasterizerWireframe;
+    RHIRasterizerDesc m_RasterizerWireframeCw;
 
-    D3D12_BLEND_DESC m_BlendDisabled;
-    D3D12_BLEND_DESC m_BlendPreMultiplied;
-    D3D12_BLEND_DESC m_BlendTraditional;
-    D3D12_BLEND_DESC m_BlendAdditive;
-    D3D12_BLEND_DESC m_BlendTraditionalAdditive;
+    RHIBlendDesc m_BlendDisabled;
+    RHIBlendDesc m_BlendPreMultiplied;
+    RHIBlendDesc m_BlendTraditional;
+    RHIBlendDesc m_BlendAdditive;
+    RHIBlendDesc m_BlendTraditionalAdditive;
 
-    D3D12_DEPTH_STENCIL_DESC m_DepthStateDisabled;
-    D3D12_DEPTH_STENCIL_DESC m_DepthStateReadWrite;
-    D3D12_DEPTH_STENCIL_DESC m_DepthStateReadOnly;
-    D3D12_DEPTH_STENCIL_DESC m_DepthStateTestEqual;
+    RHIDepthStencilDesc m_DepthStateDisabled;
+    RHIDepthStencilDesc m_DepthStateReadWrite;
+    RHIDepthStencilDesc m_DepthStateReadOnly;
+    RHIDepthStencilDesc m_DepthStateTestEqual;
 
-    D3D12_INPUT_LAYOUT_DESC m_DefaultInputLayout;
+    RHIInputLayoutDesc m_DefaultInputLayout;
 
     std::unique_ptr<Shader> m_DefaultVS;
     std::unique_ptr<Shader> m_DefaultPS;
-    std::unique_ptr<GraphicPipelineState> m_DefaultPSO;
-    std::unique_ptr<GraphicPipelineState> m_DefaultWireframePSO;
-    std::unique_ptr<RootSignature> m_DefaultRootSignature;
+
+    RHIPipelineStateHandle m_DefaultPSO;
+    RHIPipelineStateHandle m_DefaultWireframePSO;
+    RHIRootSignatureHandle m_DefaultRootSignature;
 };
 
 ETH_NAMESPACE_END

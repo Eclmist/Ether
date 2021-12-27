@@ -38,8 +38,8 @@ public:
     VisualNode(const VisualNodeData data);
     ~VisualNode() = default;
 
-    inline D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const { return m_VertexBufferView; }
-    inline D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const { return m_IndexBufferView; }
+    inline RHIVertexBufferViewHandle GetVertexBufferView() const { return m_VertexBufferView; }
+    inline RHIIndexBufferViewHandle GetIndexBufferView() const { return m_IndexBufferView; }
     inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
     inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
 
@@ -51,11 +51,11 @@ private:
     void InitIndexBufferView(size_t bufferSize);
 
 private:
-    std::unique_ptr<BufferResource> m_VertexBuffer;
-    std::unique_ptr<BufferResource> m_IndexBuffer;
+    RHIResourceHandle m_VertexBuffer;
+    RHIResourceHandle m_IndexBuffer;
 
-    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+    RHIVertexBufferViewHandle m_VertexBufferView;
+    RHIIndexBufferViewHandle m_IndexBufferView;
 
     VisualNodeData m_StaticData;
 };

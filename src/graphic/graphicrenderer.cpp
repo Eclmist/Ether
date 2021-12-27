@@ -18,6 +18,7 @@
 */
 
 #include "graphicrenderer.h"
+#include "graphic/rhi/rhicommandqueue.h"
 
 #ifdef _DEBUG
 #include <dxgidebug.h>
@@ -38,14 +39,14 @@ GraphicRenderer::~GraphicRenderer()
 void GraphicRenderer::WaitForPresent()
 {
     OPTICK_EVENT("Renderer - WaitForPresent");
-    m_Context.GetCommandQueue().StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
+    m_Context.GetCommandQueue()->StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
 }
 
 void GraphicRenderer::Render()
 {
     OPTICK_EVENT("Renderer - Render");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    m_Context.TransitionResource(*gfxDisplay.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_Context.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
 
     GraphicCore::GetGraphicScheduler().RenderPasses(m_Context);
 }
@@ -55,7 +56,7 @@ void GraphicRenderer::Present()
     OPTICK_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    m_Context.TransitionResource(*gfxDisplay.GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
+    m_Context.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::Present);
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
     gfxDisplay.SetCurrentBackBufferFence(m_Context.GetCompletionFenceValue());

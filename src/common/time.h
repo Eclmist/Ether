@@ -24,8 +24,8 @@
 ETH_NAMESPACE_BEGIN
 
 ETH_ENGINE_DLL time_t GetSystemTime();
-ETH_ENGINE_DLL std::string FormatTime(const time_t t, char* format = "%x %X");
-ETH_ENGINE_DLL std::wstring WFormatTime(const time_t t, wchar_t* format = L"%x %X");
+ETH_ENGINE_DLL std::string FormatTime(const time_t t, const char* format = "%x %X");
+ETH_ENGINE_DLL std::wstring WFormatTime(const time_t t, const wchar_t* format = L"%x %X");
 
 ETH_ENGINE_DLL double GetStartTime();
 ETH_ENGINE_DLL double GetTimeSinceStart();

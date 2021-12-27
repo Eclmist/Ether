@@ -21,13 +21,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-#define ETH_MAX_NUM_SWAPCHAIN_BUFFERS       3
+constexpr uint32_t MaxSwapChainBuffers = 3;
+constexpr RHIFormat BackBufferFormat = RHIFormat::R8G8B8A8Unorm;
 
-enum class BufferingMode
+enum class BufferingMode : unsigned int
 {
-    BUFFERINGMODE_SINGLE = 1,
-    BUFFERINGMODE_DOUBLE = 2,
-    BUFFERINGMODE_TRIPLE = 3
+    Single = 1,
+    Double = 2,
+    Triple = 3
 };
 
 class GraphicDisplay : public NonCopyable
@@ -40,8 +41,8 @@ public:
     void Resize(uint32_t width, uint32_t height);
 
 public:
-    std::shared_ptr<TextureResource> GetCurrentBackBuffer() const;
-    std::shared_ptr<DepthStencilResource> GetDepthBuffer() const;
+    RHIResourceHandle GetCurrentBackBuffer() const;
+    RHIRenderTargetViewHandle GetCurrentBackBufferRTV() const;
 
     inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
     inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
@@ -49,35 +50,36 @@ public:
     inline bool IsVsyncEnabled() const { return m_VSyncEnabled; }
     inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
 
-    inline const D3D12_VIEWPORT& GetViewport() const { return m_Viewport; }
-    inline const D3D12_RECT& GetScissorRect() const { return m_ScissorRect; }
+    inline const RHIViewportDesc& GetViewport() const { return m_Viewport; }
+    inline const RHIScissorDesc& GetScissorRect() const { return m_ScissorRect; }
 
     inline void SetVSyncEnabled(bool enabled) { m_VSyncEnabled = enabled; }
     inline void SetVSyncVBlanks(int numVblanks) { m_VSyncVBlanks = numVblanks; }
 
 private:
-    void CreateDxgiSwapChain();
-    void InitializeResources();
+    void CreateSwapChain();
+    void CreateResourcesFromSwapChain();
+    void CreateViewsFromSwapChain();
+    void ResetFences();
 
 private:
-    wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
-
-    std::shared_ptr<TextureResource> m_FrameBuffers[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
-    std::shared_ptr<DepthStencilResource> m_DepthBuffer;
-
-    uint64_t m_FrameBufferFences[ETH_MAX_NUM_SWAPCHAIN_BUFFERS];
-
+    RHISwapChainHandle m_SwapChain;
     const BufferingMode m_BufferingMode;
-    uint32_t m_CurrentBackBufferIndex;
 
+    RHIResourceHandle m_RenderTargets[MaxSwapChainBuffers];
+    RHIRenderTargetViewHandle m_RenderTargetViews[MaxSwapChainBuffers];
+    uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
+
+    uint32_t m_CurrentBackBufferIndex;
     uint32_t m_FrameBufferWidth;
     uint32_t m_FrameBufferHeight;
 
-    D3D12_RECT m_ScissorRect;
-    D3D12_VIEWPORT m_Viewport;
+    RHIScissorDesc m_ScissorRect;
+    RHIViewportDesc m_Viewport;
 
     bool m_VSyncEnabled;
     uint8_t m_VSyncVBlanks;
 };
 
 ETH_NAMESPACE_END
+

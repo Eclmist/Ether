@@ -18,34 +18,79 @@
 */
 
 #include "graphiccontext.h"
+#include "graphic/rhi/rhicommandlist.h"
+#include "graphic/rhi/rhidevice.h"
 
 ETH_NAMESPACE_BEGIN
 
-GraphicContext::GraphicContext(D3D12_COMMAND_LIST_TYPE type)
+GraphicContext::GraphicContext(RHICommandListType type)
     : CommandContext(type)
     , m_ViewMatrix(DirectX::XMMatrixIdentity())
     , m_ProjectionMatrix(DirectX::XMMatrixIdentity())
 {
+    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::RTV, RHIDescriptorHeapFlag::None, 512 }, m_RTVDescriptorHeap);
+    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::DSV, RHIDescriptorHeapFlag::None, 512 }, m_DSVDescriptorHeap);
+    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::None, 4096 }, m_SRVDescriptorHeap);
+    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::Sampler, RHIDescriptorHeapFlag::None, 512 }, m_SamplerDescriptorHeap);
 }
 
 GraphicContext::~GraphicContext()
 {
+    m_RTVDescriptorHeap.Destroy();
+    m_DSVDescriptorHeap.Destroy();
+    m_SRVDescriptorHeap.Destroy();
+    m_SamplerDescriptorHeap.Destroy();
 }
 
-void GraphicContext::ClearColor(TextureResource& texture, ethVector4 color)
+void GraphicContext::ClearColor(RHIRenderTargetViewHandle renderTarget, ethVector4 color)
 {
     float clearColor[] = { color.x, color.y, color.z, color.w };
-    m_CommandList->ClearRenderTargetView(texture.GetRTV(), clearColor, 0, nullptr);
+    
+    RHIClearRenderTargetViewDesc desc = {};
+    desc.m_ClearColor = color;
+    desc.m_RTVHandle = renderTarget;
+    m_CommandList->ClearRenderTargetView(desc);
 }
 
-void GraphicContext::ClearDepth(DepthStencilResource& depthTex, float val)
+void GraphicContext::ClearDepthStencil(RHIDepthStencilViewHandle depthTarget, float depth, float stencil)
 {
-    m_CommandList->ClearDepthStencilView(depthTex.GetDSV(), D3D12_CLEAR_FLAG_DEPTH, val, 0, 0, nullptr);
+    RHIClearDepthStencilViewDesc desc = {};
+    desc.m_ClearDepth = depth;
+    desc.m_ClearStencil = stencil;
+    desc.m_DSVHandle = depthTarget;
+    m_CommandList->ClearDepthStencilView(desc);
 }
 
-void GraphicContext::SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE rtv)
+void GraphicContext::SetRenderTarget(RHIRenderTargetViewHandle rtv)
 {
-    m_CommandList->OMSetRenderTargets(1, &rtv, FALSE, nullptr);
+    RHISetRenderTargetsDesc desc = {};
+    desc.m_NumRTV = 1;
+    desc.m_RTVHandles[0] = rtv;
+    m_CommandList->SetRenderTargets(desc);
+}
+
+void GraphicContext::SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv)
+{
+    RHISetRenderTargetsDesc desc = {};
+    desc.m_NumRTV = 1;
+    desc.m_RTVHandles[0] = rtv;
+    desc.m_DSVHandles[0] = dsv;
+
+    m_CommandList->SetRenderTargets(desc);
+}
+
+void GraphicContext::SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle* dsv)
+{
+    RHISetRenderTargetsDesc desc = {};
+    desc.m_NumRTV = numTargets;
+
+    for (int i = 0; i < desc.m_NumRTV; ++i)
+    {
+		desc.m_RTVHandles[i] = rtv[i];
+		desc.m_DSVHandles[i] = dsv[i];
+    }
+
+    m_CommandList->SetRenderTargets(desc);
 }
 
 ETH_NAMESPACE_END

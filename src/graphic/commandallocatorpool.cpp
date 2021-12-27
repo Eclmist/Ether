@@ -18,20 +18,25 @@
 */
 
 #include "commandallocatorpool.h"
+#include "graphic/rhi/rhicommandallocator.h"
+#include "graphic/rhi/rhidevice.h"
 
 ETH_NAMESPACE_BEGIN
 
-CommandAllocatorPool::CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE type)
+CommandAllocatorPool::CommandAllocatorPool(RHICommandListType type)
     : m_Type(type)
 {
 }
 
 CommandAllocatorPool::~CommandAllocatorPool()
 {
+    for (auto allocator : m_AllocatorPool)
+        allocator.Destroy();
+
     m_AllocatorPool.clear();
 }
 
-ID3D12CommandAllocator& CommandAllocatorPool::RequestAllocator(uint64_t completedFenceValue)
+RHICommandAllocatorHandle CommandAllocatorPool::RequestAllocator(RHIFenceValue completedFenceValue)
 {
     if (m_DiscardedAllocators.empty())
         return CreateNewAllocator();
@@ -39,25 +44,25 @@ ID3D12CommandAllocator& CommandAllocatorPool::RequestAllocator(uint64_t complete
     if (m_DiscardedAllocators.front().second > completedFenceValue)
         return CreateNewAllocator();
 
-    ID3D12CommandAllocator* allocator = m_DiscardedAllocators.front().first.Get();
+    RHICommandAllocatorHandle allocator = m_DiscardedAllocators.front().first;
     m_DiscardedAllocators.pop();
     ASSERT_SUCCESS(allocator->Reset());
-    return *allocator;
+    return allocator;
 }
 
-void CommandAllocatorPool::DiscardAllocator(ID3D12CommandAllocator& allocator, uint64_t fenceValue)
+void CommandAllocatorPool::DiscardAllocator(RHICommandAllocatorHandle allocator, RHIFenceValue fenceValue)
 {
-    m_DiscardedAllocators.emplace(&allocator, fenceValue);
+    m_DiscardedAllocators.emplace(allocator, fenceValue);
 }
 
-ID3D12CommandAllocator& CommandAllocatorPool::CreateNewAllocator()
+RHICommandAllocatorHandle CommandAllocatorPool::CreateNewAllocator()
 {
-    wrl::ComPtr<ID3D12CommandAllocator> allocator;
-    ASSERT_SUCCESS(GraphicCore::GetDevice().CreateCommandAllocator(m_Type, IID_PPV_ARGS(&allocator)));
-    std::wstring allocatorName = L"CommandAllocatorPool::CommandAllocator" + m_AllocatorPool.size();
-    allocator->SetName(allocatorName.c_str());
+    RHICommandAllocatorHandle allocator;
+
+    ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommandAllocator({ m_Type }, allocator));
     m_AllocatorPool.push_back(allocator);
-    return *allocator.Get();
+
+    return allocator;
 }
 
 ETH_NAMESPACE_END

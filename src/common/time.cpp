@@ -35,7 +35,7 @@ time_t GetSystemTime()
     return time(0);
 }
 
-std::string FormatTime(const time_t t, char* format)
+std::string FormatTime(const time_t t, const char* format)
 {
     std::lock_guard<std::mutex> guard(g_TimeMutex);
     char formatted[80];
@@ -45,7 +45,7 @@ std::string FormatTime(const time_t t, char* format)
     return formatted;
 }
 
-std::wstring WFormatTime(const time_t t, wchar_t* format)
+std::wstring WFormatTime(const time_t t, const wchar_t* format)
 {
     std::lock_guard<std::mutex> guard(g_TimeMutex);
     wchar_t formatted[80];

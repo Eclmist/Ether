@@ -24,20 +24,20 @@ ETH_NAMESPACE_BEGIN
 class CommandAllocatorPool : public NonCopyable
 {
 public:
-    CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE type);
+    CommandAllocatorPool(RHICommandListType type);
     ~CommandAllocatorPool();
 
-    ID3D12CommandAllocator& RequestAllocator(uint64_t completedFenceValue);
-    void DiscardAllocator(ID3D12CommandAllocator& allocator, uint64_t fenceValue);
+    RHICommandAllocatorHandle RequestAllocator(RHIFenceValue completedFenceValue);
+    void DiscardAllocator(RHICommandAllocatorHandle allocator, RHIFenceValue fenceValue);
 
 private:
-    ID3D12CommandAllocator& CreateNewAllocator();
+    RHICommandAllocatorHandle CreateNewAllocator();
     
 private:
-    const D3D12_COMMAND_LIST_TYPE m_Type;
+    const RHICommandListType m_Type;
 
-    std::vector<wrl::ComPtr<ID3D12CommandAllocator>> m_AllocatorPool;
-    std::queue<std::pair<wrl::ComPtr<ID3D12CommandAllocator>, uint64_t>> m_DiscardedAllocators;
+    std::vector<RHICommandAllocatorHandle> m_AllocatorPool;
+    std::queue<std::pair<RHICommandAllocatorHandle, RHIFenceValue>> m_DiscardedAllocators;
 };
 
 ETH_NAMESPACE_END
