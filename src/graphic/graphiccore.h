@@ -62,6 +62,12 @@ public:
     static RHIDeviceHandle GetDevice() { return Instance().m_RHIDevice; }
     static RHIModuleHandle GetModule() { return Instance().m_RHIModule; }
 
+    // TODO: Move away from here into some dynamic descriptor heap allocator or something
+    static inline RHIDescriptorHeapHandle GetRTVDescriptorHeap() { return Instance().m_RTVDescriptorHeap; }
+    static inline RHIDescriptorHeapHandle GetDSVDescriptorHeap() { return Instance().m_DSVDescriptorHeap; }
+    static inline RHIDescriptorHeapHandle GetSRVDescriptorHeap() { return Instance().m_SRVDescriptorHeap; }
+    static inline RHIDescriptorHeapHandle GetSamplerDescriptorHeap() { return Instance().m_SamplerDescriptorHeap; }
+
 public:
     static void FlushGpu();
 
@@ -79,6 +85,12 @@ private:
 
     RHIDeviceHandle m_RHIDevice;
     RHIModuleHandle m_RHIModule;
+
+    // TODO: Move away from here into some dynamic descriptor heap allocator or something
+	RHIDescriptorHeapHandle m_RTVDescriptorHeap;
+    RHIDescriptorHeapHandle m_DSVDescriptorHeap;
+    RHIDescriptorHeapHandle m_SRVDescriptorHeap;
+    RHIDescriptorHeapHandle m_SamplerDescriptorHeap;
 
 private:
     bool m_IsInitialized;

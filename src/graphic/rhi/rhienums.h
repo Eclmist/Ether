@@ -274,8 +274,6 @@ enum class RHIShaderVisibility
     Domain,
     Geometry,
     Pixel,
-    Amplification,
-    Mesh,
 };
 
 enum class RHISwapEffect
