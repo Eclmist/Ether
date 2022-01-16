@@ -346,8 +346,6 @@ D3D12_SHADER_VISIBILITY Translate(const RHIShaderVisibility& rhiType)
 	case RHIShaderVisibility::Domain:                       return D3D12_SHADER_VISIBILITY_DOMAIN;
 	case RHIShaderVisibility::Geometry:                     return D3D12_SHADER_VISIBILITY_GEOMETRY;
 	case RHIShaderVisibility::Pixel:                        return D3D12_SHADER_VISIBILITY_PIXEL;
-	case RHIShaderVisibility::Amplification:                return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
-	case RHIShaderVisibility::Mesh:                         return D3D12_SHADER_VISIBILITY_MESH;
 	default:                                                return D3D12_SHADER_VISIBILITY_ALL;
 	}
 }

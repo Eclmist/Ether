@@ -32,5 +32,14 @@ RHIDescriptorHandleGPU D3D12DescriptorHeap::GetBaseHandleGPU() const
     return Translate(m_Heap->GetGPUDescriptorHandleForHeapStart());
 }
 
+RHIDescriptorHandleCPU D3D12DescriptorHeap::GetNextHandleCPU()
+{
+    RHIDescriptorHandleCPU handle = GetBaseHandleCPU();
+    handle.m_Ptr += m_Offset;
+    m_Offset += m_HandleIncrementSize;
+
+    return handle;
+}
+
 ETH_NAMESPACE_END
 

@@ -86,6 +86,7 @@ RHIResult D3D12Device::CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, R
         IID_PPV_ARGS(&d3dDescriptorHeap->m_Heap)
     );
 
+    d3dDescriptorHeap->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
     descriptorHeap.Set(d3dDescriptorHeap);
     return RHIResult();
 }
@@ -186,6 +187,7 @@ RHIResult D3D12Device::CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChai
 RHIResult D3D12Device::CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& rtvHandle) const
 {
     D3D12RenderTargetView* d3dRtv = new D3D12RenderTargetView();
+    d3dRtv->m_D3DCpuHandle = Translate(GraphicCore::GetRTVDescriptorHeap()->GetBaseHandleCPU());
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateRenderTargetView(

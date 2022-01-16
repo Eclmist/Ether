@@ -30,10 +30,6 @@ public:
     ~GraphicContext();
 
 public:
-    inline RHIDescriptorHeapHandle GetRTVDescriptorHeap() { return m_RTVDescriptorHeap; }
-    inline RHIDescriptorHeapHandle GetDSVDescriptorHeap() { return m_DSVDescriptorHeap; }
-    inline RHIDescriptorHeapHandle GetSRVDescriptorHeap() { return m_SRVDescriptorHeap; }
-    inline RHIDescriptorHeapHandle GetSamplerDescriptorHeap() { return m_SamplerDescriptorHeap; }
 
     inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
     inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
@@ -52,11 +48,6 @@ public:
 private:
     ethXMMatrix m_ViewMatrix;
     ethXMMatrix m_ProjectionMatrix;
-
-    RHIDescriptorHeapHandle m_RTVDescriptorHeap;
-    RHIDescriptorHeapHandle m_DSVDescriptorHeap;
-    RHIDescriptorHeapHandle m_SRVDescriptorHeap;
-    RHIDescriptorHeapHandle m_SamplerDescriptorHeap;
 };
 
 ETH_NAMESPACE_END

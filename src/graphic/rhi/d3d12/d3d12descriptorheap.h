@@ -32,11 +32,16 @@ public:
     RHIDescriptorHandleCPU GetBaseHandleCPU() const override;
     RHIDescriptorHandleGPU GetBaseHandleGPU() const override;
 
+    RHIDescriptorHandleCPU GetNextHandleCPU() override;
+
 private:
     friend class D3D12Device;
     // TODO: Remove after GUI-RHI refactor
     friend class GuiRenderer;
     wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
+
+    size_t m_Offset;
+    size_t m_HandleIncrementSize;
 };
 
 ETH_NAMESPACE_END

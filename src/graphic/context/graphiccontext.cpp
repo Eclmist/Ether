@@ -28,18 +28,10 @@ GraphicContext::GraphicContext(RHICommandListType type)
     , m_ViewMatrix(DirectX::XMMatrixIdentity())
     , m_ProjectionMatrix(DirectX::XMMatrixIdentity())
 {
-    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::RTV, RHIDescriptorHeapFlag::None, 512 }, m_RTVDescriptorHeap);
-    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::DSV, RHIDescriptorHeapFlag::None, 512 }, m_DSVDescriptorHeap);
-    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::None, 4096 }, m_SRVDescriptorHeap);
-    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::Sampler, RHIDescriptorHeapFlag::None, 512 }, m_SamplerDescriptorHeap);
 }
 
 GraphicContext::~GraphicContext()
 {
-    m_RTVDescriptorHeap.Destroy();
-    m_DSVDescriptorHeap.Destroy();
-    m_SRVDescriptorHeap.Destroy();
-    m_SamplerDescriptorHeap.Destroy();
 }
 
 void GraphicContext::ClearColor(RHIRenderTargetViewHandle renderTarget, ethVector4 color)

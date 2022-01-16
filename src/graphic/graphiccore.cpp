@@ -33,6 +33,11 @@ void GraphicCore::Initialize()
     RHIResult result = Instance().m_RHIModule->CreateDevice(Instance().m_RHIDevice);
     AssertGraphics(result == RHIResult::Success, "Failed to create graphic device");
 
+    GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::RTV, RHIDescriptorHeapFlag::None, 512 }, Instance().m_RTVDescriptorHeap);
+    GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::DSV, RHIDescriptorHeapFlag::None, 512 }, Instance().m_DSVDescriptorHeap);
+    GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::None, 4096 }, Instance().m_SRVDescriptorHeap);
+    GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::Sampler, RHIDescriptorHeapFlag::None, 512 }, Instance().m_SamplerDescriptorHeap);
+
     Instance().m_ShaderDaemon = std::make_unique<ShaderDaemon>();
     Instance().m_CommandManager = std::make_unique<CommandManager>();
     Instance().m_GraphicDisplay = std::make_unique<GraphicDisplay>();
@@ -64,6 +69,12 @@ void GraphicCore::Shutdown()
 
     Instance().m_RHIDevice.Destroy();
     Instance().m_RHIModule.Destroy();
+
+    Instance().m_RTVDescriptorHeap.Destroy();
+    Instance().m_DSVDescriptorHeap.Destroy();
+    Instance().m_SRVDescriptorHeap.Destroy();
+    Instance().m_SamplerDescriptorHeap.Destroy();
+
     Reset();
 }
 
