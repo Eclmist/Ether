@@ -18,6 +18,7 @@
 */
 
 #include "visualnode.h"
+#include "graphic/rhi/rhidevice.h"
 #include "graphic/rhi/rhiresource.h"
 
 ETH_NAMESPACE_BEGIN
@@ -32,34 +33,52 @@ VisualNode::VisualNode(const VisualNodeData data)
     InitIndexBufferView(m_StaticData.m_NumIndices * sizeof(uint32_t));
 }
 
+VisualNode::~VisualNode()
+{
+    m_VertexBuffer.Destroy();
+    m_IndexBuffer.Destroy();
+}
+
 void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
 {
-    // TODO: [RHI] Implement
-    //m_VertexBuffer = std::make_unique<BufferResource>(L"Visual::VertexBuffer",
-    //    numVertices, sizeof(VertexFormats::VertexFormatStatic), data);
+    size_t bufferSize = numVertices * sizeof(VertexFormats::VertexFormatStatic);
+    RHICommitedResourceDesc desc = {};
+    desc.m_HeapType = RHIHeapType::Default;
+    desc.m_State = RHIResourceState::Common;
+    desc.m_ResourceDesc = RHICreateBufferResourceDesc(bufferSize);
+
+    GraphicCore::GetDevice()->CreateCommittedResource(desc, m_VertexBuffer);
+    m_VertexBuffer->SetName(L"VisualNode::VertexBuffer");
+    CommandContext::InitializeBuffer(m_VertexBuffer, data, bufferSize);
 }
 
 void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
 { 
-    // TODO: [RHI] Implement
-    //m_IndexBuffer = std::make_unique<BufferResource>(L"Visual::IndexBuffer",
-    //    numIndices, sizeof(uint32_t), data);
+    size_t bufferSize = numIndices * sizeof(uint32_t);
+    RHICommitedResourceDesc desc = {};
+    desc.m_HeapType = RHIHeapType::Default;
+    desc.m_State = RHIResourceState::Common;
+    desc.m_ResourceDesc = RHICreateBufferResourceDesc(bufferSize);
+
+    GraphicCore::GetDevice()->CreateCommittedResource(desc, m_IndexBuffer);
+    m_IndexBuffer->SetName(L"VisualNode::IndexBuffer");
+    CommandContext::InitializeBuffer(m_IndexBuffer, data, bufferSize);
 }
 
 void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)
 {
-    //m_VertexBufferView = {};
-    //m_VertexBufferView->BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-    //m_VertexBufferView.SizeInBytes = bufferSize;
-    //m_VertexBufferView.StrideInBytes = stride;
+    m_VertexBufferView = {};
+    m_VertexBufferView.m_BufferSize = bufferSize;
+    m_VertexBufferView.m_Stride = stride;
+    m_VertexBufferView.m_Resource = m_VertexBuffer;
 }
 
 void VisualNode::InitIndexBufferView(size_t bufferSize)
 {
-    //m_IndexBufferView = {};
-    //m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-    //m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-    //m_IndexBufferView.SizeInBytes = bufferSize;
+    m_IndexBufferView = {};
+    m_IndexBufferView.m_BufferSize = bufferSize;
+    m_IndexBufferView.m_Format = RHIFormat::R32Uint;
+    m_IndexBufferView.m_Resource = m_IndexBuffer;
 }
 
 ETH_NAMESPACE_END

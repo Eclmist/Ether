@@ -73,25 +73,5 @@ private:
     friend class D3D12Device;
 };
 
-class D3D12IndexBufferView : public RHIIndexBufferView
-{
-public:
-    D3D12IndexBufferView() = default;
-    ~D3D12IndexBufferView() = default;
-
-private:
-    friend class D3D12Device;
-};
-
-class D3D12VertexBufferView : public RHIVertexBufferView
-{
-public:
-    D3D12VertexBufferView() = default;
-    ~D3D12VertexBufferView() = default;
-
-private:
-    friend class D3D12Device;
-};
-
 ETH_NAMESPACE_END
 

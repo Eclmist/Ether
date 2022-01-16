@@ -43,7 +43,6 @@ public:
     void DrawNode(VisualNode*); // TODO: Move this responsibility into the various render passes
 
 private:
-
     GraphicContext m_Context;
 
 public: // TODO: Move into some kind of geometry render pass. Right now accessed by HardCodedRenderPass as a POC

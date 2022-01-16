@@ -176,6 +176,8 @@ DXGI_FORMAT Translate(const RHIFormat& rhiType)
 	case RHIFormat::R32G32B32Float:                         return DXGI_FORMAT_R32G32B32_FLOAT;
 	case RHIFormat::R32G32B32A32Float:                      return DXGI_FORMAT_R32G32B32A32_FLOAT;
 	case RHIFormat::D32Float:                               return DXGI_FORMAT_D32_FLOAT;
+	case RHIFormat::R32Uint:								return DXGI_FORMAT_R32_UINT;
+	case RHIFormat::R16Uint:								return DXGI_FORMAT_R16_UINT;
 	case RHIFormat::D24UnormS8Uint:                         return DXGI_FORMAT_D24_UNORM_S8_UINT;
 	default:                                                return DXGI_FORMAT_UNKNOWN;
 	}
@@ -301,11 +303,13 @@ D3D12_RESOURCE_STATES Translate(const RHIResourceState& rhiType)
 	switch (rhiType)
 	{
 	case RHIResourceState::Common:                          return D3D12_RESOURCE_STATE_COMMON;
-	case RHIResourceState::GenericRead:                     return D3D12_RESOURCE_STATE_GENERIC_READ;
-	case RHIResourceState::RenderTarget:                    return D3D12_RESOURCE_STATE_RENDER_TARGET;
-	case RHIResourceState::Present:                         return D3D12_RESOURCE_STATE_PRESENT;
-	case RHIResourceState::CopySrc:                         return D3D12_RESOURCE_STATE_COPY_SOURCE;
 	case RHIResourceState::CopyDest:                        return D3D12_RESOURCE_STATE_COPY_DEST;
+	case RHIResourceState::CopySrc:                         return D3D12_RESOURCE_STATE_COPY_SOURCE;
+	case RHIResourceState::DepthRead:                       return D3D12_RESOURCE_STATE_DEPTH_READ;
+	case RHIResourceState::DepthWrite:                      return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	case RHIResourceState::GenericRead:                     return D3D12_RESOURCE_STATE_GENERIC_READ;
+	case RHIResourceState::Present:                         return D3D12_RESOURCE_STATE_PRESENT;
+	case RHIResourceState::RenderTarget:                    return D3D12_RESOURCE_STATE_RENDER_TARGET;
 	default:                                                return D3D12_RESOURCE_STATE_COMMON;
 	}
 }
@@ -436,6 +440,19 @@ D3D12_BLEND_DESC Translate(const RHIBlendDesc& rhiDesc)
     return d3dDesc;
 }
 
+D3D12_CLEAR_VALUE Translate(const RHIClearValue& rhiDesc)
+{
+	D3D12_CLEAR_VALUE d3dDesc = {};
+	d3dDesc.Format = Translate(rhiDesc.m_Format);
+	d3dDesc.Color[0] = rhiDesc.m_Color[0];
+	d3dDesc.Color[1] = rhiDesc.m_Color[1];
+	d3dDesc.Color[2] = rhiDesc.m_Color[2];
+	d3dDesc.Color[3] = rhiDesc.m_Color[3];
+	d3dDesc.DepthStencil = Translate(rhiDesc.m_DepthStencil);
+
+	return d3dDesc;
+}
+
 D3D12_COMMAND_QUEUE_DESC Translate(const RHICommandQueueDesc& rhiDesc)
 {
     D3D12_COMMAND_QUEUE_DESC d3dDesc = {};
@@ -460,6 +477,15 @@ D3D12_DEPTH_STENCIL_DESC Translate(const RHIDepthStencilDesc& rhiDesc)
     d3dDesc.BackFace = Translate(rhiDesc.m_BackFace);
 
     return d3dDesc;
+}
+
+D3D12_DEPTH_STENCIL_VALUE Translate(const RHIDepthStencilValue& rhiDesc)
+{
+	D3D12_DEPTH_STENCIL_VALUE d3dDesc = {};
+	d3dDesc.Depth = rhiDesc.m_Depth;
+	d3dDesc.Stencil = rhiDesc.m_Stencil;
+
+	return d3dDesc;
 }
 
 D3D12_DEPTH_STENCILOP_DESC Translate(const RHIDepthStencilOperationDesc& rhiDesc)
@@ -532,8 +558,18 @@ D3D12_GRAPHICS_PIPELINE_STATE_DESC Translate(const RHIPipelineStateDesc& rhiDesc
     d3dDesc.DSVFormat = Translate(rhiDesc.m_DSVFormat);
     d3dDesc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
     d3dDesc.NodeMask = rhiDesc.m_NodeMask;
+	d3dDesc.SampleMask = 0xffffffff;
 
     return d3dDesc;
+}
+
+D3D12_INDEX_BUFFER_VIEW Translate(const RHIIndexBufferViewDesc& rhiDesc)
+{
+	D3D12_INDEX_BUFFER_VIEW d3dDesc = {};
+	d3dDesc.Format = Translate(rhiDesc.m_Format);
+	d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
+
+	return d3dDesc;
 }
 
 D3D12_ROOT_PARAMETER Translate(const RHIRootParameterConstantDesc& rhiDesc)
@@ -614,6 +650,15 @@ D3D12_STATIC_SAMPLER_DESC Translate(const RHISamplerParameterDesc& rhiDesc)
     d3dDesc.MaxLOD = rhiDesc.m_MaxLOD;
 
     return d3dDesc;
+}
+
+D3D12_VERTEX_BUFFER_VIEW Translate(const RHIVertexBufferViewDesc& rhiDesc)
+{
+	D3D12_VERTEX_BUFFER_VIEW d3dDesc = {};
+	d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
+	d3dDesc.StrideInBytes = rhiDesc.m_Stride;
+
+	return d3dDesc;
 }
 
 DXGI_SAMPLE_DESC Translate(const RHISampleDesc& rhiDesc)

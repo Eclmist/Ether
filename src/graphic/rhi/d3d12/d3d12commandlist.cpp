@@ -61,14 +61,22 @@ RHIResult D3D12CommandList::SetGraphicRootSignature(const RHIRootSignatureHandle
     return RHIResult::Success;
 }
 
-RHIResult D3D12CommandList::SetVertexBuffer(const RHIBufferHandle vertexBuffer)
+RHIResult D3D12CommandList::SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer)
 {
-    return RHIResult::NotSupported;
+    const auto d3dResource = vertexBuffer.m_Resource.As<D3D12Resource>();
+    D3D12_VERTEX_BUFFER_VIEW d3dView = Translate(vertexBuffer);
+    d3dView.BufferLocation = Translate(d3dResource->GetGPUVirtualAddress());
+    m_CommandList->IASetVertexBuffers(0, 1, &d3dView);
+    return RHIResult::Success;
 }
 
-RHIResult D3D12CommandList::SetIndexBuffer(const RHIBufferHandle indexBuffer)
+RHIResult D3D12CommandList::SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer)
 {
-    return RHIResult::NotSupported;
+    const auto d3dResource = indexBuffer.m_Resource.As<D3D12Resource>();
+    D3D12_INDEX_BUFFER_VIEW d3dView = Translate(indexBuffer);
+    d3dView.BufferLocation = Translate(d3dResource->GetGPUVirtualAddress());
+    m_CommandList->IASetIndexBuffer(&d3dView);
+    return RHIResult::Success;
 }
 
 RHIResult D3D12CommandList::SetRenderTargets(const RHISetRenderTargetsDesc& desc)

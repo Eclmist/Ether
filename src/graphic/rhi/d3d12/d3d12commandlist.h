@@ -35,8 +35,8 @@ public:
     RHIResult SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology) override;
     RHIResult SetPipelineState(const RHIPipelineStateHandle pipelineState) override;
     RHIResult SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature) override;
-    RHIResult SetVertexBuffer(const RHIBufferHandle vertexBuffer) override;
-    RHIResult SetIndexBuffer(const RHIBufferHandle indexBuffer) override;
+    RHIResult SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer) override;
+    RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) override;
     RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) override;
     RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) override;
 

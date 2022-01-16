@@ -45,8 +45,6 @@ typedef RHIHandle<class RHIDepthStencilView>    RHIDepthStencilViewHandle;
 typedef RHIHandle<class RHIShaderResourceView>  RHIShaderResourceViewHandle;
 typedef RHIHandle<class RHIConstantBufferView>  RHIConstantBufferViewHandle;
 typedef RHIHandle<class RHIUnorderedAccessView> RHIUnorderedAccessViewHandle;
-typedef RHIHandle<class RHIIndexBufferView>     RHIIndexBufferViewHandle;
-typedef RHIHandle<class RHIVertexBufferView>    RHIVertexBufferViewHandle;
 
 // Memory
 typedef uint64_t                                RHIVirtualAddress;
@@ -57,6 +55,32 @@ typedef uint64_t                                RHIFenceValue;
 typedef uint64_t                                RHIRootSignatureFlags;
 typedef uint8_t                                 RHIColorChannels;
 typedef const void*                             RHIShaderByteCode;
+
+//=========================== Misc Descs ============================//
+
+struct RHIDepthStencilValue
+{
+    float m_Depth;
+    uint8_t m_Stencil;
+};
+
+struct RHIClearValue
+{
+    RHIFormat m_Format;
+
+	union
+	{
+        float m_Color[4];
+        RHIDepthStencilValue m_DepthStencil;
+    };
+};
+
+struct RHIResizeDesc
+{
+    uint32_t m_Width;
+    uint32_t m_Height;
+    uint32_t m_Depth;
+};
 
 //========================= Creation Descs ==========================//
 
@@ -293,6 +317,18 @@ struct RHIUnorderedAccessViewDesc : public RHIResourceViewDesc
 
 };
 
+struct RHIIndexBufferViewDesc : public RHIResourceViewDesc
+{
+    RHIFormat m_Format;
+    size_t m_BufferSize;
+};
+
+struct RHIVertexBufferViewDesc : public RHIResourceViewDesc
+{
+    size_t m_BufferSize;
+    size_t m_Stride;
+};
+
 struct RHIResourceDesc
 {
 	uint64_t m_Alignment;
@@ -313,6 +349,7 @@ struct RHICommitedResourceDesc
     RHIHeapType m_HeapType;
     RHIResourceState m_State;
     RHIResourceDesc m_ResourceDesc;
+    RHIClearValue* m_ClearValue;
 };
 
 //======================= Command List Descs ========================//
@@ -369,15 +406,6 @@ struct RHISetRootConstantsDesc
     uint32_t m_NumConstants;
     uint32_t m_DestOffset;
     void* m_Data;
-};
-
-//=========================== Misc Descs ============================//
-
-struct RHIResizeDesc
-{
-    uint32_t m_Width;
-    uint32_t m_Height;
-    uint32_t m_Depth;
 };
 
 ETH_NAMESPACE_END

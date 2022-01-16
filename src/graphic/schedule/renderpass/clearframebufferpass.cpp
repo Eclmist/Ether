@@ -21,6 +21,11 @@
 
 ETH_NAMESPACE_BEGIN
 
+namespace GraphicLinkSpace
+{
+    extern RHIDepthStencilViewHandle g_DepthTextureView;
+}
+
 ClearFrameBufferPass::ClearFrameBufferPass()
     : RenderPass("Clear Frame Buffer Pass")
 {
@@ -38,7 +43,7 @@ void ClearFrameBufferPass::Render(GraphicContext& context)
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
-    //context.ClearDepth(*gfxDisplay.GetDepthBuffer(), 1.0f);
+    context.ClearDepthStencil(GraphicLinkSpace::g_DepthTextureView, 1.0f, 0.0f);
     context.FinalizeAndExecute();
     context.Reset();
 }

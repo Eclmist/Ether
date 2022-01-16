@@ -30,9 +30,6 @@ public:
 
     void RegisterInputOutput() override;
     void Render(GraphicContext& context) override;
-
-private:
-    RHIDepthStencilViewHandle m_DSVHandle;
 };
 
 ETH_NAMESPACE_END

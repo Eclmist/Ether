@@ -30,6 +30,7 @@ ETH_NAMESPACE_BEGIN
 namespace GraphicLinkSpace 
 {
     RHIResourceHandle g_DepthTexture;
+    RHIDepthStencilViewHandle g_DepthTextureView;
 }
 
 HardCodedRenderPass::HardCodedRenderPass()
@@ -39,19 +40,21 @@ HardCodedRenderPass::HardCodedRenderPass()
 
 void HardCodedRenderPass::RegisterInputOutput()
 {
+    RHIClearValue clearValue = { RHIFormat::D24UnormS8Uint, { 1.0, 0 } };
     RHICommitedResourceDesc desc = {};
     desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::Common;
+    desc.m_State = RHIResourceState::DepthWrite;
+    desc.m_ClearValue = &clearValue;
     desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(RHIFormat::D24UnormS8Uint,
         GraphicCore::GetGraphicDisplay().GetViewport().m_Width,
         GraphicCore::GetGraphicDisplay().GetViewport().m_Height);
 
     GraphicCore::GetDevice()->CreateCommittedResource(desc, GraphicLinkSpace::g_DepthTexture);
-
+    GraphicLinkSpace::g_DepthTexture->SetName(L"HardCodedRenderPass::DepthTexture");
     RHIDepthStencilViewDesc dsvDesc = {};
     dsvDesc.m_Format = RHIFormat::D24UnormS8Uint;
     dsvDesc.m_Resource = GraphicLinkSpace::g_DepthTexture;
-    GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, m_DSVHandle);
+    GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, GraphicLinkSpace::g_DepthTextureView);
 }
 
 void HardCodedRenderPass::Render(GraphicContext& context)
@@ -68,7 +71,7 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         GraphicCore::GetGraphicCommon().InitializePipelineStates();
     }
 
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), m_DSVHandle);
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GraphicLinkSpace::g_DepthTextureView);
 
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
@@ -92,8 +95,8 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         normalMat = DirectX::XMMatrixTranspose(normalMat);
 
         context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleList);
-        //context.GetCommandList()->SetVertexBuffer(0, 1, &visual->GetVertexBufferView());
-        //context.GetCommandList()->SetIndexBuffer(&visual->GetIndexBufferView());
+        context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
+        context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
 		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &modelViewMat });
 		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &modelViewProjMat });

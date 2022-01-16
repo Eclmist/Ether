@@ -46,7 +46,14 @@ public:
     inline const S* As() const { return dynamic_cast<S*>(m_Handle); }
 
 public:
-    void Destroy() { delete m_Handle; }
+    void Destroy()
+    { 
+        if (m_Handle != nullptr)
+        {
+			delete m_Handle; 
+            m_Handle = nullptr;
+        }
+    }
 
 private:
     T* m_Handle;

@@ -27,8 +27,8 @@ GraphicDisplay::GraphicDisplay()
     : m_FrameBufferWidth(EngineCore::GetEngineConfig().GetClientWidth())
     , m_FrameBufferHeight(EngineCore::GetEngineConfig().GetClientHeight())
     , m_BufferingMode(BufferingMode::Triple)
-    , m_ScissorRect({ 0, 0, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight })
-    , m_Viewport({ 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight })
+    , m_ScissorRect({ 0, 0, 99999, 99999 })
+    , m_Viewport({ 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight, 0.0f, 1.0f })
     , m_VSyncEnabled(false)
     , m_VSyncVBlanks(1)
 {
@@ -55,7 +55,7 @@ void GraphicDisplay::Present()
 
     // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model, 
     // the order of back buffer indices are not guaranteed to be sequential
-    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+    ResetCurrentBufferIndex();
 }
 
 void GraphicDisplay::Resize(uint32_t width, uint32_t height)
@@ -65,16 +65,19 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
 
     m_FrameBufferWidth = width;
     m_FrameBufferHeight = height;
-    m_Viewport = { 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight };
+    m_Viewport = { 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight, 0.0f, 1.0f };
 
     GraphicCore::FlushGpu();
+
+    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+        m_RenderTargets[i].Destroy();
 
     RHIResizeDesc resizeDesc = {};
     resizeDesc.m_Width = m_FrameBufferWidth;
     resizeDesc.m_Height = m_FrameBufferHeight;
     ASSERT_SUCCESS(m_SwapChain->ResizeBuffers(resizeDesc));
-
-    // TODO: do views need to be recreated? do resources need to be re-get?
+    ResetCurrentBufferIndex();
+    CreateResourcesFromSwapChain();
     CreateViewsFromSwapChain();
 }
 
@@ -103,7 +106,7 @@ void GraphicDisplay::CreateSwapChain()
     desc.m_WindowHandle = EngineCore::GetMainWindow().GetWindowHandle();
 
     GraphicCore::GetDevice()->CreateSwapChain(desc, m_SwapChain);
-    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+    ResetCurrentBufferIndex();
 }
 
 void GraphicDisplay::CreateResourcesFromSwapChain()
@@ -124,6 +127,11 @@ void GraphicDisplay::CreateViewsFromSwapChain()
         desc.m_Resource = m_RenderTargets[i];
         GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
 	}
+}
+
+void GraphicDisplay::ResetCurrentBufferIndex()
+{
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 
 void GraphicDisplay::ResetFences()

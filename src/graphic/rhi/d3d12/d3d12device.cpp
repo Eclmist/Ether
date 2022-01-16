@@ -258,7 +258,7 @@ RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& de
         D3D12_HEAP_FLAG_NONE,
         &Translate(desc.m_ResourceDesc),
         Translate(desc.m_State),
-        nullptr,
+        desc.m_ClearValue == nullptr ? nullptr : &Translate(*desc.m_ClearValue),
         IID_PPV_ARGS(&d3dResource->m_Resource)
     );
 

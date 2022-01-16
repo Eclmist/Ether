@@ -139,6 +139,8 @@ enum class RHIFormat
     R32G32B32Float,
     R32G32B32A32Float,
     D32Float,
+    R32Uint,
+    R16Uint,
     D24UnormS8Uint,
 };
 
@@ -247,11 +249,13 @@ enum class RHIResourceLayout
 enum class RHIResourceState
 {
     Common,
-    GenericRead,
-    RenderTarget,
-    Present,
-    CopySrc,
     CopyDest,
+    CopySrc,
+    DepthRead,
+    DepthWrite,
+    GenericRead,
+    Present,
+    RenderTarget,
 };
 
 enum class RHIRootSignatureFlag

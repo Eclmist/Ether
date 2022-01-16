@@ -82,19 +82,5 @@ public:
     ~RHIUnorderedAccessView() = default;
 };
 
-class RHIVertexBufferView : public RHIShaderVisibleResourceView
-{
-public:
-    RHIVertexBufferView() = default;
-    ~RHIVertexBufferView() = default;
-};
-
-class RHIIndexBufferView : public RHIShaderVisibleResourceView
-{
-public:
-    RHIIndexBufferView() = default;
-    ~RHIIndexBufferView() = default;
-};
-
 ETH_NAMESPACE_END
 

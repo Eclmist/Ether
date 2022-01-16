@@ -42,15 +42,15 @@ RHIResult D3D12SwapChain::ResizeBuffers(RHIResizeDesc& desc)
 {
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     ASSERT_SUCCESS(m_SwapChain->GetDesc(&swapChainDesc));
-    ASSERT_SUCCESS(m_SwapChain->ResizeBuffers(
+    HRESULT hr = m_SwapChain->ResizeBuffers(
         swapChainDesc.BufferCount,
         desc.m_Width,
         desc.m_Height,
         swapChainDesc.BufferDesc.Format,
         swapChainDesc.Flags
-    ));
+    );
 
-    return RHIResult();
+    return TO_RHI_RESULT(hr);
 }
 
 RHIResult D3D12SwapChain::Present(uint8_t numVblanks)

@@ -33,8 +33,8 @@ public:
     virtual RHIResult SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology) = 0;
     virtual RHIResult SetPipelineState(const RHIPipelineStateHandle pipelineState) = 0;
     virtual RHIResult SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature) = 0;
-    virtual RHIResult SetVertexBuffer(const RHIBufferHandle vertexBuffer) = 0;
-    virtual RHIResult SetIndexBuffer(const RHIBufferHandle indexBuffer) = 0;
+    virtual RHIResult SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer) = 0;
+    virtual RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) = 0;
     virtual RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) = 0;
     virtual RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) = 0;
 

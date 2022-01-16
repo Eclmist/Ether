@@ -36,10 +36,10 @@ class VisualNode
 {
 public:
     VisualNode(const VisualNodeData data);
-    ~VisualNode() = default;
+    ~VisualNode();
 
-    inline RHIVertexBufferViewHandle GetVertexBufferView() const { return m_VertexBufferView; }
-    inline RHIIndexBufferViewHandle GetIndexBufferView() const { return m_IndexBufferView; }
+    inline RHIVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
+    inline RHIIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
     inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
     inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
 
@@ -54,8 +54,8 @@ private:
     RHIResourceHandle m_VertexBuffer;
     RHIResourceHandle m_IndexBuffer;
 
-    RHIVertexBufferViewHandle m_VertexBufferView;
-    RHIIndexBufferViewHandle m_IndexBufferView;
+    RHIVertexBufferViewDesc m_VertexBufferView;
+    RHIIndexBufferViewDesc m_IndexBufferView;
 
     VisualNodeData m_StaticData;
 };

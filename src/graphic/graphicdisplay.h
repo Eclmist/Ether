@@ -60,6 +60,7 @@ private:
     void CreateSwapChain();
     void CreateResourcesFromSwapChain();
     void CreateViewsFromSwapChain();
+    void ResetCurrentBufferIndex();
     void ResetFences();
 
 private:
