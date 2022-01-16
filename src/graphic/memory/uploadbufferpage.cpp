@@ -33,7 +33,9 @@ UploadBufferPage::UploadBufferPage(size_t size)
     RHICommitedResourceDesc desc = {};
     desc.m_HeapType = RHIHeapType::Upload;
     desc.m_State = RHIResourceState::GenericRead;
-    desc.m_Size = size;
+
+    RHIResourceDesc rsDesc = {};
+    desc.m_ResourceDesc = rsDesc;
 
     ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommittedResource(desc, m_Resource));
 

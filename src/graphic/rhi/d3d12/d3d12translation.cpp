@@ -271,6 +271,31 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE Translate(const RHIPrimitiveTopologyType& rhiType)
 	}
 }
 
+D3D12_RESOURCE_DIMENSION Translate(const RHIResourceDimension& rhiType)
+{
+	switch (rhiType)
+	{
+	case RHIResourceDimension::Unknown:                     return D3D12_RESOURCE_DIMENSION_UNKNOWN;
+	case RHIResourceDimension::Buffer:						return D3D12_RESOURCE_DIMENSION_BUFFER;
+	case RHIResourceDimension::Texture1D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
+	case RHIResourceDimension::Texture2D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	case RHIResourceDimension::Texture3D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	default:                                                return D3D12_RESOURCE_DIMENSION_UNKNOWN;
+	}
+}
+
+D3D12_RESOURCE_FLAGS Translate(const RHIResourceFlag& rhiType)
+{
+	switch (rhiType)
+	{
+	case RHIResourceFlag::None:								return D3D12_RESOURCE_FLAG_NONE;
+	case RHIResourceFlag::AllowRenderTarget:                return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+	case RHIResourceFlag::AllowDepthStencil:                return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	case RHIResourceFlag::AllowUnorderedAccess:             return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	default:                                                return D3D12_RESOURCE_FLAG_NONE;
+	}
+}
+
 D3D12_RESOURCE_STATES Translate(const RHIResourceState& rhiType)
 {
 	switch (rhiType)
@@ -381,6 +406,16 @@ D3D12_TEXTURE_ADDRESS_MODE Translate(const RHITextureAddressMode& rhiType)
 	case RHITextureAddressMode::Border:                     return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 	case RHITextureAddressMode::MirrorOnce:                 return D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE;
 	default:                                                return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	}
+}
+
+D3D12_TEXTURE_LAYOUT Translate(const RHIResourceLayout& rhiType)
+{
+	switch (rhiType)
+	{
+	case RHIResourceLayout::Unknown:						return D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	case RHIResourceLayout::RowMajor:						return D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	default:												return D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	}
 }
 
@@ -547,6 +582,23 @@ D3D12_RESOURCE_BARRIER Translate(const RHIResourceTransitionDesc& rhiDesc)
 	return d3dDesc;
 }
 
+D3D12_RESOURCE_DESC Translate(const RHIResourceDesc& rhiDesc)
+{
+	D3D12_RESOURCE_DESC d3dDesc = {};
+	d3dDesc.Format = Translate(rhiDesc.m_Format);
+	d3dDesc.Width = rhiDesc.m_Width;
+	d3dDesc.Height = rhiDesc.m_Height;
+	d3dDesc.DepthOrArraySize = rhiDesc.m_DepthOrArraySize;
+	d3dDesc.MipLevels = rhiDesc.m_MipLevels;
+	d3dDesc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
+	d3dDesc.Flags = Translate(rhiDesc.m_Flag);
+	d3dDesc.Layout = Translate(rhiDesc.m_Layout);
+	d3dDesc.Alignment = rhiDesc.m_Alignment;
+	d3dDesc.Dimension = Translate(rhiDesc.m_Dimension);
+
+	return d3dDesc;
+}
+
 D3D12_STATIC_SAMPLER_DESC Translate(const RHISamplerParameterDesc& rhiDesc)
 {
     D3D12_STATIC_SAMPLER_DESC d3dDesc = {};
@@ -595,7 +647,7 @@ DXGI_SWAP_CHAIN_DESC1 Translate(const RHISwapChainDesc& rhiDesc)
     d3dDesc.Scaling = Translate(rhiDesc.m_ScalingMode);
     d3dDesc.SwapEffect = Translate(rhiDesc.m_SwapEffect);
     d3dDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    d3dDesc.Flags = rhiDesc.m_Flags;
+    d3dDesc.Flags = Translate(rhiDesc.m_Flag);
 
     return d3dDesc;
 }

@@ -18,13 +18,14 @@
 */
 
 #include "d3d12rootparameter.h"
+#include "d3d12translation.h"
 
 ETH_NAMESPACE_BEGIN
 
 RHIResult D3D12RootParameter::SetAsConstant(const RHIRootParameterConstantDesc& desc)
 {
     m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    m_Parameter.ShaderVisibility = static_cast<D3D12_SHADER_VISIBILITY>(desc.m_ShaderVisibility);
+    m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
     m_Parameter.Constants.Num32BitValues = desc.m_NumDwords;
     m_Parameter.Constants.ShaderRegister = desc.m_ShaderRegister;
     m_Parameter.Constants.RegisterSpace = desc.m_RegisterSpace;
@@ -35,7 +36,7 @@ RHIResult D3D12RootParameter::SetAsConstant(const RHIRootParameterConstantDesc& 
 RHIResult D3D12RootParameter::SetAsCommonBufferView(const RHIRootParameterCBVDesc& desc)
 {
 	m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    m_Parameter.ShaderVisibility = static_cast<D3D12_SHADER_VISIBILITY>(desc.m_ShaderVisibility);
+    m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
     m_Parameter.Descriptor.ShaderRegister = desc.m_ShaderRegister;
 	m_Parameter.Descriptor.RegisterSpace = desc.m_RegisterSpace;
 
@@ -45,7 +46,7 @@ RHIResult D3D12RootParameter::SetAsCommonBufferView(const RHIRootParameterCBVDes
 RHIResult D3D12RootParameter::SetAsShaderResourceView(const RHIRootParameterSRVDesc& desc)
 {
     m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-    m_Parameter.ShaderVisibility = static_cast<D3D12_SHADER_VISIBILITY>(desc.m_ShaderVisibility);
+    m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
     m_Parameter.Descriptor.ShaderRegister = desc.m_ShaderRegister;
     m_Parameter.Descriptor.RegisterSpace = desc.m_RegisterSpace;
 

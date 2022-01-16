@@ -31,7 +31,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
 };
 
 class D3D12DepthStencilView : public RHIDepthStencilView
@@ -42,7 +41,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
 };
 
 class D3D12ShaderResourceView : public RHIShaderResourceView
@@ -53,8 +51,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
-    D3D12_GPU_DESCRIPTOR_HANDLE m_D3DGpuHandle;
 };
 
 class D3D12ConstantBufferView : public RHIConstantBufferView
@@ -65,8 +61,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
-    D3D12_GPU_DESCRIPTOR_HANDLE m_D3DGpuHandle;
 };
 
 class D3D12UnorderedAccessView : public RHIUnorderedAccessView
@@ -77,8 +71,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
-    D3D12_GPU_DESCRIPTOR_HANDLE m_D3DGpuHandle;
 };
 
 class D3D12IndexBufferView : public RHIIndexBufferView
@@ -89,8 +81,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
-    D3D12_GPU_DESCRIPTOR_HANDLE m_D3DGpuHandle;
 };
 
 class D3D12VertexBufferView : public RHIVertexBufferView
@@ -101,8 +91,6 @@ public:
 
 private:
     friend class D3D12Device;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_D3DCpuHandle;
-    D3D12_GPU_DESCRIPTOR_HANDLE m_D3DGpuHandle;
 };
 
 ETH_NAMESPACE_END

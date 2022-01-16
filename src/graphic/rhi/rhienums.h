@@ -221,6 +221,29 @@ enum class RHIResult
     NotSupported,
 };
 
+enum class RHIResourceDimension
+{
+    Unknown,
+    Buffer,
+    Texture1D,
+    Texture2D,
+    Texture3D,
+};
+
+enum class RHIResourceFlag
+{
+    None,
+    AllowRenderTarget,
+    AllowDepthStencil,
+    AllowUnorderedAccess,
+};
+
+enum class RHIResourceLayout
+{
+    Unknown,
+    RowMajor,
+};
+
 enum class RHIResourceState
 {
     Common,

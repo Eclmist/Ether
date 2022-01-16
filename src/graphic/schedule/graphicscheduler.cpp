@@ -39,6 +39,9 @@ void GraphicScheduler::RegisterRenderPasses()
 {
     m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_ClearFrameBufferPass);
     m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_HardCodedRenderPass);
+
+    for (auto renderPass : m_RegisteredRenderPasses)
+        renderPass->RegisterInputOutput();
 }
 
 void GraphicScheduler::ScheduleRenderPasses()

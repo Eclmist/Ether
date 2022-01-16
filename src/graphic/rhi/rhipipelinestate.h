@@ -45,7 +45,7 @@ public:
 
 protected:
     RHIRootSignatureHandle m_RootSignature;
-    RHIPipelineStateDesc m_CreationDesc;
+    RHIPipelineStateDesc m_CreationDesc = {};
 };
 
 ETH_NAMESPACE_END
