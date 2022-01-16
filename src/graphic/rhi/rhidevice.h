@@ -34,6 +34,7 @@ public:
     virtual RHIResult CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, RHIDescriptorHeapHandle& descriptorHeap) const = 0;
     virtual RHIResult CreateFence(RHIFenceHandle& fence) const = 0;
     virtual RHIResult CreatePipelineState(const RHIPipelineStateDesc& desc, RHIPipelineStateHandle& pipelineState) const = 0;
+    virtual RHIResult CreateRootParameter(RHIRootParameterHandle& rootParameter) const = 0;
     virtual RHIResult CreateRootSignature(const RHIRootSignatureDesc& desc, RHIRootSignatureHandle& rootSignature) const = 0;
     virtual RHIResult CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChainHandle& swapChain) const = 0;
 

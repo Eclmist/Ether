@@ -130,10 +130,17 @@ RHIResult D3D12Device::CreatePipelineState(const RHIPipelineStateDesc& desc, RHI
     return TO_RHI_RESULT(hr);
 }
 
+RHIResult D3D12Device::CreateRootParameter(RHIRootParameterHandle& rootParameter) const
+{
+    D3D12RootParameter* d3dRootParameter = new D3D12RootParameter();
+    rootParameter.Set(d3dRootParameter);
+    return RHIResult::Success;
+}
+
 RHIResult D3D12Device::CreateRootSignature(const RHIRootSignatureDesc& desc, RHIRootSignatureHandle& rootSignature) const
 {
     wrl::ComPtr<ID3DBlob> rsBlob, errBlob;
-    const auto d3dRootSignature = rootSignature.As<D3D12RootSignature>();
+    D3D12RootSignature* d3dRootSignature = new D3D12RootSignature();
 
     for (int i = 0; i < desc.m_NumParameters; ++i)
         d3dRootSignature->m_D3DRootParameters.push_back(desc.m_Parameters[i].As<D3D12RootParameter>()->m_Parameter);

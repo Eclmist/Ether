@@ -26,11 +26,17 @@ RHIRootSignature::RHIRootSignature(int numParameters, int numStaticSamplers)
 	: m_NumParameters(numParameters)
 	, m_NumStaticSamplers(numStaticSamplers)
 {
-    for (int i = 0; i < m_NumParameters; ++i)
-        m_RootParameters.emplace_back();
+    m_RootParameters.resize(numParameters);
+    m_StaticSamplers.resize(numStaticSamplers);
 
-    for (int i = 0; i < m_NumStaticSamplers; ++i)
-        m_StaticSamplers.emplace_back();
+    for (int i = 0; i < m_NumParameters; ++i)
+        GraphicCore::GetDevice()->CreateRootParameter(m_RootParameters[i]);
+}
+
+RHIRootSignature::~RHIRootSignature()
+{
+    for (int i = 0; i < m_NumParameters; ++i)
+        m_RootParameters[i].Destroy();
 }
 
 RHIResult RHIRootSignature::Finalize(RHIRootSignatureFlags flags, RHIRootSignatureHandle& rootSignature)

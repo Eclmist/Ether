@@ -21,5 +21,10 @@
 
 ETH_NAMESPACE_BEGIN
 
+D3D12RootSignature::D3D12RootSignature()
+    : RHIRootSignature(0, 0)
+{
+}
+
 ETH_NAMESPACE_END
 
