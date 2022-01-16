@@ -43,13 +43,13 @@ std::string LogEntry::GetLogLevelPrefix() const
 {
     switch (m_Level)
     {
-    case LogLevel::LOGLEVEL_WARNING:
+    case LogLevel::Warning:
         return " WARN -";
-    case LogLevel::LOGLEVEL_ERROR:
+    case LogLevel::Error:
         return "ERROR -";
-    case LogLevel::LOGLEVEL_FATAL:
+    case LogLevel::Fatal:
         return "FATAL -";
-    case LogLevel::LOGLEVEL_INFO:
+    case LogLevel::Info:
     default:
         return " INFO -";
     }
@@ -59,15 +59,15 @@ std::string LogEntry::GetLogTypePrefix() const
 {
     switch (m_Type)
     {
-    case LogType::LOGTYPE_ENGINE:
+    case LogType::Engine:
         return "[  Engine  ]";
-    case LogType::LOGTYPE_GRAPHICS:
+    case LogType::Graphics:
         return "[ Graphics ]";
-    case LogType::LOGTYPE_WIN32:
+    case LogType::Win32:
         return "[ Platform ]";
-    case LogType::LOGTYPE_TOOLMODE:
+    case LogType::Toolmode:
         return "[ Toolmode ]";
-    case LogType::LOGTYPE_NONE:
+    case LogType::None:
     default:
         return "[  Engine  ]";
     }

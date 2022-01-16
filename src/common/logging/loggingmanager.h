@@ -24,31 +24,31 @@
 
 ETH_NAMESPACE_BEGIN
 
-#define LogInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
-#define LogWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
-#define LogError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
-#define LogFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_NONE, msg, ##__VA_ARGS__)
+#define LogInfo(msg, ...) Ether::Log(Ether::LogLevel::Info, Ether::LogType::None, msg, ##__VA_ARGS__)
+#define LogWarning(msg, ...) Ether::Log(Ether::LogLevel::Warning, Ether::LogType::None, msg, ##__VA_ARGS__)
+#define LogError(msg, ...) Ether::Log(Ether::LogLevel::Error, Ether::LogType::None, msg, ##__VA_ARGS__)
+#define LogFatal(msg, ...) Ether::Log(Ether::LogLevel::Fatal, Ether::LogType::None, msg, ##__VA_ARGS__)
 
-#define LogEngineInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
-#define LogEngineWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
-#define LogEngineError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
-#define LogEngineFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_ENGINE, msg, ##__VA_ARGS__)
+#define LogEngineInfo(msg, ...) Ether::Log(Ether::LogLevel::Info, Ether::LogType::Engine, msg, ##__VA_ARGS__)
+#define LogEngineWarning(msg, ...) Ether::Log(Ether::LogLevel::Warning, Ether::LogType::Engine, msg, ##__VA_ARGS__)
+#define LogEngineError(msg, ...) Ether::Log(Ether::LogLevel::Error, Ether::LogType::Engine, msg, ##__VA_ARGS__)
+#define LogEngineFatal(msg, ...) Ether::Log(Ether::LogLevel::Fatal, Ether::LogType::Engine, msg, ##__VA_ARGS__)
 
-#define LogGraphicsInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
-#define LogGraphicsWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
-#define LogGraphicsError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
-#define LogGraphicsFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_GRAPHICS, msg, ##__VA_ARGS__)
+#define LogGraphicsInfo(msg, ...) Ether::Log(Ether::LogLevel::Info, Ether::LogType::Graphics, msg, ##__VA_ARGS__)
+#define LogGraphicsWarning(msg, ...) Ether::Log(Ether::LogLevel::Warning, Ether::LogType::Graphics, msg, ##__VA_ARGS__)
+#define LogGraphicsError(msg, ...) Ether::Log(Ether::LogLevel::Error, Ether::LogType::Graphics, msg, ##__VA_ARGS__)
+#define LogGraphicsFatal(msg, ...) Ether::Log(Ether::LogLevel::Fatal, Ether::LogType::Graphics, msg, ##__VA_ARGS__)
 
-#define LogWin32Info(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
-#define LogWin32Warning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
-#define LogWin32Error(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
-#define LogWin32Fatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_WIN32, msg, ##__VA_ARGS__)
+#define LogWin32Info(msg, ...) Ether::Log(Ether::LogLevel::Info, Ether::LogType::Win32, msg, ##__VA_ARGS__)
+#define LogWin32Warning(msg, ...) Ether::Log(Ether::LogLevel::Warning, Ether::LogType::Win32, msg, ##__VA_ARGS__)
+#define LogWin32Error(msg, ...) Ether::Log(Ether::LogLevel::Error, Ether::LogType::Win32, msg, ##__VA_ARGS__)
+#define LogWin32Fatal(msg, ...) Ether::Log(Ether::LogLevel::Fatal, Ether::LogType::Win32, msg, ##__VA_ARGS__)
 
 #ifdef ETH_TOOLMODE
-#define LogToolmodeInfo(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_INFO, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
-#define LogToolmodeWarning(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_WARNING, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
-#define LogToolmodeError(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_ERROR, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
-#define LogToolmodeFatal(msg, ...) Ether::Log(Ether::LogLevel::LOGLEVEL_FATAL, Ether::LogType::LOGTYPE_TOOLMODE, msg, ##__VA_ARGS__)
+#define LogToolmodeInfo(msg, ...) Ether::Log(Ether::LogLevel::Info, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+#define LogToolmodeWarning(msg, ...) Ether::Log(Ether::LogLevel::Warning, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+#define LogToolmodeError(msg, ...) Ether::Log(Ether::LogLevel::Error, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+#define LogToolmodeFatal(msg, ...) Ether::Log(Ether::LogLevel::Fatal, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
 #endif
 
 ETH_ENGINE_DLL void Log(LogLevel level, LogType type, const char* fmt, ...);

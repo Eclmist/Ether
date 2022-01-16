@@ -23,19 +23,19 @@ ETH_NAMESPACE_BEGIN
 
 enum class LogLevel
 {
-    LOGLEVEL_INFO,
-    LOGLEVEL_WARNING,
-    LOGLEVEL_ERROR,
-    LOGLEVEL_FATAL
+    Info,
+    Warning,
+    Error,
+    Fatal
 };
 
 enum class LogType
 {
-    LOGTYPE_ENGINE,
-    LOGTYPE_GRAPHICS,
-    LOGTYPE_WIN32,
-    LOGTYPE_TOOLMODE,
-    LOGTYPE_NONE,
+    Engine,
+    Graphics,
+    Win32,
+    Toolmode,
+    None,
 };
 
 class LogEntry
