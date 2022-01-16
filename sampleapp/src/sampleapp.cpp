@@ -75,10 +75,10 @@ void SampleApp::Shutdown()
 
 void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
-    if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F3))
+    if (Input::GetKeyDown(Win32::KeyCode::F3))
         EngineCore::GetEngineConfig().ToggleDebugGui();
 
-    if (Input::GetKeyDown(Win32::KeyCode::KEYCODE_F11))
+    if (Input::GetKeyDown(Win32::KeyCode::F11))
         EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
     m_CameraDistance -= Input::GetMouseWheelDelta() / 120;

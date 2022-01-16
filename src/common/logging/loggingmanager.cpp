@@ -66,7 +66,7 @@ LoggingManager::LoggingManager()
         // Logging functions because the logging manager is in the middle of initialization.
         g_PreInitBuffer.emplace(
             "Unable to open log file for serialization. Logs may be lost",
-            LogLevel::LOGLEVEL_WARNING, LogType::LOGTYPE_ENGINE);
+            LogLevel::Warning, LogType::Engine);
 
         return;
     }
