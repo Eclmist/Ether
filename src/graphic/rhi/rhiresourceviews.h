@@ -26,10 +26,10 @@ class RHIResourceView
 public:
     RHIResourceView() = default;
     virtual ~RHIResourceView() = 0;
-    inline RHIDescriptorHandleCPU GetCPUHandle() const { return m_CPUHandle; }
+    inline RHIDescriptorHandleCPU GetCPUHandle() const { return m_CpuHandle; }
 
 protected:
-    RHIDescriptorHandleCPU m_CPUHandle;
+    RHIDescriptorHandleCPU m_CpuHandle;
 };
 
 inline RHIResourceView::~RHIResourceView() { }
@@ -39,10 +39,10 @@ class RHIShaderVisibleResourceView : public RHIResourceView
 public:
     RHIShaderVisibleResourceView() = default;
     virtual ~RHIShaderVisibleResourceView() = 0;
-    inline RHIDescriptorHandleGPU GetGPUHandle() const { return m_GPUHandle; }
+    inline RHIDescriptorHandleGPU GetGPUHandle() const { return m_GpuHandle; }
 
 protected:
-    RHIDescriptorHandleGPU m_GPUHandle;
+    RHIDescriptorHandleGPU m_GpuHandle;
 };
 
 inline RHIShaderVisibleResourceView::~RHIShaderVisibleResourceView() { }

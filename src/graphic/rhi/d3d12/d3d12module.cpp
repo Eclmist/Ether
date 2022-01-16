@@ -83,8 +83,8 @@ RHIResult D3D12Module::InitializeDebugLayer()
     wrl::ComPtr<ID3D12Debug> debugInterface;
     ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
-    return RHIResult::Success;
 #endif
+    return RHIResult::Success;
 }
 
 ETH_NAMESPACE_END

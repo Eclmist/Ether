@@ -98,7 +98,7 @@ void GraphicDisplay::CreateSwapChain()
     desc.m_BufferCount = GetNumBuffers();
     desc.m_ScalingMode = RHIScalingMode::Stretch;
     desc.m_SwapEffect = RHISwapEffect::FlipDiscard;
-    desc.m_Flags = (RHISwapChainFlags)RHISwapChainFlag::AllowTearing;
+    desc.m_Flag = RHISwapChainFlag::AllowTearing;
     desc.m_CommandQueue = GraphicCore::GetCommandManager().GetGraphicsQueue();
     desc.m_WindowHandle = EngineCore::GetMainWindow().GetWindowHandle();
 

@@ -111,7 +111,7 @@ RHIResult D3D12Device::CreatePipelineState(const RHIPipelineStateDesc& desc, RHI
 
     D3D12_INPUT_LAYOUT_DESC inputLayout = {};
 
-    for (int i = 0; i < inputLayout.NumElements; ++i)
+    for (int i = 0; i < desc.m_InputLayoutDesc.m_NumElements; ++i)
         d3dPipelineState->m_InputElements.push_back(Translate(desc.m_InputLayoutDesc.m_InputElementDescs[i]));
 
     inputLayout.NumElements = desc.m_InputLayoutDesc.m_NumElements;
@@ -194,13 +194,13 @@ RHIResult D3D12Device::CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChai
 RHIResult D3D12Device::CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& rtvHandle) const
 {
     D3D12RenderTargetView* d3dRtv = new D3D12RenderTargetView();
-    d3dRtv->m_D3DCpuHandle = Translate(GraphicCore::GetRTVDescriptorHeap()->GetBaseHandleCPU());
+    d3dRtv->m_CpuHandle = GraphicCore::GetRTVDescriptorHeap()->GetNextHandleCPU();
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateRenderTargetView(
         d3dResource->m_Resource.Get(),
         &Translate(desc),
-        d3dRtv->m_D3DCpuHandle
+        Translate(d3dRtv->m_CpuHandle)
     );
 
 	rtvHandle.Set(d3dRtv);
@@ -210,12 +210,13 @@ RHIResult D3D12Device::CreateRenderTargetView(const RHIRenderTargetViewDesc& des
 RHIResult D3D12Device::CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& dsvHandle) const
 {
     D3D12DepthStencilView* d3dDsv = new D3D12DepthStencilView();
+    d3dDsv->m_CpuHandle = GraphicCore::GetDSVDescriptorHeap()->GetNextHandleCPU();
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateDepthStencilView(
         d3dResource->m_Resource.Get(),
         &Translate(desc),
-        d3dDsv->m_D3DCpuHandle
+        Translate(d3dDsv->m_CpuHandle)
     );
 
     dsvHandle.Set(d3dDsv);
@@ -225,12 +226,13 @@ RHIResult D3D12Device::CreateDepthStencilView(const RHIDepthStencilViewDesc& des
 RHIResult D3D12Device::CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& srvHandle) const
 {
     D3D12ShaderResourceView* d3dSrv = new D3D12ShaderResourceView();
+    d3dSrv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCPU();
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateShaderResourceView(
         d3dResource->m_Resource.Get(),
         &Translate(desc),
-        d3dSrv->m_D3DCpuHandle
+        Translate(d3dSrv->m_CpuHandle)
     );
 
     srvHandle.Set(d3dSrv);
@@ -239,12 +241,12 @@ RHIResult D3D12Device::CreateShaderResourceView(const RHIShaderResourceViewDesc&
 
 RHIResult D3D12Device::CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& cbvHandle) const
 {
-    return RHIResult();
+    return RHIResult::NotSupported;
 }
 
 RHIResult D3D12Device::CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& uavHandle) const
 {
-    return RHIResult();
+    return RHIResult::NotSupported;
 }
 
 RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resourceHandle) const
@@ -254,7 +256,7 @@ RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& de
     HRESULT hr = m_Device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(Translate(desc.m_HeapType)),
         D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Buffer(desc.m_Size),
+        &Translate(desc.m_ResourceDesc),
         Translate(desc.m_State),
         nullptr,
         IID_PPV_ARGS(&d3dResource->m_Resource)

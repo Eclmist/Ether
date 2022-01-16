@@ -20,10 +20,17 @@
 #include "hardcodedrenderpass.h"
 #include "graphic/rhi/rhicommandlist.h"
 #include "graphic/rhi/rhicommandqueue.h"
+#include "graphic/rhi/rhidevice.h"
 #include "graphic/rhi/rhipipelinestate.h"
 #include "graphic/rhi/rhirootsignature.h"
+#include "graphic/rhi/rhiresource.h"
 
 ETH_NAMESPACE_BEGIN
+
+namespace GraphicLinkSpace 
+{
+    RHIResourceHandle g_DepthTexture;
+}
 
 HardCodedRenderPass::HardCodedRenderPass()
     : RenderPass("Hard Coded Render Pass")
@@ -32,7 +39,19 @@ HardCodedRenderPass::HardCodedRenderPass()
 
 void HardCodedRenderPass::RegisterInputOutput()
 {
+    RHICommitedResourceDesc desc = {};
+    desc.m_HeapType = RHIHeapType::Default;
+    desc.m_State = RHIResourceState::Common;
+    desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(RHIFormat::D24UnormS8Uint,
+        GraphicCore::GetGraphicDisplay().GetViewport().m_Width,
+        GraphicCore::GetGraphicDisplay().GetViewport().m_Height);
 
+    GraphicCore::GetDevice()->CreateCommittedResource(desc, GraphicLinkSpace::g_DepthTexture);
+
+    RHIDepthStencilViewDesc dsvDesc = {};
+    dsvDesc.m_Format = RHIFormat::D24UnormS8Uint;
+    dsvDesc.m_Resource = GraphicLinkSpace::g_DepthTexture;
+    GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, m_DSVHandle);
 }
 
 void HardCodedRenderPass::Render(GraphicContext& context)
@@ -49,7 +68,7 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         GraphicCore::GetGraphicCommon().InitializePipelineStates();
     }
 
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV() /* , DSVfromSomewhere */);
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), m_DSVHandle);
 
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
@@ -76,9 +95,9 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         //context.GetCommandList()->SetVertexBuffer(0, 1, &visual->GetVertexBufferView());
         //context.GetCommandList()->SetIndexBuffer(&visual->GetIndexBufferView());
 
-		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &globalTime });
-		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &globalTime });
-		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 32, &globalTime });
+		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &modelViewMat });
+		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &modelViewProjMat });
+		context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 32, &normalMat });
 
         ethVector4 lightDirWS(0.7, -1, 0.4, 0);
         ethXMVector lightDirES = DirectX::XMVector4Transform(DirectX::XMLoadFloat4(&lightDirWS), context.GetViewMatrix());

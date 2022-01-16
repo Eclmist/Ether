@@ -98,7 +98,7 @@ RHIResult D3D12CommandList::SetRenderTargets(const RHISetRenderTargetsDesc& desc
 
 RHIResult D3D12CommandList::SetRootConstants(const RHISetRootConstantsDesc& desc)
 {
-    m_CommandList->SetComputeRoot32BitConstants
+    m_CommandList->SetGraphicsRoot32BitConstants
     (
         desc.m_RootParameterIndex,
         desc.m_NumConstants,

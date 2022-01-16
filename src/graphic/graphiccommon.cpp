@@ -116,7 +116,6 @@ void GraphicCommon::InitializeBlendingStates()
     alphaBlend.m_DestBlendAlpha = RHIBlendType::InvSrcAlpha;
     alphaBlend.m_BlendOpAlpha = RHIBlendOperation::Add;
     alphaBlend.m_WriteMask = static_cast<RHIColorChannels>(RHIColorChannel::All);
-#include "graphic/rhi/rhirootparameter.h"
 
     m_BlendDisabled = alphaBlend;
 
@@ -142,9 +141,10 @@ void GraphicCommon::InitializeRootSignatures()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
     RHIRootSignature tempRS(3, 0);
-    tempRS[0]->SetAsConstant({ 4, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsConstant({ 48, 1, RHIShaderVisibility::All });
-    tempRS[2]->SetAsConstant({ 4, 2, RHIShaderVisibility::All });
+
+    tempRS[0]->SetAsConstant({ 0, 0, RHIShaderVisibility::All, 4 });
+    tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 48 });
+    tempRS[2]->SetAsConstant({ 2, 0, RHIShaderVisibility::All, 4 });
     tempRS.Finalize(rootSignatureFlags, m_DefaultRootSignature);
 }
 
@@ -180,7 +180,7 @@ void GraphicCommon::InitializePipelineStates()
     creationPSO.SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
     creationPSO.SetInputLayout(m_DefaultVS->GetInputLayout());
     creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RHIFormat::D32Float);
+    creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStateReadWrite);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_DefaultRootSignature);

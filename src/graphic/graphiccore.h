@@ -92,6 +92,8 @@ private:
     RHIDescriptorHeapHandle m_SRVDescriptorHeap;
     RHIDescriptorHeapHandle m_SamplerDescriptorHeap;
 
+
+
 private:
     bool m_IsInitialized;
 };

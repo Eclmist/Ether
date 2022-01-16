@@ -52,9 +52,9 @@ typedef RHIHandle<class RHIVertexBufferView>    RHIVertexBufferViewHandle;
 typedef uint64_t                                RHIVirtualAddress;
 
 // Common primitive-backed types
+// TODO: Properly support flags
 typedef uint64_t                                RHIFenceValue;
 typedef uint64_t                                RHIRootSignatureFlags;
-typedef uint64_t                                RHISwapChainFlags;
 typedef uint8_t                                 RHIColorChannels;
 typedef const void*                             RHIShaderByteCode;
 
@@ -241,7 +241,7 @@ struct RHISwapChainDesc
     uint32_t m_BufferCount;
     RHIScalingMode m_ScalingMode;
     RHISwapEffect m_SwapEffect;
-    RHISwapChainFlags m_Flags;
+    RHISwapChainFlag m_Flag;
     void* m_WindowHandle;
 
     RHICommandQueueHandle m_CommandQueue; // For d3d12 only
@@ -293,11 +293,26 @@ struct RHIUnorderedAccessViewDesc : public RHIResourceViewDesc
 
 };
 
+struct RHIResourceDesc
+{
+	uint64_t m_Alignment;
+	uint64_t m_Width;
+	uint64_t m_Height;
+	uint16_t m_DepthOrArraySize;
+    uint16_t m_MipLevels;
+
+	RHIFormat m_Format;
+	RHIResourceDimension m_Dimension;
+    RHIResourceLayout m_Layout;
+    RHIResourceFlag m_Flag;
+	RHISampleDesc m_SampleDesc;
+};
+
 struct RHICommitedResourceDesc
 {
     RHIHeapType m_HeapType;
     RHIResourceState m_State;
-    size_t m_Size;
+    RHIResourceDesc m_ResourceDesc;
 };
 
 //======================= Command List Descs ========================//
