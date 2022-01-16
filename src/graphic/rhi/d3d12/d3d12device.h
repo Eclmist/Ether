@@ -36,6 +36,7 @@ public:
     RHIResult CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, RHIDescriptorHeapHandle& descriptorHeap) const override;
     RHIResult CreateFence(RHIFenceHandle& fence) const override;
     RHIResult CreatePipelineState(const RHIPipelineStateDesc& desc, RHIPipelineStateHandle& pipelineState) const override;
+    RHIResult CreateRootParameter(RHIRootParameterHandle& rootParameter) const override;
     RHIResult CreateRootSignature(const RHIRootSignatureDesc& desc, RHIRootSignatureHandle& rootSignature) const override;
     RHIResult CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChainHandle& swapChain) const override;
 

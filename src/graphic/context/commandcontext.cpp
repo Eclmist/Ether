@@ -54,6 +54,7 @@ void CommandContext::TransitionResource(RHIResourceHandle target, RHIResourceSta
         return;
 
     RHIResourceTransitionDesc transitionDesc = {};
+    transitionDesc.m_Resource = target;
     transitionDesc.m_FromState = target->GetCurrentState();
     transitionDesc.m_ToState = newState;
     m_CommandList->TransitionResource(transitionDesc);

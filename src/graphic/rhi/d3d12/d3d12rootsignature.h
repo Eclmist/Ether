@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class D3D12RootSignature : public RHIRootSignature
 {
 public:
-    D3D12RootSignature() = default;
+    D3D12RootSignature();
     ~D3D12RootSignature() override = default;
 
 private:
