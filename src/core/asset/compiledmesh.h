@@ -28,7 +28,7 @@
 ETH_NAMESPACE_BEGIN
 
 // Arbitrary max number of vertices
-#define MAX_VERTICES 655360 
+#define MAX_VERTICES 65536 * 10 // Multiplication is a temp workaround for the lack of mesh splitting. TODO. 
 
 class CompiledMesh : public Asset
 {

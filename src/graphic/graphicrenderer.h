@@ -21,8 +21,8 @@
 
 #include "graphic/commandmanager.h"
 #include "graphic/gui/guirenderer.h"
-
 #include "graphic/common/visualnode.h"
+#include "graphic/schedule/graphicscheduler.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -37,13 +37,16 @@ public:
     void Present();
     void CleanUp();
 
-    inline GraphicContext& GetGraphicContext() { return m_Context; }
+    inline GraphicContext& GetGraphicContext() { return m_GraphicContext; }
 
 public:
     void DrawNode(VisualNode*); // TODO: Move this responsibility into the various render passes
 
 private:
-    GraphicContext m_Context;
+    GraphicContext m_GraphicContext;
+    ResourceContext m_ResourceContext;
+
+    GraphicScheduler m_Scheduler;
 
 public: // TODO: Move into some kind of geometry render pass. Right now accessed by HardCodedRenderPass as a POC
     std::vector<VisualNode*> m_PendingVisualNodes;

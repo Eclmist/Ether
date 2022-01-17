@@ -61,7 +61,7 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
     IFileStream iistream(dest);
     compiledMesh->Deserialize(iistream);
 
-    for (int i = 0; i < 100; ++i)
+    for (int i = 0; i < 1; ++i)
         if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
 			EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledMesh);
 }

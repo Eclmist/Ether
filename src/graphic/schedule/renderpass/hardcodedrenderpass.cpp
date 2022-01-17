@@ -27,18 +27,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-namespace GraphicLinkSpace 
-{
-    RHIResourceHandle g_DepthTexture;
-    RHIDepthStencilViewHandle g_DepthTextureView;
-}
+DEFINE_GFX_RESOURCE(GBufferDepthTexture);
+DEFINE_GFX_DSV(GBufferDepthTexture);
 
 HardCodedRenderPass::HardCodedRenderPass()
     : RenderPass("Hard Coded Render Pass")
 {
 }
 
-void HardCodedRenderPass::RegisterInputOutput()
+void HardCodedRenderPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     RHIClearValue clearValue = { RHIFormat::D24UnormS8Uint, { 1.0, 0 } };
     RHICommitedResourceDesc desc = {};
@@ -49,15 +46,15 @@ void HardCodedRenderPass::RegisterInputOutput()
         GraphicCore::GetGraphicDisplay().GetViewport().m_Width,
         GraphicCore::GetGraphicDisplay().GetViewport().m_Height);
 
-    GraphicCore::GetDevice()->CreateCommittedResource(desc, GraphicLinkSpace::g_DepthTexture);
-    GraphicLinkSpace::g_DepthTexture->SetName(L"HardCodedRenderPass::DepthTexture");
+    rc.CreateResource(desc, GFX_RESOURCE(GBufferDepthTexture));
+
     RHIDepthStencilViewDesc dsvDesc = {};
     dsvDesc.m_Format = RHIFormat::D24UnormS8Uint;
-    dsvDesc.m_Resource = GraphicLinkSpace::g_DepthTexture;
-    GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, GraphicLinkSpace::g_DepthTextureView);
+    dsvDesc.m_Resource = GFX_RESOURCE(GBufferDepthTexture);
+    rc.CreateDepthStencilView(dsvDesc, GFX_DSV(GBufferDepthTexture));
 }
 
-void HardCodedRenderPass::Render(GraphicContext& context)
+void HardCodedRenderPass::Render(GraphicContext& context, ResourceContext& rc)
 {
     OPTICK_EVENT("HardCodedRenderPass - Render");
 
@@ -71,7 +68,7 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         GraphicCore::GetGraphicCommon().InitializePipelineStates();
     }
 
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GraphicLinkSpace::g_DepthTextureView);
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
 
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
@@ -106,7 +103,6 @@ void HardCodedRenderPass::Render(GraphicContext& context)
         ethXMVector lightDirES = DirectX::XMVector4Transform(DirectX::XMLoadFloat4(&lightDirWS), context.GetViewMatrix());
 		context.GetCommandList()->SetRootConstants({ 2, 4, 0, &lightDirES});
         context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
-
     }
 
     context.FinalizeAndExecute();

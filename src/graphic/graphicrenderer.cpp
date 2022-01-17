@@ -29,6 +29,7 @@ ETH_NAMESPACE_BEGIN
 GraphicRenderer::GraphicRenderer()
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
+    m_Scheduler.RegisterRenderPasses();
 }
 
 GraphicRenderer::~GraphicRenderer()
@@ -39,16 +40,19 @@ GraphicRenderer::~GraphicRenderer()
 void GraphicRenderer::WaitForPresent()
 {
     OPTICK_EVENT("Renderer - WaitForPresent");
-    m_Context.GetCommandQueue()->StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
+    m_GraphicContext.GetCommandQueue()->StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
 }
 
 void GraphicRenderer::Render()
 {
     OPTICK_EVENT("Renderer - Render");
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    m_Context.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
+    
+    m_Scheduler.ScheduleRenderPasses(m_GraphicContext, m_ResourceContext);
 
-    GraphicCore::GetGraphicScheduler().RenderPasses(m_Context);
+    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
+
+    m_Scheduler.RenderPasses(m_GraphicContext, m_ResourceContext);
 }
 
 void GraphicRenderer::Present()
@@ -56,10 +60,10 @@ void GraphicRenderer::Present()
     OPTICK_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    m_Context.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::Present);
-    m_Context.FinalizeAndExecute();
-    m_Context.Reset();
-    gfxDisplay.SetCurrentBackBufferFence(m_Context.GetCompletionFenceValue());
+    m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::Present);
+    m_GraphicContext.FinalizeAndExecute();
+    m_GraphicContext.Reset();
+    gfxDisplay.SetCurrentBackBufferFence(m_GraphicContext.GetCompletionFenceValue());
     gfxDisplay.Present();
 }
 

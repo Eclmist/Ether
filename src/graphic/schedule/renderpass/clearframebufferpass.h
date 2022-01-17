@@ -28,8 +28,8 @@ class ClearFrameBufferPass : public RenderPass
 public:
     ClearFrameBufferPass();
 
-    void RegisterInputOutput() override;
-    void Render(GraphicContext& context) override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 };
 
 ETH_NAMESPACE_END

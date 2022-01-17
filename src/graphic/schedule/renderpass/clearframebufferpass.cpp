@@ -21,29 +21,26 @@
 
 ETH_NAMESPACE_BEGIN
 
-namespace GraphicLinkSpace
-{
-    extern RHIDepthStencilViewHandle g_DepthTextureView;
-}
+DECLARE_GFX_DSV(GBufferDepthTexture);
 
 ClearFrameBufferPass::ClearFrameBufferPass()
     : RenderPass("Clear Frame Buffer Pass")
 {
 }
 
-void ClearFrameBufferPass::RegisterInputOutput()
+void ClearFrameBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
 
 }
 
-void ClearFrameBufferPass::Render(GraphicContext& context)
+void ClearFrameBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 {
     OPTICK_EVENT("ClearFrameBufferPass - Render");
 
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
-    context.ClearDepthStencil(GraphicLinkSpace::g_DepthTextureView, 1.0f, 0.0f);
+    context.ClearDepthStencil(GFX_DSV(GBufferDepthTexture), 1.0f, 0.0f);
     context.FinalizeAndExecute();
     context.Reset();
 }

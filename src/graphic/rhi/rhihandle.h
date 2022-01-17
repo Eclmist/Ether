@@ -25,7 +25,7 @@ template <typename T>
 class RHIHandle
 {
 public:
-    RHIHandle(T* handle = nullptr) : m_Handle(handle) {}
+    RHIHandle(T* handle = nullptr, const wchar_t* name = L"") : m_Handle(handle), m_Name(name) {}
     RHIHandle(const RHIHandle& copy) : m_Handle(copy.m_Handle) {}
 
 public:
@@ -45,6 +45,8 @@ public:
     template <typename S>
     inline const S* As() const { return dynamic_cast<S*>(m_Handle); }
 
+    inline const wchar_t* GetName() { return m_Name; }
+
 public:
     void Destroy()
     { 
@@ -56,6 +58,7 @@ public:
     }
 
 private:
+    const wchar_t* m_Name;
     T* m_Handle;
 };
 

@@ -19,30 +19,26 @@
 
 #pragma once
 
-#include "graphic/schedule/renderpass/renderpass.h"
-#include "graphic/schedule/graphicresourceid.h"
+#include "graphic/rhi/rhiresource.h"
 
 ETH_NAMESPACE_BEGIN
 
-class GraphicScheduler : public NonCopyable
+class ResourceContext : public NonCopyable
 {
 public:
-    GraphicScheduler() = default;
-    ~GraphicScheduler() = default;
+    ResourceContext() = default;
+    ~ResourceContext() = default;
 
-    void RegisterRenderPasses();
-    void ScheduleRenderPasses(GraphicContext& context, ResourceContext& rc);
-    void RenderPasses(GraphicContext& context, ResourceContext& rc);
+    void CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
 
-    void ScheduleTextureResize(uint32_t width, uint32_t height);
+    void CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& view);
+    void CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& view);
+    void CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& view);
+    void CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& view);
+    void CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& view);
 
 private:
-    std::vector<RenderPass*> m_RegisteredRenderPasses;
-    std::vector<RenderPass*> m_OrderedRenderPasses;
-
-    std::unordered_map<std::string, RHIResourceHandle> m_Resources;
-
-    std::vector<RHIResourceHandle> m_ResizeQueue;
+    std::set<std::wstring> m_ResourceTable;
 };
 
 ETH_NAMESPACE_END

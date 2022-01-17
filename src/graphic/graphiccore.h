@@ -26,6 +26,7 @@
 // Contexts
 #include "graphic/context/commandcontext.h"
 #include "graphic/context/graphiccontext.h"
+#include "graphic/context/resourcecontext.h"
 
 // Common
 #include "graphic/commandmanager.h"
@@ -35,9 +36,6 @@
 
 // Shader Daemon
 #include "graphic/common/shaderdaemon.h"
-
-// Scheduler
-#include "graphic/schedule/graphicscheduler.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -56,7 +54,6 @@ public:
     static GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
     static GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
     static GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
-    static GraphicScheduler& GetGraphicScheduler() { return *Instance().m_GraphicScheduler; }
     static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
     static RHIDeviceHandle GetDevice() { return Instance().m_RHIDevice; }
@@ -79,7 +76,6 @@ private:
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
-    std::unique_ptr<GraphicScheduler> m_GraphicScheduler;
     //std::unique_ptr<GuiRenderer> m_GuiRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
@@ -91,8 +87,6 @@ private:
     RHIDescriptorHeapHandle m_DSVDescriptorHeap;
     RHIDescriptorHeapHandle m_SRVDescriptorHeap;
     RHIDescriptorHeapHandle m_SamplerDescriptorHeap;
-
-
 
 private:
     bool m_IsInitialized;

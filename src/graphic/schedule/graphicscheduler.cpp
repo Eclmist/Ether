@@ -29,32 +29,34 @@ namespace GraphicLinkSpace
     HardCodedRenderPass g_HardCodedRenderPass;
 }
 
-GraphicScheduler::GraphicScheduler()
-{
-    RegisterRenderPasses();
-    ScheduleRenderPasses();
-}
-
 void GraphicScheduler::RegisterRenderPasses()
 {
     m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_ClearFrameBufferPass);
     m_RegisteredRenderPasses.push_back((RenderPass*)&GraphicLinkSpace::g_HardCodedRenderPass);
-
-    for (auto renderPass : m_RegisteredRenderPasses)
-        renderPass->RegisterInputOutput();
 }
 
-void GraphicScheduler::ScheduleRenderPasses()
+void GraphicScheduler::ScheduleRenderPasses(GraphicContext& context, ResourceContext& rc)
 {
+    for (auto renderPass : m_RegisteredRenderPasses)
+        renderPass->RegisterInputOutput(context, rc);
+
     // [ETH-3] No scheduling yet, as a minimum POC
     for (int i = 0; i < m_RegisteredRenderPasses.size(); ++i)
         m_OrderedRenderPasses.push_back(m_RegisteredRenderPasses[i]);
 }
 
-void GraphicScheduler::RenderPasses(GraphicContext& context)
+void GraphicScheduler::RenderPasses(GraphicContext& context, ResourceContext& rc)
 {
+    //while (!m_ResizeQueue.empty())
+    //{
+        //m_ResizeQueue.front()->Resize();
+        //m_ResizeQueue.pop();
+    //}
+
     for (int i = 0; i < m_OrderedRenderPasses.size(); ++i)
-        m_OrderedRenderPasses[i]->Render(context);
+        m_OrderedRenderPasses[i]->Render(context, rc);
+
+    m_OrderedRenderPasses.clear();
 }
 
 ETH_NAMESPACE_END

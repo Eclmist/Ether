@@ -91,7 +91,6 @@ void CommandContext::InitializeBuffer(RHIResourceHandle dest, const void* data, 
     UploadBufferAllocation alloc = context.m_UploadBufferAllocator.Allocate(size);
     alloc.SetBufferData(data, size);
 
-    // TODO: Add proper place to upload data - the current implementation in bufferresource is incorrect.
     context.CopyBufferRegion(dest, alloc.GetUploadBuffer().GetResource(), size, dstOffset);
     context.TransitionResource(dest, RHIResourceState::GenericRead);
     context.FinalizeAndExecute(true);
