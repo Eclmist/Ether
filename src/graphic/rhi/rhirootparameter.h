@@ -31,6 +31,8 @@ public:
     virtual RHIResult SetAsConstant(const RHIRootParameterConstantDesc& desc) = 0;
     virtual RHIResult SetAsCommonBufferView(const RHIRootParameterCBVDesc& desc) = 0;
     virtual RHIResult SetAsShaderResourceView(const RHIRootParameterSRVDesc& desc) = 0;
+    virtual RHIResult SetAsDescriptorTable(const RHIDescriptorTableDesc& desc) = 0;
+    virtual RHIResult SetAsDescriptorRange(const RHIDescriptorRangeDesc& desc) = 0;
 };
 
 ETH_NAMESPACE_END

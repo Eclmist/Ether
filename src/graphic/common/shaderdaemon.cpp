@@ -69,7 +69,7 @@ void ShaderDaemon::DaemonThreadMain()
     ovl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
     ReadDirectoryChangesW(hDir,
-        notifyInfo, sizeof(notifyInfo), FALSE,
+        notifyInfo, sizeof(notifyInfo), TRUE,
         FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
         NULL, &ovl, NULL);
 
@@ -89,7 +89,7 @@ void ShaderDaemon::DaemonThreadMain()
         ProcessModifiedShaders(notifyInfo);
         ResetEvent(ovl.hEvent);
         ReadDirectoryChangesW(hDir,
-            notifyInfo, sizeof(notifyInfo), FALSE,
+            notifyInfo, sizeof(notifyInfo), TRUE,
             FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
             NULL, &ovl, NULL);
     }

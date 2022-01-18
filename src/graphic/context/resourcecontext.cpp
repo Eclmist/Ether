@@ -23,9 +23,18 @@
 ETH_NAMESPACE_BEGIN
 
 static constexpr RHIFormat DepthStencilFormat = RHIFormat::D24UnormS8Uint;
+static constexpr RHIFormat Texture2DFormat = RHIFormat::R8G8B8A8Unorm;
 
 void ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RHIResourceHandle& resource)
 {
+    RHIClearValue clearValue = { Texture2DFormat, { 0, 0, 0, 0 } };
+    RHICommitedResourceDesc desc = {};
+    desc.m_HeapType = RHIHeapType::Default;
+    desc.m_State = RHIResourceState::Common;
+    desc.m_ClearValue = &clearValue;
+    desc.m_ResourceDesc = RHICreateTexture2DResourceDesc(Texture2DFormat, width, height);
+
+    CreateResource(desc, resource);
 }
 
 void ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RHIResourceHandle& resource)
@@ -40,12 +49,15 @@ void ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height
     CreateResource(desc, resource);
 }
 
-void ResourceContext::CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& view)
+void ResourceContext::CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view)
 {
-    if (ResourceExists(view.GetName()))
+    if (ResourceExists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
         return;
 
-	GraphicCore::GetDevice()->CreateRenderTargetView(desc, view);
+    RHIRenderTargetViewDesc rtvDesc = {};
+    rtvDesc.m_Format = Texture2DFormat;
+    rtvDesc.m_Resource = resource;
+    GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 }
 
@@ -61,31 +73,35 @@ void ResourceContext::CreateDepthStencilView(RHIResourceHandle resource, RHIDept
     m_ResourceEntries.emplace(view.GetName());
 }
 
-void ResourceContext::CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& view)
+void ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view)
 {
-    if (ResourceExists(view.GetName()))
+    if (ResourceExists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
         return;
 
-	GraphicCore::GetDevice()->CreateShaderResourceView(desc, view);
+    RHIShaderResourceViewDesc srvDesc = {};
+    srvDesc.m_Format = Texture2DFormat; // TODO: This is definitely incorrect 
+    srvDesc.m_Dimensions = RHIShaderResourceDims::Texture2D;
+    srvDesc.m_Resource = resource;
+    GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 }
 
-void ResourceContext::CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& view)
+void ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
 {
     if (ResourceExists(view.GetName()))
         return;
 
-	GraphicCore::GetDevice()->CreateConstantBufferView(desc, view);
-    m_ResourceEntries.emplace(view.GetName());
+	//GraphicCore::GetDevice()->CreateConstantBufferView(desc, view);
+ //   m_ResourceEntries.emplace(view.GetName());
 }
 
-void ResourceContext::CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& view)
+void ResourceContext::CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view)
 {
     if (ResourceExists(view.GetName()))
         return;
 
-	GraphicCore::GetDevice()->CreateUnorderedAccessView(desc, view);
-    m_ResourceEntries.emplace(view.GetName());
+	//GraphicCore::GetDevice()->CreateUnorderedAccessView(desc, view);
+ //   m_ResourceEntries.emplace(view.GetName());
 }
 
 void ResourceContext::Reset()

@@ -146,6 +146,18 @@ D3D12_DESCRIPTOR_HEAP_TYPE Translate(const RHIDescriptorHeapType& rhiType)
 	}
 }
 
+D3D12_DESCRIPTOR_RANGE_TYPE Translate(const RHIDescriptorRangeType& rhiType)
+{
+	switch (rhiType)
+	{
+	case RHIDescriptorRangeType::SRV:						return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	case RHIDescriptorRangeType::CBV:						return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	case RHIDescriptorRangeType::UAV:						return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	case RHIDescriptorRangeType::Sampler:					return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+	default:												return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	}
+}
+
 D3D12_DESCRIPTOR_HEAP_FLAGS Translate(const RHIDescriptorHeapFlag& rhiType)
 {
 	switch (rhiType)
@@ -775,20 +787,18 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDe
 	d3dDesc.Format = Translate(rhiDesc.m_Format);
 	d3dDesc.ViewDimension = Translate(rhiDesc.m_Dimensions);
 	d3dDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	// TODO: populate each union types accordingly
-	/*
-        D3D12_BUFFER_SRV Buffer;
-        D3D12_TEX1D_SRV Texture1D;
-        D3D12_TEX1D_ARRAY_SRV Texture1DArray;
-        D3D12_TEX2D_SRV Texture2D;
-        D3D12_TEX2D_ARRAY_SRV Texture2DArray;
-        D3D12_TEX2DMS_SRV Texture2DMS;
-        D3D12_TEX2DMS_ARRAY_SRV Texture2DMSArray;
-        D3D12_TEX3D_SRV Texture3D;
-        D3D12_TEXCUBE_SRV TextureCube;
-        D3D12_TEXCUBE_ARRAY_SRV TextureCubeArray;
-        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_SRV RaytracingAccelerationStructure;
-	*/
+
+	switch (rhiDesc.m_Dimensions)
+	{
+	case RHIShaderResourceDims::Texture2D:
+		d3dDesc.Texture2D.MipLevels = 1;
+		d3dDesc.Texture2D.MostDetailedMip = 0;
+		d3dDesc.Texture2D.PlaneSlice = 0;
+		d3dDesc.Texture2D.ResourceMinLODClamp = 0;
+		break;
+	default:
+		LogGraphicsFatal("Not yet supported");
+	}
 
     return d3dDesc;
 }

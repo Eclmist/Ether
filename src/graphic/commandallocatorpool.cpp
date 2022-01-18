@@ -58,6 +58,7 @@ void CommandAllocatorPool::DiscardAllocator(RHICommandAllocatorHandle allocator,
 RHICommandAllocatorHandle CommandAllocatorPool::CreateNewAllocator()
 {
     RHICommandAllocatorHandle allocator;
+    allocator.SetName(L"CommandAllocatorPool::CommandAllocator");
 
     ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommandAllocator({ m_Type }, allocator));
     m_AllocatorPool.push_back(allocator);

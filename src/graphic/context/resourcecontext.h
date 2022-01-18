@@ -32,11 +32,11 @@ public:
     void CreateTexture2DResource(uint32_t width, uint32_t height, RHIResourceHandle& resource);
     void CreateDepthStencilResource(uint32_t width, uint32_t height, RHIResourceHandle& resource);
 
-    void CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& view);
+    void CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
     void CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
-    void CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& view);
-    void CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& view);
-    void CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& view);
+    void CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
+    void CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view);
+    void CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view);
 
     void Reset();
 

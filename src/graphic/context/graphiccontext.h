@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class GraphicContext : public CommandContext
 {
 public:
-    GraphicContext(RHICommandListType type = RHICommandListType::Graphic);
+    GraphicContext(const std::wstring& contextName = L"Unammed Graphic Context");
     ~GraphicContext();
 
 public:
@@ -42,11 +42,11 @@ public:
     void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color);
     void ClearDepthStencil(RHIDepthStencilViewHandle depthTex, float depth, float stencil);
 
-    void SetRenderTarget(RHIRenderTargetViewHandle rtv);
-    void SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv);
-    void SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle* dsv);
+    void SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv = RHIDepthStencilViewHandle());
+    void SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle dsv = RHIDepthStencilViewHandle());
 
     void SetViewport(const RHIViewportDesc& viewport);
+    void SetScissor(const RHIScissorDesc& scissor);
 
 private:
     ethXMMatrix m_ViewMatrix;

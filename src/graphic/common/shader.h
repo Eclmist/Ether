@@ -36,7 +36,6 @@ public:
         const wchar_t* entrypoint,
         const wchar_t* targetProfile,
         ShaderType type,
-        const RHIInputLayoutDesc& inputLayout,
         uint32_t encoding = CP_UTF8);
 
     ~Shader() = default;
@@ -44,7 +43,6 @@ public:
     inline std::wstring GetFilename() const { return m_Filename; }
     inline bool HasRecompiled() const { return m_HasRecompiled; }
     inline void SetRecompiled(bool recompiled) { m_HasRecompiled = recompiled; }
-    inline RHIInputLayoutDesc GetInputLayout() const { return m_InputLayout; }
 
     bool Compile();
     const void* GetCompiledShader() const;
@@ -62,8 +60,6 @@ private:
     std::wstring m_Filename;
     std::wstring m_EntryPoint;
     std::wstring m_TargetProfile;
-
-    RHIInputLayoutDesc m_InputLayout;
 
     ShaderType m_Type;
     uint32_t m_Encoding;

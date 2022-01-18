@@ -51,6 +51,7 @@ static RHIResourceDesc RHICreateBufferResourceDesc(size_t size)
 static RHIResourceDesc RHICreateTextureBaseResourceDesc(RHIFormat format)
 {
     RHIResourceDesc desc = RHICreateBaseResourceDesc();
+    desc.m_Flag = RHIResourceFlag::AllowRenderTarget;
     desc.m_Layout = RHIResourceLayout::Unknown;
     desc.m_Format = format;
     return desc;

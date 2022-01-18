@@ -29,10 +29,14 @@ public:
     D3D12DescriptorHeap() = default;
     ~D3D12DescriptorHeap() override = default;
 
+public:
     RHIDescriptorHandleCPU GetBaseHandleCPU() const override;
     RHIDescriptorHandleGPU GetBaseHandleGPU() const override;
 
-    RHIDescriptorHandleCPU GetNextHandleCPU() override;
+    RHIDescriptorHandleCPU GetNextHandleCPU() const override;
+    RHIDescriptorHandleGPU GetNextHandleGPU() const override;
+
+    RHIResult IncrementHandle() override;
 
 private:
     friend class D3D12CommandList;

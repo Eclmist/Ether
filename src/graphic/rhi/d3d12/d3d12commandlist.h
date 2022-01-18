@@ -39,6 +39,7 @@ public:
     RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) override;
     RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) override;
     RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) override;
+	RHIResult SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc) override;
     RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) override;
 
     RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) override;
@@ -46,6 +47,7 @@ public:
 
     RHIResult CopyBufferRegion(const RHICopyBufferRegionDesc& desc) override;
     RHIResult TransitionResource(const RHIResourceTransitionDesc& desc) override;
+    RHIResult DrawInstanced(const RHIDrawInstancedDesc& desc) override;
     RHIResult DrawIndexedInstanced(const RHIDrawIndexedInstancedDesc& desc) override;
 
     RHIResult Reset(const RHICommandAllocatorHandle commandAllocator) override;

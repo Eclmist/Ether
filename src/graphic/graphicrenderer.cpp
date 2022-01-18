@@ -27,6 +27,7 @@
 ETH_NAMESPACE_BEGIN
 
 GraphicRenderer::GraphicRenderer()
+    : m_GraphicContext(L"GraphicRendererContext")
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
     m_Scheduler.RegisterRenderPasses();
@@ -49,7 +50,7 @@ void GraphicRenderer::Render()
     
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
-    m_GraphicContext.SetViewport(gfxDisplay.GetViewport());
+    m_GraphicContext.SetViewport(gfxDisplay.GetViewport()); // TODO: Figure out why this must be set again in the render pass
 
     m_Scheduler.ScheduleRenderPasses(m_GraphicContext, m_ResourceContext);
     m_Scheduler.RenderPasses(m_GraphicContext, m_ResourceContext);

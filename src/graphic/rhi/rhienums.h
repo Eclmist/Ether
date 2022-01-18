@@ -125,6 +125,14 @@ enum class RHIDescriptorHeapFlag
     ShaderVisible,
 };
 
+enum class RHIDescriptorRangeType
+{
+    SRV,
+    UAV,
+    CBV,
+    Sampler,
+};
+
 enum class RHIFillMode
 {
     Wireframe,

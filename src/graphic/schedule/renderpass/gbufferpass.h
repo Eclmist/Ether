@@ -17,40 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "d3d12descriptorheap.h"
-#include "d3d12translation.h"
+#pragma once
+
+#include "renderpass.h"
 
 ETH_NAMESPACE_BEGIN
 
-RHIDescriptorHandleCPU D3D12DescriptorHeap::GetBaseHandleCPU() const
+class GBufferPass : public RenderPass
 {
-    return Translate(m_Heap->GetCPUDescriptorHandleForHeapStart());
-}
+public:
+    GBufferPass();
+    ~GBufferPass();
 
-RHIDescriptorHandleGPU D3D12DescriptorHeap::GetBaseHandleGPU() const
-{
-    return Translate(m_Heap->GetGPUDescriptorHandleForHeapStart());
-}
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
-RHIDescriptorHandleCPU D3D12DescriptorHeap::GetNextHandleCPU() const
-{
-    RHIDescriptorHandleCPU handle = GetBaseHandleCPU();
-    handle.m_Ptr += m_Offset;
-    return handle;
-}
+private:
+    void InitializeShaders();
+    void InitializePipelineState();
 
-RHIDescriptorHandleGPU D3D12DescriptorHeap::GetNextHandleGPU() const
-{
-    RHIDescriptorHandleGPU handle = GetBaseHandleGPU();
-    handle.m_Ptr += m_Offset;
-    return handle;
-}
+private:
+    RHIPipelineStateHandle m_PipelineState;
 
-RHIResult D3D12DescriptorHeap::IncrementHandle()
-{
-    m_Offset += m_HandleIncrementSize;
-    return RHIResult::Success;
-}
+    RHIInputLayoutDesc m_VSInputLayoutDesc;
+    std::unique_ptr<Shader> m_VertexShader;
+    std::unique_ptr<Shader> m_PixelShader;
+};
 
 ETH_NAMESPACE_END
 

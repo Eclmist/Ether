@@ -82,24 +82,17 @@ RHIResult D3D12CommandList::SetIndexBuffer(const RHIIndexBufferViewDesc& indexBu
 
 RHIResult D3D12CommandList::SetRenderTargets(const RHISetRenderTargetsDesc& desc)
 {
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
-    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandles;
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
-    {
-        if (!desc.m_RTVHandles[0].IsNull())
-            rtvHandles.push_back(Translate(desc.m_RTVHandles[0]->GetCPUHandle()));
+		rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCPUHandle());
 
-        if (!desc.m_DSVHandles[0].IsNull())
-            dsvHandles.push_back(Translate(desc.m_DSVHandles[0]->GetCPUHandle()));
-    }
-    
     m_CommandList->OMSetRenderTargets
     (
         desc.m_NumRTV,
-        rtvHandles.data(),
+        rtvHandles,
         false,
-        dsvHandles.empty() ? nullptr : dsvHandles.data()
+        desc.m_DSVHandle.IsNull() ? nullptr : &Translate(desc.m_DSVHandle->GetCPUHandle())
     );
 
     return RHIResult::Success;
@@ -113,6 +106,16 @@ RHIResult D3D12CommandList::SetRootConstants(const RHISetRootConstantsDesc& desc
         desc.m_NumConstants,
         desc.m_Data,
         desc.m_DestOffset
+    );
+
+    return RHIResult::Success;
+}
+
+RHIResult D3D12CommandList::SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc)
+{
+    m_CommandList->SetGraphicsRootDescriptorTable(
+        desc.m_RootParameterIndex,
+        Translate(desc.m_SRVHandle->GetGPUHandle())
     );
 
     return RHIResult::Success;
@@ -188,6 +191,19 @@ RHIResult D3D12CommandList::TransitionResource(const RHIResourceTransitionDesc& 
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
     barrier.Transition.pResource = d3dResource->m_Resource.Get();
     m_CommandList->ResourceBarrier(1, &barrier);
+    return RHIResult::Success;
+}
+
+RHIResult D3D12CommandList::DrawInstanced(const RHIDrawInstancedDesc& desc)
+{
+    m_CommandList->DrawInstanced
+    (
+        desc.m_VertexCount,
+        desc.m_InstanceCount,
+        desc.m_FirstVertex,
+        desc.m_FirstInstance
+    );
+
     return RHIResult::Success;
 }
 

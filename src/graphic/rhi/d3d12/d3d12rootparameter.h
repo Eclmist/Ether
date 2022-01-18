@@ -33,6 +33,8 @@ public:
     RHIResult SetAsConstant(const RHIRootParameterConstantDesc& desc) override;
     RHIResult SetAsCommonBufferView(const RHIRootParameterCBVDesc& desc) override;
     RHIResult SetAsShaderResourceView(const RHIRootParameterSRVDesc& desc) override;
+    RHIResult SetAsDescriptorTable(const RHIDescriptorTableDesc& desc) override;
+    RHIResult SetAsDescriptorRange(const RHIDescriptorRangeDesc& desc) override;
 
 private:
     friend class D3D12Device;

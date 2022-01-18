@@ -28,7 +28,7 @@ class CommandQueue;
 class CommandContext : public NonCopyable
 {
 public:
-    CommandContext(RHICommandListType type = RHICommandListType::Graphic);
+    CommandContext(RHICommandListType type, const std::wstring& contextName = L"Unammed Command Context");
     ~CommandContext();
     void Reset();
 
@@ -53,6 +53,8 @@ protected:
     RHICommandQueueHandle m_CommandQueue;
 
     UploadBufferAllocator m_UploadBufferAllocator;
+
+    std::wstring m_ContextName;
 };
 
 ETH_NAMESPACE_END

@@ -27,8 +27,10 @@
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_RESOURCE(GBufferDepthTexture);
-DEFINE_GFX_DSV(GBufferDepthTexture);
+DEFINE_GFX_PASS(HardCodedRenderPass);
+
+DEFINE_GFX_RESOURCE(DepthTexture);
+DEFINE_GFX_DSV(DepthTexture);
 
 HardCodedRenderPass::HardCodedRenderPass()
     : RenderPass("Hard Coded Render Pass")
@@ -38,8 +40,8 @@ HardCodedRenderPass::HardCodedRenderPass()
 void HardCodedRenderPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     RHIViewportDesc vp = context.GetViewport();
-    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferDepthTexture));
-    rc.CreateDepthStencilView(GFX_RESOURCE(GBufferDepthTexture), GFX_DSV(GBufferDepthTexture));
+    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(DepthTexture));
+    rc.CreateDepthStencilView(GFX_RESOURCE(DepthTexture), GFX_DSV(DepthTexture));
 }
 
 void HardCodedRenderPass::Render(GraphicContext& context, ResourceContext& rc)
@@ -54,9 +56,11 @@ void HardCodedRenderPass::Render(GraphicContext& context, ResourceContext& rc)
     {
         context.GetCommandQueue()->Flush();
         GraphicCore::GetGraphicCommon().InitializePipelineStates();
+        GraphicCore::GetGraphicCommon().m_DefaultVS->SetRecompiled(false);
+        GraphicCore::GetGraphicCommon().m_DefaultPS->SetRecompiled(false);
     }
 
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(DepthTexture));
 
     // TODO: Move this elsewhere
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);

@@ -43,6 +43,7 @@ RHIResult D3D12Device::CreateCommandAllocator(const RHICommandAllocatorDesc& des
         IID_PPV_ARGS(&d3dCommandAllocator->m_Allocator)
     );
 
+    d3dCommandAllocator->m_Allocator->SetName(allocator.GetName());
     allocator.Set(d3dCommandAllocator);
     return TO_RHI_RESULT(hr);
 }
@@ -60,6 +61,7 @@ RHIResult D3D12Device::CreateCommandList(const RHICommandListDesc& desc, RHIComm
 		IID_PPV_ARGS(&d3dCommandList->m_CommandList)
     );
 
+    d3dCommandList->m_CommandList->SetName(cmdList.GetName());
     cmdList.Set(d3dCommandList);
     return TO_RHI_RESULT(hr);
 }
@@ -73,6 +75,7 @@ RHIResult D3D12Device::CreateCommandQueue(const RHICommandQueueDesc& desc, RHICo
         IID_PPV_ARGS(&d3dCommandQueue->m_CommandQueue)
     );
 
+    d3dCommandQueue->m_CommandQueue->SetName(cmdQueue.GetName());
     cmdQueue.Set(d3dCommandQueue);
     return TO_RHI_RESULT(hr);
 }
@@ -86,6 +89,7 @@ RHIResult D3D12Device::CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, R
         IID_PPV_ARGS(&d3dDescriptorHeap->m_Heap)
     );
 
+    d3dDescriptorHeap->m_Heap->SetName(descriptorHeap.GetName());
     d3dDescriptorHeap->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
     descriptorHeap.Set(d3dDescriptorHeap);
     return RHIResult();
@@ -100,6 +104,7 @@ RHIResult D3D12Device::CreateFence(RHIFenceHandle& fence) const
         IID_PPV_ARGS(&d3dFence->m_Fence)
     );
 
+    d3dFence->m_Fence->SetName(fence.GetName());
     fence.Set(d3dFence);
     return TO_RHI_RESULT(hr);
 }
@@ -126,7 +131,8 @@ RHIResult D3D12Device::CreatePipelineState(const RHIPipelineStateDesc& desc, RHI
         IID_PPV_ARGS(&d3dPipelineState->m_PipelineState)
     );
 
-	pipelineState.Set(d3dPipelineState);
+    d3dPipelineState->m_PipelineState->SetName(pipelineState.GetName());
+    pipelineState.Set(d3dPipelineState);
     return TO_RHI_RESULT(hr);
 }
 
@@ -162,6 +168,7 @@ RHIResult D3D12Device::CreateRootSignature(const RHIRootSignatureDesc& desc, RHI
         IID_PPV_ARGS(&d3dRootSignature->m_RootSignature)
     );
 
+    d3dRootSignature->m_RootSignature->SetName(rootSignature.GetName());
     rootSignature.Set(d3dRootSignature);
     return TO_RHI_RESULT(hr);
 }
@@ -195,6 +202,8 @@ RHIResult D3D12Device::CreateRenderTargetView(const RHIRenderTargetViewDesc& des
 {
     D3D12RenderTargetView* d3dRtv = new D3D12RenderTargetView();
     d3dRtv->m_CpuHandle = GraphicCore::GetRTVDescriptorHeap()->GetNextHandleCPU();
+    GraphicCore::GetRTVDescriptorHeap()->IncrementHandle();
+
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateRenderTargetView(
@@ -211,6 +220,8 @@ RHIResult D3D12Device::CreateDepthStencilView(const RHIDepthStencilViewDesc& des
 {
     D3D12DepthStencilView* d3dDsv = new D3D12DepthStencilView();
     d3dDsv->m_CpuHandle = GraphicCore::GetDSVDescriptorHeap()->GetNextHandleCPU();
+    GraphicCore::GetDSVDescriptorHeap()->IncrementHandle();
+
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateDepthStencilView(
@@ -227,6 +238,9 @@ RHIResult D3D12Device::CreateShaderResourceView(const RHIShaderResourceViewDesc&
 {
     D3D12ShaderResourceView* d3dSrv = new D3D12ShaderResourceView();
     d3dSrv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCPU();
+    d3dSrv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleGPU();
+    GraphicCore::GetSRVDescriptorHeap()->IncrementHandle();
+
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
 
     m_Device->CreateShaderResourceView(
@@ -262,6 +276,7 @@ RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& de
         IID_PPV_ARGS(&d3dResource->m_Resource)
     );
 
+    d3dResource->m_Resource->SetName(resourceHandle.GetName());
     resourceHandle.Set(d3dResource);
     return TO_RHI_RESULT(hr);
 }

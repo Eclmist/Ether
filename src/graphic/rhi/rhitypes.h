@@ -231,6 +231,17 @@ struct RHIRootParameterSRVDesc : RHIRootParameterDesc
 {
 };
 
+struct RHIDescriptorTableDesc : RHIRootParameterDesc
+{
+    uint32_t m_RangeCount;
+};
+
+struct RHIDescriptorRangeDesc : RHIRootParameterDesc
+{
+    RHIDescriptorRangeType m_Type;
+    uint32_t m_NumDescriptors;
+};
+
 struct RHISamplerParameterDesc : RHIRootParameterDesc
 {
     RHIFilter m_Filter;
@@ -377,6 +388,14 @@ struct RHIClearDepthStencilViewDesc
     RHIDepthStencilViewHandle m_DSVHandle;
 };
 
+struct RHIDrawInstancedDesc
+{
+    uint32_t m_VertexCount;
+    uint32_t m_InstanceCount;
+    uint32_t m_FirstVertex;
+    uint32_t m_FirstInstance;
+};
+
 struct RHIDrawIndexedInstancedDesc
 {
     uint32_t m_IndexCount;
@@ -403,7 +422,7 @@ struct RHISetRenderTargetsDesc
 {
     uint32_t m_NumRTV;
     RHIRenderTargetViewHandle m_RTVHandles[8];
-    RHIDepthStencilViewHandle m_DSVHandles[8];
+    RHIDepthStencilViewHandle m_DSVHandle;
 };
 
 struct RHISetRootConstantsDesc
@@ -412,6 +431,12 @@ struct RHISetRootConstantsDesc
     uint32_t m_NumConstants;
     uint32_t m_DestOffset;
     void* m_Data;
+};
+
+struct RHISetRootDescriptorTableDesc
+{
+    uint32_t m_RootParameterIndex;
+    RHIShaderResourceViewHandle m_SRVHandle;
 };
 
 ETH_NAMESPACE_END

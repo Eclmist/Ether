@@ -26,13 +26,17 @@ ETH_NAMESPACE_BEGIN
 #define STRINGIFY(a) STRINGIFY_HELPER(a)
 #define STRINGIFY_HELPER(a) L#a
 
-#define GFX_RESOURCE_NAME(name)                 GfxResource_##name
-#define GFX_VIEW_NAME(name, tag)                GfxResourceView_##name##_##tag
+#define GFX_PASS_NAME(type)                     GfxPass_##type
+#define DEFINE_GFX_PASS(type)                   namespace GraphicLinkSpace { type GFX_PASS_NAME(type); }
+#define DECLARE_GFX_PASS(type)                  namespace GraphicLinkSpace { extern type GFX_PASS_NAME(type); }
+#define GFX_PASS(type)                          GraphicLinkSpace::GFX_PASS_NAME(type)
 
+#define GFX_RESOURCE_NAME(name)                 GfxResource_##name
 #define DEFINE_GFX_RESOURCE(name)               namespace GraphicLinkSpace { RHIResourceHandle GFX_RESOURCE_NAME(name)(nullptr, L#name); }
 #define DECLARE_GFX_RESOURCE(name)              namespace GraphicLinkSpace { extern RHIResourceHandle GFX_RESOURCE_NAME(name); }
 #define GFX_RESOURCE(name)                      GraphicLinkSpace::GFX_RESOURCE_NAME(name)
 
+#define GFX_VIEW_NAME(name, tag)                GfxResourceView_##name##_##tag
 #define DEFINE_GFX_VIEW(name, tag, type)        namespace GraphicLinkSpace { type GFX_VIEW_NAME(name, tag)(nullptr, STRINGIFY(GFX_VIEW_NAME(name, tag))); }
 #define DECLARE_GFX_VIEW(name, tag, type)       namespace GraphicLinkSpace { extern type GFX_VIEW_NAME(name, tag); }
 #define GFX_VIEW(name, tag)	         	        GraphicLinkSpace::GFX_VIEW_NAME(name, tag)

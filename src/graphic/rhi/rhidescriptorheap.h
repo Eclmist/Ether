@@ -31,7 +31,11 @@ public:
     virtual RHIDescriptorHandleCPU GetBaseHandleCPU() const = 0;
     virtual RHIDescriptorHandleGPU GetBaseHandleGPU() const = 0;
 
-    virtual RHIDescriptorHandleCPU GetNextHandleCPU() = 0;
+    virtual RHIDescriptorHandleCPU GetNextHandleCPU() const = 0;
+    virtual RHIDescriptorHandleGPU GetNextHandleGPU() const = 0;
+
+    virtual RHIResult IncrementHandle() = 0;
+
 };
 
 ETH_NAMESPACE_END

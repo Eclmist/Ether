@@ -21,6 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
+DEFINE_GFX_PASS(ClearFrameBufferPass);
 DECLARE_GFX_DSV(GBufferDepthTexture);
 
 ClearFrameBufferPass::ClearFrameBufferPass()

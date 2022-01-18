@@ -134,6 +134,8 @@ void GraphicCommon::InitializeBlendingStates()
 
 void GraphicCommon::InitializeRootSignatures()
 {
+    m_DefaultRootSignature.SetName(L"GraphicCommon::DefaultRootSignature");
+
     RHIRootSignatureFlags rootSignatureFlags =
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
@@ -161,8 +163,8 @@ void GraphicCommon::InitializeShaders()
     m_DefaultInputLayout.m_NumElements = 4;
     m_DefaultInputLayout.m_InputElementDescs = inputElementDesc;
 
-    m_DefaultVS = std::make_unique<Shader>(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex, m_DefaultInputLayout);
-    m_DefaultPS = std::make_unique<Shader>(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel, m_DefaultInputLayout);
+    m_DefaultVS = std::make_unique<Shader>(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_DefaultPS = std::make_unique<Shader>(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_DefaultVS->Compile();
     m_DefaultPS->Compile();
@@ -172,13 +174,16 @@ void GraphicCommon::InitializeShaders()
 
 void GraphicCommon::InitializePipelineStates()
 {
+    m_DefaultPSO.SetName(L"GraphicCommon::DefaultPSO");
+    m_DefaultWireframePSO.SetName(L"GraphicCommon::DefaultWireframePSO");
+
     RHIPipelineState creationPSO;
     creationPSO.SetBlendState(m_BlendDisabled);
     creationPSO.SetRasterizerState(m_RasterizerDefault);
     creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
-    creationPSO.SetInputLayout(m_DefaultVS->GetInputLayout());
+    creationPSO.SetInputLayout(m_DefaultInputLayout);
     creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStateReadWrite);

@@ -24,9 +24,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-CommandContext::CommandContext(RHICommandListType type)
+CommandContext::CommandContext(RHICommandListType type, const std::wstring& contextName)
     : m_Type(type)
+    , m_ContextName(contextName)
 {
+    m_CommandList.SetName((m_ContextName + L"::CommandList").c_str());
     GraphicCore::GetCommandManager().CreateCommandList(type, m_CommandList, m_CommandAllocator);
     m_CommandQueue = GraphicCore::GetCommandManager().GetQueue(m_Type);
 }
@@ -87,7 +89,7 @@ void CommandContext::FinalizeAndExecute(bool waitForCompletion)
 
 void CommandContext::InitializeBuffer(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset)
 {
-    CommandContext context;
+    CommandContext context(RHICommandListType::Graphic, L"BufferUploadContext");
     UploadBufferAllocation alloc = context.m_UploadBufferAllocator.Allocate(size);
     alloc.SetBufferData(data, size);
 

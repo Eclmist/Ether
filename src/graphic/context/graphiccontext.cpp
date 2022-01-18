@@ -23,8 +23,8 @@
 
 ETH_NAMESPACE_BEGIN
 
-GraphicContext::GraphicContext(RHICommandListType type)
-    : CommandContext(type)
+GraphicContext::GraphicContext(const std::wstring& contextName)
+    : CommandContext(RHICommandListType::Graphic, contextName)
     , m_ViewMatrix(DirectX::XMMatrixIdentity())
     , m_ProjectionMatrix(DirectX::XMMatrixIdentity())
 {
@@ -53,34 +53,24 @@ void GraphicContext::ClearDepthStencil(RHIDepthStencilViewHandle depthTarget, fl
     m_CommandList->ClearDepthStencilView(desc);
 }
 
-void GraphicContext::SetRenderTarget(RHIRenderTargetViewHandle rtv)
-{
-    RHISetRenderTargetsDesc desc = {};
-    desc.m_NumRTV = 1;
-    desc.m_RTVHandles[0] = rtv;
-    m_CommandList->SetRenderTargets(desc);
-}
-
 void GraphicContext::SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv)
 {
     RHISetRenderTargetsDesc desc = {};
     desc.m_NumRTV = 1;
     desc.m_RTVHandles[0] = rtv;
-    desc.m_DSVHandles[0] = dsv;
+    desc.m_DSVHandle = dsv;
 
     m_CommandList->SetRenderTargets(desc);
 }
 
-void GraphicContext::SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle* dsv)
+void GraphicContext::SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle dsv)
 {
     RHISetRenderTargetsDesc desc = {};
     desc.m_NumRTV = numTargets;
+    desc.m_DSVHandle = dsv;
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
-    {
 		desc.m_RTVHandles[i] = rtv[i];
-		desc.m_DSVHandles[i] = dsv[i];
-    }
 
     m_CommandList->SetRenderTargets(desc);
 }
@@ -89,6 +79,11 @@ void GraphicContext::SetViewport(const RHIViewportDesc& viewport)
 {
     m_Viewport = viewport;
     m_CommandList->SetViewport(viewport);
+}
+
+void GraphicContext::SetScissor(const RHIScissorDesc& scissor)
+{
+    m_CommandList->SetScissor(scissor);
 }
 
 ETH_NAMESPACE_END

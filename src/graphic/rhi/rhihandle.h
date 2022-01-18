@@ -26,6 +26,7 @@ class RHIHandle
 {
 public:
     RHIHandle(T* handle = nullptr, const wchar_t* name = L"") : m_Handle(handle), m_Name(name) {}
+    RHIHandle(const wchar_t* name) : m_Handle(nullptr), m_Name(name) {}
     RHIHandle(const RHIHandle& copy) : m_Handle(copy.m_Handle), m_Name(copy.m_Name) {}
 
 public:
@@ -46,6 +47,7 @@ public:
     inline const S* As() const { return dynamic_cast<S*>(m_Handle); }
 
     inline const wchar_t* GetName() { return m_Name; }
+    inline void SetName(const wchar_t* name) { m_Name = name; }
 
 public:
     void Destroy()

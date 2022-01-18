@@ -33,10 +33,13 @@
 ETH_NAMESPACE_BEGIN
 
 GuiRenderer::GuiRenderer()
+    : m_Context(L"GUIRendererContext")
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
     const auto d3dDevice = GraphicCore::GetDevice().As<D3D12Device>();
+
+    m_SRVDescriptorHeap.SetName(L"GUIRenderer::SRVDescriptorHeap");
     GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::ShaderVisible, 4096 }, m_SRVDescriptorHeap);
 
     RegisterComponents();

@@ -26,6 +26,10 @@ ETH_NAMESPACE_BEGIN
 
 CommandManager::CommandManager()
 {
+    m_GraphicsQueue.SetName(L"CommandManager::GraphicsQueue");
+    m_ComputeQueue.SetName(L"CommandManager::ComputeQueue");
+    m_CopyQueue.SetName(L"CommandManager::CopyQueue");
+
     GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Graphic }, m_GraphicsQueue);
     GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Compute }, m_ComputeQueue);
     GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Copy }, m_CopyQueue);

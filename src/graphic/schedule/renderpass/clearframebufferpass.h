@@ -27,6 +27,7 @@ class ClearFrameBufferPass : public RenderPass
 {
 public:
     ClearFrameBufferPass();
+    ~ClearFrameBufferPass() = default;
 
     void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
     void Render(GraphicContext& context, ResourceContext& rc) override;

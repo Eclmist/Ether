@@ -26,7 +26,6 @@ Shader::Shader(
     const wchar_t* entrypoint,
     const wchar_t* targetProfile,
     ShaderType type,
-    const RHIInputLayoutDesc& inputLayout,
     uint32_t encoding)
     : m_Filename(filename)
     , m_EntryPoint(entrypoint)
@@ -34,7 +33,6 @@ Shader::Shader(
     , m_Type(type)
     , m_Encoding(encoding)
     , m_HasRecompiled(false)
-    , m_InputLayout(inputLayout)
 {
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&m_DxcLibrary)));
     ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_DxcCompiler)));

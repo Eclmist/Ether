@@ -32,6 +32,7 @@ D3D12_CULL_MODE Translate(const RHICullMode& rhiType);
 D3D12_DEPTH_WRITE_MASK Translate(const RHIDepthWriteMask& rhiType);
 D3D12_DESCRIPTOR_HEAP_FLAGS Translate(const RHIDescriptorHeapFlag& rhiType);
 D3D12_DESCRIPTOR_HEAP_TYPE Translate(const RHIDescriptorHeapType& rhiType);
+D3D12_DESCRIPTOR_RANGE_TYPE Translate(const RHIDescriptorRangeType& rhiType);
 D3D12_FILL_MODE Translate(const RHIFillMode& rhiType);
 D3D12_FILTER Translate(const RHIFilter& rhiType);
 D3D12_HEAP_TYPE Translate(const RHIHeapType& rhiType);

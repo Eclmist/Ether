@@ -34,9 +34,14 @@ void GraphicCore::Initialize()
     RHIResult result = Instance().m_RHIModule->CreateDevice(Instance().m_RHIDevice);
     AssertGraphics(result == RHIResult::Success, "Failed to create graphic device");
 
+    Instance().m_RTVDescriptorHeap.SetName(L"GraphicCore::RTVDescriptorHeap");
+    Instance().m_DSVDescriptorHeap.SetName(L"GraphicCore::DSVDescriptorHeap");
+    Instance().m_SRVDescriptorHeap.SetName(L"GraphicCore::SRVDescriptorHeap");
+    Instance().m_SamplerDescriptorHeap.SetName(L"GraphicCore::SamplerDescriptorHeap");
+
     GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::RTV, RHIDescriptorHeapFlag::None, 512 }, Instance().m_RTVDescriptorHeap);
     GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::DSV, RHIDescriptorHeapFlag::None, 512 }, Instance().m_DSVDescriptorHeap);
-    GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::None, 4096 }, Instance().m_SRVDescriptorHeap);
+    GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::ShaderVisible, 4096 }, Instance().m_SRVDescriptorHeap);
     GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::Sampler, RHIDescriptorHeapFlag::None, 512 }, Instance().m_SamplerDescriptorHeap);
 
     Instance().m_ShaderDaemon = std::make_unique<ShaderDaemon>();
