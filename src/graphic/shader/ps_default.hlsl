@@ -59,6 +59,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     float n = 1000.2;
 
     float4 ambient = float4(0.4, 0.7, 0.4, 0.1) * 0.3;
+    ambient.xyz += ((normal + 0.2) * 0.4);
     float4 diffuse = col * ndotl;
     float4 specular = col * ndotl * pow(rdotv, n) * 0.5;
    

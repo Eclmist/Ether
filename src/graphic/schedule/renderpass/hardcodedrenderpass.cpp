@@ -37,21 +37,9 @@ HardCodedRenderPass::HardCodedRenderPass()
 
 void HardCodedRenderPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    RHIClearValue clearValue = { RHIFormat::D24UnormS8Uint, { 1.0, 0 } };
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::DepthWrite;
-    desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(RHIFormat::D24UnormS8Uint,
-        GraphicCore::GetGraphicDisplay().GetViewport().m_Width,
-        GraphicCore::GetGraphicDisplay().GetViewport().m_Height);
-
-    rc.CreateResource(desc, GFX_RESOURCE(GBufferDepthTexture));
-
-    RHIDepthStencilViewDesc dsvDesc = {};
-    dsvDesc.m_Format = RHIFormat::D24UnormS8Uint;
-    dsvDesc.m_Resource = GFX_RESOURCE(GBufferDepthTexture);
-    rc.CreateDepthStencilView(dsvDesc, GFX_DSV(GBufferDepthTexture));
+    RHIViewportDesc vp = context.GetViewport();
+    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferDepthTexture));
+    rc.CreateDepthStencilView(GFX_RESOURCE(GBufferDepthTexture), GFX_DSV(GBufferDepthTexture));
 }
 
 void HardCodedRenderPass::Render(GraphicContext& context, ResourceContext& rc)
@@ -110,3 +98,4 @@ void HardCodedRenderPass::Render(GraphicContext& context, ResourceContext& rc)
 }
 
 ETH_NAMESPACE_END
+

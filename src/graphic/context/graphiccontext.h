@@ -33,6 +33,7 @@ public:
 
     inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
     inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
+    inline RHIViewportDesc GetViewport() const { return m_Viewport; }
 
     inline void SetViewMatrix(ethXMMatrix viewMatrix) { m_ViewMatrix = viewMatrix; }
     inline void SetProjectionMatrix(ethXMMatrix projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
@@ -45,9 +46,13 @@ public:
     void SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv);
     void SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle* dsv);
 
+    void SetViewport(const RHIViewportDesc& viewport);
+
 private:
     ethXMMatrix m_ViewMatrix;
     ethXMMatrix m_ProjectionMatrix;
+
+    RHIViewportDesc m_Viewport;
 };
 
 ETH_NAMESPACE_END

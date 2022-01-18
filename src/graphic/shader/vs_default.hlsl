@@ -55,8 +55,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     float3 pos = IN.Position;
     //pos.x = -pos.x;
     
-    //pos.y += sin(pos.x * CB_GlobalConstants.Time.w) * 0.01;
-    //pos.y += sin(pos.z * CB_GlobalConstants.Time.z) * 0.03;
+    pos.y += sin(pos.x * CB_GlobalConstants.Time.w * 0.1) * 0.1;
+    pos.y += sin(pos.z * CB_GlobalConstants.Time.z * 0.1) * 0.3;
 
     o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(pos, 1.0));
     o.PositionES = mul(CB_ModelViewProj.ModelView, float4(IN.Position,1.0)).xyz;

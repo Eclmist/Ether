@@ -85,5 +85,11 @@ void GraphicContext::SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHa
     m_CommandList->SetRenderTargets(desc);
 }
 
+void GraphicContext::SetViewport(const RHIViewportDesc& viewport)
+{
+    m_Viewport = viewport;
+    m_CommandList->SetViewport(viewport);
+}
+
 ETH_NAMESPACE_END
 

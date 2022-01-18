@@ -29,16 +29,27 @@ public:
     ResourceContext() = default;
     ~ResourceContext() = default;
 
-    void CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
+    void CreateTexture2DResource(uint32_t width, uint32_t height, RHIResourceHandle& resource);
+    void CreateDepthStencilResource(uint32_t width, uint32_t height, RHIResourceHandle& resource);
 
     void CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& view);
-    void CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& view);
+    void CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
     void CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& view);
     void CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& view);
     void CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& view);
 
+    void Reset();
+
 private:
-    std::set<std::wstring> m_ResourceTable;
+    void CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
+    bool ResourceExists(const std::wstring& resourceID) const;
+    bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc);
+    bool ShouldRecreateView(const std::wstring& resourceID);
+
+private:
+    std::set<std::wstring> m_ResourceEntries;
+    std::set<std::wstring> m_NewlyCreatedResources;
+    std::unordered_map<std::wstring, RHICommitedResourceDesc> m_ResourceTable;
 };
 
 ETH_NAMESPACE_END

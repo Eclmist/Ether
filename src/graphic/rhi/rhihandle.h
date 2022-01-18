@@ -26,7 +26,7 @@ class RHIHandle
 {
 public:
     RHIHandle(T* handle = nullptr, const wchar_t* name = L"") : m_Handle(handle), m_Name(name) {}
-    RHIHandle(const RHIHandle& copy) : m_Handle(copy.m_Handle) {}
+    RHIHandle(const RHIHandle& copy) : m_Handle(copy.m_Handle), m_Name(copy.m_Name) {}
 
 public:
     inline bool IsNull() const { return m_Handle == nullptr; }

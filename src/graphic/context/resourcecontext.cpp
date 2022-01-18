@@ -22,65 +22,126 @@
 
 ETH_NAMESPACE_BEGIN
 
-void ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource)
-{
-    AssertGraphics(resource.GetName() != L"", "Resource name invalid - Resource context require unique names for resource table");
+static constexpr RHIFormat DepthStencilFormat = RHIFormat::D24UnormS8Uint;
 
-    if (m_ResourceTable.find(resource.GetName()) == m_ResourceTable.end())
-    {
-		GraphicCore::GetDevice()->CreateCommittedResource(desc, resource);
-        m_ResourceTable.emplace(resource.GetName());
-    }
+void ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RHIResourceHandle& resource)
+{
+}
+
+void ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RHIResourceHandle& resource)
+{
+    RHIClearValue clearValue = { DepthStencilFormat, { 1.0, 0 } };
+    RHICommitedResourceDesc desc = {};
+    desc.m_HeapType = RHIHeapType::Default;
+    desc.m_State = RHIResourceState::DepthWrite;
+    desc.m_ClearValue = &clearValue;
+    desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(DepthStencilFormat, width, height);
+
+    CreateResource(desc, resource);
 }
 
 void ResourceContext::CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& view)
 {
-    AssertGraphics(view.GetName() != L"", "View name invalid - Resource context require unique names for view table");
-    if (m_ResourceTable.find(view.GetName()) == m_ResourceTable.end())
-    {
-		GraphicCore::GetDevice()->CreateRenderTargetView(desc, view);
-        m_ResourceTable.emplace(view.GetName());
-    }
+    if (ResourceExists(view.GetName()))
+        return;
+
+	GraphicCore::GetDevice()->CreateRenderTargetView(desc, view);
+    m_ResourceEntries.emplace(view.GetName());
 }
 
-void ResourceContext::CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& view)
+void ResourceContext::CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view)
 {
-    AssertGraphics(view.GetName() != L"", "View name invalid - Resource context require unique names for view table");
-    if (m_ResourceTable.find(view.GetName()) == m_ResourceTable.end())
-    {
-		GraphicCore::GetDevice()->CreateDepthStencilView(desc, view);
-        m_ResourceTable.emplace(view.GetName());
-    }
+    if (ResourceExists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
+        return;
+
+	RHIDepthStencilViewDesc dsvDesc = {};
+	dsvDesc.m_Format = DepthStencilFormat;
+	dsvDesc.m_Resource = resource;
+	GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
+    m_ResourceEntries.emplace(view.GetName());
 }
 
 void ResourceContext::CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& view)
 {
-    AssertGraphics(view.GetName() != L"", "View name invalid - Resource context require unique names for view table");
-    if (m_ResourceTable.find(view.GetName()) == m_ResourceTable.end())
-    {
-		GraphicCore::GetDevice()->CreateShaderResourceView(desc, view);
-        m_ResourceTable.emplace(view.GetName());
-    }
+    if (ResourceExists(view.GetName()))
+        return;
+
+	GraphicCore::GetDevice()->CreateShaderResourceView(desc, view);
+    m_ResourceEntries.emplace(view.GetName());
 }
 
 void ResourceContext::CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& view)
 {
-    AssertGraphics(view.GetName() != L"", "View name invalid - Resource context require unique names for view table");
-    if (m_ResourceTable.find(view.GetName()) == m_ResourceTable.end())
-    {
-		GraphicCore::GetDevice()->CreateConstantBufferView(desc, view);
-        m_ResourceTable.emplace(view.GetName());
-    }
+    if (ResourceExists(view.GetName()))
+        return;
+
+	GraphicCore::GetDevice()->CreateConstantBufferView(desc, view);
+    m_ResourceEntries.emplace(view.GetName());
 }
 
 void ResourceContext::CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& view)
 {
-    AssertGraphics(view.GetName() != L"", "View name invalid - Resource context require unique names for view table");
-    if (m_ResourceTable.find(view.GetName()) == m_ResourceTable.end())
+    if (ResourceExists(view.GetName()))
+        return;
+
+	GraphicCore::GetDevice()->CreateUnorderedAccessView(desc, view);
+    m_ResourceEntries.emplace(view.GetName());
+}
+
+void ResourceContext::Reset()
+{
+    m_NewlyCreatedResources.clear();
+}
+
+void ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource)
+{
+    if (ResourceExists(resource.GetName()) && !ShouldRecreateResource(resource.GetName(), desc))
+        return;
+
+    if (!resource.IsNull())
+        resource.Destroy();
+
+    if (GraphicCore::GetDevice()->CreateCommittedResource(desc, resource) != RHIResult::Success)
     {
-		GraphicCore::GetDevice()->CreateUnorderedAccessView(desc, view);
-        m_ResourceTable.emplace(view.GetName());
+        LogGraphicsError("Failed to create commited resource %s", resource.GetName());
+        return;
     }
+
+	m_ResourceEntries.emplace(resource.GetName());
+	m_ResourceTable[resource.GetName()] = desc;
+    m_NewlyCreatedResources.emplace(resource.GetName());
+}
+
+bool ResourceContext::ResourceExists(const std::wstring& resourceID) const
+{
+    AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
+    return m_ResourceEntries.find(resourceID) != m_ResourceEntries.end();
+}
+
+bool ResourceContext::ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc)
+{
+    AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
+
+    if (!ResourceExists(resourceID))
+        return true;
+
+    auto oldDesc = m_ResourceTable[resourceID];
+
+    if (oldDesc.m_ResourceDesc.m_Width != desc.m_ResourceDesc.m_Width)
+        return true;
+
+    if (oldDesc.m_ResourceDesc.m_Height != desc.m_ResourceDesc.m_Height)
+        return true;
+
+    if (oldDesc.m_ResourceDesc.m_DepthOrArraySize != desc.m_ResourceDesc.m_DepthOrArraySize)
+        return true;
+
+    return false;
+}
+
+bool ResourceContext::ShouldRecreateView(const std::wstring& resourceID)
+{
+    return m_NewlyCreatedResources.find(resourceID) != m_NewlyCreatedResources.end();
 }
 
 ETH_NAMESPACE_END

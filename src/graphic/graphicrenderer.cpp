@@ -47,11 +47,11 @@ void GraphicRenderer::Render()
 {
     OPTICK_EVENT("Renderer - Render");
     
-    m_Scheduler.ScheduleRenderPasses(m_GraphicContext, m_ResourceContext);
-
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
+    m_GraphicContext.SetViewport(gfxDisplay.GetViewport());
 
+    m_Scheduler.ScheduleRenderPasses(m_GraphicContext, m_ResourceContext);
     m_Scheduler.RenderPasses(m_GraphicContext, m_ResourceContext);
 }
 
@@ -63,6 +63,7 @@ void GraphicRenderer::Present()
     m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::Present);
     m_GraphicContext.FinalizeAndExecute();
     m_GraphicContext.Reset();
+    m_ResourceContext.Reset();
     gfxDisplay.SetCurrentBackBufferFence(m_GraphicContext.GetCompletionFenceValue());
     gfxDisplay.Present();
 }
