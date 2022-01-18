@@ -41,12 +41,15 @@ DeferredLightingPass::DeferredLightingPass()
 {
 }
 
-void DeferredLightingPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+void DeferredLightingPass::Initialize()
 {
     InitializeShaders();
     InitializeRootSignature();
     InitializePipelineState();
+}
 
+void DeferredLightingPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+{
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPositionTexture), GFX_SRV(GBufferPositionTexture));
@@ -90,10 +93,6 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
 
 void DeferredLightingPass::InitializeShaders()
 {
-    // TODO: Find a better place to init shaders
-    if (m_VertexShader != nullptr)
-        return;
-
     m_VertexShader = std::make_unique<Shader>(L"lighting\\deferredlights.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
     m_PixelShader = std::make_unique<Shader>(L"lighting\\deferredlights.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
@@ -125,10 +124,6 @@ void DeferredLightingPass::InitializePipelineState()
 
 void DeferredLightingPass::InitializeRootSignature()
 {
-    // TODO: Find a better place to init rs
-    if (!m_RootSignature.IsNull())
-        return;
-
     m_RootSignature.SetName(L"GBufferPass::RootSignature");
 
     RHIRootSignatureFlags rootSignatureFlags =

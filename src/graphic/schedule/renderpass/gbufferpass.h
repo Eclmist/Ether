@@ -29,6 +29,7 @@ public:
     GBufferPass();
     ~GBufferPass();
 
+    void Initialize() override;
     void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
     void Render(GraphicContext& context, ResourceContext& rc) override;
 

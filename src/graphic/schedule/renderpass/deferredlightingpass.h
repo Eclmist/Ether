@@ -28,6 +28,7 @@ class DeferredLightingPass : public RenderPass
 public:
     DeferredLightingPass();
 
+    void Initialize() override;
     void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
     void Render(GraphicContext& context, ResourceContext& rc) override;
 

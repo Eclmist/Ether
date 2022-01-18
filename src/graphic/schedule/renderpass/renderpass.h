@@ -26,7 +26,8 @@ class RenderPass : public NonCopyable
 public:
     RenderPass(const std::string& name);
 
-    virtual void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) = 0;
+    virtual void Initialize() {};
+    virtual void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) {};
     virtual void Render(GraphicContext& context, ResourceContext& rc) = 0;
 
 private:

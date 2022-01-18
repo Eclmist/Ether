@@ -48,11 +48,14 @@ GBufferPass::~GBufferPass()
     m_PipelineState.Destroy();
 }
 
-void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+void GBufferPass::Initialize()
 {
     InitializeShaders();
     InitializePipelineState();
+}
 
+void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+{
     RHIViewportDesc vp = context.GetViewport();
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferAlbedoTexture));
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferNormalTexture));
@@ -139,10 +142,6 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 
 void GBufferPass::InitializeShaders()
 {
-    // TODO: Find a better place to init shaders
-    if (m_VertexShader != nullptr)
-        return;
-
     m_VertexShader = std::make_unique<Shader>(L"lighting\\gbuffer_vs.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
     m_PixelShader = std::make_unique<Shader>(L"lighting\\gbuffer_ps.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
@@ -154,10 +153,6 @@ void GBufferPass::InitializeShaders()
 
 void GBufferPass::InitializePipelineState()
 {
-    // TODO: Find a better place to init pipelinestate
-    if (!m_PipelineState.IsNull())
-        return;
-
     m_PipelineState.SetName(L"GBufferPass::PipelineState");
 
     RHIPipelineState creationPSO;

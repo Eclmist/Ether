@@ -36,6 +36,9 @@ void GraphicScheduler::RegisterRenderPasses()
     //m_RegisteredRenderPasses.push_back(&GFX_PASS(HardCodedRenderPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
+
+    for (auto renderPass : m_RegisteredRenderPasses)
+        renderPass->Initialize();
 }
 
 void GraphicScheduler::ScheduleRenderPasses(GraphicContext& context, ResourceContext& rc)
