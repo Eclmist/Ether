@@ -393,6 +393,12 @@ struct RHIResourceTransitionDesc
     RHIResourceState m_ToState;
 };
 
+struct RHISetDescriptorHeapsDesc
+{
+    uint32_t m_NumHeaps;
+    RHIDescriptorHeapHandle* m_Heaps;
+};
+
 struct RHISetRenderTargetsDesc
 {
     uint32_t m_NumRTV;

@@ -39,6 +39,7 @@ public:
     RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) override;
     RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) override;
     RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) override;
+    RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) override;
 
     RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) override;
     RHIResult ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc) override;
@@ -53,6 +54,9 @@ public:
 private:
     friend class D3D12Device;
     friend class D3D12CommandQueue;
+
+    friend class GuiRenderer;
+
     wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 };
 

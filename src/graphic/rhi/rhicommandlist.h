@@ -37,6 +37,7 @@ public:
     virtual RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) = 0;
     virtual RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) = 0;
     virtual RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) = 0;
+    virtual RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) = 0;
 
     virtual RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) = 0;
     virtual RHIResult ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc) = 0;

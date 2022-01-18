@@ -35,9 +35,11 @@ public:
     RHIDescriptorHandleCPU GetNextHandleCPU() override;
 
 private:
+    friend class D3D12CommandList;
     friend class D3D12Device;
     // TODO: Remove after GUI-RHI refactor
     friend class GuiRenderer;
+
     wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
 
     size_t m_Offset;

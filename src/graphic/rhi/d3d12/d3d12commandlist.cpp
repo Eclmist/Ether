@@ -19,6 +19,7 @@
 
 #include "d3d12commandlist.h"
 #include "d3d12commandallocator.h"
+#include "d3d12descriptorheap.h"
 #include "d3d12pipelinestate.h"
 #include "d3d12resource.h"
 #include "d3d12resourceviews.h"
@@ -81,24 +82,24 @@ RHIResult D3D12CommandList::SetIndexBuffer(const RHIIndexBufferViewDesc& indexBu
 
 RHIResult D3D12CommandList::SetRenderTargets(const RHISetRenderTargetsDesc& desc)
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
-    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandles[8];
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandles;
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
     {
         if (!desc.m_RTVHandles[0].IsNull())
-			rtvHandles[i] = Translate(desc.m_RTVHandles[0]->GetCPUHandle());
+            rtvHandles.push_back(Translate(desc.m_RTVHandles[0]->GetCPUHandle()));
 
         if (!desc.m_DSVHandles[0].IsNull())
-			dsvHandles[i] = Translate(desc.m_DSVHandles[0]->GetCPUHandle());
+            dsvHandles.push_back(Translate(desc.m_DSVHandles[0]->GetCPUHandle()));
     }
     
     m_CommandList->OMSetRenderTargets
     (
         desc.m_NumRTV,
-        rtvHandles,
+        rtvHandles.data(),
         false,
-        dsvHandles
+        dsvHandles.empty() ? nullptr : dsvHandles.data()
     );
 
     return RHIResult::Success;
@@ -113,6 +114,17 @@ RHIResult D3D12CommandList::SetRootConstants(const RHISetRootConstantsDesc& desc
         desc.m_Data,
         desc.m_DestOffset
     );
+
+    return RHIResult::Success;
+}
+
+RHIResult D3D12CommandList::SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc)
+{
+    std::vector<ID3D12DescriptorHeap*> heaps;
+    for (int i = 0; i < desc.m_NumHeaps; ++i)
+        heaps.push_back(desc.m_Heaps[i].As<D3D12DescriptorHeap>()->m_Heap.Get());
+
+    m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps.data());
 
     return RHIResult::Success;
 }

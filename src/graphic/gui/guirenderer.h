@@ -23,23 +23,25 @@
 
 ETH_NAMESPACE_BEGIN
 
-//class GuiRenderer : public NonCopyable
-//{
-//public:
-//    GuiRenderer();
-//    ~GuiRenderer();
-//
-//    void Render();
-//
-//private:
-//    void RegisterComponents();
-//    void CreateImGuiContext();
-//    void SetImGuiStyle();
-//
-//private:
-//    GraphicContext m_Context;
-//    std::vector<std::unique_ptr<GuiComponent>> m_Components;
-//};
+class GuiRenderer : public NonCopyable
+{
+public:
+    GuiRenderer();
+    ~GuiRenderer();
+
+    void Render();
+
+private:
+    void RegisterComponents();
+    void CreateImGuiContext();
+    void SetImGuiStyle();
+
+private:
+    GraphicContext m_Context;
+    std::vector<std::unique_ptr<GuiComponent>> m_Components;
+
+    RHIDescriptorHeapHandle m_SRVDescriptorHeap;
+};
 
 ETH_NAMESPACE_END
 
