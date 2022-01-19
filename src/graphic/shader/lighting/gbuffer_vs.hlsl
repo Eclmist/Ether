@@ -1,7 +1,7 @@
 /*
     This file is part of Ether, an open-source DirectX 12 renderer.
 
-    Copyright (c) 2020-2021 Samuel Van Allen - All rights reserved.
+    Copyright (c) 2020-2022 Samuel Huang - All rights reserved.
 
     Ether is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 struct ModelViewProjection
@@ -52,8 +52,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     VS_OUTPUT o;
 
     float3 pos = IN.Position;
-    pos.y += sin(pos.x * CB_GlobalConstants.Time.w * 0.1) * 0.1;
-    pos.y += sin(pos.z * CB_GlobalConstants.Time.z * 0.1) * 0.3;
+    pos.y += sin(pos.x * CB_GlobalConstants.Time.w * 0.1) * 0.01;
+    pos.y += sin(pos.z * CB_GlobalConstants.Time.z * 0.1) * 0.03;
 
     o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(pos, 1.0));
     o.PositionWS = mul(CB_ModelViewProj.ModelMatrix, float4(IN.Position, 1.0)).xyz;

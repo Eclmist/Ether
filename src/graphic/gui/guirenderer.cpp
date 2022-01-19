@@ -1,7 +1,7 @@
 /*
     This file is part of Ether, an open-source DirectX 12 renderer.
 
-    Copyright (c) 2020-2021 Samuel Van Allen - All rights reserved.
+    Copyright (c) 2020-2022 Samuel Huang - All rights reserved.
 
     Ether is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "guirenderer.h"
