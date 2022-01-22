@@ -21,19 +21,16 @@
 #include "graphic/schedule/renderpass/clearframebufferpass.h"
 #include "graphic/schedule/renderpass/deferredlightingpass.h"
 #include "graphic/schedule/renderpass/gbufferpass.h"
-#include "graphic/schedule/renderpass/hardcodedrenderpass.h"
 
 ETH_NAMESPACE_BEGIN
 
 DECLARE_GFX_PASS(ClearFrameBufferPass);
-DECLARE_GFX_PASS(HardCodedRenderPass);
 DECLARE_GFX_PASS(GBufferPass);
 DECLARE_GFX_PASS(DeferredLightingPass);
 
 void GraphicScheduler::RegisterRenderPasses()
 {
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
-    //m_RegisteredRenderPasses.push_back(&GFX_PASS(HardCodedRenderPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
 

@@ -22,40 +22,37 @@
 
 ETH_NAMESPACE_BEGIN
 
-static constexpr RHIFormat DepthStencilFormat = RHIFormat::D24UnormS8Uint;
-static constexpr RHIFormat Texture2DFormat = RHIFormat::R8G8B8A8Unorm;
-
-void ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RHIResourceHandle& resource)
+void ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource)
 {
-    RHIClearValue clearValue = { Texture2DFormat, { 0, 0, 0, 0 } };
+    RHIClearValue clearValue = { format, { 0, 0, 0, 0 } };
     RHICommitedResourceDesc desc = {};
     desc.m_HeapType = RHIHeapType::Default;
     desc.m_State = RHIResourceState::Common;
     desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RHICreateTexture2DResourceDesc(Texture2DFormat, width, height);
+    desc.m_ResourceDesc = RHICreateTexture2DResourceDesc(format, width, height);
 
     CreateResource(desc, resource);
 }
 
-void ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RHIResourceHandle& resource)
+void ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource)
 {
-    RHIClearValue clearValue = { DepthStencilFormat, { 1.0, 0 } };
+    RHIClearValue clearValue = { format, { 1.0, 0 } };
     RHICommitedResourceDesc desc = {};
     desc.m_HeapType = RHIHeapType::Default;
     desc.m_State = RHIResourceState::DepthWrite;
     desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(DepthStencilFormat, width, height);
+    desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(format, width, height);
 
     CreateResource(desc, resource);
 }
 
 void ResourceContext::CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view)
 {
-    if (ResourceExists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
+    if (Exists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
         return;
 
     RHIRenderTargetViewDesc rtvDesc = {};
-    rtvDesc.m_Format = Texture2DFormat;
+    rtvDesc.m_Format = GetResourceFormat(resource.GetName());
     rtvDesc.m_Resource = resource;
     GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
@@ -63,11 +60,11 @@ void ResourceContext::CreateRenderTargetView(RHIResourceHandle resource, RHIRend
 
 void ResourceContext::CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view)
 {
-    if (ResourceExists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
+    if (Exists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
         return;
 
 	RHIDepthStencilViewDesc dsvDesc = {};
-	dsvDesc.m_Format = DepthStencilFormat;
+	dsvDesc.m_Format = GetResourceFormat(resource.GetName());
 	dsvDesc.m_Resource = resource;
 	GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
@@ -75,11 +72,11 @@ void ResourceContext::CreateDepthStencilView(RHIResourceHandle resource, RHIDept
 
 void ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view)
 {
-    if (ResourceExists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
+    if (Exists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
         return;
 
     RHIShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Format = Texture2DFormat; // TODO: This is definitely incorrect 
+    srvDesc.m_Format = GetResourceFormat(resource.GetName());
     srvDesc.m_Dimensions = RHIShaderResourceDims::Texture2D;
     srvDesc.m_Resource = resource;
     GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
@@ -88,7 +85,7 @@ void ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHISh
 
 void ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
 {
-    if (ResourceExists(view.GetName()))
+    if (Exists(view.GetName()))
         return;
 
 	//GraphicCore::GetDevice()->CreateConstantBufferView(desc, view);
@@ -97,7 +94,7 @@ void ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHICo
 
 void ResourceContext::CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view)
 {
-    if (ResourceExists(view.GetName()))
+    if (Exists(view.GetName()))
         return;
 
 	//GraphicCore::GetDevice()->CreateUnorderedAccessView(desc, view);
@@ -111,7 +108,7 @@ void ResourceContext::Reset()
 
 void ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource)
 {
-    if (ResourceExists(resource.GetName()) && !ShouldRecreateResource(resource.GetName(), desc))
+    if (Exists(resource.GetName()) && !ShouldRecreateResource(resource.GetName(), desc))
         return;
 
     if (!resource.IsNull())
@@ -128,7 +125,7 @@ void ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIRes
     m_NewlyCreatedResources.emplace(resource.GetName());
 }
 
-bool ResourceContext::ResourceExists(const std::wstring& resourceID) const
+bool ResourceContext::Exists(const std::wstring& resourceID) const
 {
     AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
     return m_ResourceEntries.find(resourceID) != m_ResourceEntries.end();
@@ -138,7 +135,7 @@ bool ResourceContext::ShouldRecreateResource(const std::wstring& resourceID, con
 {
     AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
 
-    if (!ResourceExists(resourceID))
+    if (!Exists(resourceID))
         return true;
 
     auto oldDesc = m_ResourceTable[resourceID];
@@ -158,6 +155,14 @@ bool ResourceContext::ShouldRecreateResource(const std::wstring& resourceID, con
 bool ResourceContext::ShouldRecreateView(const std::wstring& resourceID)
 {
     return m_NewlyCreatedResources.find(resourceID) != m_NewlyCreatedResources.end();
+}
+
+RHIFormat ResourceContext::GetResourceFormat(const std::wstring& resourceID) const
+{
+    if (!Exists(resourceID))
+        return RHIFormat::Unknown;
+
+    return m_ResourceTable.find(resourceID)->second.m_ResourceDesc.m_Format;
 }
 
 ETH_NAMESPACE_END

@@ -29,8 +29,8 @@ public:
     ResourceContext() = default;
     ~ResourceContext() = default;
 
-    void CreateTexture2DResource(uint32_t width, uint32_t height, RHIResourceHandle& resource);
-    void CreateDepthStencilResource(uint32_t width, uint32_t height, RHIResourceHandle& resource);
+    void CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
+    void CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
 
     void CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
     void CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
@@ -42,9 +42,12 @@ public:
 
 private:
     void CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
-    bool ResourceExists(const std::wstring& resourceID) const;
+
+    bool Exists(const std::wstring& resourceID) const;
     bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc);
     bool ShouldRecreateView(const std::wstring& resourceID);
+
+    RHIFormat GetResourceFormat(const std::wstring& resourceID) const;
 
 private:
     std::set<std::wstring> m_ResourceEntries;

@@ -33,10 +33,12 @@ public:
 
     inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
     inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
+    inline ethXMVector GetEyeDirection() const { return m_EyeDirection; }
     inline RHIViewportDesc GetViewport() const { return m_Viewport; }
 
     inline void SetViewMatrix(ethXMMatrix viewMatrix) { m_ViewMatrix = viewMatrix; }
     inline void SetProjectionMatrix(ethXMMatrix projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
+    inline void SetEyeDirection(ethXMVector eyeVector) { m_EyeDirection = eyeVector; }
 
 public:
     void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color);
@@ -51,7 +53,8 @@ public:
 private:
     ethXMMatrix m_ViewMatrix;
     ethXMMatrix m_ProjectionMatrix;
-
+    ethXMVector m_EyeDirection;
+    
     RHIViewportDesc m_Viewport;
 };
 

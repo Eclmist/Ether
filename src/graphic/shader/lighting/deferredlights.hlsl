@@ -36,10 +36,18 @@ struct VS_OUTPUT
     float2 UV       : TEXCOORD0;
 };
 
+struct GlobalConstants
+{
+    float4 Time;
+    float4 EyeDirection;
+};
+
 Texture2D albedo : register(t0);
 Texture2D normal : register(t1);
 Texture2D position : register(t2);
 SamplerState defaultSampler : register(s0);
+
+ConstantBuffer<GlobalConstants> CB_GlobalConstants : register(b0);
 
 VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 {
@@ -54,22 +62,87 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
     return o;
 }
 
+struct PointLight
+{
+    float3 m_Position;
+    float3 m_Color;
+    float m_Size;
+    float m_Intensity;
+ };
+
+float3 ComputeLighting(float2 uv, PointLight light)
+{
+    float3 pos = position.Sample(defaultSampler, uv);
+    float3 col = albedo.Sample(defaultSampler, uv);
+    float3 norm = normal.Sample(defaultSampler, uv).xyz;
+
+    float3 dir = light.m_Position - pos;
+    float d = length(dir);
+    dir = normalize(dir);
+    float3 L;
+
+    float kc = 0.0;
+    float Kl = 0.0;
+    float Kq = 1.0;
+    float fAtt = light.m_Intensity / max((kc + Kl * d + Kq * d * d), 0.01);
+    L = fAtt * light.m_Color;
+
+    float ndotl = saturate(dot(norm, dir));
+    float3 diffuse = col * ndotl;
+
+    float3 r = reflect(dir, norm);
+    float rdotv = saturate(dot(r, CB_GlobalConstants.EyeDirection.xyz));
+    float n = 1000.2;
+    float3 specular = ndotl * pow(rdotv, n) * 0.5;
+
+    return L * (diffuse + specular) * col;
+}
+
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float3 lightDir = float3(1.2, 0.8, 0.3);
-    //float3 eyeDir = IN.PositionES;
-    float3 normalWS = normal.Sample(defaultSampler, IN.UV).xyz * 2.0 - 1.0;
-    float4 col = albedo.Sample(defaultSampler, IN.UV);
-    float ndotl = saturate(dot(normalWS, normalize(lightDir)));
+    float3 ambient = float3(0.2, 0.3, 0.5) * 0.05;
 
-    //float3 r = reflect(-lightDir, normal);
-    //float rdotv = saturate(dot(r, eyeDir));
-    //float n = 1000.2;
+    PointLight lights[6];
 
-    float4 ambient = float4(0.4, 0.7, 0.4, 0.1) * 0.2;
-    ambient.xyz += ((normalWS + 0.2) * 0.4);
-    float4 diffuse = col * ndotl;
-    //float4 specular = col * ndotl * pow(rdotv, n) * 0.5;
+    float4 time = CB_GlobalConstants.Time * 1.0;
 
-    return ambient + diffuse;
+    lights[0].m_Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
+    lights[0].m_Color = float3(0.3, 1.0, 0.3);
+    lights[0].m_Intensity = 2.0f;
+    lights[0].m_Size = 20.0f;
+
+    lights[1].m_Position = float3(10.0, sin(time.z) * 2.0, cos(time.y+10.3)* 6.0);
+    lights[1].m_Color = float3(sin(time.w+0.12), 0.0, .3);
+    lights[1].m_Intensity = 30.0f;
+    lights[1].m_Size = 20.0f;
+
+    lights[2].m_Position = float3(sin(time.y + 0.34) * 10.0, 9.0, 14.0);
+    lights[2].m_Color = float3(0.3, 0.0, 1.0);
+    lights[2].m_Intensity = 14.0f;
+    lights[2].m_Size = 20.0f;
+
+    lights[3].m_Position = float3(3.0, 9.0, sin(time.y+ 1.4) * 4.0);
+    lights[3].m_Color = float3(0.6, sin(time.y + 0.5), 0.1);
+    lights[3].m_Intensity = 44.0f;
+    lights[3].m_Size = 20.0f;
+
+    lights[4].m_Position = float3(-12.0, -3.0, -9.0);
+    lights[4].m_Color = float3(sin(time.y+4.3), 0.13, 0.57);
+    lights[4].m_Intensity = 40.0f;
+    lights[4].m_Size = 20.0f;
+
+    lights[5].m_Position = float3(4.5, 9.0, -17.0);
+    lights[5].m_Color = float3(sin(time.y+1.6), 0.73, 0.57);
+    lights[5].m_Intensity = 5.0f;
+    lights[5].m_Size = 20.0f;
+
+    float3 finalColor = 0;
+
+    for (int i = 0; i < 6; ++i)
+    {
+        finalColor += ComputeLighting(IN.UV, lights[i]) * 1.4;
+    }
+
+    //return position.Sample(defaultSampler, IN.UV).xyzz / 10.0f;
+    return ambient.xyzz + finalColor.xyzz;
 }

@@ -436,7 +436,13 @@ struct RHISetRootConstantsDesc
 struct RHISetRootDescriptorTableDesc
 {
     uint32_t m_RootParameterIndex;
-    RHIShaderResourceViewHandle m_SRVHandle;
+    RHIShaderResourceViewHandle m_BaseSRVHandle;
+};
+
+struct RHISetRootShaderResourceDesc
+{
+    uint32_t m_RootParameterIndex;
+    RHIResourceHandle m_Resource;
 };
 
 ETH_NAMESPACE_END

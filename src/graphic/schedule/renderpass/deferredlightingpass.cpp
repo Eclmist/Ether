@@ -30,11 +30,11 @@ DEFINE_GFX_PASS(DeferredLightingPass);
 
 DECLARE_GFX_RESOURCE(GBufferAlbedoTexture);
 DECLARE_GFX_RESOURCE(GBufferNormalTexture);
-DECLARE_GFX_RESOURCE(GBufferPositionTexture);
+DECLARE_GFX_RESOURCE(GBufferPosDepthTexture);
 
 DEFINE_GFX_SRV(GBufferAlbedoTexture);
 DEFINE_GFX_SRV(GBufferNormalTexture);
-DEFINE_GFX_SRV(GBufferPositionTexture);
+DEFINE_GFX_SRV(GBufferPosDepthTexture);
 
 DeferredLightingPass::DeferredLightingPass()
     : RenderPass("Deferred Lighting Pass")
@@ -52,7 +52,7 @@ void DeferredLightingPass::RegisterInputOutput(GraphicContext& context, Resource
 {
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPositionTexture), GFX_SRV(GBufferPositionTexture));
+    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_SRV(GBufferPosDepthTexture));
 }
 
 void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
@@ -77,14 +77,16 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
 
+    ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
+    context.GetCommandList()->SetRootConstants({ 1, 4, 0, &globalTime });
+    context.GetCommandList()->SetRootConstants({ 2, 4, 0, &context.GetEyeDirection() });
 
     // TODO: This technically binds 3 SRVs - as specified in the descriptor range in InitializeRootSignature()
     // There doesn't seem to be a way to explicitly bind textures one at a time unless each one is a table,
     // which is quite eww. Therefore all the textures just have to been sequential in the SRV Heap implicitly.
-    // Is there a better way to do this?
+    // This will break depending on how the descriptor allcator is written later, how do we fix this?
     context.GetCommandList()->SetRootDescriptorTable({ 0, GFX_SRV(GBufferAlbedoTexture) });
-
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
@@ -132,7 +134,7 @@ void DeferredLightingPass::InitializeRootSignature()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(1, 1);
+    RHIRootSignature tempRS(3, 1);
     RHIDescriptorRangeDesc rangeDesc = {};
     rangeDesc.m_NumDescriptors = 3;
     rangeDesc.m_ShaderRegister = 0;
@@ -154,6 +156,9 @@ void DeferredLightingPass::InitializeRootSignature()
     sampler.m_ShaderVisibility = RHIShaderVisibility::Pixel;
 
     tempRS[0]->SetAsDescriptorRange(rangeDesc);
+    tempRS[1]->SetAsConstant({ 0, 0, RHIShaderVisibility::All, 4 });
+    tempRS[2]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 4 });
+
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);
 }
 

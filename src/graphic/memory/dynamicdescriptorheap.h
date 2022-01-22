@@ -19,18 +19,14 @@
 
 #pragma once
 
-#include "renderpass.h"
-
 ETH_NAMESPACE_BEGIN
 
-class HardCodedRenderPass : public RenderPass
-{
-public:
-    HardCodedRenderPass();
-
-    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
-    void Render(GraphicContext& context, ResourceContext& rc) override;
-};
+//class DescriptorAllocation
+//{
+//public:
+//    DescriptorAllocation() = default;
+//    ~DescriptorAllocation() = default;
+//};
 
 ETH_NAMESPACE_END
 

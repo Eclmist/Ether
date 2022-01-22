@@ -30,12 +30,12 @@ DEFINE_GFX_PASS(GBufferPass);
 
 DEFINE_GFX_RESOURCE(GBufferAlbedoTexture);
 DEFINE_GFX_RESOURCE(GBufferNormalTexture);
-DEFINE_GFX_RESOURCE(GBufferPositionTexture);
+DEFINE_GFX_RESOURCE(GBufferPosDepthTexture);
 DEFINE_GFX_RESOURCE(GBufferDepthTexture);
 
 DEFINE_GFX_RTV(GBufferAlbedoTexture);
 DEFINE_GFX_RTV(GBufferNormalTexture);
-DEFINE_GFX_RTV(GBufferPositionTexture);
+DEFINE_GFX_RTV(GBufferPosDepthTexture);
 DEFINE_GFX_DSV(GBufferDepthTexture);
 
 GBufferPass::GBufferPass()
@@ -57,14 +57,14 @@ void GBufferPass::Initialize()
 void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     RHIViewportDesc vp = context.GetViewport();
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferAlbedoTexture));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferNormalTexture));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferPositionTexture));
-    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, GFX_RESOURCE(GBufferDepthTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferAlbedoTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferNormalTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPosDepthTexture));
+    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RHIFormat::D24UnormS8Uint, GFX_RESOURCE(GBufferDepthTexture));
 
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_RTV(GBufferAlbedoTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferNormalTexture), GFX_RTV(GBufferNormalTexture));
-    rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPositionTexture), GFX_RTV(GBufferPositionTexture));
+    rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_RTV(GBufferPosDepthTexture));
     rc.CreateDepthStencilView(GFX_RESOURCE(GBufferDepthTexture), GFX_DSV(GBufferDepthTexture));
 }
 
@@ -86,17 +86,17 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 
     context.TransitionResource(GFX_RESOURCE(GBufferAlbedoTexture), RHIResourceState::RenderTarget);
     context.TransitionResource(GFX_RESOURCE(GBufferNormalTexture), RHIResourceState::RenderTarget);
-    context.TransitionResource(GFX_RESOURCE(GBufferPositionTexture), RHIResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferPosDepthTexture), RHIResourceState::RenderTarget);
 
     context.ClearColor(GFX_RTV(GBufferAlbedoTexture), ethVector4());
     context.ClearColor(GFX_RTV(GBufferNormalTexture), ethVector4());
-    context.ClearColor(GFX_RTV(GBufferPositionTexture), ethVector4());
+    context.ClearColor(GFX_RTV(GBufferPosDepthTexture), ethVector4());
 
     RHIRenderTargetViewHandle rtvs[3] = 
     { 
         GFX_RTV(GBufferAlbedoTexture),
         GFX_RTV(GBufferNormalTexture),
-        GFX_RTV(GBufferPositionTexture) 
+        GFX_RTV(GBufferPosDepthTexture)
     };
 
     context.SetRenderTargets(3, rtvs, GFX_DSV(GBufferDepthTexture));
@@ -162,7 +162,7 @@ void GBufferPass::InitializePipelineState()
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    RHIFormat formats[3] = { RHIFormat::R8G8B8A8Unorm, RHIFormat::R8G8B8A8Unorm, RHIFormat::R8G8B8A8Unorm };
+    RHIFormat formats[3] = { RHIFormat::R8G8B8A8Unorm, RHIFormat::R32G32B32A32Float, RHIFormat::R32G32B32A32Float };
     creationPSO.SetRenderTargetFormats(3, formats);
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);

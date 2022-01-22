@@ -111,8 +111,13 @@ public:
 
         ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
 
+        ethMatrix4x4 viewMatrixRaw;
+        DirectX::XMStoreFloat4x4(&viewMatrixRaw, viewMatrix);
+        ethXMVector eyeVec = DirectX::XMVectorSet(viewMatrixRaw._13, viewMatrixRaw._23, viewMatrixRaw._33, viewMatrixRaw._43);
+
         e.m_GraphicContext->SetViewMatrix(viewMatrix);
         e.m_GraphicContext->SetProjectionMatrix(projectionMatrix);
+        e.m_GraphicContext->SetEyeDirection(eyeVec);
     };
 
 private:

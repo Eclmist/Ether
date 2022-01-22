@@ -51,13 +51,15 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
+    float trippyAmt = 0.0;
+
     float3 pos = IN.Position;
-    pos.y += sin(pos.x * CB_GlobalConstants.Time.w * 0.1) * 0.01;
-    pos.y += sin(pos.z * CB_GlobalConstants.Time.z * 0.1) * 0.03;
+    pos.y += sin((pos.x + CB_GlobalConstants.Time.w) * 7) * 0.05 * trippyAmt;
+    pos.y += sin((pos.z + CB_GlobalConstants.Time.z) * 4) * 0.09 * trippyAmt;
 
     o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(pos, 1.0));
     o.PositionWS = mul(CB_ModelViewProj.ModelMatrix, float4(IN.Position, 1.0)).xyz;
-    o.NormalWS = normalize(mul(CB_ModelViewProj.Normal, normalize(IN.Normal)));
+    o.NormalWS = mul(CB_ModelViewProj.Normal, float4(IN.Normal, 1.0)).xyz;
 
     return o;
 }

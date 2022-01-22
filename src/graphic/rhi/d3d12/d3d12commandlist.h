@@ -39,7 +39,8 @@ public:
     RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) override;
     RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) override;
     RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) override;
-	RHIResult SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc) override;
+    RHIResult SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc) override;
+    RHIResult SetRootShaderResource(const RHISetRootShaderResourceDesc& desc) override;
     RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) override;
 
     RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) override;

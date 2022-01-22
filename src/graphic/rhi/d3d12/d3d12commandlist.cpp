@@ -115,7 +115,17 @@ RHIResult D3D12CommandList::SetRootDescriptorTable(const RHISetRootDescriptorTab
 {
     m_CommandList->SetGraphicsRootDescriptorTable(
         desc.m_RootParameterIndex,
-        Translate(desc.m_SRVHandle->GetGPUHandle())
+        Translate(desc.m_BaseSRVHandle->GetGPUHandle())
+    );
+
+    return RHIResult::Success;
+}
+
+RHIResult D3D12CommandList::SetRootShaderResource(const RHISetRootShaderResourceDesc& desc)
+{
+    m_CommandList->SetGraphicsRootShaderResourceView(
+        desc.m_RootParameterIndex,
+        Translate(desc.m_Resource->GetGPUVirtualAddress())
     );
 
     return RHIResult::Success;
