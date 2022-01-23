@@ -321,7 +321,8 @@ struct RHIShaderResourceViewDesc : public RHIResourceViewDesc
 
 struct RHIConstantBufferViewDesc : public RHIResourceViewDesc
 {
-
+    size_t m_BufferSize;
+    RHIVirtualAddress m_GpuAddress;
 };
 
 struct RHIUnorderedAccessViewDesc : public RHIResourceViewDesc
@@ -441,6 +442,12 @@ struct RHISetRootDescriptorTableDesc
 };
 
 struct RHISetRootShaderResourceDesc
+{
+    uint32_t m_RootParameterIndex;
+    RHIResourceHandle m_Resource;
+};
+
+struct RHISetRootConstantBufferDesc
 {
     uint32_t m_RootParameterIndex;
     RHIResourceHandle m_Resource;

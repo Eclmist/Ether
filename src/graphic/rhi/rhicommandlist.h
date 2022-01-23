@@ -37,9 +37,11 @@ public:
     virtual RHIResult SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer) = 0;
     virtual RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) = 0;
     virtual RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) = 0;
+
     virtual RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) = 0;
     virtual RHIResult SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc) = 0;
     virtual RHIResult SetRootShaderResource(const RHISetRootShaderResourceDesc& desc) = 0;
+    virtual RHIResult SetRootConstantBuffer(const RHISetRootConstantBufferDesc& desc) = 0;
     virtual RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) = 0;
 
     virtual RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) = 0;

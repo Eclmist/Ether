@@ -33,7 +33,7 @@ RHIResult D3D12RootParameter::SetAsConstant(const RHIRootParameterConstantDesc& 
     return RHIResult::Success;
 }
 
-RHIResult D3D12RootParameter::SetAsCommonBufferView(const RHIRootParameterCBVDesc& desc)
+RHIResult D3D12RootParameter::SetAsConstantBufferView(const RHIRootParameterCBVDesc& desc)
 {
 	m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);

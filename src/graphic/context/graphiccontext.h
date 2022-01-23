@@ -31,14 +31,14 @@ public:
 
 public:
 
-    inline ethXMMatrix GetViewMatrix() const { return m_ViewMatrix; }
-    inline ethXMMatrix GetProjectionMatrix() const { return m_ProjectionMatrix; }
-    inline ethXMVector GetEyeDirection() const { return m_EyeDirection; }
+    inline ethMatrix4x4 GetViewMatrix() const { return m_ViewMatrix; }
+    inline ethMatrix4x4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
+    inline ethVector4 GetEyeDirection() const { return m_EyeDirection; }
     inline RHIViewportDesc GetViewport() const { return m_Viewport; }
 
-    inline void SetViewMatrix(ethXMMatrix viewMatrix) { m_ViewMatrix = viewMatrix; }
-    inline void SetProjectionMatrix(ethXMMatrix projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
-    inline void SetEyeDirection(ethXMVector eyeVector) { m_EyeDirection = eyeVector; }
+    inline void SetViewMatrix(ethMatrix4x4 viewMatrix) { m_ViewMatrix = viewMatrix; }
+    inline void SetProjectionMatrix(ethMatrix4x4 projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
+    inline void SetEyeDirection(ethVector4 eyeVector) { m_EyeDirection = eyeVector; }
 
 public:
     void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color);
@@ -51,9 +51,10 @@ public:
     void SetScissor(const RHIScissorDesc& scissor);
 
 private:
-    ethXMMatrix m_ViewMatrix;
-    ethXMMatrix m_ProjectionMatrix;
-    ethXMVector m_EyeDirection;
+    ethMatrix4x4 m_ViewMatrix;
+    ethMatrix4x4 m_ProjectionMatrix;
+
+    ethVector4 m_EyeDirection;
     
     RHIViewportDesc m_Viewport;
 };

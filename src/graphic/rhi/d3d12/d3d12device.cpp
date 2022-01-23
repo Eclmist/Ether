@@ -255,7 +255,20 @@ RHIResult D3D12Device::CreateShaderResourceView(const RHIShaderResourceViewDesc&
 
 RHIResult D3D12Device::CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& cbvHandle) const
 {
-    return RHIResult::NotSupported;
+    D3D12ConstantBufferView* d3dCbv = new D3D12ConstantBufferView();
+    d3dCbv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCPU();
+    d3dCbv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleGPU();
+    GraphicCore::GetSRVDescriptorHeap()->IncrementHandle();
+
+    const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
+
+    m_Device->CreateConstantBufferView(
+        &Translate(desc),
+        Translate(d3dCbv->m_CpuHandle)
+    );
+
+    cbvHandle.Set(d3dCbv);
+    return RHIResult::Success;
 }
 
 RHIResult D3D12Device::CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& uavHandle) const

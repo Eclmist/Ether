@@ -41,9 +41,11 @@ public:
 public:
     void TransitionResource(RHIResourceHandle resource, RHIResourceState newState);
     void CopyBufferRegion(RHIResourceHandle dest, RHIResourceHandle src, size_t size, size_t dstOffset = 0);
+    void InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset = 0);
     void FinalizeAndExecute(bool waitForCompletion = false);
 
-public:
+private:
+    friend class VisualNode; // TODO: Visual node is the only one initializing without context. remove eventually.
     static void InitializeBuffer(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset = 0);
 
 protected:

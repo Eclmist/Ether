@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "texturedebugpass.h"
+#include "ProceduralSkyPass.h"
 #include "graphic/rhi/rhicommandlist.h"
 #include "graphic/rhi/rhicommandqueue.h"
 #include "graphic/rhi/rhipipelinestate.h"
@@ -26,42 +26,29 @@
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_PASS(TextureDebugPass);
+DEFINE_GFX_PASS(ProceduralSkyPass);
 
-DECLARE_GFX_RESOURCE(GBufferAlbedoTexture);
-DECLARE_GFX_RESOURCE(GBufferNormalTexture);
-DECLARE_GFX_RESOURCE(GBufferPosDepthTexture);
+DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
-DECLARE_GFX_SRV(GBufferAlbedoTexture);
-DECLARE_GFX_SRV(GBufferNormalTexture);
-DECLARE_GFX_SRV(GBufferPosDepthTexture);
-
-TextureDebugPass::TextureDebugPass()
-    : RenderPass("Texture Debug Pass")
+ProceduralSkyPass::ProceduralSkyPass()
+    : RenderPass("Procedural Sky Pass")
 {
 }
 
-void TextureDebugPass::Initialize()
+void ProceduralSkyPass::Initialize()
 {
     InitializeShaders();
     InitializeRootSignature();
     InitializePipelineState();
 }
 
-void TextureDebugPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+void ProceduralSkyPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_SRV(GBufferPosDepthTexture));
 }
 
-void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
+void ProceduralSkyPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    EngineConfig& config = EngineCore::GetEngineConfig();
-    if (config.m_DebugTextureIndex == 0)
-        return;
-
-    OPTICK_EVENT("Texture Debug Pass - Render");
+    OPTICK_EVENT("Procedural Sky Pass - Render");
 
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (m_VertexShader->HasRecompiled() || m_PixelShader->HasRecompiled())
@@ -81,19 +68,17 @@ void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
-    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
-    context.GetCommandList()->SetRootConstants({ 0, 1, 0, &config.m_DebugTextureIndex });
-    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
+    context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
     context.Reset();
 }
 
-void TextureDebugPass::InitializeShaders()
+void ProceduralSkyPass::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"debug\\texturedebug.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"debug\\texturedebug.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"proceduralsky.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"proceduralsky.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -101,9 +86,9 @@ void TextureDebugPass::InitializeShaders()
     m_PixelShader->SetRecompiled(false);
 }
 
-void TextureDebugPass::InitializePipelineState()
+void ProceduralSkyPass::InitializePipelineState()
 {
-    m_PipelineState.SetName(L"TextureDebugPass::PipelineState");
+    m_PipelineState.SetName(L"ProceduralSkyPass::PipelineState");
 
     RHIPipelineState creationPSO;
     creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
@@ -117,12 +102,11 @@ void TextureDebugPass::InitializePipelineState()
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
     creationPSO.Finalize(m_PipelineState);
-
 }
 
-void TextureDebugPass::InitializeRootSignature()
+void ProceduralSkyPass::InitializeRootSignature()
 {
-    m_RootSignature.SetName(L"TextureDebugPass::RootSignature");
+    m_RootSignature.SetName(L"ProceduralSkyPass::RootSignature");
 
     RHIRootSignatureFlags rootSignatureFlags =
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
@@ -130,30 +114,8 @@ void TextureDebugPass::InitializeRootSignature()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(2, 1);
-    tempRS[0]->SetAsConstant({ 0, 0, RHIShaderVisibility::All, 32 });
-
-    RHIDescriptorRangeDesc rangeDesc = {};
-    rangeDesc.m_NumDescriptors = 3;
-    rangeDesc.m_ShaderRegister = 0;
-    rangeDesc.m_ShaderVisibility = RHIShaderVisibility::Pixel;
-    rangeDesc.m_Type = RHIDescriptorRangeType::SRV;
-
-    RHISamplerParameterDesc& sampler = tempRS.GetSampler(0);
-    sampler.m_Filter = RHIFilter::MinMagMipPoint;
-    sampler.m_AddressU = RHITextureAddressMode::Clamp;
-    sampler.m_AddressV = RHITextureAddressMode::Clamp;
-    sampler.m_AddressW = RHITextureAddressMode::Clamp;
-    sampler.m_MipLODBias = 0;
-    sampler.m_MaxAnisotropy = 0;
-    sampler.m_ComparisonFunc = RHIComparator::Never;
-    sampler.m_MinLOD = 0;
-    sampler.m_MinLOD = std::numeric_limits<float_t>().max();
-    sampler.m_ShaderRegister = 0;
-    sampler.m_RegisterSpace = 0;
-    sampler.m_ShaderVisibility = RHIShaderVisibility::Pixel;
-
-    tempRS[1]->SetAsDescriptorRange(rangeDesc);
+    RHIRootSignature tempRS(1, 0);
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);
 }
 

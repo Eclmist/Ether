@@ -17,31 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "visualcomponent.h"
+#pragma once
+
+#include "renderpass.h"
 
 ETH_NAMESPACE_BEGIN
 
-VisualComponent::VisualComponent(EntityID owner)
-    : Component(owner)
+class ProceduralSkyPass : public RenderPass
 {
-}
+public:
+    ProceduralSkyPass();
 
-VisualComponent::~VisualComponent()
-{
-}
+    void Initialize() override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
-void VisualComponent::Serialize(OStream& ostream)
-{
-    Component::Serialize(ostream);
-    // TODO
-}
+private:
+    void InitializeShaders();
+    void InitializePipelineState();
+    void InitializeRootSignature();
 
-void VisualComponent::Deserialize(IStream& istream)
-{
-    Component::Deserialize(istream);
-    // TODO
-}
+private:
+    RHIPipelineStateHandle m_PipelineState;
+    RHIRootSignatureHandle m_RootSignature;
+
+    std::unique_ptr<Shader> m_VertexShader;
+    std::unique_ptr<Shader> m_PixelShader;
+};
 
 ETH_NAMESPACE_END
-
 

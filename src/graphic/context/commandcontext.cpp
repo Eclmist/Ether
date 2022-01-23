@@ -76,6 +76,15 @@ void CommandContext::CopyBufferRegion(RHIResourceHandle dest, RHIResourceHandle 
     m_CommandList->CopyBufferRegion(desc);
 }
 
+void CommandContext::InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset)
+{
+    UploadBufferAllocation alloc = m_UploadBufferAllocator.Allocate(size);
+    alloc.SetBufferData(data, size);
+
+    CopyBufferRegion(dest, alloc.GetUploadBuffer().GetResource(), size, dstOffset);
+    TransitionResource(dest, RHIResourceState::GenericRead);
+}
+
 void CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
     GraphicCore::GetCommandManager().Execute(m_CommandList);
@@ -90,11 +99,7 @@ void CommandContext::FinalizeAndExecute(bool waitForCompletion)
 void CommandContext::InitializeBuffer(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset)
 {
     CommandContext context(RHICommandListType::Graphic, L"BufferUploadContext");
-    UploadBufferAllocation alloc = context.m_UploadBufferAllocator.Allocate(size);
-    alloc.SetBufferData(data, size);
-
-    context.CopyBufferRegion(dest, alloc.GetUploadBuffer().GetResource(), size, dstOffset);
-    context.TransitionResource(dest, RHIResourceState::GenericRead);
+    context.InitializeBufferRegion(dest, data, size, dstOffset);
     context.FinalizeAndExecute(true);
 }
 

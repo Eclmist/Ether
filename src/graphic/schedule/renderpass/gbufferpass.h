@@ -37,12 +37,14 @@ private:
     void InitializeShaders();
     void InitializeDepthStencilState();
     void InitializePipelineState();
+    void InitializeRootSignature();
 
 private:
-    RHIPipelineStateHandle m_PipelineState;
     RHIDepthStencilDesc m_DepthStencilState;
+    RHIPipelineStateHandle m_PipelineState;
+    RHIRootSignatureHandle m_RootSignature;
 
-    RHIInputLayoutDesc m_VSInputLayoutDesc;
+
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;
 };

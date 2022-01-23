@@ -17,31 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "visualcomponent.h"
+#pragma once
+
+#include "renderpass.h"
 
 ETH_NAMESPACE_BEGIN
 
-VisualComponent::VisualComponent(EntityID owner)
-    : Component(owner)
+class CommonConstantsUploadPass : public RenderPass
 {
-}
+public:
+    CommonConstantsUploadPass();
 
-VisualComponent::~VisualComponent()
-{
-}
+    void Initialize() override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
-void VisualComponent::Serialize(OStream& ostream)
-{
-    Component::Serialize(ostream);
-    // TODO
-}
+private:
+    struct CommonConstants
+    {
+        ethMatrix4x4 m_ViewMatrix;
+        ethMatrix4x4 m_ProjectionMatrix;
 
-void VisualComponent::Deserialize(IStream& istream)
-{
-    Component::Deserialize(istream);
-    // TODO
-}
+        ethVector4 m_EyeDirection;
+        ethVector4 m_Time;
+    };
+
+    CommonConstants m_CommonConstants;
+};
 
 ETH_NAMESPACE_END
-
 

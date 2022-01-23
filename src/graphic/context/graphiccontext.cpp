@@ -25,8 +25,10 @@ ETH_NAMESPACE_BEGIN
 
 GraphicContext::GraphicContext(const std::wstring& contextName)
     : CommandContext(RHICommandListType::Graphic, contextName)
-    , m_ViewMatrix(DirectX::XMMatrixIdentity())
-    , m_ProjectionMatrix(DirectX::XMMatrixIdentity())
+    , m_ViewMatrix()
+    , m_ProjectionMatrix()
+    , m_EyeDirection()
+    , m_Viewport()
 {
 }
 

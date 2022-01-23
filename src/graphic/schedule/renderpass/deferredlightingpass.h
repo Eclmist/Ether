@@ -39,11 +39,10 @@ private:
     void InitializeRootSignature();
 
 private:
+    RHIDepthStencilDesc m_DepthStencilState;
     RHIPipelineStateHandle m_PipelineState;
     RHIRootSignatureHandle m_RootSignature;
-    RHIDepthStencilDesc m_DepthStencilState;
 
-    RHIInputLayoutDesc m_VSInputLayoutDesc;
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;
 };

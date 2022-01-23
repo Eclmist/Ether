@@ -23,6 +23,8 @@
 #include "graphic/rhi/rhidevice.h"
 #include "graphic/rhi/rhipipelinestate.h"
 #include "graphic/rhi/rhiresource.h"
+#include "graphic/rhi/rhirootsignature.h"
+#include "graphic/rhi/rhirootparameter.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -37,6 +39,8 @@ DEFINE_GFX_RTV(GBufferAlbedoTexture);
 DEFINE_GFX_RTV(GBufferNormalTexture);
 DEFINE_GFX_RTV(GBufferPosDepthTexture);
 DEFINE_GFX_DSV(GBufferDepthTexture);
+
+DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
 GBufferPass::GBufferPass()
     : RenderPass("GBuffer Pass")
@@ -104,20 +108,15 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 
-    // TODO: Move this elsewhere
-    ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
-    context.GetCommandList()->SetRootConstants({ 0, 4, 0, &globalTime });
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleList);
     context.GetCommandList()->SetStencilRef(255);
+    context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
 
     for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
         ethXMMatrix modelMat = visual->GetModelMatrix();
-        ethXMMatrix modelViewMat = DirectX::XMMatrixMultiply(modelMat, context.GetViewMatrix());
-        ethXMMatrix modelViewProjMat = DirectX::XMMatrixMultiply(modelViewMat, context.GetProjectionMatrix());
-
         ethMatrix3x3 upper3x3;
         DirectX::XMStoreFloat3x3(&upper3x3, modelMat);
 
@@ -129,12 +128,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
         context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &modelMat });
-        context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &modelViewProjMat });
-        context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 32, &normalMat });
-
-        ethVector4 lightDirWS(0.7, -1, 0.4, 0);
-        ethXMVector lightDirES = DirectX::XMVector4Transform(DirectX::XMLoadFloat4(&lightDirWS), context.GetViewMatrix());
-        context.GetCommandList()->SetRootConstants({ 2, 4, 0, &lightDirES });
+        context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &normalMat });
         context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
     }
 
@@ -144,8 +138,8 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 
 void GBufferPass::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"lighting\\gbuffer_vs.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"lighting\\gbuffer_ps.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"lighting\\gbuffer.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"lighting\\gbuffer.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -180,6 +174,23 @@ void GBufferPass::InitializePipelineState()
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
     creationPSO.Finalize(m_PipelineState);
+}
+
+void GBufferPass::InitializeRootSignature()
+{
+    m_RootSignature.SetName(L"GBufferPass::RootSignature");
+
+    RHIRootSignatureFlags rootSignatureFlags =
+        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
+        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
+        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
+        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
+
+    RHIRootSignature tempRS(3, 1);
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
+    tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::Vertex, 32 });
+    tempRS.Finalize(rootSignatureFlags, m_RootSignature);
+
 }
 
 ETH_NAMESPACE_END

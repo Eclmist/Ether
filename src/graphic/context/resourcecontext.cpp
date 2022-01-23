@@ -22,6 +22,16 @@
 
 ETH_NAMESPACE_BEGIN
 
+void ResourceContext::CreateBufferResource(uint32_t size, RHIResourceHandle& resource)
+{
+    RHICommitedResourceDesc desc = {};
+    desc.m_HeapType = RHIHeapType::Default;
+    desc.m_State = RHIResourceState::Common;
+    desc.m_ResourceDesc = RHICreateBufferResourceDesc(size);
+
+    CreateResource(desc, resource);
+}
+
 void ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource)
 {
     RHIClearValue clearValue = { format, { 0, 0, 0, 0 } };
@@ -85,11 +95,13 @@ void ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHISh
 
 void ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
 {
-    if (Exists(view.GetName()))
+    if (Exists(view.GetName()) && !ShouldRecreateView(resource.GetName()))
         return;
 
-	//GraphicCore::GetDevice()->CreateConstantBufferView(desc, view);
- //   m_ResourceEntries.emplace(view.GetName());
+    RHIConstantBufferViewDesc cbvDesc = {};
+    cbvDesc.m_Resource = resource;
+    GraphicCore::GetDevice()->CreateConstantBufferView(cbvDesc, view);
+    m_ResourceEntries.emplace(view.GetName());
 }
 
 void ResourceContext::CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view)

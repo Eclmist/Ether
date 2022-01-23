@@ -29,6 +29,7 @@ public:
     ResourceContext() = default;
     ~ResourceContext() = default;
 
+    void CreateBufferResource(uint32_t size, RHIResourceHandle& resource);
     void CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
     void CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
 

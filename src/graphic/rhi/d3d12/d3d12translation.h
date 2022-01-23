@@ -80,6 +80,7 @@ D3D12_ROOT_PARAMETER Translate(const RHIRootParameterSRVDesc& rhiDesc);
 D3D12_ROOT_SIGNATURE_DESC Translate(const RHIRootSignatureDesc& rhiDesc);
 D3D12_SHADER_BYTECODE Translate(const RHIShaderDesc& rhiDesc);
 D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDesc);
+D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RHIConstantBufferViewDesc& rhiDesc);
 D3D12_STATIC_SAMPLER_DESC Translate(const RHISamplerParameterDesc& rhiDesc);
 D3D12_VERTEX_BUFFER_VIEW Translate(const RHIVertexBufferViewDesc& rhiDesc);
 D3D12_VIEWPORT Translate(const RHIViewportDesc& rhiDesc);

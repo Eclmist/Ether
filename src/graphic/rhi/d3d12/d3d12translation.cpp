@@ -803,6 +803,16 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDe
     return d3dDesc;
 }
 
+D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RHIConstantBufferViewDesc& rhiDesc)
+{
+	D3D12_CONSTANT_BUFFER_VIEW_DESC d3dDesc = {};
+	d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
+	d3dDesc.BufferLocation = rhiDesc.m_GpuAddress;
+
+	return d3dDesc;
+}
+
+
 //================================= Reverse Translations ======================================//
 
 RHIDescriptorHandleCPU Translate(const D3D12_CPU_DESCRIPTOR_HANDLE& d3dDesc)

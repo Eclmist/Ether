@@ -142,11 +142,10 @@ void GraphicCommon::InitializeRootSignatures()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(3, 0);
+    RHIRootSignature tempRS(2, 0);
 
-    tempRS[0]->SetAsConstant({ 0, 0, RHIShaderVisibility::All, 4 });
-    tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 48 });
-    tempRS[2]->SetAsConstant({ 2, 0, RHIShaderVisibility::All, 4 });
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
+    tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 32 });
     tempRS.Finalize(rootSignatureFlags, m_DefaultRootSignature);
 }
 
@@ -163,8 +162,8 @@ void GraphicCommon::InitializeShaders()
     m_DefaultInputLayout.m_NumElements = 4;
     m_DefaultInputLayout.m_InputElementDescs = inputElementDesc;
 
-    m_DefaultVS = std::make_unique<Shader>(L"vs_default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_DefaultPS = std::make_unique<Shader>(L"ps_default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_DefaultVS = std::make_unique<Shader>(L"default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_DefaultPS = std::make_unique<Shader>(L"default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_DefaultVS->Compile();
     m_DefaultPS->Compile();

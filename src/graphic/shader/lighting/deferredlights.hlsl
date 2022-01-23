@@ -36,18 +36,21 @@ struct VS_OUTPUT
     float2 UV       : TEXCOORD0;
 };
 
-struct GlobalConstants
+struct CommonConstants
 {
-    float4 Time;
+    float4x4 ViewMatrix;
+    float4x4 ProjectionMatrix;
+
     float4 EyeDirection;
+    float4 Time;
 };
+
+ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
 
 Texture2D albedo : register(t0);
 Texture2D normal : register(t1);
 Texture2D position : register(t2);
 SamplerState defaultSampler : register(s0);
-
-ConstantBuffer<GlobalConstants> CB_GlobalConstants : register(b0);
 
 VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 {
@@ -70,7 +73,7 @@ struct PointLight
     float m_Intensity;
  };
 
-float3 ComputeLighting(float2 uv, PointLight light)
+float3 ComputePointLight(float2 uv, PointLight light)
 {
     float3 pos = position.Sample(defaultSampler, uv);
     float3 col = albedo.Sample(defaultSampler, uv);
@@ -83,7 +86,7 @@ float3 ComputeLighting(float2 uv, PointLight light)
 
     float kc = 0.0;
     float Kl = 0.0;
-    float Kq = 1.0;
+    float Kq = 2.0;
     float fAtt = light.m_Intensity / max((kc + Kl * d + Kq * d * d), 0.01);
     L = fAtt * light.m_Color;
 
@@ -91,25 +94,32 @@ float3 ComputeLighting(float2 uv, PointLight light)
     float3 diffuse = col * ndotl;
 
     float3 r = reflect(dir, norm);
-    float rdotv = saturate(dot(r, CB_GlobalConstants.EyeDirection.xyz));
-    float n = 1000.2;
+    float rdotv = saturate(dot(r, g_CommonConstants.EyeDirection.xyz));
+    float n = 100.2;
     float3 specular = ndotl * pow(rdotv, n) * 0.5;
 
-    return L * (diffuse + specular) * col;
+    return saturate(L * (diffuse + specular) * col);
+}
+
+float3 ComputeSkyLight(float2 uv)
+{
+    float skyConst = 0.5;
+    float4 horizonColor = float4(255, 220, 213, 255) / 255.0 * skyConst;
+    return horizonColor.xyzz * 0.05 * 0;
 }
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float3 ambient = float3(0.2, 0.3, 0.5) * 0.05;
+    float3 ambient = float3(0.86, 1.0, 1.0) * 0.1;
 
-    PointLight lights[6];
+    PointLight lights[7];
 
-    float4 time = CB_GlobalConstants.Time * 1.0;
+    float4 time = g_CommonConstants.Time * 1.0;
 
-    lights[0].m_Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
-    lights[0].m_Color = float3(0.3, 1.0, 0.3);
-    lights[0].m_Intensity = 6.0f;
-    lights[0].m_Size = 10.0f;
+    lights[6].m_Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
+    lights[6].m_Color = float3(0.3, 1.0, 0.3);
+    lights[6].m_Intensity = 60.0f;
+    lights[6].m_Size = 10.0f;
 
     lights[1].m_Position = float3(10.0, sin(time.z) * 2.0, cos(time.y+10.3)* 6.0);
     lights[1].m_Color = float3(sin(time.w+0.12), 0.0, .3);
@@ -126,23 +136,29 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     lights[3].m_Intensity = 44.0f;
     lights[3].m_Size = 30.0f;
 
-    lights[4].m_Position = float3(-12.0, -3.0, -9.0);
-    lights[4].m_Color = float3(sin(time.y+4.3), 0.13, 0.57);
-    lights[4].m_Intensity = 40.0f;
+    lights[4].m_Position = float3(12.0, -9.0, -9.0);
+    lights[4].m_Color = float3(0.15, 0.23, 0.57);
+    lights[4].m_Intensity = 100.0f;
     lights[4].m_Size = 40.0f;
 
     lights[5].m_Position = float3(4.5, 9.0, 17.0);
     lights[5].m_Color = float3(sin(time.y+1.6), 0.73, 0.57);
-    lights[5].m_Intensity = 5.0f;
+    lights[5].m_Intensity = 50.0f;
     lights[5].m_Size = 20.0f;
+
+    lights[0].m_Position = float3(-60.5, 0.0, 0.0);
+    lights[0].m_Color = float3(0.9, 0.78, 0.82);
+    lights[0].m_Intensity = 1200.0f;
+    lights[0].m_Size = 100.0f;
+
 
     float3 finalColor = 0;
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 7; ++i)
     {
-        finalColor += ComputeLighting(IN.UV, lights[i]) * 1.9;
+        finalColor += ComputePointLight(IN.UV, lights[i]) * 1.9;
     }
 
     //return position.Sample(defaultSampler, IN.UV).xyzz / 10.0f;
-    return ambient.xyzz + finalColor.xyzz;
+    return ComputeSkyLight(IN.UV).xyzz + finalColor.xyzz;
 }

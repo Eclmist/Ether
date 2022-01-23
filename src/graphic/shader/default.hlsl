@@ -17,20 +17,23 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-struct ModelViewProjection
+struct InstanceConstants
 {
-    matrix ModelView;
-    matrix ModelViewProjection;
-    matrix Normal;
+    float4x4 ModelMatrix;
+    float4x4 NormalMatrix;
 };
 
-struct GlobalConstants
+struct CommonConstants
 {
+    float4x4 ViewMatrix;
+    float4x4 ProjectionMatrix;
+
+    float4 EyeDirection;
     float4 Time;
 };
 
-ConstantBuffer<GlobalConstants> CB_GlobalConstants : register(b0);
-ConstantBuffer<ModelViewProjection> CB_ModelViewProj : register(b1);
+ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
+ConstantBuffer<InstanceConstants> g_InstanceConstants : register(b1);
 
 struct VS_INPUT
 {
@@ -52,16 +55,18 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    float3 pos = IN.Position;
-    //pos.x = -pos.x;
-    
-    pos.y += sin(pos.x * CB_GlobalConstants.Time.w * 0.1) * 0.1;
-    pos.y += sin(pos.z * CB_GlobalConstants.Time.z * 0.1) * 0.3;
+    float4x4 mv = mul(g_InstanceConstants.ModelMatrix, g_CommonConstants.ViewMatrix);
+    float4x4 mvp = mul(mv, g_CommonConstants.ProjectionMatrix);
 
-    o.Position = mul(CB_ModelViewProj.ModelViewProjection, float4(pos, 1.0));
-    o.PositionES = mul(CB_ModelViewProj.ModelView, float4(IN.Position,1.0)).xyz;
-    o.Normal = normalize(mul(CB_ModelViewProj.Normal, normalize(IN.Normal)));
+    o.Position = mul(mvp, float4(IN.Position, 1.0));
+    o.PositionES = mul(mv, float4(IN.Position,1.0)).xyz;
+    o.Normal = normalize(mul(g_InstanceConstants.NormalMatrix, normalize(IN.Normal)));
     o.EyeDir = IN.Position;
 
     return o;
+}
+
+float4 PS_Main(VS_OUTPUT IN) : SV_Target
+{
+    return float4(1,0,1,1);
 }
