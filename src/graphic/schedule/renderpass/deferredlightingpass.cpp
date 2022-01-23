@@ -36,6 +36,8 @@ DEFINE_GFX_SRV(GBufferAlbedoTexture);
 DEFINE_GFX_SRV(GBufferNormalTexture);
 DEFINE_GFX_SRV(GBufferPosDepthTexture);
 
+DECLARE_GFX_DSV(GBufferDepthTexture);
+
 DeferredLightingPass::DeferredLightingPass()
     : RenderPass("Deferred Lighting Pass")
 {
@@ -44,6 +46,7 @@ DeferredLightingPass::DeferredLightingPass()
 void DeferredLightingPass::Initialize()
 {
     InitializeShaders();
+    InitializeDepthStencilState();
     InitializeRootSignature();
     InitializePipelineState();
 }
@@ -69,13 +72,14 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     }
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV());
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetStencilRef(255);
 
     ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
@@ -104,6 +108,17 @@ void DeferredLightingPass::InitializeShaders()
     m_PixelShader->SetRecompiled(false);
 }
 
+void DeferredLightingPass::InitializeDepthStencilState()
+{
+    m_DepthStencilState = GraphicCore::GetGraphicCommon().m_DepthStateReadWrite;
+    m_DepthStencilState.m_StencilEnabled = true;
+    m_DepthStencilState.m_FrontFace.m_StencilFunc = RHIComparator::Equal;
+    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RHIDepthStencilOperation::Keep;
+    m_DepthStencilState.m_FrontFace.m_StencilFailOp = RHIDepthStencilOperation::Keep;
+    m_DepthStencilState.m_BackFace = m_DepthStencilState.m_FrontFace;
+    m_DepthStencilState.m_DepthComparator = RHIComparator::Always;
+}
+
 void DeferredLightingPass::InitializePipelineState()
 {
     m_PipelineState.SetName(L"DeferredLightingPass::PipelineState");
@@ -116,7 +131,8 @@ void DeferredLightingPass::InitializePipelineState()
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
     creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
+    creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
+    creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
     creationPSO.Finalize(m_PipelineState);

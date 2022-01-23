@@ -21,7 +21,7 @@
 
 void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
 {
-    uint2 v = uint2(vertexID / 2, vertexID % 2);
+    uint2 v = uint2(vertexID % 2, vertexID / 2);
 
     pos.x = v.x * 2.0 - 1.0;
     pos.y = v.y * 2.0 - 1.0;
@@ -131,7 +131,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     lights[4].m_Intensity = 40.0f;
     lights[4].m_Size = 40.0f;
 
-    lights[5].m_Position = float3(4.5, 9.0, -17.0);
+    lights[5].m_Position = float3(4.5, 9.0, 17.0);
     lights[5].m_Color = float3(sin(time.y+1.6), 0.73, 0.57);
     lights[5].m_Intensity = 5.0f;
     lights[5].m_Size = 20.0f;

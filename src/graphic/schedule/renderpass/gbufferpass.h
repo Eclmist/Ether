@@ -35,10 +35,12 @@ public:
 
 private:
     void InitializeShaders();
+    void InitializeDepthStencilState();
     void InitializePipelineState();
 
 private:
     RHIPipelineStateHandle m_PipelineState;
+    RHIDepthStencilDesc m_DepthStencilState;
 
     RHIInputLayoutDesc m_VSInputLayoutDesc;
     std::unique_ptr<Shader> m_VertexShader;

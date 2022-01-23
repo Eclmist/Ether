@@ -45,10 +45,10 @@ void ObjFileParser::Parse(const std::string& path)
     }
 
     for (size_t i = 0; i < attrib.vertices.size(); i += 3)
-        m_RawMesh->m_Positions.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
+        m_RawMesh->m_Positions.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], -attrib.vertices[i + 2]);
 
     for (size_t i = 0; i < attrib.normals.size(); i += 3)
-        m_RawMesh->m_Normals.emplace_back(attrib.normals[i], attrib.normals[i + 1], attrib.normals[i + 2]);
+        m_RawMesh->m_Normals.emplace_back(attrib.normals[i], attrib.normals[i + 1], -attrib.normals[i + 2]);
 
     for (size_t i = 0; i < attrib.texcoords.size(); i += 2)
         m_RawMesh->m_TexCoords.emplace_back(attrib.texcoords[i], attrib.texcoords[i + 1]);

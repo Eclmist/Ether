@@ -30,6 +30,7 @@ public:
 public:
     virtual RHIResult SetViewport(const RHIViewportDesc& viewport) = 0;
     virtual RHIResult SetScissor(const RHIScissorDesc& scissor) = 0;
+    virtual RHIResult SetStencilRef(const RHIStencilValue& val) = 0;
     virtual RHIResult SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology) = 0;
     virtual RHIResult SetPipelineState(const RHIPipelineStateHandle pipelineState) = 0;
     virtual RHIResult SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature) = 0;

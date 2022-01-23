@@ -32,6 +32,7 @@ public:
 public:
     RHIResult SetViewport(const RHIViewportDesc& viewport) override;
     RHIResult SetScissor(const RHIScissorDesc& scissor) override;
+    RHIResult SetStencilRef(const RHIStencilValue& val) override;
     RHIResult SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology) override;
     RHIResult SetPipelineState(const RHIPipelineStateHandle pipelineState) override;
     RHIResult SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature) override;

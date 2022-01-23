@@ -51,6 +51,7 @@ GBufferPass::~GBufferPass()
 void GBufferPass::Initialize()
 {
     InitializeShaders();
+    InitializeDepthStencilState();
     InitializePipelineState();
 }
 
@@ -109,6 +110,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetGraphicRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
     context.GetCommandList()->SetRootConstants({ 0, 4, 0, &globalTime });
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleList);
+    context.GetCommandList()->SetStencilRef(255);
 
     for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
@@ -151,6 +153,15 @@ void GBufferPass::InitializeShaders()
     m_PixelShader->SetRecompiled(false);
 }
 
+void GBufferPass::InitializeDepthStencilState()
+{
+    m_DepthStencilState = GraphicCore::GetGraphicCommon().m_DepthStateReadWrite;
+    m_DepthStencilState.m_StencilEnabled = true;
+    m_DepthStencilState.m_FrontFace.m_StencilFunc = RHIComparator::Always;
+    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RHIDepthStencilOperation::Replace;
+    m_DepthStencilState.m_BackFace = m_DepthStencilState.m_FrontFace;
+}
+
 void GBufferPass::InitializePipelineState()
 {
     m_PipelineState.SetName(L"GBufferPass::PipelineState");
@@ -165,7 +176,7 @@ void GBufferPass::InitializePipelineState()
     RHIFormat formats[3] = { RHIFormat::R8G8B8A8Unorm, RHIFormat::R32G32B32A32Float, RHIFormat::R32G32B32A32Float };
     creationPSO.SetRenderTargetFormats(3, formats);
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
-    creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
+    creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
     creationPSO.Finalize(m_PipelineState);

@@ -42,6 +42,12 @@ RHIResult D3D12CommandList::SetScissor(const RHIScissorDesc& scissor)
     return RHIResult::Success;
 }
 
+RHIResult D3D12CommandList::SetStencilRef(const RHIStencilValue& val)
+{
+    m_CommandList->OMSetStencilRef(val);
+    return RHIResult::Success;
+}
+
 RHIResult D3D12CommandList::SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology)
 {
     m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));

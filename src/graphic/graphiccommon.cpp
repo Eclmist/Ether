@@ -59,7 +59,7 @@ GraphicCommon::~GraphicCommon()
 void GraphicCommon::InitializeRasterizerStates()
 {
     m_RasterizerDefault.m_FillMode = RHIFillMode::Solid;
-    m_RasterizerDefault.m_CullMode = RHICullMode::None;
+    m_RasterizerDefault.m_CullMode = RHICullMode::Back;
     m_RasterizerDefault.m_FrontCounterClockwise = true;
     m_RasterizerDefault.m_DepthBias = 0;
     m_RasterizerDefault.m_DepthBiasClamp = 0;

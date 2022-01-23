@@ -53,6 +53,7 @@ typedef uint64_t                                RHIVirtualAddress;
 // TODO: Properly support flags
 typedef uint64_t                                RHIFenceValue;
 typedef uint64_t                                RHIRootSignatureFlags;
+typedef uint32_t                                RHIStencilValue;
 typedef uint8_t                                 RHIColorChannels;
 typedef const void*                             RHIShaderByteCode;
 
