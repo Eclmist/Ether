@@ -30,6 +30,8 @@
 #include "ecs/gettoplevelentitiescommand.h"
 #include "ecs/getcomponentscommand.h"
 
+#include "state/viewport/setdrawmodecommand.h"
+
 
 ETH_NAMESPACE_BEGIN
 
@@ -40,9 +42,16 @@ CommandFactory::CommandFactory()
     REGISTER_COMMAND("initialize", InitializeCommand);
     REGISTER_COMMAND("detach", DetachCommand);
     REGISTER_COMMAND("resize", ResizeCommand);
+
+    // Asset
+    REGISTER_COMMAND("importasset", ImportAssetCommand);
+
+    // ECS
     REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
     REGISTER_COMMAND("getcomponents", GetComponentsCommand);
-    REGISTER_COMMAND("importasset", ImportAssetCommand);
+
+    // State
+    REGISTER_COMMAND("setdrawmode", SetDrawModeCommand);
 }
 
 std::unique_ptr<Command> CommandFactory::CreateCommand(const std::string& commandID, const CommandData& data) const

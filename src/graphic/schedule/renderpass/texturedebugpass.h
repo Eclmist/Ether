@@ -17,34 +17,34 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "clearframebufferpass.h"
+#pragma once
+
+#include "renderpass.h"
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_PASS(ClearFrameBufferPass);
-DECLARE_GFX_DSV(GBufferDepthTexture);
-
-ClearFrameBufferPass::ClearFrameBufferPass()
-    : RenderPass("Clear Frame Buffer Pass")
+class TextureDebugPass : public RenderPass
 {
-}
+public:
+    TextureDebugPass();
 
-void ClearFrameBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
-{
+    void Initialize() override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
-}
+private:
+    void InitializeShaders();
+    void InitializePipelineState();
+    void InitializeRootSignature();
 
-void ClearFrameBufferPass::Render(GraphicContext& context, ResourceContext& rc)
-{
-    OPTICK_EVENT("Clear Frame Buffer Pass - Render");
+private:
+    RHIPipelineStateHandle m_PipelineState;
+    RHIRootSignatureHandle m_RootSignature;
 
-    EngineConfig& config = EngineCore::GetEngineConfig();
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
-    context.ClearDepthStencil(GFX_DSV(GBufferDepthTexture), 1.0f, 0.0f);
-    context.FinalizeAndExecute();
-    context.Reset();
-}
+    RHIInputLayoutDesc m_VSInputLayoutDesc;
+    std::unique_ptr<Shader> m_VertexShader;
+    std::unique_ptr<Shader> m_PixelShader;
+};
 
 ETH_NAMESPACE_END
 

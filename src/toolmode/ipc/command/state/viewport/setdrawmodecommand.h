@@ -17,34 +17,24 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "clearframebufferpass.h"
+#pragma once
+
+#include "toolmode/ipc/command/command.h"
+#include "toolmode/ipc/command/sendablecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_PASS(ClearFrameBufferPass);
-DECLARE_GFX_DSV(GBufferDepthTexture);
-
-ClearFrameBufferPass::ClearFrameBufferPass()
-    : RenderPass("Clear Frame Buffer Pass")
+class SetDrawModeCommand : public Command
 {
-}
+public:
+    SetDrawModeCommand(const CommandData& data);
+    ~SetDrawModeCommand() = default;
 
-void ClearFrameBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
-{
+    void Execute() override;
 
-}
-
-void ClearFrameBufferPass::Render(GraphicContext& context, ResourceContext& rc)
-{
-    OPTICK_EVENT("Clear Frame Buffer Pass - Render");
-
-    EngineConfig& config = EngineCore::GetEngineConfig();
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
-    context.ClearDepthStencil(GFX_DSV(GBufferDepthTexture), 1.0f, 0.0f);
-    context.FinalizeAndExecute();
-    context.Reset();
-}
+private:
+    std::string m_DrawModeKey;
+};
 
 ETH_NAMESPACE_END
 

@@ -48,6 +48,8 @@ private:
 public:
     // TODO: Move to camera
     bool m_RenderWireframe = false;
+    uint32_t m_DebugTextureIndex = 0;
+
     ethVector4 m_ClearColor = ethVector4(0.05, 0.0, 0.07, 0.0);
 };
 

@@ -22,17 +22,26 @@
 #include "graphic/schedule/renderpass/deferredlightingpass.h"
 #include "graphic/schedule/renderpass/gbufferpass.h"
 
+#ifdef ETH_TOOLMODE
+#include "graphic/schedule/renderpass/texturedebugpass.h"
+#endif
+
 ETH_NAMESPACE_BEGIN
 
 DECLARE_GFX_PASS(ClearFrameBufferPass);
 DECLARE_GFX_PASS(GBufferPass);
 DECLARE_GFX_PASS(DeferredLightingPass);
 
+#ifdef ETH_TOOLMODE
+DECLARE_GFX_PASS(TextureDebugPass);
+#endif
+
 void GraphicScheduler::RegisterRenderPasses()
 {
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
+    ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
 
     for (auto renderPass : m_RegisteredRenderPasses)
         renderPass->Initialize();

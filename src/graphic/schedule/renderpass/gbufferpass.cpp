@@ -70,7 +70,7 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
 
 void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("HardCodedRenderPass - Render");
+    OPTICK_EVENT("GBuffer Pass - Render");
 
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();

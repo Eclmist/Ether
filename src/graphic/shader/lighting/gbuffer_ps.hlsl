@@ -52,16 +52,16 @@ PS_OUTPUT PS_Main(PS_INPUT IN) : SV_Target
     float3 normal = normalize(IN.NormalWS);
     float3 positionWS = IN.PositionWS;
 
-    //float4 col2 = float4(
-    //    sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
-    //    sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
-    //    sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
-    //    1.0);
+    float4 col2 = float4(
+        sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
+        sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
+        sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
+        1.0);
 
-    //float4 col3 = lerp(col, col2, saturate(sin(CB_GlobalConstants.Time.z)));
+    float4 col3 = lerp(col, positionWS.xyzz / 10.0, 0.2);// saturate(sin(CB_GlobalConstants.Time.z)));
 
     PS_OUTPUT output;
-    output.Albedo = col;
+    output.Albedo = col3;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = 0.0;

@@ -108,8 +108,8 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     lights[0].m_Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
     lights[0].m_Color = float3(0.3, 1.0, 0.3);
-    lights[0].m_Intensity = 2.0f;
-    lights[0].m_Size = 20.0f;
+    lights[0].m_Intensity = 6.0f;
+    lights[0].m_Size = 10.0f;
 
     lights[1].m_Position = float3(10.0, sin(time.z) * 2.0, cos(time.y+10.3)* 6.0);
     lights[1].m_Color = float3(sin(time.w+0.12), 0.0, .3);
@@ -119,17 +119,17 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     lights[2].m_Position = float3(sin(time.y + 0.34) * 10.0, 9.0, 14.0);
     lights[2].m_Color = float3(0.3, 0.0, 1.0);
     lights[2].m_Intensity = 14.0f;
-    lights[2].m_Size = 20.0f;
+    lights[2].m_Size = 50.0f;
 
     lights[3].m_Position = float3(3.0, 9.0, sin(time.y+ 1.4) * 4.0);
     lights[3].m_Color = float3(0.6, sin(time.y + 0.5), 0.1);
     lights[3].m_Intensity = 44.0f;
-    lights[3].m_Size = 20.0f;
+    lights[3].m_Size = 30.0f;
 
     lights[4].m_Position = float3(-12.0, -3.0, -9.0);
     lights[4].m_Color = float3(sin(time.y+4.3), 0.13, 0.57);
     lights[4].m_Intensity = 40.0f;
-    lights[4].m_Size = 20.0f;
+    lights[4].m_Size = 40.0f;
 
     lights[5].m_Position = float3(4.5, 9.0, -17.0);
     lights[5].m_Color = float3(sin(time.y+1.6), 0.73, 0.57);
@@ -140,7 +140,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     for (int i = 0; i < 6; ++i)
     {
-        finalColor += ComputeLighting(IN.UV, lights[i]) * 1.4;
+        finalColor += ComputeLighting(IN.UV, lights[i]) * 1.9;
     }
 
     //return position.Sample(defaultSampler, IN.UV).xyzz / 10.0f;

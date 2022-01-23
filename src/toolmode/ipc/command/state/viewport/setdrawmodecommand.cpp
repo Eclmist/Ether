@@ -17,33 +17,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "clearframebufferpass.h"
+#pragma once
+
+#include "setdrawmodecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_PASS(ClearFrameBufferPass);
-DECLARE_GFX_DSV(GBufferDepthTexture);
-
-ClearFrameBufferPass::ClearFrameBufferPass()
-    : RenderPass("Clear Frame Buffer Pass")
-{
+SetDrawModeCommand::SetDrawModeCommand(const CommandData& data)
+    : m_DrawModeKey(data["args"]["drawmode"]) {
 }
 
-void ClearFrameBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+void SetDrawModeCommand::Execute()
 {
-
-}
-
-void ClearFrameBufferPass::Render(GraphicContext& context, ResourceContext& rc)
-{
-    OPTICK_EVENT("Clear Frame Buffer Pass - Render");
-
-    EngineConfig& config = EngineCore::GetEngineConfig();
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
-    context.ClearDepthStencil(GFX_DSV(GBufferDepthTexture), 1.0f, 0.0f);
-    context.FinalizeAndExecute();
-    context.Reset();
+    // TODO: This should be done elsewhere
+    if (m_DrawModeKey == "shaded")
+        EngineCore::GetEngineConfig().m_DebugTextureIndex = 0;
+    if (m_DrawModeKey == "albedo")
+        EngineCore::GetEngineConfig().m_DebugTextureIndex = 1;
+    if (m_DrawModeKey == "normal")
+        EngineCore::GetEngineConfig().m_DebugTextureIndex = 2;
+    if (m_DrawModeKey == "position")
+        EngineCore::GetEngineConfig().m_DebugTextureIndex = 3;
 }
 
 ETH_NAMESPACE_END

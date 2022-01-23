@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "deferredlightingpass.h"
+#include "texturedebugpass.h"
 #include "graphic/rhi/rhicommandlist.h"
 #include "graphic/rhi/rhicommandqueue.h"
 #include "graphic/rhi/rhipipelinestate.h"
@@ -26,38 +26,42 @@
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_PASS(DeferredLightingPass);
+DEFINE_GFX_PASS(TextureDebugPass);
 
 DECLARE_GFX_RESOURCE(GBufferAlbedoTexture);
 DECLARE_GFX_RESOURCE(GBufferNormalTexture);
 DECLARE_GFX_RESOURCE(GBufferPosDepthTexture);
 
-DEFINE_GFX_SRV(GBufferAlbedoTexture);
-DEFINE_GFX_SRV(GBufferNormalTexture);
-DEFINE_GFX_SRV(GBufferPosDepthTexture);
+DECLARE_GFX_SRV(GBufferAlbedoTexture);
+DECLARE_GFX_SRV(GBufferNormalTexture);
+DECLARE_GFX_SRV(GBufferPosDepthTexture);
 
-DeferredLightingPass::DeferredLightingPass()
-    : RenderPass("Deferred Lighting Pass")
+TextureDebugPass::TextureDebugPass()
+    : RenderPass("Texture Debug Pass")
 {
 }
 
-void DeferredLightingPass::Initialize()
+void TextureDebugPass::Initialize()
 {
     InitializeShaders();
     InitializeRootSignature();
     InitializePipelineState();
 }
 
-void DeferredLightingPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+void TextureDebugPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_SRV(GBufferPosDepthTexture));
 }
 
-void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
+void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Deferred Lighting Pass - Render");
+    EngineConfig& config = EngineCore::GetEngineConfig();
+    if (config.m_DebugTextureIndex == 0)
+        return;
+
+    OPTICK_EVENT("Texture Debug Pass - Render");
 
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (m_VertexShader->HasRecompiled() || m_PixelShader->HasRecompiled())
@@ -69,6 +73,7 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     }
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+
     context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV());
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
@@ -76,27 +81,19 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
-
-    ethXMVector globalTime = DirectX::XMVectorSet(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
-    context.GetCommandList()->SetRootConstants({ 1, 4, 0, &globalTime });
-    context.GetCommandList()->SetRootConstants({ 2, 4, 0, &context.GetEyeDirection() });
-
-    // TODO: This technically binds 3 SRVs - as specified in the descriptor range in InitializeRootSignature()
-    // There doesn't seem to be a way to explicitly bind textures one at a time unless each one is a table,
-    // which is quite eww. Therefore all the textures just have to been sequential in the SRV Heap implicitly.
-    // This will break depending on how the descriptor allcator is written later, how do we fix this?
-    context.GetCommandList()->SetRootDescriptorTable({ 0, GFX_SRV(GBufferAlbedoTexture) });
+    context.GetCommandList()->SetRootConstants({ 0, 4, 0, &config.m_DebugTextureIndex });
+    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
     context.Reset();
 }
 
-void DeferredLightingPass::InitializeShaders()
+void TextureDebugPass::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"lighting\\deferredlights.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"lighting\\deferredlights.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"debug\\texturedebug.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"debug\\texturedebug.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -104,9 +101,9 @@ void DeferredLightingPass::InitializeShaders()
     m_PixelShader->SetRecompiled(false);
 }
 
-void DeferredLightingPass::InitializePipelineState()
+void TextureDebugPass::InitializePipelineState()
 {
-    m_PipelineState.SetName(L"DeferredLightingPass::PipelineState");
+    m_PipelineState.SetName(L"TextureDebugPass::PipelineState");
 
     RHIPipelineState creationPSO;
     creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
@@ -120,9 +117,10 @@ void DeferredLightingPass::InitializePipelineState()
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
     creationPSO.Finalize(m_PipelineState);
+
 }
 
-void DeferredLightingPass::InitializeRootSignature()
+void TextureDebugPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"GBufferPass::RootSignature");
 
@@ -132,7 +130,9 @@ void DeferredLightingPass::InitializeRootSignature()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(3, 1);
+    RHIRootSignature tempRS(2, 1);
+    tempRS[0]->SetAsConstant({ 0, 0, RHIShaderVisibility::Pixel, 4 });
+
     RHIDescriptorRangeDesc rangeDesc = {};
     rangeDesc.m_NumDescriptors = 3;
     rangeDesc.m_ShaderRegister = 0;
@@ -153,10 +153,7 @@ void DeferredLightingPass::InitializeRootSignature()
     sampler.m_RegisterSpace = 0;
     sampler.m_ShaderVisibility = RHIShaderVisibility::Pixel;
 
-    tempRS[0]->SetAsDescriptorRange(rangeDesc);
-    tempRS[1]->SetAsConstant({ 0, 0, RHIShaderVisibility::All, 4 });
-    tempRS[2]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 4 });
-
+    tempRS[1]->SetAsDescriptorRange(rangeDesc);
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);
 }
 
