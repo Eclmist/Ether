@@ -25,6 +25,7 @@
 #include "graphic/schedule/renderpass/proceduralskypass.h"
 
 #ifdef ETH_TOOLMODE
+#include "graphic/schedule/renderpass/editorgizmospass.h"
 #include "graphic/schedule/renderpass/texturedebugpass.h"
 #endif
 
@@ -37,6 +38,7 @@ DECLARE_GFX_PASS(GBufferPass);
 DECLARE_GFX_PASS(ProceduralSkyPass);
 
 #ifdef ETH_TOOLMODE
+DECLARE_GFX_PASS(EditorGizmosPass);
 DECLARE_GFX_PASS(TextureDebugPass);
 #endif
 
@@ -47,6 +49,7 @@ void GraphicScheduler::RegisterRenderPasses()
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
+    ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
 
     for (auto renderPass : m_RegisteredRenderPasses)

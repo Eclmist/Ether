@@ -43,7 +43,7 @@ ShaderDaemon::~ShaderDaemon()
 void ShaderDaemon::RegisterShader(Shader* shader)
 {
     std::lock_guard<std::mutex> guard(m_Mutex);
-    m_RegisteredShaders[shader->GetFilename()] = shader;
+    m_RegisteredShaders[shader->GetFilename()].push_back(shader);
 }
 
 std::wstring ShaderDaemon::GetShaderDirectory()
@@ -131,7 +131,8 @@ void ShaderDaemon::ProcessModifiedShaders(char* notifyInfo)
         {
             LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
             WaitForFileUnlock(shaderFileName);
-            m_RegisteredShaders[shaderFileName]->Compile();
+            for (auto shaders : m_RegisteredShaders[shaderFileName])
+				shaders->Compile();
         }
 
         offset += info->NextEntryOffset;

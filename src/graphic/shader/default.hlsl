@@ -28,8 +28,11 @@ struct CommonConstants
     float4x4 ViewMatrix;
     float4x4 ProjectionMatrix;
 
+    float4 EyePosition;
     float4 EyeDirection;
     float4 Time;
+
+    float2 ScreenResolution;
 };
 
 ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);

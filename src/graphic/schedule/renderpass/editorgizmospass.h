@@ -23,10 +23,10 @@
 
 ETH_NAMESPACE_BEGIN
 
-class TextureDebugPass : public RenderPass
+class EditorGizmosPass : public RenderPass
 {
 public:
-    TextureDebugPass();
+    EditorGizmosPass();
 
     void Initialize() override;
     void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
@@ -35,9 +35,11 @@ public:
 private:
     void InitializeShaders();
     void InitializePipelineState();
+    void InitializeRasterizerDesc();
     void InitializeRootSignature();
 
 private:
+    RHIRasterizerDesc m_RasterizerDesc;
     RHIPipelineStateHandle m_PipelineState;
     RHIRootSignatureHandle m_RootSignature;
 

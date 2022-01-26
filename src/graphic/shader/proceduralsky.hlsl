@@ -41,8 +41,11 @@ struct CommonConstants
     float4x4 ViewMatrix;
     float4x4 ProjectionMatrix;
 
+    float4 EyePosition;
     float4 EyeDirection;
     float4 Time;
+
+    float2 ScreenResolution;
 };
 
 ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
@@ -64,13 +67,14 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     float skyConst = 0.6;
     float4 zenithColor = float4(0.45, 0.59, 0.95, 1.0) * skyConst;
-    float4 horizonColor = float4(255, 220, 213, 255) / 255.0 * skyConst;
+    float4 horizonColor = float4(205, 220, 253, 255) / 255.0 * skyConst;
     float4 groundColor = float4(0.379, 0.38, 0.74, 1.0)* skyConst;
 
     float viewY = g_CommonConstants.EyeDirection.y - IN.UV.y + .5;
 
     float4 col;
 
+return float4(0.07, 0.06, 0.077, 1.0);
     if (viewY < 0)
         col = lerp( horizonColor, groundColor, saturate(-viewY * 2));
     else

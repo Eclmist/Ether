@@ -39,7 +39,7 @@ private:
     void ProcessModifiedShaders(char* notifyInfo);
 
 private:
-    std::unordered_map<std::wstring, Shader*> m_RegisteredShaders;
+    std::unordered_map<std::wstring, std::vector<Shader*>> m_RegisteredShaders;
 
     std::thread m_ShaderDaemonThread;
     std::mutex m_Mutex;

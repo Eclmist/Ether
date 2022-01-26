@@ -186,7 +186,7 @@ void GBufferPass::InitializeRootSignature()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(3, 1);
+    RHIRootSignature tempRS(3, 0);
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::Vertex, 32 });
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);

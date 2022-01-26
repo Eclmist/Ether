@@ -41,8 +41,11 @@ struct CommonConstants
     float4x4 ViewMatrix;
     float4x4 ProjectionMatrix;
 
+    float4 EyePosition;
     float4 EyeDirection;
     float4 Time;
+
+    float2 ScreenResolution;
 };
 
 ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
@@ -158,6 +161,8 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     {
         finalColor += ComputePointLight(IN.UV, lights[i]) * 1.9;
     }
+
+    finalColor += float3(0.4, 0.5, 0.9) * position.Sample(defaultSampler, IN.UV).w / 100.0;
 
     //return position.Sample(defaultSampler, IN.UV).xyzz / 10.0f;
     return ComputeSkyLight(IN.UV).xyzz + finalColor.xyzz;

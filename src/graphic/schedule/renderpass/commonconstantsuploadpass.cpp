@@ -47,8 +47,10 @@ void CommonConstantsUploadPass::Render(GraphicContext& context, ResourceContext&
 
     m_CommonConstants.m_ViewMatrix = context.GetViewMatrix();
     m_CommonConstants.m_ProjectionMatrix = context.GetProjectionMatrix();
+    m_CommonConstants.m_EyePosition = context.GetEyePosition();
     m_CommonConstants.m_EyeDirection = context.GetEyeDirection();
     m_CommonConstants.m_Time = ethVector4(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
+    m_CommonConstants.m_ScreenResolution = ethVector2(context.GetViewport().m_Width, context.GetViewport().m_Height);
 
     context.TransitionResource(GFX_RESOURCE(GlobalCommonConstants), RHIResourceState::CopyDest);
     context.InitializeBufferRegion(GFX_RESOURCE(GlobalCommonConstants), &m_CommonConstants, sizeof(CommonConstants));

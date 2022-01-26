@@ -38,8 +38,11 @@ private:
         ethMatrix4x4 m_ViewMatrix;
         ethMatrix4x4 m_ProjectionMatrix;
 
+        ethVector4 m_EyePosition;
         ethVector4 m_EyeDirection;
         ethVector4 m_Time;
+
+        ethVector2 m_ScreenResolution;
     };
 
     CommonConstants m_CommonConstants;

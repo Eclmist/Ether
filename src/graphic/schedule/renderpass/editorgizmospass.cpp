@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "deferredlightingpass.h"
+#include "editorgizmospass.h"
 #include "graphic/rhi/rhicommandlist.h"
 #include "graphic/rhi/rhicommandqueue.h"
 #include "graphic/rhi/rhipipelinestate.h"
@@ -26,42 +26,38 @@
 
 ETH_NAMESPACE_BEGIN
 
-DEFINE_GFX_PASS(DeferredLightingPass);
+DEFINE_GFX_PASS(EditorGizmosPass);
 
-DECLARE_GFX_RESOURCE(GBufferAlbedoTexture);
-DECLARE_GFX_RESOURCE(GBufferNormalTexture);
-DECLARE_GFX_RESOURCE(GBufferPosDepthTexture);
+DEFINE_GFX_RESOURCE(EditorGizmosTexture);
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
-DEFINE_GFX_SRV(GBufferAlbedoTexture);
-DEFINE_GFX_SRV(GBufferNormalTexture);
-DEFINE_GFX_SRV(GBufferPosDepthTexture);
-
+DEFINE_GFX_RTV(EditorGizmosTexture);
 DECLARE_GFX_DSV(GBufferDepthTexture);
+DECLARE_GFX_SRV(GBufferPosDepthTexture);
 
-DeferredLightingPass::DeferredLightingPass()
-    : RenderPass("Deferred Lighting Pass")
+EditorGizmosPass::EditorGizmosPass()
+    : RenderPass("Editor Gizmos Pass")
 {
 }
 
-void DeferredLightingPass::Initialize()
+void EditorGizmosPass::Initialize()
 {
     InitializeShaders();
-    InitializeDepthStencilState();
+    InitializeRasterizerDesc();
     InitializeRootSignature();
     InitializePipelineState();
 }
 
-void DeferredLightingPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
+void EditorGizmosPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_SRV(GBufferPosDepthTexture));
+    RHIViewportDesc vp = context.GetViewport();
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EditorGizmosTexture));
+    rc.CreateRenderTargetView(GFX_RESOURCE(EditorGizmosTexture), GFX_RTV(EditorGizmosTexture));
 }
 
-void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
+void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Deferred Lighting Pass - Render");
+    OPTICK_EVENT("Editor Gizmos Pass - Render");
 
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (m_VertexShader->HasRecompiled() || m_PixelShader->HasRecompiled())
@@ -73,32 +69,27 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     }
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
+
+    context.SetRenderTargets(1, &gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
-    context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
-
-    // TODO: This technically binds 3 SRVs - as specified in the descriptor range in InitializeRootSignature()
-    // There doesn't seem to be a way to explicitly bind textures one at a time unless each one is a table,
-    // which is quite eww. Therefore all the textures just have to been sequential in the SRV Heap implicitly.
-    // This will break depending on how the descriptor allcator is written later, how do we fix this?
-    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferPosDepthTexture) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
     context.Reset();
 }
 
-void DeferredLightingPass::InitializeShaders()
+void EditorGizmosPass::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"lighting\\deferredlights.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"lighting\\deferredlights.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"toolmode\\editorgizmos.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"toolmode\\editorgizmos.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -106,39 +97,34 @@ void DeferredLightingPass::InitializeShaders()
     m_PixelShader->SetRecompiled(false);
 }
 
-void DeferredLightingPass::InitializeDepthStencilState()
+void EditorGizmosPass::InitializePipelineState()
 {
-    m_DepthStencilState = GraphicCore::GetGraphicCommon().m_DepthStateReadOnly;
-    m_DepthStencilState.m_StencilEnabled = true;
-    m_DepthStencilState.m_FrontFace.m_StencilFunc = RHIComparator::Equal;
-    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RHIDepthStencilOperation::Keep;
-    m_DepthStencilState.m_FrontFace.m_StencilFailOp = RHIDepthStencilOperation::Keep;
-    m_DepthStencilState.m_BackFace = m_DepthStencilState.m_FrontFace;
-    m_DepthStencilState.m_DepthComparator = RHIComparator::Always;
-}
-
-void DeferredLightingPass::InitializePipelineState()
-{
-    m_PipelineState.SetName(L"DeferredLightingPass::PipelineState");
+    m_PipelineState.SetName(L"EditorGizmosPass::PipelineState");
 
     RHIPipelineState creationPSO;
-    creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
-    creationPSO.SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefault);
+    creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional);
+    creationPSO.SetRasterizerState(m_RasterizerDesc);
     creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
     creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
-    creationPSO.SetDepthStencilState(m_DepthStencilState);
+    creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
     creationPSO.Finalize(m_PipelineState);
 }
 
-void DeferredLightingPass::InitializeRootSignature()
+void EditorGizmosPass::InitializeRasterizerDesc()
 {
-    m_RootSignature.SetName(L"DeferredLightingPass::RootSignature");
+    m_RasterizerDesc = GraphicCore::GetGraphicCommon().m_RasterizerDefault;
+    m_RasterizerDesc.m_CullMode = RHICullMode::None;
+}
+
+void EditorGizmosPass::InitializeRootSignature()
+{
+    m_RootSignature.SetName(L"EditorGizmosPass::RootSignature");
 
     RHIRootSignatureFlags rootSignatureFlags =
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
@@ -148,7 +134,7 @@ void DeferredLightingPass::InitializeRootSignature()
 
     RHIRootSignature tempRS(2, 1);
     RHIDescriptorRangeDesc rangeDesc = {};
-    rangeDesc.m_NumDescriptors = 3;
+    rangeDesc.m_NumDescriptors = 1;
     rangeDesc.m_ShaderRegister = 0;
     rangeDesc.m_ShaderVisibility = RHIShaderVisibility::Pixel;
     rangeDesc.m_Type = RHIDescriptorRangeType::SRV;
@@ -169,7 +155,6 @@ void DeferredLightingPass::InitializeRootSignature()
 
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsDescriptorRange(rangeDesc);
-
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);
 }
 

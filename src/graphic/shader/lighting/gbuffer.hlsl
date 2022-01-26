@@ -28,8 +28,11 @@ struct CommonConstants
     float4x4 ViewMatrix;
     float4x4 ProjectionMatrix;
 
+    float4 EyePosition;
     float4 EyeDirection;
     float4 Time;
+
+    float2 ScreenResolution;
 };
 
 ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
@@ -64,8 +67,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     float trippyAmt = 0.0;
 
     float3 pos = IN.Position;
-    pos.y += sin((pos.x + g_CommonConstants.Time.w) * 7) * 0.05 * trippyAmt;
-    pos.y += sin((pos.z + g_CommonConstants.Time.z) * 4) * 0.09 * trippyAmt;
+    pos.y += sin((pos.x + g_CommonConstants.Time.w) * 7) * 0.5 * trippyAmt;
+    pos.y += sin((pos.z + g_CommonConstants.Time.z) * 4) * 0.9 * trippyAmt;
 
     float4x4 mv = mul(g_CommonConstants.ViewMatrix, g_InstanceConstants.ModelMatrix);
     float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);
@@ -95,7 +98,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     output.Albedo = col3;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
-    output.Position.w = 0.0;
+    output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;
 
     return output;
 }
