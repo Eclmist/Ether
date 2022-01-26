@@ -27,7 +27,11 @@ bool UpdateEngine()
 {
     OPTICK_FRAME("Engine - MainThread");
 
-    EngineCore::GetMainApplication().OnUpdate(UpdateEventArgs());
+    {
+		OPTICK_FRAME("Application (ToolMain) - Update");
+		EngineCore::GetMainApplication().OnUpdate(UpdateEventArgs());
+    }
+
     EngineCore::Update();
 
     RenderEventArgs renderArgs;

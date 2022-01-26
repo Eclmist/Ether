@@ -61,9 +61,20 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
     IFileStream iistream(dest);
     compiledMesh->Deserialize(iistream);
 
-    for (int i = 0; i < 1; ++i)
-        if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
-			EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledMesh);
+    std::shared_ptr<CompiledMesh> compiledCubeMesh = std::make_shared<CompiledMesh>();
+    IFileStream iistream2("Z:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\cube.obj.ether");
+    compiledCubeMesh->Deserialize(iistream2);
+
+
+    if (EngineCore::GetECSManager().GetComponent<MeshComponent>(0) != nullptr)
+    {
+	    EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
+	    EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
+    }
+
+    for (int i = 1; i < 20; ++i)
+		if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
+			EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledCubeMesh);
 }
 
 std::shared_ptr<Importer> AssetCompiler::GetImporter(const std::string& ext)

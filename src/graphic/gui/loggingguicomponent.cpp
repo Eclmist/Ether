@@ -23,6 +23,8 @@ ETH_NAMESPACE_BEGIN
 
 void LoggingGuiComponent::Draw()
 {
+    OPTICK_EVENT("Logging Gui Component - Draw");
+
     m_Size = ImVec2((float)EngineCore::GetEngineConfig().GetClientWidth(), 300);
     m_Position = ImVec2(0, EngineCore::GetEngineConfig().GetClientHeight() - m_Size.y);
 

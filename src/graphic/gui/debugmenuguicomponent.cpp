@@ -29,6 +29,8 @@ DebugMenuGuiComponent::DebugMenuGuiComponent()
 
 void DebugMenuGuiComponent::Draw()
 {
+    OPTICK_EVENT("Debug Menu Gui Component - Draw");
+
     static bool showImGuiDemo = false;
     GraphicContext& gfxContext = GraphicCore::GetGraphicRenderer().GetGraphicContext();
 

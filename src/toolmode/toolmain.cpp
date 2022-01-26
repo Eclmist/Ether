@@ -41,31 +41,21 @@ public:
 
     void LoadContent() override 
     {
-        Entity* debugCube = EngineCore::GetECSManager().CreateEntity("Debug Cube");
+        Entity* debugCube = EngineCore::GetECSManager().CreateEntity("AssetImportSlot (Temp)");
 
         debugCube->AddComponent<MeshComponent>();
         debugCube->AddComponent<VisualComponent>();
         debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
         debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
 
-        Entity* debugCubeAnim = EngineCore::GetECSManager().CreateEntity("Debug Cube (Animated)");
-        debugCubeAnim->AddComponent<MeshComponent>();
-        debugCubeAnim->AddComponent<VisualComponent>();
-        debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
-        debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
-
-        Entity* groundPlane = EngineCore::GetECSManager().CreateEntity("Ground Plane");
-        groundPlane->AddComponent<MeshComponent>();
-        groundPlane->AddComponent<VisualComponent>();
-        groundPlane->GetComponent<TransformComponent>()->SetScale({ 100, 0.1f, 100 });
-
         for (int i = 0; i < 10; ++i)
         {
-            Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
+            Entity* newEntity = EngineCore::GetECSManager().CreateEntity("Cube");
             newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
             newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
-            newEntity->AddComponent<MeshComponent>();
+            newEntity->GetComponent<TransformComponent>()->SetScale({ 1.5, 1.5, 1.5 });
             newEntity->AddComponent<VisualComponent>();
+            newEntity->AddComponent<MeshComponent>();
         }
     };
 

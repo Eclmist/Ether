@@ -55,6 +55,8 @@ void GraphicScheduler::RegisterRenderPasses()
 
 void GraphicScheduler::ScheduleRenderPasses(GraphicContext& context, ResourceContext& rc)
 {
+    OPTICK_EVENT("Graphic Scheduler - Schedule");
+
     for (auto renderPass : m_RegisteredRenderPasses)
         renderPass->RegisterInputOutput(context, rc);
 
@@ -70,6 +72,7 @@ void GraphicScheduler::RenderPasses(GraphicContext& context, ResourceContext& rc
         //m_ResizeQueue.front()->Resize();
         //m_ResizeQueue.pop();
     //}
+    OPTICK_EVENT("Graphic Scheduler - RenderPasses");
 
     for (int i = 0; i < m_OrderedRenderPasses.size(); ++i)
         m_OrderedRenderPasses[i]->Render(context, rc);

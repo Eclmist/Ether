@@ -45,6 +45,8 @@ void RenderingSystem::OnUpdate()
 
     for (EntityID id : m_MatchingEntities)
     {
+        OPTICK_EVENT("ECS - Rendering System - Visual Node Validation");
+
 		auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
 		auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
 
