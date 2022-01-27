@@ -17,25 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/commonconstants.hlsl"
+
 struct InstanceConstants
 {
     float4x4 ModelMatrix;
     float4x4 NormalMatrix;
 };
 
-struct CommonConstants
-{
-    float4x4 ViewMatrix;
-    float4x4 ProjectionMatrix;
-
-    float4 EyePosition;
-    float4 EyeDirection;
-    float4 Time;
-
-    float2 ScreenResolution;
-};
-
-ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
 ConstantBuffer<InstanceConstants> g_InstanceConstants : register(b1);
 
 struct VS_INPUT
@@ -80,7 +69,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     return o;
 }
 
-PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
+PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
     float4 col = float4(0.9, 0.9, 0.9, 1.0);
     float3 normal = normalize(IN.NormalWS);

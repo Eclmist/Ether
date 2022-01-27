@@ -22,9 +22,11 @@
 #include <cassert>
 #include <mutex>
 #include <unordered_map>
+#include <unordered_set>
 #include <deque>
 #include <queue>
 #include <string>
+#include <map>
 #include <set>
 #include <vector>
 #include <functional>

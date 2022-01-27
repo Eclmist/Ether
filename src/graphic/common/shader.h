@@ -53,8 +53,53 @@ private:
     std::wstring GetFullPath();
 
 private:
-    wrl::ComPtr<IDxcLibrary> m_DxcLibrary;
-    wrl::ComPtr<IDxcCompiler> m_DxcCompiler;
+    class CustomIncludeHandler : public IDxcIncludeHandler
+    {
+    public:
+        HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override
+        {
+            wrl::ComPtr<IDxcBlobEncoding> pEncoding;
+            std::wstring path = pFilename;
+            if (m_IncludedFiles.find(path) != m_IncludedFiles.end())
+            {
+                // Return empty string blob if this file has been included before
+                static const char nullStr[] = " ";
+                s_DxcUtils->CreateBlob(nullStr, ARRAYSIZE(nullStr), CP_UTF8, pEncoding.GetAddressOf());
+                *ppIncludeSource = pEncoding.Detach();
+                return S_OK;
+            }
+
+            HRESULT hr = s_DxcUtils->LoadFile(pFilename, nullptr, pEncoding.GetAddressOf());
+            if (SUCCEEDED(hr))
+            {
+                m_IncludedFiles.insert(path);
+                *ppIncludeSource = pEncoding.Detach();
+            }
+            else
+            {
+                *ppIncludeSource = nullptr;
+            }
+            return hr;
+        }
+
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override
+        {
+            return s_IncludeHandler->QueryInterface(riid, ppvObject);
+        }
+
+        ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
+        ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
+
+        std::unordered_set<std::wstring> m_IncludedFiles;
+    };
+
+private:
+    static wrl::ComPtr<IDxcLibrary> s_DxcLibrary;
+    static wrl::ComPtr<IDxcCompiler3> s_DxcCompiler;
+    static wrl::ComPtr<IDxcUtils> s_DxcUtils;
+    static wrl::ComPtr<IDxcIncludeHandler> s_IncludeHandler;
+
+private:
     wrl::ComPtr<IDxcBlob> m_ShaderBlob;
 
     std::wstring m_Filename;

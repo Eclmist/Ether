@@ -17,43 +17,19 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#include "common/fullscreenhelpers.hlsl"
+#include "common/commonconstants.hlsl"
+#include "common/fullscreenhelpers.hlsl"
 
-void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
-{
-    uint2 v = uint2(vertexID % 2, vertexID / 2);
-
-    pos.x = v.x * 2.0 - 1.0;
-    pos.y = v.y * 2.0 - 1.0;
-
-    uv.x = v.x;
-    uv.y = 1.0 - v.y;
-}
+Texture2D albedo : register(t0);
+Texture2D normal : register(t1);
+Texture2D position : register(t2);
+SamplerState defaultSampler : register(s0);
 
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
     float2 UV       : TEXCOORD0;
 };
-
-struct CommonConstants
-{
-    float4x4 ViewMatrix;
-    float4x4 ProjectionMatrix;
-
-    float4 EyePosition;
-    float4 EyeDirection;
-    float4 Time;
-
-    float2 ScreenResolution;
-};
-
-ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
-
-Texture2D albedo : register(t0);
-Texture2D normal : register(t1);
-Texture2D position : register(t2);
-SamplerState defaultSampler : register(s0);
 
 VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 {
@@ -78,8 +54,8 @@ struct PointLight
 
 float3 ComputePointLight(float2 uv, PointLight light)
 {
-    float3 pos = position.Sample(defaultSampler, uv);
-    float3 col = albedo.Sample(defaultSampler, uv);
+    float3 pos = position.Sample(defaultSampler, uv).xyz;
+    float3 col = albedo.Sample(defaultSampler, uv).xyz;
     float3 norm = normal.Sample(defaultSampler, uv).xyz;
 
     float3 dir = light.m_Position - pos;
@@ -108,7 +84,7 @@ float3 ComputeSkyLight(float2 uv)
 {
     float skyConst = 0.5;
     float4 horizonColor = float4(255, 220, 213, 255) / 255.0 * skyConst;
-    return horizonColor.xyzz * 0.05 * 0;
+    return horizonColor.xyz * 0.05 * 0;
 }
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
@@ -161,8 +137,6 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     {
         finalColor += ComputePointLight(IN.UV, lights[i]) * 1.9;
     }
-
-    finalColor += float3(0.4, 0.5, 0.9) * position.Sample(defaultSampler, IN.UV).w / 100.0;
 
     //return position.Sample(defaultSampler, IN.UV).xyzz / 10.0f;
     return ComputeSkyLight(IN.UV).xyzz + finalColor.xyzz;

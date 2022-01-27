@@ -21,6 +21,11 @@
 
 ETH_NAMESPACE_BEGIN
 
+wrl::ComPtr<IDxcLibrary> Shader::s_DxcLibrary;
+wrl::ComPtr<IDxcCompiler3> Shader::s_DxcCompiler;
+wrl::ComPtr<IDxcUtils> Shader::s_DxcUtils;
+wrl::ComPtr<IDxcIncludeHandler> Shader::s_IncludeHandler;
+
 Shader::Shader(
     const wchar_t* filename,
     const wchar_t* entrypoint,
@@ -34,8 +39,15 @@ Shader::Shader(
     , m_Encoding(encoding)
     , m_HasRecompiled(false)
 {
-    ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&m_DxcLibrary)));
-    ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&m_DxcCompiler)));
+	if (!s_DxcLibrary)
+		ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&s_DxcLibrary)));
+    if (!s_DxcCompiler)
+		ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&s_DxcCompiler)));
+    if (!s_DxcUtils)
+		ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&s_DxcUtils)));
+    if (!s_IncludeHandler)
+		ASSERT_SUCCESS(s_DxcUtils->CreateDefaultIncludeHandler(s_IncludeHandler.GetAddressOf()));
+
     GraphicCore::GetShaderDaemon().RegisterShader(this);
 }
 
@@ -43,9 +55,27 @@ bool Shader::Compile()
 {
     LogGraphicsInfo("Compiling shader %s", ToNarrowString(m_Filename).c_str());
 
+    std::vector<LPCWSTR> arguments;
+	arguments.push_back(L"-I");
+	arguments.push_back(ETH_SHADER_SOURCE_DIR);
+
+    // -E for the entry point (eg. PSMain)
+    arguments.push_back(L"-E");
+    arguments.push_back(m_EntryPoint.c_str());
+
+    //-T for the target profile (eg. ps_6_2)
+    arguments.push_back(L"-T");
+    arguments.push_back(m_TargetProfile.c_str());
+
+    //Strip reflection data and pdbs
+    ETH_TOOLONLY(arguments.push_back(L"-Qstrip_debug"));
+    ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
+    ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
+    ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
+    //arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
+
     wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
-    HRESULT hr = m_DxcLibrary->CreateBlobFromFile(
-        GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
+    HRESULT hr = s_DxcLibrary->CreateBlobFromFile(GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
 
     if (FAILED(hr))
     {
@@ -53,9 +83,13 @@ bool Shader::Compile()
         return false;
     }
 
-    wrl::ComPtr<IDxcOperationResult> result;
-    hr = m_DxcCompiler->Compile(encodingBlob.Get(), GetRelativePath().c_str(), m_EntryPoint.c_str(),
-        m_TargetProfile.c_str(), NULL, 0, NULL, 0, NULL, &result);
+    DxcBuffer sourceBuffer;
+    sourceBuffer.Ptr = encodingBlob->GetBufferPointer();
+    sourceBuffer.Size = encodingBlob->GetBufferSize();
+    sourceBuffer.Encoding = 0;
+
+    wrl::ComPtr<IDxcResult> result;
+    hr = s_DxcCompiler->Compile(&sourceBuffer, arguments.data(), arguments.size(), s_IncludeHandler.Get(), IID_PPV_ARGS(result.GetAddressOf()));
 
     if (SUCCEEDED(hr))
         result->GetStatus(&hr);

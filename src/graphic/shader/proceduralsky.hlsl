@@ -17,38 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#include "common/fullscreenhelpers.hlsl"
-
-void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
-{
-    uint2 v = uint2(vertexID % 2, vertexID / 2);
-
-    pos.x = v.x * 2.0 - 1.0;
-    pos.y = v.y * 2.0 - 1.0;
-
-    uv.x = v.x;
-    uv.y = 1.0 - v.y;
-}
+#include "common/commonconstants.hlsl"
+#include "common/fullscreenhelpers.hlsl"
 
 struct VS_OUTPUT
 {
     float4 Position   : SV_Position;
     float2 UV         : TEXCOORD0;
 };
-
-struct CommonConstants
-{
-    float4x4 ViewMatrix;
-    float4x4 ProjectionMatrix;
-
-    float4 EyePosition;
-    float4 EyeDirection;
-    float4 Time;
-
-    float2 ScreenResolution;
-};
-
-ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
 
 VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 {
