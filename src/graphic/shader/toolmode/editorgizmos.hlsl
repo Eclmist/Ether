@@ -92,7 +92,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float3 ddxPos = ddx(IN.PositionWS);
     float3 ddyPos = ddy(IN.PositionWS);
-    float3 surfaceGradient = (abs(ddxPos) + abs(ddyPos));
+    float3 surfaceGradient = abs(ddxPos) + abs(ddyPos);
     float3 axisWidth = surfaceGradient * AXIS_LINE_WIDTH;
 
     float fade = (1.0 - saturate(length(surfaceGradient))) * smoothstep(0, 0.01, abs(depthTex - depth));

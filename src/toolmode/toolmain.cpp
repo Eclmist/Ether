@@ -22,6 +22,8 @@
 
 ETH_NAMESPACE_BEGIN
 
+using namespace DirectX;
+
 class EtherToolmode : public IApplicationBase
 {
 public:
@@ -33,13 +35,13 @@ public:
         EngineCore::GetEngineConfig().SetClientHeight(1080);
         EngineCore::GetEngineConfig().SetClientName(L"Ether Toolmode");
 
+        m_CameraMode = CameraMode::Orbit;
         m_CameraDistance = 10.0f;
         m_CameraRotation = { -0.4, 0.785398, 0 };
         EngineCore::GetEngineConfig().ToggleDebugGui();
-
     };
 
-    void LoadContent() override 
+    void LoadContent() override
     {
         Entity* debugCube = EngineCore::GetECSManager().CreateEntity("AssetImportSlot (Temp)");
 
@@ -63,7 +65,7 @@ public:
     void Shutdown() override {};
 
 public:
-    void OnUpdate(const UpdateEventArgs& e) override 
+    void OnUpdate(const UpdateEventArgs& e) override
     {
         if (Input::GetKeyDown(Win32::KeyCode::F3))
             EngineCore::GetEngineConfig().ToggleDebugGui();
@@ -71,43 +73,28 @@ public:
         if (Input::GetKeyDown(Win32::KeyCode::F11))
             EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
-        m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
-        m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
+        if (Input::GetKeyDown(Win32::KeyCode::F1))
+            m_CameraMode = CameraMode::Orbit;
 
-        if (Input::GetMouseButton(1))
-        {
-            m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-            m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+        if (Input::GetKeyDown(Win32::KeyCode::F2))
+            m_CameraMode = CameraMode::Fly;
 
-            constexpr float rad90 = DirectX::XMConvertToRadians(80);
-            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -rad90, rad90);
-        }
+        UpdateCamera(e.m_DeltaTime);
 
         float x = sin((float)GetTimeSinceStart());
         EngineCore::GetECSManager().GetEntity(1)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
         EngineCore::GetECSManager().GetEntity(1)->SetName("Debug Cube (" + std::to_string(x) + ")");
     };
 
-    void OnRender(const RenderEventArgs& e) override 
+    void OnRender(const RenderEventArgs& e) override
     {
-        const ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
-        float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-
-        ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
-        ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
-
-        ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
-        viewMatrix = DirectX::XMMatrixMultiply(viewMatrix, DirectX::XMMatrixTranslation(0, 0, m_CameraDistance));
-        ethXMMatrix viewMatrixInv = DirectX::XMMatrixInverse(nullptr, viewMatrix);
-
-        ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
-
+        const ethXMVector upDir = XMVectorSet(0, 1, 0, 0);
         ethMatrix4x4 viewMatrixRaw;
         ethMatrix4x4 viewMatrixInvRaw;
         ethMatrix4x4 projMatrixRaw;
-        DirectX::XMStoreFloat4x4(&viewMatrixRaw, viewMatrix);
-        DirectX::XMStoreFloat4x4(&viewMatrixInvRaw, viewMatrixInv);
-        DirectX::XMStoreFloat4x4(&projMatrixRaw, projectionMatrix);
+        XMStoreFloat4x4(&viewMatrixRaw, m_ViewMatrix);
+        XMStoreFloat4x4(&viewMatrixInvRaw, m_ViewMatrixInv);
+        XMStoreFloat4x4(&projMatrixRaw, m_ProjectionMatrix);
 
         e.m_GraphicContext->SetViewMatrix(viewMatrixRaw);
         e.m_GraphicContext->SetProjectionMatrix(projMatrixRaw);
@@ -116,8 +103,102 @@ public:
     };
 
 private:
-    ethVector3 m_CameraRotation;
+    void UpdateCamera(float deltaTime)
+    {
+        ResetMatrices();
+
+        switch (m_CameraMode)
+        {
+        case CameraMode::Orbit:
+            return UpdateOrbitCam(deltaTime);
+        case CameraMode::Fly:
+            return UpdateFlyCam(deltaTime);
+        }
+    }
+
+    void UpdateOrbitCam(float deltaTime)
+    {
+        m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
+        m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
+
+        if (Input::GetMouseButton(1))
+        {
+            m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+            m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(80), XMConvertToRadians(80));
+        }
+
+        ethXMMatrix rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
+        ethXMMatrix translationMatrix = XMMatrixTranslation(0, 0, m_CameraDistance);
+
+        m_ViewMatrix = rotationMatrix * translationMatrix;
+        m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+
+        float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+        m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+    }
+
+    void UpdateFlyCam(float deltaTime)
+    {
+        if (Input::GetMouseButton(2))
+        {
+			m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+			m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+			m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(80), XMConvertToRadians(80));
+        }
+
+        ethXMMatrix rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
+        ethXMVector forwardVec = XMVector4Normalize(XMVector3Transform(g_XMIdentityR2, XMMatrixTranspose(rotationMatrix)));
+        ethXMVector upVec = XMVector4Normalize(g_XMIdentityR1);
+        ethXMVector rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
+
+        if (Input::GetMouseButton(2))
+        {
+			if (Input::GetKey(Win32::KeyCode::W))
+				m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
+			if (Input::GetKey(Win32::KeyCode::S))
+				m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
+			if (Input::GetKey(Win32::KeyCode::A))
+				m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
+			if (Input::GetKey(Win32::KeyCode::D))
+				m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
+        }
+
+        m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
+
+        m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
+        m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+
+        float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+        m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+    }
+
+    void ResetMatrices()
+    {
+        m_ViewMatrix = XMMatrixIdentity();
+        m_ViewMatrixInv = XMMatrixIdentity();
+        m_ProjectionMatrix = XMMatrixIdentity();
+    }
+
+private:
+    enum class CameraMode
+    {
+        Orbit,
+        Fly
+    };
+
+    CameraMode m_CameraMode;
+
+    // Orbit Cam
     float m_CameraDistance;
+    ethVector3 m_CameraRotation;
+
+    // Fly Cam
+    ethXMVector m_CameraPosition;
+
+    ethXMMatrix m_ViewMatrix;
+    ethXMMatrix m_ViewMatrixInv;
+    ethXMMatrix m_ProjectionMatrix;
 };
 
 ETH_NAMESPACE_END

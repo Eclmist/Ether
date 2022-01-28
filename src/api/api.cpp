@@ -27,9 +27,15 @@ bool UpdateEngine()
 {
     OPTICK_FRAME("Engine - MainThread");
 
+    static double lastTime = 0;
+
     {
 		OPTICK_FRAME("Application (ToolMain) - Update");
-		EngineCore::GetMainApplication().OnUpdate(UpdateEventArgs());
+        UpdateEventArgs updateArgs;
+        updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
+        updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
+
+		EngineCore::GetMainApplication().OnUpdate(updateArgs);
     }
 
     EngineCore::Update();
@@ -37,6 +43,8 @@ bool UpdateEngine()
     RenderEventArgs renderArgs;
     renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
     renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
+    renderArgs.m_DeltaTime = renderArgs.m_TotalElapsedTime - lastTime;
+    lastTime = renderArgs.m_TotalElapsedTime;
 
     {
         OPTICK_EVENT("Application - OnRender");

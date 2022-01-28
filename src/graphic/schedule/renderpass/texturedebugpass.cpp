@@ -83,7 +83,10 @@ void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstants({ 0, 1, 0, &config.m_DebugTextureIndex });
+    // TODO: Setup bindless textures
     context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 2, GFX_SRV(GBufferNormalTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 3, GFX_SRV(GBufferPosDepthTexture) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
@@ -130,14 +133,8 @@ void TextureDebugPass::InitializeRootSignature()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(2, 1);
+    RHIRootSignature tempRS(4, 1);
     tempRS[0]->SetAsConstant({ 0, 0, RHIShaderVisibility::All, 32 });
-
-    RHIDescriptorRangeDesc rangeDesc = {};
-    rangeDesc.m_NumDescriptors = 3;
-    rangeDesc.m_ShaderRegister = 0;
-    rangeDesc.m_ShaderVisibility = RHIShaderVisibility::Pixel;
-    rangeDesc.m_Type = RHIDescriptorRangeType::SRV;
 
     RHISamplerParameterDesc& sampler = tempRS.GetSampler(0);
     sampler.m_Filter = RHIFilter::MinMagMipPoint;
@@ -153,7 +150,9 @@ void TextureDebugPass::InitializeRootSignature()
     sampler.m_RegisterSpace = 0;
     sampler.m_ShaderVisibility = RHIShaderVisibility::Pixel;
 
-    tempRS[1]->SetAsDescriptorRange(rangeDesc);
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS[2]->SetAsDescriptorRange({ 1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS[3]->SetAsDescriptorRange({ 2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);
 }
 

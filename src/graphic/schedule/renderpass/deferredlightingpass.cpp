@@ -84,11 +84,10 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
 
-    // TODO: This technically binds 3 SRVs - as specified in the descriptor range in InitializeRootSignature()
-    // There doesn't seem to be a way to explicitly bind textures one at a time unless each one is a table,
-    // which is quite eww. Therefore all the textures just have to been sequential in the SRV Heap implicitly.
-    // This will break depending on how the descriptor allcator is written later, how do we fix this?
+    // TODO: Setup bindless textures
     context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 2, GFX_SRV(GBufferNormalTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 3, GFX_SRV(GBufferPosDepthTexture) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
@@ -146,12 +145,7 @@ void DeferredLightingPass::InitializeRootSignature()
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
-    RHIRootSignature tempRS(2, 1);
-    RHIDescriptorRangeDesc rangeDesc = {};
-    rangeDesc.m_NumDescriptors = 3;
-    rangeDesc.m_ShaderRegister = 0;
-    rangeDesc.m_ShaderVisibility = RHIShaderVisibility::Pixel;
-    rangeDesc.m_Type = RHIDescriptorRangeType::SRV;
+    RHIRootSignature tempRS(4, 1);
 
     RHISamplerParameterDesc& sampler = tempRS.GetSampler(0);
     sampler.m_Filter = RHIFilter::MinMagMipPoint;
@@ -168,7 +162,9 @@ void DeferredLightingPass::InitializeRootSignature()
     sampler.m_ShaderVisibility = RHIShaderVisibility::Pixel;
 
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange(rangeDesc);
+    tempRS[1]->SetAsDescriptorRange({0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
+    tempRS[2]->SetAsDescriptorRange({1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
+    tempRS[3]->SetAsDescriptorRange({2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
 
     tempRS.Finalize(rootSignatureFlags, m_RootSignature);
 }
