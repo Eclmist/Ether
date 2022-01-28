@@ -40,6 +40,7 @@ struct VS_OUTPUT
     float4 Position     : SV_Position;
     float3 NormalWS     : NORMAL;
     float3 PositionWS   : TEXCOORD0;
+    float2 UV           : TEXCOORD1;
 };
 
 struct PS_OUTPUT
@@ -65,6 +66,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
     o.Position = mul(mvp, float4(pos, 1.0));
     o.PositionWS = mul(g_InstanceConstants.ModelMatrix, float4(IN.Position, 1.0)).xyz;
     o.NormalWS = mul(g_InstanceConstants.NormalMatrix, float4(IN.Normal, 1.0)).xyz;
+    o.UV = IN.TexCoord;
 
     return o;
 }
@@ -84,7 +86,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 col3 = lerp(col, positionWS.y / 10.0, 0.2);// saturate(sin(CB_GlobalConstants.Time.z)));
 
     PS_OUTPUT output;
-    output.Albedo = col3;
+    output.Albedo = 1.0;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;

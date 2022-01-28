@@ -95,7 +95,10 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     float3 surfaceGradient = abs(ddxPos) + abs(ddyPos);
     float3 axisWidth = surfaceGradient * AXIS_LINE_WIDTH;
 
-    float fade = (1.0 - saturate(length(surfaceGradient))) * smoothstep(0, 0.01, abs(depthTex - depth));
+    float fadeGradientFactor = (1.0 - saturate(length(surfaceGradient)));
+    float fadeDepthFactor = smoothstep(0, 0.01, abs(depthTex - depth));
+    float fadeAngleFactor = saturate(abs((IN.PositionWS - g_CommonConstants.EyePosition.xyz).y));
+    float fade = fadeGradientFactor * fadeDepthFactor * fadeAngleFactor;
     float3 axisOpacity = smoothstep(axisWidth, 0, abs(IN.PositionWS)) * AXIS_LINE_ALPHA;
 
     float4 col = 0;

@@ -63,9 +63,9 @@ float3 ComputePointLight(float2 uv, PointLight light)
     dir = normalize(dir);
     float3 L;
 
-    float kc = 0.0;
-    float Kl = 0.0;
-    float Kq = 2.0;
+    float kc = 1.0;
+    float Kl = 0.045;
+    float Kq = 0.0075;
     float fAtt = light.m_Intensity / max((kc + Kl * d + Kq * d * d), 0.01);
     L = fAtt * light.m_Color;
 
@@ -96,38 +96,38 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     float4 time = g_CommonConstants.Time * 1.0;
 
     lights[6].m_Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
-    lights[6].m_Color = float3(0.3, 1.0, 0.3);
-    lights[6].m_Intensity = 60.0f;
+    lights[6].m_Color = float3(0.3, 0.1, 0.3);
+    lights[6].m_Intensity = 0.6f;
     lights[6].m_Size = 10.0f;
 
     lights[1].m_Position = float3(10.0, sin(time.z) * 2.0, cos(time.y+10.3)* 6.0);
     lights[1].m_Color = float3(sin(time.w+0.12), 0.0, .3);
-    lights[1].m_Intensity = 30.0f;
+    lights[1].m_Intensity = 0.2f;
     lights[1].m_Size = 20.0f;
 
     lights[2].m_Position = float3(sin(time.y + 0.34) * 10.0, 9.0, 14.0);
     lights[2].m_Color = float3(0.3, 0.0, 1.0);
-    lights[2].m_Intensity = 14.0f;
+    lights[2].m_Intensity = 0.4f;
     lights[2].m_Size = 50.0f;
 
-    lights[3].m_Position = float3(3.0, 9.0, sin(time.y+ 1.4) * 4.0);
+    lights[3].m_Position = float3(-10.0, 9.0, sin(time.y+ 1.4) * 4.0);
     lights[3].m_Color = float3(0.6, sin(time.y + 0.5), 0.1);
-    lights[3].m_Intensity = 44.0f;
+    lights[3].m_Intensity = 0.4f;
     lights[3].m_Size = 30.0f;
 
-    lights[4].m_Position = float3(12.0, -9.0, -9.0);
-    lights[4].m_Color = float3(0.15, 0.23, 0.57);
-    lights[4].m_Intensity = 100.0f;
+    lights[4].m_Position = float3(-2.0, -6.0, -14.0);
+    lights[4].m_Color = float3(0.15, 0.83, 0.57);
+    lights[4].m_Intensity = 0.8f;
     lights[4].m_Size = 40.0f;
 
-    lights[5].m_Position = float3(4.5, 9.0, 17.0);
+    lights[5].m_Position = float3(4.5, 9.0, 16.0);
     lights[5].m_Color = float3(sin(time.y+1.6), 0.73, 0.57);
-    lights[5].m_Intensity = 50.0f;
+    lights[5].m_Intensity = 0.5f;
     lights[5].m_Size = 20.0f;
 
     lights[0].m_Position = float3(-60.5, 0.0, 0.0);
-    lights[0].m_Color = float3(0.9, 0.78, 0.82);
-    lights[0].m_Intensity = 1200.0f;
+    lights[0].m_Color = float3(0.7, 0.78, 0.92);
+    lights[0].m_Intensity = 4.0f;
     lights[0].m_Size = 100.0f;
 
 

@@ -62,6 +62,7 @@ void GBufferPass::Initialize()
 void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     RHIViewportDesc vp = context.GetViewport();
+    
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferAlbedoTexture));
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferNormalTexture));
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPosDepthTexture));
