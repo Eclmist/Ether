@@ -31,5 +31,15 @@ inline std::string ToNarrowString(const std::wstring& wide)
     return str;
 }
 
+inline std::wstring ToWideString(const std::string& narrow)
+{
+    std::wstring str(narrow.length(), 0);
+    std::transform(narrow.begin(), narrow.end(), str.begin(), [](char c) {
+        return (wchar_t)c;
+        });
+
+    return str;
+}
+
 ETH_NAMESPACE_END
 

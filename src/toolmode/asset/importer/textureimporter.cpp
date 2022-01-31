@@ -17,33 +17,40 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "meshimporter.h"
-#include "toolmode/utility/parser/objfileparser.h"
+#include "textureimporter.h"
+
+// Generate stb_image implementations
+// Only once per project!
+#define STB_IMAGE_IMPLEMENTATION
+#include "parser/image/stb_image.h"
+
+#include "toolmode/utility/parser/pngfileparser.h"
+
 
 ETH_NAMESPACE_BEGIN
 
-MeshImporter::MeshImporter()
+TextureImporter::TextureImporter()
 {
-    m_Parsers[".obj"] = std::make_shared<ObjFileParser>();
+    m_Parsers[".png"] = std::make_shared<PngFileParser>();
 }
 
-bool MeshImporter::HasSupport(const std::string& extension)
+bool TextureImporter::HasSupport(const std::string& extension)
 {
     return m_Parsers.find(extension) != m_Parsers.end();
 }
 
-std::shared_ptr<Asset> MeshImporter::Compile(IStream& istream)
+std::shared_ptr<Asset> TextureImporter::Compile(IStream& istream)
 {
     std::string extension = PathUtils::GetFileExtension(istream.GetPath());
     FileParser* parser = GetCompatibleParser(extension);
     parser->Parse(istream.GetPath());
 
-    std::shared_ptr<Mesh> mesh = std::dynamic_pointer_cast<Mesh>(parser->GetRawAsset());
-    mesh->Compile();
+    std::shared_ptr<Texture> texture = std::dynamic_pointer_cast<Texture>(parser->GetRawAsset());
+    //texture->Compile();
 
-	std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-    compiledMesh->SetRawMesh(mesh);
-    return compiledMesh;
+	std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+    compiledTexture->SetRawTexture(texture);
+    return compiledTexture;
 }
 
 ETH_NAMESPACE_END

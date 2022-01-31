@@ -48,6 +48,7 @@ public:
     virtual RHIResult ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc) = 0;
 
     virtual RHIResult CopyBufferRegion(const RHICopyBufferRegionDesc& desc) = 0;
+    virtual RHIResult CopyTextureRegion(const RHICopyTextureRegionDesc& desc) = 0;
     virtual RHIResult TransitionResource(const RHIResourceTransitionDesc& desc) = 0;
     virtual RHIResult DrawInstanced(const RHIDrawInstancedDesc& desc) = 0;
     virtual RHIResult DrawIndexedInstanced(const RHIDrawIndexedInstancedDesc& desc) = 0;

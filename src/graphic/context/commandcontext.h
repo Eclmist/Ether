@@ -40,13 +40,15 @@ public:
 
 public:
     void TransitionResource(RHIResourceHandle resource, RHIResourceState newState);
-    void CopyBufferRegion(RHIResourceHandle dest, RHIResourceHandle src, size_t size, size_t dstOffset = 0);
-    void InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset = 0);
+    void CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t destOffset = 0);
+    void CopyTextureRegion(RHIResourceHandle src, RHIResourceHandle dest, const CompiledTexture& texture);
+    void InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
+    void InitializeTexture(const CompiledTexture& texture);
     void FinalizeAndExecute(bool waitForCompletion = false);
 
 private:
     friend class VisualNode; // TODO: Visual node is the only one initializing without context. remove eventually.
-    static void InitializeBuffer(RHIResourceHandle dest, const void* data, size_t size, size_t dstOffset = 0);
+    static void InitializeBufferTemp(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
 
 protected:
     RHICommandAllocatorHandle m_CommandAllocator;

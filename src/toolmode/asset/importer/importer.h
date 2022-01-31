@@ -29,8 +29,12 @@ class Importer : public NonCopyable
 {
 public:
     virtual bool HasSupport(const std::string& extension) = 0;
-    virtual FileParser* GetCompatibleParser(const std::string& extension) = 0;
     virtual std::shared_ptr<Asset> Compile(IStream& istream) = 0;
+
+    FileParser* GetCompatibleParser(const std::string& extension);
+
+protected:
+    std::unordered_map<std::string, std::shared_ptr<FileParser>> m_Parsers;
 };
 
 ETH_NAMESPACE_END

@@ -45,8 +45,12 @@ public:
     {
         Entity* debugCube = EngineCore::GetECSManager().CreateEntity("AssetImportSlot (Temp)");
 
+		// TODO: Create default material somewhere, maybe in graphiccommon, or maybe serialized somewhere?
+        m_Material = std::make_shared<Material>();
+
         debugCube->AddComponent<MeshComponent>();
         debugCube->AddComponent<VisualComponent>();
+        debugCube->GetComponent<VisualComponent>()->SetMaterial(m_Material);
         debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
         debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
 
@@ -125,7 +129,7 @@ private:
         {
             m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
             m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(80), XMConvertToRadians(80));
+            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(90), XMConvertToRadians(90));
         }
 
         ethXMMatrix rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
@@ -144,7 +148,7 @@ private:
         {
 			m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
 			m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-			m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(80), XMConvertToRadians(80));
+			m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(90), XMConvertToRadians(90));
         }
 
         ethXMMatrix rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
@@ -199,6 +203,9 @@ private:
     ethXMMatrix m_ViewMatrix;
     ethXMMatrix m_ViewMatrixInv;
     ethXMMatrix m_ProjectionMatrix;
+
+
+    std::shared_ptr<Material> m_Material;
 };
 
 ETH_NAMESPACE_END

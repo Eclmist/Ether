@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include "system.h"
+#include "ecssystem.h"
 
 ETH_NAMESPACE_BEGIN
 
 class VisualNode;
 
-class RenderingSystem : public System
+class RenderingSystem : public EcsSystem
 {
 public:
     RenderingSystem();

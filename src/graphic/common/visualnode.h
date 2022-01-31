@@ -30,6 +30,7 @@ struct VisualNodeData
     uint32_t m_NumIndices;
 
     const ethXMMatrix* m_ModelMatrix;
+    const Material* m_Material;
 };
 
 class VisualNode
@@ -42,6 +43,7 @@ public:
     inline RHIIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
     inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
     inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
+    inline const Material* GetMaterial() const { return m_StaticData.m_Material; }
 
 private:
     void UploadVertexBuffer(const void* data, uint32_t numVertices);

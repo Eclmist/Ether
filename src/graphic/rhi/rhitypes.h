@@ -377,6 +377,19 @@ struct RHICopyBufferRegionDesc
     size_t m_Size;
 };
 
+struct RHICopyTextureRegionDesc
+{
+    RHIResourceHandle m_Source;
+    RHIResourceHandle m_Destination;
+
+    uint32_t m_Width;
+    uint32_t m_Height;
+    uint32_t m_Depth;
+
+    size_t m_BytesPerPixel;
+    void* m_Data;
+};
+
 struct RHIClearRenderTargetViewDesc
 {
     ethVector4 m_ClearColor;

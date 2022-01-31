@@ -18,6 +18,7 @@
 */
 
 #include "common/commonconstants.hlsl"
+#include "common/samplers.hlsl"
 
 struct InstanceConstants
 {
@@ -26,6 +27,8 @@ struct InstanceConstants
 };
 
 ConstantBuffer<InstanceConstants> g_InstanceConstants : register(b1);
+
+Texture2D albedo : register(t0);
 
 struct VS_INPUT
 {
@@ -73,7 +76,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 
 PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
-    float4 col = float4(0.9, 0.9, 0.9, 1.0);
+    float4 col = albedo.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
     float3 normal = normalize(IN.NormalWS);
     float3 positionWS = IN.PositionWS;
 
@@ -86,7 +89,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 col3 = lerp(col, positionWS.y / 10.0, 0.2);// saturate(sin(CB_GlobalConstants.Time.z)));
 
     PS_OUTPUT output;
-    output.Albedo = 1.0;
+    output.Albedo = col;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;

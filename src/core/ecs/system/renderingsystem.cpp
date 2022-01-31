@@ -23,9 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 RenderingSystem::RenderingSystem()
 {
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<TransformComponent>(), true);
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<MeshComponent>(), true);
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<VisualComponent>(), true);
+    m_Signature.set(EngineCore::GetECSManager().GetComponentID<TransformComponent>());
+    m_Signature.set(EngineCore::GetECSManager().GetComponentID<MeshComponent>());
+    m_Signature.set(EngineCore::GetECSManager().GetComponentID<VisualComponent>());
 }
 
 void RenderingSystem::OnEntityRegister(EntityID id)
@@ -49,6 +49,7 @@ void RenderingSystem::OnUpdate()
 
 		auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
 		auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
+		auto* visual = EngineCore::GetECSManager().GetComponent<VisualComponent>(id);
 
 		if (!mesh->IsEnabled())
 			return;
@@ -72,6 +73,7 @@ void RenderingSystem::OnUpdate()
             data.m_NumIndices = mesh->GetCompiledMesh()->GetNumIndices();
             data.m_NumVertices = mesh->GetCompiledMesh()->GetNumVertices();
             data.m_ModelMatrix = transform->GetMatrixReference();
+            data.m_Material = visual->GetMaterial();
             m_VisualNodes[id] = std::make_unique<VisualNode>(data);
             mesh->SetMeshChanged(false);
             hasMeshChanges = true;

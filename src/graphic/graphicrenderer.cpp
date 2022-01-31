@@ -27,7 +27,8 @@
 ETH_NAMESPACE_BEGIN
 
 GraphicRenderer::GraphicRenderer()
-    : m_GraphicContext(L"GraphicRendererContext")
+    : m_GraphicContext(L"GraphicRenderer::GraphicContext")
+    , m_ResourceContext(m_GraphicContext, L"GraphicRenderer::ResourceContext")
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
     m_Scheduler.RegisterRenderPasses();

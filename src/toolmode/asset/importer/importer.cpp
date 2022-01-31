@@ -17,29 +17,16 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "importer.h"
 
 ETH_NAMESPACE_BEGIN
 
-class EcsSystem : public NonCopyable
+FileParser* Importer::GetCompatibleParser(const std::string& extension)
 {
-public:
-    EcsSystem() = default;
-    ~EcsSystem() = default;
+    if (m_Parsers.find(extension) == m_Parsers.end())
+        return nullptr;
 
-public:
-    virtual void OnEntityRegister(EntityID id) = 0;
-    virtual void OnEntityDeregister(EntityID id) = 0;
-    virtual void OnUpdate() = 0;
-
-public:
-    inline ComponentSignature GetSignature() const { return m_Signature; }
-
-protected:
-    friend class EcsSystemManager;
-    std::set<EntityID> m_MatchingEntities;
-    ComponentSignature m_Signature;
-};
+    return m_Parsers[extension].get();
+}
 
 ETH_NAMESPACE_END
-

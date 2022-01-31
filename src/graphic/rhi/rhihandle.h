@@ -46,8 +46,8 @@ public:
     template <typename S>
     inline const S* As() const { return dynamic_cast<S*>(m_Handle); }
 
-    inline const wchar_t* GetName() { return m_Name; }
-    inline void SetName(const wchar_t* name) { m_Name = name; }
+    inline std::wstring GetName() { return m_Name; }
+    inline void SetName(const std::wstring& name) { m_Name = name; }
 
 public:
     void Destroy()
@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    const wchar_t* m_Name;
+    std::wstring m_Name;
     T* m_Handle;
 };
 

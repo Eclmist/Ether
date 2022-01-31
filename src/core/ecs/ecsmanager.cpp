@@ -27,7 +27,7 @@ ECSManager::ECSManager()
 {
     m_ComponentManager = std::make_unique<ComponentManager>();
     m_EntityManager = std::make_unique<EntityManager>();
-    m_SystemManager = std::make_unique<SystemManager>();
+    m_SystemManager = std::make_unique<EcsSystemManager>();
 }
 
 void ECSManager::OnInitialize()

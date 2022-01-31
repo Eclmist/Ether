@@ -43,7 +43,7 @@ RHIResult D3D12Device::CreateCommandAllocator(const RHICommandAllocatorDesc& des
         IID_PPV_ARGS(&d3dCommandAllocator->m_Allocator)
     );
 
-    d3dCommandAllocator->m_Allocator->SetName(allocator.GetName());
+    d3dCommandAllocator->m_Allocator->SetName(allocator.GetName().c_str());
     allocator.Set(d3dCommandAllocator);
     return TO_RHI_RESULT(hr);
 }
@@ -61,7 +61,7 @@ RHIResult D3D12Device::CreateCommandList(const RHICommandListDesc& desc, RHIComm
 		IID_PPV_ARGS(&d3dCommandList->m_CommandList)
     );
 
-    d3dCommandList->m_CommandList->SetName(cmdList.GetName());
+    d3dCommandList->m_CommandList->SetName(cmdList.GetName().c_str());
     cmdList.Set(d3dCommandList);
     return TO_RHI_RESULT(hr);
 }
@@ -75,7 +75,7 @@ RHIResult D3D12Device::CreateCommandQueue(const RHICommandQueueDesc& desc, RHICo
         IID_PPV_ARGS(&d3dCommandQueue->m_CommandQueue)
     );
 
-    d3dCommandQueue->m_CommandQueue->SetName(cmdQueue.GetName());
+    d3dCommandQueue->m_CommandQueue->SetName(cmdQueue.GetName().c_str());
     cmdQueue.Set(d3dCommandQueue);
     return TO_RHI_RESULT(hr);
 }
@@ -89,7 +89,7 @@ RHIResult D3D12Device::CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, R
         IID_PPV_ARGS(&d3dDescriptorHeap->m_Heap)
     );
 
-    d3dDescriptorHeap->m_Heap->SetName(descriptorHeap.GetName());
+    d3dDescriptorHeap->m_Heap->SetName(descriptorHeap.GetName().c_str());
     d3dDescriptorHeap->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
     descriptorHeap.Set(d3dDescriptorHeap);
     return RHIResult();
@@ -104,7 +104,7 @@ RHIResult D3D12Device::CreateFence(RHIFenceHandle& fence) const
         IID_PPV_ARGS(&d3dFence->m_Fence)
     );
 
-    d3dFence->m_Fence->SetName(fence.GetName());
+    d3dFence->m_Fence->SetName(fence.GetName().c_str());
     fence.Set(d3dFence);
     return TO_RHI_RESULT(hr);
 }
@@ -131,7 +131,7 @@ RHIResult D3D12Device::CreatePipelineState(const RHIPipelineStateDesc& desc, RHI
         IID_PPV_ARGS(&d3dPipelineState->m_PipelineState)
     );
 
-    d3dPipelineState->m_PipelineState->SetName(pipelineState.GetName());
+    d3dPipelineState->m_PipelineState->SetName(pipelineState.GetName().c_str());
     pipelineState.Set(d3dPipelineState);
     return TO_RHI_RESULT(hr);
 }
@@ -168,7 +168,7 @@ RHIResult D3D12Device::CreateRootSignature(const RHIRootSignatureDesc& desc, RHI
         IID_PPV_ARGS(&d3dRootSignature->m_RootSignature)
     );
 
-    d3dRootSignature->m_RootSignature->SetName(rootSignature.GetName());
+    d3dRootSignature->m_RootSignature->SetName(rootSignature.GetName().c_str());
     rootSignature.Set(d3dRootSignature);
     return TO_RHI_RESULT(hr);
 }
@@ -289,7 +289,7 @@ RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& de
         IID_PPV_ARGS(&d3dResource->m_Resource)
     );
 
-    d3dResource->m_Resource->SetName(resourceHandle.GetName());
+    d3dResource->m_Resource->SetName(resourceHandle.GetName().c_str());
     resourceHandle.Set(d3dResource);
     return TO_RHI_RESULT(hr);
 }

@@ -214,6 +214,31 @@ RHIResult D3D12CommandList::CopyBufferRegion(const RHICopyBufferRegionDesc& desc
     return RHIResult::Success;
 }
 
+RHIResult D3D12CommandList::CopyTextureRegion(const RHICopyTextureRegionDesc& desc)
+{
+    const auto d3dSrcResource = desc.m_Source.As<D3D12Resource>();
+    const auto d3dDestResource = desc.m_Destination.As<D3D12Resource>();
+
+    D3D12_SUBRESOURCE_DATA textureData = {};
+    textureData.pData = desc.m_Data;
+    textureData.RowPitch = desc.m_Width * desc.m_BytesPerPixel;
+    textureData.SlicePitch = desc.m_Height * textureData.RowPitch;
+
+    // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
+    UpdateSubresources
+    (
+        m_CommandList.Get(),
+        d3dDestResource->m_Resource.Get(),
+        d3dSrcResource->m_Resource.Get(),
+        0, // offset
+        0, // subresource idx
+        1, // subresource count
+        &textureData
+    );
+
+    return RHIResult::Success;
+}
+
 RHIResult D3D12CommandList::TransitionResource(const RHIResourceTransitionDesc& desc)
 {
     D3D12_RESOURCE_BARRIER barrier = Translate(desc);

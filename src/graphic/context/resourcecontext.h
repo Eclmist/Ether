@@ -26,27 +26,29 @@ ETH_NAMESPACE_BEGIN
 class ResourceContext : public NonCopyable
 {
 public:
-    ResourceContext() = default;
+    ResourceContext(CommandContext& context, const std::wstring& name);
     ~ResourceContext() = default;
 
-    void CreateBufferResource(uint32_t size, RHIResourceHandle& resource);
-    void CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
-    void CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
+    bool CreateBufferResource(uint32_t size, RHIResourceHandle& resource);
+    bool CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
+    bool CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
 
-    void CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
-    void CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
-    void CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
-    void CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view);
-    void CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view);
+    bool CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
+    bool CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
+    bool CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
+    bool CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view);
+    bool CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view);
+
+    bool InitializeTexture2D(CompiledTexture& texture);
 
     void Reset();
 
 private:
-    void CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
+    bool CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
 
     bool Exists(const std::wstring& resourceID) const;
-    bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc);
-    bool ShouldRecreateView(const std::wstring& resourceID);
+    bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc) const;
+    bool ShouldRecreateView(const std::wstring& resourceID) const;
 
     RHIFormat GetResourceFormat(const std::wstring& resourceID) const;
 
@@ -54,6 +56,8 @@ private:
     std::set<std::wstring> m_ResourceEntries;
     std::set<std::wstring> m_NewlyCreatedResources;
     std::unordered_map<std::wstring, RHICommitedResourceDesc> m_ResourceTable;
+
+    CommandContext* m_Context;
 };
 
 ETH_NAMESPACE_END

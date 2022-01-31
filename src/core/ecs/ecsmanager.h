@@ -44,7 +44,7 @@ ETH_NAMESPACE_END
 #include "core/ecs/component/transformcomponent.h"
 #include "core/ecs/component/meshcomponent.h"
 #include "core/ecs/component/visualcomponent.h"
-#include "core/ecs/system/systemmanager.h"
+#include "core/ecs/system/ecssystemmanager.h"
 #include "core/ecs/system/renderingsystem.h"
 
 ETH_NAMESPACE_BEGIN
@@ -111,7 +111,7 @@ public:
 private:
     std::unique_ptr<ComponentManager> m_ComponentManager;
     std::unique_ptr<EntityManager> m_EntityManager;
-    std::unique_ptr<SystemManager> m_SystemManager;
+    std::unique_ptr<EcsSystemManager> m_SystemManager;
 };
 
 ETH_NAMESPACE_END

@@ -49,7 +49,7 @@ void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
 
     GraphicCore::GetDevice()->CreateCommittedResource(desc, m_VertexBuffer);
     m_VertexBuffer->SetName(L"VisualNode::VertexBuffer");
-    CommandContext::InitializeBuffer(m_VertexBuffer, data, bufferSize);
+    CommandContext::InitializeBufferTemp(m_VertexBuffer, data, bufferSize);
 }
 
 void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
@@ -62,7 +62,7 @@ void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
 
     GraphicCore::GetDevice()->CreateCommittedResource(desc, m_IndexBuffer);
     m_IndexBuffer->SetName(L"VisualNode::IndexBuffer");
-    CommandContext::InitializeBuffer(m_IndexBuffer, data, bufferSize);
+    CommandContext::InitializeBufferTemp(m_IndexBuffer, data, bufferSize);
 }
 
 void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)

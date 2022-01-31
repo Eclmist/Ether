@@ -107,16 +107,9 @@ void ProceduralSkyPass::InitializePipelineState()
 void ProceduralSkyPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"ProceduralSkyPass::RootSignature");
-
-    RHIRootSignatureFlags rootSignatureFlags =
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
-
     RHIRootSignature tempRS(1, 0);
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS.Finalize(rootSignatureFlags, m_RootSignature);
+    tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 }
 
 ETH_NAMESPACE_END

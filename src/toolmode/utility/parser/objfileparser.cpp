@@ -20,7 +20,7 @@
 #include "objfileparser.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "parser/tiny_obj_loader.h"
+#include "parser/mesh/tiny_obj_loader.h"
 
 ETH_NAMESPACE_BEGIN
 

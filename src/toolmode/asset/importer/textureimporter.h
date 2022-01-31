@@ -19,19 +19,23 @@
 
 #pragma once
 
+#include "toolmode/asset/importer/importer.h"
+
 ETH_NAMESPACE_BEGIN
 
-class Shader;
+class FileParser;
 
-class Material
+class TextureImporter : public Importer
 {
-public:
-    Material();
-    ~Material() = default;
 
 public:
+    TextureImporter();
+    ~TextureImporter() = default;
 
-private:
+public:
+    bool HasSupport(const std::string& extension) override;
+    std::shared_ptr<Asset> Compile(IStream& istream) override;
 };
 
 ETH_NAMESPACE_END
+

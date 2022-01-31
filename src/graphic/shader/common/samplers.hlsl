@@ -17,9 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "system.h"
+SamplerState g_PointSampler : register(s0);
+SamplerState g_BilinearSampler : register(s1);
 
-ETH_NAMESPACE_BEGIN
-
-ETH_NAMESPACE_END
 

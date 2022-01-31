@@ -44,6 +44,8 @@
 #include "system/platform/win32/keycodes.h"
 
 #include "core/asset/compiledmesh.h"
+#include "core/asset/compiledtexture.h"
+#include "core/asset/material.h"
 
 #include "core/ecs/ecsmanager.h"
 #include "core/world/world.h"
@@ -51,7 +53,6 @@
 #include "core/commandlineoptions.h"
 #include "core/event/events.h"
 #include "core/engineconfig.h"
-#include "core/material.h"
 #include "core/iapplicationbase.h"
 #include "core/input.h"
 
@@ -73,6 +74,9 @@ ETH_NAMESPACE_BEGIN
 class ETH_ENGINE_DLL EngineCore : public Singleton<EngineCore>
 {
 public:
+    EngineCore() = default;
+    ~EngineCore() = default;
+
     static void Initialize(IApplicationBase& app);
     static void LoadContent();
     static void Update();

@@ -17,8 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-// TODO: fix includes
-//#include "common/fullscreenhelpers.hlsl"
+#include "common/commonconstants.hlsl"
+#include "common/samplers.hlsl"
 
 #define AXIS_LINE_WIDTH 1.2
 #define AXIS_LINE_ALPHA 1.0
@@ -32,22 +32,7 @@ struct VS_OUTPUT
     float3 PositionWS   : TEXCOORD0;
 };
 
-struct CommonConstants
-{
-    float4x4 ViewMatrix;
-    float4x4 ProjectionMatrix;
-
-    float4 EyePosition;
-    float4 EyeDirection;
-    float4 Time;
-
-    float2 ScreenResolution;
-};
-
-ConstantBuffer<CommonConstants> g_CommonConstants : register(b0);
-
 Texture2D positionDepthTex : register(t0);
-SamplerState defaultSampler : register(s0);
 
 float2 GetScreenUV(float2 pos)
 {
@@ -87,7 +72,7 @@ float4 GetGridLevel(float level, float3 wPos, float3 dydx)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float depthTex = positionDepthTex.Sample(defaultSampler, GetScreenUV(IN.Position.xy)).w;
+    float depthTex = positionDepthTex.Sample(g_PointSampler, GetScreenUV(IN.Position.xy)).w;
 	float depth = mul(g_CommonConstants.ViewMatrix, float4(IN.PositionWS, 1.0)).z;
 
     float3 ddxPos = ddx(IN.PositionWS);
@@ -95,9 +80,9 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     float3 surfaceGradient = abs(ddxPos) + abs(ddyPos);
     float3 axisWidth = surfaceGradient * AXIS_LINE_WIDTH;
 
-    float fadeGradientFactor = (1.0 - saturate(length(surfaceGradient)));
+    float fadeGradientFactor = 1.0 - saturate(length(surfaceGradient));
     float fadeDepthFactor = smoothstep(0, 0.01, abs(depthTex - depth));
-    float fadeAngleFactor = saturate(abs((IN.PositionWS - g_CommonConstants.EyePosition.xyz).y));
+    float fadeAngleFactor = pow(abs(normalize(IN.PositionWS - g_CommonConstants.EyePosition.xyz).y), 0.5);
     float fade = fadeGradientFactor * fadeDepthFactor * fadeAngleFactor;
     float3 axisOpacity = smoothstep(axisWidth, 0, abs(IN.PositionWS)) * AXIS_LINE_ALPHA;
 

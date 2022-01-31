@@ -56,6 +56,7 @@ void GBufferPass::Initialize()
 {
     InitializeShaders();
     InitializeDepthStencilState();
+    InitializeRootSignature();
     InitializePipelineState();
 }
 
@@ -110,7 +111,8 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.SetScissor(gfxDisplay.GetScissorRect());
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
-    context.GetCommandList()->SetGraphicRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
+    context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
+    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleList);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
@@ -130,6 +132,13 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 
         context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &modelMat });
         context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &normalMat });
+
+        // TODO: Setup bindless textures
+        // TODO: If null, bind default texture
+        auto texture = visual->GetMaterial()->GetTexture("_AlbedoTexture");
+        rc.InitializeTexture2D(*texture);
+
+        context.GetCommandList()->SetRootDescriptorTable({ 2, texture->GetView() });
         context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
     }
 
@@ -173,7 +182,7 @@ void GBufferPass::InitializePipelineState()
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
-    creationPSO.SetRootSignature(GraphicCore::GetGraphicCommon().m_DefaultRootSignature);
+    creationPSO.SetRootSignature(m_RootSignature);
     creationPSO.Finalize(m_PipelineState);
 }
 
@@ -181,16 +190,12 @@ void GBufferPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"GBufferPass::RootSignature");
 
-    RHIRootSignatureFlags rootSignatureFlags =
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
-
-    RHIRootSignature tempRS(3, 0);
+    RHIRootSignature tempRS(3, 1);
+    tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::Vertex, 32 });
-    tempRS.Finalize(rootSignatureFlags, m_RootSignature);
+    tempRS[2]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
 }
 

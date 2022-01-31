@@ -50,6 +50,7 @@ public:
     RHIResult ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc) override;
 
     RHIResult CopyBufferRegion(const RHICopyBufferRegionDesc& desc) override;
+    RHIResult CopyTextureRegion(const RHICopyTextureRegionDesc& desc) override;
     RHIResult TransitionResource(const RHIResourceTransitionDesc& desc) override;
     RHIResult DrawInstanced(const RHIDrawInstancedDesc& desc) override;
     RHIResult DrawIndexedInstanced(const RHIDrawIndexedInstancedDesc& desc) override;

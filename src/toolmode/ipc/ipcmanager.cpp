@@ -18,7 +18,7 @@
 */
 
 #include "ipcmanager.h"
-#include "json/json.hpp"
+#include "parser/json/json.hpp"
 
 #include "command/commandfactory.h"
 

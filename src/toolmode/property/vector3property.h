@@ -20,7 +20,7 @@
 #pragma once
 
 #include "property.h"
-#include "json/json.hpp"
+#include "parser/json/json.hpp"
 
 ETH_NAMESPACE_BEGIN
 

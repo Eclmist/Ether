@@ -17,29 +17,35 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "ecssystemmanager.h"
+
+#include "core/ecs/system/renderingsystem.h"
 
 ETH_NAMESPACE_BEGIN
 
-class EcsSystem : public NonCopyable
+void EcsSystemManager::AssignEntityToSystems(EntityID id, ComponentSignature signature)
 {
-public:
-    EcsSystem() = default;
-    ~EcsSystem() = default;
+    for (auto& pair : m_Systems)
+    {
+        auto& system = pair.second;
+        auto systemSign = system->GetSignature();
+        if ((signature & systemSign) == systemSign)
+        {
+            system->m_MatchingEntities.insert(id);
+            system->OnEntityRegister(id);
+        }
+        else
+        {
+            system->OnEntityDeregister(id);
+            system->m_MatchingEntities.erase(id);
+        }
+    }
+}
 
-public:
-    virtual void OnEntityRegister(EntityID id) = 0;
-    virtual void OnEntityDeregister(EntityID id) = 0;
-    virtual void OnUpdate() = 0;
-
-public:
-    inline ComponentSignature GetSignature() const { return m_Signature; }
-
-protected:
-    friend class EcsSystemManager;
-    std::set<EntityID> m_MatchingEntities;
-    ComponentSignature m_Signature;
-};
+void EcsSystemManager::InitializeSystems()
+{
+    RegisterSystem<RenderingSystem>();
+}
 
 ETH_NAMESPACE_END
 

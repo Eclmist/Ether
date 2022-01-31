@@ -33,7 +33,15 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    inline bool HasMaterial() const { return m_Material != nullptr; }
+    inline Material* GetMaterial() const { return m_Material.get(); }
+    inline void SetMaterial(std::shared_ptr<Material> material) { m_Material = material; }
+
+public:
     inline std::string GetName() const override { return "Visual"; }
+
+private:
+    std::shared_ptr<Material> m_Material;
 };
 
 ETH_NAMESPACE_END

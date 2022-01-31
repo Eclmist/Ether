@@ -17,35 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "systemmanager.h"
-
-#include "core/ecs/system/renderingsystem.h"
+#include "texture.h"
 
 ETH_NAMESPACE_BEGIN
-
-void SystemManager::AssignEntityToSystems(EntityID id, ComponentSignature signature)
-{
-    for (auto& pair : m_Systems)
-    {
-        auto& system = pair.second;
-        auto systemSign = system->GetSignature();
-        if ((signature & systemSign) == systemSign)
-        {
-            system->m_MatchingEntities.insert(id);
-            system->OnEntityRegister(id);
-        }
-        else
-        {
-            system->OnEntityDeregister(id);
-            system->m_MatchingEntities.erase(id);
-        }
-    }
-}
-
-void SystemManager::InitializeSystems()
-{
-    RegisterSystem<RenderingSystem>();
-}
 
 ETH_NAMESPACE_END
 

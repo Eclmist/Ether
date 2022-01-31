@@ -34,8 +34,10 @@ public:
     void InitializeRootSignatures();
     void InitializeShaders();
     void InitializePipelineStates();
+    void InitializeSamplers();
 
 public:
+    // TODO: Privatize with getters
     RHIRasterizerDesc m_RasterizerDefault;
     RHIRasterizerDesc m_RasterizerDefaultCw;
     RHIRasterizerDesc m_RasterizerWireframe;
@@ -54,12 +56,16 @@ public:
 
     RHIInputLayoutDesc m_DefaultInputLayout;
 
-    std::unique_ptr<Shader> m_DefaultVS;
-    std::unique_ptr<Shader> m_DefaultPS;
+    std::unique_ptr<class Shader> m_DefaultVS;
+    std::unique_ptr<class Shader> m_DefaultPS;
 
     RHIPipelineStateHandle m_DefaultPSO;
     RHIPipelineStateHandle m_DefaultWireframePSO;
-    RHIRootSignatureHandle m_DefaultRootSignature;
+    RHIRootSignatureHandle m_EmptyRootSignature;
+    RHIRootSignatureFlags m_DefaultRootSignatureFlags;
+
+    RHISamplerParameterDesc m_PointSampler;
+    RHISamplerParameterDesc m_BilinearSampler;
 };
 
 ETH_NAMESPACE_END

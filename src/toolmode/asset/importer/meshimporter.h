@@ -34,11 +34,7 @@ public:
 
 public:
     bool HasSupport(const std::string& extension) override;
-    FileParser* GetCompatibleParser(const std::string& extension) override;
     std::shared_ptr<Asset> Compile(IStream& istream) override;
-
-private:
-    std::unordered_map<std::string, std::shared_ptr<FileParser>> m_Parsers;
 };
 
 ETH_NAMESPACE_END

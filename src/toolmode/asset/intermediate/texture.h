@@ -19,35 +19,23 @@
 
 #pragma once
 
-#include "property.h"
-#include "parser/json/json.hpp"
-
 ETH_NAMESPACE_BEGIN
 
-class Vector4Property : public Property
+class CompiledTexture;
+
+class Texture : public Asset
 {
 public:
-    Vector4Property(std::string name, const ethVector4* data)
-        : Property(name)
-        , m_Data(data)
-    {
-    }
-    ~Vector4Property() = default;
-
-    std::string GetData() override
-    {
-        nlohmann::json data;
-        data["name"] = m_Name;
-        data["type"] = "Vector4";
-        data["values"][0] = m_Data->x;
-        data["values"][1] = m_Data->y;
-        data["values"][2] = m_Data->z;
-        data["values"][3] = m_Data->w;
-        return data.dump();
-    }
+    Texture() = default;
+    ~Texture() = default;
 
 private:
-    const ethVector4* m_Data;
+    friend class PngFileParser;
+    friend class CompiledTexture;
+    uint32_t m_Width;
+    uint32_t m_Height;
+    RHIFormat m_Format;
+    unsigned char* m_Data;
 };
 
 ETH_NAMESPACE_END

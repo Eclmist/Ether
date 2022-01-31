@@ -17,29 +17,47 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "material.h"
 
 ETH_NAMESPACE_BEGIN
 
-class EcsSystem : public NonCopyable
+Material::Material()
 {
-public:
-    EcsSystem() = default;
-    ~EcsSystem() = default;
+}
 
-public:
-    virtual void OnEntityRegister(EntityID id) = 0;
-    virtual void OnEntityDeregister(EntityID id) = 0;
-    virtual void OnUpdate() = 0;
+void Material::Serialize(OStream& ostream)
+{
+}
 
-public:
-    inline ComponentSignature GetSignature() const { return m_Signature; }
+void Material::Deserialize(IStream& istream)
+{
+}
 
-protected:
-    friend class EcsSystemManager;
-    std::set<EntityID> m_MatchingEntities;
-    ComponentSignature m_Signature;
-};
+CompiledTexture* Material::GetTexture(const std::string& key) const
+{
+    if (m_Textures.find(key) != m_Textures.end())
+        return m_Textures.at(key).get();
+
+    return nullptr;
+}
+
+ethVector4 Material::GetColor(const std::string& key) const
+{
+    if (m_Colors.find(key) != m_Colors.end())
+        return m_Colors.at(key);
+
+    return { 1.0, 1.0, 1.0, 1.0 };
+}
+
+void Material::SetTexture(const std::string& key, std::shared_ptr<CompiledTexture> texture)
+{
+    m_Textures[key] = texture;
+}
+
+void Material::SetColor(const std::string& key, ethVector4 color)
+{
+    m_Colors[key] = color;
+}
 
 ETH_NAMESPACE_END
 

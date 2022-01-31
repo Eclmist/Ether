@@ -19,35 +19,26 @@
 
 #pragma once
 
-#include "system.h"
-
 ETH_NAMESPACE_BEGIN
 
-using SystemsArray = std::unordered_map<std::string, std::shared_ptr<System>>;
-
-class SystemManager : public NonCopyable
+class EcsSystem : public NonCopyable
 {
 public:
-    SystemManager() = default;
-    ~SystemManager() = default;
+    EcsSystem() = default;
+    ~EcsSystem() = default;
 
 public:
-    inline const SystemsArray GetSystems() const { return m_Systems; }
+    virtual void OnEntityRegister(EntityID id) = 0;
+    virtual void OnEntityDeregister(EntityID id) = 0;
+    virtual void OnUpdate() = 0;
 
 public:
-    void InitializeSystems();
-    ETH_ENGINE_DLL void AssignEntityToSystems(EntityID id, ComponentSignature signature);
+    inline ComponentSignature GetSignature() const { return m_Signature; }
 
-private:
-    template <typename T>
-    void RegisterSystem()
-    {
-        const char* typeName = typeid(T).name();
-        m_Systems.insert({ typeName, std::make_shared<T>() });
-    }
-
-private:
-    SystemsArray m_Systems;
+protected:
+    friend class EcsSystemManager;
+    std::set<EntityID> m_MatchingEntities;
+    ComponentSignature m_Signature;
 };
 
 ETH_NAMESPACE_END

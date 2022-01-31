@@ -62,16 +62,13 @@ D3D12_COMMAND_QUEUE_DESC Translate(const RHICommandQueueDesc& rhiDesc);
 D3D12_CPU_DESCRIPTOR_HANDLE Translate(const RHIDescriptorHandleCPU& rhiDesc);
 D3D12_DEPTH_STENCIL_DESC Translate(const RHIDepthStencilDesc& rhiDesc);
 D3D12_DEPTH_STENCIL_VALUE Translate(const RHIDepthStencilValue& rhiDesc);
-D3D12_DEPTH_STENCIL_VIEW_DESC Translate(const RHIDepthStencilViewDesc& rhiDesc);
 D3D12_DEPTH_STENCILOP_DESC Translate(const RHIDepthStencilOperationDesc& rhiDesc);
 D3D12_DESCRIPTOR_HEAP_DESC Translate(const RHIDescriptorHeapDesc& rhiDesc);
 D3D12_GPU_DESCRIPTOR_HANDLE Translate(const RHIDescriptorHandleGPU& rhiDesc);
 D3D12_GRAPHICS_PIPELINE_STATE_DESC Translate(const RHIPipelineStateDesc& rhiDesc);
-D3D12_INDEX_BUFFER_VIEW Translate(const RHIIndexBufferViewDesc& rhiDesc);
 D3D12_INPUT_ELEMENT_DESC Translate(const RHIInputElementDesc& rhiDesc);
 D3D12_RASTERIZER_DESC Translate(const RHIRasterizerDesc& rhiDesc);
 D3D12_RECT Translate(const RHIScissorDesc& rhiDesc);
-D3D12_RENDER_TARGET_VIEW_DESC Translate(const RHIRenderTargetViewDesc& rhiDesc);
 D3D12_RESOURCE_BARRIER Translate(const RHIResourceTransitionDesc& rhiDesc);
 D3D12_RESOURCE_DESC Translate(const RHIResourceDesc& rhiDesc);
 D3D12_ROOT_PARAMETER Translate(const RHIRootParameterCBVDesc& rhiDesc);
@@ -79,13 +76,18 @@ D3D12_ROOT_PARAMETER Translate(const RHIRootParameterConstantDesc& rhiDesc);
 D3D12_ROOT_PARAMETER Translate(const RHIRootParameterSRVDesc& rhiDesc);
 D3D12_ROOT_SIGNATURE_DESC Translate(const RHIRootSignatureDesc& rhiDesc);
 D3D12_SHADER_BYTECODE Translate(const RHIShaderDesc& rhiDesc);
-D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDesc);
-D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RHIConstantBufferViewDesc& rhiDesc);
 D3D12_STATIC_SAMPLER_DESC Translate(const RHISamplerParameterDesc& rhiDesc);
-D3D12_VERTEX_BUFFER_VIEW Translate(const RHIVertexBufferViewDesc& rhiDesc);
 D3D12_VIEWPORT Translate(const RHIViewportDesc& rhiDesc);
 DXGI_SAMPLE_DESC Translate(const RHISampleDesc& rhiDesc);
 DXGI_SWAP_CHAIN_DESC1 Translate(const RHISwapChainDesc& rhiDesc);
+
+D3D12_RENDER_TARGET_VIEW_DESC Translate(const RHIRenderTargetViewDesc& rhiDesc);
+D3D12_DEPTH_STENCIL_VIEW_DESC Translate(const RHIDepthStencilViewDesc& rhiDesc);
+D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDesc);
+D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RHIConstantBufferViewDesc& rhiDesc);
+D3D12_VERTEX_BUFFER_VIEW Translate(const RHIVertexBufferViewDesc& rhiDesc);
+D3D12_INDEX_BUFFER_VIEW Translate(const RHIIndexBufferViewDesc& rhiDesc);
+
 RHIDescriptorHandleCPU Translate(const D3D12_CPU_DESCRIPTOR_HANDLE& d3dDesc);
 RHIDescriptorHandleGPU Translate(const D3D12_GPU_DESCRIPTOR_HANDLE& d3dDesc);
 

@@ -17,12 +17,25 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "material.h"
+#pragma once
+
+#include "fileparser.h"
+#include <toolmode/asset/intermediate/texture.h>
 
 ETH_NAMESPACE_BEGIN
 
-Material::Material()
+class PngFileParser : public FileParser
 {
-}
+public:
+    PngFileParser() = default;
+    ~PngFileParser() = default;
+
+    void Parse(const std::string& path) override;
+    std::shared_ptr<Asset> GetRawAsset() const override;
+
+private:
+    std::shared_ptr<Texture> m_RawTexture;
+};
 
 ETH_NAMESPACE_END
+

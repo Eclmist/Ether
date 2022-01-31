@@ -139,34 +139,13 @@ void DeferredLightingPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"DeferredLightingPass::RootSignature");
 
-    RHIRootSignatureFlags rootSignatureFlags =
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
-
     RHIRootSignature tempRS(4, 1);
-
-    RHISamplerParameterDesc& sampler = tempRS.GetSampler(0);
-    sampler.m_Filter = RHIFilter::MinMagMipPoint;
-    sampler.m_AddressU = RHITextureAddressMode::Clamp;
-    sampler.m_AddressV = RHITextureAddressMode::Clamp;
-    sampler.m_AddressW = RHITextureAddressMode::Clamp;
-    sampler.m_MipLODBias = 0;
-    sampler.m_MaxAnisotropy = 0;
-    sampler.m_ComparisonFunc = RHIComparator::Never;
-    sampler.m_MinLOD = 0;
-    sampler.m_MinLOD = std::numeric_limits<float_t>().max();
-    sampler.m_ShaderRegister = 0;
-    sampler.m_RegisterSpace = 0;
-    sampler.m_ShaderVisibility = RHIShaderVisibility::Pixel;
-
+    tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsDescriptorRange({0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
     tempRS[2]->SetAsDescriptorRange({1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
     tempRS[3]->SetAsDescriptorRange({2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
-
-    tempRS.Finalize(rootSignatureFlags, m_RootSignature);
+    tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 }
 
 ETH_NAMESPACE_END

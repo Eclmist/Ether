@@ -27,19 +27,19 @@ ETH_NAMESPACE_BEGIN
 
 GraphicCommon::GraphicCommon()
     : m_RasterizerDefault()
-	, m_RasterizerDefaultCw()
+    , m_RasterizerDefaultCw()
     , m_RasterizerWireframe()
-	, m_RasterizerWireframeCw()
-	, m_BlendDisabled()
-	, m_BlendPreMultiplied()
-	, m_BlendTraditional()
-	, m_BlendAdditive()
-	, m_BlendTraditionalAdditive()
-	, m_DepthStateDisabled()
-	, m_DepthStateReadWrite()
-	, m_DepthStateReadOnly()
-	, m_DepthStateTestEqual()
-	, m_DefaultInputLayout()
+    , m_RasterizerWireframeCw()
+    , m_BlendDisabled()
+    , m_BlendPreMultiplied()
+    , m_BlendTraditional()
+    , m_BlendAdditive()
+    , m_BlendTraditionalAdditive()
+    , m_DepthStateDisabled()
+    , m_DepthStateReadWrite()
+    , m_DepthStateReadOnly()
+    , m_DepthStateTestEqual()
+    , m_DefaultInputLayout()
 {
     InitializeRasterizerStates();
     InitializeDepthStates();
@@ -47,13 +47,14 @@ GraphicCommon::GraphicCommon()
     InitializeRootSignatures();
     InitializeShaders();
     InitializePipelineStates();
+    InitializeSamplers();
 }
 
 GraphicCommon::~GraphicCommon()
 {
     m_DefaultPSO.Destroy();
     m_DefaultWireframePSO.Destroy();
-    m_DefaultRootSignature.Destroy();
+    m_EmptyRootSignature.Destroy();
 }
 
 void GraphicCommon::InitializeRasterizerStates()
@@ -134,19 +135,19 @@ void GraphicCommon::InitializeBlendingStates()
 
 void GraphicCommon::InitializeRootSignatures()
 {
-    m_DefaultRootSignature.SetName(L"GraphicCommon::DefaultRootSignature");
+    m_EmptyRootSignature.SetName(L"GraphicCommon::EmptyRootSignature");
 
-    RHIRootSignatureFlags rootSignatureFlags =
+    m_DefaultRootSignatureFlags = 
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
         static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
 
     RHIRootSignature tempRS(2, 0);
-
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 32 });
-    tempRS.Finalize(rootSignatureFlags, m_DefaultRootSignature);
+
+    tempRS.Finalize(m_DefaultRootSignatureFlags, m_EmptyRootSignature);
 }
 
 RHIInputElementDesc inputElementDesc[4] = 
@@ -187,11 +188,31 @@ void GraphicCommon::InitializePipelineStates()
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStateReadWrite);
     creationPSO.SetSamplingDesc(1, 0);
-    creationPSO.SetRootSignature(m_DefaultRootSignature);
+    creationPSO.SetRootSignature(m_EmptyRootSignature);
     creationPSO.Finalize(m_DefaultPSO);
 
     creationPSO.SetRasterizerState(m_RasterizerWireframe);
     creationPSO.Finalize(m_DefaultWireframePSO);
+}
+
+void GraphicCommon::InitializeSamplers()
+{
+    m_PointSampler.m_Filter = RHIFilter::MinMagMipPoint;
+    m_PointSampler.m_AddressU = RHITextureAddressMode::Wrap;
+    m_PointSampler.m_AddressV = RHITextureAddressMode::Wrap;
+    m_PointSampler.m_AddressW = RHITextureAddressMode::Wrap;
+    m_PointSampler.m_MipLODBias = 0;
+    m_PointSampler.m_MaxAnisotropy = 0;
+    m_PointSampler.m_ComparisonFunc = RHIComparator::Never;
+    m_PointSampler.m_MinLOD = 0;
+    m_PointSampler.m_MinLOD = std::numeric_limits<float_t>().max();
+    m_PointSampler.m_ShaderRegister = 0;
+    m_PointSampler.m_RegisterSpace = 0;
+    m_PointSampler.m_ShaderVisibility = RHIShaderVisibility::All;
+
+    m_BilinearSampler = m_PointSampler;
+    m_BilinearSampler.m_Filter = RHIFilter::MinMagMipLinear;
+    m_BilinearSampler.m_ShaderRegister = 1;
 }
 
 ETH_NAMESPACE_END
