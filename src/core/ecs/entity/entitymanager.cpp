@@ -71,5 +71,52 @@ void EntityManager::ReleaseEntityID(EntityID id)
     m_AvailableEntityIDs.push(id);
 }
 
+#ifdef ETH_TOOLMODE
+
+ethVector4u EntityManager::GetPickerColorFromID(EntityID id)
+{
+	ethVector4u color;
+    uint32_t colorHash;
+
+    if (m_EntityIDToColor.find(id) == m_EntityIDToColor.end())
+    {
+        do 
+        {
+            color = { (uint8_t)rand(), (uint8_t)rand(), (uint8_t)rand(), (uint8_t)rand() };
+            colorHash = (uint32_t)(color.w);
+            colorHash |= (uint32_t)(color.z << 8);
+            colorHash |= (uint32_t)(color.w << 16);
+            colorHash |= (uint32_t)(color.w << 24);
+        } 
+        while (m_ColorToEntityID.find(colorHash) != m_ColorToEntityID.end());
+    }
+    else
+    {
+        colorHash = m_EntityIDToColor.at(id);
+        color.w = colorHash >> 0 & 0xFF;
+        color.z = colorHash >> 8 & 0xFF;
+        color.y = colorHash >> 16 & 0xFF;
+        color.x = colorHash >> 24 & 0xFF;
+    }
+
+    return color;
+}
+
+EntityID EntityManager::GetIDFromPickerColor(ethVector4u color)
+{
+    uint32_t colorHash = 0;
+    colorHash = (uint32_t)(color.w);
+    colorHash |= (uint32_t)(color.z << 8);
+    colorHash |= (uint32_t)(color.w << 16);
+    colorHash |= (uint32_t)(color.w << 24);
+
+    if (m_ColorToEntityID.find(colorHash) == m_ColorToEntityID.end())
+        return ETH_ECS_INVALID_ID;
+
+    return m_ColorToEntityID.at(colorHash);
+}
+
+#endif
+
 ETH_NAMESPACE_END
 

@@ -63,11 +63,11 @@ void CommandContext::TransitionResource(RHIResourceHandle target, RHIResourceSta
     target->SetState(newState);
 }
 
-void CommandContext::CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t destOffset)
+void CommandContext::CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t srcOffset, size_t destOffset)
 {
     RHICopyBufferRegionDesc desc = {};
     desc.m_Source = src;
-    desc.m_SourceOffset = 0;
+    desc.m_SourceOffset = srcOffset;
     desc.m_Destination = dest;
     desc.m_DestinationOffset = destOffset;
     desc.m_Size = size;
@@ -96,7 +96,7 @@ void CommandContext::InitializeBufferRegion(RHIResourceHandle dest, const void* 
     UploadBufferAllocation alloc = m_UploadBufferAllocator.Allocate(size);
     alloc.SetBufferData(data, size);
 
-    CopyBufferRegion(alloc.GetUploadBuffer().GetResource(), dest, size, destOffset);
+    CopyBufferRegion(alloc.GetUploadBuffer().GetResource(), dest, size, alloc.GetOffset());
     TransitionResource(dest, RHIResourceState::GenericRead);
 }
 

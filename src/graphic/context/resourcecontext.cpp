@@ -119,7 +119,7 @@ bool ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHICo
 
 bool ResourceContext::CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view)
 {
-    if (Exists(view.GetName()))
+    if (ResourceExists(view.GetName()))
         return false;
 
     return false;
@@ -130,7 +130,8 @@ bool ResourceContext::InitializeTexture2D(CompiledTexture& texture)
     bool resourceRecreated = CreateTexture2DResource(texture.GetWidth(), texture.GetHeight(), texture.GetFormat(), texture.GetResource());
 	bool viewRecreated = CreateShaderResourceView(texture.GetResource(), texture.GetView());
 
-    AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");
+    // TODO: multiple of the same view can be created in a frame where the resource was created. This is a waste.
+    //AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");
 
     if (!resourceRecreated)
         return false;
@@ -165,7 +166,7 @@ bool ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIRes
     return true;
 }
 
-bool ResourceContext::Exists(const std::wstring& resourceID) const
+bool ResourceContext::ResourceExists(const std::wstring& resourceID) const
 {
     AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
     return m_ResourceEntries.find(resourceID) != m_ResourceEntries.end();
@@ -175,7 +176,7 @@ bool ResourceContext::ShouldRecreateResource(const std::wstring& resourceID, con
 {
     AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
 
-    if (!Exists(resourceID))
+    if (!ResourceExists(resourceID))
         return true;
 
     auto oldDesc = m_ResourceTable.at(resourceID);
@@ -196,7 +197,7 @@ bool ResourceContext::ShouldRecreateView(const std::wstring& resourceID) const
 {
     AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
 
-    if (!Exists(resourceID))
+    if (!ResourceExists(resourceID))
         return true;
 
     return m_NewlyCreatedResources.find(resourceID) != m_NewlyCreatedResources.end();
@@ -204,7 +205,7 @@ bool ResourceContext::ShouldRecreateView(const std::wstring& resourceID) const
 
 RHIFormat ResourceContext::GetResourceFormat(const std::wstring& resourceID) const
 {
-    if (!Exists(resourceID))
+    if (!ResourceExists(resourceID))
         return RHIFormat::Unknown;
 
     return m_ResourceTable.find(resourceID)->second.m_ResourceDesc.m_Format;

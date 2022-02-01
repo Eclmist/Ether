@@ -32,8 +32,9 @@ typedef DirectX::XMMATRIX           ethXMMatrix;
 typedef DirectX::XMFLOAT3X3         ethMatrix3x3;
 typedef DirectX::XMFLOAT4X3         ethMatrix4x3;
 typedef DirectX::XMFLOAT4X4         ethMatrix4x4;
-
 typedef DirectX::XMVECTOR           ethXMVector;
+typedef DirectX::XMUINT4            ethXMUint4;
+
 typedef DirectX::XMFLOAT2           ethVector2;
 typedef DirectX::XMFLOAT3           ethVector3;
 typedef DirectX::XMFLOAT4           ethVector4;

@@ -63,6 +63,7 @@ public:
             newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
             newEntity->GetComponent<TransformComponent>()->SetScale({ 1.5, 1.5, 1.5 });
             newEntity->AddComponent<VisualComponent>();
+            newEntity->GetComponent<VisualComponent>()->SetMaterial(m_Material);
             newEntity->AddComponent<MeshComponent>();
         }
     };

@@ -42,6 +42,16 @@ DEFINE_GFX_DSV(GBufferDepthTexture);
 
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
+#ifdef ETH_TOOLONLY
+DEFINE_GFX_RESOURCE(EntityPickerTexture);
+DEFINE_GFX_RESOURCE(InstanceParams);
+
+DEFINE_GFX_RTV(EntityPickerTexture);
+DEFINE_GFX_CBV(InstanceParams);
+#endif
+
+#define NUM_GBUFFER_RENDER_TARGETS ETH_ENGINE_OR_TOOL(3, 4)
+
 GBufferPass::GBufferPass()
     : RenderPass("GBuffer Pass")
 {
@@ -73,6 +83,14 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferNormalTexture), GFX_RTV(GBufferNormalTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_RTV(GBufferPosDepthTexture));
     rc.CreateDepthStencilView(GFX_RESOURCE(GBufferDepthTexture), GFX_DSV(GBufferDepthTexture));
+
+#ifdef ETH_TOOLMODE
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));
+    rc.CreateRenderTargetView(GFX_RESOURCE(EntityPickerTexture), GFX_RTV(EntityPickerTexture));
+
+    rc.CreateBufferResource(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
+    rc.CreateConstantBufferView(GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
+#endif
 }
 
 void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
@@ -99,14 +117,22 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.ClearColor(GFX_RTV(GBufferNormalTexture), ethVector4());
     context.ClearColor(GFX_RTV(GBufferPosDepthTexture), ethVector4());
 
-    RHIRenderTargetViewHandle rtvs[3] = 
+#ifdef ETH_TOOLMODE
+    context.TransitionResource(GFX_RESOURCE(EntityPickerTexture), RHIResourceState::RenderTarget);
+    context.ClearColor(GFX_RTV(EntityPickerTexture), ethVector4());
+#endif
+
+    RHIRenderTargetViewHandle rtvs[NUM_GBUFFER_RENDER_TARGETS] =
     { 
         GFX_RTV(GBufferAlbedoTexture),
         GFX_RTV(GBufferNormalTexture),
-        GFX_RTV(GBufferPosDepthTexture)
+        GFX_RTV(GBufferPosDepthTexture),
+#ifdef ETH_TOOLMODE
+        GFX_RTV(EntityPickerTexture),
+#endif
     };
 
-    context.SetRenderTargets(3, rtvs, GFX_DSV(GBufferDepthTexture));
+    context.SetRenderTargets(NUM_GBUFFER_RENDER_TARGETS, rtvs, GFX_DSV(GBufferDepthTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 
@@ -130,8 +156,14 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
         context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
-        context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 0, &modelMat });
-        context.GetCommandList()->SetRootConstants({ 1, sizeof(ethXMMatrix) / 4, 16, &normalMat });
+        InstanceParams param;
+        DirectX::XMStoreFloat4x4(&param.m_ModelMatrix, modelMat);
+        DirectX::XMStoreFloat4x4(&param.m_NormalMatrix, normalMat);
+        ETH_TOOLONLY(param.m_PickerColor = visual->GetPickerColor());
+
+        context.InitializeBufferRegion(GFX_RESOURCE(InstanceParams), &param, sizeof(InstanceParams));
+        context.TransitionResource(GFX_RESOURCE(InstanceParams), RHIResourceState::GenericRead);
+        context.GetCommandList()->SetRootConstantBuffer({ 1, GFX_RESOURCE(InstanceParams) });
 
         // TODO: Setup bindless textures
         // TODO: If null, bind default texture
@@ -177,8 +209,17 @@ void GBufferPass::InitializePipelineState()
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    RHIFormat formats[3] = { RHIFormat::R8G8B8A8Unorm, RHIFormat::R32G32B32A32Float, RHIFormat::R32G32B32A32Float };
-    creationPSO.SetRenderTargetFormats(3, formats);
+
+    RHIFormat formats[NUM_GBUFFER_RENDER_TARGETS] = { 
+        RHIFormat::R8G8B8A8Unorm,
+        RHIFormat::R32G32B32A32Float,
+        RHIFormat::R32G32B32A32Float,
+#ifdef ETH_TOOLMODE
+        RHIFormat::R8G8B8A8Unorm,
+#endif
+    };
+
+    creationPSO.SetRenderTargetFormats(NUM_GBUFFER_RENDER_TARGETS, formats);
     creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
@@ -193,7 +234,7 @@ void GBufferPass::InitializeRootSignature()
     RHIRootSignature tempRS(3, 1);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::Vertex, 32 });
+    tempRS[1]->SetAsConstantBufferView({ 1, 0, RHIShaderVisibility::All });
     tempRS[2]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 

@@ -63,13 +63,13 @@ UploadBufferAllocation UploadBufferPage::Allocate(size_t size, size_t alignment)
     }
 
     size_t alignedSize = AlignUp(size, alignment);
-    m_Offset = AlignUp(m_Offset, alignment);
 
     UploadBufferAllocation allocation(*this);
     allocation.SetSize(alignedSize);
     allocation.SetOffset(m_Offset);
     allocation.SetMappedCPUAddress(static_cast<uint8_t*>(m_CpuAddress) + m_Offset);
 
+    m_Offset = AlignUp(m_Offset + alignedSize, alignment);
     // TODO: do we need store an offset per allocation? Should be uploading the entire page in one go?
     //allocation.SetGPU(m_Resource->GetGPUVirtualAdd + m_Offset);
         

@@ -64,6 +64,11 @@ public:
     Entity* CreateEntity(const std::string& name);
     void DestroyEntity(EntityID id);
 
+#ifdef ETH_TOOLMODE
+    inline ethVector4u GetPickierColorFromID(EntityID id) { return m_EntityManager->GetPickerColorFromID(id); }
+	inline EntityID GetIDFromPickerColor(ethVector4u color) { return m_EntityManager->GetIDFromPickerColor(color); }
+#endif
+
 public:
     template <typename T>
     T* AddComponent(EntityID id)

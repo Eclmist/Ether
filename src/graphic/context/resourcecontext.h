@@ -45,8 +45,7 @@ public:
 
 private:
     bool CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
-
-    bool Exists(const std::wstring& resourceID) const;
+    bool ResourceExists(const std::wstring& resourceID) const;
     bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc) const;
     bool ShouldRecreateView(const std::wstring& resourceID) const;
 

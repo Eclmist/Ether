@@ -74,6 +74,9 @@ bool Shader::Compile()
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
     //arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
 
+    ETH_TOOLONLY(arguments.push_back(L"-D"));
+    ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
+
     wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
     HRESULT hr = s_DxcLibrary->CreateBlobFromFile(GetRelativePath().c_str(), &m_Encoding, encodingBlob.GetAddressOf());
 

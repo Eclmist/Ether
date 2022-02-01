@@ -73,6 +73,14 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
 			EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
 			EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
 		}
+
+        std::shared_ptr<CompiledMesh> compiledCubeMesh = std::make_shared<CompiledMesh>();
+        IFileStream iistream2("Z:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\cube.obj.ether");
+        compiledCubeMesh->Deserialize(iistream2);
+
+        for (int i = 1; i < 20; ++i)
+            if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
+                EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledCubeMesh);
     }
     else if (PathUtils::GetFileExtension(path) == ".png")
     {
@@ -83,6 +91,11 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
 
 		if (EngineCore::GetECSManager().GetComponent<VisualComponent>(0) != nullptr)
 			EngineCore::GetECSManager().GetComponent<VisualComponent>(0)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
+
+        for (int i = 1; i < 20; ++i)
+            if (EngineCore::GetECSManager().GetComponent<VisualComponent>(i) != nullptr)
+                EngineCore::GetECSManager().GetComponent<VisualComponent>(i)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
+
     }
 }
 

@@ -40,10 +40,17 @@ private:
     void InitializeRootSignature();
 
 private:
+    struct InstanceParams
+    {
+        ethMatrix4x4 m_ModelMatrix;
+        ethMatrix4x4 m_NormalMatrix;
+        ethVector4u m_PickerColor;
+    };
+
+private:
     RHIDepthStencilDesc m_DepthStencilState;
     RHIPipelineStateHandle m_PipelineState;
     RHIRootSignatureHandle m_RootSignature;
-
 
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;
