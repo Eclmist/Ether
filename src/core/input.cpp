@@ -51,7 +51,7 @@ void Input::SetKeyUp(Win32::KeyCode key)
 void Input::SetMouseButtonDown(int index)
 {
     m_MouseStates[index] = true;
-    m_TransientKeyDownStates[index] = true;
+    m_TransientMouseDownStates[index] = true;
 }
 
 void Input::SetMouseButtonUp(int index)

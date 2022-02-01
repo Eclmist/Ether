@@ -38,6 +38,8 @@ public:
         m_CameraMode = CameraMode::Orbit;
         m_CameraDistance = 10.0f;
         m_CameraRotation = { -0.4, 0.785398, 0 };
+        m_OrthoX = 0;
+        m_OrthoZ = 0;
         EngineCore::GetEngineConfig().ToggleDebugGui();
     };
 
@@ -78,10 +80,7 @@ public:
             EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
         if (Input::GetKeyDown(Win32::KeyCode::F1))
-            m_CameraMode = CameraMode::Orbit;
-
-        if (Input::GetKeyDown(Win32::KeyCode::F2))
-            m_CameraMode = CameraMode::Fly;
+            m_CameraMode = (CameraMode)(((uint32_t)m_CameraMode + 1) % (uint32_t)CameraMode::NumModes);
 
         UpdateCamera(e.m_DeltaTime);
 
@@ -117,6 +116,8 @@ private:
             return UpdateOrbitCam(deltaTime);
         case CameraMode::Fly:
             return UpdateFlyCam(deltaTime);
+        case CameraMode::Ortho:
+            return UpdateOrthoCam(deltaTime);
         }
     }
 
@@ -177,6 +178,33 @@ private:
         m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
     }
 
+    void UpdateOrthoCam(float deltaTime)
+    {
+        const float scaleModifier = 0.001;
+
+        m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
+
+        if (Input::GetMouseButtonDown(1))
+            m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+
+        if (Input::GetMouseButton(1))
+        {
+            m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
+            m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
+            m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+        }
+
+        ethXMMatrix rotationMatrix = XMMatrixRotationX(-90 * 0.0174533);
+        ethXMMatrix translationMatrix = XMMatrixTranslation(m_OrthoX, m_OrthoZ, m_CameraDistance);
+        m_ViewMatrix = rotationMatrix * translationMatrix;
+        m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+
+        m_ProjectionMatrix = XMMatrixOrthographicLH(
+            (float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
+            (float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
+            0.01f, 1000.0f);
+    }
+
     void ResetMatrices()
     {
         m_ViewMatrix = XMMatrixIdentity();
@@ -185,10 +213,12 @@ private:
     }
 
 private:
-    enum class CameraMode
+    enum class CameraMode : unsigned int
     {
         Orbit,
-        Fly
+        Fly,
+        Ortho,
+        NumModes
     };
 
     CameraMode m_CameraMode;
@@ -199,6 +229,10 @@ private:
 
     // Fly Cam
     ethXMVector m_CameraPosition;
+
+    // Ortho Cam
+    ethVector2 m_DragStartPos;
+    float m_OrthoX, m_OrthoZ;
 
     ethXMMatrix m_ViewMatrix;
     ethXMMatrix m_ViewMatrixInv;

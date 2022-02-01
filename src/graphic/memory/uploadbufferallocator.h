@@ -25,7 +25,7 @@ ETH_NAMESPACE_BEGIN
 
 // Constant blocks must be multiples of 16 constants @ 16 bytes each
 #define DEFAULT_ALIGN 256
-#define DEFAULT_PAGE_SIZE 0x80000000 // 8MB
+#define DEFAULT_PAGE_SIZE 0x800000 // 8MB
 
 class UploadBufferAllocator
 {
