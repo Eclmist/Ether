@@ -196,7 +196,7 @@ private:
 
         if (abs(Input::GetMouseWheelDelta()) > 0)
         {
-            float cameraDistanceDelta = -Input::GetMouseWheelDelta() * zoomModifier;
+            float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
             float offsetModifier = scaleModifier * cameraDistanceDelta;
 
             m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
