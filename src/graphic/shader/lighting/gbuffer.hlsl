@@ -98,6 +98,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
 
     PS_OUTPUT output;
     output.Albedo = col;
+    output.Albedo.a = sin(g_CommonConstants.Time.y * 2.0) / 2.4 + 0.45; //roughness
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;

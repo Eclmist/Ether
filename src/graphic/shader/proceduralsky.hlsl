@@ -50,7 +50,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float4 col;
 
-return float4(0.07, 0.06, 0.077, 1.0);
+//return float4(0.08, 0.06, 0.077, 1.0);
     if (viewY < 0)
         col = lerp( horizonColor, groundColor, saturate(-viewY * 2));
     else
