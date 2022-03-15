@@ -104,6 +104,22 @@ bool ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHISh
     return true;
 }
 
+bool ResourceContext::CreateShaderResourceViewCube(RHIResourceHandle resource, RHIShaderResourceViewHandle& view)
+{
+    if (!ShouldRecreateView(resource.GetName()))
+        return false;
+
+    RHIShaderResourceViewDesc srvDesc = {};
+    srvDesc.m_Format = GetResourceFormat(resource.GetName());
+    srvDesc.m_Dimensions = RHIShaderResourceDims::TextureCube;
+    srvDesc.m_Resource = resource;
+    GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
+    m_ResourceEntries.emplace(view.GetName());
+
+    return true;
+}
+
+
 bool ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
@@ -129,6 +145,21 @@ bool ResourceContext::InitializeTexture2D(CompiledTexture& texture)
 {
     bool resourceRecreated = CreateTexture2DResource(texture.GetWidth(), texture.GetHeight(), texture.GetFormat(), texture.GetResource());
 	bool viewRecreated = CreateShaderResourceView(texture.GetResource(), texture.GetView());
+
+    // TODO: multiple of the same view can be created in a frame where the resource was created. This is a waste.
+    //AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");
+
+    if (!resourceRecreated)
+        return false;
+
+    m_Context->InitializeTexture(texture);
+    return true;
+}
+
+bool ResourceContext::InitializeTextureCube(CompiledTexture& texture)
+{
+    bool resourceRecreated = CreateTexture2DResource(texture.GetWidth(), texture.GetHeight(), texture.GetFormat(), texture.GetResource());
+    bool viewRecreated = CreateShaderResourceViewCube(texture.GetResource(), texture.GetView());
 
     // TODO: multiple of the same view can be created in a frame where the resource was created. This is a waste.
     //AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");

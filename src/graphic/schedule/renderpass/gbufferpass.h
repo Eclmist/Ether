@@ -47,6 +47,14 @@ private:
         ethVector4u m_PickerColor;
     };
 
+    struct MaterialParams
+    {
+        ethVector4 m_BaseColor;
+        ethVector4 m_SpecularColor;
+        float m_Roughness;
+        float m_Metalness;
+    };
+
 private:
     RHIDepthStencilDesc m_DepthStencilState;
     RHIPipelineStateHandle m_PipelineState;

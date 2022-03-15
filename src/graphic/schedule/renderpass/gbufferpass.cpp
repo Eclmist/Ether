@@ -31,26 +31,31 @@ ETH_NAMESPACE_BEGIN
 DEFINE_GFX_PASS(GBufferPass);
 
 DEFINE_GFX_RESOURCE(GBufferAlbedoTexture);
+DEFINE_GFX_RESOURCE(GBufferSpecularTexture);
 DEFINE_GFX_RESOURCE(GBufferNormalTexture);
-DEFINE_GFX_RESOURCE(GBufferPosDepthTexture);
+DEFINE_GFX_RESOURCE(GBufferPositionTexture);
 DEFINE_GFX_RESOURCE(GBufferDepthTexture);
 
 DEFINE_GFX_RTV(GBufferAlbedoTexture);
+DEFINE_GFX_RTV(GBufferSpecularTexture);
 DEFINE_GFX_RTV(GBufferNormalTexture);
-DEFINE_GFX_RTV(GBufferPosDepthTexture);
+DEFINE_GFX_RTV(GBufferPositionTexture);
 DEFINE_GFX_DSV(GBufferDepthTexture);
 
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
+DECLARE_GFX_RESOURCE(MaterialConstants);
+
+DEFINE_GFX_RESOURCE(InstanceParams);
+DEFINE_GFX_RESOURCE(MaterialParams);
+DEFINE_GFX_CBV(InstanceParams);
+DEFINE_GFX_CBV(MaterialParams);
 
 #ifdef ETH_TOOLONLY
 DEFINE_GFX_RESOURCE(EntityPickerTexture);
-DEFINE_GFX_RESOURCE(InstanceParams);
-
 DEFINE_GFX_RTV(EntityPickerTexture);
-DEFINE_GFX_CBV(InstanceParams);
 #endif
 
-#define NUM_GBUFFER_RENDER_TARGETS ETH_ENGINE_OR_TOOL(3, 4)
+#define NUM_GBUFFER_RENDER_TARGETS ETH_ENGINE_OR_TOOL(4, 5)
 
 GBufferPass::GBufferPass()
     : RenderPass("GBuffer Pass")
@@ -75,21 +80,26 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
     RHIViewportDesc vp = context.GetViewport();
     
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferAlbedoTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferSpecularTexture));
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferNormalTexture));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPosDepthTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPositionTexture));
     rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RHIFormat::D24UnormS8Uint, GFX_RESOURCE(GBufferDepthTexture));
 
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_RTV(GBufferAlbedoTexture));
+    rc.CreateRenderTargetView(GFX_RESOURCE(GBufferSpecularTexture), GFX_RTV(GBufferSpecularTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferNormalTexture), GFX_RTV(GBufferNormalTexture));
-    rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_RTV(GBufferPosDepthTexture));
+    rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPositionTexture), GFX_RTV(GBufferPositionTexture));
     rc.CreateDepthStencilView(GFX_RESOURCE(GBufferDepthTexture), GFX_DSV(GBufferDepthTexture));
+
+    rc.CreateBufferResource(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
+    rc.CreateBufferResource(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams));
+    rc.CreateConstantBufferView(GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
+    rc.CreateConstantBufferView(GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
 
 #ifdef ETH_TOOLMODE
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(EntityPickerTexture), GFX_RTV(EntityPickerTexture));
 
-    rc.CreateBufferResource(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
-    rc.CreateConstantBufferView(GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
 #endif
 }
 
@@ -110,12 +120,14 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     }
 
     context.TransitionResource(GFX_RESOURCE(GBufferAlbedoTexture), RHIResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferSpecularTexture), RHIResourceState::RenderTarget);
     context.TransitionResource(GFX_RESOURCE(GBufferNormalTexture), RHIResourceState::RenderTarget);
-    context.TransitionResource(GFX_RESOURCE(GBufferPosDepthTexture), RHIResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferPositionTexture), RHIResourceState::RenderTarget);
 
-    context.ClearColor(GFX_RTV(GBufferAlbedoTexture), ethVector4());
-    context.ClearColor(GFX_RTV(GBufferNormalTexture), ethVector4());
-    context.ClearColor(GFX_RTV(GBufferPosDepthTexture), ethVector4());
+    context.ClearColor(GFX_RTV(GBufferAlbedoTexture));
+    context.ClearColor(GFX_RTV(GBufferSpecularTexture));
+    context.ClearColor(GFX_RTV(GBufferNormalTexture));
+    context.ClearColor(GFX_RTV(GBufferPositionTexture));
 
 #ifdef ETH_TOOLMODE
     context.TransitionResource(GFX_RESOURCE(EntityPickerTexture), RHIResourceState::RenderTarget);
@@ -125,8 +137,9 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     RHIRenderTargetViewHandle rtvs[NUM_GBUFFER_RENDER_TARGETS] =
     { 
         GFX_RTV(GBufferAlbedoTexture),
+        GFX_RTV(GBufferSpecularTexture),
         GFX_RTV(GBufferNormalTexture),
-        GFX_RTV(GBufferPosDepthTexture),
+        GFX_RTV(GBufferPositionTexture),
 #ifdef ETH_TOOLMODE
         GFX_RTV(EntityPickerTexture),
 #endif
@@ -160,17 +173,28 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         DirectX::XMStoreFloat4x4(&param.m_ModelMatrix, modelMat);
         DirectX::XMStoreFloat4x4(&param.m_NormalMatrix, normalMat);
         ETH_TOOLONLY(param.m_PickerColor = visual->GetPickerColor());
-
         context.InitializeBufferRegion(GFX_RESOURCE(InstanceParams), &param, sizeof(InstanceParams));
-        context.TransitionResource(GFX_RESOURCE(InstanceParams), RHIResourceState::GenericRead);
         context.GetCommandList()->SetRootConstantBuffer({ 1, GFX_RESOURCE(InstanceParams) });
+
+        MaterialParams mat;
+        mat.m_BaseColor = GraphicCore::GetGraphicRenderer().m_BaseColor;
+        mat.m_SpecularColor = GraphicCore::GetGraphicRenderer().m_SpecularColor;
+        mat.m_Roughness = GraphicCore::GetGraphicRenderer().m_Roughness;
+        mat.m_Metalness = GraphicCore::GetGraphicRenderer().m_Metalness;
+
+        context.InitializeBufferRegion(GFX_RESOURCE(MaterialParams), &mat, sizeof(MaterialParams));
+        context.GetCommandList()->SetRootConstantBuffer({ 3, GFX_RESOURCE(MaterialParams) });
 
         // TODO: Setup bindless textures
         // TODO: If null, bind default texture
         auto texture = visual->GetMaterial()->GetTexture("_AlbedoTexture");
-        rc.InitializeTexture2D(*texture);
 
-        context.GetCommandList()->SetRootDescriptorTable({ 2, texture->GetView() });
+        if (texture != nullptr)
+        {
+			rc.InitializeTexture2D(*texture);
+			context.GetCommandList()->SetRootDescriptorTable({ 2, texture->GetView() });
+        }
+
         context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
     }
 
@@ -212,6 +236,7 @@ void GBufferPass::InitializePipelineState()
 
     RHIFormat formats[NUM_GBUFFER_RENDER_TARGETS] = { 
         RHIFormat::R8G8B8A8Unorm,
+        RHIFormat::R8G8B8A8Unorm,
         RHIFormat::R32G32B32A32Float,
         RHIFormat::R32G32B32A32Float,
 #ifdef ETH_TOOLMODE
@@ -231,11 +256,14 @@ void GBufferPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"GBufferPass::RootSignature");
 
-    RHIRootSignature tempRS(3, 1);
-    tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
+    RHIRootSignature tempRS(4, 3);
+    tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
+    tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
+    tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsConstantBufferView({ 1, 0, RHIShaderVisibility::All });
     tempRS[2]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS[3]->SetAsConstantBufferView({ 2, 0, RHIShaderVisibility::All });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
 }

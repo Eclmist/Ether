@@ -53,6 +53,7 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
     // Skip if valid .ether file already exists
     if (!PathUtils::IsValidPath(dest))
     {
+        LogToolmodeInfo("Asset is already serialized. Reimporting asset", path.c_str());
 		IFileStream istream(path);
 		OFileStream ostream(dest);
 		std::shared_ptr<Asset> compiledAsset = importer->Compile(istream);
@@ -95,6 +96,13 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
         //for (int i = 1; i < 20; ++i)
         //    if (EngineCore::GetECSManager().GetComponent<VisualComponent>(i) != nullptr)
         //        EngineCore::GetECSManager().GetComponent<VisualComponent>(i)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
+    }
+    else if (PathUtils::GetFileExtension(path) == ".jpg")
+    {
+		std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+		IFileStream iistream(dest);
+		compiledTexture->Deserialize(iistream);
+		GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = compiledTexture;
     }
 }
 

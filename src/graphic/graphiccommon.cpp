@@ -213,6 +213,10 @@ void GraphicCommon::InitializeSamplers()
     m_BilinearSampler = m_PointSampler;
     m_BilinearSampler.m_Filter = RHIFilter::MinMagMipLinear;
     m_BilinearSampler.m_ShaderRegister = 1;
+
+    m_EnvMapSampler = m_BilinearSampler;
+    m_EnvMapSampler.m_ShaderRegister = 2;
+
 }
 
 ETH_NAMESPACE_END

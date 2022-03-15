@@ -66,6 +66,7 @@ public:
 
     RHISamplerParameterDesc m_PointSampler;
     RHISamplerParameterDesc m_BilinearSampler;
+    RHISamplerParameterDesc m_EnvMapSampler;
 };
 
 ETH_NAMESPACE_END

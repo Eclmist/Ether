@@ -30,7 +30,16 @@ struct InstanceParams
 #endif
 };
 
+struct MaterialParams
+{
+    float4 BaseColor;
+    float4 SpecularColor;
+    float Roughness;
+    float Metalness;
+};
+
 ConstantBuffer<InstanceParams> InstanceParams : register(b1);
+ConstantBuffer<MaterialParams> MaterialParams : register(b2);
 
 Texture2D albedo : register(t0);
 
@@ -53,11 +62,12 @@ struct VS_OUTPUT
 struct PS_OUTPUT
 {
     float4 Albedo       : SV_Target0;
-    float4 Normal       : SV_Target1;
-    float4 Position     : SV_Target2;
+    float4 Specular     : SV_Target1;
+    float4 Normal       : SV_Target2;
+    float4 Position     : SV_Target3;
 
 #ifdef ETH_TOOLMODE
-    float4 Picker       : SV_Target3;
+    float4 Picker       : SV_Target4;
 #endif
 };
 
@@ -97,8 +107,10 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 col3 = lerp(col, positionWS.y / 10.0, 0.2);// saturate(sin(CB_GlobalConstants.Time.z)));
 
     PS_OUTPUT output;
-    output.Albedo = col;
-    output.Albedo.a = sin(g_CommonConstants.Time.y * 2.0) / 2.4 + 0.45; //roughness
+    output.Albedo.xyz = col.xyz * MaterialParams.BaseColor.xyz;
+    output.Albedo.a = max(MaterialParams.Roughness, 0.02);// sin(g_CommonConstants.Time.y) / 4.0 + 0.28; //roughness
+    output.Specular.xyz = MaterialParams.SpecularColor.xyz;
+    output.Specular.w = MaterialParams.Metalness;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;

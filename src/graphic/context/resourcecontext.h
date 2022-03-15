@@ -36,10 +36,12 @@ public:
     bool CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
     bool CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
     bool CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
+    bool CreateShaderResourceViewCube(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
     bool CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view);
     bool CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view);
 
     bool InitializeTexture2D(CompiledTexture& texture);
+    bool InitializeTextureCube(CompiledTexture& texture);
 
     void Reset();
 
