@@ -68,8 +68,12 @@ bool Shader::Compile()
     arguments.push_back(m_TargetProfile.c_str());
 
     //Strip reflection data and pdbs
-    ETH_TOOLONLY(arguments.push_back(L"-Qstrip_debug"));
-    ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
+    //ETH_TOOLONLY(arguments.push_back(L"-Qstrip_debug"));
+    //ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
+
+    // Disable optimization for renderdoc pixel debugging
+    //ETH_TOOLONLY(arguments.push_back(L"-Od"));
+
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
     //arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp

@@ -75,7 +75,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    float trippyAmt = 0.0;
+    float trippyAmt = 0.005;
 
     float3 pos = IN.Position;
     pos.y += sin((pos.x + g_CommonConstants.Time.w) * 7) * 0.5 * trippyAmt;

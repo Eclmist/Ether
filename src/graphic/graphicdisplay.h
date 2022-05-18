@@ -43,6 +43,7 @@ public:
 public:
     RHIResourceHandle GetCurrentBackBuffer() const;
     RHIRenderTargetViewHandle GetCurrentBackBufferRTV() const;
+    RHIShaderResourceViewHandle GetCurrentBackBufferSRV() const;
 
     inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
     inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
@@ -69,6 +70,7 @@ private:
 
     RHIResourceHandle m_RenderTargets[MaxSwapChainBuffers];
     RHIRenderTargetViewHandle m_RenderTargetViews[MaxSwapChainBuffers];
+    RHIShaderResourceViewHandle m_ShaderResourceViews[MaxSwapChainBuffers];
     uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
 
     uint32_t m_CurrentBackBufferIndex;

@@ -200,7 +200,7 @@ float3 UniformSample(float2 Xi, float3 N)
     return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
-#define NUM_SAMPLES 16
+#define NUM_SAMPLES 256
 
 float3 SpecularIBL(float3 normal, float3 wo, Material material)
 {
@@ -346,10 +346,10 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     //lights[0].Intensity = 30.0f;
     //lights[0].Radius = 100.0f;
 
-    lights[0].Position = float3(1.0, 2.0, 1.0);
+    lights[0].Position = float3(15.0, 6.0, 0.0);
     lights[0].Color = float3(1.0, 1.0, 1.0);
-    lights[0].Intensity = 10.0f;
-    lights[0].Radius = 1.0f;
+    lights[0].Intensity = 5.0f;
+    lights[0].Radius = 20.0f;
 }
     
 
@@ -367,10 +367,10 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
     const float3 n = normalize(normal);
-    float3 finalColor = DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
+    float3 finalColor = DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat) * float3(1.0,0.5,0.5) * 1;
     //float3 finalColor = SpecularIBL(n, v, mat);
 
-    for (int i = 0; i < 0; ++i)
+    for (int i = 0; i < 1; ++i)
     {
         //finalColor += ComputePointLightOld(IN.UV, lights[i]);
         finalColor += ComputePointLight(IN.UV, mat, lights[i]);
