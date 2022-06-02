@@ -40,7 +40,7 @@ public:
 
 public:
     void TransitionResource(RHIResourceHandle resource, RHIResourceState newState);
-    void CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t destOffset = 0);
+    void CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
     void CopyTextureRegion(RHIResourceHandle src, RHIResourceHandle dest, const CompiledTexture& texture);
     void InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
     void InitializeTexture(const CompiledTexture& texture);

@@ -46,6 +46,7 @@ GraphicDisplay::~GraphicDisplay()
     {
         m_RenderTargets[i].Destroy();
         m_RenderTargetViews[i].Destroy();
+        m_ShaderResourceViews[i].Destroy();
     }
 }
 
@@ -91,6 +92,11 @@ RHIRenderTargetViewHandle GraphicDisplay::GetCurrentBackBufferRTV() const
     return m_RenderTargetViews[m_CurrentBackBufferIndex];
 }
 
+RHIShaderResourceViewHandle GraphicDisplay::GetCurrentBackBufferSRV() const
+{
+    return m_ShaderResourceViews[m_CurrentBackBufferIndex];
+}
+
 void GraphicDisplay::CreateSwapChain()
 {
     RHISwapChainDesc desc = {};
@@ -126,7 +132,13 @@ void GraphicDisplay::CreateViewsFromSwapChain()
         desc.m_Format = BackBufferFormat;
         desc.m_Resource = m_RenderTargets[i];
         GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
-	}
+
+        RHIShaderResourceViewDesc srvDesc = {};
+        srvDesc.m_Dimensions = RHIShaderResourceDims::Texture2D;
+        srvDesc.m_Format = BackBufferFormat;
+        srvDesc.m_Resource = m_RenderTargets[i];
+        GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, m_ShaderResourceViews[i]);
+    }
 }
 
 void GraphicDisplay::ResetCurrentBufferIndex()

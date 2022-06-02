@@ -31,6 +31,8 @@ struct VisualNodeData
 
     const ethXMMatrix* m_ModelMatrix;
     const Material* m_Material;
+
+    ETH_TOOLONLY(ethVector4u m_PickerColor);
 };
 
 class VisualNode
@@ -44,6 +46,7 @@ public:
     inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
     inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
     inline const Material* GetMaterial() const { return m_StaticData.m_Material; }
+    ETH_TOOLONLY(inline const ethVector4u GetPickerColor() const { return m_StaticData.m_PickerColor; })
 
 private:
     void UploadVertexBuffer(const void* data, uint32_t numVertices);

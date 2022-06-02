@@ -660,6 +660,8 @@ D3D12_STATIC_SAMPLER_DESC Translate(const RHISamplerParameterDesc& rhiDesc)
     d3dDesc.BorderColor = Translate(rhiDesc.m_BorderColor);
     d3dDesc.MinLOD = rhiDesc.m_MinLOD;
     d3dDesc.MaxLOD = rhiDesc.m_MaxLOD;
+	d3dDesc.ShaderRegister = rhiDesc.m_ShaderRegister;
+	d3dDesc.RegisterSpace = rhiDesc.m_RegisterSpace;
 
     return d3dDesc;
 }
@@ -791,6 +793,12 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDe
 	switch (rhiDesc.m_Dimensions)
 	{
 	case RHIShaderResourceDims::Texture2D:
+		d3dDesc.Texture2D.MipLevels = 1;
+		d3dDesc.Texture2D.MostDetailedMip = 0;
+		d3dDesc.Texture2D.PlaneSlice = 0;
+		d3dDesc.Texture2D.ResourceMinLODClamp = 0;
+		break;
+	case RHIShaderResourceDims::TextureCube:
 		d3dDesc.Texture2D.MipLevels = 1;
 		d3dDesc.Texture2D.MostDetailedMip = 0;
 		d3dDesc.Texture2D.PlaneSlice = 0;

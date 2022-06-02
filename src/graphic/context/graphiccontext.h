@@ -43,7 +43,7 @@ public:
     inline void SetEyePosition(ethVector4 eyePosition) { m_EyePosition = eyePosition; }
 
 public:
-    void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color);
+    void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color = { 0, 0, 0, 0 });
     void ClearDepthStencil(RHIDepthStencilViewHandle depthTex, float depth, float stencil);
 
     void SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv = RHIDepthStencilViewHandle());

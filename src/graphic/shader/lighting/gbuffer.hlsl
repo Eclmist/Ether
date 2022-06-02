@@ -20,13 +20,26 @@
 #include "common/commonconstants.hlsl"
 #include "common/samplers.hlsl"
 
-struct InstanceConstants
+struct InstanceParams
 {
     float4x4 ModelMatrix;
     float4x4 NormalMatrix;
+
+#ifdef ETH_TOOLMODE
+    uint4 PickerColor;
+#endif
 };
 
-ConstantBuffer<InstanceConstants> g_InstanceConstants : register(b1);
+struct MaterialParams
+{
+    float4 BaseColor;
+    float4 SpecularColor;
+    float Roughness;
+    float Metalness;
+};
+
+ConstantBuffer<InstanceParams> InstanceParams : register(b1);
+ConstantBuffer<MaterialParams> MaterialParams : register(b2);
 
 Texture2D albedo : register(t0);
 
@@ -49,26 +62,31 @@ struct VS_OUTPUT
 struct PS_OUTPUT
 {
     float4 Albedo       : SV_Target0;
-    float4 Normal       : SV_Target1;
-    float4 Position     : SV_Target2;
+    float4 Specular     : SV_Target1;
+    float4 Normal       : SV_Target2;
+    float4 Position     : SV_Target3;
+
+#ifdef ETH_TOOLMODE
+    float4 Picker       : SV_Target4;
+#endif
 };
 
 VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    float trippyAmt = 0.0;
+    float trippyAmt = 0.005;
 
     float3 pos = IN.Position;
     pos.y += sin((pos.x + g_CommonConstants.Time.w) * 7) * 0.5 * trippyAmt;
     pos.y += sin((pos.z + g_CommonConstants.Time.z) * 4) * 0.9 * trippyAmt;
 
-    float4x4 mv = mul(g_CommonConstants.ViewMatrix, g_InstanceConstants.ModelMatrix);
+    float4x4 mv = mul(g_CommonConstants.ViewMatrix, InstanceParams.ModelMatrix);
     float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);
 
     o.Position = mul(mvp, float4(pos, 1.0));
-    o.PositionWS = mul(g_InstanceConstants.ModelMatrix, float4(IN.Position, 1.0)).xyz;
-    o.NormalWS = mul(g_InstanceConstants.NormalMatrix, float4(IN.Normal, 1.0)).xyz;
+    o.PositionWS = mul(InstanceParams.ModelMatrix, float4(IN.Position, 1.0)).xyz;
+    o.NormalWS = mul(InstanceParams.NormalMatrix, float4(IN.Normal, 1.0)).xyz;
     o.UV = IN.TexCoord;
 
     return o;
@@ -89,10 +107,17 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 col3 = lerp(col, positionWS.y / 10.0, 0.2);// saturate(sin(CB_GlobalConstants.Time.z)));
 
     PS_OUTPUT output;
-    output.Albedo = col;
+    output.Albedo.xyz = col.xyz * MaterialParams.BaseColor.xyz;
+    output.Albedo.a = max(MaterialParams.Roughness, 0.02);// sin(g_CommonConstants.Time.y) / 4.0 + 0.28; //roughness
+    output.Specular.xyz = MaterialParams.SpecularColor.xyz;
+    output.Specular.w = MaterialParams.Metalness;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;
+
+#ifdef ETH_TOOLMODE
+    output.Picker = InstanceParams.PickerColor / 255.0;
+#endif
 
     return output;
 }

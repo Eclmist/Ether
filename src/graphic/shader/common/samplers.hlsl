@@ -19,5 +19,6 @@
 
 SamplerState g_PointSampler : register(s0);
 SamplerState g_BilinearSampler : register(s1);
+SamplerState g_EnvMapSampler : register(s2);
 
 

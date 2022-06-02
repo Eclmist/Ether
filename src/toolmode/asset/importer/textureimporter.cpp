@@ -32,6 +32,7 @@ ETH_NAMESPACE_BEGIN
 TextureImporter::TextureImporter()
 {
     m_Parsers[".png"] = std::make_shared<PngFileParser>();
+    m_Parsers[".jpg"] = std::make_shared<PngFileParser>();
 }
 
 bool TextureImporter::HasSupport(const std::string& extension)

@@ -27,7 +27,6 @@
 ETH_NAMESPACE_BEGIN
 
 DEFINE_GFX_PASS(ProceduralSkyPass);
-
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
 ProceduralSkyPass::ProceduralSkyPass()
@@ -68,7 +67,16 @@ void ProceduralSkyPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
+
+    auto texture = GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI;
+    if (texture != nullptr)
+    {
+        rc.InitializeTexture2D(*texture);
+        context.GetCommandList()->SetRootDescriptorTable({ 1, texture->GetView()});
+    }
+
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
@@ -107,8 +115,12 @@ void ProceduralSkyPass::InitializePipelineState()
 void ProceduralSkyPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"ProceduralSkyPass::RootSignature");
-    RHIRootSignature tempRS(1, 0);
+    RHIRootSignature tempRS(2, 3);
+    tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
+    tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
+    tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });    // Albedo
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 }
 

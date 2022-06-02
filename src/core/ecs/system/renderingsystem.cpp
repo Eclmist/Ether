@@ -74,6 +74,8 @@ void RenderingSystem::OnUpdate()
             data.m_NumVertices = mesh->GetCompiledMesh()->GetNumVertices();
             data.m_ModelMatrix = transform->GetMatrixReference();
             data.m_Material = visual->GetMaterial();
+            ETH_TOOLONLY(data.m_PickerColor = EngineCore::GetECSManager().GetPickierColorFromID(id));
+
             m_VisualNodes[id] = std::make_unique<VisualNode>(data);
             mesh->SetMeshChanged(false);
             hasMeshChanges = true;

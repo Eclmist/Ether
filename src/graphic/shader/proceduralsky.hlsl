@@ -19,6 +19,21 @@
 
 #include "common/commonconstants.hlsl"
 #include "common/fullscreenhelpers.hlsl"
+#include "common/samplers.hlsl"
+
+Texture2D EnvironmentHdriTex : register(t0);
+
+#define INV_ATAN float2(0.1591, 0.3183);
+#define PI          3.14159265359
+
+float2 SampleSphericalMap(float3 direction)
+{
+    float2 uv = float2(0.5 + atan2(direction.z,direction.x)/(PI*2), 0.5 - asin(direction.y)/PI);
+    uv.x = 1 - uv.x;
+    uv.y = 1 - uv.y;
+
+    return uv;
+}
 
 struct VS_OUTPUT
 {
@@ -50,11 +65,23 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float4 col;
 
-return float4(0.07, 0.06, 0.077, 1.0);
+//return float4(0.08, 0.06, 0.077, 1.0);
     if (viewY < 0)
         col = lerp( horizonColor, groundColor, saturate(-viewY * 2));
     else
         col = lerp(horizonColor, zenithColor, saturate(viewY * 2.0));
+
+    float2 offset = float2(IN.UV.x - 0.5, 0.5 - IN.UV.y) * float2(2.4, 1.5);
+    // return float4(offset, 0,0);
+
+    float3 forward = normalize(g_CommonConstants.EyeDirection.xyz);
+    float3 right = normalize(cross(forward, float3(0, 1, 0)));
+    float3 up = normalize(cross(right, forward));
+
+    float3 dir = normalize(g_CommonConstants.EyeDirection.xyz - offset.x * right + offset.y * up);
+    float2 uv = SampleSphericalMap(dir);
+    uv.y = 1-uv.y;
+    col = EnvironmentHdriTex.Sample(g_BilinearSampler, uv);
 
     return col;
 }

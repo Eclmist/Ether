@@ -23,6 +23,7 @@
 #include "graphic/schedule/renderpass/deferredlightingpass.h"
 #include "graphic/schedule/renderpass/gbufferpass.h"
 #include "graphic/schedule/renderpass/proceduralskypass.h"
+#include "graphic/schedule/renderpass/bloompass.h"
 
 #ifdef ETH_TOOLMODE
 #include "graphic/schedule/renderpass/editorgizmospass.h"
@@ -31,6 +32,7 @@
 
 ETH_NAMESPACE_BEGIN
 
+DECLARE_GFX_PASS(BloomPass);
 DECLARE_GFX_PASS(ClearFrameBufferPass);
 DECLARE_GFX_PASS(CommonConstantsUploadPass);
 DECLARE_GFX_PASS(DeferredLightingPass);
@@ -49,6 +51,7 @@ void GraphicScheduler::RegisterRenderPasses()
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
+    m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
     //ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
 

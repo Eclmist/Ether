@@ -36,17 +36,18 @@ public:
     bool CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
     bool CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
     bool CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
+    bool CreateShaderResourceViewCube(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
     bool CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view);
     bool CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view);
 
     bool InitializeTexture2D(CompiledTexture& texture);
+    bool InitializeTextureCube(CompiledTexture& texture);
 
     void Reset();
 
 private:
     bool CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
-
-    bool Exists(const std::wstring& resourceID) const;
+    bool ResourceExists(const std::wstring& resourceID) const;
     bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc) const;
     bool ShouldRecreateView(const std::wstring& resourceID) const;
 

@@ -43,6 +43,15 @@ private:
     std::queue<EntityID> m_AvailableEntityIDs;
     std::unique_ptr<Entity> m_LiveEntities[ETH_ECS_MAX_ENTITIES];
     std::unordered_map<std::string, EntityID> m_GuidToEntityIDMap;
+
+#ifdef ETH_TOOLMODE
+private:
+    ethVector4u GetPickerColorFromID(EntityID id);
+    EntityID GetIDFromPickerColor(ethVector4u color);
+
+    std::unordered_map<EntityID, uint32_t> m_EntityIDToColor;
+    std::unordered_map<uint32_t, EntityID> m_ColorToEntityID;
+#endif
 };
 
 ETH_NAMESPACE_END

@@ -30,11 +30,11 @@ DEFINE_GFX_PASS(TextureDebugPass);
 
 DECLARE_GFX_RESOURCE(GBufferAlbedoTexture);
 DECLARE_GFX_RESOURCE(GBufferNormalTexture);
-DECLARE_GFX_RESOURCE(GBufferPosDepthTexture);
+DECLARE_GFX_RESOURCE(GBufferPositionTexture);
 
 DECLARE_GFX_SRV(GBufferAlbedoTexture);
 DECLARE_GFX_SRV(GBufferNormalTexture);
-DECLARE_GFX_SRV(GBufferPosDepthTexture);
+DECLARE_GFX_SRV(GBufferPositionTexture);
 
 TextureDebugPass::TextureDebugPass()
     : RenderPass("Texture Debug Pass")
@@ -50,9 +50,6 @@ void TextureDebugPass::Initialize()
 
 void TextureDebugPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_SRV(GBufferPosDepthTexture));
 }
 
 void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
@@ -86,7 +83,7 @@ void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
     // TODO: Setup bindless textures
     context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
     context.GetCommandList()->SetRootDescriptorTable({ 2, GFX_SRV(GBufferNormalTexture) });
-    context.GetCommandList()->SetRootDescriptorTable({ 3, GFX_SRV(GBufferPosDepthTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 3, GFX_SRV(GBufferPositionTexture) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();

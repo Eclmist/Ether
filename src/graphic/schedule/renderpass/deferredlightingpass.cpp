@@ -29,14 +29,15 @@ ETH_NAMESPACE_BEGIN
 DEFINE_GFX_PASS(DeferredLightingPass);
 
 DECLARE_GFX_RESOURCE(GBufferAlbedoTexture);
+DECLARE_GFX_RESOURCE(GBufferSpecularTexture);
 DECLARE_GFX_RESOURCE(GBufferNormalTexture);
-DECLARE_GFX_RESOURCE(GBufferPosDepthTexture);
+DECLARE_GFX_RESOURCE(GBufferPositionTexture);
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
 DEFINE_GFX_SRV(GBufferAlbedoTexture);
+DEFINE_GFX_SRV(GBufferSpecularTexture);
 DEFINE_GFX_SRV(GBufferNormalTexture);
-DEFINE_GFX_SRV(GBufferPosDepthTexture);
-
+DEFINE_GFX_SRV(GBufferPositionTexture);
 DECLARE_GFX_DSV(GBufferDepthTexture);
 
 DeferredLightingPass::DeferredLightingPass()
@@ -55,8 +56,9 @@ void DeferredLightingPass::Initialize()
 void DeferredLightingPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_SRV(GBufferAlbedoTexture));
+    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferSpecularTexture), GFX_SRV(GBufferSpecularTexture));
     rc.CreateShaderResourceView(GFX_RESOURCE(GBufferNormalTexture), GFX_SRV(GBufferNormalTexture));
-    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPosDepthTexture), GFX_SRV(GBufferPosDepthTexture));
+    rc.CreateShaderResourceView(GFX_RESOURCE(GBufferPositionTexture), GFX_SRV(GBufferPositionTexture));
 }
 
 void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
@@ -73,6 +75,7 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     }
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    // TODO: Deferred lighting is a image effect - does it require gbuffer's depth buffer?
     context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
@@ -83,11 +86,18 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
-
-    // TODO: Setup bindless textures
     context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferAlbedoTexture) });
-    context.GetCommandList()->SetRootDescriptorTable({ 2, GFX_SRV(GBufferNormalTexture) });
-    context.GetCommandList()->SetRootDescriptorTable({ 3, GFX_SRV(GBufferPosDepthTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 2, GFX_SRV(GBufferSpecularTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 3, GFX_SRV(GBufferNormalTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 4, GFX_SRV(GBufferPositionTexture) });
+
+    auto texture = GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI;
+    if (texture != nullptr)
+    {
+        rc.InitializeTexture2D(*texture);
+        context.GetCommandList()->SetRootDescriptorTable({ 5, texture->GetView() });
+    }
+
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
@@ -139,12 +149,16 @@ void DeferredLightingPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"DeferredLightingPass::RootSignature");
 
-    RHIRootSignature tempRS(4, 1);
+    RHIRootSignature tempRS(6, 3);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
+    tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
+    tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange({0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
-    tempRS[2]->SetAsDescriptorRange({1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
-    tempRS[3]->SetAsDescriptorRange({2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1});
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Albedo + Roughness
+    tempRS[2]->SetAsDescriptorRange({ 1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Specular + Metalness
+    tempRS[3]->SetAsDescriptorRange({ 2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Normal
+    tempRS[4]->SetAsDescriptorRange({ 3, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Position + Depth
+    tempRS[5]->SetAsDescriptorRange({ 4, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // HDRI
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 }
 

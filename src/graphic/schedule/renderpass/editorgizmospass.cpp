@@ -33,7 +33,7 @@ DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
 DEFINE_GFX_RTV(EditorGizmosTexture);
 DECLARE_GFX_DSV(GBufferDepthTexture);
-DECLARE_GFX_SRV(GBufferPosDepthTexture);
+DECLARE_GFX_SRV(GBufferPositionTexture);
 
 EditorGizmosPass::EditorGizmosPass()
     : RenderPass("Editor Gizmos Pass")
@@ -79,7 +79,7 @@ void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
-    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferPosDepthTexture) });
+    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferPositionTexture) });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
