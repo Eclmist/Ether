@@ -38,7 +38,7 @@ void CommonConstantsUploadPass::Initialize()
 void CommonConstantsUploadPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
 	rc.CreateBufferResource(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants));
-    rc.CreateConstantBufferView(GFX_RESOURCE(GlobalCommonConstants), GFX_CBV(GlobalCommonConstants));
+    rc.CreateConstantBufferView(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants), GFX_CBV(GlobalCommonConstants));
 }
 
 void CommonConstantsUploadPass::Render(GraphicContext& context, ResourceContext& rc)

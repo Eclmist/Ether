@@ -120,13 +120,14 @@ bool ResourceContext::CreateShaderResourceViewCube(RHIResourceHandle resource, R
 }
 
 
-bool ResourceContext::CreateConstantBufferView(RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
+bool ResourceContext::CreateConstantBufferView(uint32_t bufferSize, RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
     RHIConstantBufferViewDesc cbvDesc = {};
     cbvDesc.m_Resource = resource;
+    cbvDesc.m_BufferSize = bufferSize;
     GraphicCore::GetDevice()->CreateConstantBufferView(cbvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 

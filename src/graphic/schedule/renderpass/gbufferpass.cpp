@@ -93,8 +93,8 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
 
     rc.CreateBufferResource(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
     rc.CreateBufferResource(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams));
-    rc.CreateConstantBufferView(GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
-    rc.CreateConstantBufferView(GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
+    rc.CreateConstantBufferView(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
+    rc.CreateConstantBufferView(sizeof(InstanceParams), GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
 
 #ifdef ETH_TOOLMODE
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));

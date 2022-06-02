@@ -48,10 +48,10 @@ void GraphicScheduler::RegisterRenderPasses()
 {
     m_RegisteredRenderPasses.push_back(&GFX_PASS(CommonConstantsUploadPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
+    //m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
+    //m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
     //ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
 

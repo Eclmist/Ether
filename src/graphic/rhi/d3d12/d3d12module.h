@@ -35,6 +35,7 @@ public:
 
 public:
     RHIResult CreateDevice(RHIDeviceHandle& device) const override;
+    RHIResult InitializeWarp();
 
 private:
     RHIResult InitializeAdapter();

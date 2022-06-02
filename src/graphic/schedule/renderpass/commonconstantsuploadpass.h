@@ -43,7 +43,11 @@ private:
         ethVector4 m_Time;
 
         ethVector2 m_ScreenResolution;
+        float m_Padding[18];
     };
+
+    static_assert((sizeof(CommonConstants) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
+
 
     CommonConstants m_CommonConstants;
 };

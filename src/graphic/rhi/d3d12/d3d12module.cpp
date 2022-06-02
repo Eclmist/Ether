@@ -51,6 +51,14 @@ RHIResult D3D12Module::InitializeAdapter()
     wrl::ComPtr<IDXGIFactory4> dxgiFactory;
     ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));
 
+    bool useWarp = false;
+
+    if (useWarp)
+    {
+        HRESULT hr = dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&m_Adapter));
+        return TO_RHI_RESULT(hr);
+    }
+
     SIZE_T maxDedicatedVideoMemory = 0;
     for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
     {
@@ -67,7 +75,7 @@ RHIResult D3D12Module::InitializeAdapter()
 
         // Check if this device has the largest vram so far. Use vram as a indicator of perf for now
         if (dxgiAdapterDesc1.DedicatedVideoMemory <= maxDedicatedVideoMemory)
-            continue;
+            continue;        
 
         maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
         ASSERT_SUCCESS(dxgiAdapter1.As(&m_Adapter));

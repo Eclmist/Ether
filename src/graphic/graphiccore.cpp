@@ -32,6 +32,7 @@ void GraphicCore::Initialize()
     Instance().m_RHIModule = RHIModule::CreateModule(RHIModuleType::D3D12);
     Instance().m_RHIModule->Initialize();
     RHIResult result = Instance().m_RHIModule->CreateDevice(Instance().m_RHIDevice);
+
     AssertGraphics(result == RHIResult::Success, "Failed to create graphic device");
 
     Instance().m_RTVDescriptorHeap.SetName(L"GraphicCore::RTVDescriptorHeap");

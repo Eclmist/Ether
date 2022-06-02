@@ -27,7 +27,11 @@ struct InstanceParams
 
 #ifdef ETH_TOOLMODE
     uint4 PickerColor;
+#else
+    float m_Padding2[4];
 #endif
+
+    float m_Padding[28];
 };
 
 struct MaterialParams
@@ -36,6 +40,8 @@ struct MaterialParams
     float4 SpecularColor;
     float Roughness;
     float Metalness;
+
+    float m_Padding[54];
 };
 
 ConstantBuffer<InstanceParams> InstanceParams : register(b1);

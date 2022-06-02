@@ -44,8 +44,15 @@ private:
     {
         ethMatrix4x4 m_ModelMatrix;
         ethMatrix4x4 m_NormalMatrix;
+
+#ifdef ETH_TOOLMODE
         ethVector4u m_PickerColor;
+#else
+        float m_Padding2[4];
+#endif
+        float m_Padding[28];
     };
+    static_assert((sizeof(InstanceParams) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
 
     struct MaterialParams
     {
@@ -53,7 +60,9 @@ private:
         ethVector4 m_SpecularColor;
         float m_Roughness;
         float m_Metalness;
+        float m_Padding[54];
     };
+    static_assert((sizeof(MaterialParams) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
 
 private:
     RHIDepthStencilDesc m_DepthStencilState;
