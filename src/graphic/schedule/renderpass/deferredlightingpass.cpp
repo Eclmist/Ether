@@ -38,7 +38,6 @@ DEFINE_GFX_SRV(GBufferAlbedoTexture);
 DEFINE_GFX_SRV(GBufferSpecularTexture);
 DEFINE_GFX_SRV(GBufferNormalTexture);
 DEFINE_GFX_SRV(GBufferPositionTexture);
-DECLARE_GFX_DSV(GBufferDepthTexture);
 
 DeferredLightingPass::DeferredLightingPass()
     : RenderPass("Deferred Lighting Pass")
@@ -75,8 +74,7 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
     }
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    // TODO: Deferred lighting is a image effect - does it require gbuffer's depth buffer?
-    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
+    context.SetRenderTarget(gfxDisplay.GetCurrentBackBufferRTV());
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 

@@ -29,7 +29,7 @@ public:
     ResourceContext(CommandContext& context, const std::wstring& name);
     ~ResourceContext() = default;
 
-    bool CreateBufferResource(uint32_t size, RhiResourceHandle& resource);
+    bool CreateConstantBuffer(uint32_t size, RhiResourceHandle& resource);
     bool CreateTexture2DResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource);
     bool CreateDepthStencilResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource);
 

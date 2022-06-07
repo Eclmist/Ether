@@ -27,11 +27,11 @@ ResourceContext::ResourceContext(CommandContext& context, const std::wstring& na
 {
 }
 
-bool ResourceContext::CreateBufferResource(uint32_t size, RhiResourceHandle& resource)
+bool ResourceContext::CreateConstantBuffer(uint32_t size, RhiResourceHandle& resource)
 {
     RhiCommitedResourceDesc desc = {};
-    desc.m_HeapType = RhiHeapType::Default;
-    desc.m_State = RhiResourceState::Common;
+    desc.m_HeapType = RhiHeapType::Upload;
+    desc.m_State = RhiResourceState::GenericRead;
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(size);
 
     return CreateResource(desc, resource);

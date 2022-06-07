@@ -22,7 +22,6 @@
 ETH_NAMESPACE_BEGIN
 
 DEFINE_GFX_PASS(ClearFrameBufferPass);
-DECLARE_GFX_DSV(GBufferDepthTexture);
 
 ClearFrameBufferPass::ClearFrameBufferPass()
     : RenderPass("Clear Frame Buffer Pass")
@@ -41,7 +40,6 @@ void ClearFrameBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);
-    context.ClearDepthStencil(GFX_DSV(GBufferDepthTexture), 1.0f, 0.0f);
     context.FinalizeAndExecute();
     context.Reset();
 }

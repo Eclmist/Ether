@@ -34,13 +34,11 @@ DEFINE_GFX_RESOURCE(GBufferAlbedoTexture);
 DEFINE_GFX_RESOURCE(GBufferSpecularTexture);
 DEFINE_GFX_RESOURCE(GBufferNormalTexture);
 DEFINE_GFX_RESOURCE(GBufferPositionTexture);
-DEFINE_GFX_RESOURCE(GBufferDepthTexture);
 
 DEFINE_GFX_RTV(GBufferAlbedoTexture);
 DEFINE_GFX_RTV(GBufferSpecularTexture);
 DEFINE_GFX_RTV(GBufferNormalTexture);
 DEFINE_GFX_RTV(GBufferPositionTexture);
-DEFINE_GFX_DSV(GBufferDepthTexture);
 
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 //DECLARE_GFX_RESOURCE(MaterialConstants);
@@ -49,6 +47,7 @@ DEFINE_GFX_RESOURCE(InstanceParams);
 DEFINE_GFX_RESOURCE(MaterialParams);
 DEFINE_GFX_CBV(InstanceParams);
 DEFINE_GFX_CBV(MaterialParams);
+DECLARE_GFX_DSV(DepthStencilTexture);
 
 #ifdef ETH_TOOLONLY
 DEFINE_GFX_RESOURCE(EntityPickerTexture);
@@ -83,16 +82,14 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferSpecularTexture));
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferNormalTexture));
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPositionTexture));
-    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RhiFormat::D24UnormS8Uint, GFX_RESOURCE(GBufferDepthTexture));
 
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_RTV(GBufferAlbedoTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferSpecularTexture), GFX_RTV(GBufferSpecularTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferNormalTexture), GFX_RTV(GBufferNormalTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPositionTexture), GFX_RTV(GBufferPositionTexture));
-    rc.CreateDepthStencilView(GFX_RESOURCE(GBufferDepthTexture), GFX_DSV(GBufferDepthTexture));
 
-    rc.CreateBufferResource(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
-    rc.CreateBufferResource(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams));
+    rc.CreateConstantBuffer(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
+    rc.CreateConstantBuffer(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams));
     rc.CreateConstantBufferView(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
     rc.CreateConstantBufferView(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
 
@@ -145,7 +142,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 #endif
     };
 
-    context.SetRenderTargets(NUM_GBUFFER_RENDER_TARGETS, rtvs, GFX_DSV(GBufferDepthTexture));
+    context.SetRenderTargets(NUM_GBUFFER_RENDER_TARGETS, rtvs, GFX_DSV(DepthStencilTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 

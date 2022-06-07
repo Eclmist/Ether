@@ -32,7 +32,7 @@ DEFINE_GFX_RESOURCE(EditorGizmosTexture);
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
 
 DEFINE_GFX_RTV(EditorGizmosTexture);
-DECLARE_GFX_DSV(GBufferDepthTexture);
+DECLARE_GFX_DSV(DepthStencilTexture);
 DECLARE_GFX_SRV(GBufferPositionTexture);
 
 EditorGizmosPass::EditorGizmosPass()
@@ -70,7 +70,7 @@ void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    context.SetRenderTargets(1, &gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(GBufferDepthTexture));
+    context.SetRenderTargets(1, &gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(DepthStencilTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 

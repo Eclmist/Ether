@@ -37,7 +37,7 @@ void CommonConstantsUploadPass::Initialize()
 
 void CommonConstantsUploadPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-	rc.CreateBufferResource(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants));
+	rc.CreateConstantBuffer(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants));
     rc.CreateConstantBufferView(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants), GFX_CBV(GlobalCommonConstants));
 }
 
@@ -52,8 +52,11 @@ void CommonConstantsUploadPass::Render(GraphicContext& context, ResourceContext&
     m_CommonConstants.m_Time = ethVector4(GetTimeSinceStart() / 20, GetTimeSinceStart(), GetTimeSinceStart() * 2, GetTimeSinceStart() * 3);
     m_CommonConstants.m_ScreenResolution = ethVector2(context.GetViewport().m_Width, context.GetViewport().m_Height);
 
-    context.InitializeBufferRegion(GFX_RESOURCE(GlobalCommonConstants), &m_CommonConstants, sizeof(CommonConstants));
-    context.TransitionResource(GFX_RESOURCE(GlobalCommonConstants), RhiResourceState::GenericRead);
+    void* cpuAdr;
+    GFX_RESOURCE(GlobalCommonConstants)->Map(&cpuAdr);
+    memcpy(cpuAdr, &m_CommonConstants, sizeof(CommonConstants));
+    GFX_RESOURCE(GlobalCommonConstants)->Unmap();
+
     context.FinalizeAndExecute();
     context.Reset();
 }
