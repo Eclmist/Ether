@@ -17,27 +17,26 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "hdrfileparser.h"
+#include "parser/image/stb_image.h"
 
 ETH_NAMESPACE_BEGIN
 
-class CompiledTexture;
-
-class Texture : public Asset
+void HdrFileParser::Parse(const std::string& path)
 {
-public:
-    Texture() = default;
-    ~Texture() = default;
+    m_RawTexture = std::make_shared<Texture>();
 
-private:
-    friend class ImageFileParser;
-    friend class HdrFileParser;
-    friend class CompiledTexture;
-    uint32_t m_Width;
-    uint32_t m_Height;
-    RhiFormat m_Format;
-    unsigned char* m_Data;
-};
+    int w, h, channels;
+    unsigned char* image = stbi_load(path.c_str(), &w, &h, &channels, STBI_rgb_alpha);
+
+    if (image == nullptr)
+        LogToolmodeError("Failed to load texture: %s", path.c_str());
+
+    m_RawTexture->m_Format = RhiFormat::R16G16B16A16Float;
+    m_RawTexture->m_Width = static_cast<uint32_t>(w);
+    m_RawTexture->m_Height = static_cast<uint32_t>(h);
+    m_RawTexture->m_Data = image;
+}
 
 ETH_NAMESPACE_END
 

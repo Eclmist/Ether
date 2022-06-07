@@ -50,19 +50,25 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
         return;
     }
 
-    // Skip if valid .ether file already exists
-    if (!PathUtils::IsValidPath(dest))
+    //if (!PathUtils::IsValidPath(dest))
+    if (true) // Always recompile, for testing purposes
     {
-        LogToolmodeInfo("Asset is already serialized. Reimporting asset", path.c_str());
 		IFileStream istream(path);
 		OFileStream ostream(dest);
 		std::shared_ptr<Asset> compiledAsset = importer->Compile(istream);
 		compiledAsset->SetName(PathUtils::GetFileName(path));
 		compiledAsset->Serialize(ostream);
     }
+    else
+    {
+        LogToolmodeInfo("Asset is already serialized. Reimporting asset", path.c_str());
+    }
 
-    // TEMP Code for testing : TODO REMOVE
-    if (PathUtils::GetFileExtension(path) == ".obj")
+
+    std::string fileExt = PathUtils::GetFileExtension(path);
+
+    // TEMP Code for testing : TODO REMOVE when editor is able to load things correctly
+    if (fileExt == ".obj")
     {
         // Deserialization Test
 		std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
@@ -75,15 +81,11 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
 			EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
 		}
 
-        std::shared_ptr<CompiledMesh> compiledCubeMesh = std::make_shared<CompiledMesh>();
-        IFileStream iistream2("Z:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\cube.obj.ether");
-        compiledCubeMesh->Deserialize(iistream2);
-
         //for (int i = 1; i < 20; ++i)
         //    if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
         //        EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledCubeMesh);
     }
-    else if (PathUtils::GetFileExtension(path) == ".png")
+    else if (fileExt == ".png" || fileExt == ".jpg")
     {
         // Deserialization Test
 		std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
@@ -97,7 +99,7 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
         //    if (EngineCore::GetECSManager().GetComponent<VisualComponent>(i) != nullptr)
         //        EngineCore::GetECSManager().GetComponent<VisualComponent>(i)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
     }
-    else if (PathUtils::GetFileExtension(path) == ".jpg")
+    else if (fileExt == ".hdr")
     {
 		std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
 		IFileStream iistream(dest);

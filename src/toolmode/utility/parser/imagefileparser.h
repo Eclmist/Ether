@@ -19,24 +19,22 @@
 
 #pragma once
 
+#include "fileparser.h"
+#include <toolmode/asset/intermediate/texture.h>
+
 ETH_NAMESPACE_BEGIN
 
-class CompiledTexture;
-
-class Texture : public Asset
+class ImageFileParser : public FileParser
 {
 public:
-    Texture() = default;
-    ~Texture() = default;
+    ImageFileParser() = default;
+    ~ImageFileParser() = default;
 
-private:
-    friend class ImageFileParser;
-    friend class HdrFileParser;
-    friend class CompiledTexture;
-    uint32_t m_Width;
-    uint32_t m_Height;
-    RhiFormat m_Format;
-    unsigned char* m_Data;
+    virtual void Parse(const std::string& path);
+    std::shared_ptr<Asset> GetRawAsset() const override;
+
+protected:
+    std::shared_ptr<Texture> m_RawTexture;
 };
 
 ETH_NAMESPACE_END

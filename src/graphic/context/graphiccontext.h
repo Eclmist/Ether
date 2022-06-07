@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class GraphicContext : public CommandContext
 {
 public:
-    GraphicContext(const std::wstring& contextName = L"Unammed Graphic Context");
+    GraphicContext(const std::wstring& contextName = L"Unnamed Graphic Context");
     ~GraphicContext();
 
 public:

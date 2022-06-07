@@ -22,7 +22,7 @@
 ETH_NAMESPACE_BEGIN
 
 constexpr uint32_t MaxSwapChainBuffers = 3;
-constexpr RhiFormat BackBufferFormat = RhiFormat::R8G8B8A8Unorm;
+constexpr RhiFormat BackBufferFormat = RhiFormat::R16G16B16A16Float;
 
 enum class BufferingMode : unsigned int
 {

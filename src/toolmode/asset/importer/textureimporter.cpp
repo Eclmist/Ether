@@ -24,15 +24,17 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "parser/image/stb_image.h"
 
-#include "toolmode/utility/parser/pngfileparser.h"
+#include "toolmode/utility/parser/imagefileparser.h"
+#include "toolmode/utility/parser/hdrfileparser.h"
 
 
 ETH_NAMESPACE_BEGIN
 
 TextureImporter::TextureImporter()
 {
-    m_Parsers[".png"] = std::make_shared<PngFileParser>();
-    m_Parsers[".jpg"] = std::make_shared<PngFileParser>();
+    m_Parsers[".png"] = std::make_shared<ImageFileParser>();
+    m_Parsers[".jpg"] = std::make_shared<ImageFileParser>();
+    m_Parsers[".hdr"] = std::make_shared<HdrFileParser>();
 }
 
 bool TextureImporter::HasSupport(const std::string& extension)

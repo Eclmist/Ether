@@ -57,8 +57,6 @@ void EditorGizmosPass::RegisterInputOutput(GraphicContext& context, ResourceCont
 
 void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Editor Gizmos Pass - Render");
-
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (m_VertexShader->HasRecompiled() || m_PixelShader->HasRecompiled())
     {
@@ -108,8 +106,8 @@ void EditorGizmosPass::InitializePipelineState()
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RhiFormat::D32Float);
+    creationPSO.SetRenderTargetFormat(BackBufferFormat);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);

@@ -50,6 +50,21 @@ RhiFenceValue CommandContext::GetCompletionFenceValue() const
     return GetCommandQueue()->GetCompletionFenceValue();
 }
 
+void CommandContext::SetMarker(const std::string& name)
+{
+    m_CommandList->SetMarker(name.c_str());
+}
+
+void CommandContext::PushMarker(const std::string& name)
+{
+    m_CommandList->PushMarker(name.c_str());
+}
+
+void CommandContext::PopMarker()
+{
+    m_CommandList->PopMarker();
+}
+
 void CommandContext::TransitionResource(RhiResourceHandle target, RhiResourceState newState)
 {
     if (target->GetCurrentState() == newState)

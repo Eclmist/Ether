@@ -74,14 +74,15 @@ public:
 public:
     void OnUpdate(const UpdateEventArgs& e) override
     {
+
+        if (Input::GetKeyDown(Win32::KeyCode::F2))
+            m_CameraMode = (CameraMode)(((uint32_t)m_CameraMode + 1) % (uint32_t)CameraMode::NumModes);
+
         if (Input::GetKeyDown(Win32::KeyCode::F3))
             EngineCore::GetEngineConfig().ToggleDebugGui();
 
         if (Input::GetKeyDown(Win32::KeyCode::F11))
             EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
-
-        if (Input::GetKeyDown(Win32::KeyCode::F1))
-            m_CameraMode = (CameraMode)(((uint32_t)m_CameraMode + 1) % (uint32_t)CameraMode::NumModes);
 
         UpdateCamera(e.m_DeltaTime);
 

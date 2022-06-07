@@ -47,8 +47,6 @@ void ProceduralSkyPass::RegisterInputOutput(GraphicContext& context, ResourceCon
 
 void ProceduralSkyPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Procedural Sky Pass - Render");
-
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (m_VertexShader->HasRecompiled() || m_PixelShader->HasRecompiled())
     {
@@ -105,7 +103,7 @@ void ProceduralSkyPass::InitializePipelineState()
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
+    creationPSO.SetRenderTargetFormat(BackBufferFormat);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);

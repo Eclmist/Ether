@@ -28,6 +28,25 @@
 
 ETH_NAMESPACE_BEGIN
 
+RhiResult D3D12CommandList::SetMarker(const char* name)
+{
+    // Requires pix event runtime
+    return RhiResult::NotSupported;
+}
+
+
+RhiResult D3D12CommandList::PushMarker(const char* name)
+{
+    // Requires pix event runtime
+    return RhiResult::NotSupported;
+}
+
+RhiResult D3D12CommandList::PopMarker()
+{
+    // Requires pix event runtime
+    return RhiResult::NotSupported;
+}
+
 RhiResult D3D12CommandList::SetViewport(const RhiViewportDesc& viewport)
 {
     D3D12_VIEWPORT d3d12viewport = Translate(viewport);

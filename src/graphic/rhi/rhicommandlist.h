@@ -28,6 +28,10 @@ public:
 	virtual ~RhiCommandList() = default;
 
 public:
+    virtual RhiResult SetMarker(const char* name) = 0;
+    virtual RhiResult PushMarker(const char* name) = 0;
+    virtual RhiResult PopMarker() = 0;
+
     virtual RhiResult SetViewport(const RhiViewportDesc& viewport) = 0;
     virtual RhiResult SetScissor(const RhiScissorDesc& scissor) = 0;
     virtual RhiResult SetStencilRef(const RhiStencilValue& val) = 0;

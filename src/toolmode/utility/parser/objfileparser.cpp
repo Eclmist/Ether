@@ -44,6 +44,12 @@ void ObjFileParser::Parse(const std::string& path)
         return;
     }
 
+    // z-axis is flipped because .obj specifications state that it should be in RH coordinate system
+    // but DirectX uses left handed system.
+    // TODO: What exactly *defines* handedness in a particular api? NDC coordinates?
+    // TODO: Is there a better place to swap handedness when we support other APIs?
+    // TODO: What handedness is other APIs? OpenGL is LH, Vulkan? Agc?
+
     for (size_t i = 0; i < attrib.vertices.size(); i += 3)
         m_RawMesh->m_Positions.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], -attrib.vertices[i + 2]);
 

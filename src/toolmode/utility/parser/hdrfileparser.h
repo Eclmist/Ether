@@ -19,24 +19,17 @@
 
 #pragma once
 
+#include "imagefileparser.h"
+
 ETH_NAMESPACE_BEGIN
 
-class CompiledTexture;
-
-class Texture : public Asset
+class HdrFileParser : public ImageFileParser
 {
 public:
-    Texture() = default;
-    ~Texture() = default;
+    HdrFileParser() = default;
+    ~HdrFileParser() = default;
 
-private:
-    friend class ImageFileParser;
-    friend class HdrFileParser;
-    friend class CompiledTexture;
-    uint32_t m_Width;
-    uint32_t m_Height;
-    RhiFormat m_Format;
-    unsigned char* m_Data;
+    void Parse(const std::string& path) override;
 };
 
 ETH_NAMESPACE_END

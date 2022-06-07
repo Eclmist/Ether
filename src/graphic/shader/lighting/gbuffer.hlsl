@@ -81,11 +81,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    float trippyAmt = 0.005;
-
     float3 pos = IN.Position;
-    pos.y += sin((pos.x + g_CommonConstants.Time.w) * 7) * 0.5 * trippyAmt;
-    pos.y += sin((pos.z + g_CommonConstants.Time.z) * 4) * 0.9 * trippyAmt;
 
     float4x4 mv = mul(g_CommonConstants.ViewMatrix, InstanceParams.ModelMatrix);
     float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);
@@ -103,14 +99,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 col = albedo.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
     float3 normal = normalize(IN.NormalWS);
     float3 positionWS = IN.PositionWS;
-
-    float4 col2 = float4(
-        sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
-        sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
-        sin(positionWS.x) * cos(positionWS.y) * sin(positionWS.z),
-        1.0);
-
-    float4 col3 = lerp(col, positionWS.y / 10.0, 0.2);// saturate(sin(CB_GlobalConstants.Time.z)));
 
     PS_OUTPUT output;
     output.Albedo.xyz = col.xyz * MaterialParams.BaseColor.xyz;

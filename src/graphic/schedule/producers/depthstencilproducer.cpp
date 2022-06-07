@@ -38,13 +38,13 @@ void DepthStencilProducer::Initialize()
 void DepthStencilProducer::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
     RhiViewportDesc vp = context.GetViewport();
-    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RhiFormat::D32Float, GFX_RESOURCE(DepthStencilTexture));
+    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RhiFormat::D24UnormS8Uint, GFX_RESOURCE(DepthStencilTexture));
     rc.CreateDepthStencilView(GFX_RESOURCE(DepthStencilTexture), GFX_DSV(DepthStencilTexture));
 }
 
 void DepthStencilProducer::Render(GraphicContext& context, ResourceContext& rc)
 {
-    context.ClearDepthStencil(GFX_DSV(DepthStencilTexture), 0.0f, 0.0f);
+    context.ClearDepthStencil(GFX_DSV(DepthStencilTexture), 1.0f, 0.0f);
     context.FinalizeAndExecute();
     context.Reset();
 }

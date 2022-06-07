@@ -70,13 +70,13 @@ void BloomPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc
 {
     RhiViewportDesc vp = context.GetViewport();
 
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(HighPassFilter));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex1));
-    rc.CreateTexture2DResource(vp.m_Width / 2, vp.m_Height / 2, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex2));
-    rc.CreateTexture2DResource(vp.m_Width / 4, vp.m_Height / 4, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex3));
-    rc.CreateTexture2DResource(vp.m_Width / 8, vp.m_Height / 8, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex4));
-    rc.CreateTexture2DResource(vp.m_Width / 16, vp.m_Height / 16, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex5));
-    rc.CreateTexture2DResource(vp.m_Width / 32, vp.m_Height / 32, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex6));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, BackBufferFormat, GFX_RESOURCE(HighPassFilter));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, BackBufferFormat, GFX_RESOURCE(BlurTex1));
+    rc.CreateTexture2DResource(vp.m_Width / 2, vp.m_Height / 2, BackBufferFormat, GFX_RESOURCE(BlurTex2));
+    rc.CreateTexture2DResource(vp.m_Width / 4, vp.m_Height / 4, BackBufferFormat, GFX_RESOURCE(BlurTex3));
+    rc.CreateTexture2DResource(vp.m_Width / 8, vp.m_Height / 8, BackBufferFormat, GFX_RESOURCE(BlurTex4));
+    rc.CreateTexture2DResource(vp.m_Width / 16, vp.m_Height / 16, BackBufferFormat, GFX_RESOURCE(BlurTex5));
+    rc.CreateTexture2DResource(vp.m_Width / 32, vp.m_Height / 32, BackBufferFormat, GFX_RESOURCE(BlurTex6));
 
     rc.CreateRenderTargetView(GFX_RESOURCE(HighPassFilter), GFX_RTV(HighPassFilter));
     rc.CreateRenderTargetView(GFX_RESOURCE(BlurTex1), GFX_RTV(BlurTex1));
@@ -97,8 +97,6 @@ void BloomPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc
 
 void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Bloom Pass - Render");
-
     // TODO: Properly support shader hot reload - each PSO should check their own shaders
     if (m_GaussianVS->HasRecompiled() || m_BloomCompositePS->HasRecompiled())
     {
@@ -273,7 +271,7 @@ void BloomPass::InitializePipelineState()
     creationPSO.SetVertexShader(m_GaussianVS->GetCompiledShader(), m_GaussianVS->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_GaussianHorizontalPS->GetCompiledShader(), m_GaussianHorizontalPS->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
+    creationPSO.SetRenderTargetFormat(BackBufferFormat);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);

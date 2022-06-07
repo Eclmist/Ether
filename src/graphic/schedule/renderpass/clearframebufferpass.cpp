@@ -35,8 +35,6 @@ void ClearFrameBufferPass::RegisterInputOutput(GraphicContext& context, Resource
 
 void ClearFrameBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Clear Frame Buffer Pass - Render");
-
     EngineConfig& config = EngineCore::GetEngineConfig();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     context.ClearColor(gfxDisplay.GetCurrentBackBufferRTV(), config.m_ClearColor);

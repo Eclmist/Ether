@@ -30,6 +30,10 @@ public:
     ~D3D12CommandList() override = default;
 
 public:
+    RhiResult SetMarker(const char* name) override;
+    RhiResult PushMarker(const char* name) override;
+    RhiResult PopMarker() override;
+
     RhiResult SetViewport(const RhiViewportDesc& viewport) override;
     RhiResult SetScissor(const RhiScissorDesc& scissor) override;
     RhiResult SetStencilRef(const RhiStencilValue& val) override;

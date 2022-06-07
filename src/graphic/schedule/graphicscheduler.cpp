@@ -22,9 +22,9 @@
 #include "graphic/schedule/producers/depthstencilproducer.h"
 
 #include "graphic/schedule/renderpass/clearframebufferpass.h"
-#include "graphic/schedule/renderpass/commonconstantsuploadpass.h"
-#include "graphic/schedule/renderpass/deferredlightingpass.h"
-#include "graphic/schedule/renderpass/gbufferpass.h"
+#include "graphic/schedule/renderpass/globalconstantbufferproducer.h"
+#include "graphic/schedule/renderpass/deferredlightingproducer.h"
+#include "graphic/schedule/renderpass/gbufferproducer.h"
 #include "graphic/schedule/renderpass/proceduralskypass.h"
 #include "graphic/schedule/renderpass/bloompass.h"
 
@@ -37,9 +37,9 @@ ETH_NAMESPACE_BEGIN
 
 DECLARE_GFX_PASS(BloomPass);
 DECLARE_GFX_PASS(ClearFrameBufferPass);
-DECLARE_GFX_PASS(CommonConstantsUploadPass);
-DECLARE_GFX_PASS(DeferredLightingPass);
-DECLARE_GFX_PASS(GBufferPass);
+DECLARE_GFX_PASS(GlobalConstantBufferProducer);
+DECLARE_GFX_PASS(DeferredLightingProducer);
+DECLARE_GFX_PASS(GBufferProducer);
 DECLARE_GFX_PASS(ProceduralSkyPass);
 
 DECLARE_GFX_PASS(DepthStencilProducer);
@@ -51,13 +51,13 @@ DECLARE_GFX_PASS(TextureDebugPass);
 
 void GraphicScheduler::RegisterRenderPasses()
 {
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(CommonConstantsUploadPass));
+    m_RegisteredRenderPasses.push_back(&GFX_PASS(GlobalConstantBufferProducer));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DepthStencilProducer));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));
-    //m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
+    m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferProducer));
+    m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingProducer));
+    m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
     //ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
 
@@ -79,15 +79,10 @@ void GraphicScheduler::ScheduleRenderPasses(GraphicContext& context, ResourceCon
 
 void GraphicScheduler::RenderPasses(GraphicContext& context, ResourceContext& rc)
 {
-    //while (!m_ResizeQueue.empty())
-    //{
-        //m_ResizeQueue.front()->Resize();
-        //m_ResizeQueue.pop();
-    //}
-    OPTICK_EVENT("Graphic Scheduler - RenderPasses");
-
     for (int i = 0; i < m_OrderedRenderPasses.size(); ++i)
     {
+        OPTICK_EVENT((m_OrderedRenderPasses[i]->GetName() + " - Render").c_str());
+        context.SetMarker(m_OrderedRenderPasses[i]->GetName() + " - Render");
         m_OrderedRenderPasses[i]->Render(context, rc);
     }
 

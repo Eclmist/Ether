@@ -28,7 +28,7 @@ class CommandQueue;
 class CommandContext : public NonCopyable
 {
 public:
-    CommandContext(RhiCommandListType type, const std::wstring& contextName = L"Unammed Command Context");
+    CommandContext(RhiCommandListType type, const std::wstring& contextName = L"Unnamed Command Context");
     ~CommandContext();
     void Reset();
 
@@ -39,6 +39,10 @@ public:
     inline RhiCommandQueueHandle GetCommandQueue() const { return m_CommandQueue; }
 
 public:
+    void SetMarker(const std::string& name);
+    void PushMarker(const std::string& name);
+    void PopMarker();
+
     void TransitionResource(RhiResourceHandle resource, RhiResourceState newState);
     void CopyBufferRegion(RhiResourceHandle src, RhiResourceHandle dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
     void CopyTextureRegion(RhiResourceHandle src, RhiResourceHandle dest, const CompiledTexture& texture);

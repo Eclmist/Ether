@@ -19,24 +19,32 @@
 
 #pragma once
 
+#include "renderpass.h"
+
 ETH_NAMESPACE_BEGIN
 
-class CompiledTexture;
-
-class Texture : public Asset
+class DeferredLightingProducer : public RenderPass
 {
 public:
-    Texture() = default;
-    ~Texture() = default;
+    DeferredLightingProducer();
+
+    void Initialize() override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
 private:
-    friend class ImageFileParser;
-    friend class HdrFileParser;
-    friend class CompiledTexture;
-    uint32_t m_Width;
-    uint32_t m_Height;
-    RhiFormat m_Format;
-    unsigned char* m_Data;
+    void InitializeShaders();
+    void InitializeDepthStencilState();
+    void InitializePipelineState();
+    void InitializeRootSignature();
+
+private:
+    RhiDepthStencilDesc m_DepthStencilState;
+    RhiPipelineStateHandle m_PipelineState;
+    RhiRootSignatureHandle m_RootSignature;
+
+    std::unique_ptr<Shader> m_VertexShader;
+    std::unique_ptr<Shader> m_PixelShader;
 };
 
 ETH_NAMESPACE_END

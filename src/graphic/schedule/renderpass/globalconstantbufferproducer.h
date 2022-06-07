@@ -19,24 +19,37 @@
 
 #pragma once
 
+#include "renderpass.h"
+
 ETH_NAMESPACE_BEGIN
 
-class CompiledTexture;
-
-class Texture : public Asset
+class GlobalConstantBufferProducer : public RenderPass
 {
 public:
-    Texture() = default;
-    ~Texture() = default;
+    GlobalConstantBufferProducer();
+
+    void Initialize() override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
 private:
-    friend class ImageFileParser;
-    friend class HdrFileParser;
-    friend class CompiledTexture;
-    uint32_t m_Width;
-    uint32_t m_Height;
-    RhiFormat m_Format;
-    unsigned char* m_Data;
+    struct CommonConstants
+    {
+        ethMatrix4x4 m_ViewMatrix;
+        ethMatrix4x4 m_ProjectionMatrix;
+
+        ethVector4 m_EyePosition;
+        ethVector4 m_EyeDirection;
+        ethVector4 m_Time;
+
+        ethVector2 m_ScreenResolution;
+        float m_Padding[18];
+    };
+
+    static_assert((sizeof(CommonConstants) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
+
+
+    CommonConstants m_CommonConstants;
 };
 
 ETH_NAMESPACE_END

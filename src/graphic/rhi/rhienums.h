@@ -134,6 +134,8 @@ enum class RhiFormat
 {
     Unknown,
     R8G8B8A8Unorm,
+    R11G11B10Float,
+    R16G16B16A16Float,
     R32G32Float,
     R32G32B32Float,
     R32G32B32A32Float,

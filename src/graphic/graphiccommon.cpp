@@ -97,7 +97,7 @@ void GraphicCommon::InitializeDepthStates()
     m_DepthStateReadWrite = m_DepthStateDisabled;
     m_DepthStateReadWrite.m_DepthEnabled = true;
     m_DepthStateReadWrite.m_DepthWriteMask = RhiDepthWriteMask::All;
-    m_DepthStateReadWrite.m_DepthComparator = RhiComparator::GreaterEqual;
+    m_DepthStateReadWrite.m_DepthComparator = RhiComparator::LessEqual;
 
     m_DepthStateReadOnly = m_DepthStateReadWrite;
     m_DepthStateReadOnly.m_DepthWriteMask = RhiDepthWriteMask::Zero;
@@ -184,8 +184,8 @@ void GraphicCommon::InitializePipelineStates()
     creationPSO.SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
     creationPSO.SetInputLayout(m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RhiFormat::D32Float);
+    creationPSO.SetRenderTargetFormat(BackBufferFormat);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStateReadWrite);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_EmptyRootSignature);

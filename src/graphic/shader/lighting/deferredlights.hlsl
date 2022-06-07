@@ -101,17 +101,6 @@ float3 Lambert(float3 albedo)
     return albedo * INV_PI;
 }
 
-float G1(float nDotV, float k)
-{
-    return nDotV / (nDotV * (1 - k) + k);
-}
-
-float G(float r, float nDotL, float nDotV)
-{
-    float k = Sqr(r + 1) / 8;
-    return G1(nDotL, k) * G1(nDotV, k);
-}
-
 float3 VisibilitySmith(float alphaSqr, float nDotL, float nDotV)
 {
     const float nDotLSqr = Sqr(nDotL);
@@ -266,49 +255,19 @@ float3 ComputePointLight(float2 uv, Material material, PointLight light)
     const float3 n = normalize(normal);
  
     const float d = length(light.Position - pos);
-
-    //https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/    
     const float denom = d / light.Radius + 1.0;
-    const float attenuation = 1 / (denom * denom);
-    const float3 L = light.Color * light.Intensity * attenuation;
+    float fAtt = 1 / (denom * denom);
+
+    const float3 L = light.Color * light.Intensity * fAtt;
 
     return L * Ue4Brdf(wi, wo, n, material) * saturate(dot(n, wi));
 }
-
-float3 ComputePointLightOld(float2 uv, PointLight light)
-{
-    const float3 pos = PositionTex.Sample(g_PointSampler, uv).xyz;
-    const float3 col = AlbedoTex.Sample(g_PointSampler, uv).xyz;
-    const float3 norm = NormalTex.Sample(g_PointSampler, uv).xyz;
-
-    float3 dir = light.Position - pos;
-    const float d = length(dir);
-    dir = normalize(dir);
-    float3 L;
-
-    //https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/    
-    const float denom = d / light.Radius + 1.0;
-    const float attenuation = 1 / (denom * denom);
-    const float3 LightCol = light.Color * light.Intensity * attenuation * 0.4;
-
-    const float ndotl = saturate(dot(norm, dir));
-    const float3 diffuse = 1;
-
-    const float3 r = -reflect(dir, norm);
-    const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
-
-    const float rdotv = saturate(dot(r, v));
-    const float n = 700.2;
-    const float3 specular = ndotl * pow(rdotv, n) * 10.0;
-    return LightCol * (diffuse + specular) * ndotl;
-}
-
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     PointLight lights[7];
 
-    const float4 time = g_CommonConstants.Time * 1.0;
+    const float4 time = g_CommonConstants.Time;
 {
 
     lights[6].Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
@@ -338,7 +297,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     lights[5].Position = float3(4.5, 9.0, 16.0);
     lights[5].Color = float3(saturate(sin(time.y+1.6)), 0.73, 0.57);
-    lights[5].Intensity = 2.0f;
+    lights[5].Intensity = sin(time.z)  * 5.0f;
     lights[5].Radius = 20.0f;
 
     //lights[0].Position = float3(-60.5, 0.0, 0.0);
@@ -346,12 +305,11 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     //lights[0].Intensity = 30.0f;
     //lights[0].Radius = 100.0f;
 
-    lights[0].Position = float3(15.0, 6.0, 0.0);
+    lights[0].Position = float3(5.0, 2.0, 0.0);
     lights[0].Color = float3(1.0, 1.0, 1.0);
-    lights[0].Intensity = 5.0f;
-    lights[0].Radius = 20.0f;
+    lights[0].Intensity = (sin(time.z) * 0.5 + 0.5)  * 10.0f;
+    lights[0].Radius = 3.0f;
 }
-    
 
     const float4 albedo = AlbedoTex.Sample(g_PointSampler, IN.UV);
     const float4 specular = SpecularTex.Sample(g_PointSampler, IN.UV);
@@ -361,24 +319,24 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     Material mat;
     mat.BaseColor = albedo.xyz;
-    mat.SpecularColor = specular.x;
+    mat.SpecularColor = specular.xyz;
     mat.Roughness = albedo.w;
     mat.Metalness = specular.w;
 
     const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
     const float3 n = normalize(normal);
-    float3 finalColor = 0; // DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat) * float3(1.0, 0.5, 0.5) * 1;
-    //float3 finalColor = SpecularIBL(n, v, mat);
+    float3 finalColor = DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
 
     for (int i = 0; i < 1; ++i)
     {
-        finalColor += ComputePointLightOld(IN.UV, lights[i]);
-        //finalColor += ComputePointLight(IN.UV, mat, lights[i]);
+        lights[i].Radius *= 5.2;
+        lights[i].Intensity *= 0.3;
+        finalColor += ComputePointLight(IN.UV, mat, lights[i]);
     }
 
     // fog
     // finalColor = lerp(finalColor, float3(0.07, 0.06, 0.077), saturate(PositionTex.Sample(g_PointSampler, IN.UV).w / 100.0));
 
-    return finalColor.xyzz;
+    return float4(finalColor, 1.0f);
 
 }

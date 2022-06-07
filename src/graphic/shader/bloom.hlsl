@@ -51,8 +51,10 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 float4 PS_HighPass(VS_OUTPUT IN) : SV_Target
 {
     float4 col = SourceTexture.Sample(g_BilinearSampler, IN.UV);
-    if (col.g > 0.89)
-        return col * col;
+
+    float lum = col.r * 0.3 + col.g * 0.59 + col.b * 0.11;
+    if (lum >= 0.95)
+        return col;
     
     return 0;
 }

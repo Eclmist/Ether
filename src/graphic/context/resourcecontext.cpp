@@ -51,7 +51,7 @@ bool ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, R
 
 bool ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource)
 {
-    RhiClearValue clearValue = { format, { 0.0, 0 } };
+    RhiClearValue clearValue = { format, { 1.0, 0 } };
     RhiCommitedResourceDesc desc = {};
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::DepthWrite;
