@@ -28,7 +28,7 @@ ETH_NAMESPACE_BEGIN
 //class DescriptorAllocator
 //{
 //public:
-//    DescriptorAllocator(RHIDescriptorHeapType type, uint32_t numDescriptorsPerHeap = 256);
+//    DescriptorAllocator(RhiDescriptorHeapType type, uint32_t numDescriptorsPerHeap = 256);
 //    virtual ~DescriptorAllocator();
 //
 //    DescriptorAllocation Allocate(uint32_t numDescriptors = 1);
@@ -40,7 +40,7 @@ ETH_NAMESPACE_BEGIN
 //    // Create a new heap with a specific number of descriptors.
 //    std::shared_ptr<DescriptorAllocatorPage> CreateAllocatorPage();
 //
-//    RHIDescriptorHeapType m_HeapType;
+//    RhiDescriptorHeapType m_HeapType;
 //    uint32_t m_NumDescriptorsPerHeap;
 //
 //    DescriptorHeapPool m_HeapPool;

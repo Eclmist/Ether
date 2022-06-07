@@ -22,12 +22,12 @@
 ETH_NAMESPACE_BEGIN
 
 template <typename T>
-class RHIHandle
+class RhiHandle
 {
 public:
-    RHIHandle(T* handle = nullptr, const wchar_t* name = L"") : m_Handle(handle), m_Name(name) {}
-    RHIHandle(const wchar_t* name) : m_Handle(nullptr), m_Name(name) {}
-    RHIHandle(const RHIHandle& copy) : m_Handle(copy.m_Handle), m_Name(copy.m_Name) {}
+    RhiHandle(T* handle = nullptr, const wchar_t* name = L"") : m_Handle(handle), m_Name(name) {}
+    RhiHandle(const wchar_t* name) : m_Handle(nullptr), m_Name(name) {}
+    RhiHandle(const RhiHandle& copy) : m_Handle(copy.m_Handle), m_Name(copy.m_Name) {}
 
 public:
     inline bool IsNull() const { return m_Handle == nullptr; }

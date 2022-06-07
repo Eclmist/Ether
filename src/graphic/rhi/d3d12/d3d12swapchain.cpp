@@ -28,17 +28,17 @@ uint32_t D3D12SwapChain::GetCurrentBackBufferIndex() const
     return m_SwapChain->GetCurrentBackBufferIndex();
 }
 
-RHIResourceHandle D3D12SwapChain::GetBuffer(uint8_t index) const
+RhiResourceHandle D3D12SwapChain::GetBuffer(uint8_t index) const
 {
     D3D12Resource* d3dResource = new D3D12Resource();
     m_SwapChain->GetBuffer(index, IID_PPV_ARGS(&d3dResource->m_Resource));
 
-    RHIResourceHandle resourceHandle;
+    RhiResourceHandle resourceHandle;
     resourceHandle.Set(d3dResource);
     return resourceHandle;
 }
 
-RHIResult D3D12SwapChain::ResizeBuffers(RHIResizeDesc& desc)
+RhiResult D3D12SwapChain::ResizeBuffers(RhiResizeDesc& desc)
 {
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     ASSERT_SUCCESS(m_SwapChain->GetDesc(&swapChainDesc));
@@ -50,15 +50,15 @@ RHIResult D3D12SwapChain::ResizeBuffers(RHIResizeDesc& desc)
         swapChainDesc.Flags
     );
 
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12SwapChain::Present(uint8_t numVblanks)
+RhiResult D3D12SwapChain::Present(uint8_t numVblanks)
 {
     HRESULT hr = m_SwapChain->Present(numVblanks,
         numVblanks > 0 ? 0 : DXGI_PRESENT_ALLOW_TEARING);
 
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

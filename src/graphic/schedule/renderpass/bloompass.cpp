@@ -68,15 +68,15 @@ void BloomPass::Initialize()
 
 void BloomPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    RHIViewportDesc vp = context.GetViewport();
+    RhiViewportDesc vp = context.GetViewport();
 
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(HighPassFilter));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex1));
-    rc.CreateTexture2DResource(vp.m_Width / 2, vp.m_Height / 2, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex2));
-    rc.CreateTexture2DResource(vp.m_Width / 4, vp.m_Height / 4, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex3));
-    rc.CreateTexture2DResource(vp.m_Width / 8, vp.m_Height / 8, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex4));
-    rc.CreateTexture2DResource(vp.m_Width / 16, vp.m_Height / 16, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex5));
-    rc.CreateTexture2DResource(vp.m_Width / 32, vp.m_Height / 32, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex6));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(HighPassFilter));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex1));
+    rc.CreateTexture2DResource(vp.m_Width / 2, vp.m_Height / 2, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex2));
+    rc.CreateTexture2DResource(vp.m_Width / 4, vp.m_Height / 4, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex3));
+    rc.CreateTexture2DResource(vp.m_Width / 8, vp.m_Height / 8, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex4));
+    rc.CreateTexture2DResource(vp.m_Width / 16, vp.m_Height / 16, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex5));
+    rc.CreateTexture2DResource(vp.m_Width / 32, vp.m_Height / 32, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(BlurTex6));
 
     rc.CreateRenderTargetView(GFX_RESOURCE(HighPassFilter), GFX_RTV(HighPassFilter));
     rc.CreateRenderTargetView(GFX_RESOURCE(BlurTex1), GFX_RTV(BlurTex1));
@@ -120,13 +120,13 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    RHIViewportDesc viewport = gfxDisplay.GetViewport();
-    //context.TransitionResource(GFX_RESOURCE(DeferredLightingOutput), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(HighPassFilter), RHIResourceState::RenderTarget);
+    RhiViewportDesc viewport = gfxDisplay.GetViewport();
+    //context.TransitionResource(GFX_RESOURCE(DeferredLightingOutput), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(HighPassFilter), RhiResourceState::RenderTarget);
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
-    context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
@@ -137,8 +137,8 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
 
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(HighPassFilter), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(BlurTex1), RHIResourceState::RenderTarget);
+    //context.TransitionResource(GFX_RESOURCE(HighPassFilter), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(BlurTex1), RhiResourceState::RenderTarget);
     GaussianHorizontalPass(context, GFX_SRV(HighPassFilter), GFX_RTV(BlurTex1));
     //context.SetViewport(viewport);
     //context.SetScissor(gfxDisplay.GetScissorRect());
@@ -148,8 +148,8 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     viewport.m_Height /= 2;
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(BlurTex1), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(BlurTex2), RHIResourceState::RenderTarget);
+    //context.TransitionResource(GFX_RESOURCE(BlurTex1), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(BlurTex2), RhiResourceState::RenderTarget);
 
     GaussianHorizontalPass(context, GFX_SRV(BlurTex1), GFX_RTV(BlurTex2));
     //context.SetViewport(viewport);
@@ -160,8 +160,8 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     viewport.m_Height /= 2;
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(BlurTex2), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(BlurTex3), RHIResourceState::RenderTarget);
+    //context.TransitionResource(GFX_RESOURCE(BlurTex2), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(BlurTex3), RhiResourceState::RenderTarget);
 
     GaussianHorizontalPass(context, GFX_SRV(BlurTex2), GFX_RTV(BlurTex3));
     //context.SetViewport(viewport);
@@ -172,8 +172,8 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     viewport.m_Height /= 2;
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(BlurTex3), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(BlurTex4), RHIResourceState::RenderTarget);
+    //context.TransitionResource(GFX_RESOURCE(BlurTex3), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(BlurTex4), RhiResourceState::RenderTarget);
 
     GaussianHorizontalPass(context, GFX_SRV(BlurTex3), GFX_RTV(BlurTex4));
     //context.SetViewport(viewport);
@@ -184,8 +184,8 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     viewport.m_Height /= 2;
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(BlurTex4), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(BlurTex5), RHIResourceState::RenderTarget);
+    //context.TransitionResource(GFX_RESOURCE(BlurTex4), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(BlurTex5), RhiResourceState::RenderTarget);
 
     GaussianHorizontalPass(context, GFX_SRV(BlurTex4), GFX_RTV(BlurTex5));
     //context.SetViewport(viewport);
@@ -196,8 +196,8 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     viewport.m_Height /= 2;
     context.SetViewport(viewport);
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(BlurTex5), RHIResourceState::GenericRead);
-    context.TransitionResource(GFX_RESOURCE(BlurTex6), RHIResourceState::RenderTarget);
+    //context.TransitionResource(GFX_RESOURCE(BlurTex5), RhiResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(BlurTex6), RhiResourceState::RenderTarget);
 
     GaussianHorizontalPass(context, GFX_SRV(BlurTex5), GFX_RTV(BlurTex6));
     //context.SetViewport(viewport);
@@ -208,11 +208,11 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     // Final bloom pass
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
-    //context.TransitionResource(GFX_RESOURCE(BlurTex6), RHIResourceState::GenericRead);
-    //context.TransitionResource(GFX_RESOURCE(DeferredLightingOutput), RHIResourceState::GenericRead);
+    //context.TransitionResource(GFX_RESOURCE(BlurTex6), RhiResourceState::GenericRead);
+    //context.TransitionResource(GFX_RESOURCE(DeferredLightingOutput), RhiResourceState::GenericRead);
 
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature2);
-    context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
@@ -232,10 +232,10 @@ void BloomPass::Render(GraphicContext& context, ResourceContext& rc)
     context.Reset();
 }
 
-void BloomPass::GaussianHorizontalPass(GraphicContext& context, RHIShaderResourceViewHandle src, RHIRenderTargetViewHandle dest)
+void BloomPass::GaussianHorizontalPass(GraphicContext& context, RhiShaderResourceViewHandle src, RhiRenderTargetViewHandle dest)
 {
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
-    context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
@@ -266,14 +266,14 @@ void BloomPass::InitializePipelineState()
 {
     m_PipelineStateGaussianH.SetName(L"BloomPass::GaussianH::PipelineState");
 
-    RHIPipelineState creationPSO;
+    RhiPipelineState creationPSO;
     creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
     creationPSO.SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefault);
-    creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
+    creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_GaussianVS->GetCompiledShader(), m_GaussianVS->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_GaussianHorizontalPS->GetCompiledShader(), m_GaussianHorizontalPS->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
+    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
@@ -292,26 +292,26 @@ void BloomPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"BloomPass::RootSignature");
 
-    RHIRootSignature tempRS(2, 3);
+    RhiRootSignature tempRS(2, 3);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
-    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
-    RHIRootSignature tempRS2(8, 3);
+    RhiRootSignature tempRS2(8, 3);
     tempRS2.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS2.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS2.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
-    tempRS2[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS2[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS2[2]->SetAsDescriptorRange({ 1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS2[3]->SetAsDescriptorRange({ 2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS2[4]->SetAsDescriptorRange({ 3, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS2[5]->SetAsDescriptorRange({ 4, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS2[6]->SetAsDescriptorRange({ 5, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS2[7]->SetAsDescriptorRange({ 6, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS2[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
+    tempRS2[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[2]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[3]->SetAsDescriptorRange({ 2, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[4]->SetAsDescriptorRange({ 3, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[5]->SetAsDescriptorRange({ 4, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[6]->SetAsDescriptorRange({ 5, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[7]->SetAsDescriptorRange({ 6, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
     tempRS2.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature2);
 }
 

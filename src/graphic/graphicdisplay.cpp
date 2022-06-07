@@ -73,7 +73,7 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
         m_RenderTargets[i].Destroy();
 
-    RHIResizeDesc resizeDesc = {};
+    RhiResizeDesc resizeDesc = {};
     resizeDesc.m_Width = m_FrameBufferWidth;
     resizeDesc.m_Height = m_FrameBufferHeight;
     ASSERT_SUCCESS(m_SwapChain->ResizeBuffers(resizeDesc));
@@ -82,32 +82,32 @@ void GraphicDisplay::Resize(uint32_t width, uint32_t height)
     CreateViewsFromSwapChain();
 }
 
-RHIResourceHandle GraphicDisplay::GetCurrentBackBuffer() const
+RhiResourceHandle GraphicDisplay::GetCurrentBackBuffer() const
 {
     return m_RenderTargets[m_CurrentBackBufferIndex];
 }
 
-RHIRenderTargetViewHandle GraphicDisplay::GetCurrentBackBufferRTV() const
+RhiRenderTargetViewHandle GraphicDisplay::GetCurrentBackBufferRTV() const
 {
     return m_RenderTargetViews[m_CurrentBackBufferIndex];
 }
 
-RHIShaderResourceViewHandle GraphicDisplay::GetCurrentBackBufferSRV() const
+RhiShaderResourceViewHandle GraphicDisplay::GetCurrentBackBufferSRV() const
 {
     return m_ShaderResourceViews[m_CurrentBackBufferIndex];
 }
 
 void GraphicDisplay::CreateSwapChain()
 {
-    RHISwapChainDesc desc = {};
+    RhiSwapChainDesc desc = {};
     desc.m_Width = m_FrameBufferWidth;
     desc.m_Height = m_FrameBufferHeight;
     desc.m_Format = BackBufferFormat;
     desc.m_SampleDesc = { 1, 0 };
     desc.m_BufferCount = GetNumBuffers();
-    desc.m_ScalingMode = RHIScalingMode::Stretch;
-    desc.m_SwapEffect = RHISwapEffect::FlipDiscard;
-    desc.m_Flag = RHISwapChainFlag::AllowTearing;
+    desc.m_ScalingMode = RhiScalingMode::Stretch;
+    desc.m_SwapEffect = RhiSwapEffect::FlipDiscard;
+    desc.m_Flag = RhiSwapChainFlag::AllowTearing;
     desc.m_CommandQueue = GraphicCore::GetCommandManager().GetGraphicsQueue();
     desc.m_WindowHandle = EngineCore::GetMainWindow().GetWindowHandle();
 
@@ -128,13 +128,13 @@ void GraphicDisplay::CreateViewsFromSwapChain()
 {
 	for (uint32_t i = 0; i < GetNumBuffers(); ++i)
 	{
-        RHIRenderTargetViewDesc desc = {};
+        RhiRenderTargetViewDesc desc = {};
         desc.m_Format = BackBufferFormat;
         desc.m_Resource = m_RenderTargets[i];
         GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
 
-        RHIShaderResourceViewDesc srvDesc = {};
-        srvDesc.m_Dimensions = RHIShaderResourceDims::Texture2D;
+        RhiShaderResourceViewDesc srvDesc = {};
+        srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
         srvDesc.m_Format = BackBufferFormat;
         srvDesc.m_Resource = m_RenderTargets[i];
         GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, m_ShaderResourceViews[i]);

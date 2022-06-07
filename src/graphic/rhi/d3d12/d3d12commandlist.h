@@ -23,40 +23,40 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12CommandList : public RHICommandList
+class D3D12CommandList : public RhiCommandList
 {
 public:
-    D3D12CommandList(RHICommandListType type) : RHICommandList(type) {}
+    D3D12CommandList(RhiCommandListType type) : RhiCommandList(type) {}
     ~D3D12CommandList() override = default;
 
 public:
-    RHIResult SetViewport(const RHIViewportDesc& viewport) override;
-    RHIResult SetScissor(const RHIScissorDesc& scissor) override;
-    RHIResult SetStencilRef(const RHIStencilValue& val) override;
-    RHIResult SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology) override;
-    RHIResult SetPipelineState(const RHIPipelineStateHandle pipelineState) override;
-    RHIResult SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature) override;
-    RHIResult SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer) override;
-    RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) override;
-    RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) override;
+    RhiResult SetViewport(const RhiViewportDesc& viewport) override;
+    RhiResult SetScissor(const RhiScissorDesc& scissor) override;
+    RhiResult SetStencilRef(const RhiStencilValue& val) override;
+    RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
+    RhiResult SetPipelineState(const RhiPipelineStateHandle pipelineState) override;
+    RhiResult SetGraphicRootSignature(const RhiRootSignatureHandle rootSignature) override;
+    RhiResult SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer) override;
+    RhiResult SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) override;
+    RhiResult SetRenderTargets(const RhiSetRenderTargetsDesc& desc) override;
 
-    RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) override;
-    RHIResult SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc) override;
-    RHIResult SetRootShaderResource(const RHISetRootShaderResourceDesc& desc) override;
-    RHIResult SetRootConstantBuffer(const RHISetRootConstantBufferDesc& desc) override;
-    RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) override;
+    RhiResult SetRootConstants(const RhiSetRootConstantsDesc& desc) override;
+    RhiResult SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc) override;
+    RhiResult SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc) override;
+    RhiResult SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc) override;
+    RhiResult SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) override;
 
-    RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) override;
-    RHIResult ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc) override;
+    RhiResult ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) override;
+    RhiResult ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) override;
 
-    RHIResult CopyBufferRegion(const RHICopyBufferRegionDesc& desc) override;
-    RHIResult CopyTextureRegion(const RHICopyTextureRegionDesc& desc) override;
-    RHIResult TransitionResource(const RHIResourceTransitionDesc& desc) override;
-    RHIResult DrawInstanced(const RHIDrawInstancedDesc& desc) override;
-    RHIResult DrawIndexedInstanced(const RHIDrawIndexedInstancedDesc& desc) override;
+    RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) override;
+    RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) override;
+    RhiResult TransitionResource(const RhiResourceTransitionDesc& desc) override;
+    RhiResult DrawInstanced(const RhiDrawInstancedDesc& desc) override;
+    RhiResult DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) override;
 
-    RHIResult Reset(const RHICommandAllocatorHandle commandAllocator) override;
-    RHIResult Close() override;
+    RhiResult Reset(const RhiCommandAllocatorHandle commandAllocator) override;
+    RhiResult Close() override;
 
 private:
     friend class D3D12Device;

@@ -21,31 +21,31 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIPipelineState
+class RhiPipelineState
 {
 public:
-    RHIPipelineState() = default;
-    virtual ~RHIPipelineState() = default;
+    RhiPipelineState() = default;
+    virtual ~RhiPipelineState() = default;
 
-    inline void SetRootSignature(RHIRootSignatureHandle rootSignature) { m_RootSignature = rootSignature; }
+    inline void SetRootSignature(RhiRootSignatureHandle rootSignature) { m_RootSignature = rootSignature; }
 
 public:
-    RHIResult SetBlendState(const RHIBlendDesc& desc);
-    RHIResult SetRasterizerState(const RHIRasterizerDesc& desc);
-    RHIResult SetInputLayout(const RHIInputLayoutDesc& desc);
-    RHIResult SetPrimitiveTopology(RHIPrimitiveTopologyType type);
-    RHIResult SetDepthStencilState(const RHIDepthStencilDesc& desc);
-    RHIResult SetDepthTargetFormat(RHIFormat dsvFormat);
-    RHIResult SetRenderTargetFormat(RHIFormat rtvFormat);
-    RHIResult SetRenderTargetFormats(uint32_t numRtv, const RHIFormat* rtvFormats);
-    RHIResult SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality);
-    RHIResult SetVertexShader(const void* binary, size_t size);
-    RHIResult SetPixelShader(const void* binary, size_t size);
-    RHIResult Finalize(RHIPipelineStateHandle& pipelineState);
+    RhiResult SetBlendState(const RhiBlendDesc& desc);
+    RhiResult SetRasterizerState(const RhiRasterizerDesc& desc);
+    RhiResult SetInputLayout(const RhiInputLayoutDesc& desc);
+    RhiResult SetPrimitiveTopology(RhiPrimitiveTopologyType type);
+    RhiResult SetDepthStencilState(const RhiDepthStencilDesc& desc);
+    RhiResult SetDepthTargetFormat(RhiFormat dsvFormat);
+    RhiResult SetRenderTargetFormat(RhiFormat rtvFormat);
+    RhiResult SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats);
+    RhiResult SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality);
+    RhiResult SetVertexShader(const void* binary, size_t size);
+    RhiResult SetPixelShader(const void* binary, size_t size);
+    RhiResult Finalize(RhiPipelineStateHandle& pipelineState);
 
 protected:
-    RHIRootSignatureHandle m_RootSignature;
-    RHIPipelineStateDesc m_CreationDesc = {};
+    RhiRootSignatureHandle m_RootSignature;
+    RhiPipelineStateDesc m_CreationDesc = {};
 };
 
 ETH_NAMESPACE_END

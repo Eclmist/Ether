@@ -41,8 +41,8 @@ public:
     VisualNode(const VisualNodeData data);
     ~VisualNode();
 
-    inline RHIVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
-    inline RHIIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
+    inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
+    inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
     inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
     inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
     inline const Material* GetMaterial() const { return m_StaticData.m_Material; }
@@ -56,11 +56,11 @@ private:
     void InitIndexBufferView(size_t bufferSize);
 
 private:
-    RHIResourceHandle m_VertexBuffer;
-    RHIResourceHandle m_IndexBuffer;
+    RhiResourceHandle m_VertexBuffer;
+    RhiResourceHandle m_IndexBuffer;
 
-    RHIVertexBufferViewDesc m_VertexBufferView;
-    RHIIndexBufferViewDesc m_IndexBufferView;
+    RhiVertexBufferViewDesc m_VertexBufferView;
+    RhiIndexBufferViewDesc m_IndexBufferView;
 
     VisualNodeData m_StaticData;
 };

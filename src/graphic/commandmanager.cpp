@@ -30,13 +30,13 @@ CommandManager::CommandManager()
     m_ComputeQueue.SetName(L"CommandManager::ComputeQueue");
     m_CopyQueue.SetName(L"CommandManager::CopyQueue");
 
-    GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Graphic }, m_GraphicsQueue);
-    GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Compute }, m_ComputeQueue);
-    GraphicCore::GetDevice()->CreateCommandQueue({ RHICommandListType::Copy }, m_CopyQueue);
+    GraphicCore::GetDevice()->CreateCommandQueue({ RhiCommandListType::Graphic }, m_GraphicsQueue);
+    GraphicCore::GetDevice()->CreateCommandQueue({ RhiCommandListType::Compute }, m_ComputeQueue);
+    GraphicCore::GetDevice()->CreateCommandQueue({ RhiCommandListType::Copy }, m_CopyQueue);
 
-    m_GraphicAllocatorPool = std::make_unique<CommandAllocatorPool>(RHICommandListType::Graphic);
-    m_ComputeAllocatorPool = std::make_unique<CommandAllocatorPool>(RHICommandListType::Compute);
-    m_CopyAllocatorPool = std::make_unique<CommandAllocatorPool>(RHICommandListType::Copy);
+    m_GraphicAllocatorPool = std::make_unique<CommandAllocatorPool>(RhiCommandListType::Graphic);
+    m_ComputeAllocatorPool = std::make_unique<CommandAllocatorPool>(RhiCommandListType::Compute);
+    m_CopyAllocatorPool = std::make_unique<CommandAllocatorPool>(RhiCommandListType::Copy);
 }
 
 CommandManager::~CommandManager()
@@ -47,19 +47,19 @@ CommandManager::~CommandManager()
 }
 
 void CommandManager::CreateCommandList(
-    RHICommandListType type,
-    RHICommandListHandle& cmdList,
-    RHICommandAllocatorHandle& cmdAlloc)
+    RhiCommandListType type,
+    RhiCommandListHandle& cmdList,
+    RhiCommandAllocatorHandle& cmdAlloc)
 {
     switch (type)
     {
-    case RHICommandListType::Graphic:
+    case RhiCommandListType::Graphic:
         cmdAlloc = m_GraphicAllocatorPool->RequestAllocator(m_GraphicsQueue->GetCompletedFenceValue());
         break;
-    case RHICommandListType::Compute:
+    case RhiCommandListType::Compute:
         cmdAlloc = m_ComputeAllocatorPool->RequestAllocator(m_ComputeQueue->GetCompletedFenceValue());
         break;
-    case RHICommandListType::Copy:
+    case RhiCommandListType::Copy:
         cmdAlloc = m_CopyAllocatorPool->RequestAllocator(m_CopyQueue->GetCompletedFenceValue());
         break;
     default:
@@ -67,24 +67,24 @@ void CommandManager::CreateCommandList(
         return;
     }
 
-    RHICommandListDesc desc;
+    RhiCommandListDesc desc;
     desc.m_Allocator = cmdAlloc;
     desc.m_Type = type;
 
     ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommandList(desc, cmdList));
 }
 
-void CommandManager::Execute(RHICommandListHandle cmdList)
+void CommandManager::Execute(RhiCommandListHandle cmdList)
 {
     switch (cmdList->GetType())
     {
-    case RHICommandListType::Graphic:
+    case RhiCommandListType::Graphic:
         m_GraphicsQueue->Execute(cmdList);
         break;
-    case RHICommandListType::Compute:
+    case RhiCommandListType::Compute:
         m_ComputeQueue->Execute(cmdList);
         break;
-    case RHICommandListType::Copy:
+    case RhiCommandListType::Copy:
         m_CopyQueue->Execute(cmdList);
         break;
     default:
@@ -100,15 +100,15 @@ void CommandManager::Flush()
     m_CopyQueue->Flush();
 }
 
-RHICommandQueueHandle CommandManager::GetQueue(RHICommandListType type) const
+RhiCommandQueueHandle CommandManager::GetQueue(RhiCommandListType type) const
 {
     switch (type)
     {
-    case RHICommandListType::Graphic:
+    case RhiCommandListType::Graphic:
         return m_GraphicsQueue;
-    case RHICommandListType::Compute:
+    case RhiCommandListType::Compute:
         return m_ComputeQueue;
-    case RHICommandListType::Copy:
+    case RhiCommandListType::Copy:
         return m_CopyQueue;
     default:
         LogGraphicsError("An unsupported command list type (%s) was requested", type);
@@ -117,15 +117,15 @@ RHICommandQueueHandle CommandManager::GetQueue(RHICommandListType type) const
     }
 }
 
-CommandAllocatorPool& CommandManager::GetAllocatorPool(RHICommandListType type) const
+CommandAllocatorPool& CommandManager::GetAllocatorPool(RhiCommandListType type) const
 {
     switch (type)
     {
-    case RHICommandListType::Graphic:
+    case RhiCommandListType::Graphic:
         return *m_GraphicAllocatorPool;
-    case RHICommandListType::Compute:
+    case RhiCommandListType::Compute:
         return *m_ComputeAllocatorPool;
-    case RHICommandListType::Copy:
+    case RhiCommandListType::Copy:
         return *m_CopyAllocatorPool;
     default:
         LogGraphicsError("An unsupported command list type (%s) was requested", type);

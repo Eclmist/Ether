@@ -29,16 +29,16 @@ public:
     ResourceContext(CommandContext& context, const std::wstring& name);
     ~ResourceContext() = default;
 
-    bool CreateBufferResource(uint32_t size, RHIResourceHandle& resource);
-    bool CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
-    bool CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource);
+    bool CreateBufferResource(uint32_t size, RhiResourceHandle& resource);
+    bool CreateTexture2DResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource);
+    bool CreateDepthStencilResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource);
 
-    bool CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view);
-    bool CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view);
-    bool CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
-    bool CreateShaderResourceViewCube(RHIResourceHandle resource, RHIShaderResourceViewHandle& view);
-    bool CreateConstantBufferView(uint32_t bufferSize, RHIResourceHandle resource, RHIConstantBufferViewHandle& view);
-    bool CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view);
+    bool CreateRenderTargetView(RhiResourceHandle resource, RhiRenderTargetViewHandle& view);
+    bool CreateDepthStencilView(RhiResourceHandle resource, RhiDepthStencilViewHandle& view);
+    bool CreateShaderResourceView(RhiResourceHandle resource, RhiShaderResourceViewHandle& view);
+    bool CreateShaderResourceViewCube(RhiResourceHandle resource, RhiShaderResourceViewHandle& view);
+    bool CreateConstantBufferView(uint32_t bufferSize, RhiResourceHandle resource, RhiConstantBufferViewHandle& view);
+    bool CreateUnorderedAccessView(RhiResourceHandle resource, RhiUnorderedAccessViewHandle& view);
 
     bool InitializeTexture2D(CompiledTexture& texture);
     bool InitializeTextureCube(CompiledTexture& texture);
@@ -46,17 +46,17 @@ public:
     void Reset();
 
 private:
-    bool CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource);
+    bool CreateResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resource);
     bool ResourceExists(const std::wstring& resourceID) const;
-    bool ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc) const;
+    bool ShouldRecreateResource(const std::wstring& resourceID, const RhiCommitedResourceDesc& desc) const;
     bool ShouldRecreateView(const std::wstring& resourceID) const;
 
-    RHIFormat GetResourceFormat(const std::wstring& resourceID) const;
+    RhiFormat GetResourceFormat(const std::wstring& resourceID) const;
 
 private:
     std::set<std::wstring> m_ResourceEntries;
     std::set<std::wstring> m_NewlyCreatedResources;
-    std::unordered_map<std::wstring, RHICommitedResourceDesc> m_ResourceTable;
+    std::unordered_map<std::wstring, RhiCommitedResourceDesc> m_ResourceTable;
 
     CommandContext* m_Context;
 };

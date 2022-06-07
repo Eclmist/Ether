@@ -40,7 +40,7 @@ GuiRenderer::GuiRenderer()
     const auto d3dDevice = GraphicCore::GetDevice().As<D3D12Device>();
 
     m_SRVDescriptorHeap.SetName(L"GUIRenderer::SRVDescriptorHeap");
-    GraphicCore::GetDevice()->CreateDescriptorHeap({ RHIDescriptorHeapType::CbvSrvUav, RHIDescriptorHeapFlag::ShaderVisible, 4096 }, m_SRVDescriptorHeap);
+    GraphicCore::GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 4096 }, m_SRVDescriptorHeap);
 
     RegisterComponents();
     CreateImGuiContext();
@@ -82,7 +82,7 @@ void GuiRenderer::Render()
         component->Draw();
 
     ImGui::Render();
-    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
+    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
     m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferRTV());
 
     

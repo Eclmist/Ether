@@ -40,7 +40,7 @@ private:
     GraphicContext m_Context;
     std::vector<std::unique_ptr<GuiComponent>> m_Components;
 
-    RHIDescriptorHeapHandle m_SRVDescriptorHeap;
+    RhiDescriptorHeapHandle m_SRVDescriptorHeap;
 };
 
 ETH_NAMESPACE_END

@@ -30,10 +30,10 @@ UploadBufferPage::UploadBufferPage(size_t size)
     , m_Offset(0)
     , m_CpuAddress(nullptr)
 {
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Upload;
-    desc.m_State = RHIResourceState::GenericRead;
-    desc.m_ResourceDesc = RHICreateBufferResourceDesc(m_Size);
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Upload;
+    desc.m_State = RhiResourceState::GenericRead;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(m_Size);
 
     ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommittedResource(desc, m_Resource));
 
@@ -67,7 +67,7 @@ UploadBufferAllocation UploadBufferPage::Allocate(size_t size, size_t alignment)
     UploadBufferAllocation allocation(*this);
     allocation.SetSize(alignedSize);
     allocation.SetOffset(m_Offset);
-    allocation.SetMappedCPUAddress(static_cast<uint8_t*>(m_CpuAddress) + m_Offset);
+    allocation.SetMappedCpuAddress(static_cast<uint8_t*>(m_CpuAddress) + m_Offset);
 
     m_Offset = AlignUp(m_Offset + alignedSize, alignment);
     return allocation;

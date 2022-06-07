@@ -30,29 +30,29 @@ public:
     ~CommandManager();
 
     void CreateCommandList(
-        RHICommandListType type,
-        RHICommandListHandle& cmdList,
-        RHICommandAllocatorHandle& cmdAlloc);
+        RhiCommandListType type,
+        RhiCommandListHandle& cmdList,
+        RhiCommandAllocatorHandle& cmdAlloc);
 
-    void Execute(RHICommandListHandle cmdList);
+    void Execute(RhiCommandListHandle cmdList);
     void Flush();
 
 public:
-    inline RHICommandQueueHandle GetGraphicsQueue() const { return m_GraphicsQueue; }
-    inline RHICommandQueueHandle GetComputeQueue() const { return m_ComputeQueue; }
-    inline RHICommandQueueHandle GetCopyQueue() const { return m_CopyQueue; }
+    inline RhiCommandQueueHandle GetGraphicsQueue() const { return m_GraphicsQueue; }
+    inline RhiCommandQueueHandle GetComputeQueue() const { return m_ComputeQueue; }
+    inline RhiCommandQueueHandle GetCopyQueue() const { return m_CopyQueue; }
 
     inline CommandAllocatorPool& GetGraphicAllocatorPool() const { return *m_GraphicAllocatorPool; }
     inline CommandAllocatorPool& GetComputeAllocatorPool() const { return *m_ComputeAllocatorPool; }
     inline CommandAllocatorPool& GetCopyAllocatorPool() const { return *m_CopyAllocatorPool; }
 
-    RHICommandQueueHandle GetQueue(RHICommandListType type) const;
-    CommandAllocatorPool& GetAllocatorPool(RHICommandListType type) const;
+    RhiCommandQueueHandle GetQueue(RhiCommandListType type) const;
+    CommandAllocatorPool& GetAllocatorPool(RhiCommandListType type) const;
 
 private:
-    RHICommandQueueHandle m_GraphicsQueue;
-    RHICommandQueueHandle m_ComputeQueue;
-    RHICommandQueueHandle m_CopyQueue;
+    RhiCommandQueueHandle m_GraphicsQueue;
+    RhiCommandQueueHandle m_ComputeQueue;
+    RhiCommandQueueHandle m_CopyQueue;
 
     std::unique_ptr<CommandAllocatorPool> m_GraphicAllocatorPool;
     std::unique_ptr<CommandAllocatorPool> m_ComputeAllocatorPool;

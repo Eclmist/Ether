@@ -21,26 +21,26 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHICommandQueue
+class RhiCommandQueue
 {
 public:
-    RHICommandQueue(RHICommandListType type = RHICommandListType::Graphic) : m_Type(type) {}
-	virtual ~RHICommandQueue() = default;
+    RhiCommandQueue(RhiCommandListType type = RhiCommandListType::Graphic) : m_Type(type) {}
+	virtual ~RhiCommandQueue() = default;
 
 public:
-    virtual RHIFenceValue GetCompletionFenceValue() const = 0;
-    virtual RHIFenceValue GetCompletedFenceValue() = 0;
+    virtual RhiFenceValue GetCompletionFenceValue() const = 0;
+    virtual RhiFenceValue GetCompletedFenceValue() = 0;
 
-    virtual bool IsFenceComplete(RHIFenceValue fenceValue) = 0;
-    virtual RHIResult StallForFence(RHIFenceValue fenceValue) = 0;
-    virtual RHIResult Flush() = 0;
-    virtual RHIResult Execute(RHICommandListHandle cmdList) = 0;
+    virtual bool IsFenceComplete(RhiFenceValue fenceValue) = 0;
+    virtual RhiResult StallForFence(RhiFenceValue fenceValue) = 0;
+    virtual RhiResult Flush() = 0;
+    virtual RhiResult Execute(RhiCommandListHandle cmdList) = 0;
 
 public:
-    RHICommandListType GetType() const { return m_Type; }
+    RhiCommandListType GetType() const { return m_Type; }
 
 protected:
-    RHICommandListType m_Type;
+    RhiCommandListType m_Type;
 };
 
 ETH_NAMESPACE_END

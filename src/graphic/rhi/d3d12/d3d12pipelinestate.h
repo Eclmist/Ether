@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12PipelineState : public RHIPipelineState
+class D3D12PipelineState : public RhiPipelineState
 {
 public:
     D3D12PipelineState() = default;

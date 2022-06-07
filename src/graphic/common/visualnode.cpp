@@ -42,10 +42,10 @@ VisualNode::~VisualNode()
 void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
 {
     size_t bufferSize = numVertices * sizeof(VertexFormats::VertexFormatStatic);
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::Common;
-    desc.m_ResourceDesc = RHICreateBufferResourceDesc(bufferSize);
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::Common;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
 
     GraphicCore::GetDevice()->CreateCommittedResource(desc, m_VertexBuffer);
     m_VertexBuffer->SetName(L"VisualNode::VertexBuffer");
@@ -55,10 +55,10 @@ void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
 void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
 { 
     size_t bufferSize = numIndices * sizeof(uint32_t);
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::Common;
-    desc.m_ResourceDesc = RHICreateBufferResourceDesc(bufferSize);
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::Common;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
 
     GraphicCore::GetDevice()->CreateCommittedResource(desc, m_IndexBuffer);
     m_IndexBuffer->SetName(L"VisualNode::IndexBuffer");
@@ -77,7 +77,7 @@ void VisualNode::InitIndexBufferView(size_t bufferSize)
 {
     m_IndexBufferView = {};
     m_IndexBufferView.m_BufferSize = bufferSize;
-    m_IndexBufferView.m_Format = RHIFormat::R32Uint;
+    m_IndexBufferView.m_Format = RhiFormat::R32Uint;
     m_IndexBufferView.m_Resource = m_IndexBuffer;
 }
 

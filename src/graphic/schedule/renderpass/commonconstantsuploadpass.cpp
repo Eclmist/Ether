@@ -53,7 +53,7 @@ void CommonConstantsUploadPass::Render(GraphicContext& context, ResourceContext&
     m_CommonConstants.m_ScreenResolution = ethVector2(context.GetViewport().m_Width, context.GetViewport().m_Height);
 
     context.InitializeBufferRegion(GFX_RESOURCE(GlobalCommonConstants), &m_CommonConstants, sizeof(CommonConstants));
-    context.TransitionResource(GFX_RESOURCE(GlobalCommonConstants), RHIResourceState::GenericRead);
+    context.TransitionResource(GFX_RESOURCE(GlobalCommonConstants), RhiResourceState::GenericRead);
     context.FinalizeAndExecute();
     context.Reset();
 }

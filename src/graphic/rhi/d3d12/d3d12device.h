@@ -23,34 +23,34 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Device : public RHIDevice
+class D3D12Device : public RhiDevice
 {
 public:
     D3D12Device() = default;
     ~D3D12Device() override = default;
 
 public:
-    RHIResult CreateCommandAllocator(const RHICommandAllocatorDesc& desc, RHICommandAllocatorHandle& allocator) const override;
-    RHIResult CreateCommandList(const RHICommandListDesc& desc, RHICommandListHandle& cmdList) const override;
-    RHIResult CreateCommandQueue(const RHICommandQueueDesc& desc, RHICommandQueueHandle& cmdQueue) const override;
-    RHIResult CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, RHIDescriptorHeapHandle& descriptorHeap) const override;
-    RHIResult CreateFence(RHIFenceHandle& fence) const override;
-    RHIResult CreatePipelineState(const RHIPipelineStateDesc& desc, RHIPipelineStateHandle& pipelineState) const override;
-    RHIResult CreateRootParameter(RHIRootParameterHandle& rootParameter) const override;
-    RHIResult CreateRootSignature(const RHIRootSignatureDesc& desc, RHIRootSignatureHandle& rootSignature) const override;
-    RHIResult CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChainHandle& swapChain) const override;
+    RhiResult CreateCommandAllocator(const RhiCommandAllocatorDesc& desc, RhiCommandAllocatorHandle& allocator) const override;
+    RhiResult CreateCommandList(const RhiCommandListDesc& desc, RhiCommandListHandle& cmdList) const override;
+    RhiResult CreateCommandQueue(const RhiCommandQueueDesc& desc, RhiCommandQueueHandle& cmdQueue) const override;
+    RhiResult CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc, RhiDescriptorHeapHandle& descriptorHeap) const override;
+    RhiResult CreateFence(RhiFenceHandle& fence) const override;
+    RhiResult CreatePipelineState(const RhiPipelineStateDesc& desc, RhiPipelineStateHandle& pipelineState) const override;
+    RhiResult CreateRootParameter(RhiRootParameterHandle& rootParameter) const override;
+    RhiResult CreateRootSignature(const RhiRootSignatureDesc& desc, RhiRootSignatureHandle& rootSignature) const override;
+    RhiResult CreateSwapChain(const RhiSwapChainDesc& desc, RhiSwapChainHandle& swapChain) const override;
 
-    RHIResult CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& rtvHandle) const override;
-    RHIResult CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& dsvHandle) const override;
-    RHIResult CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& srvHandle) const override;
-    RHIResult CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& cbvHandle) const override;
-    RHIResult CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& uavHandle) const override;
+    RhiResult CreateRenderTargetView(const RhiRenderTargetViewDesc& desc, RhiRenderTargetViewHandle& rtvHandle) const override;
+    RhiResult CreateDepthStencilView(const RhiDepthStencilViewDesc& desc, RhiDepthStencilViewHandle& dsvHandle) const override;
+    RhiResult CreateShaderResourceView(const RhiShaderResourceViewDesc& desc, RhiShaderResourceViewHandle& srvHandle) const override;
+    RhiResult CreateConstantBufferView(const RhiConstantBufferViewDesc& desc, RhiConstantBufferViewHandle& cbvHandle) const override;
+    RhiResult CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc, RhiUnorderedAccessViewHandle& uavHandle) const override;
 
-    RHIResult CreateCommittedResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resourceHandle) const override;
+    RhiResult CreateCommittedResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resourceHandle) const override;
 
 protected:
     friend class D3D12Module;
-    // TODO: Remove after GUI-RHI refactor
+    // TODO: Remove after GUI-Rhi refactor
     friend class GuiRenderer;
     wrl::ComPtr<ID3D12Device3> m_Device;
 };

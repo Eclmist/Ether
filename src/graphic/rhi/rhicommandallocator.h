@@ -21,14 +21,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHICommandAllocator
+class RhiCommandAllocator
 {
 public:
-    RHICommandAllocator() = default;
-	virtual ~RHICommandAllocator() = default;
+    RhiCommandAllocator() = default;
+	virtual ~RhiCommandAllocator() = default;
 
 public:
-    virtual RHIResult Reset() const = 0;
+    virtual RhiResult Reset() const = 0;
 };
 
 ETH_NAMESPACE_END

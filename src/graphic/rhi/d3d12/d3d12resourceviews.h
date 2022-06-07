@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12RenderTargetView : public RHIRenderTargetView
+class D3D12RenderTargetView : public RhiRenderTargetView
 {
 public:
     D3D12RenderTargetView() = default;
@@ -33,7 +33,7 @@ private:
     friend class D3D12Device;
 };
 
-class D3D12DepthStencilView : public RHIDepthStencilView
+class D3D12DepthStencilView : public RhiDepthStencilView
 {
 public:
     D3D12DepthStencilView() = default;
@@ -43,7 +43,7 @@ private:
     friend class D3D12Device;
 };
 
-class D3D12ShaderResourceView : public RHIShaderResourceView
+class D3D12ShaderResourceView : public RhiShaderResourceView
 {
 public:
     D3D12ShaderResourceView() = default;
@@ -53,7 +53,7 @@ private:
     friend class D3D12Device;
 };
 
-class D3D12ConstantBufferView : public RHIConstantBufferView
+class D3D12ConstantBufferView : public RhiConstantBufferView
 {
 public:
     D3D12ConstantBufferView() = default;
@@ -63,7 +63,7 @@ private:
     friend class D3D12Device;
 };
 
-class D3D12UnorderedAccessView : public RHIUnorderedAccessView
+class D3D12UnorderedAccessView : public RhiUnorderedAccessView
 {
 public:
     D3D12UnorderedAccessView() = default;

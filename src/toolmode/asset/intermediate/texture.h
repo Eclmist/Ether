@@ -34,7 +34,7 @@ private:
     friend class CompiledTexture;
     uint32_t m_Width;
     uint32_t m_Height;
-    RHIFormat m_Format;
+    RhiFormat m_Format;
     unsigned char* m_Data;
 };
 

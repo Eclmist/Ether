@@ -26,9 +26,9 @@ ETH_NAMESPACE_BEGIN
 //class DescriptorAllocatorPage
 //{
 //public:
-//    DescriptorAllocatorPage(RHIDescriptorHeapType type, uint32_t numDescriptors);
+//    DescriptorAllocatorPage(RhiDescriptorHeapType type, uint32_t numDescriptors);
 //
-//    RHIDescriptorHeapType GetHeapType() const;
+//    RhiDescriptorHeapType GetHeapType() const;
 //
 //    /**
 //     * Check to see if this descriptor page has a contiguous block of descriptors
@@ -64,7 +64,7 @@ ETH_NAMESPACE_BEGIN
 //protected:
 //
 //    // Compute the offset of the descriptor handle from the start of the heap.
-//    uint32_t ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle);
+//    uint32_t ComputeOffset(D3D12_Cpu_DESCRIPTOR_HANDLE handle);
 //
 //    // Adds a new block to the free list.
 //    void AddNewBlock(uint32_t offset, uint32_t numDescriptors);
@@ -122,9 +122,9 @@ ETH_NAMESPACE_BEGIN
 //    FreeListBySize m_FreeListBySize;
 //    StaleDescriptorQueue m_StaleDescriptors;
 //
-//    RHIDescriptorHeapHandle m_DescriptorHeap;
-//    RHIDescriptorHeapType m_HeapType;
-//    RHIResourceHandle m_BaseDescriptor;
+//    RhiDescriptorHeapHandle m_DescriptorHeap;
+//    RhiDescriptorHeapType m_HeapType;
+//    RhiResourceHandle m_BaseDescriptor;
 //
 //    uint32_t m_DescriptorHandleIncrementSize;
 //    uint32_t m_NumDescriptorsInHeap;

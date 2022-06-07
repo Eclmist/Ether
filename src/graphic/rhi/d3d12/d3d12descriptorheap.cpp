@@ -22,38 +22,38 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHICpuHandle D3D12DescriptorHeap::GetBaseHandleCPU() const
+RhiCpuHandle D3D12DescriptorHeap::GetBaseHandleCpu() const
 {
-    RHICpuHandle handle;
+    RhiCpuHandle handle;
     handle.m_Ptr = m_Heap->GetCPUDescriptorHandleForHeapStart().ptr;
     return handle;
 }
 
-RHIGpuHandle D3D12DescriptorHeap::GetBaseHandleGPU() const
+RhiGpuHandle D3D12DescriptorHeap::GetBaseGpuHandle() const
 {
-    RHIGpuHandle handle;
+    RhiGpuHandle handle;
     handle.m_Ptr = m_Heap->GetGPUDescriptorHandleForHeapStart().ptr;
     return handle;
 }
 
-RHICpuHandle D3D12DescriptorHeap::GetNextHandleCPU() const
+RhiCpuHandle D3D12DescriptorHeap::GetNextCpuHandle() const
 {
-    RHICpuHandle handle = GetBaseHandleCPU();
+    RhiCpuHandle handle = GetBaseHandleCpu();
     handle.m_Ptr += m_Offset;
     return handle;
 }
 
-RHIGpuHandle D3D12DescriptorHeap::GetNextHandleGPU() const
+RhiGpuHandle D3D12DescriptorHeap::GetNextGpuHandle() const
 {
-    RHIGpuHandle handle = GetBaseHandleGPU();
+    RhiGpuHandle handle = GetBaseGpuHandle();
     handle.m_Ptr += m_Offset;
     return handle;
 }
 
-RHIResult D3D12DescriptorHeap::IncrementHandle()
+RhiResult D3D12DescriptorHeap::IncrementHandle()
 {
     m_Offset += m_HandleIncrementSize;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
 ETH_NAMESPACE_END

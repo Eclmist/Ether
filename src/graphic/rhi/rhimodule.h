@@ -31,21 +31,21 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIModule
+class RhiModule
 {
 public:
-    RHIModule() = default;
-	virtual ~RHIModule() = default;
+    RhiModule() = default;
+	virtual ~RhiModule() = default;
 
 public:
-    virtual RHIResult Initialize() = 0;
-    virtual RHIResult Shutdown() = 0;
+    virtual RhiResult Initialize() = 0;
+    virtual RhiResult Shutdown() = 0;
 
 public:
-    virtual RHIResult CreateDevice(RHIDeviceHandle& device) const = 0;
+    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
 
 public:
-    static RHIModuleHandle CreateModule(RHIModuleType type);
+    static RhiModuleHandle CreateModule(RhiModuleType type);
 };
 
 ETH_NAMESPACE_END

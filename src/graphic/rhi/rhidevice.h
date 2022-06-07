@@ -21,30 +21,30 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIDevice
+class RhiDevice
 {
 public:
-    RHIDevice() = default;
-	virtual ~RHIDevice() = default;
+    RhiDevice() = default;
+	virtual ~RhiDevice() = default;
 
 public:
-    virtual RHIResult CreateCommandAllocator(const RHICommandAllocatorDesc& desc, RHICommandAllocatorHandle& allocator) const = 0;
-    virtual RHIResult CreateCommandList(const RHICommandListDesc& desc, RHICommandListHandle& cmdList) const = 0;
-    virtual RHIResult CreateCommandQueue(const RHICommandQueueDesc& desc, RHICommandQueueHandle& cmdQueue) const = 0;
-    virtual RHIResult CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, RHIDescriptorHeapHandle& descriptorHeap) const = 0;
-    virtual RHIResult CreateFence(RHIFenceHandle& fence) const = 0;
-    virtual RHIResult CreatePipelineState(const RHIPipelineStateDesc& desc, RHIPipelineStateHandle& pipelineState) const = 0;
-    virtual RHIResult CreateRootParameter(RHIRootParameterHandle& rootParameter) const = 0;
-    virtual RHIResult CreateRootSignature(const RHIRootSignatureDesc& desc, RHIRootSignatureHandle& rootSignature) const = 0;
-    virtual RHIResult CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChainHandle& swapChain) const = 0;
+    virtual RhiResult CreateCommandAllocator(const RhiCommandAllocatorDesc& desc, RhiCommandAllocatorHandle& allocator) const = 0;
+    virtual RhiResult CreateCommandList(const RhiCommandListDesc& desc, RhiCommandListHandle& cmdList) const = 0;
+    virtual RhiResult CreateCommandQueue(const RhiCommandQueueDesc& desc, RhiCommandQueueHandle& cmdQueue) const = 0;
+    virtual RhiResult CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc, RhiDescriptorHeapHandle& descriptorHeap) const = 0;
+    virtual RhiResult CreateFence(RhiFenceHandle& fence) const = 0;
+    virtual RhiResult CreatePipelineState(const RhiPipelineStateDesc& desc, RhiPipelineStateHandle& pipelineState) const = 0;
+    virtual RhiResult CreateRootParameter(RhiRootParameterHandle& rootParameter) const = 0;
+    virtual RhiResult CreateRootSignature(const RhiRootSignatureDesc& desc, RhiRootSignatureHandle& rootSignature) const = 0;
+    virtual RhiResult CreateSwapChain(const RhiSwapChainDesc& desc, RhiSwapChainHandle& swapChain) const = 0;
 
-    virtual RHIResult CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& rtvHandle) const = 0;
-    virtual RHIResult CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& dsvHandle) const = 0;
-    virtual RHIResult CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& srvHandle) const = 0;
-    virtual RHIResult CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& cbvHandle) const = 0;
-    virtual RHIResult CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& uavHandle) const = 0;
+    virtual RhiResult CreateRenderTargetView(const RhiRenderTargetViewDesc& desc, RhiRenderTargetViewHandle& rtvHandle) const = 0;
+    virtual RhiResult CreateDepthStencilView(const RhiDepthStencilViewDesc& desc, RhiDepthStencilViewHandle& dsvHandle) const = 0;
+    virtual RhiResult CreateShaderResourceView(const RhiShaderResourceViewDesc& desc, RhiShaderResourceViewHandle& srvHandle) const = 0;
+    virtual RhiResult CreateConstantBufferView(const RhiConstantBufferViewDesc& desc, RhiConstantBufferViewHandle& cbvHandle) const = 0;
+    virtual RhiResult CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc, RhiUnorderedAccessViewHandle& uavHandle) const = 0;
 
-    virtual RHIResult CreateCommittedResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resourceHandle) const = 0;
+    virtual RhiResult CreateCommittedResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resourceHandle) const = 0;
 };
 
 ETH_NAMESPACE_END

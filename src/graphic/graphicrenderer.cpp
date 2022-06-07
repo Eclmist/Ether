@@ -50,7 +50,7 @@ void GraphicRenderer::Render()
     OPTICK_EVENT("Renderer - Render");
     
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::RenderTarget);
+    m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
     m_GraphicContext.SetViewport(gfxDisplay.GetViewport()); // TODO: Figure out why this must be set again in the render pass
 
     m_Scheduler.ScheduleRenderPasses(m_GraphicContext, m_ResourceContext);
@@ -62,7 +62,7 @@ void GraphicRenderer::Present()
     OPTICK_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RHIResourceState::Present);
+    m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RhiResourceState::Present);
     m_GraphicContext.FinalizeAndExecute();
     m_GraphicContext.Reset();
     m_ResourceContext.Reset();
