@@ -21,8 +21,8 @@
 
 ETH_NAMESPACE_BEGIN
 
-constexpr RHIVirtualAddress NullAddress = 0;
-constexpr RHIVirtualAddress UnknownAddress = -1;
+constexpr RHIGpuHandle NullAddress = { 0 };
+constexpr RHIGpuHandle UnknownAddress = { -1 };
 
 static RHIResourceDesc RHICreateBaseResourceDesc()
 {
@@ -98,7 +98,7 @@ public:
 	virtual ~RHIResource() = default;
 
 public:
-    virtual RHIVirtualAddress GetGPUVirtualAddress() const = 0;
+    virtual RHIGpuHandle GetGpuHandle() const = 0;
     virtual RHIResult SetName(const std::wstring& name) const = 0;
     virtual RHIResult Map(void** mappedAddr) const = 0;
     virtual RHIResult Unmap() const = 0;

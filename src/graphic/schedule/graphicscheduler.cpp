@@ -47,7 +47,7 @@ DECLARE_GFX_PASS(TextureDebugPass);
 void GraphicScheduler::RegisterRenderPasses()
 {
     m_RegisteredRenderPasses.push_back(&GFX_PASS(CommonConstantsUploadPass));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
+    //m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
     //m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingPass));

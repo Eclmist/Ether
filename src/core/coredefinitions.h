@@ -58,3 +58,14 @@ namespace Ether { enum { InEtherNamespace = true }; }
 #define ETH_NAMESPACE_BEGIN      static_assert(!InEtherNamespace, "Ether namespace not previously closed"); namespace Ether {
 #define ETH_NAMESPACE_END        } static_assert(!InEtherNamespace, "Ether namespace not previously opened");
 
+
+// Enum Utils
+#define ETH_DEFINE_ENUM_FLAGS(T) \
+inline constexpr T operator | (T a, T b) { return T(((uint64_t)a) | ((uint64_t)b)); } \
+inline T &operator |= (T &a, T b) { return (T &)(((uint64_t &)a) |= ((uint64_t)b)); } \
+inline constexpr T operator & (T a, T b) { return T(((uint64_t)a) & ((uint64_t)b)); } \
+inline T &operator &= (T &a, T b) { return (T &)(((uint64_t &)a) &= ((uint64_t)b)); } \
+inline constexpr T operator ~ (T a) { return T(~((uint64_t)a)); } \
+inline constexpr T operator ^ (T a, T b) { return T(((uint64_t)a) ^ ((uint64_t)b)); } \
+inline T &operator ^= (T &a, T b) { return (T &)(((uint64_t &)a) ^= ((uint64_t)b)); } \
+

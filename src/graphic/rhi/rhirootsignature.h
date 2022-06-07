@@ -32,7 +32,7 @@ public:
     inline RHISamplerParameterDesc& GetSampler(uint32_t i) { return m_StaticSamplers[i]; }
 
 public:
-    RHIResult Finalize(RHIRootSignatureFlags flags, RHIRootSignatureHandle& rootSignature);
+    RHIResult Finalize(RHIRootSignatureFlag flags, RHIRootSignatureHandle& rootSignature);
 
 protected:
     std::vector<RHIRootParameterHandle> m_RootParameters;

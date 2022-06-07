@@ -99,5 +99,5 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
         col = float4(0.3, 0.7, 1.0, axisOpacity.x);
 
     col.a *= fade;
-    return col;
+    return 1;
 }

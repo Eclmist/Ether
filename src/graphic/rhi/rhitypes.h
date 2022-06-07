@@ -46,16 +46,8 @@ typedef RHIHandle<class RHIShaderResourceView>  RHIShaderResourceViewHandle;
 typedef RHIHandle<class RHIConstantBufferView>  RHIConstantBufferViewHandle;
 typedef RHIHandle<class RHIUnorderedAccessView> RHIUnorderedAccessViewHandle;
 
-// Memory
-typedef uint64_t                                RHIVirtualAddress;
-
-// Common primitive-backed types
-// TODO: Properly support flags
-typedef uint64_t                                RHIFenceValue;
-typedef uint64_t                                RHIRootSignatureFlags;
-typedef uint32_t                                RHIStencilValue;
-typedef uint8_t                                 RHIColorChannels;
-typedef const void*                             RHIShaderByteCode;
+typedef uint64_t RHIFenceValue;
+typedef uint32_t RHIStencilValue;
 
 //=========================== Misc Descs ============================//
 
@@ -83,6 +75,17 @@ struct RHIResizeDesc
     uint32_t m_Depth;
 };
 
+//========================== Memory Descs ===========================//
+struct RHICpuHandle
+{
+    uint64_t m_Ptr;
+};
+
+struct RHIGpuHandle
+{
+    uint64_t m_Ptr;
+};
+
 //========================= Creation Descs ==========================//
 
 struct RHIBlendDesc
@@ -96,7 +99,7 @@ struct RHIBlendDesc
     RHIBlendType m_DestBlendAlpha;
     RHIBlendOperation m_BlendOpAlpha;
     RHILogicOperation m_LogicOp;
-    RHIColorChannels m_WriteMask;
+    RHIRenderTargetWriteMask m_WriteMask;
 };
 
 struct RHICommandAllocatorDesc
@@ -135,16 +138,6 @@ struct RHIDepthStencilDesc
     RHIDepthStencilOperationDesc m_BackFace;
 };
 
-struct RHIDescriptorHandleCPU
-{
-    RHIVirtualAddress m_Ptr;
-};
-
-struct RHIDescriptorHandleGPU
-{
-    RHIVirtualAddress m_Ptr;
-};
-
 struct RHIDescriptorHeapDesc
 {
     RHIDescriptorHeapType m_Type;
@@ -171,7 +164,7 @@ struct RHIInputLayoutDesc
 
 struct RHIShaderDesc
 {
-    RHIShaderByteCode m_Bytecode;
+    const void* m_Bytecode;
     uint32_t m_BytecodeLength;
 };
 
@@ -265,7 +258,7 @@ struct RHIRootSignatureDesc
     uint32_t m_NumStaticSamplers;
     RHIRootParameterHandle* m_Parameters;
     RHISamplerParameterDesc* m_StaticSamplers;
-    RHIRootSignatureFlags m_Flags;
+    RHIRootSignatureFlag m_Flags;
 };
 
 struct RHISwapChainDesc
@@ -322,7 +315,7 @@ struct RHIShaderResourceViewDesc : public RHIResourceViewDesc
 struct RHIConstantBufferViewDesc : public RHIResourceViewDesc
 {
     size_t m_BufferSize;
-    RHIVirtualAddress m_GpuAddress;
+    RHIGpuHandle m_GpuHandle;
 };
 
 struct RHIUnorderedAccessViewDesc : public RHIResourceViewDesc

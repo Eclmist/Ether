@@ -39,7 +39,7 @@ RHIRootSignature::~RHIRootSignature()
         m_RootParameters[i].Destroy();
 }
 
-RHIResult RHIRootSignature::Finalize(RHIRootSignatureFlags flags, RHIRootSignatureHandle& rootSignature)
+RHIResult RHIRootSignature::Finalize(RHIRootSignatureFlag flags, RHIRootSignatureHandle& rootSignature)
 {
     RHIRootSignatureDesc desc = {};
     desc.m_NumParameters = m_NumParameters;

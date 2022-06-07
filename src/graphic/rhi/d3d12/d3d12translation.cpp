@@ -326,11 +326,6 @@ D3D12_RESOURCE_STATES Translate(const RHIResourceState& rhiType)
 	}
 }
 
-D3D12_ROOT_SIGNATURE_FLAGS Translate(const RHIRootSignatureFlags& rhiType)
-{
-	return static_cast<D3D12_ROOT_SIGNATURE_FLAGS>(rhiType);
-}
-
 D3D12_ROOT_SIGNATURE_FLAGS Translate(const RHIRootSignatureFlag& rhiType)
 {
 	switch (rhiType)
@@ -344,7 +339,7 @@ D3D12_ROOT_SIGNATURE_FLAGS Translate(const RHIRootSignatureFlag& rhiType)
 	case RHIRootSignatureFlag::DenyPSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 	case RHIRootSignatureFlag::AllowStreamOutput:           return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
 	case RHIRootSignatureFlag::LocalRootSignature:          return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-	default:                                                return D3D12_ROOT_SIGNATURE_FLAG_NONE;
+	default:                                                return static_cast<D3D12_ROOT_SIGNATURE_FLAGS>(rhiType);
 	}
 }
 
@@ -511,14 +506,14 @@ D3D12_DEPTH_STENCILOP_DESC Translate(const RHIDepthStencilOperationDesc& rhiDesc
     return d3dDesc;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Translate(const RHIDescriptorHandleCPU& rhiDesc)
+D3D12_CPU_DESCRIPTOR_HANDLE Translate(const RHICpuHandle& rhiDesc)
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dDesc = {};
 	d3dDesc.ptr = rhiDesc.m_Ptr;
 	return d3dDesc;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE Translate(const RHIDescriptorHandleGPU& rhiDesc)
+D3D12_GPU_DESCRIPTOR_HANDLE Translate(const RHIGpuHandle& rhiDesc)
 {
 	D3D12_GPU_DESCRIPTOR_HANDLE d3dDesc = {};
 	d3dDesc.ptr = rhiDesc.m_Ptr;
@@ -815,26 +810,9 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RHIConstantBufferViewDesc& rhiDe
 {
 	D3D12_CONSTANT_BUFFER_VIEW_DESC d3dDesc = {};
 	d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
-	d3dDesc.BufferLocation = rhiDesc.m_GpuAddress;
+	d3dDesc.BufferLocation = rhiDesc.m_GpuHandle.m_Ptr;
 
 	return d3dDesc;
-}
-
-
-//================================= Reverse Translations ======================================//
-
-RHIDescriptorHandleCPU Translate(const D3D12_CPU_DESCRIPTOR_HANDLE& d3dDesc)
-{
-	RHIDescriptorHandleCPU rhiDesc = {};
-	rhiDesc.m_Ptr = d3dDesc.ptr;
-	return rhiDesc;
-}
-
-RHIDescriptorHandleGPU Translate(const D3D12_GPU_DESCRIPTOR_HANDLE& d3dDesc)
-{
-	RHIDescriptorHandleGPU rhiDesc = {};
-	rhiDesc.m_Ptr = d3dDesc.ptr;
-	return rhiDesc;
 }
 
 ETH_NAMESPACE_END

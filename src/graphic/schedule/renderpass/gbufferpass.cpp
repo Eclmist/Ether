@@ -43,7 +43,7 @@ DEFINE_GFX_RTV(GBufferPositionTexture);
 DEFINE_GFX_DSV(GBufferDepthTexture);
 
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
-DECLARE_GFX_RESOURCE(MaterialConstants);
+//DECLARE_GFX_RESOURCE(MaterialConstants);
 
 DEFINE_GFX_RESOURCE(InstanceParams);
 DEFINE_GFX_RESOURCE(MaterialParams);
@@ -94,7 +94,7 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
     rc.CreateBufferResource(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
     rc.CreateBufferResource(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams));
     rc.CreateConstantBufferView(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
-    rc.CreateConstantBufferView(sizeof(InstanceParams), GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
+    rc.CreateConstantBufferView(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
 
 #ifdef ETH_TOOLMODE
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));
@@ -169,6 +169,8 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
         context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
+
+
         InstanceParams param;
         DirectX::XMStoreFloat4x4(&param.m_ModelMatrix, modelMat);
         DirectX::XMStoreFloat4x4(&param.m_NormalMatrix, normalMat);
@@ -183,7 +185,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         mat.m_Metalness = GraphicCore::GetGraphicRenderer().m_Metalness;
 
         context.InitializeBufferRegion(GFX_RESOURCE(MaterialParams), &mat, sizeof(MaterialParams));
-        context.GetCommandList()->SetRootConstantBuffer({ 3, GFX_RESOURCE(MaterialParams) });
+        context.GetCommandList()->SetRootConstantBuffer({ 2, GFX_RESOURCE(MaterialParams) });
 
         // TODO: Setup bindless textures
         // TODO: If null, bind default texture
@@ -192,7 +194,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         if (texture != nullptr)
         {
 			rc.InitializeTexture2D(*texture);
-			context.GetCommandList()->SetRootDescriptorTable({ 2, texture->GetView() });
+			context.GetCommandList()->SetRootDescriptorTable({ 3, texture->GetView() });
         }
 
         context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
@@ -262,8 +264,8 @@ void GBufferPass::InitializeRootSignature()
     tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
     tempRS[1]->SetAsConstantBufferView({ 1, 0, RHIShaderVisibility::All });
-    tempRS[2]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
-    tempRS[3]->SetAsConstantBufferView({ 2, 0, RHIShaderVisibility::All });
+    tempRS[2]->SetAsConstantBufferView({ 2, 0, RHIShaderVisibility::All });
+    tempRS[3]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
 }

@@ -47,7 +47,7 @@ private:
     RHIFenceValue m_CompletionFenceValue;
     RHIFenceValue m_LastKnownFenceValue;
 
-    HANDLE m_FenceEventHandle;
+    void* m_FenceEventHandle;
 };
 
 ETH_NAMESPACE_END

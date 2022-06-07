@@ -44,7 +44,6 @@ D3D12_RESOURCE_DIMENSION Translate(const RHIResourceDimension& rhiType);
 D3D12_RESOURCE_FLAGS Translate(const RHIResourceFlag& rhiType);
 D3D12_RESOURCE_STATES Translate(const RHIResourceState& rhiType);
 D3D12_ROOT_SIGNATURE_FLAGS Translate(const RHIRootSignatureFlag& rhiType);
-D3D12_ROOT_SIGNATURE_FLAGS Translate(const RHIRootSignatureFlags& rhiType);
 D3D12_SHADER_VISIBILITY Translate(const RHIShaderVisibility& rhiType);
 D3D12_SRV_DIMENSION Translate(const RHIShaderResourceDims& rhiType);
 D3D12_STATIC_BORDER_COLOR Translate(const RHIBorderColor& rhiType);
@@ -59,12 +58,12 @@ DXGI_SWAP_EFFECT Translate(const RHISwapEffect& rhiType);
 D3D12_BLEND_DESC Translate(const RHIBlendDesc& rhiDesc);
 D3D12_CLEAR_VALUE Translate(const RHIClearValue& rhiDesc);
 D3D12_COMMAND_QUEUE_DESC Translate(const RHICommandQueueDesc& rhiDesc);
-D3D12_CPU_DESCRIPTOR_HANDLE Translate(const RHIDescriptorHandleCPU& rhiDesc);
+D3D12_CPU_DESCRIPTOR_HANDLE Translate(const RHICpuHandle& rhiDesc);
 D3D12_DEPTH_STENCIL_DESC Translate(const RHIDepthStencilDesc& rhiDesc);
 D3D12_DEPTH_STENCIL_VALUE Translate(const RHIDepthStencilValue& rhiDesc);
 D3D12_DEPTH_STENCILOP_DESC Translate(const RHIDepthStencilOperationDesc& rhiDesc);
 D3D12_DESCRIPTOR_HEAP_DESC Translate(const RHIDescriptorHeapDesc& rhiDesc);
-D3D12_GPU_DESCRIPTOR_HANDLE Translate(const RHIDescriptorHandleGPU& rhiDesc);
+D3D12_GPU_DESCRIPTOR_HANDLE Translate(const RHIGpuHandle& rhiDesc);
 D3D12_GRAPHICS_PIPELINE_STATE_DESC Translate(const RHIPipelineStateDesc& rhiDesc);
 D3D12_INPUT_ELEMENT_DESC Translate(const RHIInputElementDesc& rhiDesc);
 D3D12_RASTERIZER_DESC Translate(const RHIRasterizerDesc& rhiDesc);
@@ -87,9 +86,6 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RHIShaderResourceViewDesc& rhiDe
 D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RHIConstantBufferViewDesc& rhiDesc);
 D3D12_VERTEX_BUFFER_VIEW Translate(const RHIVertexBufferViewDesc& rhiDesc);
 D3D12_INDEX_BUFFER_VIEW Translate(const RHIIndexBufferViewDesc& rhiDesc);
-
-RHIDescriptorHandleCPU Translate(const D3D12_CPU_DESCRIPTOR_HANDLE& d3dDesc);
-RHIDescriptorHandleGPU Translate(const D3D12_GPU_DESCRIPTOR_HANDLE& d3dDesc);
 
 ETH_NAMESPACE_END
 

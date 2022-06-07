@@ -30,7 +30,7 @@ public:
     ~D3D12Resource() override = default;
 
 public:
-    RHIVirtualAddress GetGPUVirtualAddress() const override;
+    RHIGpuHandle GetGpuHandle() const override;
     RHIResult SetName(const std::wstring& name) const override;
     RHIResult Map(void** mappedAddr) const override;
     RHIResult Unmap() const override;

@@ -116,7 +116,7 @@ void GraphicCommon::InitializeBlendingStates()
     alphaBlend.m_SrcBlendAlpha = RHIBlendType::One;
     alphaBlend.m_DestBlendAlpha = RHIBlendType::InvSrcAlpha;
     alphaBlend.m_BlendOpAlpha = RHIBlendOperation::Add;
-    alphaBlend.m_WriteMask = static_cast<RHIColorChannels>(RHIColorChannel::All);
+    alphaBlend.m_WriteMask = RHIRenderTargetWriteMask::All;
 
     m_BlendDisabled = alphaBlend;
 
@@ -138,10 +138,10 @@ void GraphicCommon::InitializeRootSignatures()
     m_EmptyRootSignature.SetName(L"GraphicCommon::EmptyRootSignature");
 
     m_DefaultRootSignatureFlags = 
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::AllowIAInputLayout) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyHSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyGSRootAccess) |
-        static_cast<RHIRootSignatureFlags>(RHIRootSignatureFlag::DenyDSRootAccess);
+        RHIRootSignatureFlag::AllowIAInputLayout |
+        RHIRootSignatureFlag::DenyHSRootAccess |
+        RHIRootSignatureFlag::DenyGSRootAccess |
+        RHIRootSignatureFlag::DenyDSRootAccess;
 
     RHIRootSignature tempRS(2, 0);
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });

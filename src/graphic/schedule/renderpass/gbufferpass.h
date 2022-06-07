@@ -64,6 +64,21 @@ private:
     };
     static_assert((sizeof(MaterialParams) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
 
+    struct CommonConstants
+    {
+        ethMatrix4x4 m_ViewMatrix;
+        ethMatrix4x4 m_ProjectionMatrix;
+
+        ethVector4 m_EyePosition;
+        ethVector4 m_EyeDirection;
+        ethVector4 m_Time;
+
+        ethVector2 m_ScreenResolution;
+        float m_Padding[18];
+    };
+    static_assert((sizeof(CommonConstants) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
+
+
 private:
     RHIDepthStencilDesc m_DepthStencilState;
     RHIPipelineStateHandle m_PipelineState;

@@ -30,11 +30,11 @@ public:
     ~D3D12DescriptorHeap() override = default;
 
 public:
-    RHIDescriptorHandleCPU GetBaseHandleCPU() const override;
-    RHIDescriptorHandleGPU GetBaseHandleGPU() const override;
+    RHICpuHandle GetBaseHandleCPU() const override;
+    RHIGpuHandle GetBaseHandleGPU() const override;
 
-    RHIDescriptorHandleCPU GetNextHandleCPU() const override;
-    RHIDescriptorHandleGPU GetNextHandleGPU() const override;
+    RHICpuHandle GetNextHandleCPU() const override;
+    RHIGpuHandle GetNextHandleGPU() const override;
 
     RHIResult IncrementHandle() override;
 

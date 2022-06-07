@@ -72,7 +72,7 @@ RHIResult D3D12CommandList::SetVertexBuffer(const RHIVertexBufferViewDesc& verte
 {
     const auto d3dResource = vertexBuffer.m_Resource.As<D3D12Resource>();
     D3D12_VERTEX_BUFFER_VIEW d3dView = Translate(vertexBuffer);
-    d3dView.BufferLocation = Translate(d3dResource->GetGPUVirtualAddress());
+    d3dView.BufferLocation = d3dResource->GetGpuHandle().m_Ptr;
     m_CommandList->IASetVertexBuffers(0, 1, &d3dView);
     return RHIResult::Success;
 }
@@ -81,7 +81,7 @@ RHIResult D3D12CommandList::SetIndexBuffer(const RHIIndexBufferViewDesc& indexBu
 {
     const auto d3dResource = indexBuffer.m_Resource.As<D3D12Resource>();
     D3D12_INDEX_BUFFER_VIEW d3dView = Translate(indexBuffer);
-    d3dView.BufferLocation = Translate(d3dResource->GetGPUVirtualAddress());
+    d3dView.BufferLocation = d3dResource->GetGpuHandle().m_Ptr;
     m_CommandList->IASetIndexBuffer(&d3dView);
     return RHIResult::Success;
 }
@@ -91,14 +91,14 @@ RHIResult D3D12CommandList::SetRenderTargets(const RHISetRenderTargetsDesc& desc
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
-		rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCPUHandle());
+		rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCPUAddress());
 
     m_CommandList->OMSetRenderTargets
     (
         desc.m_NumRTV,
         rtvHandles,
         false,
-        desc.m_DSVHandle.IsNull() ? nullptr : &Translate(desc.m_DSVHandle->GetCPUHandle())
+        desc.m_DSVHandle.IsNull() ? nullptr : &Translate(desc.m_DSVHandle->GetCPUAddress())
     );
 
     return RHIResult::Success;
@@ -133,7 +133,7 @@ RHIResult D3D12CommandList::SetRootShaderResource(const RHISetRootShaderResource
     m_CommandList->SetGraphicsRootShaderResourceView
     (
         desc.m_RootParameterIndex,
-        Translate(desc.m_Resource->GetGPUVirtualAddress())
+        desc.m_Resource->GetGpuHandle().m_Ptr
     );
 
     return RHIResult::Success;
@@ -144,7 +144,7 @@ RHIResult D3D12CommandList::SetRootConstantBuffer(const RHISetRootConstantBuffer
     m_CommandList->SetGraphicsRootConstantBufferView
     (
         desc.m_RootParameterIndex,
-        Translate(desc.m_Resource->GetGPUVirtualAddress())
+        desc.m_Resource->GetGpuHandle().m_Ptr
     );
 
     return RHIResult::Success;
@@ -173,7 +173,7 @@ RHIResult D3D12CommandList::ClearRenderTargetView(const RHIClearRenderTargetView
 
     m_CommandList->ClearRenderTargetView
     (
-        Translate(desc.m_RTVHandle->GetCPUHandle()),
+        Translate(desc.m_RTVHandle->GetCPUAddress()),
         clearColor,
         0,
         nullptr
@@ -186,7 +186,7 @@ RHIResult D3D12CommandList::ClearDepthStencilView(const RHIClearDepthStencilView
 {
     m_CommandList->ClearDepthStencilView
     (
-        Translate(desc.m_DSVHandle->GetCPUHandle()),
+        Translate(desc.m_DSVHandle->GetCPUAddress()),
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
         desc.m_ClearDepth,
         desc.m_ClearStencil,

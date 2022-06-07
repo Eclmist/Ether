@@ -28,11 +28,11 @@ public:
     virtual ~RHIDescriptorHeap() = default;
 
 public:
-    virtual RHIDescriptorHandleCPU GetBaseHandleCPU() const = 0;
-    virtual RHIDescriptorHandleGPU GetBaseHandleGPU() const = 0;
+    virtual RHICpuHandle GetBaseHandleCPU() const = 0;
+    virtual RHIGpuHandle GetBaseHandleGPU() const = 0;
 
-    virtual RHIDescriptorHandleCPU GetNextHandleCPU() const = 0;
-    virtual RHIDescriptorHandleGPU GetNextHandleGPU() const = 0;
+    virtual RHICpuHandle GetNextHandleCPU() const = 0;
+    virtual RHIGpuHandle GetNextHandleGPU() const = 0;
 
     virtual RHIResult IncrementHandle() = 0;
 

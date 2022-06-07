@@ -62,7 +62,7 @@ public:
     RHIPipelineStateHandle m_DefaultPSO;
     RHIPipelineStateHandle m_DefaultWireframePSO;
     RHIRootSignatureHandle m_EmptyRootSignature;
-    RHIRootSignatureFlags m_DefaultRootSignatureFlags;
+    RHIRootSignatureFlag m_DefaultRootSignatureFlags;
 
     RHISamplerParameterDesc m_PointSampler;
     RHISamplerParameterDesc m_BilinearSampler;

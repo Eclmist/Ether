@@ -22,9 +22,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIVirtualAddress D3D12Resource::GetGPUVirtualAddress() const
+RHIGpuHandle D3D12Resource::GetGpuHandle() const
 {
-    return Translate(m_Resource->GetGPUVirtualAddress());
+    RHIGpuHandle handle;
+    handle.m_Ptr = m_Resource->GetGPUVirtualAddress();
+    return handle;
 }
 
 RHIResult D3D12Resource::SetName(const std::wstring& name) const

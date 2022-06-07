@@ -58,15 +58,6 @@ enum class RHIBlendType
     InvSrc1Alpha,
 };
 
-enum class RHIColorChannel
-{
-    Red                     = 0x1,
-    Green                   = 0x2,
-    Blue                    = 0x4,
-    Alpha                   = 0x8,
-    All                     = Red | Green | Blue | Alpha
-};
-
 enum class RHICommandListType
 {
     Graphic,
@@ -224,6 +215,15 @@ enum class RHIPrimitiveTopologyType
     Patch,
 };
 
+enum RHIRenderTargetWriteMask : uint32_t
+{
+    Red                     = 0x1,
+    Green                   = 0x2,
+    Blue                    = 0x4,
+    Alpha                   = 0x8,
+    All = (Red | Green | Blue | Alpha)
+}; ETH_DEFINE_ENUM_FLAGS(RHIRenderTargetWriteMask);
+
 enum class RHIResult
 {
     Success,
@@ -266,7 +266,7 @@ enum class RHIResourceState
     RenderTarget,
 };
 
-enum class RHIRootSignatureFlag
+enum class RHIRootSignatureFlag : uint64_t
 {
     None                    = 0x0,
     AllowIAInputLayout      = 0x1,
@@ -277,7 +277,7 @@ enum class RHIRootSignatureFlag
     DenyPSRootAccess        = 0x20,
     AllowStreamOutput       = 0x40,
     LocalRootSignature      = 0x80,
-};
+}; ETH_DEFINE_ENUM_FLAGS(RHIRootSignatureFlag);
 
 enum class RHIScalingMode
 {

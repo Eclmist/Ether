@@ -22,26 +22,30 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIDescriptorHandleCPU D3D12DescriptorHeap::GetBaseHandleCPU() const
+RHICpuHandle D3D12DescriptorHeap::GetBaseHandleCPU() const
 {
-    return Translate(m_Heap->GetCPUDescriptorHandleForHeapStart());
+    RHICpuHandle handle;
+    handle.m_Ptr = m_Heap->GetCPUDescriptorHandleForHeapStart().ptr;
+    return handle;
 }
 
-RHIDescriptorHandleGPU D3D12DescriptorHeap::GetBaseHandleGPU() const
+RHIGpuHandle D3D12DescriptorHeap::GetBaseHandleGPU() const
 {
-    return Translate(m_Heap->GetGPUDescriptorHandleForHeapStart());
+    RHIGpuHandle handle;
+    handle.m_Ptr = m_Heap->GetGPUDescriptorHandleForHeapStart().ptr;
+    return handle;
 }
 
-RHIDescriptorHandleCPU D3D12DescriptorHeap::GetNextHandleCPU() const
+RHICpuHandle D3D12DescriptorHeap::GetNextHandleCPU() const
 {
-    RHIDescriptorHandleCPU handle = GetBaseHandleCPU();
+    RHICpuHandle handle = GetBaseHandleCPU();
     handle.m_Ptr += m_Offset;
     return handle;
 }
 
-RHIDescriptorHandleGPU D3D12DescriptorHeap::GetNextHandleGPU() const
+RHIGpuHandle D3D12DescriptorHeap::GetNextHandleGPU() const
 {
-    RHIDescriptorHandleGPU handle = GetBaseHandleGPU();
+    RHIGpuHandle handle = GetBaseHandleGPU();
     handle.m_Ptr += m_Offset;
     return handle;
 }
