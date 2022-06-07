@@ -31,12 +31,12 @@ RhiGpuHandle D3D12Resource::GetGpuHandle() const
 
 RhiResult D3D12Resource::SetName(const std::wstring& name) const
 {
-    return TO_Rhi_RESULT(m_Resource->SetName(name.c_str()));
+    return TO_RHI_RESULT(m_Resource->SetName(name.c_str()));
 }
 
 RhiResult D3D12Resource::Map(void** mappedAddr) const
 {
-    return TO_Rhi_RESULT(m_Resource->Map(0, nullptr, mappedAddr));
+    return TO_RHI_RESULT(m_Resource->Map(0, nullptr, mappedAddr));
 }
 
 RhiResult D3D12Resource::Unmap() const

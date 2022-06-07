@@ -29,7 +29,7 @@ RhiFenceValue D3D12Fence::GetCompletedValue()
 RhiResult D3D12Fence::SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle)
 {
     HRESULT hr = m_Fence->SetEventOnCompletion(value, eventHandle);
-    return TO_Rhi_RESULT(hr);
+    return TO_RHI_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

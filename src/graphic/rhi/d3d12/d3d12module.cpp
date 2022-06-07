@@ -56,7 +56,7 @@ RhiResult D3D12Module::InitializeAdapter()
     if (useWarp)
     {
         HRESULT hr = dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&m_Adapter));
-        return TO_Rhi_RESULT(hr);
+        return TO_RHI_RESULT(hr);
     }
 
     SIZE_T maxDedicatedVideoMemory = 0;

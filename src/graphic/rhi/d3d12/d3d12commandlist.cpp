@@ -279,13 +279,13 @@ RhiResult D3D12CommandList::Reset(const RhiCommandAllocatorHandle commandAllocat
 {
     const auto allocator = commandAllocator.As<D3D12CommandAllocator>();
     HRESULT hr = m_CommandList->Reset(allocator->m_Allocator.Get(), nullptr);
-    return TO_Rhi_RESULT(hr);
+    return TO_RHI_RESULT(hr);
 }
 
 RhiResult D3D12CommandList::Close()
 {
     HRESULT hr = m_CommandList->Close();
-    return TO_Rhi_RESULT(hr);
+    return TO_RHI_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

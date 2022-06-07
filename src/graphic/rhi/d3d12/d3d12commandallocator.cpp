@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 RhiResult D3D12CommandAllocator::Reset() const
 {
-    return TO_Rhi_RESULT(m_Allocator->Reset());
+    return TO_RHI_RESULT(m_Allocator->Reset());
 }
 
 ETH_NAMESPACE_END

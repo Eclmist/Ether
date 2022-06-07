@@ -50,7 +50,7 @@ RhiResult D3D12SwapChain::ResizeBuffers(RhiResizeDesc& desc)
         swapChainDesc.Flags
     );
 
-    return TO_Rhi_RESULT(hr);
+    return TO_RHI_RESULT(hr);
 }
 
 RhiResult D3D12SwapChain::Present(uint8_t numVblanks)
@@ -58,7 +58,7 @@ RhiResult D3D12SwapChain::Present(uint8_t numVblanks)
     HRESULT hr = m_SwapChain->Present(numVblanks,
         numVblanks > 0 ? 0 : DXGI_PRESENT_ALLOW_TEARING);
 
-    return TO_Rhi_RESULT(hr);
+    return TO_RHI_RESULT(hr);
 }
 
 ETH_NAMESPACE_END
