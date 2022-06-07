@@ -56,14 +56,14 @@ public:
     static GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
     static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
-    static RHIDeviceHandle GetDevice() { return Instance().m_RHIDevice; }
-    static RHIModuleHandle GetModule() { return Instance().m_RHIModule; }
+    static RhiDeviceHandle GetDevice() { return Instance().m_RhiDevice; }
+    static RhiModuleHandle GetModule() { return Instance().m_RhiModule; }
 
     // TODO: Move away from here into some dynamic descriptor heap allocator or something
-    static inline RHIDescriptorHeapHandle GetRTVDescriptorHeap() { return Instance().m_RTVDescriptorHeap; }
-    static inline RHIDescriptorHeapHandle GetDSVDescriptorHeap() { return Instance().m_DSVDescriptorHeap; }
-    static inline RHIDescriptorHeapHandle GetSRVDescriptorHeap() { return Instance().m_SRVDescriptorHeap; }
-    static inline RHIDescriptorHeapHandle GetSamplerDescriptorHeap() { return Instance().m_SamplerDescriptorHeap; }
+    static inline RhiDescriptorHeapHandle GetRTVDescriptorHeap() { return Instance().m_RTVDescriptorHeap; }
+    static inline RhiDescriptorHeapHandle GetDSVDescriptorHeap() { return Instance().m_DSVDescriptorHeap; }
+    static inline RhiDescriptorHeapHandle GetSRVDescriptorHeap() { return Instance().m_SRVDescriptorHeap; }
+    static inline RhiDescriptorHeapHandle GetSamplerDescriptorHeap() { return Instance().m_SamplerDescriptorHeap; }
 
 public:
     static void FlushGpu();
@@ -79,14 +79,14 @@ private:
     std::unique_ptr<GuiRenderer> m_GuiRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
-    RHIDeviceHandle m_RHIDevice;
-    RHIModuleHandle m_RHIModule;
+    RhiDeviceHandle m_RhiDevice;
+    RhiModuleHandle m_RhiModule;
 
     // TODO: Move away from here into some dynamic descriptor heap allocator or something
-	RHIDescriptorHeapHandle m_RTVDescriptorHeap;
-    RHIDescriptorHeapHandle m_DSVDescriptorHeap;
-    RHIDescriptorHeapHandle m_SRVDescriptorHeap;
-    RHIDescriptorHeapHandle m_SamplerDescriptorHeap;
+	RhiDescriptorHeapHandle m_RTVDescriptorHeap;
+    RhiDescriptorHeapHandle m_DSVDescriptorHeap;
+    RhiDescriptorHeapHandle m_SRVDescriptorHeap;
+    RhiDescriptorHeapHandle m_SamplerDescriptorHeap;
 
 private:
     bool m_IsInitialized;

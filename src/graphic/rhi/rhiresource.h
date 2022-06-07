@@ -21,94 +21,94 @@
 
 ETH_NAMESPACE_BEGIN
 
-constexpr RHIGpuHandle NullAddress = { 0 };
-constexpr RHIGpuHandle UnknownAddress = { -1 };
+constexpr RhiGpuHandle NullAddress = { 0 };
+constexpr RhiGpuHandle UnknownAddress = { -1 };
 
-static RHIResourceDesc RHICreateBaseResourceDesc()
+static RhiResourceDesc RhiCreateBaseResourceDesc()
 {
-    RHIResourceDesc desc = {};
+    RhiResourceDesc desc = {};
     desc.m_Alignment = 0;
-    desc.m_Format = RHIFormat::Unknown;
+    desc.m_Format = RhiFormat::Unknown;
     desc.m_Height = 1;
     desc.m_DepthOrArraySize = 1;
     desc.m_MipLevels = 1;
     desc.m_SampleDesc.m_NumMsaaSamples = 1;
     desc.m_SampleDesc.m_MsaaQuality = 0;
-    desc.m_Layout = RHIResourceLayout::Unknown;
-    desc.m_Flag = RHIResourceFlag::None;
+    desc.m_Layout = RhiResourceLayout::Unknown;
+    desc.m_Flag = RhiResourceFlag::None;
     return desc;
 }
 
-static RHIResourceDesc RHICreateBufferResourceDesc(size_t size)
+static RhiResourceDesc RhiCreateBufferResourceDesc(size_t size)
 {
-    RHIResourceDesc desc = RHICreateBaseResourceDesc();
-    desc.m_Dimension = RHIResourceDimension::Buffer;
+    RhiResourceDesc desc = RhiCreateBaseResourceDesc();
+    desc.m_Dimension = RhiResourceDimension::Buffer;
     desc.m_Width = size;
-    desc.m_Layout = RHIResourceLayout::RowMajor;
+    desc.m_Layout = RhiResourceLayout::RowMajor;
     return desc;
 }
 
-static RHIResourceDesc RHICreateTextureBaseResourceDesc(RHIFormat format)
+static RhiResourceDesc RhiCreateTextureBaseResourceDesc(RhiFormat format)
 {
-    RHIResourceDesc desc = RHICreateBaseResourceDesc();
-    desc.m_Flag = RHIResourceFlag::AllowRenderTarget;
-    desc.m_Layout = RHIResourceLayout::Unknown;
+    RhiResourceDesc desc = RhiCreateBaseResourceDesc();
+    desc.m_Flag = RhiResourceFlag::AllowRenderTarget;
+    desc.m_Layout = RhiResourceLayout::Unknown;
     desc.m_Format = format;
     return desc;
 }
 
-static RHIResourceDesc RHICreateTexture1DResourceDesc(RHIFormat format, uint32_t width)
+static RhiResourceDesc RhiCreateTexture1DResourceDesc(RhiFormat format, uint32_t width)
 {
-    RHIResourceDesc desc = RHICreateTextureBaseResourceDesc(format);
-    desc.m_Dimension = RHIResourceDimension::Texture1D;
+    RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
+    desc.m_Dimension = RhiResourceDimension::Texture1D;
     desc.m_Width = width;
     return desc;
 }
 
-static RHIResourceDesc RHICreateTexture2DResourceDesc(RHIFormat format, uint32_t width, uint32_t height)
+static RhiResourceDesc RhiCreateTexture2DResourceDesc(RhiFormat format, uint32_t width, uint32_t height)
 {
-    RHIResourceDesc desc = RHICreateTextureBaseResourceDesc(format);
-    desc.m_Dimension = RHIResourceDimension::Texture2D;
+    RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
+    desc.m_Dimension = RhiResourceDimension::Texture2D;
     desc.m_Width = width;
     desc.m_Height = height;
     return desc;
 }
 
-static RHIResourceDesc RHICreateTexture3DResourceDesc(RHIFormat format, uint32_t width, uint32_t height, uint16_t depth)
+static RhiResourceDesc RhiCreateTexture3DResourceDesc(RhiFormat format, uint32_t width, uint32_t height, uint16_t depth)
 {
-    RHIResourceDesc desc = RHICreateTextureBaseResourceDesc(format);
-    desc.m_Dimension = RHIResourceDimension::Texture3D;
+    RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
+    desc.m_Dimension = RhiResourceDimension::Texture3D;
     desc.m_Width = width;
     desc.m_Height = height;
     desc.m_DepthOrArraySize = depth;
     return desc;
 }
 
-static RHIResourceDesc RHICreateDepthStencilResourceDesc(RHIFormat format, uint32_t width, uint32_t height)
+static RhiResourceDesc RhiCreateDepthStencilResourceDesc(RhiFormat format, uint32_t width, uint32_t height)
 {
-    RHIResourceDesc desc = RHICreateTexture2DResourceDesc(format, width, height);
-    desc.m_Flag = RHIResourceFlag::AllowDepthStencil;
+    RhiResourceDesc desc = RhiCreateTexture2DResourceDesc(format, width, height);
+    desc.m_Flag = RhiResourceFlag::AllowDepthStencil;
     return desc;
 }
 
-class RHIResource
+class RhiResource
 {
 public:
-    RHIResource() = default;
-	virtual ~RHIResource() = default;
+    RhiResource() = default;
+	virtual ~RhiResource() = default;
 
 public:
-    virtual RHIGpuHandle GetGpuHandle() const = 0;
-    virtual RHIResult SetName(const std::wstring& name) const = 0;
-    virtual RHIResult Map(void** mappedAddr) const = 0;
-    virtual RHIResult Unmap() const = 0;
+    virtual RhiGpuHandle GetGpuHandle() const = 0;
+    virtual RhiResult SetName(const std::wstring& name) const = 0;
+    virtual RhiResult Map(void** mappedAddr) const = 0;
+    virtual RhiResult Unmap() const = 0;
 
 public:
-    inline RHIResourceState GetCurrentState() const { return m_CurrentState; }
-    inline void SetState(RHIResourceState state) { m_CurrentState = state; }
+    inline RhiResourceState GetCurrentState() const { return m_CurrentState; }
+    inline void SetState(RhiResourceState state) { m_CurrentState = state; }
 
 protected:
-    RHIResourceState m_CurrentState = RHIResourceState::Common;
+    RhiResourceState m_CurrentState = RhiResourceState::Common;
 };
 
 ETH_NAMESPACE_END

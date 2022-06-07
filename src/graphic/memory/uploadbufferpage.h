@@ -33,7 +33,7 @@ public:
     inline size_t GetSize() const { return m_Size; }
     inline size_t GetOffset() const { return m_Offset; }
 
-    inline RHIResourceHandle GetResource() const { return m_Resource; }
+    inline RhiResourceHandle GetResource() const { return m_Resource; }
 
 public:
     bool HasSpace(size_t size, size_t alignment);
@@ -41,7 +41,7 @@ public:
     void Reset();
 
 private:
-    RHIResourceHandle m_Resource;
+    RhiResourceHandle m_Resource;
 
     size_t m_Size;
     size_t m_Offset;

@@ -21,15 +21,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIFence
+class RhiFence
 {
 public:
-    RHIFence() = default;
-	virtual ~RHIFence() = default;
+    RhiFence() = default;
+	virtual ~RhiFence() = default;
 
 public:
-    virtual RHIFenceValue GetCompletedValue() = 0;
-    virtual RHIResult SetEventOnCompletion(RHIFenceValue value, HANDLE eventHandle) = 0;
+    virtual RhiFenceValue GetCompletedValue() = 0;
+    virtual RhiResult SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle) = 0;
 };
 
 ETH_NAMESPACE_END

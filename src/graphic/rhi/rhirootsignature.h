@@ -21,22 +21,22 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIRootSignature
+class RhiRootSignature
 {
 public:
-    RHIRootSignature(int numParameters, int numStaticSamplers);
-	virtual ~RHIRootSignature();
+    RhiRootSignature(int numParameters, int numStaticSamplers);
+	virtual ~RhiRootSignature();
 
 public:
-    inline RHIRootParameterHandle operator[] (uint32_t i) { return m_RootParameters[i]; }
-    inline RHISamplerParameterDesc& GetSampler(uint32_t i) { return m_StaticSamplers[i]; }
+    inline RhiRootParameterHandle operator[] (uint32_t i) { return m_RootParameters[i]; }
+    inline RhiSamplerParameterDesc& GetSampler(uint32_t i) { return m_StaticSamplers[i]; }
 
 public:
-    RHIResult Finalize(RHIRootSignatureFlag flags, RHIRootSignatureHandle& rootSignature);
+    RhiResult Finalize(RhiRootSignatureFlag flags, RhiRootSignatureHandle& rootSignature);
 
 protected:
-    std::vector<RHIRootParameterHandle> m_RootParameters;
-    std::vector<RHISamplerParameterDesc> m_StaticSamplers;
+    std::vector<RhiRootParameterHandle> m_RootParameters;
+    std::vector<RhiSamplerParameterDesc> m_StaticSamplers;
 
     int m_NumParameters;
     int m_NumStaticSamplers;

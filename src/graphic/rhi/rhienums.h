@@ -21,14 +21,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-enum class RHIBorderColor
+enum class RhiBorderColor
 {
     TransparentBlack,
     OpaqueBlack,
     OpaqueWhite,
 };
 
-enum class RHIBlendOperation
+enum class RhiBlendOperation
 {
     Add,
     Subtract,
@@ -37,7 +37,7 @@ enum class RHIBlendOperation
     Max,
 };
 
-enum class RHIBlendType
+enum class RhiBlendType
 {
     Zero,
     One,
@@ -58,14 +58,14 @@ enum class RHIBlendType
     InvSrc1Alpha,
 };
 
-enum class RHICommandListType
+enum class RhiCommandListType
 {
     Graphic,
     Compute,
     Copy,
 };
 
-enum class RHIComparator
+enum class RhiComparator
 {
     Never,
     Less,
@@ -77,14 +77,14 @@ enum class RHIComparator
     Always,
 };
 
-enum class RHICullMode
+enum class RhiCullMode
 {
     None,
     Front,
     Back,
 };
 
-enum class RHIDepthStencilOperation
+enum class RhiDepthStencilOperation
 {
     Keep,
     Zero,
@@ -96,13 +96,13 @@ enum class RHIDepthStencilOperation
     Decrement,
 };
 
-enum class RHIDepthWriteMask
+enum class RhiDepthWriteMask
 {
     Zero,
     All,
 };
 
-enum class RHIDescriptorHeapType
+enum class RhiDescriptorHeapType
 {
     CbvSrvUav,
     RTV,
@@ -110,13 +110,13 @@ enum class RHIDescriptorHeapType
     Sampler,
 };
 
-enum class RHIDescriptorHeapFlag
+enum class RhiDescriptorHeapFlag
 {
     None,
     ShaderVisible,
 };
 
-enum class RHIDescriptorRangeType
+enum class RhiDescriptorRangeType
 {
     SRV,
     UAV,
@@ -124,13 +124,13 @@ enum class RHIDescriptorRangeType
     Sampler,
 };
 
-enum class RHIFillMode
+enum class RhiFillMode
 {
     Wireframe,
     Solid,
 };
 
-enum class RHIFormat
+enum class RhiFormat
 {
     Unknown,
     R8G8B8A8Unorm,
@@ -143,7 +143,7 @@ enum class RHIFormat
     D24UnormS8Uint,
 };
 
-enum class RHIFilter
+enum class RhiFilter
 {
     MinMagMipPoint,
     MinMagPointMipLinear,
@@ -156,7 +156,7 @@ enum class RHIFilter
     Anisotropic,
 };
 
-enum class RHIHeapType
+enum class RhiHeapType
 {
     Default,
     Upload,
@@ -164,13 +164,13 @@ enum class RHIHeapType
     Custom,
 };
 
-enum class RHIInputClassification
+enum class RhiInputClassification
 {
     PerVertexData,
     PerInstanceData,
 };
 
-enum class RHILogicOperation
+enum class RhiLogicOperation
 {
     Clear,
     Set,
@@ -190,13 +190,13 @@ enum class RHILogicOperation
     OrInverted,
 };
 
-enum class RHIModuleType
+enum class RhiModuleType
 {
     D3D12,
     Vulkan,
 };
 
-enum class RHIPrimitiveTopology
+enum class RhiPrimitiveTopology
 {
     Undefined,
     PointList,
@@ -206,7 +206,7 @@ enum class RHIPrimitiveTopology
     TriangleStrip,
 };
 
-enum class RHIPrimitiveTopologyType
+enum class RhiPrimitiveTopologyType
 {
     Undefined,
     Point,
@@ -215,23 +215,23 @@ enum class RHIPrimitiveTopologyType
     Patch,
 };
 
-enum RHIRenderTargetWriteMask : uint32_t
+enum RhiRenderTargetWriteMask : uint32_t
 {
     Red                     = 0x1,
     Green                   = 0x2,
     Blue                    = 0x4,
     Alpha                   = 0x8,
     All = (Red | Green | Blue | Alpha)
-}; ETH_DEFINE_ENUM_FLAGS(RHIRenderTargetWriteMask);
+}; ETH_DEFINE_ENUM_FLAGS(RhiRenderTargetWriteMask);
 
-enum class RHIResult
+enum class RhiResult
 {
     Success,
     Failure,
     NotSupported,
 };
 
-enum class RHIResourceDimension
+enum class RhiResourceDimension
 {
     Unknown,
     Buffer,
@@ -240,7 +240,7 @@ enum class RHIResourceDimension
     Texture3D,
 };
 
-enum class RHIResourceFlag
+enum class RhiResourceFlag
 {
     None,
     AllowRenderTarget,
@@ -248,13 +248,13 @@ enum class RHIResourceFlag
     AllowUnorderedAccess,
 };
 
-enum class RHIResourceLayout
+enum class RhiResourceLayout
 {
     Unknown,
     RowMajor,
 };
 
-enum class RHIResourceState
+enum class RhiResourceState
 {
     Common,
     CopyDest,
@@ -266,7 +266,7 @@ enum class RHIResourceState
     RenderTarget,
 };
 
-enum class RHIRootSignatureFlag : uint64_t
+enum class RhiRootSignatureFlag : uint64_t
 {
     None                    = 0x0,
     AllowIAInputLayout      = 0x1,
@@ -277,9 +277,9 @@ enum class RHIRootSignatureFlag : uint64_t
     DenyPSRootAccess        = 0x20,
     AllowStreamOutput       = 0x40,
     LocalRootSignature      = 0x80,
-}; ETH_DEFINE_ENUM_FLAGS(RHIRootSignatureFlag);
+}; ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 
-enum class RHIScalingMode
+enum class RhiScalingMode
 {
     None,
     Stretch,
@@ -287,7 +287,7 @@ enum class RHIScalingMode
 };
 
 
-enum class RHIShaderResourceDims
+enum class RhiShaderResourceDims
 {
 	Unknown,
 	Buffer,
@@ -301,7 +301,7 @@ enum class RHIShaderResourceDims
     RTAccelerationStructure,
 };
 
-enum class RHIShaderVisibility
+enum class RhiShaderVisibility
 {
     All,
     Vertex,
@@ -311,7 +311,7 @@ enum class RHIShaderVisibility
     Pixel,
 };
 
-enum class RHISwapEffect
+enum class RhiSwapEffect
 {
     Discard,
     Sequential,
@@ -319,12 +319,12 @@ enum class RHISwapEffect
     FlipSequential,
 };
 
-enum class RHISwapChainFlag
+enum class RhiSwapChainFlag
 {
     AllowTearing,
 };
 
-enum class RHITextureAddressMode
+enum class RhiTextureAddressMode
 {
     Wrap,
     Mirror,

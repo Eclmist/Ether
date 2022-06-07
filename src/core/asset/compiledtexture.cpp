@@ -49,7 +49,7 @@ void CompiledTexture::Deserialize(IStream& istream)
     istream >> m_Height;
     istream >> format;
 
-    m_Format = static_cast<RHIFormat>(format);
+    m_Format = static_cast<RhiFormat>(format);
 
     static int tempIdx = 0;
     tempIdx++;

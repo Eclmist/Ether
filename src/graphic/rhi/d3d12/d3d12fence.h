@@ -23,15 +23,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Fence : public RHIFence
+class D3D12Fence : public RhiFence
 {
 public:
     D3D12Fence() = default;
     ~D3D12Fence() override = default;
 
 public:
-    RHIFenceValue GetCompletedValue() override;
-    RHIResult SetEventOnCompletion(RHIFenceValue value, HANDLE eventHandle) override;
+    RhiFenceValue GetCompletedValue() override;
+    RhiResult SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle) override;
 
 private:
     friend class D3D12Device;

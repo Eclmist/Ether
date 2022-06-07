@@ -22,7 +22,7 @@
 ETH_NAMESPACE_BEGIN
 
 constexpr uint32_t MaxSwapChainBuffers = 3;
-constexpr RHIFormat BackBufferFormat = RHIFormat::R8G8B8A8Unorm;
+constexpr RhiFormat BackBufferFormat = RhiFormat::R8G8B8A8Unorm;
 
 enum class BufferingMode : unsigned int
 {
@@ -41,9 +41,9 @@ public:
     void Resize(uint32_t width, uint32_t height);
 
 public:
-    RHIResourceHandle GetCurrentBackBuffer() const;
-    RHIRenderTargetViewHandle GetCurrentBackBufferRTV() const;
-    RHIShaderResourceViewHandle GetCurrentBackBufferSRV() const;
+    RhiResourceHandle GetCurrentBackBuffer() const;
+    RhiRenderTargetViewHandle GetCurrentBackBufferRTV() const;
+    RhiShaderResourceViewHandle GetCurrentBackBufferSRV() const;
 
     inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
     inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
@@ -51,8 +51,8 @@ public:
     inline bool IsVsyncEnabled() const { return m_VSyncEnabled; }
     inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
 
-    inline const RHIViewportDesc& GetViewport() const { return m_Viewport; }
-    inline const RHIScissorDesc& GetScissorRect() const { return m_ScissorRect; }
+    inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
+    inline const RhiScissorDesc& GetScissorRect() const { return m_ScissorRect; }
 
     inline void SetVSyncEnabled(bool enabled) { m_VSyncEnabled = enabled; }
     inline void SetVSyncVBlanks(int numVblanks) { m_VSyncVBlanks = numVblanks; }
@@ -65,20 +65,20 @@ private:
     void ResetFences();
 
 private:
-    RHISwapChainHandle m_SwapChain;
+    RhiSwapChainHandle m_SwapChain;
     const BufferingMode m_BufferingMode;
 
-    RHIResourceHandle m_RenderTargets[MaxSwapChainBuffers];
-    RHIRenderTargetViewHandle m_RenderTargetViews[MaxSwapChainBuffers];
-    RHIShaderResourceViewHandle m_ShaderResourceViews[MaxSwapChainBuffers];
+    RhiResourceHandle m_RenderTargets[MaxSwapChainBuffers];
+    RhiRenderTargetViewHandle m_RenderTargetViews[MaxSwapChainBuffers];
+    RhiShaderResourceViewHandle m_ShaderResourceViews[MaxSwapChainBuffers];
     uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
 
     uint32_t m_CurrentBackBufferIndex;
     uint32_t m_FrameBufferWidth;
     uint32_t m_FrameBufferHeight;
 
-    RHIScissorDesc m_ScissorRect;
-    RHIViewportDesc m_Viewport;
+    RhiScissorDesc m_ScissorRect;
+    RhiViewportDesc m_Viewport;
 
     bool m_VSyncEnabled;
     uint8_t m_VSyncVBlanks;

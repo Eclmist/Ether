@@ -50,8 +50,8 @@ void EditorGizmosPass::Initialize()
 
 void EditorGizmosPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    RHIViewportDesc vp = context.GetViewport();
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EditorGizmosTexture));
+    RhiViewportDesc vp = context.GetViewport();
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(EditorGizmosTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(EditorGizmosTexture), GFX_RTV(EditorGizmosTexture));
 }
 
@@ -76,7 +76,7 @@ void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
-    context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
     context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferPositionTexture) });
@@ -101,15 +101,15 @@ void EditorGizmosPass::InitializePipelineState()
 {
     m_PipelineState.SetName(L"EditorGizmosPass::PipelineState");
 
-    RHIPipelineState creationPSO;
+    RhiPipelineState creationPSO;
     creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional);
     creationPSO.SetRasterizerState(m_RasterizerDesc);
-    creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
+    creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
+    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
@@ -119,17 +119,17 @@ void EditorGizmosPass::InitializePipelineState()
 void EditorGizmosPass::InitializeRasterizerDesc()
 {
     m_RasterizerDesc = GraphicCore::GetGraphicCommon().m_RasterizerDefault;
-    m_RasterizerDesc.m_CullMode = RHICullMode::None;
+    m_RasterizerDesc.m_CullMode = RhiCullMode::None;
 }
 
 void EditorGizmosPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"EditorGizmosPass::RootSignature");
 
-    RHIRootSignature tempRS(2, 1);
+    RhiRootSignature tempRS(2, 1);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
-    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 }
 

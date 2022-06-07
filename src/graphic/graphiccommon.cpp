@@ -59,8 +59,8 @@ GraphicCommon::~GraphicCommon()
 
 void GraphicCommon::InitializeRasterizerStates()
 {
-    m_RasterizerDefault.m_FillMode = RHIFillMode::Solid;
-    m_RasterizerDefault.m_CullMode = RHICullMode::Back;
+    m_RasterizerDefault.m_FillMode = RhiFillMode::Solid;
+    m_RasterizerDefault.m_CullMode = RhiCullMode::Back;
     m_RasterizerDefault.m_FrontCounterClockwise = true;
     m_RasterizerDefault.m_DepthBias = 0;
     m_RasterizerDefault.m_DepthBiasClamp = 0;
@@ -74,7 +74,7 @@ void GraphicCommon::InitializeRasterizerStates()
     m_RasterizerDefaultCw.m_FrontCounterClockwise = false;
 
     m_RasterizerWireframe = m_RasterizerDefault;
-    m_RasterizerWireframe.m_FillMode = RHIFillMode::Wireframe;
+    m_RasterizerWireframe.m_FillMode = RhiFillMode::Wireframe;
 
     m_RasterizerWireframeCw = m_RasterizerWireframe;
     m_RasterizerWireframeCw.m_FrontCounterClockwise = false;
@@ -83,53 +83,53 @@ void GraphicCommon::InitializeRasterizerStates()
 void GraphicCommon::InitializeDepthStates()
 {
     m_DepthStateDisabled.m_DepthEnabled = false;
-    m_DepthStateDisabled.m_DepthWriteMask = RHIDepthWriteMask::Zero;
-    m_DepthStateDisabled.m_DepthComparator = RHIComparator::Always;
+    m_DepthStateDisabled.m_DepthWriteMask = RhiDepthWriteMask::Zero;
+    m_DepthStateDisabled.m_DepthComparator = RhiComparator::Always;
     m_DepthStateDisabled.m_StencilEnabled = false;
     m_DepthStateDisabled.m_StencilReadMask = 0xff;
     m_DepthStateDisabled.m_StencilWriteMask = 0xff;
-    m_DepthStateDisabled.m_FrontFace.m_StencilFunc = RHIComparator::Always;
-    m_DepthStateDisabled.m_FrontFace.m_StencilPassOp = RHIDepthStencilOperation::Keep;
-    m_DepthStateDisabled.m_FrontFace.m_StencilFailOp = RHIDepthStencilOperation::Keep;
-    m_DepthStateDisabled.m_FrontFace.m_StencilDepthFailOp = RHIDepthStencilOperation::Keep;
+    m_DepthStateDisabled.m_FrontFace.m_StencilFunc = RhiComparator::Always;
+    m_DepthStateDisabled.m_FrontFace.m_StencilPassOp = RhiDepthStencilOperation::Keep;
+    m_DepthStateDisabled.m_FrontFace.m_StencilFailOp = RhiDepthStencilOperation::Keep;
+    m_DepthStateDisabled.m_FrontFace.m_StencilDepthFailOp = RhiDepthStencilOperation::Keep;
     m_DepthStateDisabled.m_BackFace = m_DepthStateDisabled.m_FrontFace;
 
     m_DepthStateReadWrite = m_DepthStateDisabled;
     m_DepthStateReadWrite.m_DepthEnabled = true;
-    m_DepthStateReadWrite.m_DepthWriteMask = RHIDepthWriteMask::All;
-    m_DepthStateReadWrite.m_DepthComparator = RHIComparator::LessEqual;
+    m_DepthStateReadWrite.m_DepthWriteMask = RhiDepthWriteMask::All;
+    m_DepthStateReadWrite.m_DepthComparator = RhiComparator::LessEqual;
 
     m_DepthStateReadOnly = m_DepthStateReadWrite;
-    m_DepthStateReadOnly.m_DepthWriteMask = RHIDepthWriteMask::Zero;
+    m_DepthStateReadOnly.m_DepthWriteMask = RhiDepthWriteMask::Zero;
 
     m_DepthStateTestEqual = m_DepthStateReadOnly;
-    m_DepthStateTestEqual.m_DepthComparator = RHIComparator::Equal;
+    m_DepthStateTestEqual.m_DepthComparator = RhiComparator::Equal;
 }
 
 void GraphicCommon::InitializeBlendingStates()
 {
-    RHIBlendDesc alphaBlend = {};
+    RhiBlendDesc alphaBlend = {};
     alphaBlend.m_BlendingEnabled = false;
-    alphaBlend.m_SrcBlend = RHIBlendType::SrcAlpha;
-    alphaBlend.m_DestBlend = RHIBlendType::InvSrcAlpha;
-    alphaBlend.m_BlendOp = RHIBlendOperation::Add;
-    alphaBlend.m_SrcBlendAlpha = RHIBlendType::One;
-    alphaBlend.m_DestBlendAlpha = RHIBlendType::InvSrcAlpha;
-    alphaBlend.m_BlendOpAlpha = RHIBlendOperation::Add;
-    alphaBlend.m_WriteMask = RHIRenderTargetWriteMask::All;
+    alphaBlend.m_SrcBlend = RhiBlendType::SrcAlpha;
+    alphaBlend.m_DestBlend = RhiBlendType::InvSrcAlpha;
+    alphaBlend.m_BlendOp = RhiBlendOperation::Add;
+    alphaBlend.m_SrcBlendAlpha = RhiBlendType::One;
+    alphaBlend.m_DestBlendAlpha = RhiBlendType::InvSrcAlpha;
+    alphaBlend.m_BlendOpAlpha = RhiBlendOperation::Add;
+    alphaBlend.m_WriteMask = RhiRenderTargetWriteMask::All;
 
     m_BlendDisabled = alphaBlend;
 
     alphaBlend.m_BlendingEnabled = true;
     m_BlendTraditional = alphaBlend;
 
-    alphaBlend.m_SrcBlend = RHIBlendType::One;
+    alphaBlend.m_SrcBlend = RhiBlendType::One;
     m_BlendPreMultiplied = alphaBlend;
 
-    alphaBlend.m_DestBlend = RHIBlendType::One;
+    alphaBlend.m_DestBlend = RhiBlendType::One;
     m_BlendAdditive = alphaBlend;
 
-    alphaBlend.m_SrcBlend = RHIBlendType::SrcAlpha;
+    alphaBlend.m_SrcBlend = RhiBlendType::SrcAlpha;
     m_BlendTraditionalAdditive = alphaBlend;
 }
 
@@ -138,24 +138,24 @@ void GraphicCommon::InitializeRootSignatures()
     m_EmptyRootSignature.SetName(L"GraphicCommon::EmptyRootSignature");
 
     m_DefaultRootSignatureFlags = 
-        RHIRootSignatureFlag::AllowIAInputLayout |
-        RHIRootSignatureFlag::DenyHSRootAccess |
-        RHIRootSignatureFlag::DenyGSRootAccess |
-        RHIRootSignatureFlag::DenyDSRootAccess;
+        RhiRootSignatureFlag::AllowIAInputLayout |
+        RhiRootSignatureFlag::DenyHSRootAccess |
+        RhiRootSignatureFlag::DenyGSRootAccess |
+        RhiRootSignatureFlag::DenyDSRootAccess;
 
-    RHIRootSignature tempRS(2, 0);
-    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsConstant({ 1, 0, RHIShaderVisibility::All, 32 });
+    RhiRootSignature tempRS(2, 0);
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
+    tempRS[1]->SetAsConstant({ 1, 0, RhiShaderVisibility::All, 32 });
 
     tempRS.Finalize(m_DefaultRootSignatureFlags, m_EmptyRootSignature);
 }
 
-RHIInputElementDesc inputElementDesc[4] = 
+RhiInputElementDesc inputElementDesc[4] = 
 {
-    { "POSITION", 0, RHIFormat::R32G32B32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RHIInputClassification::PerVertexData, 0 },
-    { "NORMAL", 0, RHIFormat::R32G32B32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RHIInputClassification::PerVertexData, 0 },
-    { "TANGENT", 0, RHIFormat::R32G32B32A32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RHIInputClassification::PerVertexData, 0 },
-    { "TEXCOORD", 0, RHIFormat::R32G32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RHIInputClassification::PerVertexData, 0 },
+    { "POSITION", 0, RhiFormat::R32G32B32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RhiInputClassification::PerVertexData, 0 },
+    { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RhiInputClassification::PerVertexData, 0 },
+    { "TANGENT", 0, RhiFormat::R32G32B32A32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RhiInputClassification::PerVertexData, 0 },
+    { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, D3D12_APPEND_ALIGNED_ELEMENT, RhiInputClassification::PerVertexData, 0 },
 };
 
 void GraphicCommon::InitializeShaders()
@@ -177,15 +177,15 @@ void GraphicCommon::InitializePipelineStates()
     m_DefaultPSO.SetName(L"GraphicCommon::DefaultPSO");
     m_DefaultWireframePSO.SetName(L"GraphicCommon::DefaultWireframePSO");
 
-    RHIPipelineState creationPSO;
+    RhiPipelineState creationPSO;
     creationPSO.SetBlendState(m_BlendDisabled);
     creationPSO.SetRasterizerState(m_RasterizerDefault);
-    creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
+    creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
     creationPSO.SetInputLayout(m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
+    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStateReadWrite);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_EmptyRootSignature);
@@ -197,21 +197,21 @@ void GraphicCommon::InitializePipelineStates()
 
 void GraphicCommon::InitializeSamplers()
 {
-    m_PointSampler.m_Filter = RHIFilter::MinMagMipPoint;
-    m_PointSampler.m_AddressU = RHITextureAddressMode::Wrap;
-    m_PointSampler.m_AddressV = RHITextureAddressMode::Wrap;
-    m_PointSampler.m_AddressW = RHITextureAddressMode::Wrap;
+    m_PointSampler.m_Filter = RhiFilter::MinMagMipPoint;
+    m_PointSampler.m_AddressU = RhiTextureAddressMode::Wrap;
+    m_PointSampler.m_AddressV = RhiTextureAddressMode::Wrap;
+    m_PointSampler.m_AddressW = RhiTextureAddressMode::Wrap;
     m_PointSampler.m_MipLODBias = 0;
     m_PointSampler.m_MaxAnisotropy = 0;
-    m_PointSampler.m_ComparisonFunc = RHIComparator::Never;
+    m_PointSampler.m_ComparisonFunc = RhiComparator::Never;
     m_PointSampler.m_MinLOD = 0;
     m_PointSampler.m_MinLOD = std::numeric_limits<float_t>().max();
     m_PointSampler.m_ShaderRegister = 0;
     m_PointSampler.m_RegisterSpace = 0;
-    m_PointSampler.m_ShaderVisibility = RHIShaderVisibility::All;
+    m_PointSampler.m_ShaderVisibility = RhiShaderVisibility::All;
 
     m_BilinearSampler = m_PointSampler;
-    m_BilinearSampler.m_Filter = RHIFilter::MinMagMipLinear;
+    m_BilinearSampler.m_Filter = RhiFilter::MinMagMipLinear;
     m_BilinearSampler.m_ShaderRegister = 1;
 
     m_EnvMapSampler = m_BilinearSampler;

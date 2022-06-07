@@ -21,17 +21,17 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHISwapChain
+class RhiSwapChain
 {
 public:
-	RHISwapChain() = default;
-	virtual ~RHISwapChain() = default;
+	RhiSwapChain() = default;
+	virtual ~RhiSwapChain() = default;
 
 public:
     virtual uint32_t GetCurrentBackBufferIndex() const = 0;
-    virtual RHIResourceHandle GetBuffer(uint8_t index) const = 0;
-    virtual RHIResult ResizeBuffers(RHIResizeDesc& desc) = 0;
-    virtual RHIResult Present(uint8_t numVblanks) = 0;
+    virtual RhiResourceHandle GetBuffer(uint8_t index) const = 0;
+    virtual RhiResult ResizeBuffers(RhiResizeDesc& desc) = 0;
+    virtual RhiResult Present(uint8_t numVblanks) = 0;
 };
 
 ETH_NAMESPACE_END

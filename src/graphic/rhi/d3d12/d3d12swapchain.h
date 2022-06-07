@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12SwapChain : public RHISwapChain
+class D3D12SwapChain : public RhiSwapChain
 {
 public:
     D3D12SwapChain() = default;
@@ -31,9 +31,9 @@ public:
 
 public:
     uint32_t GetCurrentBackBufferIndex() const override;
-    RHIResourceHandle GetBuffer(uint8_t index) const override;
-    RHIResult ResizeBuffers(RHIResizeDesc& desc) override;
-    RHIResult Present(uint8_t numVblanks) override;
+    RhiResourceHandle GetBuffer(uint8_t index) const override;
+    RhiResult ResizeBuffers(RhiResizeDesc& desc) override;
+    RhiResult Present(uint8_t numVblanks) override;
 
 private:
     friend class D3D12Device;

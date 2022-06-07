@@ -35,7 +35,7 @@ public:
     inline ethMatrix4x4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
     inline ethVector4 GetEyePosition() const { return m_EyePosition; }
     inline ethVector4 GetEyeDirection() const { return m_EyeDirection; }
-    inline RHIViewportDesc GetViewport() const { return m_Viewport; }
+    inline RhiViewportDesc GetViewport() const { return m_Viewport; }
 
     inline void SetViewMatrix(ethMatrix4x4 viewMatrix) { m_ViewMatrix = viewMatrix; }
     inline void SetProjectionMatrix(ethMatrix4x4 projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
@@ -43,14 +43,14 @@ public:
     inline void SetEyePosition(ethVector4 eyePosition) { m_EyePosition = eyePosition; }
 
 public:
-    void ClearColor(RHIRenderTargetViewHandle texture, ethVector4 color = { 0, 0, 0, 0 });
-    void ClearDepthStencil(RHIDepthStencilViewHandle depthTex, float depth, float stencil);
+    void ClearColor(RhiRenderTargetViewHandle texture, ethVector4 color = { 0, 0, 0, 0 });
+    void ClearDepthStencil(RhiDepthStencilViewHandle depthTex, float depth, float stencil);
 
-    void SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv = RHIDepthStencilViewHandle());
-    void SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle dsv = RHIDepthStencilViewHandle());
+    void SetRenderTarget(RhiRenderTargetViewHandle rtv, RhiDepthStencilViewHandle dsv = RhiDepthStencilViewHandle());
+    void SetRenderTargets(uint32_t numTargets, RhiRenderTargetViewHandle* rtv, RhiDepthStencilViewHandle dsv = RhiDepthStencilViewHandle());
 
-    void SetViewport(const RHIViewportDesc& viewport);
-    void SetScissor(const RHIScissorDesc& scissor);
+    void SetViewport(const RhiViewportDesc& viewport);
+    void SetScissor(const RhiScissorDesc& scissor);
 
 private:
     ethMatrix4x4 m_ViewMatrix;
@@ -59,7 +59,7 @@ private:
     ethVector4 m_EyeDirection;
     ethVector4 m_EyePosition;
 
-    RHIViewportDesc m_Viewport;
+    RhiViewportDesc m_Viewport;
 };
 
 ETH_NAMESPACE_END

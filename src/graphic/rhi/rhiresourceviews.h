@@ -21,65 +21,65 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIResourceView
+class RhiResourceView
 {
 public:
-    RHIResourceView() = default;
-    virtual ~RHIResourceView() = 0;
-    inline RHICpuHandle GetCPUAddress() const { return m_CpuHandle; }
+    RhiResourceView() = default;
+    virtual ~RhiResourceView() = 0;
+    inline RhiCpuHandle GetCpuAddress() const { return m_CpuHandle; }
 
 protected:
-    RHICpuHandle m_CpuHandle;
+    RhiCpuHandle m_CpuHandle;
 };
 
-inline RHIResourceView::~RHIResourceView() { }
+inline RhiResourceView::~RhiResourceView() { }
 
-class RHIShaderVisibleResourceView : public RHIResourceView
+class RhiShaderVisibleResourceView : public RhiResourceView
 {
 public:
-    RHIShaderVisibleResourceView() = default;
-    virtual ~RHIShaderVisibleResourceView() = 0;
-    inline RHIGpuHandle GetGPUHandle() const { return m_GpuHandle; }
+    RhiShaderVisibleResourceView() = default;
+    virtual ~RhiShaderVisibleResourceView() = 0;
+    inline RhiGpuHandle GetGpuHandle() const { return m_GpuHandle; }
 
 protected:
-    RHIGpuHandle m_GpuHandle;
+    RhiGpuHandle m_GpuHandle;
 };
 
-inline RHIShaderVisibleResourceView::~RHIShaderVisibleResourceView() { }
+inline RhiShaderVisibleResourceView::~RhiShaderVisibleResourceView() { }
 
-class RHIRenderTargetView : public RHIResourceView
+class RhiRenderTargetView : public RhiResourceView
 {
 public:
-    RHIRenderTargetView() = default;
-    ~RHIRenderTargetView() = default;
+    RhiRenderTargetView() = default;
+    ~RhiRenderTargetView() = default;
 };
 
-class RHIDepthStencilView : public RHIResourceView
+class RhiDepthStencilView : public RhiResourceView
 {
 public:
-    RHIDepthStencilView() = default;
-    ~RHIDepthStencilView() = default;
+    RhiDepthStencilView() = default;
+    ~RhiDepthStencilView() = default;
 };
 
-class RHIShaderResourceView : public RHIShaderVisibleResourceView
+class RhiShaderResourceView : public RhiShaderVisibleResourceView
 {
 public:
-    RHIShaderResourceView() = default;
-    ~RHIShaderResourceView() = default;
+    RhiShaderResourceView() = default;
+    ~RhiShaderResourceView() = default;
 };
 
-class RHIConstantBufferView : public RHIShaderVisibleResourceView
+class RhiConstantBufferView : public RhiShaderVisibleResourceView
 {
 public:
-    RHIConstantBufferView() = default;
-    ~RHIConstantBufferView() = default;
+    RhiConstantBufferView() = default;
+    ~RhiConstantBufferView() = default;
 };
 
-class RHIUnorderedAccessView : public RHIShaderVisibleResourceView
+class RhiUnorderedAccessView : public RhiShaderVisibleResourceView
 {
 public:
-    RHIUnorderedAccessView() = default;
-    ~RHIUnorderedAccessView() = default;
+    RhiUnorderedAccessView() = default;
+    ~RhiUnorderedAccessView() = default;
 };
 
 ETH_NAMESPACE_END

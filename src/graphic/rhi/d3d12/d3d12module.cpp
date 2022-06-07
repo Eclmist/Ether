@@ -22,29 +22,29 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIResult D3D12Module::Initialize()
+RhiResult D3D12Module::Initialize()
 {
     InitializeDebugLayer();
-	RHIResult result = InitializeAdapter();
+	RhiResult result = InitializeAdapter();
 
     return result;
 }
 
-RHIResult D3D12Module::Shutdown()
+RhiResult D3D12Module::Shutdown()
 {
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12Module::CreateDevice(RHIDeviceHandle& device) const
+RhiResult D3D12Module::CreateDevice(RhiDeviceHandle& device) const
 {
     D3D12Device* d3d12Device = new D3D12Device();
     device.Set(d3d12Device);
 
     HRESULT hr = D3D12CreateDevice(m_Adapter.Get(), D3D12_MINIMUM_FEATURE_LEVEL, IID_PPV_ARGS(&d3d12Device->m_Device));
-    return FAILED(hr) ? RHIResult::Failure : RHIResult::Success;
+    return FAILED(hr) ? RhiResult::Failure : RhiResult::Success;
 }
 
-RHIResult D3D12Module::InitializeAdapter()
+RhiResult D3D12Module::InitializeAdapter()
 {
 	wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
 
@@ -56,7 +56,7 @@ RHIResult D3D12Module::InitializeAdapter()
     if (useWarp)
     {
         HRESULT hr = dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&m_Adapter));
-        return TO_RHI_RESULT(hr);
+        return TO_Rhi_RESULT(hr);
     }
 
     SIZE_T maxDedicatedVideoMemory = 0;
@@ -79,20 +79,20 @@ RHIResult D3D12Module::InitializeAdapter()
 
         maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
         ASSERT_SUCCESS(dxgiAdapter1.As(&m_Adapter));
-        return RHIResult::Success;
+        return RhiResult::Success;
     }
 
-    return RHIResult::Failure;
+    return RhiResult::Failure;
 }
 
-RHIResult D3D12Module::InitializeDebugLayer()
+RhiResult D3D12Module::InitializeDebugLayer()
 {
 #if defined(_DEBUG)
     wrl::ComPtr<ID3D12Debug> debugInterface;
     ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
 #endif
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
 ETH_NAMESPACE_END

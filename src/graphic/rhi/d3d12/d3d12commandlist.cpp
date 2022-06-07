@@ -28,83 +28,83 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIResult D3D12CommandList::SetViewport(const RHIViewportDesc& viewport)
+RhiResult D3D12CommandList::SetViewport(const RhiViewportDesc& viewport)
 {
     D3D12_VIEWPORT d3d12viewport = Translate(viewport);
     m_CommandList->RSSetViewports(1, &d3d12viewport);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetScissor(const RHIScissorDesc& scissor)
+RhiResult D3D12CommandList::SetScissor(const RhiScissorDesc& scissor)
 {
     D3D12_RECT scissorRect = Translate(scissor);
     m_CommandList->RSSetScissorRects(1, &scissorRect);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetStencilRef(const RHIStencilValue& val)
+RhiResult D3D12CommandList::SetStencilRef(const RhiStencilValue& val)
 {
     m_CommandList->OMSetStencilRef(val);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology)
+RhiResult D3D12CommandList::SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology)
 {
     m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetPipelineState(const RHIPipelineStateHandle pipelineState)
+RhiResult D3D12CommandList::SetPipelineState(const RhiPipelineStateHandle pipelineState)
 {
     const auto d3dPipelineState = pipelineState.As<D3D12PipelineState>();
     m_CommandList->SetPipelineState(d3dPipelineState->m_PipelineState.Get());
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature)
+RhiResult D3D12CommandList::SetGraphicRootSignature(const RhiRootSignatureHandle rootSignature)
 {
     const auto d3dRootSignature = rootSignature.As<D3D12RootSignature>();
     m_CommandList->SetGraphicsRootSignature(d3dRootSignature->m_RootSignature.Get());
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer)
+RhiResult D3D12CommandList::SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer)
 {
     const auto d3dResource = vertexBuffer.m_Resource.As<D3D12Resource>();
     D3D12_VERTEX_BUFFER_VIEW d3dView = Translate(vertexBuffer);
     d3dView.BufferLocation = d3dResource->GetGpuHandle().m_Ptr;
     m_CommandList->IASetVertexBuffers(0, 1, &d3dView);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer)
+RhiResult D3D12CommandList::SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer)
 {
     const auto d3dResource = indexBuffer.m_Resource.As<D3D12Resource>();
     D3D12_INDEX_BUFFER_VIEW d3dView = Translate(indexBuffer);
     d3dView.BufferLocation = d3dResource->GetGpuHandle().m_Ptr;
     m_CommandList->IASetIndexBuffer(&d3dView);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetRenderTargets(const RHISetRenderTargetsDesc& desc)
+RhiResult D3D12CommandList::SetRenderTargets(const RhiSetRenderTargetsDesc& desc)
 {
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
-		rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCPUAddress());
+		rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCpuAddress());
 
     m_CommandList->OMSetRenderTargets
     (
         desc.m_NumRTV,
         rtvHandles,
         false,
-        desc.m_DSVHandle.IsNull() ? nullptr : &Translate(desc.m_DSVHandle->GetCPUAddress())
+        desc.m_DSVHandle.IsNull() ? nullptr : &Translate(desc.m_DSVHandle->GetCpuAddress())
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetRootConstants(const RHISetRootConstantsDesc& desc)
+RhiResult D3D12CommandList::SetRootConstants(const RhiSetRootConstantsDesc& desc)
 {
     m_CommandList->SetGraphicsRoot32BitConstants
     (
@@ -114,21 +114,21 @@ RHIResult D3D12CommandList::SetRootConstants(const RHISetRootConstantsDesc& desc
         desc.m_DestOffset
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc)
+RhiResult D3D12CommandList::SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc)
 {
     m_CommandList->SetGraphicsRootDescriptorTable
     (
         desc.m_RootParameterIndex,
-        Translate(desc.m_BaseSRVHandle->GetGPUHandle())
+        Translate(desc.m_BaseSRVHandle->GetGpuHandle())
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetRootShaderResource(const RHISetRootShaderResourceDesc& desc)
+RhiResult D3D12CommandList::SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc)
 {
     m_CommandList->SetGraphicsRootShaderResourceView
     (
@@ -136,10 +136,10 @@ RHIResult D3D12CommandList::SetRootShaderResource(const RHISetRootShaderResource
         desc.m_Resource->GetGpuHandle().m_Ptr
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetRootConstantBuffer(const RHISetRootConstantBufferDesc& desc)
+RhiResult D3D12CommandList::SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc)
 {
     m_CommandList->SetGraphicsRootConstantBufferView
     (
@@ -147,10 +147,10 @@ RHIResult D3D12CommandList::SetRootConstantBuffer(const RHISetRootConstantBuffer
         desc.m_Resource->GetGpuHandle().m_Ptr
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc)
+RhiResult D3D12CommandList::SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc)
 {
     std::vector<ID3D12DescriptorHeap*> heaps;
     for (int i = 0; i < desc.m_NumHeaps; ++i)
@@ -158,10 +158,10 @@ RHIResult D3D12CommandList::SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& 
 
     m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps.data());
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc)
+RhiResult D3D12CommandList::ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc)
 {
     float clearColor[] = 
     {
@@ -173,20 +173,20 @@ RHIResult D3D12CommandList::ClearRenderTargetView(const RHIClearRenderTargetView
 
     m_CommandList->ClearRenderTargetView
     (
-        Translate(desc.m_RTVHandle->GetCPUAddress()),
+        Translate(desc.m_RTVHandle->GetCpuAddress()),
         clearColor,
         0,
         nullptr
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc)
+RhiResult D3D12CommandList::ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc)
 {
     m_CommandList->ClearDepthStencilView
     (
-        Translate(desc.m_DSVHandle->GetCPUAddress()),
+        Translate(desc.m_DSVHandle->GetCpuAddress()),
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
         desc.m_ClearDepth,
         desc.m_ClearStencil,
@@ -194,10 +194,10 @@ RHIResult D3D12CommandList::ClearDepthStencilView(const RHIClearDepthStencilView
         nullptr
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::CopyBufferRegion(const RHICopyBufferRegionDesc& desc)
+RhiResult D3D12CommandList::CopyBufferRegion(const RhiCopyBufferRegionDesc& desc)
 {
     const auto d3dSrcResource = desc.m_Source.As<D3D12Resource>();
     const auto d3dDestResource = desc.m_Destination.As<D3D12Resource>();
@@ -211,10 +211,10 @@ RHIResult D3D12CommandList::CopyBufferRegion(const RHICopyBufferRegionDesc& desc
         desc.m_Size
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::CopyTextureRegion(const RHICopyTextureRegionDesc& desc)
+RhiResult D3D12CommandList::CopyTextureRegion(const RhiCopyTextureRegionDesc& desc)
 {
     const auto d3dSrcResource = desc.m_Source.As<D3D12Resource>();
     const auto d3dDestResource = desc.m_Destination.As<D3D12Resource>();
@@ -236,19 +236,19 @@ RHIResult D3D12CommandList::CopyTextureRegion(const RHICopyTextureRegionDesc& de
         &textureData
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::TransitionResource(const RHIResourceTransitionDesc& desc)
+RhiResult D3D12CommandList::TransitionResource(const RhiResourceTransitionDesc& desc)
 {
     D3D12_RESOURCE_BARRIER barrier = Translate(desc);
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
     barrier.Transition.pResource = d3dResource->m_Resource.Get();
     m_CommandList->ResourceBarrier(1, &barrier);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::DrawInstanced(const RHIDrawInstancedDesc& desc)
+RhiResult D3D12CommandList::DrawInstanced(const RhiDrawInstancedDesc& desc)
 {
     m_CommandList->DrawInstanced
     (
@@ -258,10 +258,10 @@ RHIResult D3D12CommandList::DrawInstanced(const RHIDrawInstancedDesc& desc)
         desc.m_FirstInstance
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::DrawIndexedInstanced(const RHIDrawIndexedInstancedDesc& desc)
+RhiResult D3D12CommandList::DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc)
 {
     m_CommandList->DrawIndexedInstanced
     (
@@ -272,20 +272,20 @@ RHIResult D3D12CommandList::DrawIndexedInstanced(const RHIDrawIndexedInstancedDe
         desc.m_FirstInstance
     );
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandList::Reset(const RHICommandAllocatorHandle commandAllocator)
+RhiResult D3D12CommandList::Reset(const RhiCommandAllocatorHandle commandAllocator)
 {
     const auto allocator = commandAllocator.As<D3D12CommandAllocator>();
     HRESULT hr = m_CommandList->Reset(allocator->m_Allocator.Get(), nullptr);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12CommandList::Close()
+RhiResult D3D12CommandList::Close()
 {
     HRESULT hr = m_CommandList->Close();
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

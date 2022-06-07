@@ -22,78 +22,78 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIResult RHIPipelineState::SetBlendState(const RHIBlendDesc& desc)
+RhiResult RhiPipelineState::SetBlendState(const RhiBlendDesc& desc)
 {
     m_CreationDesc.m_BlendDesc = desc;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetRasterizerState(const RHIRasterizerDesc& desc)
+RhiResult RhiPipelineState::SetRasterizerState(const RhiRasterizerDesc& desc)
 {
     m_CreationDesc.m_RasterizerDesc = desc;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetInputLayout(const RHIInputLayoutDesc& desc)
+RhiResult RhiPipelineState::SetInputLayout(const RhiInputLayoutDesc& desc)
 {
     m_CreationDesc.m_InputLayoutDesc = desc;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetPrimitiveTopology(RHIPrimitiveTopologyType type)
+RhiResult RhiPipelineState::SetPrimitiveTopology(RhiPrimitiveTopologyType type)
 {
     m_CreationDesc.m_PrimitiveTopologyType = type;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetDepthStencilState(const RHIDepthStencilDesc& desc)
+RhiResult RhiPipelineState::SetDepthStencilState(const RhiDepthStencilDesc& desc)
 {
     m_CreationDesc.m_DepthStencilDesc = desc;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetDepthTargetFormat(RHIFormat dsvFormat)
+RhiResult RhiPipelineState::SetDepthTargetFormat(RhiFormat dsvFormat)
 {
     m_CreationDesc.m_DSVFormat = dsvFormat;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetRenderTargetFormat(RHIFormat rtvFormat)
+RhiResult RhiPipelineState::SetRenderTargetFormat(RhiFormat rtvFormat)
 {
     return SetRenderTargetFormats(1, &rtvFormat);
 }
 
-RHIResult RHIPipelineState::SetRenderTargetFormats(uint32_t numRtv, const RHIFormat* rtvFormats)
+RhiResult RhiPipelineState::SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats)
 {
     m_CreationDesc.m_NumRenderTargets = numRtv;
     for (int i = 0; i < numRtv; ++i)
         m_CreationDesc.m_RTVFormats[i] = rtvFormats[i];
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)
+RhiResult RhiPipelineState::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)
 {
     m_CreationDesc.m_SampleDesc.m_NumMsaaSamples = numMsaaSamples;
     m_CreationDesc.m_SampleDesc.m_MsaaQuality = msaaQuality;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetVertexShader(const void* binary, size_t size)
+RhiResult RhiPipelineState::SetVertexShader(const void* binary, size_t size)
 {
     m_CreationDesc.m_VS.m_Bytecode = binary;
     m_CreationDesc.m_VS.m_BytecodeLength = size;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::SetPixelShader(const void* binary, size_t size)
+RhiResult RhiPipelineState::SetPixelShader(const void* binary, size_t size)
 {
     m_CreationDesc.m_PS.m_Bytecode = binary;
     m_CreationDesc.m_PS.m_BytecodeLength = size;
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult RHIPipelineState::Finalize(RHIPipelineStateHandle& pipelineState)
+RhiResult RhiPipelineState::Finalize(RhiPipelineStateHandle& pipelineState)
 {
     m_CreationDesc.m_RootSignature = m_RootSignature;
     return GraphicCore::GetDevice()->CreatePipelineState(m_CreationDesc, pipelineState);

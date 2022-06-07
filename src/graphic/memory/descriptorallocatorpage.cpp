@@ -22,11 +22,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-//DescriptorAllocatorPage::DescriptorAllocatorPage(RHIDescriptorHeapType type, uint32_t numDescriptors)
+//DescriptorAllocatorPage::DescriptorAllocatorPage(RhiDescriptorHeapType type, uint32_t numDescriptors)
 //    : m_HeapType(type)
 //    , m_NumDescriptorsInHeap(numDescriptors)
 //{
-//    RHIDescriptorHeapDesc heapDesc = {};
+//    RhiDescriptorHeapDesc heapDesc = {};
 //    heapDesc.m_Type = m_HeapType;
 //    heapDesc.m_NumDescriptors = m_NumDescriptorsInHeap;
 //

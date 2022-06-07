@@ -27,46 +27,46 @@ ResourceContext::ResourceContext(CommandContext& context, const std::wstring& na
 {
 }
 
-bool ResourceContext::CreateBufferResource(uint32_t size, RHIResourceHandle& resource)
+bool ResourceContext::CreateBufferResource(uint32_t size, RhiResourceHandle& resource)
 {
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::Common;
-    desc.m_ResourceDesc = RHICreateBufferResourceDesc(size);
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::Common;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(size);
 
     return CreateResource(desc, resource);
 }
 
-bool ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource)
+bool ResourceContext::CreateTexture2DResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource)
 {
-    RHIClearValue clearValue = { format, { 0, 0, 0, 0 } };
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::Common;
+    RhiClearValue clearValue = { format, { 0, 0, 0, 0 } };
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::Common;
     desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RHICreateTexture2DResourceDesc(format, width, height);
+    desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, width, height);
 
     return CreateResource(desc, resource);
 }
 
-bool ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RHIFormat format, RHIResourceHandle& resource)
+bool ResourceContext::CreateDepthStencilResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource)
 {
-    RHIClearValue clearValue = { format, { 1.0, 0 } };
-    RHICommitedResourceDesc desc = {};
-    desc.m_HeapType = RHIHeapType::Default;
-    desc.m_State = RHIResourceState::DepthWrite;
+    RhiClearValue clearValue = { format, { 1.0, 0 } };
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::DepthWrite;
     desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RHICreateDepthStencilResourceDesc(format, width, height);
+    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(format, width, height);
 
     return CreateResource(desc, resource);
 }
 
-bool ResourceContext::CreateRenderTargetView(RHIResourceHandle resource, RHIRenderTargetViewHandle& view)
+bool ResourceContext::CreateRenderTargetView(RhiResourceHandle resource, RhiRenderTargetViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-    RHIRenderTargetViewDesc rtvDesc = {};
+    RhiRenderTargetViewDesc rtvDesc = {};
     rtvDesc.m_Format = GetResourceFormat(resource.GetName());
     rtvDesc.m_Resource = resource;
     GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, view);
@@ -75,12 +75,12 @@ bool ResourceContext::CreateRenderTargetView(RHIResourceHandle resource, RHIRend
     return true;
 }
 
-bool ResourceContext::CreateDepthStencilView(RHIResourceHandle resource, RHIDepthStencilViewHandle& view)
+bool ResourceContext::CreateDepthStencilView(RhiResourceHandle resource, RhiDepthStencilViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-	RHIDepthStencilViewDesc dsvDesc = {};
+	RhiDepthStencilViewDesc dsvDesc = {};
 	dsvDesc.m_Format = GetResourceFormat(resource.GetName());
 	dsvDesc.m_Resource = resource;
 	GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
@@ -89,14 +89,14 @@ bool ResourceContext::CreateDepthStencilView(RHIResourceHandle resource, RHIDept
     return true;
 }
 
-bool ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHIShaderResourceViewHandle& view)
+bool ResourceContext::CreateShaderResourceView(RhiResourceHandle resource, RhiShaderResourceViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-    RHIShaderResourceViewDesc srvDesc = {};
+    RhiShaderResourceViewDesc srvDesc = {};
     srvDesc.m_Format = GetResourceFormat(resource.GetName());
-    srvDesc.m_Dimensions = RHIShaderResourceDims::Texture2D;
+    srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
     srvDesc.m_Resource = resource;
     GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
@@ -104,14 +104,14 @@ bool ResourceContext::CreateShaderResourceView(RHIResourceHandle resource, RHISh
     return true;
 }
 
-bool ResourceContext::CreateShaderResourceViewCube(RHIResourceHandle resource, RHIShaderResourceViewHandle& view)
+bool ResourceContext::CreateShaderResourceViewCube(RhiResourceHandle resource, RhiShaderResourceViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-    RHIShaderResourceViewDesc srvDesc = {};
+    RhiShaderResourceViewDesc srvDesc = {};
     srvDesc.m_Format = GetResourceFormat(resource.GetName());
-    srvDesc.m_Dimensions = RHIShaderResourceDims::TextureCube;
+    srvDesc.m_Dimensions = RhiShaderResourceDims::TextureCube;
     srvDesc.m_Resource = resource;
     GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
@@ -120,12 +120,12 @@ bool ResourceContext::CreateShaderResourceViewCube(RHIResourceHandle resource, R
 }
 
 
-bool ResourceContext::CreateConstantBufferView(uint32_t bufferSize, RHIResourceHandle resource, RHIConstantBufferViewHandle& view)
+bool ResourceContext::CreateConstantBufferView(uint32_t bufferSize, RhiResourceHandle resource, RhiConstantBufferViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-    RHIConstantBufferViewDesc cbvDesc = {};
+    RhiConstantBufferViewDesc cbvDesc = {};
     cbvDesc.m_Resource = resource;
     cbvDesc.m_BufferSize = bufferSize;
     GraphicCore::GetDevice()->CreateConstantBufferView(cbvDesc, view);
@@ -134,7 +134,7 @@ bool ResourceContext::CreateConstantBufferView(uint32_t bufferSize, RHIResourceH
     return true;
 }
 
-bool ResourceContext::CreateUnorderedAccessView(RHIResourceHandle resource, RHIUnorderedAccessViewHandle& view)
+bool ResourceContext::CreateUnorderedAccessView(RhiResourceHandle resource, RhiUnorderedAccessViewHandle& view)
 {
     if (ResourceExists(view.GetName()))
         return false;
@@ -177,7 +177,7 @@ void ResourceContext::Reset()
     m_NewlyCreatedResources.clear();
 }
 
-bool ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resource)
+bool ResourceContext::CreateResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resource)
 {
     if (!ShouldRecreateResource(resource.GetName(), desc))
         return false;
@@ -185,7 +185,7 @@ bool ResourceContext::CreateResource(const RHICommitedResourceDesc& desc, RHIRes
     if (!resource.IsNull())
         resource.Destroy();
 
-    if (GraphicCore::GetDevice()->CreateCommittedResource(desc, resource) != RHIResult::Success)
+    if (GraphicCore::GetDevice()->CreateCommittedResource(desc, resource) != RhiResult::Success)
     {
         LogGraphicsError("Failed to create commited resource %s", resource.GetName());
         return false;
@@ -204,7 +204,7 @@ bool ResourceContext::ResourceExists(const std::wstring& resourceID) const
     return m_ResourceEntries.find(resourceID) != m_ResourceEntries.end();
 }
 
-bool ResourceContext::ShouldRecreateResource(const std::wstring& resourceID, const RHICommitedResourceDesc& desc) const
+bool ResourceContext::ShouldRecreateResource(const std::wstring& resourceID, const RhiCommitedResourceDesc& desc) const
 {
     AssertGraphics(resourceID != L"", "Resource name invalid - Resource context require unique names for resource table entries");
 
@@ -235,10 +235,10 @@ bool ResourceContext::ShouldRecreateView(const std::wstring& resourceID) const
     return m_NewlyCreatedResources.find(resourceID) != m_NewlyCreatedResources.end();
 }
 
-RHIFormat ResourceContext::GetResourceFormat(const std::wstring& resourceID) const
+RhiFormat ResourceContext::GetResourceFormat(const std::wstring& resourceID) const
 {
     if (!ResourceExists(resourceID))
-        return RHIFormat::Unknown;
+        return RhiFormat::Unknown;
 
     return m_ResourceTable.find(resourceID)->second.m_ResourceDesc.m_Format;
 }

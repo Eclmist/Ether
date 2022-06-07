@@ -24,7 +24,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-CommandContext::CommandContext(RHICommandListType type, const std::wstring& contextName)
+CommandContext::CommandContext(RhiCommandListType type, const std::wstring& contextName)
     : m_Type(type)
     , m_ContextName(contextName)
 {
@@ -45,17 +45,17 @@ void CommandContext::Reset()
     m_CommandList->Reset(m_CommandAllocator);
 }
 
-RHIFenceValue CommandContext::GetCompletionFenceValue() const
+RhiFenceValue CommandContext::GetCompletionFenceValue() const
 {
     return GetCommandQueue()->GetCompletionFenceValue();
 }
 
-void CommandContext::TransitionResource(RHIResourceHandle target, RHIResourceState newState)
+void CommandContext::TransitionResource(RhiResourceHandle target, RhiResourceState newState)
 {
     if (target->GetCurrentState() == newState)
         return;
 
-    RHIResourceTransitionDesc transitionDesc = {};
+    RhiResourceTransitionDesc transitionDesc = {};
     transitionDesc.m_Resource = target;
     transitionDesc.m_FromState = target->GetCurrentState();
     transitionDesc.m_ToState = newState;
@@ -63,22 +63,22 @@ void CommandContext::TransitionResource(RHIResourceHandle target, RHIResourceSta
     target->SetState(newState);
 }
 
-void CommandContext::CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t srcOffset, size_t destOffset)
+void CommandContext::CopyBufferRegion(RhiResourceHandle src, RhiResourceHandle dest, size_t size, size_t srcOffset, size_t destOffset)
 {
-    RHICopyBufferRegionDesc desc = {};
+    RhiCopyBufferRegionDesc desc = {};
     desc.m_Source = src;
     desc.m_SourceOffset = srcOffset;
     desc.m_Destination = dest;
     desc.m_DestinationOffset = destOffset;
     desc.m_Size = size;
 
-    TransitionResource(dest, RHIResourceState::CopyDest);
+    TransitionResource(dest, RhiResourceState::CopyDest);
     m_CommandList->CopyBufferRegion(desc);
 }
 
-void CommandContext::CopyTextureRegion(RHIResourceHandle src, RHIResourceHandle dest, const CompiledTexture& texture)
+void CommandContext::CopyTextureRegion(RhiResourceHandle src, RhiResourceHandle dest, const CompiledTexture& texture)
 {
-    RHICopyTextureRegionDesc desc = {};
+    RhiCopyTextureRegionDesc desc = {};
     desc.m_Source = src;
     desc.m_Destination = dest;
     desc.m_Width = texture.GetWidth();
@@ -87,17 +87,17 @@ void CommandContext::CopyTextureRegion(RHIResourceHandle src, RHIResourceHandle 
     desc.m_BytesPerPixel = texture.GetBytesPerPixel();
     desc.m_Data = texture.GetData();
 
-    TransitionResource(dest, RHIResourceState::CopyDest);
+    TransitionResource(dest, RhiResourceState::CopyDest);
     m_CommandList->CopyTextureRegion(desc);
 }
 
-void CommandContext::InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset)
+void CommandContext::InitializeBufferRegion(RhiResourceHandle dest, const void* data, size_t size, size_t destOffset)
 {
     UploadBufferAllocation alloc = m_UploadBufferAllocator.Allocate(size);
     alloc.SetBufferData(data, size);
 
     CopyBufferRegion(alloc.GetUploadBuffer().GetResource(), dest, size, alloc.GetOffset());
-    TransitionResource(dest, RHIResourceState::GenericRead);
+    TransitionResource(dest, RhiResourceState::GenericRead);
 }
 
 void CommandContext::InitializeTexture(const CompiledTexture& texture)
@@ -106,7 +106,7 @@ void CommandContext::InitializeTexture(const CompiledTexture& texture)
     UploadBufferAllocation alloc = m_UploadBufferAllocator.Allocate(size);
 
     CopyTextureRegion(alloc.GetUploadBuffer().GetResource(), texture.GetResource(), texture);
-    TransitionResource(texture.GetResource(), RHIResourceState::GenericRead);
+    TransitionResource(texture.GetResource(), RhiResourceState::GenericRead);
 }
 
 void CommandContext::FinalizeAndExecute(bool waitForCompletion)
@@ -120,9 +120,9 @@ void CommandContext::FinalizeAndExecute(bool waitForCompletion)
         m_CommandQueue->Flush();
 }
 
-void CommandContext::InitializeBufferTemp(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset)
+void CommandContext::InitializeBufferTemp(RhiResourceHandle dest, const void* data, size_t size, size_t destOffset)
 {
-    CommandContext context(RHICommandListType::Graphic, L"BufferUploadContext");
+    CommandContext context(RhiCommandListType::Graphic, L"BufferUploadContext");
     context.InitializeBufferRegion(dest, data, size, destOffset);
     context.FinalizeAndExecute(true);
 }

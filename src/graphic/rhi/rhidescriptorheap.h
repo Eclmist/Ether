@@ -21,20 +21,20 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIDescriptorHeap
+class RhiDescriptorHeap
 {
 public:
-    RHIDescriptorHeap() = default;
-    virtual ~RHIDescriptorHeap() = default;
+    RhiDescriptorHeap() = default;
+    virtual ~RhiDescriptorHeap() = default;
 
 public:
-    virtual RHICpuHandle GetBaseHandleCPU() const = 0;
-    virtual RHIGpuHandle GetBaseHandleGPU() const = 0;
+    virtual RhiCpuHandle GetBaseHandleCpu() const = 0;
+    virtual RhiGpuHandle GetBaseGpuHandle() const = 0;
 
-    virtual RHICpuHandle GetNextHandleCPU() const = 0;
-    virtual RHIGpuHandle GetNextHandleGPU() const = 0;
+    virtual RhiCpuHandle GetNextCpuHandle() const = 0;
+    virtual RhiGpuHandle GetNextGpuHandle() const = 0;
 
-    virtual RHIResult IncrementHandle() = 0;
+    virtual RhiResult IncrementHandle() = 0;
 
 };
 

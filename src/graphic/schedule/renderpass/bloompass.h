@@ -37,15 +37,15 @@ private:
     void InitializePipelineState();
     void InitializeRootSignature();
 
-    void GaussianHorizontalPass(GraphicContext& context, RHIShaderResourceViewHandle src, RHIRenderTargetViewHandle dest);
+    void GaussianHorizontalPass(GraphicContext& context, RhiShaderResourceViewHandle src, RhiRenderTargetViewHandle dest);
 
 
 private:
-    RHIPipelineStateHandle m_PipelineStateGaussianH;
-    RHIPipelineStateHandle m_PipelineStateBloomHighpass;
-    RHIPipelineStateHandle m_PipelineStateBloomComposite;
-    RHIRootSignatureHandle m_RootSignature;
-    RHIRootSignatureHandle m_RootSignature2;
+    RhiPipelineStateHandle m_PipelineStateGaussianH;
+    RhiPipelineStateHandle m_PipelineStateBloomHighpass;
+    RhiPipelineStateHandle m_PipelineStateBloomComposite;
+    RhiRootSignatureHandle m_RootSignature;
+    RhiRootSignatureHandle m_RootSignature2;
 
     std::unique_ptr<Shader> m_GaussianVS;
     std::unique_ptr<Shader> m_GaussianHorizontalPS;

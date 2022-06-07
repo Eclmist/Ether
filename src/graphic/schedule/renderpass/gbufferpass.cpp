@@ -77,13 +77,13 @@ void GBufferPass::Initialize()
 
 void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-    RHIViewportDesc vp = context.GetViewport();
+    RhiViewportDesc vp = context.GetViewport();
     
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferAlbedoTexture));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferSpecularTexture));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferNormalTexture));
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPositionTexture));
-    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RHIFormat::D24UnormS8Uint, GFX_RESOURCE(GBufferDepthTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferAlbedoTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(GBufferSpecularTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferNormalTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R32G32B32A32Float, GFX_RESOURCE(GBufferPositionTexture));
+    rc.CreateDepthStencilResource(vp.m_Width, vp.m_Height, RhiFormat::D24UnormS8Uint, GFX_RESOURCE(GBufferDepthTexture));
 
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferAlbedoTexture), GFX_RTV(GBufferAlbedoTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferSpecularTexture), GFX_RTV(GBufferSpecularTexture));
@@ -97,7 +97,7 @@ void GBufferPass::RegisterInputOutput(GraphicContext& context, ResourceContext& 
     rc.CreateConstantBufferView(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
 
 #ifdef ETH_TOOLMODE
-    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RHIFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));
+    rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(EntityPickerTexture), GFX_RTV(EntityPickerTexture));
 
 #endif
@@ -119,10 +119,10 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         m_PixelShader->SetRecompiled(false);
     }
 
-    context.TransitionResource(GFX_RESOURCE(GBufferAlbedoTexture), RHIResourceState::RenderTarget);
-    context.TransitionResource(GFX_RESOURCE(GBufferSpecularTexture), RHIResourceState::RenderTarget);
-    context.TransitionResource(GFX_RESOURCE(GBufferNormalTexture), RHIResourceState::RenderTarget);
-    context.TransitionResource(GFX_RESOURCE(GBufferPositionTexture), RHIResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferAlbedoTexture), RhiResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferSpecularTexture), RhiResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferNormalTexture), RhiResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(GBufferPositionTexture), RhiResourceState::RenderTarget);
 
     context.ClearColor(GFX_RTV(GBufferAlbedoTexture));
     context.ClearColor(GFX_RTV(GBufferSpecularTexture));
@@ -130,11 +130,11 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.ClearColor(GFX_RTV(GBufferPositionTexture));
 
 #ifdef ETH_TOOLMODE
-    context.TransitionResource(GFX_RESOURCE(EntityPickerTexture), RHIResourceState::RenderTarget);
+    context.TransitionResource(GFX_RESOURCE(EntityPickerTexture), RhiResourceState::RenderTarget);
     context.ClearColor(GFX_RTV(EntityPickerTexture), ethVector4());
 #endif
 
-    RHIRenderTargetViewHandle rtvs[NUM_GBUFFER_RENDER_TARGETS] =
+    RhiRenderTargetViewHandle rtvs[NUM_GBUFFER_RENDER_TARGETS] =
     { 
         GFX_RTV(GBufferAlbedoTexture),
         GFX_RTV(GBufferSpecularTexture),
@@ -152,7 +152,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
-    context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleList);
+    context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
 
@@ -219,8 +219,8 @@ void GBufferPass::InitializeDepthStencilState()
 {
     m_DepthStencilState = GraphicCore::GetGraphicCommon().m_DepthStateReadWrite;
     m_DepthStencilState.m_StencilEnabled = true;
-    m_DepthStencilState.m_FrontFace.m_StencilFunc = RHIComparator::Always;
-    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RHIDepthStencilOperation::Replace;
+    m_DepthStencilState.m_FrontFace.m_StencilFunc = RhiComparator::Always;
+    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RhiDepthStencilOperation::Replace;
     m_DepthStencilState.m_BackFace = m_DepthStencilState.m_FrontFace;
 }
 
@@ -228,26 +228,26 @@ void GBufferPass::InitializePipelineState()
 {
     m_PipelineState.SetName(L"GBufferPass::PipelineState");
 
-    RHIPipelineState creationPSO;
+    RhiPipelineState creationPSO;
     creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
     creationPSO.SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefault);
-    creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
+    creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
 
-    RHIFormat formats[NUM_GBUFFER_RENDER_TARGETS] = { 
-        RHIFormat::R8G8B8A8Unorm,
-        RHIFormat::R8G8B8A8Unorm,
-        RHIFormat::R32G32B32A32Float,
-        RHIFormat::R32G32B32A32Float,
+    RhiFormat formats[NUM_GBUFFER_RENDER_TARGETS] = { 
+        RhiFormat::R8G8B8A8Unorm,
+        RhiFormat::R8G8B8A8Unorm,
+        RhiFormat::R32G32B32A32Float,
+        RhiFormat::R32G32B32A32Float,
 #ifdef ETH_TOOLMODE
-        RHIFormat::R8G8B8A8Unorm,
+        RhiFormat::R8G8B8A8Unorm,
 #endif
     };
 
     creationPSO.SetRenderTargetFormats(NUM_GBUFFER_RENDER_TARGETS, formats);
-    creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
@@ -258,14 +258,14 @@ void GBufferPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"GBufferPass::RootSignature");
 
-    RHIRootSignature tempRS(4, 3);
+    RhiRootSignature tempRS(4, 3);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
-    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsConstantBufferView({ 1, 0, RHIShaderVisibility::All });
-    tempRS[2]->SetAsConstantBufferView({ 2, 0, RHIShaderVisibility::All });
-    tempRS[3]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 });
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
+    tempRS[1]->SetAsConstantBufferView({ 1, 0, RhiShaderVisibility::All });
+    tempRS[2]->SetAsConstantBufferView({ 2, 0, RhiShaderVisibility::All });
+    tempRS[3]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
 }

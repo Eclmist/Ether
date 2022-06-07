@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12RootSignature : public RHIRootSignature
+class D3D12RootSignature : public RhiRootSignature
 {
 public:
     D3D12RootSignature();

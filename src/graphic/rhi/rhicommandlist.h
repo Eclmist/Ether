@@ -21,46 +21,46 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHICommandList
+class RhiCommandList
 {
 public:
-    RHICommandList(RHICommandListType type) : m_Type(type) {}
-	virtual ~RHICommandList() = default;
+    RhiCommandList(RhiCommandListType type) : m_Type(type) {}
+	virtual ~RhiCommandList() = default;
 
 public:
-    virtual RHIResult SetViewport(const RHIViewportDesc& viewport) = 0;
-    virtual RHIResult SetScissor(const RHIScissorDesc& scissor) = 0;
-    virtual RHIResult SetStencilRef(const RHIStencilValue& val) = 0;
-    virtual RHIResult SetPrimitiveTopology(RHIPrimitiveTopology primitiveTopology) = 0;
-    virtual RHIResult SetPipelineState(const RHIPipelineStateHandle pipelineState) = 0;
-    virtual RHIResult SetGraphicRootSignature(const RHIRootSignatureHandle rootSignature) = 0;
-    virtual RHIResult SetVertexBuffer(const RHIVertexBufferViewDesc& vertexBuffer) = 0;
-    virtual RHIResult SetIndexBuffer(const RHIIndexBufferViewDesc& indexBuffer) = 0;
-    virtual RHIResult SetRenderTargets(const RHISetRenderTargetsDesc& desc) = 0;
+    virtual RhiResult SetViewport(const RhiViewportDesc& viewport) = 0;
+    virtual RhiResult SetScissor(const RhiScissorDesc& scissor) = 0;
+    virtual RhiResult SetStencilRef(const RhiStencilValue& val) = 0;
+    virtual RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
+    virtual RhiResult SetPipelineState(const RhiPipelineStateHandle pipelineState) = 0;
+    virtual RhiResult SetGraphicRootSignature(const RhiRootSignatureHandle rootSignature) = 0;
+    virtual RhiResult SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer) = 0;
+    virtual RhiResult SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) = 0;
+    virtual RhiResult SetRenderTargets(const RhiSetRenderTargetsDesc& desc) = 0;
 
-    virtual RHIResult SetRootConstants(const RHISetRootConstantsDesc& desc) = 0;
-    virtual RHIResult SetRootDescriptorTable(const RHISetRootDescriptorTableDesc& desc) = 0;
-    virtual RHIResult SetRootShaderResource(const RHISetRootShaderResourceDesc& desc) = 0;
-    virtual RHIResult SetRootConstantBuffer(const RHISetRootConstantBufferDesc& desc) = 0;
-    virtual RHIResult SetDescriptorHeaps(const RHISetDescriptorHeapsDesc& desc) = 0;
+    virtual RhiResult SetRootConstants(const RhiSetRootConstantsDesc& desc) = 0;
+    virtual RhiResult SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc) = 0;
+    virtual RhiResult SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc) = 0;
+    virtual RhiResult SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc) = 0;
+    virtual RhiResult SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) = 0;
 
-    virtual RHIResult ClearRenderTargetView(const RHIClearRenderTargetViewDesc& desc) = 0;
-    virtual RHIResult ClearDepthStencilView(const RHIClearDepthStencilViewDesc& desc) = 0;
+    virtual RhiResult ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) = 0;
+    virtual RhiResult ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
 
-    virtual RHIResult CopyBufferRegion(const RHICopyBufferRegionDesc& desc) = 0;
-    virtual RHIResult CopyTextureRegion(const RHICopyTextureRegionDesc& desc) = 0;
-    virtual RHIResult TransitionResource(const RHIResourceTransitionDesc& desc) = 0;
-    virtual RHIResult DrawInstanced(const RHIDrawInstancedDesc& desc) = 0;
-    virtual RHIResult DrawIndexedInstanced(const RHIDrawIndexedInstancedDesc& desc) = 0;
+    virtual RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
+    virtual RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
+    virtual RhiResult TransitionResource(const RhiResourceTransitionDesc& desc) = 0;
+    virtual RhiResult DrawInstanced(const RhiDrawInstancedDesc& desc) = 0;
+    virtual RhiResult DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) = 0;
 
-    virtual RHIResult Reset(const RHICommandAllocatorHandle commandAllocator) = 0;
-    virtual RHIResult Close() = 0;
+    virtual RhiResult Reset(const RhiCommandAllocatorHandle commandAllocator) = 0;
+    virtual RhiResult Close() = 0;
 
 public:
-    RHICommandListType GetType() const { return m_Type; }
+    RhiCommandListType GetType() const { return m_Type; }
 
 protected:
-    RHICommandListType m_Type;
+    RhiCommandListType m_Type;
 };
 
 ETH_NAMESPACE_END

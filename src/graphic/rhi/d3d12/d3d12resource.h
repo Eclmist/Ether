@@ -23,17 +23,17 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Resource : public RHIResource
+class D3D12Resource : public RhiResource
 {
 public:
     D3D12Resource() = default;
     ~D3D12Resource() override = default;
 
 public:
-    RHIGpuHandle GetGpuHandle() const override;
-    RHIResult SetName(const std::wstring& name) const override;
-    RHIResult Map(void** mappedAddr) const override;
-    RHIResult Unmap() const override;
+    RhiGpuHandle GetGpuHandle() const override;
+    RhiResult SetName(const std::wstring& name) const override;
+    RhiResult Map(void** mappedAddr) const override;
+    RhiResult Unmap() const override;
 
 private:
     friend class D3D12CommandList;

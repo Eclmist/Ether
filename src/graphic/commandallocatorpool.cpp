@@ -23,7 +23,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-CommandAllocatorPool::CommandAllocatorPool(RHICommandListType type)
+CommandAllocatorPool::CommandAllocatorPool(RhiCommandListType type)
     : m_Type(type)
 {
 }
@@ -36,7 +36,7 @@ CommandAllocatorPool::~CommandAllocatorPool()
     m_AllocatorPool.clear();
 }
 
-RHICommandAllocatorHandle CommandAllocatorPool::RequestAllocator(RHIFenceValue completedFenceValue)
+RhiCommandAllocatorHandle CommandAllocatorPool::RequestAllocator(RhiFenceValue completedFenceValue)
 {
     if (m_DiscardedAllocators.empty())
         return CreateNewAllocator();
@@ -44,20 +44,20 @@ RHICommandAllocatorHandle CommandAllocatorPool::RequestAllocator(RHIFenceValue c
     if (m_DiscardedAllocators.front().second > completedFenceValue)
         return CreateNewAllocator();
 
-    RHICommandAllocatorHandle allocator = m_DiscardedAllocators.front().first;
+    RhiCommandAllocatorHandle allocator = m_DiscardedAllocators.front().first;
     m_DiscardedAllocators.pop();
     ASSERT_SUCCESS(allocator->Reset());
     return allocator;
 }
 
-void CommandAllocatorPool::DiscardAllocator(RHICommandAllocatorHandle allocator, RHIFenceValue fenceValue)
+void CommandAllocatorPool::DiscardAllocator(RhiCommandAllocatorHandle allocator, RhiFenceValue fenceValue)
 {
     m_DiscardedAllocators.emplace(allocator, fenceValue);
 }
 
-RHICommandAllocatorHandle CommandAllocatorPool::CreateNewAllocator()
+RhiCommandAllocatorHandle CommandAllocatorPool::CreateNewAllocator()
 {
-    RHICommandAllocatorHandle allocator;
+    RhiCommandAllocatorHandle allocator;
     allocator.SetName(L"CommandAllocatorPool::CommandAllocator");
 
     ASSERT_SUCCESS(GraphicCore::GetDevice()->CreateCommandAllocator({ m_Type }, allocator));

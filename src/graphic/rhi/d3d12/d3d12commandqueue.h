@@ -23,29 +23,29 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12CommandQueue : public RHICommandQueue
+class D3D12CommandQueue : public RhiCommandQueue
 {
 public:
-    D3D12CommandQueue(RHICommandListType type = RHICommandListType::Graphic);
+    D3D12CommandQueue(RhiCommandListType type = RhiCommandListType::Graphic);
     ~D3D12CommandQueue() override;
 
 public:
-    inline RHIFenceValue GetCompletionFenceValue() const override;
-    inline RHIFenceValue GetCompletedFenceValue() override;
+    inline RhiFenceValue GetCompletionFenceValue() const override;
+    inline RhiFenceValue GetCompletedFenceValue() override;
 
-    bool IsFenceComplete(RHIFenceValue fenceValue) override;
+    bool IsFenceComplete(RhiFenceValue fenceValue) override;
 
-    RHIResult StallForFence(RHIFenceValue fenceValue) override;
-    RHIResult Flush() override;
-    RHIResult Execute(RHICommandListHandle cmdList) override;
+    RhiResult StallForFence(RhiFenceValue fenceValue) override;
+    RhiResult Flush() override;
+    RhiResult Execute(RhiCommandListHandle cmdList) override;
 
 private:
     friend class D3D12Device;
     wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 
-    RHIFenceHandle m_Fence;
-    RHIFenceValue m_CompletionFenceValue;
-    RHIFenceValue m_LastKnownFenceValue;
+    RhiFenceHandle m_Fence;
+    RhiFenceValue m_CompletionFenceValue;
+    RhiFenceValue m_LastKnownFenceValue;
 
     void* m_FenceEventHandle;
 };
