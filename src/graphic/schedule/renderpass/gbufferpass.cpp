@@ -153,6 +153,10 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
 
+    void *mappedInstanceParams, *mappedMaterialParams;
+    GFX_RESOURCE(InstanceParams)->Map(&mappedInstanceParams);
+    GFX_RESOURCE(MaterialParams)->Map(&mappedMaterialParams);
+
     for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
         ethXMMatrix modelMat = visual->GetModelMatrix();
@@ -166,13 +170,11 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
         context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
-
-
-        InstanceParams param;
-        DirectX::XMStoreFloat4x4(&param.m_ModelMatrix, modelMat);
-        DirectX::XMStoreFloat4x4(&param.m_NormalMatrix, normalMat);
-        ETH_TOOLONLY(param.m_PickerColor = visual->GetPickerColor());
-        context.InitializeBufferRegion(GFX_RESOURCE(InstanceParams), &param, sizeof(InstanceParams));
+        InstanceParams params;
+        DirectX::XMStoreFloat4x4(&params.m_ModelMatrix, modelMat);
+        DirectX::XMStoreFloat4x4(&params.m_NormalMatrix, normalMat);
+        ETH_TOOLONLY(params.m_PickerColor = visual->GetPickerColor());
+        memcpy(mappedInstanceParams, &params, sizeof(params));
         context.GetCommandList()->SetRootConstantBuffer({ 1, GFX_RESOURCE(InstanceParams) });
 
         MaterialParams mat;
@@ -180,8 +182,7 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
         mat.m_SpecularColor = GraphicCore::GetGraphicRenderer().m_SpecularColor;
         mat.m_Roughness = GraphicCore::GetGraphicRenderer().m_Roughness;
         mat.m_Metalness = GraphicCore::GetGraphicRenderer().m_Metalness;
-
-        context.InitializeBufferRegion(GFX_RESOURCE(MaterialParams), &mat, sizeof(MaterialParams));
+        memcpy(mappedMaterialParams, &mat, sizeof(mat));
         context.GetCommandList()->SetRootConstantBuffer({ 2, GFX_RESOURCE(MaterialParams) });
 
         // TODO: Setup bindless textures
@@ -196,6 +197,9 @@ void GBufferPass::Render(GraphicContext& context, ResourceContext& rc)
 
         context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
     }
+
+    GFX_RESOURCE(InstanceParams)->Unmap();
+    GFX_RESOURCE(MaterialParams)->Unmap();
 
     context.FinalizeAndExecute();
     context.Reset();
@@ -244,7 +248,7 @@ void GBufferPass::InitializePipelineState()
     };
 
     creationPSO.SetRenderTargetFormats(NUM_GBUFFER_RENDER_TARGETS, formats);
-    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D32Float);
     creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);

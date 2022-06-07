@@ -109,7 +109,7 @@ void EditorGizmosPass::InitializePipelineState()
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
     creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D32Float);
     creationPSO.SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);

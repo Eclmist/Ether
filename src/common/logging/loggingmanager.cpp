@@ -46,6 +46,9 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
     while (std::getline(ss, individualLine, '\n')) {
         LogEntry entry(individualLine, level, type);
 
+        // Output the log entry to visual studio's debug output window
+        OutputDebugStringA((entry.GetFullText() + "\n").c_str());
+
         if (EngineCore::HasInstance())
         {
             EngineCore::GetLoggingManager().AddLog(entry);

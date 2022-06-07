@@ -45,6 +45,8 @@ void DepthStencilProducer::RegisterInputOutput(GraphicContext& context, Resource
 void DepthStencilProducer::Render(GraphicContext& context, ResourceContext& rc)
 {
     context.ClearDepthStencil(GFX_DSV(DepthStencilTexture), 0.0f, 0.0f);
+    context.FinalizeAndExecute();
+    context.Reset();
 }
 
 ETH_NAMESPACE_END

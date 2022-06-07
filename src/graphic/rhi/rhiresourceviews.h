@@ -38,14 +38,12 @@ class RhiShaderVisibleResourceView : public RhiResourceView
 {
 public:
     RhiShaderVisibleResourceView() = default;
-    virtual ~RhiShaderVisibleResourceView() = 0;
+    ~RhiShaderVisibleResourceView() = default;
     inline RhiGpuHandle GetGpuHandle() const { return m_GpuHandle; }
 
 protected:
     RhiGpuHandle m_GpuHandle;
 };
-
-inline RhiShaderVisibleResourceView::~RhiShaderVisibleResourceView() { }
 
 class RhiRenderTargetView : public RhiResourceView
 {

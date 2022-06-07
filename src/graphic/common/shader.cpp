@@ -72,7 +72,7 @@ bool Shader::Compile()
     //ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
 
     // Disable optimization for renderdoc pixel debugging
-    //ETH_TOOLONLY(arguments.push_back(L"-Od"));
+    ETH_TOOLONLY(arguments.push_back(L"-Od"));
 
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
@@ -107,7 +107,9 @@ bool Shader::Compile()
             wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
             hr = result->GetErrorBuffer(&errorsBlob);
             if (SUCCEEDED(hr) && errorsBlob)
+            {
                 LogGraphicsError((const char*)errorsBlob->GetBufferPointer());
+            }
         }
 
         return false;
