@@ -31,23 +31,23 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIModuleHandle RHIModule::CreateModule(RHIModuleType type)
+RhiModuleHandle RhiModule::CreateModule(RhiModuleType type)
 {
-    if (type == RHIModuleType::D3D12)
+    if (type == RhiModuleType::D3D12)
 #ifdef ETH_HAS_D3D12_SUPPORT
-        return RHIModuleHandle(new D3D12Module());
+        return RhiModuleHandle(new D3D12Module());
 #else
         LogGraphicsFatal("D3D12 is not supported on the current platform");
 #endif
 
-    if (type == RHIModuleType::Vulkan)
+    if (type == RhiModuleType::Vulkan)
 #ifdef ETH_HAS_VULKAN_SUPPORT
-        return RHIModuleHandle(new VulkanModule());
+        return RhiModuleHandle(new VulkanModule());
 #else
         LogGraphicsFatal("Vulkan is not yet supported");
 #endif
 
-    return RHIModuleHandle();
+    return RhiModuleHandle();
 }
 
 ETH_NAMESPACE_END

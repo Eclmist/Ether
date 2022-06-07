@@ -82,7 +82,7 @@ void DeferredLightingPass::Render(GraphicContext& context, ResourceContext& rc)
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
-    context.GetCommandList()->SetPrimitiveTopology(RHIPrimitiveTopology::TriangleStrip);
+    context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
@@ -119,26 +119,26 @@ void DeferredLightingPass::InitializeDepthStencilState()
 {
     m_DepthStencilState = GraphicCore::GetGraphicCommon().m_DepthStateReadOnly;
     m_DepthStencilState.m_StencilEnabled = true;
-    m_DepthStencilState.m_FrontFace.m_StencilFunc = RHIComparator::Equal;
-    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RHIDepthStencilOperation::Keep;
-    m_DepthStencilState.m_FrontFace.m_StencilFailOp = RHIDepthStencilOperation::Keep;
+    m_DepthStencilState.m_FrontFace.m_StencilFunc = RhiComparator::Equal;
+    m_DepthStencilState.m_FrontFace.m_StencilPassOp = RhiDepthStencilOperation::Keep;
+    m_DepthStencilState.m_FrontFace.m_StencilFailOp = RhiDepthStencilOperation::Keep;
     m_DepthStencilState.m_BackFace = m_DepthStencilState.m_FrontFace;
-    m_DepthStencilState.m_DepthComparator = RHIComparator::Always;
+    m_DepthStencilState.m_DepthComparator = RhiComparator::Always;
 }
 
 void DeferredLightingPass::InitializePipelineState()
 {
     m_PipelineState.SetName(L"DeferredLightingPass::PipelineState");
 
-    RHIPipelineState creationPSO;
+    RhiPipelineState creationPSO;
     creationPSO.SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
     creationPSO.SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefault);
-    creationPSO.SetPrimitiveTopology(RHIPrimitiveTopologyType::Triangle);
+    creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     creationPSO.SetVertexShader(m_VertexShader->GetCompiledShader(), m_VertexShader->GetCompiledShaderSize());
     creationPSO.SetPixelShader(m_PixelShader->GetCompiledShader(), m_PixelShader->GetCompiledShaderSize());
     creationPSO.SetInputLayout(GraphicCore::GetGraphicCommon().m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(RHIFormat::R8G8B8A8Unorm);
-    creationPSO.SetDepthTargetFormat(RHIFormat::D24UnormS8Uint);
+    creationPSO.SetRenderTargetFormat(RhiFormat::R8G8B8A8Unorm);
+    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
     creationPSO.SetRootSignature(m_RootSignature);
@@ -149,16 +149,16 @@ void DeferredLightingPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"DeferredLightingPass::RootSignature");
 
-    RHIRootSignature tempRS(6, 3);
+    RhiRootSignature tempRS(6, 3);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
-    tempRS[0]->SetAsConstantBufferView({ 0, 0, RHIShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange({ 0, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Albedo + Roughness
-    tempRS[2]->SetAsDescriptorRange({ 1, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Specular + Metalness
-    tempRS[3]->SetAsDescriptorRange({ 2, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Normal
-    tempRS[4]->SetAsDescriptorRange({ 3, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // Position + Depth
-    tempRS[5]->SetAsDescriptorRange({ 4, 0, RHIShaderVisibility::Pixel, RHIDescriptorRangeType::SRV, 1 }); // HDRI
+    tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // Albedo + Roughness
+    tempRS[2]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // Specular + Metalness
+    tempRS[3]->SetAsDescriptorRange({ 2, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // Normal
+    tempRS[4]->SetAsDescriptorRange({ 3, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // Position + Depth
+    tempRS[5]->SetAsDescriptorRange({ 4, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // HDRI
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 }
 

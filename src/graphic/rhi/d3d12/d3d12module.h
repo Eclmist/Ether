@@ -23,23 +23,23 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Module : public RHIModule
+class D3D12Module : public RhiModule
 {
 public:
     D3D12Module() = default;
     ~D3D12Module() override = default;
 
 public:
-    RHIResult Initialize() override;
-    RHIResult Shutdown() override;
+    RhiResult Initialize() override;
+    RhiResult Shutdown() override;
 
 public:
-    RHIResult CreateDevice(RHIDeviceHandle& device) const override;
-    RHIResult InitializeWarp();
+    RhiResult CreateDevice(RhiDeviceHandle& device) const override;
+    RhiResult InitializeWarp();
 
 private:
-    RHIResult InitializeAdapter();
-    RHIResult InitializeDebugLayer();
+    RhiResult InitializeAdapter();
+    RhiResult InitializeDebugLayer();
 
 private:
     wrl::ComPtr<IDXGIAdapter4> m_Adapter;

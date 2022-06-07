@@ -24,8 +24,8 @@
 
 ETH_NAMESPACE_BEGIN
 
-D3D12CommandQueue::D3D12CommandQueue(RHICommandListType type)
-    : RHICommandQueue(type)
+D3D12CommandQueue::D3D12CommandQueue(RhiCommandListType type)
+    : RhiCommandQueue(type)
     , m_CompletionFenceValue(0)
     , m_LastKnownFenceValue(0)
 {
@@ -38,17 +38,17 @@ D3D12CommandQueue::~D3D12CommandQueue()
     m_Fence.Destroy();
 }
 
-RHIFenceValue D3D12CommandQueue::GetCompletionFenceValue() const
+RhiFenceValue D3D12CommandQueue::GetCompletionFenceValue() const
 { 
     return m_CompletionFenceValue; 
 }
 
-RHIFenceValue D3D12CommandQueue::GetCompletedFenceValue()
+RhiFenceValue D3D12CommandQueue::GetCompletedFenceValue()
 { 
     return m_Fence->GetCompletedValue();
 }
 
-bool D3D12CommandQueue::IsFenceComplete(RHIFenceValue fenceValue)
+bool D3D12CommandQueue::IsFenceComplete(RhiFenceValue fenceValue)
 {
     if (fenceValue > m_LastKnownFenceValue)
         m_LastKnownFenceValue = m_Fence->GetCompletedValue();
@@ -56,7 +56,7 @@ bool D3D12CommandQueue::IsFenceComplete(RHIFenceValue fenceValue)
     return fenceValue <= m_LastKnownFenceValue;
 }
 
-RHIResult D3D12CommandQueue::StallForFence(RHIFenceValue fenceValue)
+RhiResult D3D12CommandQueue::StallForFence(RhiFenceValue fenceValue)
 {
     if (!IsFenceComplete(fenceValue))
     {
@@ -64,18 +64,18 @@ RHIResult D3D12CommandQueue::StallForFence(RHIFenceValue fenceValue)
         WaitForSingleObject(m_FenceEventHandle, INFINITE);
     }
 
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12CommandQueue::Flush()
+RhiResult D3D12CommandQueue::Flush()
 {
     const auto d3d12Fence = m_Fence.As<D3D12Fence>();
     HRESULT hr = m_CommandQueue->Signal(d3d12Fence->m_Fence.Get(), ++m_CompletionFenceValue);
     StallForFence(m_CompletionFenceValue);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12CommandQueue::Execute(RHICommandListHandle cmdList)
+RhiResult D3D12CommandQueue::Execute(RhiCommandListHandle cmdList)
 {
     ASSERT_SUCCESS(cmdList->Close());
     const auto d3d12CmdList = cmdList.As<D3D12CommandList>();
@@ -84,7 +84,7 @@ RHIResult D3D12CommandQueue::Execute(RHICommandListHandle cmdList)
     const auto graphicCmdList = dynamic_cast<ID3D12CommandList*>(d3d12CmdList->m_CommandList.Get());
     m_CommandQueue->ExecuteCommandLists(1, &graphicCmdList);
     HRESULT hr = m_CommandQueue->Signal(d3d12Fence->m_Fence.Get(), ++m_CompletionFenceValue);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

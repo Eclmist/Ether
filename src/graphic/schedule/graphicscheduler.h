@@ -40,9 +40,9 @@ private:
     std::vector<RenderPass*> m_RegisteredRenderPasses;
     std::vector<RenderPass*> m_OrderedRenderPasses;
 
-    std::unordered_map<std::string, RHIResourceHandle> m_Resources;
+    std::unordered_map<std::string, RhiResourceHandle> m_Resources;
 
-    std::vector<RHIResourceHandle> m_ResizeQueue;
+    std::vector<RhiResourceHandle> m_ResizeQueue;
 };
 
 ETH_NAMESPACE_END

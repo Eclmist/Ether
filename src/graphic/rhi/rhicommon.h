@@ -24,7 +24,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-#define TO_RHI_RESULT(hr) FAILED(hr) ? RHIResult::Failure : RHIResult::Success;
+#define TO_Rhi_RESULT(hr) FAILED(hr) ? RhiResult::Failure : RhiResult::Success;
 
 ETH_NAMESPACE_END
 

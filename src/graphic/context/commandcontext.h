@@ -28,33 +28,33 @@ class CommandQueue;
 class CommandContext : public NonCopyable
 {
 public:
-    CommandContext(RHICommandListType type, const std::wstring& contextName = L"Unammed Command Context");
+    CommandContext(RhiCommandListType type, const std::wstring& contextName = L"Unammed Command Context");
     ~CommandContext();
     void Reset();
 
-    RHIFenceValue GetCompletionFenceValue() const;
+    RhiFenceValue GetCompletionFenceValue() const;
 
 public:
-    inline RHICommandListHandle GetCommandList() const { return m_CommandList; }
-    inline RHICommandQueueHandle GetCommandQueue() const { return m_CommandQueue; }
+    inline RhiCommandListHandle GetCommandList() const { return m_CommandList; }
+    inline RhiCommandQueueHandle GetCommandQueue() const { return m_CommandQueue; }
 
 public:
-    void TransitionResource(RHIResourceHandle resource, RHIResourceState newState);
-    void CopyBufferRegion(RHIResourceHandle src, RHIResourceHandle dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
-    void CopyTextureRegion(RHIResourceHandle src, RHIResourceHandle dest, const CompiledTexture& texture);
-    void InitializeBufferRegion(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
+    void TransitionResource(RhiResourceHandle resource, RhiResourceState newState);
+    void CopyBufferRegion(RhiResourceHandle src, RhiResourceHandle dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
+    void CopyTextureRegion(RhiResourceHandle src, RhiResourceHandle dest, const CompiledTexture& texture);
+    void InitializeBufferRegion(RhiResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
     void InitializeTexture(const CompiledTexture& texture);
     void FinalizeAndExecute(bool waitForCompletion = false);
 
 private:
     friend class VisualNode; // TODO: Visual node is the only one initializing without context. remove eventually.
-    static void InitializeBufferTemp(RHIResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
+    static void InitializeBufferTemp(RhiResourceHandle dest, const void* data, size_t size, size_t destOffset = 0);
 
 protected:
-    RHICommandAllocatorHandle m_CommandAllocator;
-    RHICommandListHandle m_CommandList;
-    RHICommandListType m_Type;
-    RHICommandQueueHandle m_CommandQueue;
+    RhiCommandAllocatorHandle m_CommandAllocator;
+    RhiCommandListHandle m_CommandList;
+    RhiCommandListType m_Type;
+    RhiCommandQueueHandle m_CommandQueue;
 
     UploadBufferAllocator m_UploadBufferAllocator;
 

@@ -23,52 +23,52 @@
 
 ETH_NAMESPACE_BEGIN
 
-// RHI type handles
-typedef RHIHandle<class RHIBuffer>              RHIBufferHandle;
-typedef RHIHandle<class RHICommandAllocator>    RHICommandAllocatorHandle;
-typedef RHIHandle<class RHICommandList>         RHICommandListHandle;
-typedef RHIHandle<class RHICommandQueue>        RHICommandQueueHandle;
-typedef RHIHandle<class RHIDescriptorHeap>      RHIDescriptorHeapHandle;
-typedef RHIHandle<class RHIDevice>              RHIDeviceHandle;
-typedef RHIHandle<class RHIFence>               RHIFenceHandle;
-typedef RHIHandle<class RHIModule>              RHIModuleHandle;
-typedef RHIHandle<class RHIPipelineState>       RHIPipelineStateHandle;
-typedef RHIHandle<class RHIRootParameter>       RHIRootParameterHandle;
-typedef RHIHandle<class RHIRootSignature>       RHIRootSignatureHandle;
-typedef RHIHandle<class RHISwapChain>           RHISwapChainHandle;
+// Rhi type handles
+typedef RhiHandle<class RhiBuffer>              RhiBufferHandle;
+typedef RhiHandle<class RhiCommandAllocator>    RhiCommandAllocatorHandle;
+typedef RhiHandle<class RhiCommandList>         RhiCommandListHandle;
+typedef RhiHandle<class RhiCommandQueue>        RhiCommandQueueHandle;
+typedef RhiHandle<class RhiDescriptorHeap>      RhiDescriptorHeapHandle;
+typedef RhiHandle<class RhiDevice>              RhiDeviceHandle;
+typedef RhiHandle<class RhiFence>               RhiFenceHandle;
+typedef RhiHandle<class RhiModule>              RhiModuleHandle;
+typedef RhiHandle<class RhiPipelineState>       RhiPipelineStateHandle;
+typedef RhiHandle<class RhiRootParameter>       RhiRootParameterHandle;
+typedef RhiHandle<class RhiRootSignature>       RhiRootSignatureHandle;
+typedef RhiHandle<class RhiSwapChain>           RhiSwapChainHandle;
 
-// RHI resource handles
-typedef RHIHandle<class RHIResource>            RHIResourceHandle;
-typedef RHIHandle<class RHIResourceView>        RHIResourceViewHandle;
-typedef RHIHandle<class RHIRenderTargetView>    RHIRenderTargetViewHandle;
-typedef RHIHandle<class RHIDepthStencilView>    RHIDepthStencilViewHandle;
-typedef RHIHandle<class RHIShaderResourceView>  RHIShaderResourceViewHandle;
-typedef RHIHandle<class RHIConstantBufferView>  RHIConstantBufferViewHandle;
-typedef RHIHandle<class RHIUnorderedAccessView> RHIUnorderedAccessViewHandle;
+// Rhi resource handles
+typedef RhiHandle<class RhiResource>            RhiResourceHandle;
+typedef RhiHandle<class RhiResourceView>        RhiResourceViewHandle;
+typedef RhiHandle<class RhiRenderTargetView>    RhiRenderTargetViewHandle;
+typedef RhiHandle<class RhiDepthStencilView>    RhiDepthStencilViewHandle;
+typedef RhiHandle<class RhiShaderResourceView>  RhiShaderResourceViewHandle;
+typedef RhiHandle<class RhiConstantBufferView>  RhiConstantBufferViewHandle;
+typedef RhiHandle<class RhiUnorderedAccessView> RhiUnorderedAccessViewHandle;
 
-typedef uint64_t RHIFenceValue;
-typedef uint32_t RHIStencilValue;
+typedef uint64_t RhiFenceValue;
+typedef uint32_t RhiStencilValue;
 
 //=========================== Misc Descs ============================//
 
-struct RHIDepthStencilValue
+struct RhiDepthStencilValue
 {
     float m_Depth;
     uint8_t m_Stencil;
 };
 
-struct RHIClearValue
+struct RhiClearValue
 {
-    RHIFormat m_Format;
+    RhiFormat m_Format;
 
 	union
 	{
         float m_Color[4];
-        RHIDepthStencilValue m_DepthStencil;
+        RhiDepthStencilValue m_DepthStencil;
     };
 };
 
-struct RHIResizeDesc
+struct RhiResizeDesc
 {
     uint32_t m_Width;
     uint32_t m_Height;
@@ -76,102 +76,102 @@ struct RHIResizeDesc
 };
 
 //========================== Memory Descs ===========================//
-struct RHICpuHandle
+struct RhiCpuHandle
 {
     uint64_t m_Ptr;
 };
 
-struct RHIGpuHandle
+struct RhiGpuHandle
 {
     uint64_t m_Ptr;
 };
 
 //========================= Creation Descs ==========================//
 
-struct RHIBlendDesc
+struct RhiBlendDesc
 {
     bool m_BlendingEnabled;
     bool m_LogicOpEnabled;
-    RHIBlendType m_SrcBlend;
-    RHIBlendType m_DestBlend;
-    RHIBlendOperation m_BlendOp;
-    RHIBlendType m_SrcBlendAlpha;
-    RHIBlendType m_DestBlendAlpha;
-    RHIBlendOperation m_BlendOpAlpha;
-    RHILogicOperation m_LogicOp;
-    RHIRenderTargetWriteMask m_WriteMask;
+    RhiBlendType m_SrcBlend;
+    RhiBlendType m_DestBlend;
+    RhiBlendOperation m_BlendOp;
+    RhiBlendType m_SrcBlendAlpha;
+    RhiBlendType m_DestBlendAlpha;
+    RhiBlendOperation m_BlendOpAlpha;
+    RhiLogicOperation m_LogicOp;
+    RhiRenderTargetWriteMask m_WriteMask;
 };
 
-struct RHICommandAllocatorDesc
+struct RhiCommandAllocatorDesc
 {
-    RHICommandListType m_Type;
+    RhiCommandListType m_Type;
 };
 
-struct RHICommandListDesc
+struct RhiCommandListDesc
 {
-    RHICommandListType m_Type;
-    RHICommandAllocatorHandle m_Allocator;
+    RhiCommandListType m_Type;
+    RhiCommandAllocatorHandle m_Allocator;
 };
 
-struct RHICommandQueueDesc
+struct RhiCommandQueueDesc
 {
-    RHICommandListType m_Type;
+    RhiCommandListType m_Type;
 };
 
-struct RHIDepthStencilOperationDesc
+struct RhiDepthStencilOperationDesc
 {
-    RHIDepthStencilOperation m_StencilFailOp;
-    RHIDepthStencilOperation m_StencilDepthFailOp;
-    RHIDepthStencilOperation m_StencilPassOp;
-    RHIComparator m_StencilFunc;
+    RhiDepthStencilOperation m_StencilFailOp;
+    RhiDepthStencilOperation m_StencilDepthFailOp;
+    RhiDepthStencilOperation m_StencilPassOp;
+    RhiComparator m_StencilFunc;
 };
 
-struct RHIDepthStencilDesc
+struct RhiDepthStencilDesc
 {
     bool m_DepthEnabled;
-    RHIDepthWriteMask m_DepthWriteMask;
-    RHIComparator m_DepthComparator;
+    RhiDepthWriteMask m_DepthWriteMask;
+    RhiComparator m_DepthComparator;
     bool m_StencilEnabled;
     uint8_t m_StencilReadMask;
     uint8_t m_StencilWriteMask;
-    RHIDepthStencilOperationDesc m_FrontFace;
-    RHIDepthStencilOperationDesc m_BackFace;
+    RhiDepthStencilOperationDesc m_FrontFace;
+    RhiDepthStencilOperationDesc m_BackFace;
 };
 
-struct RHIDescriptorHeapDesc
+struct RhiDescriptorHeapDesc
 {
-    RHIDescriptorHeapType m_Type;
-    RHIDescriptorHeapFlag m_Flags;
+    RhiDescriptorHeapType m_Type;
+    RhiDescriptorHeapFlag m_Flags;
     uint32_t m_NumDescriptors;
 };
 
-struct RHIInputElementDesc
+struct RhiInputElementDesc
 {
     const char* m_SemanticName;
     uint32_t m_SemanticIndex;
-    RHIFormat m_Format;
+    RhiFormat m_Format;
     uint32_t m_InputSlot;
     uint32_t m_AlignedByteOffset;
-    RHIInputClassification m_InputSlotClass;
+    RhiInputClassification m_InputSlotClass;
     uint32_t m_InstanceDataStepRate;
 };
 
-struct RHIInputLayoutDesc
+struct RhiInputLayoutDesc
 {
-    RHIInputElementDesc* m_InputElementDescs;
+    RhiInputElementDesc* m_InputElementDescs;
     uint32_t m_NumElements;
 };
 
-struct RHIShaderDesc
+struct RhiShaderDesc
 {
     const void* m_Bytecode;
     uint32_t m_BytecodeLength;
 };
 
-struct RHIRasterizerDesc
+struct RhiRasterizerDesc
 {
-    RHIFillMode m_FillMode;
-    RHICullMode m_CullMode;
+    RhiFillMode m_FillMode;
+    RhiCullMode m_CullMode;
     bool m_FrontCounterClockwise;
     uint32_t m_DepthBias;
     float m_DepthBiasClamp;
@@ -182,68 +182,68 @@ struct RHIRasterizerDesc
     uint32_t m_ForcedSampleCount;
 };
 
-struct RHISampleDesc
+struct RhiSampleDesc
 {
     uint32_t m_NumMsaaSamples;
     uint32_t m_MsaaQuality;
 };
 
-struct RHIPipelineStateDesc
+struct RhiPipelineStateDesc
 {
-    RHIRootSignatureHandle m_RootSignature;
-    RHIShaderDesc m_VS;
-    RHIShaderDesc m_PS;
-    RHIBlendDesc m_BlendDesc;
-    RHIRasterizerDesc m_RasterizerDesc;
-    RHIDepthStencilDesc m_DepthStencilDesc;
-    RHIInputLayoutDesc m_InputLayoutDesc;
-    RHIPrimitiveTopologyType m_PrimitiveTopologyType;
+    RhiRootSignatureHandle m_RootSignature;
+    RhiShaderDesc m_VS;
+    RhiShaderDesc m_PS;
+    RhiBlendDesc m_BlendDesc;
+    RhiRasterizerDesc m_RasterizerDesc;
+    RhiDepthStencilDesc m_DepthStencilDesc;
+    RhiInputLayoutDesc m_InputLayoutDesc;
+    RhiPrimitiveTopologyType m_PrimitiveTopologyType;
     uint32_t m_NumRenderTargets;
-    RHIFormat m_RTVFormats[8];
-    RHIFormat m_DSVFormat;
-    RHISampleDesc m_SampleDesc;
+    RhiFormat m_RTVFormats[8];
+    RhiFormat m_DSVFormat;
+    RhiSampleDesc m_SampleDesc;
     uint32_t m_NodeMask;
 };
 
-struct RHIRootParameterDesc
+struct RhiRootParameterDesc
 {
     uint32_t m_ShaderRegister;
     uint32_t m_RegisterSpace;
-    RHIShaderVisibility m_ShaderVisibility;
+    RhiShaderVisibility m_ShaderVisibility;
 };
 
-struct RHIRootParameterConstantDesc : RHIRootParameterDesc
+struct RhiRootParameterConstantDesc : RhiRootParameterDesc
 {
     uint32_t m_NumDwords;
 };
 
-struct RHIRootParameterCBVDesc : RHIRootParameterDesc
+struct RhiRootParameterCBVDesc : RhiRootParameterDesc
 {
 };
 
-struct RHIRootParameterSRVDesc : RHIRootParameterDesc
+struct RhiRootParameterSRVDesc : RhiRootParameterDesc
 {
 };
 
-struct RHIDescriptorTableDesc : RHIRootParameterDesc
+struct RhiDescriptorTableDesc : RhiRootParameterDesc
 {
     uint32_t m_RangeCount;
 };
 
-struct RHIDescriptorRangeDesc : RHIRootParameterDesc
+struct RhiDescriptorRangeDesc : RhiRootParameterDesc
 {
-    RHIDescriptorRangeType m_Type;
+    RhiDescriptorRangeType m_Type;
     uint32_t m_NumDescriptors;
 };
 
-struct RHISamplerParameterDesc : RHIRootParameterDesc
+struct RhiSamplerParameterDesc : RhiRootParameterDesc
 {
-    RHIFilter m_Filter;
-    RHITextureAddressMode m_AddressU;
-    RHITextureAddressMode m_AddressV;
-    RHITextureAddressMode m_AddressW;
-    RHIComparator m_ComparisonFunc;
-    RHIBorderColor m_BorderColor;
+    RhiFilter m_Filter;
+    RhiTextureAddressMode m_AddressU;
+    RhiTextureAddressMode m_AddressV;
+    RhiTextureAddressMode m_AddressW;
+    RhiComparator m_ComparisonFunc;
+    RhiBorderColor m_BorderColor;
 
     uint32_t m_MaxAnisotropy;
 
@@ -252,37 +252,37 @@ struct RHISamplerParameterDesc : RHIRootParameterDesc
     float m_MaxLOD;
 };
 
-struct RHIRootSignatureDesc
+struct RhiRootSignatureDesc
 {
     uint32_t m_NumParameters;
     uint32_t m_NumStaticSamplers;
-    RHIRootParameterHandle* m_Parameters;
-    RHISamplerParameterDesc* m_StaticSamplers;
-    RHIRootSignatureFlag m_Flags;
+    RhiRootParameterHandle* m_Parameters;
+    RhiSamplerParameterDesc* m_StaticSamplers;
+    RhiRootSignatureFlag m_Flags;
 };
 
-struct RHISwapChainDesc
+struct RhiSwapChainDesc
 {
     uint32_t m_Width;
     uint32_t m_Height;
-    RHIFormat m_Format;
-    RHISampleDesc m_SampleDesc;
+    RhiFormat m_Format;
+    RhiSampleDesc m_SampleDesc;
     uint32_t m_BufferCount;
-    RHIScalingMode m_ScalingMode;
-    RHISwapEffect m_SwapEffect;
-    RHISwapChainFlag m_Flag;
+    RhiScalingMode m_ScalingMode;
+    RhiSwapEffect m_SwapEffect;
+    RhiSwapChainFlag m_Flag;
     void* m_WindowHandle;
 
-    RHICommandQueueHandle m_CommandQueue; // For d3d12 only
+    RhiCommandQueueHandle m_CommandQueue; // For d3d12 only
 };
 
-struct RHIScissorDesc
+struct RhiScissorDesc
 {
     float m_X, m_Y;
     float m_Width, m_Height;
 };
 
-struct RHIViewportDesc
+struct RhiViewportDesc
 {
     float m_X, m_Y;
     float m_Width, m_Height;
@@ -291,51 +291,51 @@ struct RHIViewportDesc
 
 //========================= Resource Descs ==========================//
 
-struct RHIResourceViewDesc
+struct RhiResourceViewDesc
 {
-    RHIResourceHandle m_Resource;
+    RhiResourceHandle m_Resource;
 };
 
-struct RHIRenderTargetViewDesc : public RHIResourceViewDesc
+struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
 {
-    RHIFormat m_Format;
+    RhiFormat m_Format;
 };
 
-struct RHIDepthStencilViewDesc : public RHIResourceViewDesc
+struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 {
-    RHIFormat m_Format;
+    RhiFormat m_Format;
 };
 
-struct RHIShaderResourceViewDesc : public RHIResourceViewDesc
+struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
-    RHIFormat m_Format;
-    RHIShaderResourceDims m_Dimensions;
+    RhiFormat m_Format;
+    RhiShaderResourceDims m_Dimensions;
 };
 
-struct RHIConstantBufferViewDesc : public RHIResourceViewDesc
+struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
 {
     size_t m_BufferSize;
-    RHIGpuHandle m_GpuHandle;
+    RhiGpuHandle m_GpuHandle;
 };
 
-struct RHIUnorderedAccessViewDesc : public RHIResourceViewDesc
+struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
 {
 
 };
 
-struct RHIIndexBufferViewDesc : public RHIResourceViewDesc
+struct RhiIndexBufferViewDesc : public RhiResourceViewDesc
 {
-    RHIFormat m_Format;
+    RhiFormat m_Format;
     size_t m_BufferSize;
 };
 
-struct RHIVertexBufferViewDesc : public RHIResourceViewDesc
+struct RhiVertexBufferViewDesc : public RhiResourceViewDesc
 {
     size_t m_BufferSize;
     size_t m_Stride;
 };
 
-struct RHIResourceDesc
+struct RhiResourceDesc
 {
 	uint64_t m_Alignment;
 	uint64_t m_Width;
@@ -343,37 +343,37 @@ struct RHIResourceDesc
 	uint16_t m_DepthOrArraySize;
     uint16_t m_MipLevels;
 
-	RHIFormat m_Format;
-	RHIResourceDimension m_Dimension;
-    RHIResourceLayout m_Layout;
-    RHIResourceFlag m_Flag;
-	RHISampleDesc m_SampleDesc;
+	RhiFormat m_Format;
+	RhiResourceDimension m_Dimension;
+    RhiResourceLayout m_Layout;
+    RhiResourceFlag m_Flag;
+	RhiSampleDesc m_SampleDesc;
 };
 
-struct RHICommitedResourceDesc
+struct RhiCommitedResourceDesc
 {
-    RHIHeapType m_HeapType;
-    RHIResourceState m_State;
-    RHIResourceDesc m_ResourceDesc;
-    RHIClearValue* m_ClearValue;
+    RhiHeapType m_HeapType;
+    RhiResourceState m_State;
+    RhiResourceDesc m_ResourceDesc;
+    RhiClearValue* m_ClearValue;
 };
 
 //======================= Command List Descs ========================//
 
-struct RHICopyBufferRegionDesc
+struct RhiCopyBufferRegionDesc
 {
-    RHIResourceHandle m_Source;
-    RHIResourceHandle m_Destination;
+    RhiResourceHandle m_Source;
+    RhiResourceHandle m_Destination;
 
     size_t m_SourceOffset;
     size_t m_DestinationOffset;
     size_t m_Size;
 };
 
-struct RHICopyTextureRegionDesc
+struct RhiCopyTextureRegionDesc
 {
-    RHIResourceHandle m_Source;
-    RHIResourceHandle m_Destination;
+    RhiResourceHandle m_Source;
+    RhiResourceHandle m_Destination;
 
     uint32_t m_Width;
     uint32_t m_Height;
@@ -383,20 +383,20 @@ struct RHICopyTextureRegionDesc
     void* m_Data;
 };
 
-struct RHIClearRenderTargetViewDesc
+struct RhiClearRenderTargetViewDesc
 {
     ethVector4 m_ClearColor;
-    RHIRenderTargetViewHandle m_RTVHandle;
+    RhiRenderTargetViewHandle m_RTVHandle;
 };
 
-struct RHIClearDepthStencilViewDesc
+struct RhiClearDepthStencilViewDesc
 {
     float m_ClearDepth;
     float m_ClearStencil;
-    RHIDepthStencilViewHandle m_DSVHandle;
+    RhiDepthStencilViewHandle m_DSVHandle;
 };
 
-struct RHIDrawInstancedDesc
+struct RhiDrawInstancedDesc
 {
     uint32_t m_VertexCount;
     uint32_t m_InstanceCount;
@@ -404,7 +404,7 @@ struct RHIDrawInstancedDesc
     uint32_t m_FirstInstance;
 };
 
-struct RHIDrawIndexedInstancedDesc
+struct RhiDrawIndexedInstancedDesc
 {
     uint32_t m_IndexCount;
     uint32_t m_InstanceCount;
@@ -413,27 +413,27 @@ struct RHIDrawIndexedInstancedDesc
     uint32_t m_FirstInstance;
 };
 
-struct RHIResourceTransitionDesc
+struct RhiResourceTransitionDesc
 {
-    RHIResourceHandle m_Resource;
-    RHIResourceState m_FromState;
-    RHIResourceState m_ToState;
+    RhiResourceHandle m_Resource;
+    RhiResourceState m_FromState;
+    RhiResourceState m_ToState;
 };
 
-struct RHISetDescriptorHeapsDesc
+struct RhiSetDescriptorHeapsDesc
 {
     uint32_t m_NumHeaps;
-    RHIDescriptorHeapHandle* m_Heaps;
+    RhiDescriptorHeapHandle* m_Heaps;
 };
 
-struct RHISetRenderTargetsDesc
+struct RhiSetRenderTargetsDesc
 {
     uint32_t m_NumRTV;
-    RHIRenderTargetViewHandle m_RTVHandles[8];
-    RHIDepthStencilViewHandle m_DSVHandle;
+    RhiRenderTargetViewHandle m_RTVHandles[8];
+    RhiDepthStencilViewHandle m_DSVHandle;
 };
 
-struct RHISetRootConstantsDesc
+struct RhiSetRootConstantsDesc
 {
     uint32_t m_RootParameterIndex;
     uint32_t m_NumConstants;
@@ -441,22 +441,22 @@ struct RHISetRootConstantsDesc
     void* m_Data;
 };
 
-struct RHISetRootDescriptorTableDesc
+struct RhiSetRootDescriptorTableDesc
 {
     uint32_t m_RootParameterIndex;
-    RHIShaderResourceViewHandle m_BaseSRVHandle;
+    RhiShaderResourceViewHandle m_BaseSRVHandle;
 };
 
-struct RHISetRootShaderResourceDesc
+struct RhiSetRootShaderResourceDesc
 {
     uint32_t m_RootParameterIndex;
-    RHIResourceHandle m_Resource;
+    RhiResourceHandle m_Resource;
 };
 
-struct RHISetRootConstantBufferDesc
+struct RhiSetRootConstantBufferDesc
 {
     uint32_t m_RootParameterIndex;
-    RHIResourceHandle m_Resource;
+    RhiResourceHandle m_Resource;
 };
 
 ETH_NAMESPACE_END

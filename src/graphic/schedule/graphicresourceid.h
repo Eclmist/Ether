@@ -32,8 +32,8 @@ ETH_NAMESPACE_BEGIN
 #define GFX_PASS(type)                          GraphicLinkSpace::GFX_PASS_NAME(type)
 
 #define GFX_RESOURCE_NAME(name)                 GfxResource_##name
-#define DEFINE_GFX_RESOURCE(name)               namespace GraphicLinkSpace { RHIResourceHandle GFX_RESOURCE_NAME(name)(nullptr, L#name); }
-#define DECLARE_GFX_RESOURCE(name)              namespace GraphicLinkSpace { extern RHIResourceHandle GFX_RESOURCE_NAME(name); }
+#define DEFINE_GFX_RESOURCE(name)               namespace GraphicLinkSpace { RhiResourceHandle GFX_RESOURCE_NAME(name)(nullptr, L#name); }
+#define DECLARE_GFX_RESOURCE(name)              namespace GraphicLinkSpace { extern RhiResourceHandle GFX_RESOURCE_NAME(name); }
 #define GFX_RESOURCE(name)                      GraphicLinkSpace::GFX_RESOURCE_NAME(name)
 
 #define GFX_VIEW_NAME(name, tag)                GfxResourceView_##name##_##tag
@@ -41,17 +41,17 @@ ETH_NAMESPACE_BEGIN
 #define DECLARE_GFX_VIEW(name, tag, type)       namespace GraphicLinkSpace { extern type GFX_VIEW_NAME(name, tag); }
 #define GFX_VIEW(name, tag)	         	        GraphicLinkSpace::GFX_VIEW_NAME(name, tag)
 
-#define DEFINE_GFX_RTV(name)                    DEFINE_GFX_VIEW(name, RTV, RHIRenderTargetViewHandle)
-#define DEFINE_GFX_DSV(name)                    DEFINE_GFX_VIEW(name, DSV, RHIDepthStencilViewHandle)
-#define DEFINE_GFX_SRV(name)                    DEFINE_GFX_VIEW(name, SRV, RHIShaderResourceViewHandle)
-#define DEFINE_GFX_CBV(name)                    DEFINE_GFX_VIEW(name, CBV, RHIConstantBufferViewHandle)
-#define DEFINE_GFX_UAV(name)                    DEFINE_GFX_VIEW(name, UAV, RHIUnorderedAccessViewHandle)
+#define DEFINE_GFX_RTV(name)                    DEFINE_GFX_VIEW(name, RTV, RhiRenderTargetViewHandle)
+#define DEFINE_GFX_DSV(name)                    DEFINE_GFX_VIEW(name, DSV, RhiDepthStencilViewHandle)
+#define DEFINE_GFX_SRV(name)                    DEFINE_GFX_VIEW(name, SRV, RhiShaderResourceViewHandle)
+#define DEFINE_GFX_CBV(name)                    DEFINE_GFX_VIEW(name, CBV, RhiConstantBufferViewHandle)
+#define DEFINE_GFX_UAV(name)                    DEFINE_GFX_VIEW(name, UAV, RhiUnorderedAccessViewHandle)
 
-#define DECLARE_GFX_RTV(name)                   DECLARE_GFX_VIEW(name, RTV, RHIRenderTargetViewHandle)
-#define DECLARE_GFX_DSV(name)                   DECLARE_GFX_VIEW(name, DSV, RHIDepthStencilViewHandle)
-#define DECLARE_GFX_SRV(name)                   DECLARE_GFX_VIEW(name, SRV, RHIShaderResourceViewHandle)
-#define DECLARE_GFX_CBV(name)                   DECLARE_GFX_VIEW(name, CBV, RHIConstantBufferViewHandle)
-#define DECLARE_GFX_UAV(name)                   DECLARE_GFX_VIEW(name, UAV, RHIUnorderedAccessViewHandle)
+#define DECLARE_GFX_RTV(name)                   DECLARE_GFX_VIEW(name, RTV, RhiRenderTargetViewHandle)
+#define DECLARE_GFX_DSV(name)                   DECLARE_GFX_VIEW(name, DSV, RhiDepthStencilViewHandle)
+#define DECLARE_GFX_SRV(name)                   DECLARE_GFX_VIEW(name, SRV, RhiShaderResourceViewHandle)
+#define DECLARE_GFX_CBV(name)                   DECLARE_GFX_VIEW(name, CBV, RhiConstantBufferViewHandle)
+#define DECLARE_GFX_UAV(name)                   DECLARE_GFX_VIEW(name, UAV, RhiUnorderedAccessViewHandle)
 
 #define GFX_RTV(name)                           GFX_VIEW(name, RTV)
 #define GFX_DSV(name)                           GFX_VIEW(name, DSV)

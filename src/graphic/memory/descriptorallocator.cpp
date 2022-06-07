@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-//DescriptorAllocator::DescriptorAllocator(RHIDescriptorHeapType type, uint32_t numDescriptorsPerHeap)
+//DescriptorAllocator::DescriptorAllocator(RhiDescriptorHeapType type, uint32_t numDescriptorsPerHeap)
 //    : m_HeapType(type)
 //    , m_NumDescriptorsPerHeap(numDescriptorsPerHeap)
 //{

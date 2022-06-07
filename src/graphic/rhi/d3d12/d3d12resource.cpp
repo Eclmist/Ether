@@ -22,27 +22,27 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIGpuHandle D3D12Resource::GetGpuHandle() const
+RhiGpuHandle D3D12Resource::GetGpuHandle() const
 {
-    RHIGpuHandle handle;
+    RhiGpuHandle handle;
     handle.m_Ptr = m_Resource->GetGPUVirtualAddress();
     return handle;
 }
 
-RHIResult D3D12Resource::SetName(const std::wstring& name) const
+RhiResult D3D12Resource::SetName(const std::wstring& name) const
 {
-    return TO_RHI_RESULT(m_Resource->SetName(name.c_str()));
+    return TO_Rhi_RESULT(m_Resource->SetName(name.c_str()));
 }
 
-RHIResult D3D12Resource::Map(void** mappedAddr) const
+RhiResult D3D12Resource::Map(void** mappedAddr) const
 {
-    return TO_RHI_RESULT(m_Resource->Map(0, nullptr, mappedAddr));
+    return TO_Rhi_RESULT(m_Resource->Map(0, nullptr, mappedAddr));
 }
 
-RHIResult D3D12Resource::Unmap() const
+RhiResult D3D12Resource::Unmap() const
 {
     m_Resource->Unmap(0, nullptr);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
 ETH_NAMESPACE_END

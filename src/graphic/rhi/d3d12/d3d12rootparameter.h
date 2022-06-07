@@ -23,18 +23,18 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12RootParameter : public RHIRootParameter
+class D3D12RootParameter : public RhiRootParameter
 {
 public:
     D3D12RootParameter() = default;
     ~D3D12RootParameter() override = default;
 
 public:
-    RHIResult SetAsConstant(const RHIRootParameterConstantDesc& desc) override;
-    RHIResult SetAsConstantBufferView(const RHIRootParameterCBVDesc& desc) override;
-    RHIResult SetAsShaderResourceView(const RHIRootParameterSRVDesc& desc) override;
-    RHIResult SetAsDescriptorTable(const RHIDescriptorTableDesc& desc) override;
-    RHIResult SetAsDescriptorRange(const RHIDescriptorRangeDesc& desc) override;
+    RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) override;
+    RhiResult SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc) override;
+    RhiResult SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc) override;
+    RhiResult SetAsDescriptorTable(const RhiDescriptorTableDesc& desc) override;
+    RhiResult SetAsDescriptorRange(const RhiDescriptorRangeDesc& desc) override;
 
 private:
     friend class D3D12Device;

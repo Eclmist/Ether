@@ -22,7 +22,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIRootSignature::RHIRootSignature(int numParameters, int numStaticSamplers)
+RhiRootSignature::RhiRootSignature(int numParameters, int numStaticSamplers)
 	: m_NumParameters(numParameters)
 	, m_NumStaticSamplers(numStaticSamplers)
 {
@@ -33,15 +33,15 @@ RHIRootSignature::RHIRootSignature(int numParameters, int numStaticSamplers)
         GraphicCore::GetDevice()->CreateRootParameter(m_RootParameters[i]);
 }
 
-RHIRootSignature::~RHIRootSignature()
+RhiRootSignature::~RhiRootSignature()
 {
     for (int i = 0; i < m_NumParameters; ++i)
         m_RootParameters[i].Destroy();
 }
 
-RHIResult RHIRootSignature::Finalize(RHIRootSignatureFlag flags, RHIRootSignatureHandle& rootSignature)
+RhiResult RhiRootSignature::Finalize(RhiRootSignatureFlag flags, RhiRootSignatureHandle& rootSignature)
 {
-    RHIRootSignatureDesc desc = {};
+    RhiRootSignatureDesc desc = {};
     desc.m_NumParameters = m_NumParameters;
     desc.m_NumStaticSamplers = m_NumStaticSamplers;
     desc.m_Parameters = m_RootParameters.data();

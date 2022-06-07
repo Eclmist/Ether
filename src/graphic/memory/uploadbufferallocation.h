@@ -38,7 +38,7 @@ public:
 
 private:
     friend class UploadBufferPage;
-    inline void SetMappedCPUAddress(void* cpuAddress) { m_MappedCpuAddress = cpuAddress; }
+    inline void SetMappedCpuAddress(void* cpuAddress) { m_MappedCpuAddress = cpuAddress; }
     inline void SetSize(size_t size) { m_Size = size; }
     inline void SetOffset(size_t offset) { m_Offset = offset; }
 

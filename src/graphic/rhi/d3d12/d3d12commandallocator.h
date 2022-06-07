@@ -23,14 +23,14 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12CommandAllocator : public RHICommandAllocator
+class D3D12CommandAllocator : public RhiCommandAllocator
 {
 public:
     D3D12CommandAllocator() = default;
     ~D3D12CommandAllocator() override = default;
 
 public:
-    RHIResult Reset() const override;
+    RhiResult Reset() const override;
 
 private:
     friend class D3D12Device;

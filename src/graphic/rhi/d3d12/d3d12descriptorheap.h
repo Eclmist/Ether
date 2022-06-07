@@ -23,25 +23,25 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12DescriptorHeap : public RHIDescriptorHeap
+class D3D12DescriptorHeap : public RhiDescriptorHeap
 {
 public:
     D3D12DescriptorHeap() = default;
     ~D3D12DescriptorHeap() override = default;
 
 public:
-    RHICpuHandle GetBaseHandleCPU() const override;
-    RHIGpuHandle GetBaseHandleGPU() const override;
+    RhiCpuHandle GetBaseHandleCpu() const override;
+    RhiGpuHandle GetBaseGpuHandle() const override;
 
-    RHICpuHandle GetNextHandleCPU() const override;
-    RHIGpuHandle GetNextHandleGPU() const override;
+    RhiCpuHandle GetNextCpuHandle() const override;
+    RhiGpuHandle GetNextGpuHandle() const override;
 
-    RHIResult IncrementHandle() override;
+    RhiResult IncrementHandle() override;
 
 private:
     friend class D3D12CommandList;
     friend class D3D12Device;
-    // TODO: Remove after GUI-RHI refactor
+    // TODO: Remove after GUI-Rhi refactor
     friend class GuiRenderer;
 
     wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;

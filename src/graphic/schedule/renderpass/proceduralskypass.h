@@ -38,8 +38,8 @@ private:
     void InitializeRootSignature();
 
 private:
-    RHIPipelineStateHandle m_PipelineState;
-    RHIRootSignatureHandle m_RootSignature;
+    RhiPipelineStateHandle m_PipelineState;
+    RhiRootSignatureHandle m_RootSignature;
 
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;

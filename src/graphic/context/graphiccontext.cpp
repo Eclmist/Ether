@@ -24,7 +24,7 @@
 ETH_NAMESPACE_BEGIN
 
 GraphicContext::GraphicContext(const std::wstring& contextName)
-    : CommandContext(RHICommandListType::Graphic, contextName)
+    : CommandContext(RhiCommandListType::Graphic, contextName)
     , m_ViewMatrix()
     , m_ProjectionMatrix()
     , m_EyeDirection()
@@ -36,28 +36,28 @@ GraphicContext::~GraphicContext()
 {
 }
 
-void GraphicContext::ClearColor(RHIRenderTargetViewHandle renderTarget, ethVector4 color)
+void GraphicContext::ClearColor(RhiRenderTargetViewHandle renderTarget, ethVector4 color)
 {
     float clearColor[] = { color.x, color.y, color.z, color.w };
     
-    RHIClearRenderTargetViewDesc desc = {};
+    RhiClearRenderTargetViewDesc desc = {};
     desc.m_ClearColor = color;
     desc.m_RTVHandle = renderTarget;
     m_CommandList->ClearRenderTargetView(desc);
 }
 
-void GraphicContext::ClearDepthStencil(RHIDepthStencilViewHandle depthTarget, float depth, float stencil)
+void GraphicContext::ClearDepthStencil(RhiDepthStencilViewHandle depthTarget, float depth, float stencil)
 {
-    RHIClearDepthStencilViewDesc desc = {};
+    RhiClearDepthStencilViewDesc desc = {};
     desc.m_ClearDepth = depth;
     desc.m_ClearStencil = stencil;
     desc.m_DSVHandle = depthTarget;
     m_CommandList->ClearDepthStencilView(desc);
 }
 
-void GraphicContext::SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthStencilViewHandle dsv)
+void GraphicContext::SetRenderTarget(RhiRenderTargetViewHandle rtv, RhiDepthStencilViewHandle dsv)
 {
-    RHISetRenderTargetsDesc desc = {};
+    RhiSetRenderTargetsDesc desc = {};
     desc.m_NumRTV = 1;
     desc.m_RTVHandles[0] = rtv;
     desc.m_DSVHandle = dsv;
@@ -65,9 +65,9 @@ void GraphicContext::SetRenderTarget(RHIRenderTargetViewHandle rtv, RHIDepthSten
     m_CommandList->SetRenderTargets(desc);
 }
 
-void GraphicContext::SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHandle* rtv, RHIDepthStencilViewHandle dsv)
+void GraphicContext::SetRenderTargets(uint32_t numTargets, RhiRenderTargetViewHandle* rtv, RhiDepthStencilViewHandle dsv)
 {
-    RHISetRenderTargetsDesc desc = {};
+    RhiSetRenderTargetsDesc desc = {};
     desc.m_NumRTV = numTargets;
     desc.m_DSVHandle = dsv;
 
@@ -77,13 +77,13 @@ void GraphicContext::SetRenderTargets(uint32_t numTargets, RHIRenderTargetViewHa
     m_CommandList->SetRenderTargets(desc);
 }
 
-void GraphicContext::SetViewport(const RHIViewportDesc& viewport)
+void GraphicContext::SetViewport(const RhiViewportDesc& viewport)
 {
     m_Viewport = viewport;
     m_CommandList->SetViewport(viewport);
 }
 
-void GraphicContext::SetScissor(const RHIScissorDesc& scissor)
+void GraphicContext::SetScissor(const RhiScissorDesc& scissor)
 {
     m_CommandList->SetScissor(scissor);
 }

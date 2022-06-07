@@ -21,15 +21,15 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIFenceValue D3D12Fence::GetCompletedValue()
+RhiFenceValue D3D12Fence::GetCompletedValue()
 {
     return m_Fence->GetCompletedValue();
 }
 
-RHIResult D3D12Fence::SetEventOnCompletion(RHIFenceValue value, HANDLE eventHandle)
+RhiResult D3D12Fence::SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle)
 {
     HRESULT hr = m_Fence->SetEventOnCompletion(value, eventHandle);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

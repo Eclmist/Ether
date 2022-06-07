@@ -21,18 +21,18 @@
 
 ETH_NAMESPACE_BEGIN
 
-class RHIRootParameter
+class RhiRootParameter
 {
 public:
-    RHIRootParameter() = default;
-	virtual ~RHIRootParameter() = default;
+    RhiRootParameter() = default;
+	virtual ~RhiRootParameter() = default;
 
 public:
-    virtual RHIResult SetAsConstant(const RHIRootParameterConstantDesc& desc) = 0;
-    virtual RHIResult SetAsConstantBufferView(const RHIRootParameterCBVDesc& desc) = 0;
-    virtual RHIResult SetAsShaderResourceView(const RHIRootParameterSRVDesc& desc) = 0;
-    virtual RHIResult SetAsDescriptorTable(const RHIDescriptorTableDesc& desc) = 0;
-    virtual RHIResult SetAsDescriptorRange(const RHIDescriptorRangeDesc& desc) = 0;
+    virtual RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) = 0;
+    virtual RhiResult SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc) = 0;
+    virtual RhiResult SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc) = 0;
+    virtual RhiResult SetAsDescriptorTable(const RhiDescriptorTableDesc& desc) = 0;
+    virtual RhiResult SetAsDescriptorRange(const RhiDescriptorRangeDesc& desc) = 0;
 };
 
 ETH_NAMESPACE_END

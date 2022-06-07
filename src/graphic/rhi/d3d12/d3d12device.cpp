@@ -34,7 +34,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-RHIResult D3D12Device::CreateCommandAllocator(const RHICommandAllocatorDesc& desc, RHICommandAllocatorHandle& allocator) const
+RhiResult D3D12Device::CreateCommandAllocator(const RhiCommandAllocatorDesc& desc, RhiCommandAllocatorHandle& allocator) const
 {
     D3D12CommandAllocator* d3dCommandAllocator = new D3D12CommandAllocator();
 
@@ -45,10 +45,10 @@ RHIResult D3D12Device::CreateCommandAllocator(const RHICommandAllocatorDesc& des
 
     d3dCommandAllocator->m_Allocator->SetName(allocator.GetName().c_str());
     allocator.Set(d3dCommandAllocator);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreateCommandList(const RHICommandListDesc& desc, RHICommandListHandle& cmdList) const
+RhiResult D3D12Device::CreateCommandList(const RhiCommandListDesc& desc, RhiCommandListHandle& cmdList) const
 {
     D3D12CommandList* d3dCommandList = new D3D12CommandList(desc.m_Type);
     const auto allocator = desc.m_Allocator.As<D3D12CommandAllocator>();
@@ -63,10 +63,10 @@ RHIResult D3D12Device::CreateCommandList(const RHICommandListDesc& desc, RHIComm
 
     d3dCommandList->m_CommandList->SetName(cmdList.GetName().c_str());
     cmdList.Set(d3dCommandList);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreateCommandQueue(const RHICommandQueueDesc& desc, RHICommandQueueHandle& cmdQueue) const
+RhiResult D3D12Device::CreateCommandQueue(const RhiCommandQueueDesc& desc, RhiCommandQueueHandle& cmdQueue) const
 {
     D3D12CommandQueue* d3dCommandQueue = new D3D12CommandQueue(desc.m_Type);
 
@@ -77,10 +77,10 @@ RHIResult D3D12Device::CreateCommandQueue(const RHICommandQueueDesc& desc, RHICo
 
     d3dCommandQueue->m_CommandQueue->SetName(cmdQueue.GetName().c_str());
     cmdQueue.Set(d3dCommandQueue);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, RHIDescriptorHeapHandle& descriptorHeap) const
+RhiResult D3D12Device::CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc, RhiDescriptorHeapHandle& descriptorHeap) const
 {
     D3D12DescriptorHeap* d3dDescriptorHeap = new D3D12DescriptorHeap();
 
@@ -92,10 +92,10 @@ RHIResult D3D12Device::CreateDescriptorHeap(const RHIDescriptorHeapDesc& desc, R
     d3dDescriptorHeap->m_Heap->SetName(descriptorHeap.GetName().c_str());
     d3dDescriptorHeap->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
     descriptorHeap.Set(d3dDescriptorHeap);
-    return RHIResult();
+    return RhiResult();
 }
 
-RHIResult D3D12Device::CreateFence(RHIFenceHandle& fence) const
+RhiResult D3D12Device::CreateFence(RhiFenceHandle& fence) const
 {
     D3D12Fence* d3dFence = new D3D12Fence();
     HRESULT hr = m_Device->CreateFence(
@@ -106,10 +106,10 @@ RHIResult D3D12Device::CreateFence(RHIFenceHandle& fence) const
 
     d3dFence->m_Fence->SetName(fence.GetName().c_str());
     fence.Set(d3dFence);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreatePipelineState(const RHIPipelineStateDesc& desc, RHIPipelineStateHandle& pipelineState) const
+RhiResult D3D12Device::CreatePipelineState(const RhiPipelineStateDesc& desc, RhiPipelineStateHandle& pipelineState) const
 {
     D3D12PipelineState* d3dPipelineState = new D3D12PipelineState();
     const auto rootSignature = desc.m_RootSignature.As<D3D12RootSignature>();
@@ -133,17 +133,17 @@ RHIResult D3D12Device::CreatePipelineState(const RHIPipelineStateDesc& desc, RHI
 
     d3dPipelineState->m_PipelineState->SetName(pipelineState.GetName().c_str());
     pipelineState.Set(d3dPipelineState);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreateRootParameter(RHIRootParameterHandle& rootParameter) const
+RhiResult D3D12Device::CreateRootParameter(RhiRootParameterHandle& rootParameter) const
 {
     D3D12RootParameter* d3dRootParameter = new D3D12RootParameter();
     rootParameter.Set(d3dRootParameter);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12Device::CreateRootSignature(const RHIRootSignatureDesc& desc, RHIRootSignatureHandle& rootSignature) const
+RhiResult D3D12Device::CreateRootSignature(const RhiRootSignatureDesc& desc, RhiRootSignatureHandle& rootSignature) const
 {
     wrl::ComPtr<ID3DBlob> rsBlob, errBlob;
     D3D12RootSignature* d3dRootSignature = new D3D12RootSignature();
@@ -170,10 +170,10 @@ RHIResult D3D12Device::CreateRootSignature(const RHIRootSignatureDesc& desc, RHI
 
     d3dRootSignature->m_RootSignature->SetName(rootSignature.GetName().c_str());
     rootSignature.Set(d3dRootSignature);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChainHandle& swapChain) const
+RhiResult D3D12Device::CreateSwapChain(const RhiSwapChainDesc& desc, RhiSwapChainHandle& swapChain) const
 {
     D3D12SwapChain* d3dSwapChain = new D3D12SwapChain();
     const auto d3dCommandQueue = desc.m_CommandQueue.As<D3D12CommandQueue>();
@@ -195,13 +195,13 @@ RHIResult D3D12Device::CreateSwapChain(const RHISwapChainDesc& desc, RHISwapChai
     swapChain1.As(&d3dSwapChain->m_SwapChain);
 
     swapChain.Set(d3dSwapChain);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
-RHIResult D3D12Device::CreateRenderTargetView(const RHIRenderTargetViewDesc& desc, RHIRenderTargetViewHandle& rtvHandle) const
+RhiResult D3D12Device::CreateRenderTargetView(const RhiRenderTargetViewDesc& desc, RhiRenderTargetViewHandle& rtvHandle) const
 {
     D3D12RenderTargetView* d3dRtv = new D3D12RenderTargetView();
-    d3dRtv->m_CpuHandle = GraphicCore::GetRTVDescriptorHeap()->GetNextHandleCPU();
+    d3dRtv->m_CpuHandle = GraphicCore::GetRTVDescriptorHeap()->GetNextHandleCpu();
     GraphicCore::GetRTVDescriptorHeap()->IncrementHandle();
 
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
@@ -213,13 +213,13 @@ RHIResult D3D12Device::CreateRenderTargetView(const RHIRenderTargetViewDesc& des
     );
 
 	rtvHandle.Set(d3dRtv);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12Device::CreateDepthStencilView(const RHIDepthStencilViewDesc& desc, RHIDepthStencilViewHandle& dsvHandle) const
+RhiResult D3D12Device::CreateDepthStencilView(const RhiDepthStencilViewDesc& desc, RhiDepthStencilViewHandle& dsvHandle) const
 {
     D3D12DepthStencilView* d3dDsv = new D3D12DepthStencilView();
-    d3dDsv->m_CpuHandle = GraphicCore::GetDSVDescriptorHeap()->GetNextHandleCPU();
+    d3dDsv->m_CpuHandle = GraphicCore::GetDSVDescriptorHeap()->GetNextHandleCpu();
     GraphicCore::GetDSVDescriptorHeap()->IncrementHandle();
 
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
@@ -231,14 +231,14 @@ RHIResult D3D12Device::CreateDepthStencilView(const RHIDepthStencilViewDesc& des
     );
 
     dsvHandle.Set(d3dDsv);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12Device::CreateShaderResourceView(const RHIShaderResourceViewDesc& desc, RHIShaderResourceViewHandle& srvHandle) const
+RhiResult D3D12Device::CreateShaderResourceView(const RhiShaderResourceViewDesc& desc, RhiShaderResourceViewHandle& srvHandle) const
 {
     D3D12ShaderResourceView* d3dSrv = new D3D12ShaderResourceView();
-    d3dSrv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCPU();
-    d3dSrv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleGPU();
+    d3dSrv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCpu();
+    d3dSrv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextGpuHandle();
     GraphicCore::GetSRVDescriptorHeap()->IncrementHandle();
 
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
@@ -250,14 +250,14 @@ RHIResult D3D12Device::CreateShaderResourceView(const RHIShaderResourceViewDesc&
     );
 
     srvHandle.Set(d3dSrv);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12Device::CreateConstantBufferView(const RHIConstantBufferViewDesc& desc, RHIConstantBufferViewHandle& cbvHandle) const
+RhiResult D3D12Device::CreateConstantBufferView(const RhiConstantBufferViewDesc& desc, RhiConstantBufferViewHandle& cbvHandle) const
 {
     D3D12ConstantBufferView* d3dCbv = new D3D12ConstantBufferView();
-    d3dCbv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCPU();
-    d3dCbv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleGPU();
+    d3dCbv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextHandleCpu();
+    d3dCbv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextGpuHandle();
     GraphicCore::GetSRVDescriptorHeap()->IncrementHandle();
 
     const auto d3dResource = desc.m_Resource.As<D3D12Resource>();
@@ -268,15 +268,15 @@ RHIResult D3D12Device::CreateConstantBufferView(const RHIConstantBufferViewDesc&
     );
 
     cbvHandle.Set(d3dCbv);
-    return RHIResult::Success;
+    return RhiResult::Success;
 }
 
-RHIResult D3D12Device::CreateUnorderedAccessView(const RHIUnorderedAccessViewDesc& desc, RHIUnorderedAccessViewHandle& uavHandle) const
+RhiResult D3D12Device::CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc, RhiUnorderedAccessViewHandle& uavHandle) const
 {
-    return RHIResult::NotSupported;
+    return RhiResult::NotSupported;
 }
 
-RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& desc, RHIResourceHandle& resourceHandle) const
+RhiResult D3D12Device::CreateCommittedResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resourceHandle) const
 {
     D3D12Resource* d3dResource = new D3D12Resource();
 
@@ -291,7 +291,7 @@ RHIResult D3D12Device::CreateCommittedResource(const RHICommitedResourceDesc& de
 
     d3dResource->m_Resource->SetName(resourceHandle.GetName().c_str());
     resourceHandle.Set(d3dResource);
-    return TO_RHI_RESULT(hr);
+    return TO_Rhi_RESULT(hr);
 }
 
 ETH_NAMESPACE_END

@@ -38,35 +38,35 @@ public:
 
 public:
     // TODO: Privatize with getters
-    RHIRasterizerDesc m_RasterizerDefault;
-    RHIRasterizerDesc m_RasterizerDefaultCw;
-    RHIRasterizerDesc m_RasterizerWireframe;
-    RHIRasterizerDesc m_RasterizerWireframeCw;
+    RhiRasterizerDesc m_RasterizerDefault;
+    RhiRasterizerDesc m_RasterizerDefaultCw;
+    RhiRasterizerDesc m_RasterizerWireframe;
+    RhiRasterizerDesc m_RasterizerWireframeCw;
 
-    RHIBlendDesc m_BlendDisabled;
-    RHIBlendDesc m_BlendPreMultiplied;
-    RHIBlendDesc m_BlendTraditional;
-    RHIBlendDesc m_BlendAdditive;
-    RHIBlendDesc m_BlendTraditionalAdditive;
+    RhiBlendDesc m_BlendDisabled;
+    RhiBlendDesc m_BlendPreMultiplied;
+    RhiBlendDesc m_BlendTraditional;
+    RhiBlendDesc m_BlendAdditive;
+    RhiBlendDesc m_BlendTraditionalAdditive;
 
-    RHIDepthStencilDesc m_DepthStateDisabled;
-    RHIDepthStencilDesc m_DepthStateReadWrite;
-    RHIDepthStencilDesc m_DepthStateReadOnly;
-    RHIDepthStencilDesc m_DepthStateTestEqual;
+    RhiDepthStencilDesc m_DepthStateDisabled;
+    RhiDepthStencilDesc m_DepthStateReadWrite;
+    RhiDepthStencilDesc m_DepthStateReadOnly;
+    RhiDepthStencilDesc m_DepthStateTestEqual;
 
-    RHIInputLayoutDesc m_DefaultInputLayout;
+    RhiInputLayoutDesc m_DefaultInputLayout;
 
     std::unique_ptr<class Shader> m_DefaultVS;
     std::unique_ptr<class Shader> m_DefaultPS;
 
-    RHIPipelineStateHandle m_DefaultPSO;
-    RHIPipelineStateHandle m_DefaultWireframePSO;
-    RHIRootSignatureHandle m_EmptyRootSignature;
-    RHIRootSignatureFlag m_DefaultRootSignatureFlags;
+    RhiPipelineStateHandle m_DefaultPSO;
+    RhiPipelineStateHandle m_DefaultWireframePSO;
+    RhiRootSignatureHandle m_EmptyRootSignature;
+    RhiRootSignatureFlag m_DefaultRootSignatureFlags;
 
-    RHISamplerParameterDesc m_PointSampler;
-    RHISamplerParameterDesc m_BilinearSampler;
-    RHISamplerParameterDesc m_EnvMapSampler;
+    RhiSamplerParameterDesc m_PointSampler;
+    RhiSamplerParameterDesc m_BilinearSampler;
+    RhiSamplerParameterDesc m_EnvMapSampler;
 };
 
 ETH_NAMESPACE_END

@@ -24,20 +24,20 @@ ETH_NAMESPACE_BEGIN
 class CommandAllocatorPool : public NonCopyable
 {
 public:
-    CommandAllocatorPool(RHICommandListType type);
+    CommandAllocatorPool(RhiCommandListType type);
     ~CommandAllocatorPool();
 
-    RHICommandAllocatorHandle RequestAllocator(RHIFenceValue completedFenceValue);
-    void DiscardAllocator(RHICommandAllocatorHandle allocator, RHIFenceValue fenceValue);
+    RhiCommandAllocatorHandle RequestAllocator(RhiFenceValue completedFenceValue);
+    void DiscardAllocator(RhiCommandAllocatorHandle allocator, RhiFenceValue fenceValue);
 
 private:
-    RHICommandAllocatorHandle CreateNewAllocator();
+    RhiCommandAllocatorHandle CreateNewAllocator();
     
 private:
-    const RHICommandListType m_Type;
+    const RhiCommandListType m_Type;
 
-    std::vector<RHICommandAllocatorHandle> m_AllocatorPool;
-    std::queue<std::pair<RHICommandAllocatorHandle, RHIFenceValue>> m_DiscardedAllocators;
+    std::vector<RhiCommandAllocatorHandle> m_AllocatorPool;
+    std::queue<std::pair<RhiCommandAllocatorHandle, RhiFenceValue>> m_DiscardedAllocators;
 };
 
 ETH_NAMESPACE_END

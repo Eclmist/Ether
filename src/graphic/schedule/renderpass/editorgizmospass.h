@@ -39,9 +39,9 @@ private:
     void InitializeRootSignature();
 
 private:
-    RHIRasterizerDesc m_RasterizerDesc;
-    RHIPipelineStateHandle m_PipelineState;
-    RHIRootSignatureHandle m_RootSignature;
+    RhiRasterizerDesc m_RasterizerDesc;
+    RhiPipelineStateHandle m_PipelineState;
+    RhiRootSignatureHandle m_RootSignature;
 
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;
