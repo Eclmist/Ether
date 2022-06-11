@@ -1,8 +1,8 @@
 @echo off
 
-echo Generating Visual Studio solutions for Ether
-cmake -B build -S .
-
+:: ============== WINDOWS ============== ::
+echo Generating Visual Studio solutions for Ether (Windows)
+cmake -B build\win32
 if %errorlevel% neq 0 (
     echo CMake exited with error code %errorlevel%
     echo Projects generation failed
@@ -12,8 +12,8 @@ if %errorlevel% neq 0 (
 )
 
 echo Creating Symbolic Links for Data
-if not exist ".\build\Data" md ".\build\Data"
-if not exist ".\build\Data\shader" mklink /J ".\build\Data\shader" ".\src\graphic\shader"
+if not exist ".\build\win32\Data" md ".\build\win32\Data"
+if not exist ".\build\win32\Data\shader" mklink /J ".\build\win32\Data\shader" ".\src\graphic\shader"
 
 if %errorlevel% neq 0 (
     echo Failed to create symlink with error code %errorlevel%
@@ -22,7 +22,9 @@ if %errorlevel% neq 0 (
     pause
     exit
 )
+
+echo Windows solutions generated successfully
+
 color 2F
 echo Projects generated successfully
-
 PAUSE

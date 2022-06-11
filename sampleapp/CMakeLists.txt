@@ -29,13 +29,13 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 # =========================================================================== #
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
-
-add_executable(SampleApp WIN32 ${sample_app})
-set_property(TARGET SampleApp PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+add_executable(SampleApp.Win32 WIN32 ${sample_app})
+target_compile_definitions(SampleApp.Win32 PRIVATE ETH_PLATFORM_WIN32)
+set_property(TARGET SampleApp.Win32 PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
 # =========================================================================== #
 #                                LINK LIBRARIES                               #
 # =========================================================================== #
 
-target_link_libraries(SampleApp ${ENGINE_PROJECT})
-set_target_properties(SampleApp PROPERTIES LINK_FLAGS ${CMAKE_SOURCE_DIR}/resource/Ether.res)
+target_link_libraries(SampleApp.Win32 ${ENGINE_PROJECT_DX12})
+set_target_properties(SampleApp.Win32 PROPERTIES LINK_FLAGS ${CMAKE_SOURCE_DIR}/resource/Ether.res)
