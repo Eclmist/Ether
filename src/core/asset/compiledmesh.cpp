@@ -21,26 +21,18 @@
 
 ETH_NAMESPACE_BEGIN
 
-CompiledMesh::CompiledMesh()
-    : m_VertexBuffer(nullptr)
-    , m_VertexBufferSize(0)
-    , m_NumVertices(0)
-    , m_NumIndices(0)
-{
-}
-
 void CompiledMesh::Serialize(OStream& ostream)
 {
     Asset::Serialize(ostream);
 
-    ostream << m_VertexBufferSize;
+    ostream << (uint32_t)m_VertexBuffer.size();
+    ostream << (uint32_t)m_IndexBuffer.size();
     ostream << m_NumVertices;
-    ostream << m_NumIndices;
 
-    for (int i = 0; i < m_VertexBufferSize; ++i)
-        ostream << reinterpret_cast<char*>(m_VertexBuffer)[i];
+    for (int i = 0; i < m_VertexBuffer.size(); ++i)
+        ostream << m_VertexBuffer[i];
 
-    for (int i = 0; i < m_NumIndices; ++i)
+    for (int i = 0; i < m_IndexBuffer.size(); ++i)
         ostream << m_IndexBuffer[i];
 }
 
@@ -48,15 +40,20 @@ void CompiledMesh::Deserialize(IStream& istream)
 {
     Asset::Deserialize(istream);
 
-    istream >> m_VertexBufferSize;
+    uint32_t vertexBufferSize;
+    uint32_t numIndices;
+
+    istream >> vertexBufferSize;
+    istream >> numIndices;
     istream >> m_NumVertices;
-    istream >> m_NumIndices;
 
-    m_VertexBuffer = malloc(m_VertexBufferSize);
-    for (int i = 0; i < m_VertexBufferSize; ++i)
-        istream >> reinterpret_cast<char*>(m_VertexBuffer)[i];
+    m_IndexBuffer.resize(numIndices);
+    m_VertexBuffer.resize(vertexBufferSize);
 
-    for (int i = 0; i < m_NumIndices; ++i)
+    for (int i = 0; i < vertexBufferSize; ++i)
+        istream >> m_VertexBuffer[i];
+
+    for (int i = 0; i < numIndices; ++i)
         istream >> m_IndexBuffer[i];
 }
 
@@ -68,44 +65,26 @@ void CompiledMesh::SetRawMesh(std::shared_ptr<Mesh> rawMesh)
     UpdateBuffers();
 }
 
-void CompiledMesh::SetVertexBuffer(void* vertices, size_t size)
+void CompiledMesh::SetVertexBuffer(char* vertices, size_t size)
 {
-    if (m_VertexBuffer != nullptr)
-        free(m_VertexBuffer);
-
-    m_VertexBuffer = malloc(size);
-    m_VertexBufferSize = size;
-    memcpy(m_VertexBuffer, vertices, size);
+    m_VertexBuffer.resize(size);
+    m_VertexBuffer.assign(vertices, vertices + size);
 }
 
 void CompiledMesh::SetIndexBuffer(uint32_t* indices, size_t size)
 {
-    memcpy(m_IndexBuffer, indices, size);
-}
-
-void CompiledMesh::ClearBuffers()
-{
-    memset(m_VertexBuffer, 0, m_VertexBufferSize);
-    memset(m_IndexBuffer, 0, sizeof(m_IndexBuffer));
-    m_VertexBuffer = nullptr;
-	m_VertexBufferSize = 0;
-	m_NumVertices = 0;
-    m_NumIndices = 0;
+    m_IndexBuffer.resize(size);
+    m_IndexBuffer.assign(indices, indices + size);
 }
 
 void CompiledMesh::UpdateBuffers()
 {
     if (m_RawMesh->GetNumIndices() >= MAX_VERTICES)
-    {
-		LogToolmodeError("Failed to load mesh asset - max vertex count exceeded");
-        ClearBuffers();
-        return;
-    }
+		LogToolmodeWarning("Max recommended vertex count exceeded. Memory exceptions may occur.");
 
-    SetVertexBuffer(m_RawMesh->GetPackedVertexData(), m_RawMesh->GetPackedVertexDataSize());
-    SetIndexBuffer(m_RawMesh->GetIndices(), m_RawMesh->GetIndicesSize());
+    SetVertexBuffer(static_cast<char*>(m_RawMesh->GetPackedVertexData()), m_RawMesh->GetPackedVertexDataSize());
+    SetIndexBuffer(m_RawMesh->GetIndices(), m_RawMesh->GetNumIndices());
     m_NumVertices = m_RawMesh->GetNumVertices();
-    m_NumIndices = m_RawMesh->GetNumIndices();
 }
 
 #endif // ETH_TOOLMODE

@@ -43,12 +43,6 @@ void MeshComponent::Deserialize(IStream& istream)
 
 void MeshComponent::SetCompiledMesh(std::shared_ptr<CompiledMesh> mesh)
 {
-    if (mesh->GetNumVertices() > MAX_VERTICES)
-    {
-        LogEngineError("Failed to set mesh asset - max vertex count exceeded");
-        return;
-    }
-
     m_Mesh = mesh;
     m_MeshChanged = true;
 }

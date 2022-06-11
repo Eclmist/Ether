@@ -27,13 +27,12 @@
 
 ETH_NAMESPACE_BEGIN
 
-// Arbitrary max number of vertices
-#define MAX_VERTICES 65536 * 10 // Multiplication is a temp workaround for the lack of mesh splitting. TODO. 
+#define MAX_VERTICES 65536 
 
 class CompiledMesh : public Asset
 {
 public:
-    CompiledMesh();
+    CompiledMesh() = default;
     ~CompiledMesh() = default;
 
     void Serialize(OStream& ostream) override;
@@ -41,30 +40,26 @@ public:
 
 public:
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
-    inline uint32_t GetNumIndices() const { return m_NumIndices; }
+    inline uint32_t GetNumIndices() const { return m_IndexBuffer.size(); }
 
-    inline void* GetVertexBuffer() const { return m_VertexBuffer; }
-    inline size_t GetVertexBufferSize() const { return m_VertexBufferSize; }
-    inline uint32_t* GetIndexBuffer() const { return (uint32_t*)m_IndexBuffer; }
+    inline const void* GetVertexBuffer() const { return m_VertexBuffer.data(); }
+    inline const uint32_t* GetIndexBuffer() const { return m_IndexBuffer.data(); }
 
-    inline bool IsValid() const { return m_VertexBuffer != nullptr; }
+    inline bool IsValid() const { return GetNumVertices() > 0; }
 
 public:
     ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<Mesh> rawMesh));
 
 private:
-    ETH_TOOLONLY(void SetVertexBuffer(void* vertices, size_t size));
+    ETH_TOOLONLY(void SetVertexBuffer(char* vertices, size_t size));
     ETH_TOOLONLY(void SetIndexBuffer(uint32_t* indices, size_t size));
-    ETH_TOOLONLY(void ClearBuffers());
     ETH_TOOLONLY(void UpdateBuffers());
 
 private:
-    void* m_VertexBuffer;
-    uint32_t m_VertexBufferSize;
-    uint32_t m_IndexBuffer[MAX_VERTICES];
+    std::vector<char> m_VertexBuffer;
+    std::vector<uint32_t> m_IndexBuffer;
 
     uint32_t m_NumVertices;
-    uint32_t m_NumIndices;
 
     ETH_TOOLONLY(std::shared_ptr<Mesh> m_RawMesh);
 };

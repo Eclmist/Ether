@@ -35,6 +35,13 @@ float2 SampleSphericalMap(float3 direction)
     return uv;
 }
 
+float4 FilmicToneMapping(float4 color)
+{
+    color = max(0, color - 0.004);
+    color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
+    return color;
+}
+
 struct VS_OUTPUT
 {
     float4 Position   : SV_Position;

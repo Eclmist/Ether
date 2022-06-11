@@ -189,7 +189,7 @@ float3 UniformSample(float2 Xi, float3 N)
     return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
-#define NUM_SAMPLES 1
+#define NUM_SAMPLES 16
 
 float3 SpecularIBL(float3 normal, float3 wo, Material material)
 {
@@ -297,7 +297,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     lights[5].Position = float3(4.5, 9.0, 16.0);
     lights[5].Color = float3(saturate(sin(time.y+1.6)), 0.73, 0.57);
-    lights[5].Intensity = sin(time.z)  * 5.0f;
+    lights[5].Intensity =  5.0f;
     lights[5].Radius = 20.0f;
 
     //lights[0].Position = float3(-60.5, 0.0, 0.0);
@@ -307,7 +307,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     lights[0].Position = float3(5.0, 2.0, 0.0);
     lights[0].Color = float3(1.0, 1.0, 1.0);
-    lights[0].Intensity = (sin(time.z) * 0.5 + 0.5)  * 10.0f;
+    lights[0].Intensity = 10.0f;// (sin(time.z) * 0.5 + 0.5) * 10.0f;
     lights[0].Radius = 3.0f;
 }
 
@@ -320,14 +320,14 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     Material mat;
     mat.BaseColor = albedo.xyz;
     mat.SpecularColor = specular.xyz;
-    mat.Roughness = albedo.w;
+    mat.Roughness = max(0.1, albedo.w - abs(albedo.b - (0.5 * albedo.g + 0.5 * albedo.r)));
     mat.Metalness = specular.w;
 
     const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
     const float3 n = normalize(normal);
     float3 finalColor = DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
 
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         lights[i].Radius *= 5.2;
         lights[i].Intensity *= 0.3;

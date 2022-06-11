@@ -48,7 +48,7 @@ GuiRenderer::GuiRenderer()
     ImGui_ImplDX12_Init(
         d3dDevice->m_Device.Get(),
         3, // ETH_MAX_NUM_SWAPCHAIN_BUFFERS,
-        DXGI_FORMAT_R16G16B16A16_FLOAT,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
         m_SRVDescriptorHeap.As<D3D12DescriptorHeap>()->m_Heap.Get(),
         m_SRVDescriptorHeap.As<D3D12DescriptorHeap>()->m_Heap->GetCPUDescriptorHandleForHeapStart(),
         m_SRVDescriptorHeap.As<D3D12DescriptorHeap>()->m_Heap->GetGPUDescriptorHandleForHeapStart()

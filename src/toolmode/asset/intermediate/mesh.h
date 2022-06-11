@@ -63,7 +63,6 @@ public:
     inline void* GetPackedVertexData() const { return (void*)m_PackedVertexData.data(); }
     inline size_t GetPackedVertexDataSize() const { return m_PackedVertexData.size() * sizeof(m_PackedVertexData[0]); }
     inline uint32_t* GetIndices() const { return (uint32_t*)m_Indices.data(); }
-    inline size_t GetIndicesSize() const { return m_Indices.size() * sizeof(m_Indices[0]); }
 
     inline uint32_t GetNumVertices() const { return m_PackedVertexData.size(); }
     inline uint32_t GetNumIndices() const { return m_Indices.size(); }

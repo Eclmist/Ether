@@ -53,7 +53,7 @@ float4 PS_HighPass(VS_OUTPUT IN) : SV_Target
     float4 col = SourceTexture.Sample(g_BilinearSampler, IN.UV);
 
     float lum = col.r * 0.3 + col.g * 0.59 + col.b * 0.11;
-    if (lum >= 0.95)
+    if (lum >= 1.0)
         return col;
     
     return 0;
@@ -76,5 +76,5 @@ float4 PS_Composite(VS_OUTPUT IN) : SV_Target
     float4 flare5 = BloomTexture6.Sample(g_BilinearSampler, (1-IN.UV) * 0.1 + 0.45) * float4(0.6, 0.3, 0.9, 1.0);
     float4 flare6 = BloomTexture6.Sample(g_BilinearSampler, (1-IN.UV) * 2.0 - 1.0) * float4(0.6, 0.3, 0.9, 1.0);
     
-    return col + bloom * 0.9 + (flare1 + flare2 + flare3 + flare4 + flare5) * 0.3;
+    return col + bloom * 0.01 + (flare1 + flare2 + flare3 + flare4 + flare5) * 0.3;
 }
