@@ -19,7 +19,7 @@
 
 #pragma once
 
-#define ETH_SHADER_SOURCE_DIR               L"../../src/graphic/shader/"
+#define ETH_SHADER_SOURCE_DIR               L"../../../src/graphic/shader/"
 
 #define ASSERT_SUCCESS(hr)                  if (FAILED(hr)) { LogGraphicsFatal("Graphic API operation failed - %s", #hr); throw std::exception(); }
 

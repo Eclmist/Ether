@@ -19,28 +19,24 @@
 
 #pragma once
 
-#include "graphic/rhi/rhiresource.h"
+#include "graphic/rhi/rhirootsignature.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Resource : public RhiResource
+class Dx12RootSignature : public RhiRootSignature
 {
 public:
-    D3D12Resource() = default;
-    ~D3D12Resource() override = default;
-
-public:
-    RhiGpuHandle GetGpuHandle() const override;
-    RhiResult SetName(const std::wstring& name) const override;
-    RhiResult Map(void** mappedAddr) const override;
-    RhiResult Unmap() const override;
+    Dx12RootSignature();
+    ~Dx12RootSignature() override = default;
 
 private:
-    friend class D3D12CommandList;
-    friend class D3D12Device;
-    friend class D3D12SwapChain;
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    friend class Dx12PipelineState;
+    wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
 
-    wrl::ComPtr<ID3D12Resource> m_Resource;
+    std::vector<D3D12_ROOT_PARAMETER> m_D3DRootParameters;
+	std::vector<D3D12_STATIC_SAMPLER_DESC> m_D3DStaticSamplers;
 };
 
 ETH_NAMESPACE_END

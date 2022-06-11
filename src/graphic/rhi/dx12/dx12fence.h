@@ -19,28 +19,24 @@
 
 #pragma once
 
-#ifdef ETH_GRAPHICS_DX12
-#include "dx12/dx12includes.h"
-#endif
+#include "graphic/rhi/rhifence.h"
 
 ETH_NAMESPACE_BEGIN
 
-class RhiModule
+class Dx12Fence : public RhiFence
 {
 public:
-    RhiModule() = default;
-	virtual ~RhiModule() = default;
+    Dx12Fence() = default;
+    ~Dx12Fence() override = default;
 
 public:
-    virtual RhiResult Initialize() = 0;
-    virtual RhiResult Shutdown() = 0;
+    RhiFenceValue GetCompletedValue() override;
+    RhiResult SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle) override;
 
-public:
-    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
-
-public:
-    static RhiModuleHandle CreateModule();
+private:
+    friend class Dx12Device;
+    friend class Dx12CommandQueue;
+    wrl::ComPtr<ID3D12Fence> m_Fence;
 };
 
 ETH_NAMESPACE_END
-

@@ -17,27 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphic/rhi/rhirootsignature.h"
+#include "dx12commandallocator.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12RootSignature : public RhiRootSignature
+RhiResult Dx12CommandAllocator::Reset() const
 {
-public:
-    D3D12RootSignature();
-    ~D3D12RootSignature() override = default;
-
-private:
-    friend class D3D12CommandList;
-    friend class D3D12Device;
-    friend class D3D12PipelineState;
-    wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
-
-    std::vector<D3D12_ROOT_PARAMETER> m_D3DRootParameters;
-	std::vector<D3D12_STATIC_SAMPLER_DESC> m_D3DStaticSamplers;
-};
+    return TO_RHI_RESULT(m_Allocator->Reset());
+}
 
 ETH_NAMESPACE_END
 

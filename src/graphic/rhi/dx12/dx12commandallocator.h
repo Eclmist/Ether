@@ -19,28 +19,23 @@
 
 #pragma once
 
-#include "graphic/rhi/rhirootparameter.h"
+#include "graphic/rhi/rhicommandallocator.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12RootParameter : public RhiRootParameter
+class Dx12CommandAllocator : public RhiCommandAllocator
 {
 public:
-    D3D12RootParameter() = default;
-    ~D3D12RootParameter() override = default;
+    Dx12CommandAllocator() = default;
+    ~Dx12CommandAllocator() override = default;
 
 public:
-    RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) override;
-    RhiResult SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc) override;
-    RhiResult SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc) override;
-    RhiResult SetAsDescriptorTable(const RhiDescriptorTableDesc& desc) override;
-    RhiResult SetAsDescriptorRange(const RhiDescriptorRangeDesc& desc) override;
+    RhiResult Reset() const override;
 
 private:
-    friend class D3D12Device;
-    friend class D3D12RootSignature;
-    D3D12_ROOT_PARAMETER m_Parameter;
+    friend class Dx12Device;
+    friend class Dx12CommandList;
+    wrl::ComPtr<ID3D12CommandAllocator> m_Allocator;
 };
 
 ETH_NAMESPACE_END
-

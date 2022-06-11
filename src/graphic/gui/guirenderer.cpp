@@ -24,9 +24,9 @@
 #include "graphic/gui/loggingguicomponent.h"
 #include "graphic/gui/debugmenuguicomponent.h"
 
-#include "graphic/rhi/d3d12/d3d12commandlist.h"
-#include "graphic/rhi/d3d12/d3d12device.h"
-#include "graphic/rhi/d3d12/d3d12descriptorheap.h"
+#include "graphic/rhi/dx12/dx12commandlist.h"
+#include "graphic/rhi/dx12/dx12device.h"
+#include "graphic/rhi/dx12/dx12descriptorheap.h"
 #include "graphic/rhi/rhidescriptorheap.h"
 #include "graphic/rhi/rhicommandlist.h"
 
@@ -37,7 +37,7 @@ GuiRenderer::GuiRenderer()
 {
     LogGraphicsInfo("Initializing GUI Manager");
 
-    const auto d3dDevice = GraphicCore::GetDevice().As<D3D12Device>();
+    const auto d3dDevice = GraphicCore::GetDevice().As<Dx12Device>();
 
     m_SRVDescriptorHeap.SetName(L"GUIRenderer::SRVDescriptorHeap");
     GraphicCore::GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 4096 }, m_SRVDescriptorHeap);
@@ -49,9 +49,9 @@ GuiRenderer::GuiRenderer()
         d3dDevice->m_Device.Get(),
         3, // ETH_MAX_NUM_SWAPCHAIN_BUFFERS,
         DXGI_FORMAT_R8G8B8A8_UNORM,
-        m_SRVDescriptorHeap.As<D3D12DescriptorHeap>()->m_Heap.Get(),
-        m_SRVDescriptorHeap.As<D3D12DescriptorHeap>()->m_Heap->GetCPUDescriptorHandleForHeapStart(),
-        m_SRVDescriptorHeap.As<D3D12DescriptorHeap>()->m_Heap->GetGPUDescriptorHandleForHeapStart()
+        m_SRVDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap.Get(),
+        m_SRVDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap->GetCPUDescriptorHandleForHeapStart(),
+        m_SRVDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap->GetGPUDescriptorHandleForHeapStart()
     );
 
     SetImGuiStyle();
@@ -87,7 +87,7 @@ void GuiRenderer::Render()
 
     
     m_Context.GetCommandList()->SetDescriptorHeaps({ 1, &m_SRVDescriptorHeap });
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context.GetCommandList().As<D3D12CommandList>()->m_CommandList.Get());
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context.GetCommandList().As<Dx12CommandList>()->m_CommandList.Get());
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
 }

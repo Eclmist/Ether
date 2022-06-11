@@ -23,11 +23,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Device : public RhiDevice
+class Dx12Device : public RhiDevice
 {
 public:
-    D3D12Device() = default;
-    ~D3D12Device() override = default;
+    Dx12Device() = default;
+    ~Dx12Device() override = default;
 
 public:
     RhiResult CreateCommandAllocator(const RhiCommandAllocatorDesc& desc, RhiCommandAllocatorHandle& allocator) const override;
@@ -49,7 +49,7 @@ public:
     RhiResult CreateCommittedResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resourceHandle) const override;
 
 protected:
-    friend class D3D12Module;
+    friend class Dx12Module;
     // TODO: Remove after GUI-Rhi refactor
     friend class GuiRenderer;
     wrl::ComPtr<ID3D12Device3> m_Device;

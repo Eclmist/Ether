@@ -19,28 +19,14 @@
 
 #pragma once
 
-#ifdef ETH_GRAPHICS_DX12
-#include "dx12/dx12includes.h"
-#endif
+// ComPtr library
+#include <wrl.h>
+namespace wrl = Microsoft::WRL;
 
-ETH_NAMESPACE_BEGIN
-
-class RhiModule
-{
-public:
-    RhiModule() = default;
-	virtual ~RhiModule() = default;
-
-public:
-    virtual RhiResult Initialize() = 0;
-    virtual RhiResult Shutdown() = 0;
-
-public:
-    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
-
-public:
-    static RhiModuleHandle CreateModule();
-};
-
-ETH_NAMESPACE_END
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3d12shader.h>
+#include <dxc/dxcapi.h>
+#include <DirectXMath.h>
+#include <d3dx12/d3dx12.h>
 

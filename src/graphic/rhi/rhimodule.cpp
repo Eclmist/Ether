@@ -19,34 +19,25 @@
 
 #include "rhimodule.h"
 
-#define ETH_HAS_D3D12_SUPPORT
-
-#ifdef ETH_HAS_D3D12_SUPPORT
-#include "d3d12/d3d12module.h"
+#ifdef ETH_GRAPHICS_DX12
+#include "dx12/dx12module.h"
 #endif
 
-#ifdef ETH_HAS_VULKAN_SUPPORT
-#include "vulkan/vulkanmodule.h"
+#ifdef ETH_GRAPHICS_AGC
+#include "agc/agcmodule.h"
 #endif
 
 ETH_NAMESPACE_BEGIN
 
-RhiModuleHandle RhiModule::CreateModule(RhiModuleType type)
+RhiModuleHandle RhiModule::CreateModule()
 {
-    if (type == RhiModuleType::D3D12)
-#ifdef ETH_HAS_D3D12_SUPPORT
-        return RhiModuleHandle(new D3D12Module());
-#else
-        LogGraphicsFatal("D3D12 is not supported on the current platform");
+#if defined(ETH_GRAPHICS_DX12)
+	return RhiModuleHandle(new Dx12Module());
+#else defined (ETH_GRAPHICS_AGC)
+	return RhiModuleHandle(new AgcModule());
 #endif
 
-    if (type == RhiModuleType::Vulkan)
-#ifdef ETH_HAS_VULKAN_SUPPORT
-        return RhiModuleHandle(new VulkanModule());
-#else
-        LogGraphicsFatal("Vulkan is not yet supported");
-#endif
-
+    LogGraphicsFatal("No supported graphics API defined");
     return RhiModuleHandle();
 }
 

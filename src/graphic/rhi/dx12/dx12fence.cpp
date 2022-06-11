@@ -17,26 +17,20 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphic/rhi/rhifence.h"
+#include "dx12fence.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Fence : public RhiFence
+RhiFenceValue Dx12Fence::GetCompletedValue()
 {
-public:
-    D3D12Fence() = default;
-    ~D3D12Fence() override = default;
+    return m_Fence->GetCompletedValue();
+}
 
-public:
-    RhiFenceValue GetCompletedValue() override;
-    RhiResult SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle) override;
-
-private:
-    friend class D3D12Device;
-    friend class D3D12CommandQueue;
-    wrl::ComPtr<ID3D12Fence> m_Fence;
-};
+RhiResult Dx12Fence::SetEventOnCompletion(RhiFenceValue value, HANDLE eventHandle)
+{
+    HRESULT hr = m_Fence->SetEventOnCompletion(value, eventHandle);
+    return TO_RHI_RESULT(hr);
+}
 
 ETH_NAMESPACE_END
+

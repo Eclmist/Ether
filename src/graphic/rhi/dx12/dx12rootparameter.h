@@ -19,27 +19,27 @@
 
 #pragma once
 
-#ifdef ETH_GRAPHICS_DX12
-#include "dx12/dx12includes.h"
-#endif
+#include "graphic/rhi/rhirootparameter.h"
 
 ETH_NAMESPACE_BEGIN
 
-class RhiModule
+class D3D12RootParameter : public RhiRootParameter
 {
 public:
-    RhiModule() = default;
-	virtual ~RhiModule() = default;
+    D3D12RootParameter() = default;
+    ~D3D12RootParameter() override = default;
 
 public:
-    virtual RhiResult Initialize() = 0;
-    virtual RhiResult Shutdown() = 0;
+    RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) override;
+    RhiResult SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc) override;
+    RhiResult SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc) override;
+    RhiResult SetAsDescriptorTable(const RhiDescriptorTableDesc& desc) override;
+    RhiResult SetAsDescriptorRange(const RhiDescriptorRangeDesc& desc) override;
 
-public:
-    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
-
-public:
-    static RhiModuleHandle CreateModule();
+private:
+    friend class Dx12Device;
+    friend class Dx12RootSignature;
+    D3D12_ROOT_PARAMETER m_Parameter;
 };
 
 ETH_NAMESPACE_END

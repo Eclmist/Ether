@@ -31,6 +31,7 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 # =========================================================================== #
 add_executable(SampleApp.Win32 WIN32 ${sample_app})
 target_compile_definitions(SampleApp.Win32 PRIVATE ETH_PLATFORM_WIN32)
+target_compile_definitions(SampleApp.Win32 PRIVATE ETH_GRAPHICS_DX12)
 set_property(TARGET SampleApp.Win32 PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
 # =========================================================================== #

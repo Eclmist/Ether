@@ -17,30 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#ifdef ETH_GRAPHICS_DX12
-#include "dx12/dx12includes.h"
-#endif
+#include "dx12rootsignature.h"
 
 ETH_NAMESPACE_BEGIN
 
-class RhiModule
+Dx12RootSignature::Dx12RootSignature()
+    : RhiRootSignature(0, 0)
 {
-public:
-    RhiModule() = default;
-	virtual ~RhiModule() = default;
-
-public:
-    virtual RhiResult Initialize() = 0;
-    virtual RhiResult Shutdown() = 0;
-
-public:
-    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
-
-public:
-    static RhiModuleHandle CreateModule();
-};
+}
 
 ETH_NAMESPACE_END
 

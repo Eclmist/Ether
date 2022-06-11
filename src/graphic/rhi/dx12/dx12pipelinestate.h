@@ -19,27 +19,21 @@
 
 #pragma once
 
-#ifdef ETH_GRAPHICS_DX12
-#include "dx12/dx12includes.h"
-#endif
+#include "graphic/rhi/rhipipelinestate.h"
 
 ETH_NAMESPACE_BEGIN
 
-class RhiModule
+class Dx12PipelineState : public RhiPipelineState
 {
 public:
-    RhiModule() = default;
-	virtual ~RhiModule() = default;
+    Dx12PipelineState() = default;
+    ~Dx12PipelineState() = default;
 
-public:
-    virtual RhiResult Initialize() = 0;
-    virtual RhiResult Shutdown() = 0;
-
-public:
-    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
-
-public:
-    static RhiModuleHandle CreateModule();
+private:
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
+    std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputElements;
 };
 
 ETH_NAMESPACE_END

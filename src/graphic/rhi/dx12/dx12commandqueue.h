@@ -19,31 +19,35 @@
 
 #pragma once
 
-#include "graphic/rhi/rhimodule.h"
+#include "graphic/rhi/rhicommandqueue.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12Module : public RhiModule
+class Dx12CommandQueue : public RhiCommandQueue
 {
 public:
-    D3D12Module() = default;
-    ~D3D12Module() override = default;
+    Dx12CommandQueue(RhiCommandListType type = RhiCommandListType::Graphic);
+    ~Dx12CommandQueue() override;
 
 public:
-    RhiResult Initialize() override;
-    RhiResult Shutdown() override;
+    inline RhiFenceValue GetCompletionFenceValue() const override;
+    inline RhiFenceValue GetCompletedFenceValue() override;
 
-public:
-    RhiResult CreateDevice(RhiDeviceHandle& device) const override;
-    RhiResult InitializeWarp();
+    bool IsFenceComplete(RhiFenceValue fenceValue) override;
 
-private:
-    RhiResult InitializeAdapter();
-    RhiResult InitializeDebugLayer();
+    RhiResult StallForFence(RhiFenceValue fenceValue) override;
+    RhiResult Flush() override;
+    RhiResult Execute(RhiCommandListHandle cmdList) override;
 
 private:
-    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
+    friend class Dx12Device;
+    wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
+
+    RhiFenceHandle m_Fence;
+    RhiFenceValue m_CompletionFenceValue;
+    RhiFenceValue m_LastKnownFenceValue;
+
+    void* m_FenceEventHandle;
 };
 
 ETH_NAMESPACE_END
-

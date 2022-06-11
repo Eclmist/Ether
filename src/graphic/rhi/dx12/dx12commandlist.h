@@ -23,11 +23,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12CommandList : public RhiCommandList
+class Dx12CommandList : public RhiCommandList
 {
 public:
-    D3D12CommandList(RhiCommandListType type) : RhiCommandList(type) {}
-    ~D3D12CommandList() override = default;
+    Dx12CommandList(RhiCommandListType type) : RhiCommandList(type) {}
+    ~Dx12CommandList() override = default;
 
 public:
     RhiResult SetMarker(const char* name) override;
@@ -63,8 +63,8 @@ public:
     RhiResult Close() override;
 
 private:
-    friend class D3D12Device;
-    friend class D3D12CommandQueue;
+    friend class Dx12Device;
+    friend class Dx12CommandQueue;
 
     friend class GuiRenderer;
 

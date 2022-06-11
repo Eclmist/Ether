@@ -192,12 +192,6 @@ enum class RhiLogicOperation
     OrInverted,
 };
 
-enum class RhiModuleType
-{
-    D3D12,
-    Vulkan,
-};
-
 enum class RhiPrimitiveTopology
 {
     Undefined,

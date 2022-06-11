@@ -19,23 +19,29 @@
 
 #pragma once
 
-#include "graphic/rhi/rhicommandallocator.h"
+#include "graphic/rhi/rhiresource.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12CommandAllocator : public RhiCommandAllocator
+class Dx12Resource : public RhiResource
 {
 public:
-    D3D12CommandAllocator() = default;
-    ~D3D12CommandAllocator() override = default;
+    Dx12Resource() = default;
+    ~Dx12Resource() override = default;
 
 public:
-    RhiResult Reset() const override;
+    RhiGpuHandle GetGpuHandle() const override;
+    RhiResult SetName(const std::wstring& name) const override;
+    RhiResult Map(void** mappedAddr) const override;
+    RhiResult Unmap() const override;
 
 private:
-    friend class D3D12Device;
-    friend class D3D12CommandList;
-    wrl::ComPtr<ID3D12CommandAllocator> m_Allocator;
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    friend class Dx12SwapChain;
+
+    wrl::ComPtr<ID3D12Resource> m_Resource;
 };
 
 ETH_NAMESPACE_END
+

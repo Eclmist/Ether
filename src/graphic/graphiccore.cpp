@@ -29,7 +29,7 @@ void GraphicCore::Initialize()
         return;
     }
 
-    Instance().m_RhiModule = RhiModule::CreateModule(RhiModuleType::D3D12);
+    Instance().m_RhiModule = RhiModule::CreateModule();
     Instance().m_RhiModule->Initialize();
     RhiResult result = Instance().m_RhiModule->CreateDevice(Instance().m_RhiDevice);
 

@@ -17,37 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphic/rhi/rhicommandqueue.h"
+#include "dx12pipelinestate.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12CommandQueue : public RhiCommandQueue
-{
-public:
-    D3D12CommandQueue(RhiCommandListType type = RhiCommandListType::Graphic);
-    ~D3D12CommandQueue() override;
-
-public:
-    inline RhiFenceValue GetCompletionFenceValue() const override;
-    inline RhiFenceValue GetCompletedFenceValue() override;
-
-    bool IsFenceComplete(RhiFenceValue fenceValue) override;
-
-    RhiResult StallForFence(RhiFenceValue fenceValue) override;
-    RhiResult Flush() override;
-    RhiResult Execute(RhiCommandListHandle cmdList) override;
-
-private:
-    friend class D3D12Device;
-    wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-
-    RhiFenceHandle m_Fence;
-    RhiFenceValue m_CompletionFenceValue;
-    RhiFenceValue m_LastKnownFenceValue;
-
-    void* m_FenceEventHandle;
-};
-
 ETH_NAMESPACE_END
+

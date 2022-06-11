@@ -17,24 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphic/rhi/rhipipelinestate.h"
+#include "dx12resource.h"
+#include "dx12translation.h"
 
 ETH_NAMESPACE_BEGIN
 
-class D3D12PipelineState : public RhiPipelineState
+RhiGpuHandle Dx12Resource::GetGpuHandle() const
 {
-public:
-    D3D12PipelineState() = default;
-    ~D3D12PipelineState() = default;
+    RhiGpuHandle handle;
+    handle.m_Ptr = m_Resource->GetGPUVirtualAddress();
+    return handle;
+}
 
-private:
-    friend class D3D12CommandList;
-    friend class D3D12Device;
-    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
-    std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputElements;
-};
+RhiResult Dx12Resource::SetName(const std::wstring& name) const
+{
+    return TO_RHI_RESULT(m_Resource->SetName(name.c_str()));
+}
+
+RhiResult Dx12Resource::Map(void** mappedAddr) const
+{
+    return TO_RHI_RESULT(m_Resource->Map(0, nullptr, mappedAddr));
+}
+
+RhiResult Dx12Resource::Unmap() const
+{
+    m_Resource->Unmap(0, nullptr);
+    return RhiResult::Success;
+}
 
 ETH_NAMESPACE_END
 

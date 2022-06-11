@@ -19,28 +19,35 @@
 
 #pragma once
 
-#ifdef ETH_GRAPHICS_DX12
-#include "dx12/dx12includes.h"
-#endif
+#include "graphic/rhi/rhidescriptorheap.h"
 
 ETH_NAMESPACE_BEGIN
 
-class RhiModule
+class Dx12DescriptorHeap : public RhiDescriptorHeap
 {
 public:
-    RhiModule() = default;
-	virtual ~RhiModule() = default;
+    Dx12DescriptorHeap() = default;
+    ~Dx12DescriptorHeap() override = default;
 
 public:
-    virtual RhiResult Initialize() = 0;
-    virtual RhiResult Shutdown() = 0;
+    RhiCpuHandle GetBaseHandleCpu() const override;
+    RhiGpuHandle GetBaseGpuHandle() const override;
 
-public:
-    virtual RhiResult CreateDevice(RhiDeviceHandle& device) const = 0;
+    RhiCpuHandle GetNextCpuHandle() const override;
+    RhiGpuHandle GetNextGpuHandle() const override;
 
-public:
-    static RhiModuleHandle CreateModule();
+    RhiResult IncrementHandle() override;
+
+private:
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    // TODO: Remove after GUI-Rhi refactor
+    friend class GuiRenderer;
+
+    wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
+
+    size_t m_Offset;
+    size_t m_HandleIncrementSize;
 };
 
 ETH_NAMESPACE_END
-

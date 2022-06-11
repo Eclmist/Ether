@@ -19,20 +19,26 @@
 
 #pragma once
 
-#define D3D12_MINIMUM_FEATURE_LEVEL         D3D_FEATURE_LEVEL_11_0
+#include "graphic/rhi/rhiswapchain.h"
 
-#define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
-#define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
-#define D3D12_RESOURCE_STATE_UNKNOWN        ((D3D12_RESOURCE_STATES)-1)
+ETH_NAMESPACE_BEGIN
 
-// ComPtr library
-#include <wrl.h>
-namespace wrl = Microsoft::WRL;
+class Dx12SwapChain : public RhiSwapChain
+{
+public:
+    Dx12SwapChain() = default;
+    ~Dx12SwapChain() override = default;
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3d12shader.h>
-#include <dxc/dxcapi.h>
-#include <DirectXMath.h>
-#include <d3dx12/d3dx12.h>
+public:
+    uint32_t GetCurrentBackBufferIndex() const override;
+    RhiResourceHandle GetBuffer(uint8_t index) const override;
+    RhiResult ResizeBuffers(RhiResizeDesc& desc) override;
+    RhiResult Present(uint8_t numVblanks) override;
+
+private:
+    friend class Dx12Device;
+    wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
+};
+
+ETH_NAMESPACE_END
 
