@@ -248,7 +248,6 @@ private:
     ethXMMatrix m_ViewMatrixInv;
     ethXMMatrix m_ProjectionMatrix;
 
-
     std::shared_ptr<Material> m_Material;
 };
 
@@ -263,6 +262,6 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
         return EXIT_FAILURE;
     }
 
-    return Start(Ether::EtherToolmode(), cmdShow);
+    return Start(Ether::EtherToolmode());
 }
 

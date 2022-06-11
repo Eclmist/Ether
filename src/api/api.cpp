@@ -79,7 +79,7 @@ void WindowsUpdateLoop()
     while (UpdateEngine());
 }
 
-int Start(IApplicationBase& app, int cmdShow)
+int Start(IApplicationBase& app)
 {
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
 

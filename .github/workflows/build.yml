@@ -6,18 +6,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Generate Projects
-      run: ./GenerateProjects.bat
+      run: ./GenerateProjects_Win32.bat
     - name: Build Debug
-      run: cmake --build ./build/ --config Debug
+      run: cmake --build ./build/win32 --config Debug
     - name: Build Release
-      run: cmake --build ./build/ --config Release
-    - name: Upload Win32 Build Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ether_win32
-        path: bin/win32
-    - name: Upload Library Build Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ether_lib
-        path: bin/lib
+      run: cmake --build ./build/win32 --config Release
+    # - name: Upload Win32 Build Artifacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: ether_win32
+    #     path: bin/win32
+    # - name: Upload Library Build Artifacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: ether_lib
+    #     path: bin/lib
