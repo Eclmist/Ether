@@ -19,34 +19,21 @@
 
 #pragma once
 
-#include "property.h"
-#include "parser/json/json.hpp"
+#include "toolmode/ipc/command/command.h"
+#include "toolmode/ipc/command/sendablecommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-class Vector3Property : public Property
+class SetComponentCommand : public Command
 {
 public:
-    Vector3Property(std::string name, const ethVector3* data)
-        : Property(name)
-        , m_Data(data)
-    {
-    }
-    ~Vector3Property() = default;
+    SetComponentCommand(const CommandData& data);
+    ~SetComponentCommand() = default;
 
-    std::string GetData() override
-    {
-        nlohmann::json data;
-        data["name"] = m_Name;
-        data["type"] = "Vector3";
-        data["values"][0] = m_Data->x;
-        data["values"][1] = m_Data->y;
-        data["values"][2] = m_Data->z;
-        return data.dump();
-    }
+    void Execute() override;
 
 private:
-    const ethVector3* m_Data;
+    CommandData m_ComponentData;
 };
 
 ETH_NAMESPACE_END

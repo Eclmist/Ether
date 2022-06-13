@@ -20,16 +20,24 @@
 #pragma once
 
 #ifdef ETH_TOOLMODE
-#include "toolmode/property/property.h"
-#include "toolmode/property/intproperty.h"
-#include "toolmode/property/floatproperty.h"
-#include "toolmode/property/vector2property.h"
-#include "toolmode/property/vector3property.h"
-#include "toolmode/property/vector4property.h"
-#include "toolmode/property/stringproperty.h"
-
-#define EDITOR_PROPERTY(var, name, Type) m_EditorProperties.push_back(std::make_unique<Type>(name, &var))
+#include "toolmode/property/field.h"
+#include "toolmode/property/intfield.h"
+#include "toolmode/property/floatfield.h"
+#include "toolmode/property/vector2field.h"
+#include "toolmode/property/vector3field.h"
+#include "toolmode/property/vector4field.h"
+#include "toolmode/property/stringfield.h"
 #endif
+
+#ifdef ETH_TOOLMODE
+// Macro instead of template because property type (Type) and variable type (typeof(var)) must be compatible
+#define EDITOR_INSPECTOR_FIELD(var, name, Type) m_InspectorFields.push_back(std::make_shared<Type>(name, var))
+#define EDITOR_INSPECTOR_RANGE_FIELD(var, name, Type, minVal, maxVal) m_InspectorFields.push_back(std::make_shared<Type>(name, var, minVal, maxVal))
+#else
+#define EDITOR_INSPECTOR_FIELD(var, name, Type) (void)0
+#define EDITOR_INSPECTOR_RANGE_FIELD(var, name, Type, minVal, maxVal) (void)0
+#endif
+
 
 ETH_NAMESPACE_BEGIN
 
@@ -49,11 +57,12 @@ public:
 
     virtual std::string GetName() const = 0;
     
+#ifdef ETH_TOOLMODE
 public:
-    ETH_TOOLONLY(inline std::vector<std::shared_ptr<Property>> GetEditorProperties() const { return m_EditorProperties; })
-
+    inline std::vector<std::shared_ptr<Field>> GetInspectorFields() const { return m_InspectorFields; }
 protected:
-    ETH_TOOLONLY(std::vector<std::shared_ptr<Property>> m_EditorProperties);
+    std::vector<std::shared_ptr<Field>> m_InspectorFields;
+#endif
 
 protected:
     EntityID m_Owner;

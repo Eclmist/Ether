@@ -47,25 +47,10 @@ public:
     {
         Entity* debugCube = EngineCore::GetECSManager().CreateEntity("AssetImportSlot (Temp)");
 
-		// TODO: Create default material somewhere, maybe in graphiccommon, or maybe serialized somewhere?
-        m_Material = std::make_shared<Material>();
-
         debugCube->AddComponent<MeshComponent>();
         debugCube->AddComponent<VisualComponent>();
-        debugCube->GetComponent<VisualComponent>()->SetMaterial(m_Material);
         debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
         debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
-
-        for (int i = 0; i < 10; ++i)
-        {
-            Entity* newEntity = EngineCore::GetECSManager().CreateEntity("Cube");
-            newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
-            newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
-            newEntity->GetComponent<TransformComponent>()->SetScale({ 1.5, 1.5, 1.5 });
-            newEntity->AddComponent<VisualComponent>();
-            newEntity->GetComponent<VisualComponent>()->SetMaterial(m_Material);
-            newEntity->AddComponent<MeshComponent>();
-        }
     };
 
     void UnloadContent() override {};
@@ -85,10 +70,6 @@ public:
             EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
         UpdateCamera(e.m_DeltaTime);
-
-        float x = sin((float)GetTimeSinceStart());
-        EngineCore::GetECSManager().GetEntity(1)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
-        EngineCore::GetECSManager().GetEntity(1)->SetName("Debug Cube (" + std::to_string(x) + ")");
     };
 
     void OnRender(const RenderEventArgs& e) override

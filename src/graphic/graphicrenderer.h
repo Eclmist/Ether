@@ -53,12 +53,6 @@ public:
     std::vector<VisualNode*> m_PendingVisualNodes;
     // TODO: Move this somewhere sane
     std::shared_ptr<CompiledTexture> m_EnvironmentHDRI;
-
-    // Global material params for imgui: TODO remove when material component is editable in tool
-    float m_Roughness = 0.5;
-    float m_Metalness = 1.0;
-    ethVector4 m_BaseColor = { 1, 1, 1, 1 };
-    ethVector4 m_SpecularColor = { 1, 1, 1, 1 };
 };
 
 ETH_NAMESPACE_END

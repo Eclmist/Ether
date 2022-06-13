@@ -17,30 +17,22 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "componentmanager.h"
+#pragma once
 
-#include "core/ecs/component/transformcomponent.h"
-#include "core/ecs/component/meshcomponent.h"
-#include "core/ecs/component/visualcomponent.h"
+#include "ecssystem.h"
 
 ETH_NAMESPACE_BEGIN
 
-ComponentManager::ComponentManager()
-    : m_NextComponentType(0)
+class TransformationSystem : public EcsSystem
 {
-    RegisterComponent<TransformComponent>();
-    RegisterComponent<MeshComponent>();
-    RegisterComponent<VisualComponent>();
+public:
+    TransformationSystem();
+    ~TransformationSystem() = default;
+
+protected:
+    void OnEntityRegister(EntityID id) override;
+    void OnEntityDeregister(EntityID id) override;
+    void OnUpdate() override;
 };
 
-#ifdef ETH_TOOLMODE
-Component* ComponentManager::GetComponentByGuid(const std::string& guid) const
-{
-    return m_GuidToComponentsMap.find(guid) == m_GuidToComponentsMap.end()
-        ? nullptr
-        : m_GuidToComponentsMap.at(guid);
-}
-#endif
-
 ETH_NAMESPACE_END
-

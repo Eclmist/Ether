@@ -3,7 +3,7 @@
 
     Copyright (c) 2020-2022 Samuel Huang - All rights reserved.
 
-    Ether is free software: you can redistribute it and/or modify
+    Ether is free software: you can redistribute it jand/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -17,30 +17,41 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "componentmanager.h"
+#pragma once
 
-#include "core/ecs/component/transformcomponent.h"
-#include "core/ecs/component/meshcomponent.h"
-#include "core/ecs/component/visualcomponent.h"
+#include "field.h"
 
 ETH_NAMESPACE_BEGIN
 
-ComponentManager::ComponentManager()
-    : m_NextComponentType(0)
+class Vector2Field : public Field
 {
-    RegisterComponent<TransformComponent>();
-    RegisterComponent<MeshComponent>();
-    RegisterComponent<VisualComponent>();
-};
+public:
+    Vector2Field(std::string name, ethVector2& data)
+        : Field(name)
+        , m_Data(&data)
+    {
+    }
+    ~Vector2Field() = default;
 
-#ifdef ETH_TOOLMODE
-Component* ComponentManager::GetComponentByGuid(const std::string& guid) const
-{
-    return m_GuidToComponentsMap.find(guid) == m_GuidToComponentsMap.end()
-        ? nullptr
-        : m_GuidToComponentsMap.at(guid);
-}
-#endif
+    std::string GetData() override
+    {
+        nlohmann::json data;
+        data["name"] = m_Name;
+        data["type"] = "Vector2";
+        data["values"][0] = m_Data->x;
+        data["values"][1] = m_Data->y;
+        return data.dump();
+    }
+
+    void SetData(const nlohmann::json& data) override
+    {
+        m_Data->x = data["values"][0];
+        m_Data->y = data["values"][1];
+    }
+
+private:
+    ethVector2* const m_Data;
+};
 
 ETH_NAMESPACE_END
 

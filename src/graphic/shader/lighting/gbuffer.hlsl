@@ -81,7 +81,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 {
     VS_OUTPUT o;
 
-    float3 pos = IN.Position * 0.2;
+    float3 pos = IN.Position;
 
     float4x4 mv = mul(g_CommonConstants.ViewMatrix, InstanceParams.ModelMatrix);
     float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);

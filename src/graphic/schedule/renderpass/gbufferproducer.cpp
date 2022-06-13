@@ -175,12 +175,13 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
         memcpy(mappedInstanceParams, &params, sizeof(params));
         context.GetCommandList()->SetRootConstantBuffer({ 1, GFX_RESOURCE(InstanceParams) });
 
-        MaterialParams mat;
-        mat.m_BaseColor = GraphicCore::GetGraphicRenderer().m_BaseColor;
-        mat.m_SpecularColor = GraphicCore::GetGraphicRenderer().m_SpecularColor;
-        mat.m_Roughness = GraphicCore::GetGraphicRenderer().m_Roughness;
-        mat.m_Metalness = GraphicCore::GetGraphicRenderer().m_Metalness;
-        memcpy(mappedMaterialParams, &mat, sizeof(mat));
+        MaterialParams matParams;
+        const Material* material = visual->GetMaterial();
+        matParams.m_BaseColor = material->GetBaseColor();
+        matParams.m_SpecularColor = material->GetSpecularColor();
+        matParams.m_Roughness = material->GetRoughness();
+        matParams.m_Metalness = material->GetMetalness();
+        memcpy(mappedMaterialParams, &matParams, sizeof(MaterialParams));
         context.GetCommandList()->SetRootConstantBuffer({ 2, GFX_RESOURCE(MaterialParams) });
 
         // TODO: Setup bindless textures

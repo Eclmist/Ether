@@ -30,7 +30,7 @@ public:
     ~EntityManager();
 
 private:
-    friend class ECSManager;
+    friend class EcsManager;
     inline Entity* GetEntity(EntityID id) const { return m_LiveEntities[id].get(); }
 
     Entity* CreateEntity(const std::string& name);

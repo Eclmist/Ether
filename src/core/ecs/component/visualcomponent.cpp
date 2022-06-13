@@ -24,6 +24,12 @@ ETH_NAMESPACE_BEGIN
 VisualComponent::VisualComponent(EntityID owner)
     : Component(owner)
 {
+    m_Material = std::make_shared<Material>();
+
+	EDITOR_INSPECTOR_FIELD(m_Material->m_BaseColor, "Base Color", Vector4Field);
+	EDITOR_INSPECTOR_FIELD(m_Material->m_SpecularColor, "Specular Color", Vector4Field);
+    EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Roughness, "Roughness", FloatField, 0, 1);
+    EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Metalness, "Metalness", FloatField, 0, 1);
 }
 
 VisualComponent::~VisualComponent()
@@ -33,13 +39,11 @@ VisualComponent::~VisualComponent()
 void VisualComponent::Serialize(OStream& ostream)
 {
     Component::Serialize(ostream);
-    // TODO
 }
 
 void VisualComponent::Deserialize(IStream& istream)
 {
     Component::Deserialize(istream);
-    // TODO
 }
 
 ETH_NAMESPACE_END

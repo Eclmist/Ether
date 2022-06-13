@@ -31,6 +31,17 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    inline ethVector4 GetBaseColor() const { return m_BaseColor; }
+    inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
+    inline float GetRoughness() const { return m_Roughness; }
+    inline float GetMetalness() const { return m_Metalness; }
+
+    inline void SetBaseColor(ethVector4 color) { m_BaseColor = color; }
+    inline void SetSpecularColor(ethVector4 color) { m_SpecularColor = color; }
+    inline void SetRoughness(float roughness) { m_Roughness = roughness; }
+    inline void SetMetalness(float metalness) { m_Metalness = metalness; }
+
+public:
     CompiledTexture* GetTexture(const std::string& key) const;
     ethVector4 GetColor(const std::string& key) const;
 
@@ -38,8 +49,15 @@ public:
     void SetColor(const std::string& key, ethVector4 color);
 
 private:
+    friend class VisualComponent;
+
     std::unordered_map<std::string, std::shared_ptr<CompiledTexture>> m_Textures;
     std::unordered_map<std::string, ethVector4> m_Colors;
+
+	float m_Roughness = 0.5;
+	float m_Metalness = 1.0;
+	ethVector4 m_BaseColor = { 1, 1, 1, 1 };
+	ethVector4 m_SpecularColor = { 1, 1, 1, 1 };
 };
 
 ETH_NAMESPACE_END

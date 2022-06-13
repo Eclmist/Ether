@@ -23,19 +23,19 @@
 
 ETH_NAMESPACE_BEGIN
 
-ECSManager::ECSManager()
+EcsManager::EcsManager()
 {
     m_ComponentManager = std::make_unique<ComponentManager>();
     m_EntityManager = std::make_unique<EntityManager>();
     m_SystemManager = std::make_unique<EcsSystemManager>();
 }
 
-void ECSManager::OnInitialize()
+void EcsManager::OnInitialize()
 {
     m_SystemManager->InitializeSystems();
 }
 
-void ECSManager::OnUpdate()
+void EcsManager::OnUpdate()
 {
     for (auto& system : m_SystemManager->GetSystems())
     {
@@ -43,25 +43,30 @@ void ECSManager::OnUpdate()
     }
 }
 
-Entity* ECSManager::GetEntity(EntityID id)
+Entity* EcsManager::GetEntity(EntityID id)
 {
     return m_EntityManager->GetEntity(id);
 }
 
-Entity* ECSManager::CreateEntity(const std::string& name)
+Entity* EcsManager::CreateEntity(const std::string& name)
 {
     return m_EntityManager->CreateEntity(name);
 }
 
-void ECSManager::DestroyEntity(EntityID id)
+void EcsManager::DestroyEntity(EntityID id)
 {
     return m_EntityManager->DestroyEntity(id);
 }
 
 #ifdef ETH_TOOLMODE
-EntityID ECSManager::GetEntityID(const std::string& guid) const
+EntityID EcsManager::GetEntityID(const std::string& guid) const
 {
     return m_EntityManager->m_GuidToEntityIDMap[guid];
+}
+
+Component* EcsManager::GetComponentByGuid(const std::string& guid) const
+{
+    return m_ComponentManager->GetComponentByGuid(guid);
 }
 #endif
 

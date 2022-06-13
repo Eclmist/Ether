@@ -18,36 +18,26 @@
 */
 
 #pragma once
-
-#include "property.h"
 #include "parser/json/json.hpp"
 
 ETH_NAMESPACE_BEGIN
 
-class Vector4Property : public Property
+class Field
 {
 public:
-    Vector4Property(std::string name, const ethVector4* data)
-        : Property(name)
-        , m_Data(data)
+    Field(std::string name = "Unnamed Property")
+        : m_Name(name)
     {
     }
-    ~Vector4Property() = default;
 
-    std::string GetData() override
-    {
-        nlohmann::json data;
-        data["name"] = m_Name;
-        data["type"] = "Vector4";
-        data["values"][0] = m_Data->x;
-        data["values"][1] = m_Data->y;
-        data["values"][2] = m_Data->z;
-        data["values"][3] = m_Data->w;
-        return data.dump();
-    }
+    virtual std::string GetData() = 0;
+    virtual void SetData(const nlohmann::json& data) = 0;
 
-private:
-    const ethVector4* m_Data;
+public:
+    inline std::string GetName() const { return m_Name; }
+
+protected:
+    std::string m_Name;
 };
 
 ETH_NAMESPACE_END

@@ -19,20 +19,40 @@
 
 #pragma once
 
+#include "field.h"
+
 ETH_NAMESPACE_BEGIN
 
-class Property
+class Vector3Field : public Field
 {
 public:
-    Property(std::string name = "Unnamed Property")
-        : m_Name(name)
+    Vector3Field(std::string name, ethVector3& data)
+        : Field(name)
+        , m_Data(&data)
     {
     }
+    ~Vector3Field() = default;
 
-    virtual std::string GetData() = 0;
+    std::string GetData() override
+    {
+        nlohmann::json data;
+        data["name"] = m_Name;
+        data["type"] = "Vector3";
+        data["values"][0] = m_Data->x;
+        data["values"][1] = m_Data->y;
+        data["values"][2] = m_Data->z;
+        return data.dump();
+    }
 
-protected:
-    std::string m_Name;
+    void SetData(const nlohmann::json& data) override
+    {
+        m_Data->x = data["values"][0];
+        m_Data->y = data["values"][1];
+        m_Data->z = data["values"][2];
+    }
+
+private:
+    ethVector3* const m_Data;
 };
 
 ETH_NAMESPACE_END

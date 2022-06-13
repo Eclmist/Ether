@@ -49,11 +49,11 @@ ETH_NAMESPACE_END
 
 ETH_NAMESPACE_BEGIN
 
-class ETH_ENGINE_DLL ECSManager : public NonCopyable
+class ETH_ENGINE_DLL EcsManager : public NonCopyable
 {
 public:
-    ECSManager();
-    ~ECSManager() = default;
+    EcsManager();
+    ~EcsManager() = default;
 
 public:
     void OnInitialize();
@@ -111,7 +111,8 @@ public:
     }
 
 public:
-    ETH_TOOLONLY(EntityID GetEntityID(const std::string& guid) const);
+	ETH_TOOLONLY(EntityID GetEntityID(const std::string& guid) const);
+	ETH_TOOLONLY(Component* GetComponentByGuid(const std::string& guid) const);
 
 private:
     std::unique_ptr<ComponentManager> m_ComponentManager;

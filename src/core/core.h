@@ -84,7 +84,7 @@ public:
     static bool IsInitialized();
 
     static IApplicationBase& GetMainApplication() { return *Instance().m_MainApplication; }
-    static ECSManager& GetECSManager() { return *Instance().m_ECSManager; }
+    static EcsManager& GetECSManager() { return *Instance().m_ECSManager; }
     static LoggingManager& GetLoggingManager() { return *Instance().m_LoggingManager; }
     static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
     static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
@@ -97,7 +97,7 @@ public:
 private:
     IApplicationBase* m_MainApplication;
 
-    std::unique_ptr<ECSManager> m_ECSManager;
+    std::unique_ptr<EcsManager> m_ECSManager;
     std::unique_ptr<LoggingManager> m_LoggingManager;
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;

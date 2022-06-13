@@ -17,30 +17,32 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "componentmanager.h"
+#pragma once
 
-#include "core/ecs/component/transformcomponent.h"
-#include "core/ecs/component/meshcomponent.h"
-#include "core/ecs/component/visualcomponent.h"
+#include "setcomponentcommand.h"
 
 ETH_NAMESPACE_BEGIN
 
-ComponentManager::ComponentManager()
-    : m_NextComponentType(0)
+SetComponentCommand::SetComponentCommand(const CommandData& data)
+    : m_ComponentData(data["args"]["component"])
 {
-    RegisterComponent<TransformComponent>();
-    RegisterComponent<MeshComponent>();
-    RegisterComponent<VisualComponent>();
-};
-
-#ifdef ETH_TOOLMODE
-Component* ComponentManager::GetComponentByGuid(const std::string& guid) const
-{
-    return m_GuidToComponentsMap.find(guid) == m_GuidToComponentsMap.end()
-        ? nullptr
-        : m_GuidToComponentsMap.at(guid);
 }
-#endif
+
+void SetComponentCommand::Execute()
+{
+    Component* component = EngineCore::GetECSManager().GetComponentByGuid(m_ComponentData["guid"]);
+
+    std::vector<std::shared_ptr<Field>> fields = component->GetInspectorFields();
+    std::unordered_map<std::string, std::shared_ptr<Field>> nameToFieldMap;
+    auto properties = m_ComponentData["fields"];
+
+    for (int i = 0; i < fields.size(); ++i)
+        nameToFieldMap[fields[i]->GetName()] = fields[i];
+
+    for (int i = 0; i < properties.size(); ++i)
+        if (nameToFieldMap.find(properties[i]["name"]) != nameToFieldMap.end())
+            nameToFieldMap[properties[i]["name"]]->SetData(properties[i]);
+}
 
 ETH_NAMESPACE_END
 

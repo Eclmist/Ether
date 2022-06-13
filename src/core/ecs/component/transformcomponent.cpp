@@ -31,11 +31,9 @@ TransformComponent::TransformComponent(EntityID owner)
     SetRotation({ 0, 0, 0 });
     SetScale({ 1, 1, 1 });
 
-#ifdef ETH_TOOLMODE
-    EDITOR_PROPERTY(m_Position, "Position", Vector3Property);
-    EDITOR_PROPERTY(m_EulerRotation, "Rotation", Vector3Property);
-    EDITOR_PROPERTY(m_Scale, "Scale", Vector3Property);
-#endif
+	EDITOR_INSPECTOR_FIELD(m_Position, "Position", Vector3Field);
+	EDITOR_INSPECTOR_FIELD(m_EulerRotation, "Rotation", Vector3Field);
+	EDITOR_INSPECTOR_FIELD(m_Scale, "Scale", Vector3Field);
 }
 
 void TransformComponent::Serialize(OStream& ostream)
@@ -50,31 +48,14 @@ void TransformComponent::Deserialize(IStream& istream)
     // TODO
 }
 
-void TransformComponent::SetPosition(const ethVector3& position)
+void TransformComponent::UpdateMatrices()
 {
-    m_Position = position;
-    m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
-    UpdateModelMatrix();
-}
+	m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&m_Position));
+	m_RotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_EulerRotation));
+	m_ScaleMatrix = XMMatrixScalingFromVector(XMLoadFloat3(&m_Scale));
 
-void TransformComponent::SetRotation(const ethVector3& eulerRotation)
-{
-    m_EulerRotation = eulerRotation;
-    m_RotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&eulerRotation));
-    UpdateModelMatrix();
-}
-
-void TransformComponent::SetScale(const ethVector3& scale)
-{
-    m_Scale = scale;
-    m_ScaleMatrix = XMMatrixScalingFromVector(XMLoadFloat3(&scale));
-    UpdateModelMatrix();
-}
-
-void TransformComponent::UpdateModelMatrix()
-{
-    m_ModelMatrix = XMMatrixMultiply(m_RotationMatrix, m_TranslationMatrix);
-    m_ModelMatrix = XMMatrixMultiply(m_ScaleMatrix, m_ModelMatrix);
+	m_ModelMatrix = XMMatrixMultiply(m_RotationMatrix, m_TranslationMatrix);
+	m_ModelMatrix = XMMatrixMultiply(m_ScaleMatrix, m_ModelMatrix);
 }
 
 ETH_NAMESPACE_END

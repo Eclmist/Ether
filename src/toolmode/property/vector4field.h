@@ -17,30 +17,45 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "componentmanager.h"
+#pragma once
 
-#include "core/ecs/component/transformcomponent.h"
-#include "core/ecs/component/meshcomponent.h"
-#include "core/ecs/component/visualcomponent.h"
+#include "field.h"
 
 ETH_NAMESPACE_BEGIN
 
-ComponentManager::ComponentManager()
-    : m_NextComponentType(0)
+class Vector4Field : public Field
 {
-    RegisterComponent<TransformComponent>();
-    RegisterComponent<MeshComponent>();
-    RegisterComponent<VisualComponent>();
-};
+public:
+    Vector4Field(std::string name, ethVector4& data)
+        : Field(name)
+        , m_Data(&data)
+    {
+    }
+    ~Vector4Field() = default;
 
-#ifdef ETH_TOOLMODE
-Component* ComponentManager::GetComponentByGuid(const std::string& guid) const
-{
-    return m_GuidToComponentsMap.find(guid) == m_GuidToComponentsMap.end()
-        ? nullptr
-        : m_GuidToComponentsMap.at(guid);
-}
-#endif
+    std::string GetData() override
+    {
+        nlohmann::json data;
+        data["name"] = m_Name;
+        data["type"] = "Vector4";
+        data["values"][0] = m_Data->x;
+        data["values"][1] = m_Data->y;
+        data["values"][2] = m_Data->z;
+        data["values"][3] = m_Data->w;
+        return data.dump();
+    }
+
+    void SetData(const nlohmann::json& data) override
+    {
+        m_Data->x = data["values"][0];
+        m_Data->y = data["values"][1];
+        m_Data->z = data["values"][2];
+        m_Data->w = data["values"][3];
+    }
+
+private:
+    ethVector4* const m_Data;
+};
 
 ETH_NAMESPACE_END
 

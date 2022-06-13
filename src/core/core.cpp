@@ -29,7 +29,7 @@ void EngineCore::Initialize(IApplicationBase& app)
     Instance().m_LoggingManager = std::make_unique<LoggingManager>();
     Instance().m_MainWindow = std::make_unique<Win32::Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
-    Instance().m_ECSManager = std::make_unique<ECSManager>();
+    Instance().m_ECSManager = std::make_unique<EcsManager>();
     Instance().m_ECSManager->OnInitialize(); // TODO: This looks ugly, can we move this away?
 
 #ifdef ETH_TOOLMODE

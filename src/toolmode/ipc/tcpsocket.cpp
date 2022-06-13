@@ -108,11 +108,11 @@ std::string TcpSocket::GetNext()
             break;
 
         fullPacket += std::string(bytes, numBytesReceived);
-        LogToolmodeInfo("IPC: Received %d bytes - %s", numBytesReceived, bytes);
-        LogToolmodeInfo("IPC: Command still incomplete, waiting for delimiter...", numBytesReceived, bytes);
+        //LogToolmodeInfo("IPC: Received %d bytes - %s", numBytesReceived, bytes);
+        //LogToolmodeInfo("IPC: Command still incomplete, waiting for delimiter...", numBytesReceived, bytes);
     }
 
-    LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
+    //LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
     return fullPacket;
 }
 

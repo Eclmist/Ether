@@ -17,30 +17,34 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "componentmanager.h"
-
-#include "core/ecs/component/transformcomponent.h"
-#include "core/ecs/component/meshcomponent.h"
-#include "core/ecs/component/visualcomponent.h"
+#include "transformationsystem.h"
 
 ETH_NAMESPACE_BEGIN
 
-ComponentManager::ComponentManager()
-    : m_NextComponentType(0)
+TransformationSystem::TransformationSystem()
 {
-    RegisterComponent<TransformComponent>();
-    RegisterComponent<MeshComponent>();
-    RegisterComponent<VisualComponent>();
-};
-
-#ifdef ETH_TOOLMODE
-Component* ComponentManager::GetComponentByGuid(const std::string& guid) const
-{
-    return m_GuidToComponentsMap.find(guid) == m_GuidToComponentsMap.end()
-        ? nullptr
-        : m_GuidToComponentsMap.at(guid);
+    m_Signature.set(EngineCore::GetECSManager().GetComponentID<TransformComponent>());
 }
-#endif
+
+void TransformationSystem::OnEntityRegister(EntityID id)
+{
+}
+
+void TransformationSystem::OnEntityDeregister(EntityID id)
+{
+}
+
+void TransformationSystem::OnUpdate()
+{
+    OPTICK_EVENT("ECS - Transformation System - Update");
+
+    for (EntityID id : m_MatchingEntities)
+    {
+        OPTICK_EVENT("ECS - Transformation System - Update matrices");
+		auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
+        transform->UpdateMatrices();
+    }
+}
 
 ETH_NAMESPACE_END
 

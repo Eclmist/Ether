@@ -29,6 +29,7 @@
 
 #include "ecs/gettoplevelentitiescommand.h"
 #include "ecs/getcomponentscommand.h"
+#include "ecs/setcomponentcommand.h"
 
 #include "state/viewport/setdrawmodecommand.h"
 
@@ -49,6 +50,7 @@ CommandFactory::CommandFactory()
     // ECS
     REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
     REGISTER_COMMAND("getcomponents", GetComponentsCommand);
+    REGISTER_COMMAND("setcomponent", SetComponentCommand);
 
     // State
     REGISTER_COMMAND("setdrawmode", SetDrawModeCommand);

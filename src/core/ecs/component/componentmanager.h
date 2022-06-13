@@ -32,7 +32,7 @@ public:
     ~ComponentManager() = default;
 
 private:
-    friend class ECSManager;
+    friend class EcsManager;
     
     template <typename T>
     std::shared_ptr<ComponentArray<T>> GetComponents() const
@@ -50,12 +50,16 @@ private:
     template <typename T>
     T* AddComponent(EntityID id)
     {
-        return GetComponents<T>()->AddComponent(id);
+        T* newComponent = GetComponents<T>()->AddComponent(id);
+        m_GuidToComponentsMap[newComponent->GetGuid()] = newComponent;
+        return newComponent;
     }
 
     template <typename T>
     void RemoveComponent(EntityID id)
     {
+        T* oldComponent = GetComponents<T>()->GetComponent(id);
+        m_GuidToComponentsMap.erase(oldComponent->GetGuid());
         GetComponents<T>()->RemoveComponent(id);
     }
 
@@ -66,7 +70,6 @@ private:
         return m_ComponentIDs.at(typeName);
     }
 
-private:
     template <typename T>
     void RegisterComponent()
     {
@@ -76,8 +79,13 @@ private:
     }
 
 private:
+    ETH_TOOLONLY(Component* GetComponentByGuid(const std::string& guid) const);
+
+private:
     std::unordered_map<std::string, std::shared_ptr<IComponentArray>> m_ComponentArrays;
     std::unordered_map<std::string, ComponentID> m_ComponentIDs;
+
+    std::unordered_map<std::string, Component*> m_GuidToComponentsMap;
     ComponentID m_NextComponentType;
 };
 

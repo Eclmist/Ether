@@ -20,6 +20,7 @@
 #include "ecssystemmanager.h"
 
 #include "core/ecs/system/renderingsystem.h"
+#include "core/ecs/system/transformationsystem.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -44,7 +45,8 @@ void EcsSystemManager::AssignEntityToSystems(EntityID id, ComponentSignature sig
 
 void EcsSystemManager::InitializeSystems()
 {
-    RegisterSystem<RenderingSystem>();
+	RegisterSystem<TransformationSystem>();
+	RegisterSystem<RenderingSystem>();
 }
 
 ETH_NAMESPACE_END

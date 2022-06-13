@@ -92,24 +92,6 @@ void DebugMenuGuiComponent::Draw()
             }
         }
 
-        if (ImGui::CollapsingHeader("PBR Debug"))
-        {
-            static float baseColor[4] = { 1, 1, 1, 1.0 };
-            static float specColor[4] = { 1, 1, 1, 1.0 };
-            ImGui::ColorPicker3("Base Color", baseColor);
-            ImGui::ColorPicker3("Specular Color", specColor);
-            GraphicCore::GetGraphicRenderer().m_BaseColor.x = baseColor[0];
-            GraphicCore::GetGraphicRenderer().m_BaseColor.y = baseColor[1];
-            GraphicCore::GetGraphicRenderer().m_BaseColor.z = baseColor[2];
-            GraphicCore::GetGraphicRenderer().m_BaseColor.w = 1.0;
-            GraphicCore::GetGraphicRenderer().m_SpecularColor.x = specColor[0];
-            GraphicCore::GetGraphicRenderer().m_SpecularColor.y = specColor[1];
-            GraphicCore::GetGraphicRenderer().m_SpecularColor.z = specColor[2];
-            GraphicCore::GetGraphicRenderer().m_SpecularColor.w = 1.0;
-            ImGui::SliderFloat("Roughness", &GraphicCore::GetGraphicRenderer().m_Roughness, 0, 1);
-            ImGui::SliderFloat("Metalness", &GraphicCore::GetGraphicRenderer().m_Metalness, 0, 1);
-        }
-
         if (ImGui::CollapsingHeader("ImGui"))
         {
             ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo);      // Edit bools storing our window open/close state

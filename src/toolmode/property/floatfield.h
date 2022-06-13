@@ -3,7 +3,7 @@
 
     Copyright (c) 2020-2022 Samuel Huang - All rights reserved.
 
-    Ether is free software: you can redistribute it jand/or modify
+    Ether is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -19,33 +19,60 @@
 
 #pragma once
 
-#include "property.h"
-#include "parser/json/json.hpp"
+#include "field.h"
 
 ETH_NAMESPACE_BEGIN
 
-class Vector2Property : public Property
+class FloatField : public Field
 {
 public:
-    Vector2Property(std::string name, const ethVector2* data)
-        : Property(name)
-        , m_Data(data)
+    FloatField(std::string name, float& data)
+        : Field(name)
+        , m_Data(&data)
+        , m_HasMinMax(false)
+        , m_MinValue(-1)
+        , m_MaxValue(-1)
     {
     }
-    ~Vector2Property() = default;
+
+	FloatField(std::string name, float& data, float minVal, float maxVal)
+		: Field(name)
+		, m_Data(&data)
+		, m_HasMinMax(true)
+		, m_MinValue(minVal)
+		, m_MaxValue(maxVal)
+	{
+	}
+
+    ~FloatField() = default;
 
     std::string GetData() override
     {
         nlohmann::json data;
         data["name"] = m_Name;
-        data["type"] = "Vector2";
-        data["values"][0] = m_Data->x;
-        data["values"][1] = m_Data->y;
+        data["type"] = "Float";
+        data["values"][0] = *m_Data;
+
+        if (m_HasMinMax)
+        {
+			data["properties"]["range"]["min"] = m_MinValue;
+			data["properties"]["range"]["max"] = m_MaxValue;
+        }
+
         return data.dump();
     }
 
+    void SetData(const nlohmann::json& data) override
+    {
+        *m_Data = data["values"][0];
+    }
+
 private:
-    const ethVector2* m_Data;
+    float* const m_Data;
+
+    const bool m_HasMinMax;
+    const float m_MinValue;
+    const float m_MaxValue;
 };
 
 ETH_NAMESPACE_END

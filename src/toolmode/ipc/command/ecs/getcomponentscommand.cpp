@@ -54,15 +54,14 @@ std::string GetComponentsCommandResponse::GetSendableData() const
         if (components[i] == nullptr)
             continue;
 
-        command["args"]["components"][i]["guid"] = components[i]->GetGuid();
         command["args"]["components"][i]["name"] = components[i]->GetName();
-        command["args"]["components"][i]["ownerguid"] = m_EntityGuid;
+        command["args"]["components"][i]["guid"] = components[i]->GetGuid();
+        command["args"]["components"][i]["entity_guid"] = m_EntityGuid;
         command["args"]["components"][i]["enabled"] = components[i]->IsEnabled();
 
-        // Send an empty array if there are no properties
-        auto properties = components[i]->GetEditorProperties();
-        for (int j = 0; j < properties.size(); ++j)
-            command["args"]["components"][i]["properties"][j] = CommandData::parse(properties[j]->GetData());
+        const auto fields = components[i]->GetInspectorFields();
+        for (int j = 0; j < fields.size(); ++j)
+            command["args"]["components"][i]["fields"][j] = CommandData::parse(fields[j]->GetData());
     }
 
     return command.dump();

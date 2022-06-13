@@ -37,9 +37,9 @@ public:
     inline ethVector3 GetRotation() const { return m_EulerRotation; }
     inline ethVector3 GetScale() const { return m_Scale; }
 
-    void SetPosition(const ethVector3& position);
-    void SetRotation(const ethVector3& eulerRotation);
-    void SetScale(const ethVector3& scale);
+    inline void SetPosition(const ethVector3& position) { m_Position = position; }
+    inline void SetRotation(const ethVector3& eulerRotation) { m_EulerRotation = eulerRotation; };
+    inline void SetScale(const ethVector3& scale) { m_Scale = scale; };
 
     inline ethXMMatrix GetMatrix() const { return m_ModelMatrix; }
     inline const ethXMMatrix* GetMatrixReference() const { return &m_ModelMatrix; }
@@ -48,7 +48,8 @@ public:
     inline std::string GetName() const override { return "Transform"; }
 
 private:
-    void UpdateModelMatrix();
+    friend class TransformationSystem;
+    void UpdateMatrices();
 
 private:
     ethVector3 m_Position;
