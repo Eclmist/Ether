@@ -61,7 +61,7 @@ public:
 
 public:
     Entity* GetEntity(EntityID id);
-    Entity* CreateEntity(const std::string& name);
+    Entity* CreateEntity(const std::string& name = "");
     void DestroyEntity(EntityID id);
 
 #ifdef ETH_TOOLMODE

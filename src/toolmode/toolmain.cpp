@@ -19,6 +19,7 @@
 
 #include <string>
 #include "api/api.h"
+#include <common/stream/filestream.h>
 
 ETH_NAMESPACE_BEGIN
 
@@ -43,12 +44,37 @@ public:
 
     void LoadContent() override
     {
-        Entity* debugCube = EngineCore::GetECSManager().CreateEntity("AssetImportSlot (Temp)");
+        Entity* testObj = EngineCore::GetECSManager().CreateEntity();
 
-        debugCube->AddComponent<MeshComponent>();
-        debugCube->AddComponent<VisualComponent>();
-        debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
-        debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
+        testObj->AddComponent<MeshComponent>();
+        testObj->AddComponent<VisualComponent>();
+        testObj->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
+        testObj->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
+
+        {
+			std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Models\\mori_knob.obj.ether");
+			compiledMesh->Deserialize(iistream);
+			testObj->GetComponent<MeshComponent>()->SetCompiledMesh(compiledMesh);
+			testObj->SetName(compiledMesh->GetName());
+        }
+
+
+        {
+			std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
+			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Textures\\uv_grid_2.png.ether");
+            texture->Deserialize(iistream);
+			testObj->GetComponent<VisualComponent>()->GetMaterial()->SetTexture("_AlbedoTexture", texture);
+        }
+
+
+		{
+			std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
+			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\dikhololo_night_4k.hdr.ether");
+            hdri->Deserialize(iistream);
+			GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
+		}
+
     };
 
     void UnloadContent() override {};
@@ -76,8 +102,8 @@ public:
 
         e.m_GraphicContext->SetViewMatrix(m_ViewMatrix);
         e.m_GraphicContext->SetProjectionMatrix(m_ProjectionMatrix);
-        e.m_GraphicContext->SetEyeDirection({ m_ViewMatrix.m_13, m_ViewMatrix.m_23, m_ViewMatrix.m_33, 1.0 });
-        e.m_GraphicContext->SetEyePosition({ m_ViewMatrixInv.m_41, m_ViewMatrixInv.m_42, m_ViewMatrixInv.m_43, 0.0 });
+        e.m_GraphicContext->SetEyeDirection({ m_ViewMatrix.m_31, m_ViewMatrix.m_32, m_ViewMatrix.m_33, 1.0 });
+        e.m_GraphicContext->SetEyePosition({ m_ViewMatrixInv.m_14, m_ViewMatrixInv.m_24, m_ViewMatrixInv.m_34, 0.0 });
     };
 
 private:
@@ -139,52 +165,55 @@ private:
 
     ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
     {
-        const float yScale = 1 / tan(DEG_TO_RAD(fovy / 2));
-        const float xScale = yScale / aspect;
-        const float Q = zfar / (zfar - znear);
+		const float range = tan(DEG_TO_RAD(fovy / 2)) * znear;
+		const float left = -range * aspect;
+		const float right = range * aspect;
+		const float bottom = -range;
+		const float top = range;
+		const float Q = zfar / (zfar - znear);
 
         ethMatrix4x4 dst(0.0f);
-        dst.m_Data2D[0][0] = xScale;
-        dst.m_Data2D[1][1] = yScale;
-        dst.m_Data2D[2][2] = 1;//Q;
-        dst.m_Data2D[2][3] = 0;// 1;
-        dst.m_Data2D[3][2] = 1;// znear* Q;
+        dst.m_Data2D[0][0] = (2 * znear) / (right - left);
+        dst.m_Data2D[1][1] = (2 * znear) / (top - bottom);
+        dst.m_Data2D[2][2] = Q;
+        dst.m_Data2D[2][3] = -znear * Q;
+        dst.m_Data2D[3][2] = 1;
         return dst;
     }
 
     void UpdateFlyCam(float deltaTime)
     {
-   //     if (Input::GetMouseButton(2))
-   //     {
-			//m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-			//m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-			//m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(90), XMConvertToRadians(90));
-   //     }
+		//if (Input::GetMouseButton(2))
+		//{
+		//	m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+		//	m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+		//	m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90), DEG_TO_RAD(90));
+		//}
 
-   //     ethMatrix4x4 rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
-   //     ethXMVector forwardVec = XMVector4Normalize(XMVector3Transform(g_XMIdentityR2, XMMatrixTranspose(rotationMatrix)));
-   //     ethXMVector upVec = XMVector4Normalize(g_XMIdentityR1);
-   //     ethXMVector rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
+		//ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
+		//ethVector3 forwardVec = (rotationMatrix.Transposed() * {0, 0, 1}).Normalized();
+		//ethVector3 upVec = XMVector4Normalize(g_XMIdentityR1);
+		//ethVector3 rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
 
-   //     if (Input::GetMouseButton(2))
-   //     {
-			//if (Input::GetKey(Win32::KeyCode::W))
-			//	m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
-			//if (Input::GetKey(Win32::KeyCode::S))
-			//	m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
-			//if (Input::GetKey(Win32::KeyCode::A))
-			//	m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
-			//if (Input::GetKey(Win32::KeyCode::D))
-			//	m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
-   //     }
+		//if (Input::GetMouseButton(2))
+		//{
+		//	if (Input::GetKey(Win32::KeyCode::W))
+		//		m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
+		//	if (Input::GetKey(Win32::KeyCode::S))
+		//		m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
+		//	if (Input::GetKey(Win32::KeyCode::A))
+		//		m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
+		//	if (Input::GetKey(Win32::KeyCode::D))
+		//		m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
+		//}
 
-   //     m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
+		//m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
 
-   //     m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
-   //     m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+		//m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
+		//m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
 
-   //     float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-   //     m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+		//float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+		//m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
     }
 
     void UpdateOrthoCam(float deltaTime)

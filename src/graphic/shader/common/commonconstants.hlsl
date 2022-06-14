@@ -19,8 +19,8 @@
 
 struct CommonConstants
 {
-    row_major float4x4 ViewMatrix;
-    row_major float4x4 ProjectionMatrix;
+    float4x4 ViewMatrix;
+    float4x4 ProjectionMatrix;
 
     float4 EyePosition;
     float4 EyeDirection;

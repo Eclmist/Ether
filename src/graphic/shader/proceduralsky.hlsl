@@ -35,13 +35,6 @@ float2 SampleSphericalMap(float3 direction)
     return uv;
 }
 
-float4 FilmicToneMapping(float4 color)
-{
-    color = max(0, color - 0.004);
-    color = (color * (6.2 * color + .5)) / (color * (6.2 * color + 1.7) + 0.06);
-    return color;
-}
-
 struct VS_OUTPUT
 {
     float4 Position   : SV_Position;
@@ -78,8 +71,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     else
         col = lerp(horizonColor, zenithColor, saturate(viewY * 2.0));
 
-    float2 offset = float2(IN.UV.x - 0.5, 0.5 - IN.UV.y) * float2(2.4, 1.5);
-    // return float4(offset, 0,0);
+    float2 offset = float2(IN.UV.x - 0.5, 0.5 - IN.UV.y) * g_CommonConstants.ScreenResolution / g_CommonConstants.ScreenResolution.y;
 
     float3 forward = normalize(g_CommonConstants.EyeDirection.xyz);
     float3 right = normalize(cross(forward, float3(0, 1, 0)));

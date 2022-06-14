@@ -76,7 +76,7 @@ bool Shader::Compile()
 
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
-    //arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
+    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
 
     ETH_TOOLONLY(arguments.push_back(L"-D"));
     ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));

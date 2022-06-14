@@ -21,8 +21,8 @@
 
 struct InstanceConstants
 {
-    row_major float4x4 ModelMatrix;
-    row_major float4x4 NormalMatrix;
+    float4x4 ModelMatrix;
+    float4x4 NormalMatrix;
 };
 
 ConstantBuffer<InstanceConstants> g_InstanceConstants : register(b1);

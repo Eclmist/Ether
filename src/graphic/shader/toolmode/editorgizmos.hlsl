@@ -43,7 +43,7 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 {
     VS_OUTPUT o;
 
-    float2 pos, uv;
+    float2 pos;
     pos.x = ID % 2 * 2.0 - 1.0;
     pos.y = (ID / 2) * 2.0 - 1.0;
 

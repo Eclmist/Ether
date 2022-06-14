@@ -25,6 +25,9 @@
 #define PI2         6.28318530718
 #define INV_PI      0.31830988618
 
+#define NUM_SAMPLES 64
+
+
 float2 SampleSphericalMap(float3 direction)
 {
     float2 uv = float2(0.5 + atan2(direction.z,direction.x)/(PI*2), 0.5 - asin(direction.y)/PI);
@@ -188,8 +191,6 @@ float3 UniformSample(float2 Xi, float3 N)
     // Tangent to world space
     return TangentX * H.x + TangentY * H.y + N * H.z;
 }
-
-#define NUM_SAMPLES 8
 
 float3 SpecularIBL(float3 normal, float3 wo, Material material)
 {
