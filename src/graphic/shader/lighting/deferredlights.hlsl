@@ -25,7 +25,7 @@
 #define PI2         6.28318530718
 #define INV_PI      0.31830988618
 
-#define NUM_SAMPLES 64
+#define NUM_SAMPLES 8
 
 
 float2 SampleSphericalMap(float3 direction)

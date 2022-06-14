@@ -49,8 +49,7 @@ void TransformComponent::UpdateMatrices()
 	m_RotationMatrix = GetRotationMatrix(m_EulerRotation);
 	m_ScaleMatrix = GetScaleMatrix(m_Scale);
 
-	m_ModelMatrix = m_RotationMatrix * m_TranslationMatrix;
-	m_ModelMatrix = m_ScaleMatrix * m_ModelMatrix;
+	m_ModelMatrix = m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix;
 }
 
 ethMatrix4x4 TransformComponent::GetTranslationMatrix(const ethVector3& translation)

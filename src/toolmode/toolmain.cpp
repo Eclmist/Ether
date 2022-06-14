@@ -181,6 +181,16 @@ private:
         return dst;
     }
 
+    ethMatrix4x4 GetOrthographicMatrixLH(float w, float h, float n, float f)
+    {
+        return {
+            2.0f / w, 0.0f, 0.0f, 0.0f,
+            0.0f, 2.0f / h, 0.0f, 0.0f,
+            0.0f, 0.0f, -2.0f / (f - n), 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+    }
+
     void UpdateFlyCam(float deltaTime)
     {
 		//if (Input::GetMouseButton(2))
@@ -218,37 +228,37 @@ private:
 
     void UpdateOrthoCam(float deltaTime)
     {
-   //     const float scaleModifier = 0.001;
-   //     const float zoomModifier = 1.0 / 121.0;
+		const float scaleModifier = 0.001;
+		const float zoomModifier = 1.0 / 121.0;
 
-   //     if (Input::GetMouseButtonDown(1))
-   //         m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+		if (Input::GetMouseButtonDown(1))
+			m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
 
-   //     if (Input::GetMouseButton(1))
-   //     {
-   //         m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
-   //         m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
-   //         m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
-   //     }
+		if (Input::GetMouseButton(1))
+		{
+			m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
+			m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
+			m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+		}
 
-   //     if (abs(Input::GetMouseWheelDelta()) > 0)
-   //     {
-   //         float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
-   //         float offsetModifier = scaleModifier * cameraDistanceDelta;
+		if (abs(Input::GetMouseWheelDelta()) > 0)
+		{
+			float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
+			float offsetModifier = scaleModifier * cameraDistanceDelta;
 
-   //         m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
-   //         m_OrthoZ -= ((float)EngineCore::GetEngineConfig().GetClientHeight() / 2.0 - Input::GetMousePosY()) * offsetModifier;
-			//m_CameraDistance -= cameraDistanceDelta;
-   //     }
+			m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
+			m_OrthoZ -= ((float)EngineCore::GetEngineConfig().GetClientHeight() / 2.0 - Input::GetMousePosY()) * offsetModifier;
+			m_CameraDistance -= cameraDistanceDelta;
+		}
 
-   //     ethMatrix4x4 rotationMatrix = XMMatrixRotationX(-90 * 0.0174533);
-   //     ethMatrix4x4 translationMatrix = XMMatrixTranslation(m_OrthoX, m_OrthoZ, m_CameraDistance);
-   //     m_ViewMatrix = rotationMatrix * translationMatrix;
-   //     m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
-   //     m_ProjectionMatrix = XMMatrixOrthographicLH(
-   //         (float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
-   //         (float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
-   //         0.01f, 1000.0f);
+		ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(-90 * 0.0174533);
+        ethMatrix4x4 translationMatrix = TransformComponent::GetTranslationMatrix({ m_OrthoX, m_OrthoZ, m_CameraDistance });
+		m_ViewMatrix = rotationMatrix * translationMatrix;
+		m_ViewMatrixInv = m_ViewMatrix.Inversed();
+		m_ProjectionMatrix = GetOrthographicMatrixLH(
+			(float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
+			(float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
+			0.01f, 1000.0f);
     }
 
     void ResetMatrices()

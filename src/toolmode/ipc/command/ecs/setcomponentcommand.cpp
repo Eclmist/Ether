@@ -31,6 +31,8 @@ SetComponentCommand::SetComponentCommand(const CommandData& data)
 void SetComponentCommand::Execute()
 {
     Component* component = EngineCore::GetECSManager().GetComponentByGuid(m_ComponentData["guid"]);
+    if (component == nullptr)
+        return;
 
     std::vector<std::shared_ptr<Field>> fields = component->GetInspectorFields();
     std::unordered_map<std::string, std::shared_ptr<Field>> nameToFieldMap;
