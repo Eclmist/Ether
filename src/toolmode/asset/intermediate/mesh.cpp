@@ -33,17 +33,17 @@ void Mesh::CalculateNormals()
         const uint32_t i1 = m_PositionIndices[i + 1];
         const uint32_t i2 = m_PositionIndices[i + 2];
 
-        ethXMVector v0 = XMLoadFloat3(&m_Positions[i0]);
-        ethXMVector v1 = XMLoadFloat3(&m_Positions[i1]);
-        ethXMVector v2 = XMLoadFloat3(&m_Positions[i2]);
+        ethVector3 v0 = m_Positions[i0];
+        ethVector3 v1 = m_Positions[i1];
+        ethVector3 v2 = m_Positions[i2];
 
-        ethXMVector e1 = DirectX::XMVectorSubtract(v1, v0);
-        ethXMVector e2 = DirectX::XMVectorSubtract(v2, v0);
-        ethXMVector xmNormal = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(e1, e2));
+        ethVector3 e1 = v1 - v0;
+        ethVector3 e2 = v2 - v0;
+        ethVector3 normal = ethVector3::Cross(e1, e2);
 
-        DirectX::XMStoreFloat3(&m_Normals[m_NormalIndices[i]], xmNormal);
-        m_Normals[m_NormalIndices[i + 1]] = m_Normals[m_NormalIndices[i]];
-        m_Normals[m_NormalIndices[i + 2]] = m_Normals[m_NormalIndices[i]];
+        m_Normals[m_NormalIndices[i]] = normal;
+        m_Normals[m_NormalIndices[i + 1]] = normal;
+        m_Normals[m_NormalIndices[i + 2]] = normal;
     }
 }
 

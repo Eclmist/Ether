@@ -22,8 +22,6 @@
 
 ETH_NAMESPACE_BEGIN
 
-using namespace DirectX;
-
 class EtherToolmode : public IApplicationBase
 {
 public:
@@ -74,18 +72,12 @@ public:
 
     void OnRender(const RenderEventArgs& e) override
     {
-        const ethXMVector upDir = XMVectorSet(0, 1, 0, 0);
-        ethMatrix4x4 viewMatrixRaw;
-        ethMatrix4x4 viewMatrixInvRaw;
-        ethMatrix4x4 projMatrixRaw;
-        XMStoreFloat4x4(&viewMatrixRaw, m_ViewMatrix);
-        XMStoreFloat4x4(&viewMatrixInvRaw, m_ViewMatrixInv);
-        XMStoreFloat4x4(&projMatrixRaw, m_ProjectionMatrix);
+        const ethVector3 upDir = { 0, 1, 0 };
 
-        e.m_GraphicContext->SetViewMatrix(viewMatrixRaw);
-        e.m_GraphicContext->SetProjectionMatrix(projMatrixRaw);
-        e.m_GraphicContext->SetEyeDirection({ viewMatrixRaw._13, viewMatrixRaw._23, viewMatrixRaw._33, 1.0 });
-        e.m_GraphicContext->SetEyePosition({ viewMatrixInvRaw._41, viewMatrixInvRaw._42, viewMatrixInvRaw._43, 0.0 });
+        e.m_GraphicContext->SetViewMatrix(m_ViewMatrix);
+        e.m_GraphicContext->SetProjectionMatrix(m_ProjectionMatrix);
+        e.m_GraphicContext->SetEyeDirection({ m_ViewMatrix.m_13, m_ViewMatrix.m_23, m_ViewMatrix.m_33, 1.0 });
+        e.m_GraphicContext->SetEyePosition({ m_ViewMatrixInv.m_41, m_ViewMatrixInv.m_42, m_ViewMatrixInv.m_43, 0.0 });
     };
 
 private:
@@ -113,94 +105,128 @@ private:
         {
             m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
             m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(90), XMConvertToRadians(90));
+            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90.0f), DEG_TO_RAD(90.0f));
         }
 
-        ethXMMatrix rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
-        ethXMMatrix translationMatrix = XMMatrixTranslation(0, 0, m_CameraDistance);
+        ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
+        ethMatrix4x4 translationMatrix = TransformComponent::GetTranslationMatrix({ 0, 0, m_CameraDistance });
 
-        m_ViewMatrix = rotationMatrix * translationMatrix;
-        m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+        m_ViewMatrix = translationMatrix * rotationMatrix;
+        m_ViewMatrixInv = m_ViewMatrix.Inversed();
 
         float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-        m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+        m_ProjectionMatrix = GetPerspectiveMatrixLH(80, aspectRatio, 0.01f, 1000.0f);
+    }
+
+    // TODO: Move into a camera component
+    ethMatrix4x4 GetPerspectiveMatrixRH(float fovy, float aspect, float znear, float zfar)
+    {
+        const float range = tan(DEG_TO_RAD(fovy / 2)) * znear;
+        const float left = -range * aspect;
+        const float right = range * aspect;
+        const float bottom = -range;
+        const float top = range;
+        const float Q = zfar / (znear - zfar);
+
+        ethMatrix4x4 dst(0.0f);
+        dst.m_Data2D[0][0] = (2 * znear) / (right - left);
+        dst.m_Data2D[1][1] = (2 * znear) / (top - bottom);
+        dst.m_Data2D[2][2] = Q;
+        dst.m_Data2D[2][3] = -1;
+        dst.m_Data2D[3][2] = znear * Q;
+        return dst;
+    }
+
+    ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
+    {
+        const float yScale = 1 / tan(DEG_TO_RAD(fovy / 2));
+        const float xScale = yScale / aspect;
+        const float Q = zfar / (zfar - znear);
+
+        ethMatrix4x4 dst(0.0f);
+        dst.m_Data2D[0][0] = xScale;
+        dst.m_Data2D[1][1] = yScale;
+        dst.m_Data2D[2][2] = 1;//Q;
+        dst.m_Data2D[2][3] = 0;// 1;
+        dst.m_Data2D[3][2] = 1;// znear* Q;
+        return dst;
     }
 
     void UpdateFlyCam(float deltaTime)
     {
-        if (Input::GetMouseButton(2))
-        {
-			m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-			m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-			m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(90), XMConvertToRadians(90));
-        }
+   //     if (Input::GetMouseButton(2))
+   //     {
+			//m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+			//m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+			//m_CameraRotation.x = std::clamp(m_CameraRotation.x, -XMConvertToRadians(90), XMConvertToRadians(90));
+   //     }
 
-        ethXMMatrix rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
-        ethXMVector forwardVec = XMVector4Normalize(XMVector3Transform(g_XMIdentityR2, XMMatrixTranspose(rotationMatrix)));
-        ethXMVector upVec = XMVector4Normalize(g_XMIdentityR1);
-        ethXMVector rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
+   //     ethMatrix4x4 rotationMatrix = XMMatrixRotationY(m_CameraRotation.y) * XMMatrixRotationX(m_CameraRotation.x);
+   //     ethXMVector forwardVec = XMVector4Normalize(XMVector3Transform(g_XMIdentityR2, XMMatrixTranspose(rotationMatrix)));
+   //     ethXMVector upVec = XMVector4Normalize(g_XMIdentityR1);
+   //     ethXMVector rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
 
-        if (Input::GetMouseButton(2))
-        {
-			if (Input::GetKey(Win32::KeyCode::W))
-				m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
-			if (Input::GetKey(Win32::KeyCode::S))
-				m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
-			if (Input::GetKey(Win32::KeyCode::A))
-				m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
-			if (Input::GetKey(Win32::KeyCode::D))
-				m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
-        }
+   //     if (Input::GetMouseButton(2))
+   //     {
+			//if (Input::GetKey(Win32::KeyCode::W))
+			//	m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
+			//if (Input::GetKey(Win32::KeyCode::S))
+			//	m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
+			//if (Input::GetKey(Win32::KeyCode::A))
+			//	m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
+			//if (Input::GetKey(Win32::KeyCode::D))
+			//	m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
+   //     }
 
-        m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
+   //     m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
 
-        m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
-        m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+   //     m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
+   //     m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
 
-        float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-        m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+   //     float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+   //     m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
     }
 
     void UpdateOrthoCam(float deltaTime)
     {
-        const float scaleModifier = 0.001;
-        const float zoomModifier = 1.0 / 121.0;
+   //     const float scaleModifier = 0.001;
+   //     const float zoomModifier = 1.0 / 121.0;
 
-        if (Input::GetMouseButtonDown(1))
-            m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+   //     if (Input::GetMouseButtonDown(1))
+   //         m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
 
-        if (Input::GetMouseButton(1))
-        {
-            m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
-            m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
-            m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
-        }
+   //     if (Input::GetMouseButton(1))
+   //     {
+   //         m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
+   //         m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
+   //         m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+   //     }
 
-        if (abs(Input::GetMouseWheelDelta()) > 0)
-        {
-            float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
-            float offsetModifier = scaleModifier * cameraDistanceDelta;
+   //     if (abs(Input::GetMouseWheelDelta()) > 0)
+   //     {
+   //         float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
+   //         float offsetModifier = scaleModifier * cameraDistanceDelta;
 
-            m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
-            m_OrthoZ -= ((float)EngineCore::GetEngineConfig().GetClientHeight() / 2.0 - Input::GetMousePosY()) * offsetModifier;
-			m_CameraDistance -= cameraDistanceDelta;
-        }
+   //         m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
+   //         m_OrthoZ -= ((float)EngineCore::GetEngineConfig().GetClientHeight() / 2.0 - Input::GetMousePosY()) * offsetModifier;
+			//m_CameraDistance -= cameraDistanceDelta;
+   //     }
 
-        ethXMMatrix rotationMatrix = XMMatrixRotationX(-90 * 0.0174533);
-        ethXMMatrix translationMatrix = XMMatrixTranslation(m_OrthoX, m_OrthoZ, m_CameraDistance);
-        m_ViewMatrix = rotationMatrix * translationMatrix;
-        m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
-        m_ProjectionMatrix = XMMatrixOrthographicLH(
-            (float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
-            (float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
-            0.01f, 1000.0f);
+   //     ethMatrix4x4 rotationMatrix = XMMatrixRotationX(-90 * 0.0174533);
+   //     ethMatrix4x4 translationMatrix = XMMatrixTranslation(m_OrthoX, m_OrthoZ, m_CameraDistance);
+   //     m_ViewMatrix = rotationMatrix * translationMatrix;
+   //     m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+   //     m_ProjectionMatrix = XMMatrixOrthographicLH(
+   //         (float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
+   //         (float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
+   //         0.01f, 1000.0f);
     }
 
     void ResetMatrices()
     {
-        m_ViewMatrix = XMMatrixIdentity();
-        m_ViewMatrixInv = XMMatrixIdentity();
-        m_ProjectionMatrix = XMMatrixIdentity();
+        m_ViewMatrix = ethMatrix4x4();
+        m_ViewMatrixInv = ethMatrix4x4();
+        m_ProjectionMatrix = ethMatrix4x4();
     }
 
 private:
@@ -219,15 +245,15 @@ private:
     ethVector3 m_CameraRotation;
 
     // Fly Cam
-    ethXMVector m_CameraPosition;
+    ethVector3 m_CameraPosition;
 
     // Ortho Cam
     ethVector2 m_DragStartPos;
     float m_OrthoX, m_OrthoZ;
 
-    ethXMMatrix m_ViewMatrix;
-    ethXMMatrix m_ViewMatrixInv;
-    ethXMMatrix m_ProjectionMatrix;
+    ethMatrix4x4 m_ViewMatrix;
+    ethMatrix4x4 m_ViewMatrixInv;
+    ethMatrix4x4 m_ProjectionMatrix;
 
     std::shared_ptr<Material> m_Material;
 };

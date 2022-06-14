@@ -18,8 +18,8 @@
 */
 
 #include "sampleapp.h"
+#include "math/math.h"
 #include <algorithm> // for std::clamp
-#include <cmath>
 
 using namespace Ether;
 
@@ -89,7 +89,7 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
         m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
         m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
 
-        constexpr float rad90 = DirectX::XMConvertToRadians(80);
+        constexpr float rad90 = DEG_TO_RAD(80);
         m_CameraRotation.x = std::clamp(m_CameraRotation.x, -rad90, rad90);
     }
 
@@ -99,22 +99,22 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
 
 void SampleApp::OnRender(const RenderEventArgs& e)
 {
-    const ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
-    float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+    //const ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
+    //float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
 
-    ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
-    ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
+    //ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
+    //ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
 
-    ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
-    viewMatrix = DirectX::XMMatrixMultiply(viewMatrix, DirectX::XMMatrixTranslation(0, 0, m_CameraDistance));
+    //ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
+    //viewMatrix = DirectX::XMMatrixMultiply(viewMatrix, DirectX::XMMatrixTranslation(0, 0, m_CameraDistance));
 
-    ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
-    ethMatrix4x4 viewMatrixRaw;
-    ethMatrix4x4 projMatrixRaw;
-    DirectX::XMStoreFloat4x4(&viewMatrixRaw, viewMatrix);
-    DirectX::XMStoreFloat4x4(&projMatrixRaw, projectionMatrix);
+    //ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
+    //ethMatrix4x4 viewMatrixRaw;
+    //ethMatrix4x4 projMatrixRaw;
+    //DirectX::XMStoreFloat4x4(&viewMatrixRaw, viewMatrix);
+    //DirectX::XMStoreFloat4x4(&projMatrixRaw, projectionMatrix);
 
-    e.m_GraphicContext->SetViewMatrix(viewMatrixRaw);
-    e.m_GraphicContext->SetProjectionMatrix(projMatrixRaw);
+    //e.m_GraphicContext->SetViewMatrix(viewMatrixRaw);
+    //e.m_GraphicContext->SetProjectionMatrix(projMatrixRaw);
 }
 

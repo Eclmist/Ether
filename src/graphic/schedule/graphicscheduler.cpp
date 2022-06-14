@@ -59,7 +59,7 @@ void GraphicScheduler::RegisterRenderPasses()
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingProducer));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
-    ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
+    //ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
 
     for (auto renderPass : m_RegisteredRenderPasses)
         renderPass->Initialize();

@@ -189,7 +189,7 @@ float3 UniformSample(float2 Xi, float3 N)
     return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
-#define NUM_SAMPLES 16
+#define NUM_SAMPLES 8
 
 float3 SpecularIBL(float3 normal, float3 wo, Material material)
 {

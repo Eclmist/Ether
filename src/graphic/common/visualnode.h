@@ -29,7 +29,7 @@ struct VisualNodeData
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;
 
-    const ethXMMatrix* m_ModelMatrix;
+    const ethMatrix4x4* m_ModelMatrix;
     const Material* m_Material;
 
     ETH_TOOLONLY(ethVector4u m_PickerColor);
@@ -44,7 +44,7 @@ public:
     inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
     inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
     inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
-    inline const ethXMMatrix GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
+    inline const ethMatrix4x4 GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
     inline const Material* GetMaterial() const { return m_StaticData.m_Material; }
     ETH_TOOLONLY(inline const ethVector4u GetPickerColor() const { return m_StaticData.m_PickerColor; })
 

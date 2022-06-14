@@ -18,21 +18,14 @@
 */
 
 #pragma once
-#include "math/math.h"
 
-ETH_NAMESPACE_BEGIN
+#define _USE_MATH_DEFINES
 
-typedef Matrix4x4                       ethMatrix4x4;
-typedef Matrix3x3                       ethMatrix3x3;
+#include "matrix.h"
+#include "vector.h"
 
-typedef Vector<float, 2>                ethVector2;
-typedef Vector<float, 3>                ethVector3;
-typedef Vector<float, 4>                ethVector4;
-typedef Vector<int, 2>                  ethVector2i;
-typedef Vector<int, 3>                  ethVector3i;
-typedef Vector<int, 4>                  ethVector4i;
-typedef Vector<uint32_t, 2>             ethVector2u;
-typedef Vector<uint32_t, 3>             ethVector3u;
-typedef Vector<uint32_t, 4>             ethVector4u;
+#define M_PI                    3.14159265358979323846f
 
-ETH_NAMESPACE_END
+#define DEG_TO_RAD(deg)         deg * (M_PI / 180.0f) 
+#define RAD_TO_DEG(rad)         rad * (180.0f / M_PI) 
+

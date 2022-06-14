@@ -21,9 +21,6 @@
 
 ETH_NAMESPACE_BEGIN
 
-// TODO: Should our transform class really be tied to the directxmath library?
-using namespace DirectX;
-
 TransformComponent::TransformComponent(EntityID owner)
     : Component(owner)
 {
@@ -39,23 +36,65 @@ TransformComponent::TransformComponent(EntityID owner)
 void TransformComponent::Serialize(OStream& ostream)
 {
     Component::Serialize(ostream);
-    // TODO
 }
 
 void TransformComponent::Deserialize(IStream& istream)
 {
     Component::Deserialize(istream);
-    // TODO
 }
 
 void TransformComponent::UpdateMatrices()
 {
-	m_TranslationMatrix = XMMatrixTranslationFromVector(XMLoadFloat3(&m_Position));
-	m_RotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&m_EulerRotation));
-	m_ScaleMatrix = XMMatrixScalingFromVector(XMLoadFloat3(&m_Scale));
+	m_TranslationMatrix = GetTranslationMatrix(m_Position);
+	m_RotationMatrix = GetRotationMatrix(m_EulerRotation);
+	m_ScaleMatrix = GetScaleMatrix(m_Scale);
 
-	m_ModelMatrix = XMMatrixMultiply(m_RotationMatrix, m_TranslationMatrix);
-	m_ModelMatrix = XMMatrixMultiply(m_ScaleMatrix, m_ModelMatrix);
+	m_ModelMatrix = m_RotationMatrix * m_TranslationMatrix;
+	m_ModelMatrix = m_ScaleMatrix * m_ModelMatrix;
+}
+
+ethMatrix4x4 TransformComponent::GetTranslationMatrix(const ethVector3& translation)
+{
+    return { 1.0f, 0.0f, 0.0f, translation.x,
+             0.0f, 1.0f, 0.0f, translation.y,
+             0.0f, 0.0f, 1.0f, translation.z,
+             0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+ethMatrix4x4 TransformComponent::GetRotationMatrix(const ethVector3& eulerRotation)
+{
+    return GetRotationMatrixZ(eulerRotation.z) * GetRotationMatrixY(eulerRotation.y) * GetRotationMatrixX(eulerRotation.x);
+}
+
+ethMatrix4x4 TransformComponent::GetScaleMatrix(const ethVector3& scale)
+{
+    return { scale.x, 0.0f, 0.0f, 0.0f,
+             0.0f, scale.y, 0.0f, 0.0f,
+             0.0f, 0.0f, scale.z, 0.0f,
+             0.0f, 0.0f, 0.0f, 1.0f };
+}
+Matrix4x4 TransformComponent::GetRotationMatrixX(float rotX)
+{
+    return { 1.0f, 0.0f, 0.0f, 0.0f,
+             0.0f, cos(rotX), -sin(rotX), 0.0f,
+             0.0f, sin(rotX), cos(rotX), 0.0f,
+             0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+Matrix4x4 TransformComponent::GetRotationMatrixY(float rotY)
+{
+    return { cos(rotY), 0.0f, sin(rotY), 0.0f,
+             0.0f, 1.0f, 0.0f, 0.0f,
+             -sin(rotY), 0.0f, cos(rotY), 0.0f,
+             0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+Matrix4x4 TransformComponent::GetRotationMatrixZ(float rotZ)
+{
+    return { cos(rotZ), -sin(rotZ), 0.0f, 0.0f,
+             sin(rotZ), cos(rotZ), 0.0f, 0.0f,
+             0.0f, 0.0f, 1.0f, 0.0f,
+             0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 ETH_NAMESPACE_END

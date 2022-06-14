@@ -157,20 +157,17 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
 
     for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
-        ethXMMatrix modelMat = visual->GetModelMatrix();
-        ethMatrix3x3 upper3x3;
-        DirectX::XMStoreFloat3x3(&upper3x3, modelMat);
-
-        ethXMMatrix normalMat = DirectX::XMLoadFloat3x3(&upper3x3);
-        normalMat = DirectX::XMMatrixInverse(nullptr, normalMat);
-        normalMat = DirectX::XMMatrixTranspose(normalMat);
+        ethMatrix4x4 modelMat = visual->GetModelMatrix();
+        ethMatrix4x4 normalMat = ethMatrix4x4::From3x3(modelMat.Upper3x3());
+        normalMat = normalMat.Inversed();
+        normalMat = normalMat.Transposed();
 
         context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
         context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
         InstanceParams params;
-        DirectX::XMStoreFloat4x4(&params.m_ModelMatrix, modelMat);
-        DirectX::XMStoreFloat4x4(&params.m_NormalMatrix, normalMat);
+        params.m_ModelMatrix = modelMat;
+        params.m_NormalMatrix = normalMat;
         ETH_TOOLONLY(params.m_PickerColor = visual->GetPickerColor());
         memcpy(mappedInstanceParams, &params, sizeof(params));
         context.GetCommandList()->SetRootConstantBuffer({ 1, GFX_RESOURCE(InstanceParams) });

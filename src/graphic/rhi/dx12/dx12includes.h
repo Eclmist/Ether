@@ -27,6 +27,5 @@ namespace wrl = Microsoft::WRL;
 #include <dxgi1_6.h>
 #include <d3d12shader.h>
 #include <dxc/dxcapi.h>
-#include <DirectXMath.h>
 #include <d3dx12/d3dx12.h>
 
