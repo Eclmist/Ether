@@ -6,6 +6,8 @@
 # Ether specific
 vs-chromium-project.txt
 
+# Ignore SIE plugin .git folders
+.git_*/
 
 # Post CMake integration (No need project files anymore)
 *.sln
