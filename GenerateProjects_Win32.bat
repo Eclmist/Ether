@@ -24,7 +24,4 @@ if %errorlevel% neq 0 (
 )
 
 echo Windows solutions generated successfully
-
-color 2F
-echo Projects generated successfully
 PAUSE

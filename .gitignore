@@ -5,7 +5,6 @@
 
 # Ether specific
 vs-chromium-project.txt
-GenerateProjects_All.bat
 
 
 # Post CMake integration (No need project files anymore)
