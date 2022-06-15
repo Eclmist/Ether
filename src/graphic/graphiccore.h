@@ -39,7 +39,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class GraphicCore : public Singleton<GraphicCore>
+class ETH_ENGINE_DLL GraphicCore : public Singleton<GraphicCore>
 {
 public:
     GraphicCore() = default;

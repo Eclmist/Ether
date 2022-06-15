@@ -25,7 +25,7 @@
 #define PI2         6.28318530718
 #define INV_PI      0.31830988618
 
-#define NUM_SAMPLES 8
+#define NUM_SAMPLES 64
 
 
 float2 SampleSphericalMap(float3 direction)
@@ -330,8 +330,9 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     for (int i = 0; i < 6; ++i)
     {
-        lights[i].Radius *= 5.2;
-        lights[i].Intensity *= 0.3;
+        lights[i].Radius *= 0.7;
+        lights[i].Position *= 5.2;
+        lights[i].Intensity *= 4.9;
         finalColor += ComputePointLight(IN.UV, mat, lights[i]);
     }
 

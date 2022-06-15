@@ -55,7 +55,7 @@ Vector<T, N>::Vector(T x, T y, T z, T w)
 }
 
 template<typename T, int N>
-Vector<T, N>::Vector(T* data)
+Vector<T, N>::Vector(const T* data)
 {
     for (int i = 0; i < N; ++i)
         this->m_Data[i] = data[i];

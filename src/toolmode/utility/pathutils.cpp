@@ -39,6 +39,13 @@ namespace PathUtils
 	{
 		return std::filesystem::path(path).filename().string();
 	}
+
+	std::string GetFolderPath(const std::string& path)
+	{
+		if (std::filesystem::path(path).has_parent_path())
+			return std::filesystem::path(path).parent_path().string();
+		return path;
+	}
 }
 
 ETH_NAMESPACE_END

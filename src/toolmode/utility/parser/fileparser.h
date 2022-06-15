@@ -25,7 +25,7 @@ class FileParser : public NonCopyable
 {
 public:
     virtual void Parse(const std::string& path) = 0;
-    virtual std::shared_ptr<Asset> GetRawAsset() const = 0;
+	virtual std::shared_ptr<Asset> GetRawAsset() const = 0;
 };
 
 ETH_NAMESPACE_END

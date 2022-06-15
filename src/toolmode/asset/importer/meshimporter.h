@@ -34,7 +34,7 @@ public:
 
 public:
     bool HasSupport(const std::string& extension) override;
-    std::shared_ptr<Asset> Compile(IStream& istream) override;
+    std::vector<std::shared_ptr<Asset>> Compile(IStream& istream) override;
 };
 
 ETH_NAMESPACE_END

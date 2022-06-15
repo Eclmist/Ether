@@ -73,7 +73,7 @@ public:
     Vector(T x, T y);
     Vector(T x, T y, T z);
     Vector(T x, T y, T z, T w);
-    Vector(T* data);
+    Vector(const T* data);
 
     Vector operator+() const;
     Vector operator-() const;
@@ -117,3 +117,4 @@ typedef Vector<int, 3> Vector3i;
 typedef Vector<int, 4> Vector4i;
 
 #include "vector_impl.h" 
+

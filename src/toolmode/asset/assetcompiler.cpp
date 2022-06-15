@@ -54,10 +54,13 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
     if (true) // Always recompile, for testing purposes
     {
 		IFileStream istream(path);
-		OFileStream ostream(dest);
-		std::shared_ptr<Asset> compiledAsset = importer->Compile(istream);
-		compiledAsset->SetName(PathUtils::GetFileName(path));
-		compiledAsset->Serialize(ostream);
+		std::vector<std::shared_ptr<Asset>> compiledAssets = importer->Compile(istream);
+
+        for (int i = 0; i < compiledAssets.size(); ++i)
+        {
+			compiledAssets[i]->SetName(PathUtils::GetFileName(path) + std::to_string(i));
+			compiledAssets[i]->Serialize(OFileStream(dest + std::to_string(i)));
+        }
     }
     else
     {
@@ -65,47 +68,47 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
     }
 
 
-    std::string fileExt = PathUtils::GetFileExtension(path);
+    //std::string fileExt = PathUtils::GetFileExtension(path);
 
     // TEMP Code for testing : TODO REMOVE when editor is able to load things correctly
-    if (fileExt == ".obj")
-    {
-        // Deserialization Test
-		std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-		IFileStream iistream(dest);
-		compiledMesh->Deserialize(iistream);
+  //  if (fileExt == ".obj")
+  //  {
+  //      // Deserialization Test
+		//std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+		//IFileStream iistream(dest);
+		//compiledMesh->Deserialize(iistream);
 
-		if (EngineCore::GetECSManager().GetComponent<MeshComponent>(0) != nullptr)
-		{
-			EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
-			EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
-		}
+		//if (EngineCore::GetECSManager().GetComponent<MeshComponent>(0) != nullptr)
+		//{
+		//	EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
+		//	EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
+		//}
 
-        //for (int i = 1; i < 20; ++i)
-        //    if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
-        //        EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledCubeMesh);
-    }
-    else if (fileExt == ".png" || fileExt == ".jpg")
-    {
-        // Deserialization Test
-		std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
-		IFileStream iistream(dest);
-		compiledTexture->Deserialize(iistream);
+  //      //for (int i = 1; i < 20; ++i)
+  //      //    if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
+  //      //        EngineCore::GetECSManager().GetComponent<MeshComponent>(i)->SetCompiledMesh(compiledCubeMesh);
+  //  }
+  //  else if (fileExt == ".png" || fileExt == ".jpg")
+  //  {
+  //      // Deserialization Test
+		//std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+		//IFileStream iistream(dest);
+		//compiledTexture->Deserialize(iistream);
 
-		if (EngineCore::GetECSManager().GetComponent<VisualComponent>(0) != nullptr)
-			EngineCore::GetECSManager().GetComponent<VisualComponent>(0)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
+		//if (EngineCore::GetECSManager().GetComponent<VisualComponent>(0) != nullptr)
+		//	EngineCore::GetECSManager().GetComponent<VisualComponent>(0)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
 
-        //for (int i = 1; i < 20; ++i)
-        //    if (EngineCore::GetECSManager().GetComponent<VisualComponent>(i) != nullptr)
-        //        EngineCore::GetECSManager().GetComponent<VisualComponent>(i)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
-    }
-    else if (fileExt == ".hdr")
-    {
-		std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
-		IFileStream iistream(dest);
-		compiledTexture->Deserialize(iistream);
-		GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = compiledTexture;
-    }
+  //      //for (int i = 1; i < 20; ++i)
+  //      //    if (EngineCore::GetECSManager().GetComponent<VisualComponent>(i) != nullptr)
+  //      //        EngineCore::GetECSManager().GetComponent<VisualComponent>(i)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
+  //  }
+  //  else if (fileExt == ".hdr")
+  //  {
+		//std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+		//IFileStream iistream(dest);
+		//compiledTexture->Deserialize(iistream);
+		//GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = compiledTexture;
+  //  }
 }
 
 std::shared_ptr<Importer> AssetCompiler::GetImporter(const std::string& ext)

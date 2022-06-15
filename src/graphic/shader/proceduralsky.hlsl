@@ -73,6 +73,8 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float2 offset = float2(IN.UV.x - 0.5, 0.5 - IN.UV.y) * g_CommonConstants.ScreenResolution / g_CommonConstants.ScreenResolution.y;
 
+    offset *= 1.39626;
+
     float3 forward = normalize(g_CommonConstants.EyeDirection.xyz);
     float3 right = normalize(cross(forward, float3(0, 1, 0)));
     float3 up = normalize(cross(right, forward));

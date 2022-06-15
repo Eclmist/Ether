@@ -27,10 +27,7 @@ VisualNode::VisualNode(const VisualNodeData data)
     : m_StaticData(data)
 {
     UploadVertexBuffer(m_StaticData.m_VertexBuffer, m_StaticData.m_NumVertices);
-    UploadIndexBuffer(m_StaticData.m_IndexBuffer, m_StaticData.m_NumIndices);
-
     InitVertexBufferView(m_StaticData.m_NumVertices * sizeof(VertexFormats::VertexFormatStatic), sizeof(VertexFormats::VertexFormatStatic));
-    InitIndexBufferView(m_StaticData.m_NumIndices * sizeof(uint32_t));
 }
 
 VisualNode::~VisualNode()
@@ -52,33 +49,12 @@ void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
     CommandContext::InitializeBufferTemp(m_VertexBuffer, data, bufferSize);
 }
 
-void VisualNode::UploadIndexBuffer(const void* data, uint32_t numIndices)
-{ 
-    size_t bufferSize = numIndices * sizeof(uint32_t);
-    RhiCommitedResourceDesc desc = {};
-    desc.m_HeapType = RhiHeapType::Default;
-    desc.m_State = RhiResourceState::Common;
-    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
-
-    GraphicCore::GetDevice()->CreateCommittedResource(desc, m_IndexBuffer);
-    m_IndexBuffer->SetName(L"VisualNode::IndexBuffer");
-    CommandContext::InitializeBufferTemp(m_IndexBuffer, data, bufferSize);
-}
-
 void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)
 {
     m_VertexBufferView = {};
     m_VertexBufferView.m_BufferSize = bufferSize;
     m_VertexBufferView.m_Stride = stride;
     m_VertexBufferView.m_Resource = m_VertexBuffer;
-}
-
-void VisualNode::InitIndexBufferView(size_t bufferSize)
-{
-    m_IndexBufferView = {};
-    m_IndexBufferView.m_BufferSize = bufferSize;
-    m_IndexBufferView.m_Format = RhiFormat::R32Uint;
-    m_IndexBufferView.m_Resource = m_IndexBuffer;
 }
 
 ETH_NAMESPACE_END

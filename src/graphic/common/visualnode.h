@@ -24,10 +24,7 @@ ETH_NAMESPACE_BEGIN
 struct VisualNodeData
 {
     const void* m_VertexBuffer;
-    const void* m_IndexBuffer;
-
     uint32_t m_NumVertices;
-    uint32_t m_NumIndices;
 
     const ethMatrix4x4* m_ModelMatrix;
     const Material* m_Material;
@@ -42,18 +39,14 @@ public:
     ~VisualNode();
 
     inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
-    inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
-    inline uint32_t GetNumIndices() const { return m_StaticData.m_NumIndices; }
+    inline uint32_t GetNumVertices() const { return m_StaticData.m_NumVertices; }
     inline const ethMatrix4x4 GetModelMatrix() const { return *m_StaticData.m_ModelMatrix; }
     inline const Material* GetMaterial() const { return m_StaticData.m_Material; }
     ETH_TOOLONLY(inline const ethVector4u GetPickerColor() const { return m_StaticData.m_PickerColor; })
 
 private:
     void UploadVertexBuffer(const void* data, uint32_t numVertices);
-    void UploadIndexBuffer(const void* data, uint32_t numIndices);
-
     void InitVertexBufferView(size_t bufferSize, size_t stride);
-    void InitIndexBufferView(size_t bufferSize);
 
 private:
     RhiResourceHandle m_VertexBuffer;

@@ -21,10 +21,10 @@
 
 ETH_NAMESPACE_BEGIN
 
-class Material : public Asset
+class ETH_ENGINE_DLL Material : public Asset
 {
 public:
-    Material();
+    Material() = default;
     ~Material() = default;
 
     void Serialize(OStream& ostream) override;
@@ -58,6 +58,13 @@ private:
 	float m_Metalness = 1.0;
 	ethVector4 m_BaseColor = { 1, 1, 1, 1 };
 	ethVector4 m_SpecularColor = { 1, 1, 1, 1 };
+
+public:
+    // TODO: Fix this hack
+    std::string m_AlbedoTexturePath;
+    std::string m_SpecularTexturePath;
+    std::string m_RoughnessTexturePath;
+    std::string m_MetalnessTexturePath;
 };
 
 ETH_NAMESPACE_END

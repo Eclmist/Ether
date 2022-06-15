@@ -21,34 +21,27 @@
 
 ETH_NAMESPACE_BEGIN
 
-UploadBufferAllocator::UploadBufferAllocator(size_t pageSize)
-    : m_PageSize(pageSize)
-    , m_CurrentPage(nullptr)
-{
-}
+#define PAGE_SIZE 33554432 // 3MB
 
 UploadBufferAllocation UploadBufferAllocator::Allocate(size_t size, size_t alignment)
 {
-    if (size > m_PageSize)
+    if (size > PAGE_SIZE)
     {
-        LogGraphicsError("An attempt was made to allocate more memory than a linear allocator allows");
+		LogGraphicsFatal("An attempt was made to allocate more memory than a linear allocator allows");
         throw std::bad_alloc();
     }
 
-    if (m_CurrentPage == nullptr)
-        m_CurrentPage = &RequestPage();
-
-    if (!m_CurrentPage->HasSpace(size, alignment))
-        m_CurrentPage = &RequestPage();
+    if (m_CurrentPage == nullptr || !m_CurrentPage->HasSpace(size, alignment))
+        m_CurrentPage = &RequestPage(size);
 
     return m_CurrentPage->Allocate(size, alignment);
 }
 
-UploadBufferPage& UploadBufferAllocator::RequestPage()
+UploadBufferPage& UploadBufferAllocator::RequestPage(size_t size)
 {
     if (m_AvaliablePages.empty())
     {
-        auto newPage = std::make_shared<UploadBufferPage>(m_PageSize);
+        auto newPage = std::make_shared<UploadBufferPage>(PAGE_SIZE);
         m_InFlightPages.emplace_back(newPage);
         return *newPage;
     }

@@ -33,6 +33,8 @@
 
 #include "coredefinitions.h"
 
+#include "math/math.h"
+
 #include "system/noncopyable.h"
 #include "system/serializable.h"
 #include "system/singleton.h"

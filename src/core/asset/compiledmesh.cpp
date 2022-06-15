@@ -26,14 +26,12 @@ void CompiledMesh::Serialize(OStream& ostream)
     Asset::Serialize(ostream);
 
     ostream << (uint32_t)m_VertexBuffer.size();
-    ostream << (uint32_t)m_IndexBuffer.size();
     ostream << m_NumVertices;
 
     for (int i = 0; i < m_VertexBuffer.size(); ++i)
         ostream << m_VertexBuffer[i];
 
-    for (int i = 0; i < m_IndexBuffer.size(); ++i)
-        ostream << m_IndexBuffer[i];
+    m_Material->Serialize(ostream);
 }
 
 void CompiledMesh::Deserialize(IStream& istream)
@@ -41,28 +39,26 @@ void CompiledMesh::Deserialize(IStream& istream)
     Asset::Deserialize(istream);
 
     uint32_t vertexBufferSize;
-    uint32_t numIndices;
 
     istream >> vertexBufferSize;
-    istream >> numIndices;
     istream >> m_NumVertices;
 
-    m_IndexBuffer.resize(numIndices);
     m_VertexBuffer.resize(vertexBufferSize);
 
     for (int i = 0; i < vertexBufferSize; ++i)
         istream >> m_VertexBuffer[i];
 
-    for (int i = 0; i < numIndices; ++i)
-        istream >> m_IndexBuffer[i];
+    m_Material = std::make_shared<Material>();
+	m_Material->Deserialize(istream);
 }
 
 #ifdef ETH_TOOLMODE
 
-void CompiledMesh::SetRawMesh(std::shared_ptr<Mesh> rawMesh)
+void CompiledMesh::SetRawMesh(std::shared_ptr<RawMesh> rawMesh)
 {
     m_RawMesh = rawMesh;
-    UpdateBuffers();
+	UpdateBuffers();
+	UpdateMaterial();
 }
 
 void CompiledMesh::SetVertexBuffer(char* vertices, size_t size)
@@ -71,21 +67,20 @@ void CompiledMesh::SetVertexBuffer(char* vertices, size_t size)
     m_VertexBuffer.assign(vertices, vertices + size);
 }
 
-void CompiledMesh::SetIndexBuffer(uint32_t* indices, size_t size)
-{
-    m_IndexBuffer.resize(size);
-    m_IndexBuffer.assign(indices, indices + size);
-}
-
 void CompiledMesh::UpdateBuffers()
 {
-    if (m_RawMesh->GetNumIndices() >= MAX_VERTICES)
+    if (m_RawMesh->GetNumVertices() >= MAX_VERTICES)
 		LogToolmodeWarning("Max recommended vertex count exceeded. Memory exceptions may occur.");
 
     SetVertexBuffer(static_cast<char*>(m_RawMesh->GetPackedVertexData()), m_RawMesh->GetPackedVertexDataSize());
-    SetIndexBuffer(m_RawMesh->GetIndices(), m_RawMesh->GetNumIndices());
     m_NumVertices = m_RawMesh->GetNumVertices();
 }
+
+void CompiledMesh::UpdateMaterial()
+{
+    m_Material = m_RawMesh->GetMaterial();
+}
+
 
 #endif // ETH_TOOLMODE
 

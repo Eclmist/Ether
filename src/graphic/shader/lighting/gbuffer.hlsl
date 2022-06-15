@@ -48,6 +48,7 @@ ConstantBuffer<InstanceParams> InstanceParams : register(b1);
 ConstantBuffer<MaterialParams> MaterialParams : register(b2);
 
 Texture2D albedo : register(t0);
+Texture2D specular : register(t1);
 
 struct VS_INPUT
 {
@@ -97,14 +98,15 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
     float4 col = albedo.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
+    float4 spec = specular.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
     float3 normal = normalize(IN.NormalWS);
     float3 positionWS = IN.PositionWS;
 
     PS_OUTPUT output;
     output.Albedo.xyz = col.xyz * MaterialParams.BaseColor.xyz;
-    output.Albedo.a = max(MaterialParams.Roughness, 0.02);// sin(g_CommonConstants.Time.y) / 4.0 + 0.28; //roughness
-    output.Specular.xyz = MaterialParams.SpecularColor.xyz;
-    output.Specular.w = MaterialParams.Metalness;
+    output.Albedo.a = 0.97;// max(MaterialParams.Roughness, 0.02);
+    output.Specular.xyz = spec.xyz * MaterialParams.SpecularColor.xyz;
+    output.Specular.w = 0.0;// MaterialParams.Metalness;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;

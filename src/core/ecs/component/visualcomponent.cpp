@@ -28,8 +28,8 @@ VisualComponent::VisualComponent(EntityID owner)
 
 	EDITOR_INSPECTOR_FIELD(m_Material->m_BaseColor, "Base Color", Vector4Field);
 	EDITOR_INSPECTOR_FIELD(m_Material->m_SpecularColor, "Specular Color", Vector4Field);
-    EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Roughness, "Roughness", FloatField, 0, 1);
-    EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Metalness, "Metalness", FloatField, 0, 1);
+    EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Roughness, "Roughness", FloatField, 0.0f, 1.0f);
+    EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Metalness, "Metalness", FloatField, 0.0f, 1.0f);
 }
 
 VisualComponent::~VisualComponent()

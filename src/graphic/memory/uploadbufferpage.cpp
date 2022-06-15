@@ -44,6 +44,7 @@ UploadBufferPage::UploadBufferPage(size_t size)
 UploadBufferPage::~UploadBufferPage()
 {
     m_Resource->Unmap();
+    m_Resource.Destroy();
 }
 
 bool UploadBufferPage::HasSpace(size_t size, size_t alignment)

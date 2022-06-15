@@ -163,7 +163,6 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
         normalMat = normalMat.Transposed();
 
         context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
-        context.GetCommandList()->SetIndexBuffer(visual->GetIndexBufferView());
 
         InstanceParams params;
         params.m_ModelMatrix = modelMat;
@@ -183,15 +182,21 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
 
         // TODO: Setup bindless textures
         // TODO: If null, bind default texture
-        auto texture = visual->GetMaterial()->GetTexture("_AlbedoTexture");
-
-        if (texture != nullptr)
+        auto albedoTex = visual->GetMaterial()->GetTexture("_AlbedoTexture");
+        if (albedoTex != nullptr)
         {
-			rc.InitializeTexture2D(*texture);
-			context.GetCommandList()->SetRootDescriptorTable({ 3, texture->GetView() });
+			rc.InitializeTexture2D(*albedoTex);
+			context.GetCommandList()->SetRootDescriptorTable({ 3, albedoTex->GetView() });
         }
 
-        context.GetCommandList()->DrawIndexedInstanced({ visual->GetNumIndices(), 1, 0, 0, 0 });
+		auto specTex = visual->GetMaterial()->GetTexture("_SpecularTexture");
+		if (specTex != nullptr)
+		{
+			rc.InitializeTexture2D(*specTex);
+			context.GetCommandList()->SetRootDescriptorTable({ 4, specTex->GetView() });
+		}
+
+        context.GetCommandList()->DrawInstanced({ visual->GetNumVertices(), 1, 0, 0 });
     }
 
     GFX_RESOURCE(InstanceParams)->Unmap();
@@ -255,14 +260,15 @@ void GBufferProducer::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"GBufferPass::RootSignature");
 
-    RhiRootSignature tempRS(4, 3);
+    RhiRootSignature tempRS(5, 3);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
     tempRS[1]->SetAsConstantBufferView({ 1, 0, RhiShaderVisibility::All });
     tempRS[2]->SetAsConstantBufferView({ 2, 0, RhiShaderVisibility::All });
-    tempRS[3]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+	tempRS[3]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // albedo
+	tempRS[4]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // specular
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
 }

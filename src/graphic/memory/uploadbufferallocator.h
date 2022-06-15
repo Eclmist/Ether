@@ -25,26 +25,25 @@ ETH_NAMESPACE_BEGIN
 
 // Constant blocks must be multiples of 16 constants @ 16 bytes each
 #define DEFAULT_ALIGN 256
-#define DEFAULT_PAGE_SIZE 512000000 //64MB
 
 class UploadBufferAllocator
 {
 public:
-    UploadBufferAllocator(size_t pageSize = DEFAULT_PAGE_SIZE);
-
+    UploadBufferAllocator() = default;
+    ~UploadBufferAllocator() = default;
     UploadBufferAllocation Allocate(size_t size, size_t alignment = DEFAULT_ALIGN);
+
     void Reset();
 
 private:
-    UploadBufferPage& RequestPage();
+    UploadBufferPage& RequestPage(size_t size);
 
 private:
-    size_t m_PageSize;
 
     std::vector<std::shared_ptr<UploadBufferPage>> m_InFlightPages;
     std::vector<std::shared_ptr<UploadBufferPage>> m_AvaliablePages;
 
-    UploadBufferPage* m_CurrentPage;
+    UploadBufferPage* m_CurrentPage = nullptr;
 };
 
 ETH_NAMESPACE_END

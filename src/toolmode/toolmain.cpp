@@ -20,6 +20,7 @@
 #include <string>
 #include "api/api.h"
 #include <common/stream/filestream.h>
+#include "toolmode/utility/pathutils.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -44,34 +45,56 @@ public:
 
     void LoadContent() override
     {
-        Entity* testObj = EngineCore::GetECSManager().CreateEntity();
+        std::string modelsGroupPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\Models\\sponza.obj.ether";
+        std::string texturesGroupPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\Textures\\";
 
-        testObj->AddComponent<MeshComponent>();
-        testObj->AddComponent<VisualComponent>();
-        testObj->GetComponent<TransformComponent>()->SetPosition({ 0, 0, 0 });
-        testObj->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
+   //     for (int i = 0; i < 500; ++i)
+   //     {
+   //         std::string modelPath = modelsGroupPath + std::to_string(i);
+   //         if (!PathUtils::IsValidPath(modelPath))
+   //             break;
 
-        {
-			std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Models\\mori_knob.obj.ether");
-			compiledMesh->Deserialize(iistream);
-			testObj->GetComponent<MeshComponent>()->SetCompiledMesh(compiledMesh);
-			testObj->SetName(compiledMesh->GetName());
-        }
+			//std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+			//compiledMesh->Deserialize(IFileStream(modelPath));
 
 
-        {
-			std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
-			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Textures\\uv_grid_2.png.ether");
-            texture->Deserialize(iistream);
-			testObj->GetComponent<VisualComponent>()->GetMaterial()->SetTexture("_AlbedoTexture", texture);
-        }
+			//Entity* entity = EngineCore::GetECSManager().CreateEntity();
+   //         entity->SetName(compiledMesh->GetName());
+
+			//MeshComponent* mesh = entity->AddComponent<MeshComponent>();
+   //         mesh->SetCompiledMesh(compiledMesh);
+
+			//VisualComponent* visual =  entity->AddComponent<VisualComponent>();
+
+   //         TransformComponent* transform = entity->GetComponent<TransformComponent>();
+   //         transform->SetPosition({ 0, 0, 0 });
+   //         transform->SetRotation({ 0, 0, 0 });
+   //         transform->SetScale({ 0.1 });
+   //     }
+
+
+
+  //      {
+		//	std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+		//	IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Models\\sponza.obj.ether");
+		//	compiledMesh->Deserialize(iistream);
+		//	testObj->GetComponent<MeshComponent>()->SetCompiledMesh(compiledMesh);
+		//	testObj->SetName(compiledMesh->GetName());
+  //      }
+
+
+		//{
+		//	std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
+		//	IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Textures\\uv_grid_2.png.ether");
+		//	texture->Deserialize(iistream);
+		//	testObj->GetComponent<VisualComponent>()->GetMaterial()->SetTexture("_AlbedoTexture", texture);
+		//}
 
 
 		{
 			std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
 			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\dikhololo_night_4k.hdr.ether");
-            hdri->Deserialize(iistream);
+			hdri->Deserialize(iistream);
 			GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
 		}
 
@@ -131,7 +154,7 @@ private:
         {
             m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
             m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-            m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90.0f), DEG_TO_RAD(90.0f));
+            m_CameraRotation.x = ethClamp(m_CameraRotation.x, -ethDegToRad(90.0f), ethDegToRad(90.0f));
         }
 
         ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
@@ -147,7 +170,7 @@ private:
     // TODO: Move into a camera component
     ethMatrix4x4 GetPerspectiveMatrixRH(float fovy, float aspect, float znear, float zfar)
     {
-        const float range = tan(DEG_TO_RAD(fovy / 2)) * znear;
+        const float range = tan(ethDegToRad(fovy / 2)) * znear;
         const float left = -range * aspect;
         const float right = range * aspect;
         const float bottom = -range;
@@ -165,7 +188,7 @@ private:
 
     ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
     {
-		const float range = tan(DEG_TO_RAD(fovy / 2)) * znear;
+		const float range = tan(ethDegToRad(fovy / 2)) * znear;
 		const float left = -range * aspect;
 		const float right = range * aspect;
 		const float bottom = -range;

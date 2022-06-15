@@ -27,9 +27,11 @@
 
 ETH_NAMESPACE_BEGIN
 
+class Material;
+
 #define MAX_VERTICES 65536 
 
-class CompiledMesh : public Asset
+class ETH_ENGINE_DLL CompiledMesh : public Asset
 {
 public:
     CompiledMesh() = default;
@@ -40,28 +42,30 @@ public:
 
 public:
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
-    inline uint32_t GetNumIndices() const { return m_IndexBuffer.size(); }
-
     inline const void* GetVertexBuffer() const { return m_VertexBuffer.data(); }
-    inline const uint32_t* GetIndexBuffer() const { return m_IndexBuffer.data(); }
-
     inline bool IsValid() const { return GetNumVertices() > 0; }
 
+	// TODO: Only serialize material id? material guid? 
+	// material should be serialized/deserialized separately as part of "project" loading
+    inline std::shared_ptr<Material> GetMaterial() const { return m_Material; }
+
 public:
-    ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<Mesh> rawMesh));
+    ETH_TOOLONLY(void SetRawMesh(std::shared_ptr<RawMesh> rawMesh));
 
 private:
     ETH_TOOLONLY(void SetVertexBuffer(char* vertices, size_t size));
-    ETH_TOOLONLY(void SetIndexBuffer(uint32_t* indices, size_t size));
     ETH_TOOLONLY(void UpdateBuffers());
+    ETH_TOOLONLY(void UpdateMaterial());
 
 private:
     std::vector<char> m_VertexBuffer;
-    std::vector<uint32_t> m_IndexBuffer;
-
     uint32_t m_NumVertices;
 
-    ETH_TOOLONLY(std::shared_ptr<Mesh> m_RawMesh);
+    // TODO: Only serialize material id? material guid? 
+    // material should be serialized/deserialized separately as part of "project" loading
+    std::shared_ptr<Material> m_Material;
+
+    ETH_TOOLONLY(std::shared_ptr<RawMesh> m_RawMesh);
 };
 
 ETH_NAMESPACE_END

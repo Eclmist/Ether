@@ -21,7 +21,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class Asset : public Serializable
+class ETH_ENGINE_DLL Asset : public Serializable
 {
 public:
     Asset() = default;

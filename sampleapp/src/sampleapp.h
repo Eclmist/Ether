@@ -22,6 +22,12 @@
 #include "core/core.h"
 #include "graphic/graphiccore.h"
 
+namespace Ether
+{
+	class CompiledTexture;
+    class Material;
+}
+
 class SampleApp : public Ether::IApplicationBase
 {
 public:
@@ -35,7 +41,25 @@ public:
     void OnRender(const Ether::RenderEventArgs& e) override;
 
 private:
-    // ========== Temp Orbit Cam Implementation =========== //
+    void UpdateCamera(float deltaTime);
+	void UpdateOrbitCam(float deltaTime);
+    void LoadTexture(const std::string& path, const std::string& key);
+
+	// Orbit Cam
+	float m_CameraDistance;
     Ether::ethVector3 m_CameraRotation;
-    float m_CameraDistance;
+
+	// Fly Cam
+    Ether::ethVector3 m_CameraPosition;
+
+	// Ortho Cam
+    Ether::ethVector2 m_DragStartPos;
+	float m_OrthoX, m_OrthoZ;
+
+    Ether::ethMatrix4x4 m_ViewMatrix;
+    Ether::ethMatrix4x4 m_ViewMatrixInv;
+    Ether::ethMatrix4x4 m_ProjectionMatrix;
+
+	std::shared_ptr<Ether::Material> m_Material;
+    std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
 };

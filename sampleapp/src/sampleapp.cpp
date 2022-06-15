@@ -18,10 +18,14 @@
 */
 
 #include "sampleapp.h"
-#include "math/math.h"
-#include <algorithm> // for std::clamp
+#include <common/stream/filestream.h>
+#include <filesystem>
 
 using namespace Ether;
+
+std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
+std::string objName = "sponza.obj.ether";
+std::string modelsGroupPath = sceneRootPath + objName;
 
 void SampleApp::Initialize()
 {
@@ -36,33 +40,46 @@ void SampleApp::Initialize()
 
 void SampleApp::LoadContent()
 {
-    Entity* debugCube = EngineCore::GetECSManager().CreateEntity("Debug Cube");
+	for (int i = 0; i < 500; ++i)
+	{
+		std::string modelPath = modelsGroupPath + std::to_string(i);
+		if (!std::filesystem::exists(modelPath))
+			break;
 
-    debugCube->AddComponent<MeshComponent>();
-    debugCube->AddComponent<VisualComponent>();
-    debugCube->GetComponent<TransformComponent>()->SetPosition({ 0, 1, 0 });
-    debugCube->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0 });
+		std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+		compiledMesh->Deserialize(IFileStream(modelPath));
 
-    Entity* debugCubeAnim = EngineCore::GetECSManager().CreateEntity("Debug Cube (Animated)");
-    debugCubeAnim->AddComponent<MeshComponent>();
-    debugCubeAnim->AddComponent<VisualComponent>();
-    debugCubeAnim->GetComponent<TransformComponent>()->SetPosition({ 2.0, -4.0, 0 });
-    debugCubeAnim->GetComponent<TransformComponent>()->SetRotation({ 0, 0, 0.23f });
-    debugCubeAnim->GetComponent<TransformComponent>()->SetScale({ 1.20f, 1.40f, 1.23f });
 
-    Entity* groundPlane = EngineCore::GetECSManager().CreateEntity("Ground Plane");
-    groundPlane->AddComponent<MeshComponent>();
-    groundPlane->AddComponent<VisualComponent>();
-    groundPlane->GetComponent<TransformComponent>()->SetScale({ 1000, 0.01f, 1000 });
+		Entity* entity = EngineCore::GetECSManager().CreateEntity();
+		entity->SetName(compiledMesh->GetName());
 
-    for (int i = 0; i < 100; ++i)
-    {
-        Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
-        newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
-        newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
-        newEntity->AddComponent<MeshComponent>();
-        newEntity->AddComponent<VisualComponent>();
-    }
+		MeshComponent* mesh = entity->AddComponent<MeshComponent>();
+		mesh->SetCompiledMesh(compiledMesh);
+
+		VisualComponent* visual = entity->AddComponent<VisualComponent>();
+		visual->SetMaterial(compiledMesh->GetMaterial());
+
+		TransformComponent* transform = entity->GetComponent<TransformComponent>();
+		transform->SetPosition({ 0, -15, 0 });
+		transform->SetRotation({ 0, 0, 0 });
+		transform->SetScale({ 0.1 });
+
+		LoadTexture(compiledMesh->GetMaterial()->m_AlbedoTexturePath, "_AlbedoTexture");
+		if (m_Textures.find(compiledMesh->GetMaterial()->m_AlbedoTexturePath) != m_Textures.end())
+			visual->GetMaterial()->SetTexture("_AlbedoTexture", m_Textures[compiledMesh->GetMaterial()->m_AlbedoTexturePath]);
+
+		LoadTexture(compiledMesh->GetMaterial()->m_SpecularTexturePath, "_SpecularTexture");
+		if (m_Textures.find(compiledMesh->GetMaterial()->m_SpecularTexturePath) != m_Textures.end())
+			visual->GetMaterial()->SetTexture("_SpecularTexture", m_Textures[compiledMesh->GetMaterial()->m_SpecularTexturePath]);
+
+		//{
+		//}
+	}
+
+	std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
+	IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
+	hdri->Deserialize(iistream);
+	GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
 }
 
 void SampleApp::UnloadContent()
@@ -75,46 +92,87 @@ void SampleApp::Shutdown()
 
 void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
-    if (Input::GetKeyDown(Win32::KeyCode::F3))
-        EngineCore::GetEngineConfig().ToggleDebugGui();
+	if (Input::GetKeyDown(Win32::KeyCode::F3))
+		EngineCore::GetEngineConfig().ToggleDebugGui();
 
-    if (Input::GetKeyDown(Win32::KeyCode::F11))
-        EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
+	if (Input::GetKeyDown(Win32::KeyCode::F11))
+		EngineCore::GetMainWindow().SetFullscreen(!EngineCore::GetMainWindow().GetFullscreen());
 
-    m_CameraDistance -= Input::GetMouseWheelDelta() / 120;
-    m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
+	UpdateCamera(e.m_DeltaTime);
+}
 
-    if (Input::GetMouseButton(1))
-    {
-        m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-        m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+void SampleApp::UpdateCamera(float deltaTime)
+{
+	m_ViewMatrix = ethMatrix4x4();
+	m_ViewMatrixInv = ethMatrix4x4();
+	m_ProjectionMatrix = ethMatrix4x4();
+	UpdateOrbitCam(deltaTime);
+}
 
-        constexpr float rad90 = DEG_TO_RAD(80);
-        m_CameraRotation.x = std::clamp(m_CameraRotation.x, -rad90, rad90);
-    }
+void SampleApp::UpdateOrbitCam(float deltaTime)
+{
+	m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
+	m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 
-    float x = sin((float)GetTimeSinceStart());
-    EngineCore::GetECSManager().GetEntity(1)->GetComponent<TransformComponent>()->SetPosition({ x, 5, 5 });
+	if (Input::GetMouseButton(1))
+	{
+		m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+		m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+		m_CameraRotation.x = ethClamp(m_CameraRotation.x, -ethDegToRad(90.0f), ethDegToRad(90.0f));
+	}
+
+	ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
+	ethMatrix4x4 translationMatrix = TransformComponent::GetTranslationMatrix({ 0, 0, m_CameraDistance });
+
+	m_ViewMatrix = translationMatrix * rotationMatrix;
+	m_ViewMatrixInv = m_ViewMatrix.Inversed();
+
+	float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+	const float fovy = 80;
+	const float zfar = 1000.0f;
+	const float znear = 0.01f;
+	const float range = tan(ethDegToRad(fovy / 2)) * znear;
+	const float left = -range * aspectRatio;
+	const float right = range * aspectRatio;
+	const float bottom = -range;
+	const float top = range;
+	const float Q = zfar / (zfar - znear);
+
+	ethMatrix4x4 dst(0.0f);
+	dst.m_Data2D[0][0] = (2 * znear) / (right - left);
+	dst.m_Data2D[1][1] = (2 * znear) / (top - bottom);
+	dst.m_Data2D[2][2] = Q;
+	dst.m_Data2D[2][3] = -znear * Q;
+	dst.m_Data2D[3][2] = 1;
+	m_ProjectionMatrix = dst;
+
+}
+
+void SampleApp::LoadTexture(const std::string& path, const std::string& key)
+{
+	if (path == "")
+		return;
+
+	if (m_Textures.find(path) == m_Textures.end())
+	{
+		std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
+		IFileStream iistream(sceneRootPath + path + ".ether0");
+		if (iistream.IsOpen())
+		{
+			texture->Deserialize(iistream);
+			m_Textures[path] = texture;
+		}
+	}
+
 }
 
 void SampleApp::OnRender(const RenderEventArgs& e)
 {
-    //const ethXMVector upDir = DirectX::XMVectorSet(0, 1, 0, 0);
-    //float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+	const ethVector3 upDir = { 0, 1, 0 };
 
-    //ethXMMatrix xRot = DirectX::XMMatrixRotationX(m_CameraRotation.x);
-    //ethXMMatrix yRot = DirectX::XMMatrixRotationY(m_CameraRotation.y);
-
-    //ethXMMatrix viewMatrix = DirectX::XMMatrixMultiply(yRot, xRot);
-    //viewMatrix = DirectX::XMMatrixMultiply(viewMatrix, DirectX::XMMatrixTranslation(0, 0, m_CameraDistance));
-
-    //ethXMMatrix projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(80), aspectRatio, 0.1f, 1000.0f);
-    //ethMatrix4x4 viewMatrixRaw;
-    //ethMatrix4x4 projMatrixRaw;
-    //DirectX::XMStoreFloat4x4(&viewMatrixRaw, viewMatrix);
-    //DirectX::XMStoreFloat4x4(&projMatrixRaw, projectionMatrix);
-
-    //e.m_GraphicContext->SetViewMatrix(viewMatrixRaw);
-    //e.m_GraphicContext->SetProjectionMatrix(projMatrixRaw);
+	e.m_GraphicContext->SetViewMatrix(m_ViewMatrix);
+	e.m_GraphicContext->SetProjectionMatrix(m_ProjectionMatrix);
+	e.m_GraphicContext->SetEyeDirection({ m_ViewMatrix.m_31, m_ViewMatrix.m_32, m_ViewMatrix.m_33, 1.0 });
+	e.m_GraphicContext->SetEyePosition({ m_ViewMatrixInv.m_14, m_ViewMatrixInv.m_24, m_ViewMatrixInv.m_34, 0.0 });
 }
 

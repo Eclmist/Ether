@@ -23,72 +23,92 @@
 
 ETH_NAMESPACE_BEGIN
 
-class CompiledMesh;
+class Material;
 
 struct Vertex
 {
+    Vertex(ethVector3 pos, ethVector3 norm, ethVector2 uv)
+        : m_Position(pos)
+        , m_Normal(norm)
+        , m_TexCoord(uv) {}
+
     ethVector3 m_Position;
-    ethVector3 m_Normal;
+	ethVector3 m_Normal;
     ethVector2 m_TexCoord;
 
     bool operator==(const Vertex& other)
     {
-        if (m_Position.x != other.m_Position.x ||
-            m_Position.y != other.m_Position.y ||
-            m_Position.z != other.m_Position.z)
+        if (m_Position != other.m_Position)
             return false;
 
-        if (m_Normal.x != other.m_Normal.x ||
-            m_Normal.y != other.m_Normal.y ||
-            m_Normal.z != other.m_Normal.z)
-            return false;
+		if (m_Normal != other.m_Normal)
+			return false;
 
-        if (m_TexCoord.x != other.m_TexCoord.x ||
-            m_TexCoord.y != other.m_TexCoord.y)
+        if (m_TexCoord != other.m_TexCoord)
             return false;
 
         return true;
     }
 };
 
-class Mesh : public Asset
+class RawMesh
 {
 public:
-    Mesh() = default;
-    ~Mesh() = default;
+    RawMesh() = default;
+    ~RawMesh() = default;
 
 public:
-    void Compile();
-
     inline void* GetPackedVertexData() const { return (void*)m_PackedVertexData.data(); }
     inline size_t GetPackedVertexDataSize() const { return m_PackedVertexData.size() * sizeof(m_PackedVertexData[0]); }
-    inline uint32_t* GetIndices() const { return (uint32_t*)m_Indices.data(); }
-
     inline uint32_t GetNumVertices() const { return m_PackedVertexData.size(); }
-    inline uint32_t GetNumIndices() const { return m_Indices.size(); }
+    inline std::shared_ptr<Material> GetMaterial() const { return m_Material; }
 
 private:
     friend class ObjFileParser;
+    friend class MeshGroup;
+    void Compile();
 
-    void CalculateNormals();
-    void CalculateTexCoords();
+private:
+	void CalculateNormals();
+	void CalculateTexCoords();
     void GenerateVertices();
     void PackVertices();
 
 private:
-    std::vector<ethVector3> m_Positions;
-    std::vector<ethVector3> m_Normals;
-    std::vector<ethVector2> m_TexCoords;
+	std::vector<ethVector3> m_Positions;
+	std::vector<ethVector3> m_Normals;
+	std::vector<ethVector2> m_TexCoords;
 
-    std::vector<uint32_t> m_PositionIndices;
-    std::vector<uint32_t> m_NormalIndices;
-    std::vector<uint32_t> m_TexCoordIndices;
+	//std::vector<uint32_t> m_PositionIndices;
+	//std::vector<uint32_t> m_NormalIndices;
+	//std::vector<uint32_t> m_TexCoordIndices;
 
     std::vector<Vertex> m_Vertices;
-
     std::vector<VertexFormats::VertexFormatStatic> m_PackedVertexData;
-    std::vector<uint32_t> m_Indices;
+    //std::vector<uint32_t> m_Indices;
+    std::shared_ptr<Material> m_Material;
 };
+
+class MeshGroup : public Asset
+{
+public:
+	MeshGroup() = default;
+	~MeshGroup() = default;
+
+public:
+	inline std::vector<std::shared_ptr<RawMesh>> GetSubMeshes() const { return m_SubMeshes; }
+
+public:
+	void Compile();
+
+private:     
+	friend class ObjFileParser;
+
+private:
+	std::vector<std::shared_ptr<RawMesh>> m_SubMeshes;
+	std::vector<std::shared_ptr<Material>> m_MaterialTable;
+};
+
 
 ETH_NAMESPACE_END
 

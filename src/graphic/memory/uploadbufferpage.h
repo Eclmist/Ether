@@ -26,7 +26,7 @@ ETH_NAMESPACE_BEGIN
 class UploadBufferPage
 {
 public:
-    UploadBufferPage(size_t size = 2048);
+    UploadBufferPage(size_t size = 2000000); // 2MB
     ~UploadBufferPage();
 
 public:

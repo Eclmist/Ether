@@ -34,7 +34,7 @@ struct SerializableField
 class OStream;
 class IStream;
 
-class Serializable
+class ETH_ENGINE_DLL Serializable
 {
 public:
     Serializable();

@@ -42,18 +42,22 @@ bool TextureImporter::HasSupport(const std::string& extension)
     return m_Parsers.find(extension) != m_Parsers.end();
 }
 
-std::shared_ptr<Asset> TextureImporter::Compile(IStream& istream)
+std::vector<std::shared_ptr<Asset>> TextureImporter::Compile(IStream& istream)
 {
     std::string extension = PathUtils::GetFileExtension(istream.GetPath());
     FileParser* parser = GetCompatibleParser(extension);
     parser->Parse(istream.GetPath());
 
     std::shared_ptr<Texture> texture = std::dynamic_pointer_cast<Texture>(parser->GetRawAsset());
-    //texture->Compile();
+    //texture->Compile(); Texture don't need compiling for now. Might need to change when not using DX (TODO)
+
+    std::vector<std::shared_ptr<Asset>> compiledTextures;
 
 	std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
     compiledTexture->SetRawTexture(texture);
-    return compiledTexture;
+
+    compiledTextures.push_back(compiledTexture);
+    return compiledTextures;
 }
 
 ETH_NAMESPACE_END

@@ -27,8 +27,8 @@ ETH_NAMESPACE_BEGIN
 class IFileStream : public IStream
 {
 public:
-    IFileStream(const std::string& path);
-    ~IFileStream();
+    ETH_ENGINE_DLL IFileStream(const std::string& path);
+    ETH_ENGINE_DLL ~IFileStream();
 
     std::string GetPath() override final;
 
@@ -39,7 +39,10 @@ public:
     IFileStream& operator>>(unsigned int& v) override final;
     IFileStream& operator>>(unsigned long& v) override final;
     IFileStream& operator>>(std::string& v) override final;
-    IFileStream& operator>>(bool& v) override final;
+	IFileStream& operator>>(bool& v) override final;
+	IFileStream& operator>>(ethVector2& v) override final;
+	IFileStream& operator>>(ethVector3& v) override final;
+	IFileStream& operator>>(ethVector4& v) override final;
 
 private:
     std::ifstream m_File;
@@ -62,6 +65,9 @@ public:
     OFileStream& operator<<(const unsigned long v) override final;
     OFileStream& operator<<(const std::string& v) override final;
     OFileStream& operator<<(const bool v) override final;
+    OFileStream& operator<<(const ethVector2 v) override final;
+    OFileStream& operator<<(const ethVector3 v) override final;
+    OFileStream& operator<<(const ethVector4 v) override final;
 
 private:
     std::ofstream m_File;

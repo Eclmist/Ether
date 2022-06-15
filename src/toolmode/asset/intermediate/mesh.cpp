@@ -21,106 +21,57 @@
 
 ETH_NAMESPACE_BEGIN
 
-void Mesh::CalculateNormals()
+void MeshGroup::Compile()
 {
-    const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
-    m_Normals.resize(numIndices);
-    m_NormalIndices = m_PositionIndices;
+    for (std::shared_ptr<RawMesh> rawMesh : m_SubMeshes)
+        rawMesh->Compile();
+}
 
-    for (uint32_t i = 0; i < numIndices; i += 3)
+void RawMesh::CalculateNormals()
+{
+    m_Normals.resize(m_Positions.size());
+    for (uint32_t i = 0; i < m_Positions.size(); i += 3)
     {
-        const uint32_t i0 = m_PositionIndices[i];
-        const uint32_t i1 = m_PositionIndices[i + 1];
-        const uint32_t i2 = m_PositionIndices[i + 2];
-
-        ethVector3 v0 = m_Positions[i0];
-        ethVector3 v1 = m_Positions[i1];
-        ethVector3 v2 = m_Positions[i2];
+        ethVector3 v0 = m_Positions[i];
+        ethVector3 v1 = m_Positions[i + 1];
+        ethVector3 v2 = m_Positions[i + 2];
 
         ethVector3 e1 = v1 - v0;
         ethVector3 e2 = v2 - v0;
         ethVector3 normal = ethVector3::Cross(e1, e2);
 
-        m_Normals[m_NormalIndices[i]] = normal;
-        m_Normals[m_NormalIndices[i + 1]] = normal;
-        m_Normals[m_NormalIndices[i + 2]] = normal;
+        m_Normals[i] = normal;
+        m_Normals[i + 1] = normal;
+        m_Normals[i + 2] = normal;
     }
 }
 
-void Mesh::CalculateTexCoords()
+void RawMesh::CalculateTexCoords()
 {
-    const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
-    m_TexCoords.resize(numIndices);
-    m_TexCoordIndices.resize(numIndices);
+    m_TexCoords.resize(m_Positions.size());
 
-	for (uint32_t i = 0; i < numIndices; ++i)
-	{
-        m_TexCoords[i] = ethVector2();
-		m_TexCoordIndices[i] = 0;
-    }
+	for (uint32_t i = 0; i < m_Positions.size(); ++i)
+        m_TexCoords[i] = { 0, 0 };
 }
 
-void Mesh::GenerateVertices()
+void RawMesh::GenerateVertices()
 {
-    const uint32_t numIndices = (uint32_t)m_PositionIndices.size();
-    const uint32_t numPositions = (uint32_t)m_Positions.size();
-
-    m_Indices.resize(numIndices);
-    std::vector<std::vector<uint32_t>> indexRef(numPositions);
-
-    for (uint32_t i = 0; i < numIndices; ++i)
-        indexRef[m_PositionIndices[i]].emplace_back(i);
-
-    for (uint32_t i = 0; i < numPositions; ++i)
+    for (uint32_t i = 0; i < m_Positions.size(); ++i)
     {
-        ethVector3 position = m_Positions[i];
-        std::vector<Vertex> uniqueVerts;
-
-        for (uint32_t j = 0; j < indexRef[i].size(); ++j)
-        {
-            ethVector3 normal = m_Normals[m_NormalIndices[indexRef[i][j]]];
-            ethVector2 texcoord = m_TexCoords[m_TexCoordIndices[indexRef[i][j]]];
-            Vertex newVertex;
-            newVertex.m_Position = position;
-            newVertex.m_Normal = normal;
-            newVertex.m_TexCoord = texcoord;
-
-            bool vertexExists = false;
-            uint32_t vertexIndex = -1;
-
-            for (uint32_t k = 0; k < uniqueVerts.size(); ++k)
-            {
-                if (newVertex == uniqueVerts[k])
-                {
-                    vertexExists = true;
-                    vertexIndex = k;
-                    break;
-                }
-            }
-
-            if (vertexExists)
-            {
-                vertexIndex = m_Vertices.size() - uniqueVerts.size() + vertexIndex;
-            }
-            else 
-            {
-                uniqueVerts.emplace_back(newVertex);
-                m_Vertices.emplace_back(newVertex);
-                vertexIndex = m_Vertices.size() - 1;
-            }
-
-			m_Indices[indexRef[i][j]] = vertexIndex;
-        }
+        m_Vertices.emplace_back(
+            m_Positions[i],
+            m_Normals[i],
+            m_TexCoords[i]
+		);
     }
 }
 
-void Mesh::PackVertices()
+void RawMesh::PackVertices()
 {
     const uint32_t numVertices = (uint32_t)m_Vertices.size();
     assert(numVertices != 0);
 
     m_PackedVertexData.resize(numVertices);
-
     for (uint32_t i = 0; i < numVertices; ++i)
     {
         Vertex& v = m_Vertices[i];
@@ -135,16 +86,16 @@ void Mesh::PackVertices()
     }
 }
 
-void Mesh::Compile()
+void RawMesh::Compile()
 {
-    AssertToolmode(m_PositionIndices.size() != 0, "Cannot pack empty mesh");
-    AssertToolmode((m_PositionIndices.size() % 3) == 0, "Cannot pack non-triangle meshes");
+    AssertToolmode(m_Positions.size() != 0, "Cannot pack empty mesh");
+    AssertToolmode((m_Positions.size() % 3) == 0, "Cannot pack non-triangle meshes");
 
-    if (m_Normals.empty())
-        CalculateNormals();
+	if (m_Normals.empty())
+		CalculateNormals();
 
-    if (m_TexCoords.empty())
-        CalculateTexCoords();
+	if (m_TexCoords.empty())
+		CalculateTexCoords();
 
     GenerateVertices();
     PackVertices();

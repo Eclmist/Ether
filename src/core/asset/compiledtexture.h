@@ -28,7 +28,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-class CompiledTexture : public Asset
+class ETH_ENGINE_DLL CompiledTexture : public Asset
 {
 public:
     CompiledTexture() = default;

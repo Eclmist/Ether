@@ -34,7 +34,7 @@ public:
     std::shared_ptr<Asset> GetRawAsset() const override;
 
 private:
-    std::shared_ptr<Mesh> m_RawMesh;
+    std::shared_ptr<MeshGroup> m_RawMeshGroup;
 };
 
 ETH_NAMESPACE_END

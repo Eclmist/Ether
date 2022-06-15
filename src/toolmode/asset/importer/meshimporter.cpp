@@ -32,18 +32,24 @@ bool MeshImporter::HasSupport(const std::string& extension)
     return m_Parsers.find(extension) != m_Parsers.end();
 }
 
-std::shared_ptr<Asset> MeshImporter::Compile(IStream& istream)
+std::vector<std::shared_ptr<Asset>> MeshImporter::Compile(IStream& istream)
 {
     std::string extension = PathUtils::GetFileExtension(istream.GetPath());
     FileParser* parser = GetCompatibleParser(extension);
     parser->Parse(istream.GetPath());
 
-    std::shared_ptr<Mesh> mesh = std::dynamic_pointer_cast<Mesh>(parser->GetRawAsset());
-    mesh->Compile();
+    std::shared_ptr<MeshGroup> meshGroup = std::dynamic_pointer_cast<MeshGroup>(parser->GetRawAsset());
+    meshGroup->Compile();
 
-	std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-    compiledMesh->SetRawMesh(mesh);
-    return compiledMesh;
+	std::vector<std::shared_ptr<Asset>> compiledMeshes;
+    for (int i = 0; i < meshGroup->GetSubMeshes().size(); ++i)
+    {
+		std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+		compiledMesh->SetRawMesh(meshGroup->GetSubMeshes()[i]);
+        compiledMeshes.push_back(compiledMesh);
+    }
+
+    return compiledMeshes;
 }
 
 ETH_NAMESPACE_END

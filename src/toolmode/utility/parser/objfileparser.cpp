@@ -18,6 +18,7 @@
 */
 
 #include "objfileparser.h"
+#include "toolmode/utility/pathutils.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "parser/mesh/tiny_obj_loader.h"
@@ -26,61 +27,121 @@ ETH_NAMESPACE_BEGIN
 
 void ObjFileParser::Parse(const std::string& path)
 {
-    m_RawMesh = std::make_shared<Mesh>();
+    m_RawMeshGroup = std::make_unique<MeshGroup>();
 
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> objmaterials;
-    std::string err;
+    tinyobj::ObjReaderConfig reader_config;
+    tinyobj::ObjReader reader;
 
-    bool success = tinyobj::LoadObj(&attrib, &shapes, &objmaterials, &err, 
-        path.c_str(), //model to load
-        path.c_str(), //directory to search for materials
-        true); //enable triangulation
-
-    if (!success)
-    {
-        LogToolmodeError("Failed to load mesh: %s", path.c_str());
+    if (!reader.ParseFromFile(path, reader_config)) {
+        if (!reader.Error().empty())
+			LogToolmodeError("Failed to load mesh: %s", path.c_str());
+            LogToolmodeError(reader.Error().c_str());
         return;
     }
 
-    // z-axis is flipped because .obj specifications state that it should be in RH coordinate system
-    // but DirectX uses left handed system.
-    // TODO: What exactly *defines* handedness in a particular api? NDC coordinates?
-    // TODO: Is there a better place to swap handedness when we support other APIs?
-    // TODO: What handedness is other APIs? OpenGL is LH, Vulkan? Agc?
+    if (!reader.Warning().empty())
+        LogToolmodeWarning(reader.Warning().c_str());
 
-    for (size_t i = 0; i < attrib.vertices.size(); i += 3)
-        m_RawMesh->m_Positions.emplace_back(attrib.vertices[i], attrib.vertices[i + 1], -attrib.vertices[i + 2]);
+    auto& attrib = reader.GetAttrib();
+    auto& shapes = reader.GetShapes();
+    auto& materials = reader.GetMaterials();
+    std::string err;
 
-    for (size_t i = 0; i < attrib.normals.size(); i += 3)
-        m_RawMesh->m_Normals.emplace_back(attrib.normals[i], attrib.normals[i + 1], -attrib.normals[i + 2]);
+	m_RawMeshGroup->m_MaterialTable.resize(materials.size());
+	for (int i = 0; i < materials.size(); ++i)
+	{
+        const auto rawMat = materials[i];
+        m_RawMeshGroup->m_MaterialTable[i] = std::make_shared<Material>();
+        m_RawMeshGroup->m_MaterialTable[i]->SetRoughness(rawMat.roughness);
+        m_RawMeshGroup->m_MaterialTable[i]->SetMetalness(rawMat.metallic);
+        m_RawMeshGroup->m_MaterialTable[i]->SetBaseColor({ rawMat.diffuse[0], rawMat.diffuse[1], rawMat.diffuse[2], 1.0f });
+        m_RawMeshGroup->m_MaterialTable[i]->SetSpecularColor({ rawMat.specular[0], rawMat.specular[1], rawMat.specular[2], 1.0f });
+		m_RawMeshGroup->m_MaterialTable[i]->m_AlbedoTexturePath = rawMat.diffuse_texname;
+		m_RawMeshGroup->m_MaterialTable[i]->m_SpecularTexturePath = rawMat.specular_texname;
+		m_RawMeshGroup->m_MaterialTable[i]->m_RoughnessTexturePath = rawMat.roughness_texname;
+		m_RawMeshGroup->m_MaterialTable[i]->m_MetalnessTexturePath = rawMat.metallic_texname;
+	}
 
-    for (size_t i = 0; i < attrib.texcoords.size(); i += 2)
-        m_RawMesh->m_TexCoords.emplace_back(attrib.texcoords[i], attrib.texcoords[i + 1]);
+    // Loop over shapes (each shape is a "mesh" that should have different materials)
+    // LIMITATION FOR NOW: Each shape can only have 1 material. In order to support multiple
+    // material per shape, we cannot render the entire shape in one single draw call.
+    // We would have to further split each shape (internally) by material and submit draw calls
+    // per material in the renderer. (TODO)
 
-    for (auto shape = shapes.begin(); shape < shapes.end(); ++shape)
-    {
-        for (auto i = 0; i < shape->mesh.indices.size(); ++i)
-        {
-            m_RawMesh->m_PositionIndices.emplace_back(shape->mesh.indices[i].vertex_index);
+    for (size_t s = 0; s < shapes.size(); s++) {
 
-            if (shape->mesh.indices[i].normal_index != -1)
-                m_RawMesh->m_NormalIndices.emplace_back(shape->mesh.indices[i].normal_index);
-            else
-                m_RawMesh->m_NormalIndices.emplace_back(0);
+        std::shared_ptr<RawMesh> rawMesh = std::make_shared<RawMesh>();
 
-            if (shape->mesh.indices[i].texcoord_index != -1)
-                m_RawMesh->m_TexCoordIndices.emplace_back(shape->mesh.indices[i].texcoord_index);
-            else
-                m_RawMesh->m_TexCoordIndices.emplace_back(0);
+        // Loop over faces(polygon)
+        size_t index_offset = 0;
+        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+            size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
+
+            // LIMITATION FOR NOW: polygons must be triangles. In order to support n-gon
+            // rendering, we cannot draw simply with a triangle list. Most engines simplify
+            // the rendering process by triangulating imported meshes to fix this, and if we 
+            // want to support that we should probably do it somewhere here (TODO)
+            AssertToolmode(fv == 3, "Only triangulated meshes are supported! Could bypass assert for undefined behaviour");
+
+            // Loop over vertices in the face.
+            for (size_t v = 0; v < fv; v++) {
+                // access to vertex
+                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+                tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
+                tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
+                tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
+
+                // TODO: Resize the array in the beginning for better performance
+                // z-axis is flipped (pos/norm) because .obj specs specifies that vertices be in RH coordinate system
+                // but Ether uses a LH coordinate system by convention.
+                rawMesh->m_Positions.emplace_back(vx, vy, -vz);
+ 
+                // Check if `normal_index` is zero or positive. negative = no normal data
+                if (idx.normal_index >= 0) {
+                    tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
+                    tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
+                    tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
+                    rawMesh->m_Normals.emplace_back(nx, ny, -nz);
+                }
+
+                // Check if `texcoord_index` is zero or positive. negative = no texcoord data
+                if (idx.texcoord_index >= 0) {
+                    tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
+                    tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
+                    rawMesh->m_TexCoords.emplace_back(tx, ty);
+                }
+            }
+
+            // per-face material
+            if (materials.size() > shapes[s].mesh.material_ids[f])
+				rawMesh->m_Material = m_RawMeshGroup->m_MaterialTable[shapes[s].mesh.material_ids[f]];
+
+            index_offset += fv;
         }
+
+        //// Assign indices
+        //for (auto i = 0; i < shapes[s].mesh.indices.size(); ++i)
+        //{
+        //    rawMesh->m_PositionIndices.emplace_back(shapes[s].mesh.indices[i].vertex_index);
+
+        //    if (shapes[s].mesh.indices[i].normal_index != -1)
+        //        rawMesh->m_NormalIndices.emplace_back(shapes[s].mesh.indices[i].normal_index);
+        //    else
+        //        rawMesh->m_NormalIndices.emplace_back(0);
+
+        //    if (shapes[s].mesh.indices[i].texcoord_index != -1)
+        //        rawMesh->m_TexCoordIndices.emplace_back(shapes[s].mesh.indices[i].texcoord_index);
+        //    else
+        //        rawMesh->m_TexCoordIndices.emplace_back(0);
+        //}
+
+        m_RawMeshGroup->m_SubMeshes.push_back(rawMesh);
     }
 }
 
 std::shared_ptr<Asset> ObjFileParser::GetRawAsset() const
 {
-    return std::dynamic_pointer_cast<Asset>(m_RawMesh);
+    return std::dynamic_pointer_cast<Asset>(m_RawMeshGroup);
 }
 
 ETH_NAMESPACE_END

@@ -29,7 +29,7 @@ class Importer : public NonCopyable
 {
 public:
     virtual bool HasSupport(const std::string& extension) = 0;
-    virtual std::shared_ptr<Asset> Compile(IStream& istream) = 0;
+	virtual std::vector<std::shared_ptr<Asset>> Compile(IStream& istream) = 0;
 
     FileParser* GetCompatibleParser(const std::string& extension);
 
