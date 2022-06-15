@@ -90,8 +90,8 @@ void TextureDebugPass::Render(GraphicContext& context, ResourceContext& rc)
 
 void TextureDebugPass::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"debug\\texturedebug.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"debug\\texturedebug.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"toolmode\\texturedebug.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"toolmode\\texturedebug.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();

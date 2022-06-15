@@ -51,7 +51,7 @@ void DebugMenuGuiComponent::Draw()
             ImGui::ColorEdit3("clear color", (float*)&EngineCore::GetEngineConfig().m_ClearColor); // Edit 3 floats representing a color
             ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      // Edit bools storing our window open/close state
 
-            static bool vSync;
+            static bool vSync = GraphicCore::GetGraphicDisplay().IsVsyncEnabled();
             ImGui::Checkbox("VSync Enabled", &vSync);
             GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
 
