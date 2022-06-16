@@ -43,7 +43,7 @@ void CommandContext::Reset()
     CommandAllocatorPool& allocatorPool = GraphicCore::GetCommandManager().GetAllocatorPool(m_Type);
     m_CommandAllocator = allocatorPool.RequestAllocator(m_CommandQueue->GetCompletedFenceValue());
     m_CommandList->Reset(m_CommandAllocator);
-    m_UploadBufferAllocator.Reset();
+    //m_UploadBufferAllocator.Reset();
 }
 
 RhiFenceValue CommandContext::GetCompletionFenceValue() const

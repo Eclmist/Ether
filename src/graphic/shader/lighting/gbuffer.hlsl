@@ -104,9 +104,9 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
 
     PS_OUTPUT output;
     output.Albedo.xyz = col.xyz * MaterialParams.BaseColor.xyz;
-    output.Albedo.a = 0.97;// max(MaterialParams.Roughness, 0.02);
-    output.Specular.xyz = spec.xyz * MaterialParams.SpecularColor.xyz;
-    output.Specular.w = 0.0;// MaterialParams.Metalness;
+    output.Albedo.a = spec.y;// max(MaterialParams.Roughness, 0.02);
+    output.Specular.xyz = 1.0 - spec.xyz * MaterialParams.SpecularColor.xyz;
+    output.Specular.w = 1.0 - spec.y;// 1.0;// MaterialParams.Metalness;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;

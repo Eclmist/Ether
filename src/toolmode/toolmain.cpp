@@ -24,6 +24,10 @@
 
 ETH_NAMESPACE_BEGIN
 
+std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
+std::string objName = "sponza.obj.ether";
+std::string modelsGroupPath = sceneRootPath + objName;
+
 class EtherToolmode : public IApplicationBase
 {
 public:
@@ -45,60 +49,65 @@ public:
 
     void LoadContent() override
     {
-        std::string modelsGroupPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\Models\\sponza.obj.ether";
-        std::string texturesGroupPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\Textures\\";
-
-   //     for (int i = 0; i < 500; ++i)
-   //     {
-   //         std::string modelPath = modelsGroupPath + std::to_string(i);
-   //         if (!PathUtils::IsValidPath(modelPath))
-   //             break;
-
-			//std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-			//compiledMesh->Deserialize(IFileStream(modelPath));
-
-
-			//Entity* entity = EngineCore::GetECSManager().CreateEntity();
-   //         entity->SetName(compiledMesh->GetName());
-
-			//MeshComponent* mesh = entity->AddComponent<MeshComponent>();
-   //         mesh->SetCompiledMesh(compiledMesh);
-
-			//VisualComponent* visual =  entity->AddComponent<VisualComponent>();
-
-   //         TransformComponent* transform = entity->GetComponent<TransformComponent>();
-   //         transform->SetPosition({ 0, 0, 0 });
-   //         transform->SetRotation({ 0, 0, 0 });
-   //         transform->SetScale({ 0.1 });
-   //     }
-
-
-
-  //      {
-		//	std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-		//	IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Models\\sponza.obj.ether");
-		//	compiledMesh->Deserialize(iistream);
-		//	testObj->GetComponent<MeshComponent>()->SetCompiledMesh(compiledMesh);
-		//	testObj->SetName(compiledMesh->GetName());
-  //      }
-
-
-		//{
-		//	std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
-		//	IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Textures\\uv_grid_2.png.ether");
-		//	texture->Deserialize(iistream);
-		//	testObj->GetComponent<VisualComponent>()->GetMaterial()->SetTexture("_AlbedoTexture", texture);
-		//}
-
-
+		for (int i = 0; i < 400; ++i)
 		{
-			std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
-			IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\dikhololo_night_4k.hdr.ether");
-			hdri->Deserialize(iistream);
-			GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
+			std::string modelPath = modelsGroupPath + std::to_string(i);
+			if (!PathUtils::IsValidPath(modelPath))
+				break;
+
+			std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+			compiledMesh->Deserialize(IFileStream(modelPath));
+
+
+			Entity* entity = EngineCore::GetECSManager().CreateEntity();
+			entity->SetName(compiledMesh->GetName());
+
+			MeshComponent* mesh = entity->AddComponent<MeshComponent>();
+			mesh->SetCompiledMesh(compiledMesh);
+
+			VisualComponent* visual = entity->AddComponent<VisualComponent>();
+			visual->SetMaterial(compiledMesh->GetMaterial());
+
+			TransformComponent* transform = entity->GetComponent<TransformComponent>();
+			transform->SetPosition({ 0, -15, 0 });
+			transform->SetRotation({ 0, 0, 0 });
+			transform->SetScale({ 0.1 });
+
+			LoadTexture(compiledMesh->GetMaterial()->m_AlbedoTexturePath, "_AlbedoTexture");
+			if (m_Textures.find(compiledMesh->GetMaterial()->m_AlbedoTexturePath) != m_Textures.end())
+				visual->GetMaterial()->SetTexture("_AlbedoTexture", m_Textures[compiledMesh->GetMaterial()->m_AlbedoTexturePath]);
+
+			LoadTexture(compiledMesh->GetMaterial()->m_SpecularTexturePath, "_SpecularTexture");
+			if (m_Textures.find(compiledMesh->GetMaterial()->m_SpecularTexturePath) != m_Textures.end())
+				visual->GetMaterial()->SetTexture("_SpecularTexture", m_Textures[compiledMesh->GetMaterial()->m_SpecularTexturePath]);
+
+			//{
+			//}
 		}
 
+		std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
+		IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
+		hdri->Deserialize(iistream);
+		GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
     };
+
+	void LoadTexture(const std::string& path, const std::string& key)
+	{
+		if (path == "")
+			return;
+
+		if (m_Textures.find(path) == m_Textures.end())
+		{
+			std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
+			IFileStream iistream(sceneRootPath + path + ".ether0");
+			if (iistream.IsOpen())
+			{
+				texture->Deserialize(iistream);
+				m_Textures[path] = texture;
+			}
+		}
+	}
+
 
     void UnloadContent() override {};
     void Shutdown() override {};
@@ -318,6 +327,7 @@ private:
     ethMatrix4x4 m_ProjectionMatrix;
 
     std::shared_ptr<Material> m_Material;
+	std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
 };
 
 ETH_NAMESPACE_END
