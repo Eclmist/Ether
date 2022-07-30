@@ -23,6 +23,11 @@
 
 ETH_NAMESPACE_BEGIN
 
+struct CommandPacketHeader
+{
+	uint32_t m_MessageLength;
+};
+
 class TcpSocket : public NonCopyable
 {
 public:
@@ -33,6 +38,7 @@ public:
     inline bool HasActiveConnection() const { return m_HasActiveConnection; }
 
     void WaitForConnection();
+
     std::string GetNext();
     void Send(const std::string& message);
     void Close();
@@ -42,7 +48,9 @@ private:
     bool RequestPlatformSocket();
     bool BindSocket() const;
     bool SetSocketListenState() const;
-    void SendDelimiter();
+
+    CommandPacketHeader GetNextHeader();
+    bool GetBytes(char* bytes, const size_t numBytes);
 
 private:
     int m_SocketFd;

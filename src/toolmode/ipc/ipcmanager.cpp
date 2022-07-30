@@ -135,7 +135,7 @@ std::shared_ptr<Command> IpcManager::ParseMessage(const std::string& rawRequest)
     {
         CommandData data = CommandData::parse(rawRequest);
         std::string commandID = data["command"];
-        LogToolmodeInfo("Received %s command", commandID.c_str());
+        //LogToolmodeInfo("Received %s command", commandID.c_str());
 
         return std::move(m_CommandFactory.CreateCommand(commandID, data));
     }

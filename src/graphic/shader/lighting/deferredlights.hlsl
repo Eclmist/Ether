@@ -25,8 +25,7 @@
 #define PI2         6.28318530718
 #define INV_PI      0.31830988618
 
-#define NUM_SAMPLES 64
-
+#define NUM_SAMPLES 1
 
 float2 SampleSphericalMap(float3 direction)
 {
@@ -321,7 +320,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     Material mat;
     mat.BaseColor = albedo.xyz;
     mat.SpecularColor = specular.xyz;
-    mat.Roughness = max(0.1, albedo.w - abs(albedo.b - (0.5 * albedo.g + 0.5 * albedo.r)));
+    mat.Roughness = 1;// max(0.1, albedo.w - abs(albedo.b - (0.5 * albedo.g + 0.5 * albedo.r)));
     mat.Metalness = specular.w;
 
     const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
@@ -333,6 +332,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
         lights[i].Radius *= 0.7;
         lights[i].Position *= 5.2;
         lights[i].Intensity *= 4.9;
+        lights[i].Color = 1.0;
         finalColor += ComputePointLight(IN.UV, mat, lights[i]);
     }
 

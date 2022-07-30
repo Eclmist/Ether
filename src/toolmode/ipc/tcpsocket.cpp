@@ -21,11 +21,11 @@
 
 ETH_NAMESPACE_BEGIN
 
-// Arbitrary max buffer size. Might be worth profiling the average size of requests from
-// Cauldron to optimize this value.
-#define MAX_BUFFER_SIZE         2048
 #define TCP_FAILED(res)         (res == 0 || res == SOCKET_ERROR)
-#define INVALID_REQUEST         ""
+
+// Arbitrary max buffer size. Might be worth profiling the average size of requests from
+// editor to optimize this value.
+constexpr uint32_t MaxBufferSize = 2048;
 
 TcpSocket::TcpSocket()
     : m_SocketFd(0)
@@ -85,33 +85,11 @@ void TcpSocket::WaitForConnection()
 
 std::string TcpSocket::GetNext()
 {
-    if (!m_HasActiveConnection)
-    {
-        LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
-        return INVALID_REQUEST;
-    }
-
-    std::string fullPacket;
-    char bytes[MAX_BUFFER_SIZE];
-    while (true)
-    {
-        memset(bytes, 0, sizeof(bytes));
-        int numBytesReceived = recv(m_ActiveSocket, bytes, sizeof(bytes), 0);
-        
-        if (TCP_FAILED(numBytesReceived))
-        {
-            m_HasActiveConnection = false;
-            return INVALID_REQUEST;
-        }
-
-        if (numBytesReceived == 1 && bytes[0] == NULL)
-            break;
-
-        fullPacket += std::string(bytes, numBytesReceived);
-        //LogToolmodeInfo("IPC: Received %d bytes - %s", numBytesReceived, bytes);
-        //LogToolmodeInfo("IPC: Command still incomplete, waiting for delimiter...", numBytesReceived, bytes);
-    }
-
+    CommandPacketHeader header = GetNextHeader();
+    char* bytes = (char*)malloc(header.m_MessageLength);
+	GetBytes(bytes, header.m_MessageLength);
+    std::string fullPacket = std::string(bytes, header.m_MessageLength);
+    free(bytes);
     //LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
     return fullPacket;
 }
@@ -119,15 +97,16 @@ std::string TcpSocket::GetNext()
 void TcpSocket::Send(const std::string& message)
 {
     //LogToolmodeInfo("Sending response: %s", message.c_str());
-    int result = send(m_ActiveSocket, message.c_str(), message.size(), 0);
+    size_t messageLength = message.length();
+
+    AssertToolmode(send(m_ActiveSocket, (char*)&messageLength, sizeof(CommandPacketHeader), 0) == sizeof(CommandPacketHeader), "Failed to send TCP header");
+    int result = send(m_ActiveSocket, message.c_str(), messageLength, 0);
 
     if (TCP_FAILED(result))
     {
         m_HasActiveConnection = false;
         return;
     }
-
-    SendDelimiter();
 }
 
 void TcpSocket::Close()
@@ -155,6 +134,7 @@ bool TcpSocket::StartWsa()
 bool TcpSocket::RequestPlatformSocket()
 {
     if ((m_SocketFd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+
     {
         LogToolmodeWarning("Failed to create a network socket for IPC (%d). Editor will not be available", WSAGetLastError());
         return false;
@@ -185,11 +165,41 @@ bool TcpSocket::SetSocketListenState() const
     return true;
 }
 
-void TcpSocket::SendDelimiter()
+CommandPacketHeader TcpSocket::GetNextHeader()
 {
-    int result = send(m_ActiveSocket, "\0", 1, 0);
-    if (TCP_FAILED(result))
-        m_HasActiveConnection = false;
+    char headerBytes[sizeof(CommandPacketHeader)];
+    GetBytes(headerBytes, sizeof(CommandPacketHeader));
+    return *reinterpret_cast<CommandPacketHeader*>(headerBytes);
+}
+
+bool TcpSocket::GetBytes(char* bytes, const size_t numBytes)
+{
+	if (!m_HasActiveConnection)
+	{
+		LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
+		return false;
+	}
+
+	char tempBuffer[MaxBufferSize];
+    for (int totalReceivedBytes = 0; totalReceivedBytes < numBytes;)
+    {
+		memset(tempBuffer, 0, sizeof(tempBuffer));
+
+		uint32_t numBytesRemaining = numBytes - totalReceivedBytes;
+        uint32_t sizeToRecv = ethMin(MaxBufferSize, numBytesRemaining);
+		uint32_t numBytesReceived = recv(m_ActiveSocket, tempBuffer, sizeToRecv, 0);
+
+		if (TCP_FAILED(numBytesReceived))
+		{
+			m_HasActiveConnection = false;
+			return false;
+		}
+
+        memcpy(bytes + totalReceivedBytes, tempBuffer, numBytesReceived);
+		totalReceivedBytes += numBytesReceived;
+	}
+
+	return true;
 }
 
 ETH_NAMESPACE_END

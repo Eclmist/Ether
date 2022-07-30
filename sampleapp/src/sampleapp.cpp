@@ -23,8 +23,10 @@
 
 using namespace Ether;
 
-std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
-std::string objName = "sponza.obj.ether";
+//std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
+std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Bedroom\\";
+//std::string objName = "sponza.obj.ether";
+std::string objName = "iscv2.obj.ether";
 std::string modelsGroupPath = sceneRootPath + objName;
 
 void SampleApp::Initialize()
@@ -40,7 +42,7 @@ void SampleApp::Initialize()
 
 void SampleApp::LoadContent()
 {
-	for (int i = 0; i < 500; ++i)
+	for (int i = 0; i < 400; ++i)
 	{
 		std::string modelPath = modelsGroupPath + std::to_string(i);
 		if (!std::filesystem::exists(modelPath))
