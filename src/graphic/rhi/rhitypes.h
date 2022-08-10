@@ -294,22 +294,22 @@ struct RhiViewportDesc
 struct RhiResourceViewDesc
 {
     RhiResourceHandle m_Resource;
+	RhiCpuHandle m_CpuHandle;
 };
 
 struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
 {
     RhiFormat m_Format;
-    RhiCpuHandle m_DescriptorHandle;
 };
 
 struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 {
     RhiFormat m_Format;
-	RhiCpuHandle m_DescriptorHandle;
 };
 
 struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
+	RhiGpuHandle m_GpuHandle;
     RhiFormat m_Format;
     RhiShaderResourceDims m_Dimensions;
 };
@@ -322,7 +322,6 @@ struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
 
 struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
 {
-
 };
 
 struct RhiIndexBufferViewDesc : public RhiResourceViewDesc

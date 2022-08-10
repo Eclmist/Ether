@@ -30,7 +30,7 @@ ETH_NAMESPACE_BEGIN
 #ifdef ETH_TOOLMODE
 #define ETH_WINDOW_STYLE                    WS_POPUP
 #else
-#define ETH_WINDOW_STYLE                    WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU
+#define ETH_WINDOW_STYLE                    WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME
 #endif
 
 #define ETH_WINDOW_STYLE_FULLSCREEN         WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)
@@ -184,7 +184,7 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_SIZE:
         EngineCore::GetEngineConfig().SetClientWidth(LOWORD(lParam));
         EngineCore::GetEngineConfig().SetClientHeight(HIWORD(lParam));
-        GraphicCore::GetGraphicDisplay().Resize(LOWORD(lParam), HIWORD(lParam));
+        GraphicCore::GetGraphicDisplay().QueueBufferResize(LOWORD(lParam), HIWORD(lParam));
         break;
     case WM_KEYDOWN:
         // TODO: Handle Ctrl, Alt, and convert keycode to character

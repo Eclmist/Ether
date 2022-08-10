@@ -29,6 +29,7 @@ public:
     ResourceContext(CommandContext& context, const std::wstring& name);
     ~ResourceContext() = default;
 
+public:
     bool CreateConstantBuffer(uint32_t size, RhiResourceHandle& resource);
     bool CreateTexture2DResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource);
     bool CreateDepthStencilResource(uint32_t width, uint32_t height, RhiFormat format, RhiResourceHandle& resource);
@@ -61,6 +62,7 @@ private:
     // TODO: This is clearly the wrong place to allocate descriptors, but where should it go?
 	DescriptorAllocator m_RtvDescriptorAllocator;
 	DescriptorAllocator m_DsvDescriptorAllocator;
+
     std::vector<std::shared_ptr<DescriptorAllocation>> m_DescriptorAllocations;
 
     CommandContext* m_Context;

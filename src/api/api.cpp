@@ -23,46 +23,50 @@
 
 ETH_NAMESPACE_BEGIN
 
-bool UpdateEngine()
+void UpdateEngine()
 {
-    OPTICK_FRAME("Engine - MainThread");
-
-    static double lastTime = 0;
-
+    while (true)
     {
-		OPTICK_FRAME("Application (ToolMain) - Update");
-        UpdateEventArgs updateArgs;
-        updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
-        updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
+		OPTICK_FRAME("Engine - MainThread");
 
-		EngineCore::GetMainApplication().OnUpdate(updateArgs);
+		static double lastTime = 0;
+
+		{
+			OPTICK_FRAME("Application (ToolMain) - Update");
+			UpdateEventArgs updateArgs;
+			updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
+			updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
+
+			EngineCore::GetMainApplication().OnUpdate(updateArgs);
+		}
+
+		EngineCore::Update();
+
+		RenderEventArgs renderArgs;
+		renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
+		renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
+		renderArgs.m_DeltaTime = renderArgs.m_TotalElapsedTime - lastTime;
+		lastTime = renderArgs.m_TotalElapsedTime;
+
+		{
+			OPTICK_EVENT("Application - OnRender");
+			EngineCore::GetMainApplication().OnRender(renderArgs);
+		}
+		{
+			OPTICK_EVENT("Graphic Core - Render");
+			GraphicCore::Render();
+		}
+
+		ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
+
+        if (EngineCore::GetMainApplication().ShouldExit())
+            break;
     }
-
-    EngineCore::Update();
-
-    RenderEventArgs renderArgs;
-    renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
-    renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
-    renderArgs.m_DeltaTime = renderArgs.m_TotalElapsedTime - lastTime;
-    lastTime = renderArgs.m_TotalElapsedTime;
-
-    {
-        OPTICK_EVENT("Application - OnRender");
-        EngineCore::GetMainApplication().OnRender(renderArgs);
-    }
-    {
-        OPTICK_EVENT("Graphic Core - Render");
-        GraphicCore::Render();
-    }
-
-    ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
-
-    return !EngineCore::GetMainApplication().ShouldExit();
 }
 
 void WindowsUpdateLoop()
 {
-    do
+    while(true)
     {
         Input::Instance().NewFrame(); // Todo: make it Input::Newframe();
 
@@ -76,7 +80,6 @@ void WindowsUpdateLoop()
         if (msg.message == WM_QUIT)
             break;
     } 
-    while (UpdateEngine());
 }
 
 int Start(IApplicationBase& app)
@@ -89,7 +92,10 @@ int Start(IApplicationBase& app)
     EngineCore::LoadContent();
     ETH_ENGINEONLY(EngineCore::GetMainWindow().Show());
 
+	std::thread mainEngineThread(UpdateEngine);
     WindowsUpdateLoop();
+
+    mainEngineThread.join();
 
     GraphicCore::Shutdown();
     EngineCore::Shutdown();

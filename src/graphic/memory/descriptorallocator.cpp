@@ -64,7 +64,10 @@ void DescriptorAllocator::ReleaseStaleDescriptors(uint64_t frameNumber)
 
 std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
 {
-	auto newPage = std::make_shared<DescriptorAllocatorPage>(m_HeapType, MaxDescriptorsPerHeap);
+	auto newPage = std::make_shared<DescriptorAllocatorPage>(
+        m_HeapType,
+        MaxDescriptorsPerHeap);
+
 	m_AllocatorPagePool.emplace_back(newPage);
 	m_AvailablePageIndices.insert(m_AllocatorPagePool.size() - 1);
 	return newPage;

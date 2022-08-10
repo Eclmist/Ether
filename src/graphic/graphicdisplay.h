@@ -38,13 +38,9 @@ public:
     ~GraphicDisplay();
 
     void Present();
-    void Resize(uint32_t width, uint32_t height);
+    void ResizeBuffers();
 
 public:
-    RhiResourceHandle GetCurrentBackBuffer() const;
-    RhiRenderTargetViewHandle GetCurrentBackBufferRTV() const;
-    RhiShaderResourceViewHandle GetCurrentBackBufferSRV() const;
-
     inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
     inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
 
@@ -56,6 +52,12 @@ public:
 
     inline void SetVSyncEnabled(bool enabled) { m_VSyncEnabled = enabled; }
     inline void SetVSyncVBlanks(int numVblanks) { m_VSyncVBlanks = numVblanks; }
+
+public:
+    RhiResourceHandle GetCurrentBackBuffer() const;
+    RhiRenderTargetViewHandle GetCurrentBackBufferRTV() const;
+    RhiShaderResourceViewHandle GetCurrentBackBufferSRV() const;
+    void QueueBufferResize(uint32_t width, uint32_t height);
 
 private:
     void CreateSwapChain();
@@ -82,6 +84,9 @@ private:
 
     bool m_VSyncEnabled;
     uint8_t m_VSyncVBlanks;
+
+    std::mutex m_WindowsResizeMutex;
+    bool m_ShouldResize;
 };
 
 ETH_NAMESPACE_END

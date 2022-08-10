@@ -73,7 +73,7 @@ bool ResourceContext::CreateRenderTargetView(RhiResourceHandle resource, RhiRend
     RhiRenderTargetViewDesc rtvDesc = {};
     rtvDesc.m_Format = GetResourceFormat(resource.GetName());
     rtvDesc.m_Resource = resource;
-    rtvDesc.m_DescriptorHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
+    rtvDesc.m_CpuHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
     GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 
@@ -90,7 +90,7 @@ bool ResourceContext::CreateDepthStencilView(RhiResourceHandle resource, RhiDept
 	RhiDepthStencilViewDesc dsvDesc = {};
 	dsvDesc.m_Format = GetResourceFormat(resource.GetName());
 	dsvDesc.m_Resource = resource;
-    dsvDesc.m_DescriptorHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
+    dsvDesc.m_CpuHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
 	GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 

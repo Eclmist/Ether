@@ -201,7 +201,7 @@ RhiResult Dx12Device::CreateSwapChain(const RhiSwapChainDesc& desc, RhiSwapChain
 RhiResult Dx12Device::CreateRenderTargetView(const RhiRenderTargetViewDesc& desc, RhiRenderTargetViewHandle& rtvHandle) const
 {
     Dx12RenderTargetView* d3dRtv = new Dx12RenderTargetView();
-    d3dRtv->m_CpuHandle = desc.m_DescriptorHandle;
+    d3dRtv->m_CpuHandle = desc.m_CpuHandle;
 
     const auto d3dResource = desc.m_Resource.As<Dx12Resource>();
 
@@ -218,7 +218,7 @@ RhiResult Dx12Device::CreateRenderTargetView(const RhiRenderTargetViewDesc& desc
 RhiResult Dx12Device::CreateDepthStencilView(const RhiDepthStencilViewDesc& desc, RhiDepthStencilViewHandle& dsvHandle) const
 {
     D3D12DepthStencilView* d3dDsv = new D3D12DepthStencilView();
-    d3dDsv->m_CpuHandle = desc.m_DescriptorHandle;
+    d3dDsv->m_CpuHandle = desc.m_CpuHandle;
 
     const auto d3dResource = desc.m_Resource.As<Dx12Resource>();
 

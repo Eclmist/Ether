@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -21,12 +21,12 @@
 
 ETH_NAMESPACE_BEGIN
 
-//class DescriptorAllocation
-//{
-//public:
-//    DescriptorAllocation() = default;
-//    ~DescriptorAllocation() = default;
-//};
+class DynamicDescriptorHeap
+{
+public:
+    DynamicDescriptorHeap() = default;
+    ~DynamicDescriptorHeap() = default;
+};
 
 ETH_NAMESPACE_END
 

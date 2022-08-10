@@ -55,6 +55,7 @@ void GraphicCore::Initialize()
 
 void GraphicCore::Render()
 {
+	Instance().m_GraphicDisplay->ResizeBuffers();
     Instance().m_GraphicRenderer->WaitForPresent();
     Instance().m_GraphicRenderer->Render();
     Instance().m_GuiRenderer->Render();

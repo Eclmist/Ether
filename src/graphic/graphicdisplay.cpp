@@ -59,13 +59,14 @@ void GraphicDisplay::Present()
     ResetCurrentBufferIndex();
 }
 
-void GraphicDisplay::Resize(uint32_t width, uint32_t height)
+void GraphicDisplay::ResizeBuffers()
 {
-    if (m_FrameBufferWidth == width && m_FrameBufferHeight == height)
+    std::lock_guard<std::mutex> guard(m_WindowsResizeMutex);
+
+    if (!m_ShouldResize)
         return;
 
-    m_FrameBufferWidth = width;
-    m_FrameBufferHeight = height;
+    m_ShouldResize = false;
     m_Viewport = { 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight, 0.0f, 1.0f };
 
     GraphicCore::FlushGpu();
@@ -97,6 +98,14 @@ RhiShaderResourceViewHandle GraphicDisplay::GetCurrentBackBufferSRV() const
     return m_ShaderResourceViews[m_CurrentBackBufferIndex];
 }
 
+void GraphicDisplay::QueueBufferResize(uint32_t width, uint32_t height)
+{
+    std::lock_guard<std::mutex> guard(m_WindowsResizeMutex);
+    m_ShouldResize = true;
+    m_FrameBufferWidth = width;
+    m_FrameBufferHeight = height;
+}
+
 void GraphicDisplay::CreateSwapChain()
 {
     RhiSwapChainDesc desc = {};
@@ -126,14 +135,14 @@ void GraphicDisplay::CreateResourcesFromSwapChain()
 
 void GraphicDisplay::CreateViewsFromSwapChain()
 {
-    static auto m_RenderTargetDescriptors = GraphicCore::GetGlobalRtvDescriptorAllocator().Allocate(3);
+    static auto m_RtvDescriptors = GraphicCore::GetGlobalRtvDescriptorAllocator().Allocate(3);
 
 	for (uint32_t i = 0; i < GetNumBuffers(); ++i)
 	{
         RhiRenderTargetViewDesc desc = {};
         desc.m_Format = BackBufferFormat;
         desc.m_Resource = m_RenderTargets[i];
-        desc.m_DescriptorHandle = m_RenderTargetDescriptors->GetDescriptorHandle(i);
+		desc.m_CpuHandle = m_RtvDescriptors->GetDescriptorHandle(i);
         GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
 
         RhiShaderResourceViewDesc srvDesc = {};

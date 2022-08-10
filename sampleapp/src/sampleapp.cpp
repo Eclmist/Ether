@@ -23,10 +23,10 @@
 
 using namespace Ether;
 
-//std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
-std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Bedroom\\";
-//std::string objName = "sponza.obj.ether";
-std::string objName = "iscv2.obj.ether";
+std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
+//std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Bedroom\\";
+std::string objName = "sponza.obj.ether";
+//std::string objName = "iscv2.obj.ether";
 std::string modelsGroupPath = sceneRootPath + objName;
 
 void SampleApp::Initialize()
