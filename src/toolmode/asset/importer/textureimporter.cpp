@@ -53,7 +53,7 @@ std::vector<std::shared_ptr<Asset>> TextureImporter::Compile(IStream& istream)
 
     std::vector<std::shared_ptr<Asset>> compiledTextures;
 
-	std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+    std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
     compiledTexture->SetRawTexture(texture);
 
     compiledTextures.push_back(compiledTexture);

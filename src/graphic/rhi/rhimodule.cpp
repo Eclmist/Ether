@@ -32,9 +32,9 @@ ETH_NAMESPACE_BEGIN
 RhiModuleHandle RhiModule::CreateModule()
 {
 #if defined(ETH_GRAPHICS_DX12)
-	return RhiModuleHandle(new Dx12Module());
+    return RhiModuleHandle(new Dx12Module());
 #else defined (ETH_GRAPHICS_AGC)
-	return RhiModuleHandle(new AgcModule());
+    return RhiModuleHandle(new AgcModule());
 #endif
 
     LogGraphicsFatal("No supported graphics API defined");

@@ -23,7 +23,7 @@
 ETH_NAMESPACE_BEGIN
 
 ResourceContext::ResourceContext(CommandContext& context, const std::wstring& name)
-	: m_Context(&context)
+    : m_Context(&context)
     , m_RtvDescriptorAllocator(RhiDescriptorHeapType::Rtv)
     , m_DsvDescriptorAllocator(RhiDescriptorHeapType::Dsv)
 {
@@ -85,13 +85,13 @@ bool ResourceContext::CreateDepthStencilView(RhiResourceHandle resource, RhiDept
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-	m_DescriptorAllocations.push_back(m_DsvDescriptorAllocator.Allocate());
+    m_DescriptorAllocations.push_back(m_DsvDescriptorAllocator.Allocate());
 
-	RhiDepthStencilViewDesc dsvDesc = {};
-	dsvDesc.m_Format = GetResourceFormat(resource.GetName());
-	dsvDesc.m_Resource = resource;
+    RhiDepthStencilViewDesc dsvDesc = {};
+    dsvDesc.m_Format = GetResourceFormat(resource.GetName());
+    dsvDesc.m_Resource = resource;
     dsvDesc.m_CpuHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
-	GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
+    GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 
     return true;
@@ -153,7 +153,7 @@ bool ResourceContext::CreateUnorderedAccessView(RhiResourceHandle resource, RhiU
 bool ResourceContext::InitializeTexture2D(CompiledTexture& texture)
 {
     bool resourceRecreated = CreateTexture2DResource(texture.GetWidth(), texture.GetHeight(), texture.GetFormat(), texture.GetResource());
-	bool viewRecreated = CreateShaderResourceView(texture.GetResource(), texture.GetView());
+    bool viewRecreated = CreateShaderResourceView(texture.GetResource(), texture.GetView());
 
     // TODO: multiple of the same view can be created in a frame where the resource was created. This is a waste.
     //AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");
@@ -199,8 +199,8 @@ bool ResourceContext::CreateResource(const RhiCommitedResourceDesc& desc, RhiRes
         return false;
     }
 
-	m_ResourceEntries.emplace(resource.GetName());
-	m_ResourceTable[resource.GetName()] = desc;
+    m_ResourceEntries.emplace(resource.GetName());
+    m_ResourceTable[resource.GetName()] = desc;
     m_NewlyCreatedResources.emplace(resource.GetName());
 
     return true;

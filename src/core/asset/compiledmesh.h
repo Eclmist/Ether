@@ -45,8 +45,8 @@ public:
     inline const void* GetVertexBuffer() const { return m_VertexBuffer.data(); }
     inline bool IsValid() const { return GetNumVertices() > 0; }
 
-	// TODO: Only serialize material id? material guid? 
-	// material should be serialized/deserialized separately as part of "project" loading
+    // TODO: Only serialize material id? material guid? 
+    // material should be serialized/deserialized separately as part of "project" loading
     inline std::shared_ptr<Material> GetMaterial() const { return m_Material; }
 
 public:

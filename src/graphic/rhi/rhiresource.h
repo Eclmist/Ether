@@ -95,7 +95,7 @@ class RhiResource
 {
 public:
     RhiResource() = default;
-	virtual ~RhiResource() = default;
+    virtual ~RhiResource() = default;
 
 public:
     virtual RhiGpuHandle GetGpuHandle() const = 0;

@@ -104,7 +104,7 @@ private:
     std::unique_ptr<World> m_ActiveWorld;
     std::unique_ptr<PlatformWindow> m_MainWindow;
     ETH_TOOLONLY(std::unique_ptr<PlatformNotificationTray> m_NotificationTray;)
-	ETH_TOOLONLY(std::unique_ptr<AssetCompiler> m_AssetCompiler;)
+    ETH_TOOLONLY(std::unique_ptr<AssetCompiler> m_AssetCompiler;)
     ETH_TOOLONLY(std::unique_ptr<IpcManager> m_IpcManager;)
 
     CommandLineOptions m_CommandLineOptions;

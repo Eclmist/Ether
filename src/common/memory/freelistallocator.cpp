@@ -23,55 +23,55 @@ ETH_NAMESPACE_BEGIN
 
 FreeListAllocation FreeListAllocator::Allocate(uint32_t size)
 {
-	auto smallestFreeBlockIter = m_SizeToFreeBlocksMap.lower_bound(size);
-	uint32_t blockSize = smallestFreeBlockIter->first;
-	auto offsetIter = smallestFreeBlockIter->second;
-	uint32_t offset = offsetIter->first;
+    auto smallestFreeBlockIter = m_SizeToFreeBlocksMap.lower_bound(size);
+    uint32_t blockSize = smallestFreeBlockIter->first;
+    auto offsetIter = smallestFreeBlockIter->second;
+    uint32_t offset = offsetIter->first;
 
-	// Remove the existing free block from the free list.
-	m_SizeToFreeBlocksMap.erase(smallestFreeBlockIter);
-	m_OffsetToFreeBlockMap.erase(offsetIter);
+    // Remove the existing free block from the free list.
+    m_SizeToFreeBlocksMap.erase(smallestFreeBlockIter);
+    m_OffsetToFreeBlockMap.erase(offsetIter);
 
-	// Compute the new free block that results from splitting this block.
-	uint32_t newOffset = offset + size;
-	uint32_t newSize = blockSize - size;
+    // Compute the new free block that results from splitting this block.
+    uint32_t newOffset = offset + size;
+    uint32_t newSize = blockSize - size;
 
-	// Requested size does not match exactly, split and create new block
-	if (newSize > 0)
-		AddBlock(newOffset, newSize);
+    // Requested size does not match exactly, split and create new block
+    if (newSize > 0)
+        AddBlock(newOffset, newSize);
 
-	return { offset, size };
+    return { offset, size };
 }
 
 void FreeListAllocator::AddBlock(uint32_t offset, uint32_t size)
 {
-	auto offsetIter = m_OffsetToFreeBlockMap.emplace(offset, size);
-	auto sizeIter = m_SizeToFreeBlocksMap.emplace(size, offsetIter.first);
-	offsetIter.first->second.m_SizeToBlockIterator = sizeIter;
+    auto offsetIter = m_OffsetToFreeBlockMap.emplace(offset, size);
+    auto sizeIter = m_SizeToFreeBlocksMap.emplace(size, offsetIter.first);
+    offsetIter.first->second.m_SizeToBlockIterator = sizeIter;
 }
 
 void FreeListAllocator::FreeBlock(uint32_t offset, uint32_t size)
 {
-	auto nextBlockIter = m_OffsetToFreeBlockMap.upper_bound(offset);
-	auto prevBlockIter = nextBlockIter;
+    auto nextBlockIter = m_OffsetToFreeBlockMap.upper_bound(offset);
+    auto prevBlockIter = nextBlockIter;
 
-	// If it's not the first block in the list.
-	if (prevBlockIter != m_OffsetToFreeBlockMap.begin())
-	{
-		// Go to the previous block in the list.
-		prevBlockIter--;
-	}
-	else
-	{
-		// Otherwise, just set it to the end of the list to indicate that no
-		// block comes before the one being freed.
-		prevBlockIter = m_OffsetToFreeBlockMap.end();
-	}
+    // If it's not the first block in the list.
+    if (prevBlockIter != m_OffsetToFreeBlockMap.begin())
+    {
+        // Go to the previous block in the list.
+        prevBlockIter--;
+    }
+    else
+    {
+        // Otherwise, just set it to the end of the list to indicate that no
+        // block comes before the one being freed.
+        prevBlockIter = m_OffsetToFreeBlockMap.end();
+    }
 }
 
 bool FreeListAllocator::HasSpace(uint32_t size) const
 {
-	return m_SizeToFreeBlocksMap.lower_bound(size) != m_SizeToFreeBlocksMap.end();
+    return m_SizeToFreeBlocksMap.lower_bound(size) != m_SizeToFreeBlocksMap.end();
 }
 
 ETH_NAMESPACE_END

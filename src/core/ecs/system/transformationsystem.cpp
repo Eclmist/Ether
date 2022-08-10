@@ -41,7 +41,7 @@ void TransformationSystem::OnUpdate()
     for (EntityID id : m_MatchingEntities)
     {
         OPTICK_EVENT("ECS - Transformation System - Update matrices");
-		auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
+        auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
         transform->UpdateMatrices();
     }
 }

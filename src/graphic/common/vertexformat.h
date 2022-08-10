@@ -24,19 +24,19 @@ ETH_NAMESPACE_BEGIN
 class VertexFormats
 {
 public:
-	struct VertexPositionColor
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Color;
-	};
+    struct VertexPositionColor
+    {
+        ethVector3 m_Position;
+        ethVector3 m_Color;
+    };
 
-	struct VertexFormatStatic
-	{
-		ethVector3 m_Position;
-		ethVector3 m_Normal;
-		ethVector4 m_Tangent;
-		ethVector2 m_UV;
-	};
+    struct VertexFormatStatic
+    {
+        ethVector3 m_Position;
+        ethVector3 m_Normal;
+        ethVector4 m_Tangent;
+        ethVector2 m_UV;
+    };
 };
 
 ETH_NAMESPACE_END

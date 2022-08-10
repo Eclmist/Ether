@@ -25,7 +25,7 @@ class RhiCommandList
 {
 public:
     RhiCommandList(RhiCommandListType type) : m_Type(type) {}
-	virtual ~RhiCommandList() = default;
+    virtual ~RhiCommandList() = default;
 
 public:
     virtual RhiResult SetMarker(const char* name) = 0;

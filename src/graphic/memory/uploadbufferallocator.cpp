@@ -27,7 +27,7 @@ UploadBufferAllocation UploadBufferAllocator::Allocate(size_t size, size_t align
 {
     if (size > MaxPageSize)
     {
-		LogGraphicsFatal("An attempt was made to allocate more memory than a linear allocator allows");
+        LogGraphicsFatal("An attempt was made to allocate more memory than a linear allocator allows");
         throw std::bad_alloc();
     }
 

@@ -33,7 +33,7 @@ struct Vertex
         , m_TexCoord(uv) {}
 
     ethVector3 m_Position;
-	ethVector3 m_Normal;
+    ethVector3 m_Normal;
     ethVector2 m_TexCoord;
 
     bool operator==(const Vertex& other)
@@ -41,8 +41,8 @@ struct Vertex
         if (m_Position != other.m_Position)
             return false;
 
-		if (m_Normal != other.m_Normal)
-			return false;
+        if (m_Normal != other.m_Normal)
+            return false;
 
         if (m_TexCoord != other.m_TexCoord)
             return false;
@@ -69,19 +69,19 @@ private:
     void Compile();
 
 private:
-	void CalculateNormals();
-	void CalculateTexCoords();
+    void CalculateNormals();
+    void CalculateTexCoords();
     void GenerateVertices();
     void PackVertices();
 
 private:
-	std::vector<ethVector3> m_Positions;
-	std::vector<ethVector3> m_Normals;
-	std::vector<ethVector2> m_TexCoords;
+    std::vector<ethVector3> m_Positions;
+    std::vector<ethVector3> m_Normals;
+    std::vector<ethVector2> m_TexCoords;
 
-	//std::vector<uint32_t> m_PositionIndices;
-	//std::vector<uint32_t> m_NormalIndices;
-	//std::vector<uint32_t> m_TexCoordIndices;
+    //std::vector<uint32_t> m_PositionIndices;
+    //std::vector<uint32_t> m_NormalIndices;
+    //std::vector<uint32_t> m_TexCoordIndices;
 
     std::vector<Vertex> m_Vertices;
     std::vector<VertexFormats::VertexFormatStatic> m_PackedVertexData;
@@ -92,21 +92,21 @@ private:
 class MeshGroup : public Asset
 {
 public:
-	MeshGroup() = default;
-	~MeshGroup() = default;
+    MeshGroup() = default;
+    ~MeshGroup() = default;
 
 public:
-	inline std::vector<std::shared_ptr<RawMesh>> GetSubMeshes() const { return m_SubMeshes; }
+    inline std::vector<std::shared_ptr<RawMesh>> GetSubMeshes() const { return m_SubMeshes; }
 
 public:
-	void Compile();
+    void Compile();
 
 private:     
-	friend class ObjFileParser;
+    friend class ObjFileParser;
 
 private:
-	std::vector<std::shared_ptr<RawMesh>> m_SubMeshes;
-	std::vector<std::shared_ptr<Material>> m_MaterialTable;
+    std::vector<std::shared_ptr<RawMesh>> m_SubMeshes;
+    std::vector<std::shared_ptr<Material>> m_MaterialTable;
 };
 
 

@@ -36,7 +36,7 @@ private:
     wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
 
     std::vector<D3D12_ROOT_PARAMETER> m_D3DRootParameters;
-	std::vector<D3D12_STATIC_SAMPLER_DESC> m_D3DStaticSamplers;
+    std::vector<D3D12_STATIC_SAMPLER_DESC> m_D3DStaticSamplers;
 };
 
 ETH_NAMESPACE_END

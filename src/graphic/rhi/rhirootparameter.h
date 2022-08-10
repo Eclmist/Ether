@@ -25,7 +25,7 @@ class RhiRootParameter
 {
 public:
     RhiRootParameter() = default;
-	virtual ~RhiRootParameter() = default;
+    virtual ~RhiRootParameter() = default;
 
 public:
     virtual RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) = 0;

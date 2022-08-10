@@ -28,9 +28,9 @@ TransformComponent::TransformComponent(EntityID owner)
     SetRotation({ 0, 0, 0 });
     SetScale({ 1, 1, 1 });
 
-	EDITOR_INSPECTOR_FIELD(m_Position, "Position", Vector3Field);
-	EDITOR_INSPECTOR_FIELD(m_EulerRotation, "Rotation", Vector3Field);
-	EDITOR_INSPECTOR_FIELD(m_Scale, "Scale", Vector3Field);
+    EDITOR_INSPECTOR_FIELD(m_Position, "Position", Vector3Field);
+    EDITOR_INSPECTOR_FIELD(m_EulerRotation, "Rotation", Vector3Field);
+    EDITOR_INSPECTOR_FIELD(m_Scale, "Scale", Vector3Field);
 }
 
 void TransformComponent::Serialize(OStream& ostream)
@@ -45,11 +45,11 @@ void TransformComponent::Deserialize(IStream& istream)
 
 void TransformComponent::UpdateMatrices()
 {
-	m_TranslationMatrix = GetTranslationMatrix(m_Position);
-	m_RotationMatrix = GetRotationMatrix(m_EulerRotation);
-	m_ScaleMatrix = GetScaleMatrix(m_Scale);
+    m_TranslationMatrix = GetTranslationMatrix(m_Position);
+    m_RotationMatrix = GetRotationMatrix(m_EulerRotation);
+    m_ScaleMatrix = GetScaleMatrix(m_Scale);
 
-	m_ModelMatrix = m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix;
+    m_ModelMatrix = m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix;
 }
 
 ethMatrix4x4 TransformComponent::GetTranslationMatrix(const ethVector3& translation)

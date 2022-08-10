@@ -32,21 +32,21 @@ DescriptorAllocator::DescriptorAllocator(RhiDescriptorHeapType type)
 
 std::shared_ptr<DescriptorAllocation> DescriptorAllocator::Allocate(uint32_t numDescriptors)
 {
-	std::lock_guard<std::mutex> guard(m_AllocationMutex);
-	std::shared_ptr<DescriptorAllocatorPage> pageWithEnoughSpace;
+    std::lock_guard<std::mutex> guard(m_AllocationMutex);
+    std::shared_ptr<DescriptorAllocatorPage> pageWithEnoughSpace;
 
-	if (numDescriptors > MaxDescriptorsPerHeap)
-	{
-		LogGraphicsFatal("An attempt was made to allocate more descriptors (%d) than allowed (%d)", numDescriptors, MaxDescriptorsPerHeap);
-		throw std::bad_alloc();
-	}
+    if (numDescriptors > MaxDescriptorsPerHeap)
+    {
+        LogGraphicsFatal("An attempt was made to allocate more descriptors (%d) than allowed (%d)", numDescriptors, MaxDescriptorsPerHeap);
+        throw std::bad_alloc();
+    }
 
     auto availablePage = GetAvailablePages(numDescriptors);
 
     if (availablePage == nullptr)
         availablePage = CreateAllocatorPage();
 
-	return availablePage->Allocate(numDescriptors);
+    return availablePage->Allocate(numDescriptors);
 }
 
 void DescriptorAllocator::ReleaseStaleDescriptors(uint64_t frameNumber)
@@ -64,26 +64,26 @@ void DescriptorAllocator::ReleaseStaleDescriptors(uint64_t frameNumber)
 
 std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
 {
-	auto newPage = std::make_shared<DescriptorAllocatorPage>(
+    auto newPage = std::make_shared<DescriptorAllocatorPage>(
         m_HeapType,
         MaxDescriptorsPerHeap);
 
-	m_AllocatorPagePool.emplace_back(newPage);
-	m_AvailablePageIndices.insert(m_AllocatorPagePool.size() - 1);
-	return newPage;
+    m_AllocatorPagePool.emplace_back(newPage);
+    m_AvailablePageIndices.insert(m_AllocatorPagePool.size() - 1);
+    return newPage;
 }
 
 std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::GetAvailablePages(uint32_t numDescriptors)
 {
-	for (auto iter = m_AvailablePageIndices.begin(); iter != m_AvailablePageIndices.end(); ++iter)
-	{
-		auto allocatorPage = m_AllocatorPagePool[*iter];
+    for (auto iter = m_AvailablePageIndices.begin(); iter != m_AvailablePageIndices.end(); ++iter)
+    {
+        auto allocatorPage = m_AllocatorPagePool[*iter];
         if (allocatorPage->HasSpace(numDescriptors))
             return allocatorPage;
 
-		if (m_AllocatorPagePool[*iter]->GetNumFreeHandles() <= 0)
-			iter = m_AvailablePageIndices.erase(iter);
-	}
+        if (m_AllocatorPagePool[*iter]->GetNumFreeHandles() <= 0)
+            iter = m_AvailablePageIndices.erase(iter);
+    }
 
     return nullptr;
 }

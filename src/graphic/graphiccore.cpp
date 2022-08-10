@@ -42,7 +42,7 @@ void GraphicCore::Initialize()
     GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::Sampler, RhiDescriptorHeapFlag::None, 512 }, Instance().m_SamplerDescriptorHeap);
 
     Instance().m_RtvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv);
-	Instance().m_DsvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv);
+    Instance().m_DsvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv);
 
     Instance().m_ShaderDaemon = std::make_unique<ShaderDaemon>();
     Instance().m_CommandManager = std::make_unique<CommandManager>();
@@ -55,7 +55,7 @@ void GraphicCore::Initialize()
 
 void GraphicCore::Render()
 {
-	Instance().m_GraphicDisplay->ResizeBuffers();
+    Instance().m_GraphicDisplay->ResizeBuffers();
     Instance().m_GraphicRenderer->WaitForPresent();
     Instance().m_GraphicRenderer->Render();
     Instance().m_GuiRenderer->Render();
@@ -76,10 +76,10 @@ void GraphicCore::Shutdown()
     Instance().m_GraphicRenderer.reset();
     Instance().m_GraphicDisplay.reset();
     Instance().m_CommandManager.reset();
-	Instance().m_ShaderDaemon.reset();
+    Instance().m_ShaderDaemon.reset();
 
-	Instance().m_RtvDescriptorAllocator.reset();
-	Instance().m_DsvDescriptorAllocator.reset();
+    Instance().m_RtvDescriptorAllocator.reset();
+    Instance().m_DsvDescriptorAllocator.reset();
 
     Instance().m_RhiDevice.Destroy();
     Instance().m_RhiModule.Destroy();

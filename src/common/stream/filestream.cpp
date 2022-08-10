@@ -98,26 +98,26 @@ IFileStream& IFileStream::operator>>(bool& value)
 
 IFileStream& IFileStream::operator>>(ethVector2& v)
 {
-	m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
-	m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
-	return *this;
+    m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
+    m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
+    return *this;
 }
 
 IFileStream& IFileStream::operator>>(ethVector3& v)
 {
-	m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
-	m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
-	m_File.read(reinterpret_cast<char*>(&v.z), sizeof(float));
-	return *this;
+    m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
+    m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
+    m_File.read(reinterpret_cast<char*>(&v.z), sizeof(float));
+    return *this;
 }
 
 IFileStream& IFileStream::operator>>(ethVector4& v)
 {
-	m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
-	m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
-	m_File.read(reinterpret_cast<char*>(&v.z), sizeof(float));
-	m_File.read(reinterpret_cast<char*>(&v.w), sizeof(float));
-	return *this;
+    m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
+    m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
+    m_File.read(reinterpret_cast<char*>(&v.z), sizeof(float));
+    m_File.read(reinterpret_cast<char*>(&v.w), sizeof(float));
+    return *this;
 }
 
 OFileStream::OFileStream(const std::string& path)
@@ -127,7 +127,7 @@ OFileStream::OFileStream(const std::string& path)
     if (!m_File.is_open())
         LogEngineError("Failed to open file %s", path.c_str());
 
-	m_IsOpen = m_File.is_open();
+    m_IsOpen = m_File.is_open();
 }
 
 OFileStream::~OFileStream()
@@ -193,16 +193,16 @@ OFileStream& OFileStream::operator<<(const bool value)
 
 OFileStream& OFileStream::operator<<(const ethVector2 v)
 {
-	m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
-	m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
-	return *this;
+    m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
+    m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
+    return *this;
 }
 
 OFileStream& OFileStream::operator<<(const ethVector3 v)
 {
     m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
-	m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
-	m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
+    m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
+    m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
     return *this;
 }
 
@@ -210,8 +210,8 @@ OFileStream& OFileStream::operator<<(const ethVector4 v)
 {
     m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
     m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
-	m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
-	m_File.write(reinterpret_cast<const char*>(&v.w), sizeof(float));
+    m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
+    m_File.write(reinterpret_cast<const char*>(&v.w), sizeof(float));
     return *this;
 }
 

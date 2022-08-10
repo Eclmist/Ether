@@ -21,38 +21,38 @@ ETH_NAMESPACE_BEGIN
 
 struct FreeListAllocation
 {
-	uint32_t m_Offset;
-	uint32_t m_Size;
+    uint32_t m_Offset;
+    uint32_t m_Size;
 };
 
 class FreeListAllocator : public NonCopyable
 {
 public:
-	FreeListAllocator() = default;
-	~FreeListAllocator() = default;
+    FreeListAllocator() = default;
+    ~FreeListAllocator() = default;
 
 public:
-	FreeListAllocation Allocate(uint32_t size);
+    FreeListAllocation Allocate(uint32_t size);
 
-	void AddBlock(uint32_t offset, uint32_t size);
-	void FreeBlock(uint32_t offset, uint32_t size);
-	bool HasSpace(uint32_t size) const;
-
-private:
-	struct FreeBlockInfo;
-	using OffsetToBlockMap = std::map<uint32_t, FreeBlockInfo>;
-	using SizeToBlockMap = std::multimap<uint32_t, OffsetToBlockMap::iterator>;
-
-	struct FreeBlockInfo
-	{
-		FreeBlockInfo(uint32_t size) : m_Size(size) {}
-		uint32_t m_Size;
-		SizeToBlockMap::iterator m_SizeToBlockIterator;
-	};
+    void AddBlock(uint32_t offset, uint32_t size);
+    void FreeBlock(uint32_t offset, uint32_t size);
+    bool HasSpace(uint32_t size) const;
 
 private:
-	OffsetToBlockMap m_OffsetToFreeBlockMap;
-	SizeToBlockMap m_SizeToFreeBlocksMap;
+    struct FreeBlockInfo;
+    using OffsetToBlockMap = std::map<uint32_t, FreeBlockInfo>;
+    using SizeToBlockMap = std::multimap<uint32_t, OffsetToBlockMap::iterator>;
+
+    struct FreeBlockInfo
+    {
+        FreeBlockInfo(uint32_t size) : m_Size(size) {}
+        uint32_t m_Size;
+        SizeToBlockMap::iterator m_SizeToBlockIterator;
+    };
+
+private:
+    OffsetToBlockMap m_OffsetToFreeBlockMap;
+    SizeToBlockMap m_SizeToFreeBlocksMap;
 };
 
 

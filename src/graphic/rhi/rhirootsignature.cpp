@@ -23,8 +23,8 @@
 ETH_NAMESPACE_BEGIN
 
 RhiRootSignature::RhiRootSignature(int numParameters, int numStaticSamplers)
-	: m_NumParameters(numParameters)
-	, m_NumStaticSamplers(numStaticSamplers)
+    : m_NumParameters(numParameters)
+    , m_NumStaticSamplers(numStaticSamplers)
 {
     m_RootParameters.resize(numParameters);
     m_StaticSamplers.resize(numStaticSamplers);

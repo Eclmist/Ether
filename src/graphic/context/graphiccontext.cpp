@@ -72,7 +72,7 @@ void GraphicContext::SetRenderTargets(uint32_t numTargets, RhiRenderTargetViewHa
     desc.m_DSVHandle = dsv;
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
-		desc.m_RTVHandles[i] = rtv[i];
+        desc.m_RTVHandles[i] = rtv[i];
 
     m_CommandList->SetRenderTargets(desc);
 }

@@ -110,7 +110,7 @@ RhiResult Dx12CommandList::SetRenderTargets(const RhiSetRenderTargetsDesc& desc)
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
 
     for (int i = 0; i < desc.m_NumRTV; ++i)
-		rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCpuAddress());
+        rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCpuAddress());
 
     m_CommandList->OMSetRenderTargets
     (

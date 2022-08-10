@@ -41,11 +41,11 @@ std::vector<std::shared_ptr<Asset>> MeshImporter::Compile(IStream& istream)
     std::shared_ptr<MeshGroup> meshGroup = std::dynamic_pointer_cast<MeshGroup>(parser->GetRawAsset());
     meshGroup->Compile();
 
-	std::vector<std::shared_ptr<Asset>> compiledMeshes;
+    std::vector<std::shared_ptr<Asset>> compiledMeshes;
     for (int i = 0; i < meshGroup->GetSubMeshes().size(); ++i)
     {
-		std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-		compiledMesh->SetRawMesh(meshGroup->GetSubMeshes()[i]);
+        std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+        compiledMesh->SetRawMesh(meshGroup->GetSubMeshes()[i]);
         compiledMeshes.push_back(compiledMesh);
     }
 

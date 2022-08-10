@@ -27,37 +27,37 @@ void UpdateEngine()
 {
     while (true)
     {
-		OPTICK_FRAME("Engine - MainThread");
+        OPTICK_FRAME("Engine - MainThread");
 
-		static double lastTime = 0;
+        static double lastTime = 0;
 
-		{
-			OPTICK_FRAME("Application (ToolMain) - Update");
-			UpdateEventArgs updateArgs;
-			updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
-			updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
+        {
+            OPTICK_FRAME("Application (ToolMain) - Update");
+            UpdateEventArgs updateArgs;
+            updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
+            updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
 
-			EngineCore::GetMainApplication().OnUpdate(updateArgs);
-		}
+            EngineCore::GetMainApplication().OnUpdate(updateArgs);
+        }
 
-		EngineCore::Update();
+        EngineCore::Update();
 
-		RenderEventArgs renderArgs;
-		renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
-		renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
-		renderArgs.m_DeltaTime = renderArgs.m_TotalElapsedTime - lastTime;
-		lastTime = renderArgs.m_TotalElapsedTime;
+        RenderEventArgs renderArgs;
+        renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
+        renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
+        renderArgs.m_DeltaTime = renderArgs.m_TotalElapsedTime - lastTime;
+        lastTime = renderArgs.m_TotalElapsedTime;
 
-		{
-			OPTICK_EVENT("Application - OnRender");
-			EngineCore::GetMainApplication().OnRender(renderArgs);
-		}
-		{
-			OPTICK_EVENT("Graphic Core - Render");
-			GraphicCore::Render();
-		}
+        {
+            OPTICK_EVENT("Application - OnRender");
+            EngineCore::GetMainApplication().OnRender(renderArgs);
+        }
+        {
+            OPTICK_EVENT("Graphic Core - Render");
+            GraphicCore::Render();
+        }
 
-		ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
+        ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
 
         if (EngineCore::GetMainApplication().ShouldExit())
             break;
@@ -92,7 +92,7 @@ int Start(IApplicationBase& app)
     EngineCore::LoadContent();
     ETH_ENGINEONLY(EngineCore::GetMainWindow().Show());
 
-	std::thread mainEngineThread(UpdateEngine);
+    std::thread mainEngineThread(UpdateEngine);
     WindowsUpdateLoop();
 
     mainEngineThread.join();

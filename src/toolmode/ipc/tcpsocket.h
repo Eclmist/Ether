@@ -25,7 +25,7 @@ ETH_NAMESPACE_BEGIN
 
 struct CommandPacketHeader
 {
-	uint32_t m_MessageLength;
+    uint32_t m_MessageLength;
 };
 
 class TcpSocket : public NonCopyable

@@ -54,10 +54,10 @@ private:
     std::unordered_map<std::string, std::shared_ptr<CompiledTexture>> m_Textures;
     std::unordered_map<std::string, ethVector4> m_Colors;
 
-	float m_Roughness = 0.5;
-	float m_Metalness = 1.0;
-	ethVector4 m_BaseColor = { 1, 1, 1, 1 };
-	ethVector4 m_SpecularColor = { 1, 1, 1, 1 };
+    float m_Roughness = 0.5;
+    float m_Metalness = 1.0;
+    ethVector4 m_BaseColor = { 1, 1, 1, 1 };
+    ethVector4 m_SpecularColor = { 1, 1, 1, 1 };
 
 public:
     // TODO: Fix this hack

@@ -25,7 +25,7 @@ class RhiDevice
 {
 public:
     RhiDevice() = default;
-	virtual ~RhiDevice() = default;
+    virtual ~RhiDevice() = default;
 
 public:
     virtual RhiResult CreateCommandAllocator(const RhiCommandAllocatorDesc& desc, RhiCommandAllocatorHandle& allocator) const = 0;

@@ -25,7 +25,7 @@ class RhiFence
 {
 public:
     RhiFence() = default;
-	virtual ~RhiFence() = default;
+    virtual ~RhiFence() = default;
 
 public:
     virtual RhiFenceValue GetCompletedValue() = 0;

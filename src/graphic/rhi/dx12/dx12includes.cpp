@@ -25,7 +25,7 @@ ETH_NAMESPACE_BEGIN
 RhiResult Dx12Module::Initialize()
 {
     InitializeDebugLayer();
-	RhiResult result = InitializeAdapter();
+    RhiResult result = InitializeAdapter();
 
     return result;
 }
@@ -46,7 +46,7 @@ RhiResult Dx12Module::CreateDevice(RhiDeviceHandle& device) const
 
 RhiResult Dx12Module::InitializeAdapter()
 {
-	wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
+    wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
 
     wrl::ComPtr<IDXGIFactory4> dxgiFactory;
     ASSERT_SUCCESS(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgiFactory)));

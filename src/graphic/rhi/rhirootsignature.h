@@ -25,7 +25,7 @@ class RhiRootSignature
 {
 public:
     RhiRootSignature(int numParameters, int numStaticSamplers);
-	virtual ~RhiRootSignature();
+    virtual ~RhiRootSignature();
 
 public:
     inline RhiRootParameterHandle operator[] (uint32_t i) { return m_RootParameters[i]; }

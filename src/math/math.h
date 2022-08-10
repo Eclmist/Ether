@@ -47,25 +47,25 @@ static constexpr float Infinity = ::std::numeric_limits<float>::infinity();
 template <typename _Type>
 inline _Type ethMax(_Type lhs, _Type rhs)
 {
-	return lhs >= rhs ? lhs : rhs;
+    return lhs >= rhs ? lhs : rhs;
 }
 
 template <typename _Type>
 inline _Type ethMin(_Type lhs, _Type rhs)
 {
-	return lhs <= rhs ? lhs : rhs;
+    return lhs <= rhs ? lhs : rhs;
 }
 
 template <typename _Type1, typename _Type2, typename _Type3>
 inline _Type1 ethClamp(_Type1 v, _Type2 a, _Type3 b)
 {
-	return v < a ? a : (v < b ? v : b);
+    return v < a ? a : (v < b ? v : b);
 }
 
 template <typename _Type1, typename _Type2>
 inline _Type1 ethLerp(_Type1 a, _Type1 b, _Type2 t)
 {
-	return ((static_cast<_Type2>(1) - t) * a + t * b);
+    return ((static_cast<_Type2>(1) - t) * a + t * b);
 }
 
 ETH_NAMESPACE_END

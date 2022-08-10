@@ -60,7 +60,7 @@ public:
     static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
     static DescriptorAllocator& GetGlobalRtvDescriptorAllocator() { return *Instance().m_RtvDescriptorAllocator; }
-	static DescriptorAllocator& GetGlobalDsvDescriptorAllocator() { return *Instance().m_DsvDescriptorAllocator; }
+    static DescriptorAllocator& GetGlobalDsvDescriptorAllocator() { return *Instance().m_DsvDescriptorAllocator; }
 
     static RhiDeviceHandle GetDevice() { return Instance().m_RhiDevice; }
     static RhiModuleHandle GetModule() { return Instance().m_RhiModule; }

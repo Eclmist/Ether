@@ -61,8 +61,8 @@ struct RhiClearValue
 {
     RhiFormat m_Format;
 
-	union
-	{
+    union
+    {
         float m_Color[4];
         RhiDepthStencilValue m_DepthStencil;
     };
@@ -294,7 +294,7 @@ struct RhiViewportDesc
 struct RhiResourceViewDesc
 {
     RhiResourceHandle m_Resource;
-	RhiCpuHandle m_CpuHandle;
+    RhiCpuHandle m_CpuHandle;
 };
 
 struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
@@ -309,7 +309,7 @@ struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 
 struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
-	RhiGpuHandle m_GpuHandle;
+    RhiGpuHandle m_GpuHandle;
     RhiFormat m_Format;
     RhiShaderResourceDims m_Dimensions;
 };
@@ -338,17 +338,17 @@ struct RhiVertexBufferViewDesc : public RhiResourceViewDesc
 
 struct RhiResourceDesc
 {
-	uint64_t m_Alignment;
-	uint64_t m_Width;
-	uint64_t m_Height;
-	uint16_t m_DepthOrArraySize;
+    uint64_t m_Alignment;
+    uint64_t m_Width;
+    uint64_t m_Height;
+    uint16_t m_DepthOrArraySize;
     uint16_t m_MipLevels;
 
-	RhiFormat m_Format;
-	RhiResourceDimension m_Dimension;
+    RhiFormat m_Format;
+    RhiResourceDimension m_Dimension;
     RhiResourceLayout m_Layout;
     RhiResourceFlag m_Flag;
-	RhiSampleDesc m_SampleDesc;
+    RhiSampleDesc m_SampleDesc;
 };
 
 struct RhiCommitedResourceDesc

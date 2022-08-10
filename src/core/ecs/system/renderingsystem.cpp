@@ -47,20 +47,20 @@ void RenderingSystem::OnUpdate()
     {
         OPTICK_EVENT("ECS - Rendering System - Visual Node Validation");
 
-		auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
-		auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
-		auto* visual = EngineCore::GetECSManager().GetComponent<VisualComponent>(id);
+        auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
+        auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
+        auto* visual = EngineCore::GetECSManager().GetComponent<VisualComponent>(id);
 
-		if (!mesh->IsEnabled())
-			return;
+        if (!mesh->IsEnabled())
+            return;
 
-		if (!mesh->HasMesh())
-			return;
+        if (!mesh->HasMesh())
+            return;
 
         if (!mesh->GetCompiledMesh()->IsValid())
             return;
 
-		// TODO: Right now visual nodes are recreated when mesh changes -> This is because
+        // TODO: Right now visual nodes are recreated when mesh changes -> This is because
         // on the user level you should be able to swap out meshes of particular mesh components.
         // However, the ECS "registration" mechanism works on a component level. If some mechanism
         // like "reregister entity" can be added, then we don't need the following check and

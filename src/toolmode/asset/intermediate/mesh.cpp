@@ -50,7 +50,7 @@ void RawMesh::CalculateTexCoords()
 {
     m_TexCoords.resize(m_Positions.size());
 
-	for (uint32_t i = 0; i < m_Positions.size(); ++i)
+    for (uint32_t i = 0; i < m_Positions.size(); ++i)
         m_TexCoords[i] = { 0, 0 };
 }
 
@@ -62,7 +62,7 @@ void RawMesh::GenerateVertices()
             m_Positions[i],
             m_Normals[i],
             m_TexCoords[i]
-		);
+        );
     }
 }
 
@@ -91,11 +91,11 @@ void RawMesh::Compile()
     AssertToolmode(m_Positions.size() != 0, "Cannot pack empty mesh");
     AssertToolmode((m_Positions.size() % 3) == 0, "Cannot pack non-triangle meshes");
 
-	if (m_Normals.empty())
-		CalculateNormals();
+    if (m_Normals.empty())
+        CalculateNormals();
 
-	if (m_TexCoords.empty())
-		CalculateTexCoords();
+    if (m_TexCoords.empty())
+        CalculateTexCoords();
 
     GenerateVertices();
     PackVertices();

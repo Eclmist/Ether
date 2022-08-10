@@ -285,15 +285,15 @@ enum class RhiScalingMode
 
 enum class RhiShaderResourceDims
 {
-	Unknown,
-	Buffer,
-	Texture1D,
-	Texture1DArray,
-	Texture2D,
-	Texture2DArray,
-	Texture3D,
-	TextureCube,
-	TextureCubeArray,
+    Unknown,
+    Buffer,
+    Texture1D,
+    Texture1DArray,
+    Texture2D,
+    Texture2DArray,
+    Texture3D,
+    TextureCube,
+    TextureCubeArray,
     RTAccelerationStructure,
 };
 

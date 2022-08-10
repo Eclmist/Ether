@@ -26,8 +26,8 @@ VisualComponent::VisualComponent(EntityID owner)
 {
     m_Material = std::make_shared<Material>();
 
-	EDITOR_INSPECTOR_FIELD(m_Material->m_BaseColor, "Base Color", Vector4Field);
-	EDITOR_INSPECTOR_FIELD(m_Material->m_SpecularColor, "Specular Color", Vector4Field);
+    EDITOR_INSPECTOR_FIELD(m_Material->m_BaseColor, "Base Color", Vector4Field);
+    EDITOR_INSPECTOR_FIELD(m_Material->m_SpecularColor, "Specular Color", Vector4Field);
     EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Roughness, "Roughness", FloatField, 0.0f, 1.0f);
     EDITOR_INSPECTOR_RANGE_FIELD(m_Material->m_Metalness, "Metalness", FloatField, 0.0f, 1.0f);
 }

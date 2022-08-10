@@ -29,7 +29,7 @@ public:
     DescriptorAllocation(
         RhiCpuHandle allocBaseHandle,
         uint32_t numDescriptors,
-		uint32_t pageOffset,
+        uint32_t pageOffset,
         uint32_t descriptorSize,
         DescriptorAllocatorPage* parentPage);
 

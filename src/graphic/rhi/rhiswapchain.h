@@ -24,8 +24,8 @@ ETH_NAMESPACE_BEGIN
 class RhiSwapChain
 {
 public:
-	RhiSwapChain() = default;
-	virtual ~RhiSwapChain() = default;
+    RhiSwapChain() = default;
+    virtual ~RhiSwapChain() = default;
 
 public:
     virtual uint32_t GetCurrentBackBufferIndex() const = 0;

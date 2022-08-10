@@ -54,7 +54,7 @@ public:
     { 
         if (m_Handle != nullptr)
         {
-			delete m_Handle; 
+            delete m_Handle; 
             m_Handle = nullptr;
         }
     }

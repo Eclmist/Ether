@@ -45,8 +45,8 @@ void EcsSystemManager::AssignEntityToSystems(EntityID id, ComponentSignature sig
 
 void EcsSystemManager::InitializeSystems()
 {
-	RegisterSystem<TransformationSystem>();
-	RegisterSystem<RenderingSystem>();
+    RegisterSystem<TransformationSystem>();
+    RegisterSystem<RenderingSystem>();
 }
 
 ETH_NAMESPACE_END

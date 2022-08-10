@@ -38,7 +38,7 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
 
     if (!PathUtils::IsValidPath(path))
     {
-		LogToolmodeError("Failed to import asset - the path is invalid (%s)", path.c_str());
+        LogToolmodeError("Failed to import asset - the path is invalid (%s)", path.c_str());
         return;
     }
 
@@ -46,20 +46,20 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
 
     if (importer == nullptr)
     {
-		LogToolmodeError("Failed to find compatible importer", path.c_str());
+        LogToolmodeError("Failed to find compatible importer", path.c_str());
         return;
     }
 
     //if (!PathUtils::IsValidPath(dest))
     if (true) // Always recompile, for testing purposes
     {
-		IFileStream istream(path);
-		std::vector<std::shared_ptr<Asset>> compiledAssets = importer->Compile(istream);
+        IFileStream istream(path);
+        std::vector<std::shared_ptr<Asset>> compiledAssets = importer->Compile(istream);
 
         for (int i = 0; i < compiledAssets.size(); ++i)
         {
-			compiledAssets[i]->SetName(PathUtils::GetFileName(path) + std::to_string(i));
-			compiledAssets[i]->Serialize(OFileStream(dest + std::to_string(i)));
+            compiledAssets[i]->SetName(PathUtils::GetFileName(path) + std::to_string(i));
+            compiledAssets[i]->Serialize(OFileStream(dest + std::to_string(i)));
         }
     }
     else
@@ -74,15 +74,15 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
   //  if (fileExt == ".obj")
   //  {
   //      // Deserialization Test
-		//std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-		//IFileStream iistream(dest);
-		//compiledMesh->Deserialize(iistream);
+        //std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+        //IFileStream iistream(dest);
+        //compiledMesh->Deserialize(iistream);
 
-		//if (EngineCore::GetECSManager().GetComponent<MeshComponent>(0) != nullptr)
-		//{
-		//	EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
-		//	EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
-		//}
+        //if (EngineCore::GetECSManager().GetComponent<MeshComponent>(0) != nullptr)
+        //{
+        //    EngineCore::GetECSManager().GetComponent<MeshComponent>(0)->SetCompiledMesh(compiledMesh);
+        //    EngineCore::GetECSManager().GetEntity(0)->SetName(compiledMesh->GetName());
+        //}
 
   //      //for (int i = 1; i < 20; ++i)
   //      //    if (EngineCore::GetECSManager().GetComponent<MeshComponent>(i) != nullptr)
@@ -91,12 +91,12 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
   //  else if (fileExt == ".png" || fileExt == ".jpg")
   //  {
   //      // Deserialization Test
-		//std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
-		//IFileStream iistream(dest);
-		//compiledTexture->Deserialize(iistream);
+        //std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+        //IFileStream iistream(dest);
+        //compiledTexture->Deserialize(iistream);
 
-		//if (EngineCore::GetECSManager().GetComponent<VisualComponent>(0) != nullptr)
-		//	EngineCore::GetECSManager().GetComponent<VisualComponent>(0)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
+        //if (EngineCore::GetECSManager().GetComponent<VisualComponent>(0) != nullptr)
+        //    EngineCore::GetECSManager().GetComponent<VisualComponent>(0)->GetMaterial()->SetTexture("_AlbedoTexture", compiledTexture);
 
   //      //for (int i = 1; i < 20; ++i)
   //      //    if (EngineCore::GetECSManager().GetComponent<VisualComponent>(i) != nullptr)
@@ -104,10 +104,10 @@ void AssetCompiler::Compile(const std::string& path, const std::string& dest)
   //  }
   //  else if (fileExt == ".hdr")
   //  {
-		//std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
-		//IFileStream iistream(dest);
-		//compiledTexture->Deserialize(iistream);
-		//GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = compiledTexture;
+        //std::shared_ptr<CompiledTexture> compiledTexture = std::make_shared<CompiledTexture>();
+        //IFileStream iistream(dest);
+        //compiledTexture->Deserialize(iistream);
+        //GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = compiledTexture;
   //  }
 }
 

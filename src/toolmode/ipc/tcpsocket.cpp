@@ -87,7 +87,7 @@ std::string TcpSocket::GetNext()
 {
     CommandPacketHeader header = GetNextHeader();
     char* bytes = (char*)malloc(header.m_MessageLength);
-	GetBytes(bytes, header.m_MessageLength);
+    GetBytes(bytes, header.m_MessageLength);
     std::string fullPacket = std::string(bytes, header.m_MessageLength);
     free(bytes);
     //LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
@@ -174,32 +174,32 @@ CommandPacketHeader TcpSocket::GetNextHeader()
 
 bool TcpSocket::GetBytes(char* bytes, const size_t numBytes)
 {
-	if (!m_HasActiveConnection)
-	{
-		LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
-		return false;
-	}
+    if (!m_HasActiveConnection)
+    {
+        LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
+        return false;
+    }
 
-	char tempBuffer[MaxBufferSize];
+    char tempBuffer[MaxBufferSize];
     for (int totalReceivedBytes = 0; totalReceivedBytes < numBytes;)
     {
-		memset(tempBuffer, 0, sizeof(tempBuffer));
+        memset(tempBuffer, 0, sizeof(tempBuffer));
 
-		uint32_t numBytesRemaining = numBytes - totalReceivedBytes;
+        uint32_t numBytesRemaining = numBytes - totalReceivedBytes;
         uint32_t sizeToRecv = ethMin(MaxBufferSize, numBytesRemaining);
-		uint32_t numBytesReceived = recv(m_ActiveSocket, tempBuffer, sizeToRecv, 0);
+        uint32_t numBytesReceived = recv(m_ActiveSocket, tempBuffer, sizeToRecv, 0);
 
-		if (TCP_FAILED(numBytesReceived))
-		{
-			m_HasActiveConnection = false;
-			return false;
-		}
+        if (TCP_FAILED(numBytesReceived))
+        {
+            m_HasActiveConnection = false;
+            return false;
+        }
 
         memcpy(bytes + totalReceivedBytes, tempBuffer, numBytesReceived);
-		totalReceivedBytes += numBytesReceived;
-	}
+        totalReceivedBytes += numBytesReceived;
+    }
 
-	return true;
+    return true;
 }
 
 ETH_NAMESPACE_END

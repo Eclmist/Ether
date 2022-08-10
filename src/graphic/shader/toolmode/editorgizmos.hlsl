@@ -73,7 +73,7 @@ float4 GetGridLevel(float level, float3 wPos, float3 dydx)
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     float depthTex = positionDepthTex.Sample(g_PointSampler, GetScreenUV(IN.Position.xy)).w;
-	float depth = mul(g_CommonConstants.ViewMatrix, float4(IN.PositionWS, 1.0)).z;
+    float depth = mul(g_CommonConstants.ViewMatrix, float4(IN.PositionWS, 1.0)).z;
 
     float3 ddxPos = ddx(IN.PositionWS);
     float3 ddyPos = ddy(IN.PositionWS);

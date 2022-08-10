@@ -37,7 +37,7 @@ void GlobalConstantBufferProducer::Initialize()
 
 void GlobalConstantBufferProducer::RegisterInputOutput(GraphicContext& context, ResourceContext& rc)
 {
-	rc.CreateConstantBuffer(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants));
+    rc.CreateConstantBuffer(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants));
     rc.CreateConstantBufferView(sizeof(CommonConstants), GFX_RESOURCE(GlobalCommonConstants), GFX_CBV(GlobalCommonConstants));
 }
 

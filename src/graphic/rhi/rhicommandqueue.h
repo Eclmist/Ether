@@ -25,7 +25,7 @@ class RhiCommandQueue
 {
 public:
     RhiCommandQueue(RhiCommandListType type = RhiCommandListType::Graphic) : m_Type(type) {}
-	virtual ~RhiCommandQueue() = default;
+    virtual ~RhiCommandQueue() = default;
 
 public:
     virtual RhiFenceValue GetCompletionFenceValue() const = 0;

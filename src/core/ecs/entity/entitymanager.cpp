@@ -75,7 +75,7 @@ void EntityManager::ReleaseEntityID(EntityID id)
 
 ethVector4u EntityManager::GetPickerColorFromID(EntityID id)
 {
-	ethVector4u color;
+    ethVector4u color;
     uint32_t colorHash;
 
     if (m_EntityIDToColor.find(id) == m_EntityIDToColor.end())

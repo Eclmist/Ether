@@ -43,10 +43,10 @@ public:
     virtual IStream& operator>>(unsigned int& v) = 0;
     virtual IStream& operator>>(unsigned long& v) = 0;
     virtual IStream& operator>>(std::string& v) = 0;
-	virtual IStream& operator>>(bool& v) = 0;
-	virtual IStream& operator>>(ethVector2& v) = 0;
-	virtual IStream& operator>>(ethVector3& v) = 0;
-	virtual IStream& operator>>(ethVector4& v) = 0;
+    virtual IStream& operator>>(bool& v) = 0;
+    virtual IStream& operator>>(ethVector2& v) = 0;
+    virtual IStream& operator>>(ethVector3& v) = 0;
+    virtual IStream& operator>>(ethVector4& v) = 0;
 };
 
 class OStream : public Stream
@@ -60,9 +60,9 @@ public:
     virtual OStream& operator<<(const unsigned long v) = 0;
     virtual OStream& operator<<(const std::string& v) = 0;
     virtual OStream& operator<<(const bool v) = 0;
-	virtual OStream& operator<<(const ethVector2 v) = 0;
-	virtual OStream& operator<<(const ethVector3 v) = 0;
-	virtual OStream& operator<<(const ethVector4 v) = 0;
+    virtual OStream& operator<<(const ethVector2 v) = 0;
+    virtual OStream& operator<<(const ethVector3 v) = 0;
+    virtual OStream& operator<<(const ethVector4 v) = 0;
 };
 
 ETH_NAMESPACE_END

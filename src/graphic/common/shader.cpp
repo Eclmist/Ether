@@ -39,14 +39,14 @@ Shader::Shader(
     , m_Encoding(encoding)
     , m_HasRecompiled(false)
 {
-	if (!s_DxcLibrary)
-		ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&s_DxcLibrary)));
+    if (!s_DxcLibrary)
+        ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&s_DxcLibrary)));
     if (!s_DxcCompiler)
-		ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&s_DxcCompiler)));
+        ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&s_DxcCompiler)));
     if (!s_DxcUtils)
-		ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&s_DxcUtils)));
+        ASSERT_SUCCESS(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&s_DxcUtils)));
     if (!s_IncludeHandler)
-		ASSERT_SUCCESS(s_DxcUtils->CreateDefaultIncludeHandler(s_IncludeHandler.GetAddressOf()));
+        ASSERT_SUCCESS(s_DxcUtils->CreateDefaultIncludeHandler(s_IncludeHandler.GetAddressOf()));
 
     GraphicCore::GetShaderDaemon().RegisterShader(this);
 }
@@ -56,8 +56,8 @@ bool Shader::Compile()
     LogGraphicsInfo("Compiling shader %s", ToNarrowString(m_Filename).c_str());
 
     std::vector<LPCWSTR> arguments;
-	arguments.push_back(L"-I");
-	arguments.push_back(ETH_SHADER_SOURCE_DIR);
+    arguments.push_back(L"-I");
+    arguments.push_back(ETH_SHADER_SOURCE_DIR);
 
     // -E for the entry point (eg. PSMain)
     arguments.push_back(L"-E");

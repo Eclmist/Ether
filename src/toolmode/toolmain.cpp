@@ -49,64 +49,64 @@ public:
 
     void LoadContent() override
     {
-		for (int i = 0; i < 400; ++i)
-		{
-			std::string modelPath = modelsGroupPath + std::to_string(i);
-			if (!PathUtils::IsValidPath(modelPath))
-				break;
+        for (int i = 0; i < 400; ++i)
+        {
+            std::string modelPath = modelsGroupPath + std::to_string(i);
+            if (!PathUtils::IsValidPath(modelPath))
+                break;
 
-			std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
-			compiledMesh->Deserialize(IFileStream(modelPath));
+            std::shared_ptr<CompiledMesh> compiledMesh = std::make_shared<CompiledMesh>();
+            compiledMesh->Deserialize(IFileStream(modelPath));
 
 
-			Entity* entity = EngineCore::GetECSManager().CreateEntity();
-			entity->SetName(compiledMesh->GetName());
+            Entity* entity = EngineCore::GetECSManager().CreateEntity();
+            entity->SetName(compiledMesh->GetName());
 
-			MeshComponent* mesh = entity->AddComponent<MeshComponent>();
-			mesh->SetCompiledMesh(compiledMesh);
+            MeshComponent* mesh = entity->AddComponent<MeshComponent>();
+            mesh->SetCompiledMesh(compiledMesh);
 
-			VisualComponent* visual = entity->AddComponent<VisualComponent>();
-			visual->SetMaterial(compiledMesh->GetMaterial());
+            VisualComponent* visual = entity->AddComponent<VisualComponent>();
+            visual->SetMaterial(compiledMesh->GetMaterial());
 
-			TransformComponent* transform = entity->GetComponent<TransformComponent>();
-			transform->SetPosition({ 0, -15, 0 });
-			transform->SetRotation({ 0, 0, 0 });
-			transform->SetScale({ 0.1 });
+            TransformComponent* transform = entity->GetComponent<TransformComponent>();
+            transform->SetPosition({ 0, -15, 0 });
+            transform->SetRotation({ 0, 0, 0 });
+            transform->SetScale({ 0.1 });
 
-			LoadTexture(compiledMesh->GetMaterial()->m_AlbedoTexturePath, "_AlbedoTexture");
-			if (m_Textures.find(compiledMesh->GetMaterial()->m_AlbedoTexturePath) != m_Textures.end())
-				visual->GetMaterial()->SetTexture("_AlbedoTexture", m_Textures[compiledMesh->GetMaterial()->m_AlbedoTexturePath]);
+            LoadTexture(compiledMesh->GetMaterial()->m_AlbedoTexturePath, "_AlbedoTexture");
+            if (m_Textures.find(compiledMesh->GetMaterial()->m_AlbedoTexturePath) != m_Textures.end())
+                visual->GetMaterial()->SetTexture("_AlbedoTexture", m_Textures[compiledMesh->GetMaterial()->m_AlbedoTexturePath]);
 
-			LoadTexture(compiledMesh->GetMaterial()->m_SpecularTexturePath, "_SpecularTexture");
-			if (m_Textures.find(compiledMesh->GetMaterial()->m_SpecularTexturePath) != m_Textures.end())
-				visual->GetMaterial()->SetTexture("_SpecularTexture", m_Textures[compiledMesh->GetMaterial()->m_SpecularTexturePath]);
+            LoadTexture(compiledMesh->GetMaterial()->m_SpecularTexturePath, "_SpecularTexture");
+            if (m_Textures.find(compiledMesh->GetMaterial()->m_SpecularTexturePath) != m_Textures.end())
+                visual->GetMaterial()->SetTexture("_SpecularTexture", m_Textures[compiledMesh->GetMaterial()->m_SpecularTexturePath]);
 
-			//{
-			//}
-		}
+            //{
+            //}
+        }
 
-		std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
-		IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
-		hdri->Deserialize(iistream);
-		GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
+        std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
+        IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
+        hdri->Deserialize(iistream);
+        GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
     };
 
-	void LoadTexture(const std::string& path, const std::string& key)
-	{
-		if (path == "")
-			return;
+    void LoadTexture(const std::string& path, const std::string& key)
+    {
+        if (path == "")
+            return;
 
-		if (m_Textures.find(path) == m_Textures.end())
-		{
-			std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
-			IFileStream iistream(sceneRootPath + path + ".ether0");
-			if (iistream.IsOpen())
-			{
-				texture->Deserialize(iistream);
-				m_Textures[path] = texture;
-			}
-		}
-	}
+        if (m_Textures.find(path) == m_Textures.end())
+        {
+            std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
+            IFileStream iistream(sceneRootPath + path + ".ether0");
+            if (iistream.IsOpen())
+            {
+                texture->Deserialize(iistream);
+                m_Textures[path] = texture;
+            }
+        }
+    }
 
 
     void UnloadContent() override {};
@@ -197,12 +197,12 @@ private:
 
     ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
     {
-		const float range = tan(ethDegToRad(fovy / 2)) * znear;
-		const float left = -range * aspect;
-		const float right = range * aspect;
-		const float bottom = -range;
-		const float top = range;
-		const float Q = zfar / (zfar - znear);
+        const float range = tan(ethDegToRad(fovy / 2)) * znear;
+        const float left = -range * aspect;
+        const float right = range * aspect;
+        const float bottom = -range;
+        const float top = range;
+        const float Q = zfar / (zfar - znear);
 
         ethMatrix4x4 dst(0.0f);
         dst.m_Data2D[0][0] = (2 * znear) / (right - left);
@@ -225,72 +225,72 @@ private:
 
     void UpdateFlyCam(float deltaTime)
     {
-		//if (Input::GetMouseButton(2))
-		//{
-		//	m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-		//	m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-		//	m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90), DEG_TO_RAD(90));
-		//}
+        //if (Input::GetMouseButton(2))
+        //{
+        //    m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+        //    m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+        //    m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90), DEG_TO_RAD(90));
+        //}
 
-		//ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
-		//ethVector3 forwardVec = (rotationMatrix.Transposed() * {0, 0, 1}).Normalized();
-		//ethVector3 upVec = XMVector4Normalize(g_XMIdentityR1);
-		//ethVector3 rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
+        //ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
+        //ethVector3 forwardVec = (rotationMatrix.Transposed() * {0, 0, 1}).Normalized();
+        //ethVector3 upVec = XMVector4Normalize(g_XMIdentityR1);
+        //ethVector3 rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
 
-		//if (Input::GetMouseButton(2))
-		//{
-		//	if (Input::GetKey(Win32::KeyCode::W))
-		//		m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
-		//	if (Input::GetKey(Win32::KeyCode::S))
-		//		m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
-		//	if (Input::GetKey(Win32::KeyCode::A))
-		//		m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
-		//	if (Input::GetKey(Win32::KeyCode::D))
-		//		m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
-		//}
+        //if (Input::GetMouseButton(2))
+        //{
+        //    if (Input::GetKey(Win32::KeyCode::W))
+        //        m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
+        //    if (Input::GetKey(Win32::KeyCode::S))
+        //        m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
+        //    if (Input::GetKey(Win32::KeyCode::A))
+        //        m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
+        //    if (Input::GetKey(Win32::KeyCode::D))
+        //        m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
+        //}
 
-		//m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
+        //m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
 
-		//m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
-		//m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+        //m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
+        //m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
 
-		//float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-		//m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+        //float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+        //m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
     }
 
     void UpdateOrthoCam(float deltaTime)
     {
-		const float scaleModifier = 0.001;
-		const float zoomModifier = 1.0 / 121.0;
+        const float scaleModifier = 0.001;
+        const float zoomModifier = 1.0 / 121.0;
 
-		if (Input::GetMouseButtonDown(1))
-			m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+        if (Input::GetMouseButtonDown(1))
+            m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
 
-		if (Input::GetMouseButton(1))
-		{
-			m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
-			m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
-			m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
-		}
+        if (Input::GetMouseButton(1))
+        {
+            m_OrthoX += (Input::GetMousePosX() - m_DragStartPos.x) * m_CameraDistance * scaleModifier;
+            m_OrthoZ -= (Input::GetMousePosY() - m_DragStartPos.y) * m_CameraDistance * scaleModifier;
+            m_DragStartPos = { (float)Input::GetMousePosX(), (float)Input::GetMousePosY() };
+        }
 
-		if (abs(Input::GetMouseWheelDelta()) > 0)
-		{
-			float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
-			float offsetModifier = scaleModifier * cameraDistanceDelta;
+        if (abs(Input::GetMouseWheelDelta()) > 0)
+        {
+            float cameraDistanceDelta = Input::GetMouseWheelDelta() * zoomModifier;
+            float offsetModifier = scaleModifier * cameraDistanceDelta;
 
-			m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
-			m_OrthoZ -= ((float)EngineCore::GetEngineConfig().GetClientHeight() / 2.0 - Input::GetMousePosY()) * offsetModifier;
-			m_CameraDistance -= cameraDistanceDelta;
-		}
+            m_OrthoX += ((float)EngineCore::GetEngineConfig().GetClientWidth() / 2.0 - Input::GetMousePosX()) * offsetModifier;
+            m_OrthoZ -= ((float)EngineCore::GetEngineConfig().GetClientHeight() / 2.0 - Input::GetMousePosY()) * offsetModifier;
+            m_CameraDistance -= cameraDistanceDelta;
+        }
 
-		ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(-90 * 0.0174533);
+        ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(-90 * 0.0174533);
         ethMatrix4x4 translationMatrix = TransformComponent::GetTranslationMatrix({ m_OrthoX, m_OrthoZ, m_CameraDistance });
-		m_ViewMatrix = rotationMatrix * translationMatrix;
-		m_ViewMatrixInv = m_ViewMatrix.Inversed();
-		m_ProjectionMatrix = GetOrthographicMatrixLH(
-			(float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
-			(float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
-			0.01f, 1000.0f);
+        m_ViewMatrix = rotationMatrix * translationMatrix;
+        m_ViewMatrixInv = m_ViewMatrix.Inversed();
+        m_ProjectionMatrix = GetOrthographicMatrixLH(
+            (float)EngineCore::GetEngineConfig().GetClientWidth() * m_CameraDistance * scaleModifier,
+            (float)EngineCore::GetEngineConfig().GetClientHeight() * m_CameraDistance * scaleModifier,
+            0.01f, 1000.0f);
     }
 
     void ResetMatrices()
@@ -327,7 +327,7 @@ private:
     ethMatrix4x4 m_ProjectionMatrix;
 
     std::shared_ptr<Material> m_Material;
-	std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
+    std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
 };
 
 ETH_NAMESPACE_END

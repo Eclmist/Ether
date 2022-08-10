@@ -29,7 +29,7 @@ class RhiModule
 {
 public:
     RhiModule() = default;
-	virtual ~RhiModule() = default;
+    virtual ~RhiModule() = default;
 
 public:
     virtual RhiResult Initialize() = 0;

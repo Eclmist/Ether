@@ -49,7 +49,7 @@ void CompiledMesh::Deserialize(IStream& istream)
         istream >> m_VertexBuffer[i];
 
     m_Material = std::make_shared<Material>();
-	m_Material->Deserialize(istream);
+    m_Material->Deserialize(istream);
 }
 
 #ifdef ETH_TOOLMODE
@@ -57,8 +57,8 @@ void CompiledMesh::Deserialize(IStream& istream)
 void CompiledMesh::SetRawMesh(std::shared_ptr<RawMesh> rawMesh)
 {
     m_RawMesh = rawMesh;
-	UpdateBuffers();
-	UpdateMaterial();
+    UpdateBuffers();
+    UpdateMaterial();
 }
 
 void CompiledMesh::SetVertexBuffer(char* vertices, size_t size)
@@ -70,7 +70,7 @@ void CompiledMesh::SetVertexBuffer(char* vertices, size_t size)
 void CompiledMesh::UpdateBuffers()
 {
     if (m_RawMesh->GetNumVertices() >= MAX_VERTICES)
-		LogToolmodeWarning("Max recommended vertex count exceeded. Memory exceptions may occur.");
+        LogToolmodeWarning("Max recommended vertex count exceeded. Memory exceptions may occur.");
 
     SetVertexBuffer(static_cast<char*>(m_RawMesh->GetPackedVertexData()), m_RawMesh->GetPackedVertexDataSize());
     m_NumVertices = m_RawMesh->GetNumVertices();

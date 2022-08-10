@@ -29,10 +29,10 @@ DescriptorAllocatorPage::DescriptorAllocatorPage(RhiDescriptorHeapType type, uin
     , m_NumFreeHandles(numDescriptors)
 {
     GraphicCore::GetDevice()->CreateDescriptorHeap({
-		type,
-		RhiDescriptorHeapFlag::None,
-		numDescriptors
-	}, m_DescriptorHeap);
+        type,
+        RhiDescriptorHeapFlag::None,
+        numDescriptors
+    }, m_DescriptorHeap);
 
     m_FreeListAllocator.AddBlock(0, m_MaxDescriptors);
 }
@@ -43,8 +43,8 @@ std::shared_ptr<DescriptorAllocation> DescriptorAllocatorPage::Allocate(uint32_t
 
     if (!HasSpace(numDescriptors))
     {
-		LogGraphicsError("An attempt was made to allocate more descriptors than a descriptor allocator page allows");
-		throw std::bad_alloc();
+        LogGraphicsError("An attempt was made to allocate more descriptors than a descriptor allocator page allows");
+        throw std::bad_alloc();
     }
 
     FreeListAllocation alloc = m_FreeListAllocator.Allocate(numDescriptors);
@@ -61,24 +61,24 @@ std::shared_ptr<DescriptorAllocation> DescriptorAllocatorPage::Allocate(uint32_t
 
 void DescriptorAllocatorPage::Free(DescriptorAllocation&& allocation, uint64_t frameNumber)
 {
-	std::lock_guard<std::mutex> guard(m_AllocationMutex);
+    std::lock_guard<std::mutex> guard(m_AllocationMutex);
 
     uint32_t offset = GetOffset(allocation.GetDescriptorHandle());
-	m_StaleDescriptors.emplace(allocation, frameNumber);
+    m_StaleDescriptors.emplace(allocation, frameNumber);
 }
 
 void DescriptorAllocatorPage::ReleaseStaleDescriptors(uint64_t frameNumber)
 {
-	std::lock_guard<std::mutex> guard(m_AllocationMutex);
+    std::lock_guard<std::mutex> guard(m_AllocationMutex);
 
-	while (!m_StaleDescriptors.empty() && m_StaleDescriptors.front().second <= frameNumber)
-	{
+    while (!m_StaleDescriptors.empty() && m_StaleDescriptors.front().second <= frameNumber)
+    {
         DescriptorAllocation& staleDescriptor = m_StaleDescriptors.front().first;
-		uint32_t offset = staleDescriptor.GetPageOffset();
+        uint32_t offset = staleDescriptor.GetPageOffset();
         uint32_t numDescriptors = staleDescriptor.GetNumDescriptors();
-		m_FreeListAllocator.FreeBlock(offset, numDescriptors);
-		m_StaleDescriptors.pop();
-	}
+        m_FreeListAllocator.FreeBlock(offset, numDescriptors);
+        m_StaleDescriptors.pop();
+    }
 }
 
 uint32_t DescriptorAllocatorPage::GetOffset(RhiCpuHandle descriptor)

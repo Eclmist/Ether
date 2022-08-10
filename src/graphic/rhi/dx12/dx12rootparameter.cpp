@@ -35,10 +35,10 @@ RhiResult D3D12RootParameter::SetAsConstant(const RhiRootParameterConstantDesc& 
 
 RhiResult D3D12RootParameter::SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc)
 {
-	m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
     m_Parameter.Descriptor.ShaderRegister = desc.m_ShaderRegister;
-	m_Parameter.Descriptor.RegisterSpace = desc.m_RegisterSpace;
+    m_Parameter.Descriptor.RegisterSpace = desc.m_RegisterSpace;
 
     return RhiResult::Success;
 }

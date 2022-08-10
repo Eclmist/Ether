@@ -25,7 +25,7 @@ class RhiCommandAllocator
 {
 public:
     RhiCommandAllocator() = default;
-	virtual ~RhiCommandAllocator() = default;
+    virtual ~RhiCommandAllocator() = default;
 
 public:
     virtual RhiResult Reset() const = 0;

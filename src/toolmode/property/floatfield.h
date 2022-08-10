@@ -35,14 +35,14 @@ public:
     {
     }
 
-	FloatField(std::string name, float& data, float minVal, float maxVal)
-		: Field(name)
-		, m_Data(&data)
-		, m_HasMinMax(true)
-		, m_MinValue(minVal)
-		, m_MaxValue(maxVal)
-	{
-	}
+    FloatField(std::string name, float& data, float minVal, float maxVal)
+        : Field(name)
+        , m_Data(&data)
+        , m_HasMinMax(true)
+        , m_MinValue(minVal)
+        , m_MaxValue(maxVal)
+    {
+    }
 
     ~FloatField() = default;
 
@@ -55,8 +55,8 @@ public:
 
         if (m_HasMinMax)
         {
-			data["properties"]["range"]["min"] = m_MinValue;
-			data["properties"]["range"]["max"] = m_MaxValue;
+            data["properties"]["range"]["min"] = m_MinValue;
+            data["properties"]["range"]["max"] = m_MaxValue;
         }
 
         return data.dump();

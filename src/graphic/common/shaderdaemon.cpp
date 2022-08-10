@@ -132,7 +132,7 @@ void ShaderDaemon::ProcessModifiedShaders(char* notifyInfo)
             LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
             WaitForFileUnlock(shaderFileName);
             for (auto shaders : m_RegisteredShaders[shaderFileName])
-				shaders->Compile();
+                shaders->Compile();
         }
 
         offset += info->NextEntryOffset;

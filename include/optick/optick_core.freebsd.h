@@ -35,42 +35,42 @@
 
 namespace Optick
 {
-	const char* Platform::GetName()
-	{
-		return "PS4";
-	}
+    const char* Platform::GetName()
+    {
+        return "PS4";
+    }
 
-	ThreadID Platform::GetThreadID()
-	{
-		return (uint64_t)pthread_self();
-	}
+    ThreadID Platform::GetThreadID()
+    {
+        return (uint64_t)pthread_self();
+    }
 
-	ProcessID Platform::GetProcessID()
-	{
-		return (ProcessID)getpid();
-	}
+    ProcessID Platform::GetProcessID()
+    {
+        return (ProcessID)getpid();
+    }
 
-	int64 Platform::GetFrequency()
-	{
-		return 1000000000;
-	}
+    int64 Platform::GetFrequency()
+    {
+        return 1000000000;
+    }
 
-	int64 Platform::GetTime()
-	{
-		struct timespec ts;
-		clock_gettime(CLOCK_REALTIME, &ts);
-		return ts.tv_sec * 1000000000LL + ts.tv_nsec;
-	}
+    int64 Platform::GetTime()
+    {
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        return ts.tv_sec * 1000000000LL + ts.tv_nsec;
+    }
 
-	Trace* Platform::CreateTrace()
-	{
-		return nullptr;
-	}
+    Trace* Platform::CreateTrace()
+    {
+        return nullptr;
+    }
 
-	SymbolEngine* Platform::CreateSymbolEngine()
-	{
-		return nullptr;
-	}
+    SymbolEngine* Platform::CreateSymbolEngine()
+    {
+        return nullptr;
+    }
 }
 
 #endif //USE_OPTICK

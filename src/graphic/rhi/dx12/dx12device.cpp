@@ -54,11 +54,11 @@ RhiResult Dx12Device::CreateCommandList(const RhiCommandListDesc& desc, RhiComma
     const auto allocator = desc.m_Allocator.As<Dx12CommandAllocator>();
 
     HRESULT hr = m_Device->CreateCommandList(
-		1,
+        1,
         Translate(desc.m_Type),
-		allocator->m_Allocator.Get(),
-		nullptr,
-		IID_PPV_ARGS(&d3dCommandList->m_CommandList)
+        allocator->m_Allocator.Get(),
+        nullptr,
+        IID_PPV_ARGS(&d3dCommandList->m_CommandList)
     );
 
     d3dCommandList->m_CommandList->SetName(cmdList.GetName().c_str());
@@ -211,7 +211,7 @@ RhiResult Dx12Device::CreateRenderTargetView(const RhiRenderTargetViewDesc& desc
         Translate(d3dRtv->m_CpuHandle)
     );
 
-	rtvHandle.Set(d3dRtv);
+    rtvHandle.Set(d3dRtv);
     return RhiResult::Success;
 }
 

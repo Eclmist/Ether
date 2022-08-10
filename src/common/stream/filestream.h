@@ -39,10 +39,10 @@ public:
     IFileStream& operator>>(unsigned int& v) override final;
     IFileStream& operator>>(unsigned long& v) override final;
     IFileStream& operator>>(std::string& v) override final;
-	IFileStream& operator>>(bool& v) override final;
-	IFileStream& operator>>(ethVector2& v) override final;
-	IFileStream& operator>>(ethVector3& v) override final;
-	IFileStream& operator>>(ethVector4& v) override final;
+    IFileStream& operator>>(bool& v) override final;
+    IFileStream& operator>>(ethVector2& v) override final;
+    IFileStream& operator>>(ethVector3& v) override final;
+    IFileStream& operator>>(ethVector4& v) override final;
 
 private:
     std::ifstream m_File;

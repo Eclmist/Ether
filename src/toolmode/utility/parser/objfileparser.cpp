@@ -34,7 +34,7 @@ void ObjFileParser::Parse(const std::string& path)
 
     if (!reader.ParseFromFile(path, reader_config)) {
         if (!reader.Error().empty())
-			LogToolmodeError("Failed to load mesh: %s", path.c_str());
+            LogToolmodeError("Failed to load mesh: %s", path.c_str());
             LogToolmodeError(reader.Error().c_str());
         return;
     }
@@ -47,20 +47,20 @@ void ObjFileParser::Parse(const std::string& path)
     auto& materials = reader.GetMaterials();
     std::string err;
 
-	m_RawMeshGroup->m_MaterialTable.resize(materials.size());
-	for (int i = 0; i < materials.size(); ++i)
-	{
+    m_RawMeshGroup->m_MaterialTable.resize(materials.size());
+    for (int i = 0; i < materials.size(); ++i)
+    {
         const auto rawMat = materials[i];
         m_RawMeshGroup->m_MaterialTable[i] = std::make_shared<Material>();
         m_RawMeshGroup->m_MaterialTable[i]->SetRoughness(rawMat.roughness);
         m_RawMeshGroup->m_MaterialTable[i]->SetMetalness(rawMat.metallic);
         m_RawMeshGroup->m_MaterialTable[i]->SetBaseColor({ rawMat.diffuse[0], rawMat.diffuse[1], rawMat.diffuse[2], 1.0f });
         m_RawMeshGroup->m_MaterialTable[i]->SetSpecularColor({ rawMat.specular[0], rawMat.specular[1], rawMat.specular[2], 1.0f });
-		m_RawMeshGroup->m_MaterialTable[i]->m_AlbedoTexturePath = rawMat.diffuse_texname;
-		m_RawMeshGroup->m_MaterialTable[i]->m_SpecularTexturePath = rawMat.specular_texname;
-		m_RawMeshGroup->m_MaterialTable[i]->m_RoughnessTexturePath = rawMat.roughness_texname;
-		m_RawMeshGroup->m_MaterialTable[i]->m_MetalnessTexturePath = rawMat.metallic_texname;
-	}
+        m_RawMeshGroup->m_MaterialTable[i]->m_AlbedoTexturePath = rawMat.diffuse_texname;
+        m_RawMeshGroup->m_MaterialTable[i]->m_SpecularTexturePath = rawMat.specular_texname;
+        m_RawMeshGroup->m_MaterialTable[i]->m_RoughnessTexturePath = rawMat.roughness_texname;
+        m_RawMeshGroup->m_MaterialTable[i]->m_MetalnessTexturePath = rawMat.metallic_texname;
+    }
 
     // Loop over shapes (each shape is a "mesh" that should have different materials)
     // LIMITATION FOR NOW: Each shape can only have 1 material. In order to support multiple
@@ -114,7 +114,7 @@ void ObjFileParser::Parse(const std::string& path)
 
             // per-face material
             if (materials.size() > shapes[s].mesh.material_ids[f])
-				rawMesh->m_Material = m_RawMeshGroup->m_MaterialTable[shapes[s].mesh.material_ids[f]];
+                rawMesh->m_Material = m_RawMeshGroup->m_MaterialTable[shapes[s].mesh.material_ids[f]];
 
             index_offset += fv;
         }

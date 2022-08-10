@@ -39,7 +39,7 @@ ETH_NAMESPACE_BEGIN
 #define GFX_VIEW_NAME(name, tag)                GfxResourceView_##name##_##tag
 #define DEFINE_GFX_VIEW(name, tag, type)        namespace GraphicLinkSpace { type GFX_VIEW_NAME(name, tag)(nullptr, STRINGIFY(GFX_VIEW_NAME(name, tag))); }
 #define DECLARE_GFX_VIEW(name, tag, type)       namespace GraphicLinkSpace { extern type GFX_VIEW_NAME(name, tag); }
-#define GFX_VIEW(name, tag)	         	        GraphicLinkSpace::GFX_VIEW_NAME(name, tag)
+#define GFX_VIEW(name, tag)                         GraphicLinkSpace::GFX_VIEW_NAME(name, tag)
 
 #define DEFINE_GFX_RTV(name)                    DEFINE_GFX_VIEW(name, RTV, RhiRenderTargetViewHandle)
 #define DEFINE_GFX_DSV(name)                    DEFINE_GFX_VIEW(name, DSV, RhiDepthStencilViewHandle)

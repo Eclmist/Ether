@@ -139,14 +139,14 @@
 #pragma once
 
 /////////////////////////// OPTICK MODIFICATIONS ///////////////////////////////
-#include "optick.config.h"													  //
-																			  //	
-#define OPTICK_ENABLE_COMPRESSION	  (1)									  //
-																			  //
-#define MINIZ_NO_MALLOC				  (1)									  //
-#define MINIZ_NO_STDIO			      (1)									  //
-#define MINIZ_NO_ARCHIVE_APIS		  (1)									  //
-#define MINIZ_NO_TIME				  (1)									  //
+#include "optick.config.h"                                                      //
+                                                                              //    
+#define OPTICK_ENABLE_COMPRESSION      (1)                                      //
+                                                                              //
+#define MINIZ_NO_MALLOC                  (1)                                      //
+#define MINIZ_NO_STDIO                  (1)                                      //
+#define MINIZ_NO_ARCHIVE_APIS          (1)                                      //
+#define MINIZ_NO_TIME                  (1)                                      //
 ////////////////////////////////////////////////////////////////////////////////
 
 

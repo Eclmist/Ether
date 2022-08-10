@@ -23,12 +23,12 @@ ETH_NAMESPACE_BEGIN
 
 void Material::Serialize(OStream& ostream)
 {
-	ostream << m_Roughness;
-	ostream << m_Metalness;
+    ostream << m_Roughness;
+    ostream << m_Metalness;
     ostream << m_BaseColor;
     ostream << m_SpecularColor;
-	ostream << m_AlbedoTexturePath;
-	ostream << m_SpecularTexturePath;
+    ostream << m_AlbedoTexturePath;
+    ostream << m_SpecularTexturePath;
 }
 
 void Material::Deserialize(IStream& istream)
@@ -37,8 +37,8 @@ void Material::Deserialize(IStream& istream)
     istream >> m_Metalness;
     istream >> m_BaseColor;
     istream >> m_SpecularColor;
-	istream >> m_AlbedoTexturePath;
-	istream >> m_SpecularTexturePath;
+    istream >> m_AlbedoTexturePath;
+    istream >> m_SpecularTexturePath;
 }
 
 CompiledTexture* Material::GetTexture(const std::string& key) const
@@ -60,7 +60,7 @@ ethVector4 Material::GetColor(const std::string& key) const
 void Material::SetTexture(const std::string& key, std::shared_ptr<CompiledTexture> texture)
 {
     if (m_Textures.find(key) == m_Textures.end())
-		m_Textures[key] = texture;
+        m_Textures[key] = texture;
 }
 
 void Material::SetColor(const std::string& key, ethVector4 color)
