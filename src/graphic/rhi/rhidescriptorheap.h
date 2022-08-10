@@ -28,14 +28,14 @@ public:
     virtual ~RhiDescriptorHeap() = default;
 
 public:
-    virtual RhiCpuHandle GetBaseHandleCpu() const = 0;
+    virtual RhiCpuHandle GetBaseCpuHandle() const = 0;
     virtual RhiGpuHandle GetBaseGpuHandle() const = 0;
 
     virtual RhiCpuHandle GetNextCpuHandle() const = 0;
     virtual RhiGpuHandle GetNextGpuHandle() const = 0;
 
+    virtual uint32_t GetHandleIncrementSize() const = 0;
     virtual RhiResult IncrementHandle() = 0;
-
 };
 
 ETH_NAMESPACE_END

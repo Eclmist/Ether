@@ -21,29 +21,28 @@
 
 ETH_NAMESPACE_BEGIN
 
-#define PAGE_SIZE 33554432 // 3MB
+constexpr uint32_t MaxPageSize = 33554432; // 3MB
 
 UploadBufferAllocation UploadBufferAllocator::Allocate(size_t size, size_t alignment)
 {
-    if (size > PAGE_SIZE)
+    if (size > MaxPageSize)
     {
 		LogGraphicsFatal("An attempt was made to allocate more memory than a linear allocator allows");
         throw std::bad_alloc();
     }
 
     if (m_CurrentPage == nullptr || !m_CurrentPage->HasSpace(size, alignment))
-        m_CurrentPage = &RequestPage(size);
+        m_CurrentPage = &GetAvailablePage(size);
 
     return m_CurrentPage->Allocate(size, alignment);
 }
 
-UploadBufferPage& UploadBufferAllocator::RequestPage(size_t size)
+UploadBufferPage& UploadBufferAllocator::GetAvailablePage(size_t size)
 {
     if (m_AvaliablePages.empty())
     {
-        auto newPage = std::make_shared<UploadBufferPage>(PAGE_SIZE);
-        m_InFlightPages.emplace_back(newPage);
-        return *newPage;
+        auto newPage = std::make_shared<UploadBufferPage>(MaxPageSize);
+        m_AvaliablePages.emplace_back(newPage);
     }
 
     auto page = m_AvaliablePages.back();
@@ -51,7 +50,7 @@ UploadBufferPage& UploadBufferAllocator::RequestPage(size_t size)
     m_InFlightPages.push_back(page);
 
     AssertGraphics(page != nullptr, "LinearAllocatorPage::RequestPage failed to produce a valid page");
-    return *page;
+    return *m_InFlightPages.back();
 }
 
 void UploadBufferAllocator::Reset()

@@ -30,11 +30,13 @@ public:
     ~Dx12DescriptorHeap() override = default;
 
 public:
-    RhiCpuHandle GetBaseHandleCpu() const override;
+    RhiCpuHandle GetBaseCpuHandle() const override;
     RhiGpuHandle GetBaseGpuHandle() const override;
 
     RhiCpuHandle GetNextCpuHandle() const override;
     RhiGpuHandle GetNextGpuHandle() const override;
+
+    uint32_t GetHandleIncrementSize() const override;
 
     RhiResult IncrementHandle() override;
 

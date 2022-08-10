@@ -18,8 +18,46 @@
 */
 
 #include "descriptorallocation.h"
+#include "descriptorallocatorpage.h"
 
 ETH_NAMESPACE_BEGIN
+
+DescriptorAllocation::DescriptorAllocation(
+    RhiCpuHandle allocBaseHandle,
+    uint32_t numDescriptors,
+    uint32_t pageOffset,
+    uint32_t descriptorSize,
+    DescriptorAllocatorPage* parentPage)
+    : m_AllocationBaseHandle(allocBaseHandle)
+    , m_NumDescriptors(numDescriptors)
+    , m_PageOffset(pageOffset)
+    , m_DescriptorSize(descriptorSize)
+    , m_ParentPage(parentPage)
+{
+}
+
+DescriptorAllocation::~DescriptorAllocation()
+{
+    Free();
+}
+
+RhiCpuHandle DescriptorAllocation::GetDescriptorHandle(uint32_t offset) const
+{
+    AssertGraphics(offset < m_NumDescriptors, "Specified offset is greater than total number of descriptor handles");
+    return { m_AllocationBaseHandle.m_Ptr + (m_DescriptorSize * offset) };
+}
+
+void DescriptorAllocation::Free()
+{
+    AssertGraphics(m_ParentPage != nullptr, "A descriptor allocation has an invalid parent page");
+
+    m_ParentPage->Free(std::move(*this), GraphicCore::GetFrameNumber());
+    m_AllocationBaseHandle.m_Ptr = 0;
+    m_NumDescriptors = 0;
+    m_PageOffset = 0;
+    m_DescriptorSize = 0;
+    m_ParentPage = nullptr;
+}
 
 ETH_NAMESPACE_END
 

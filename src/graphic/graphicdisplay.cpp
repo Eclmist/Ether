@@ -126,11 +126,14 @@ void GraphicDisplay::CreateResourcesFromSwapChain()
 
 void GraphicDisplay::CreateViewsFromSwapChain()
 {
+    static auto m_RenderTargetDescriptors = GraphicCore::GetGlobalRtvDescriptorAllocator().Allocate(3);
+
 	for (uint32_t i = 0; i < GetNumBuffers(); ++i)
 	{
         RhiRenderTargetViewDesc desc = {};
         desc.m_Format = BackBufferFormat;
         desc.m_Resource = m_RenderTargets[i];
+        desc.m_DescriptorHandle = m_RenderTargetDescriptors->GetDescriptorHandle(i);
         GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
 
         RhiShaderResourceViewDesc srvDesc = {};

@@ -23,6 +23,9 @@
 #include "graphic/rhi/rhicommon.h"
 #include "graphic/rhi/rhimodule.h"
 
+// Allocators
+#include "graphic/memory/descriptorallocator.h"
+
 // Contexts
 #include "graphic/context/commandcontext.h"
 #include "graphic/context/graphiccontext.h"
@@ -56,14 +59,17 @@ public:
     static GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
     static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
+    static DescriptorAllocator& GetGlobalRtvDescriptorAllocator() { return *Instance().m_RtvDescriptorAllocator; }
+    static DescriptorAllocator& GetGlobalDsvDescriptorAllocator() { return *Instance().m_DsvDescriptorAllocator; }
+
     static RhiDeviceHandle GetDevice() { return Instance().m_RhiDevice; }
     static RhiModuleHandle GetModule() { return Instance().m_RhiModule; }
 
     // TODO: Move away from here into some dynamic descriptor heap allocator or something
-    static inline RhiDescriptorHeapHandle GetRTVDescriptorHeap() { return Instance().m_RTVDescriptorHeap; }
-    static inline RhiDescriptorHeapHandle GetDSVDescriptorHeap() { return Instance().m_DSVDescriptorHeap; }
     static inline RhiDescriptorHeapHandle GetSRVDescriptorHeap() { return Instance().m_SRVDescriptorHeap; }
     static inline RhiDescriptorHeapHandle GetSamplerDescriptorHeap() { return Instance().m_SamplerDescriptorHeap; }
+
+    static inline uint64_t GetFrameNumber() { return Instance().m_FrameNumber; }
 
 public:
     static void FlushGpu();
@@ -79,17 +85,20 @@ private:
     std::unique_ptr<GuiRenderer> m_GuiRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
+    std::unique_ptr<DescriptorAllocator> m_RtvDescriptorAllocator;
+    std::unique_ptr<DescriptorAllocator> m_DsvDescriptorAllocator;
+
     RhiDeviceHandle m_RhiDevice;
     RhiModuleHandle m_RhiModule;
 
     // TODO: Move away from here into some dynamic descriptor heap allocator or something
-	RhiDescriptorHeapHandle m_RTVDescriptorHeap;
-    RhiDescriptorHeapHandle m_DSVDescriptorHeap;
     RhiDescriptorHeapHandle m_SRVDescriptorHeap;
     RhiDescriptorHeapHandle m_SamplerDescriptorHeap;
 
 private:
     bool m_IsInitialized;
+
+    uint64_t m_FrameNumber;
 };
 
 ETH_NAMESPACE_END

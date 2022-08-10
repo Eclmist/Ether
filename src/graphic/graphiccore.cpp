@@ -35,15 +35,14 @@ void GraphicCore::Initialize()
 
     AssertGraphics(result == RhiResult::Success, "Failed to create graphic device");
 
-    Instance().m_RTVDescriptorHeap.SetName(L"GraphicCore::RTVDescriptorHeap");
-    Instance().m_DSVDescriptorHeap.SetName(L"GraphicCore::DSVDescriptorHeap");
     Instance().m_SRVDescriptorHeap.SetName(L"GraphicCore::SRVDescriptorHeap");
     Instance().m_SamplerDescriptorHeap.SetName(L"GraphicCore::SamplerDescriptorHeap");
 
-    GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::RTV, RhiDescriptorHeapFlag::None, 512 }, Instance().m_RTVDescriptorHeap);
-    GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::DSV, RhiDescriptorHeapFlag::None, 512 }, Instance().m_DSVDescriptorHeap);
     GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 4096 }, Instance().m_SRVDescriptorHeap);
     GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::Sampler, RhiDescriptorHeapFlag::None, 512 }, Instance().m_SamplerDescriptorHeap);
+
+    Instance().m_RtvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv);
+	Instance().m_DsvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv);
 
     Instance().m_ShaderDaemon = std::make_unique<ShaderDaemon>();
     Instance().m_CommandManager = std::make_unique<CommandManager>();
@@ -61,6 +60,11 @@ void GraphicCore::Render()
     Instance().m_GuiRenderer->Render();
     Instance().m_GraphicRenderer->Present();
     Instance().m_GraphicRenderer->CleanUp();
+
+    // TODO: Move this somewhere
+    Instance().m_RtvDescriptorAllocator->ReleaseStaleDescriptors(Instance().m_FrameNumber);
+    Instance().m_DsvDescriptorAllocator->ReleaseStaleDescriptors(Instance().m_FrameNumber);
+    Instance().m_FrameNumber++;
 }
 
 void GraphicCore::Shutdown()
@@ -71,13 +75,14 @@ void GraphicCore::Shutdown()
     Instance().m_GraphicRenderer.reset();
     Instance().m_GraphicDisplay.reset();
     Instance().m_CommandManager.reset();
-    Instance().m_ShaderDaemon.reset();
+	Instance().m_ShaderDaemon.reset();
+
+	Instance().m_RtvDescriptorAllocator.reset();
+	Instance().m_DsvDescriptorAllocator.reset();
 
     Instance().m_RhiDevice.Destroy();
     Instance().m_RhiModule.Destroy();
 
-    Instance().m_RTVDescriptorHeap.Destroy();
-    Instance().m_DSVDescriptorHeap.Destroy();
     Instance().m_SRVDescriptorHeap.Destroy();
     Instance().m_SamplerDescriptorHeap.Destroy();
 

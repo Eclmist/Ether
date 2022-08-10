@@ -36,7 +36,7 @@ public:
     void Reset();
 
 private:
-    UploadBufferPage& RequestPage(size_t size);
+    UploadBufferPage& GetAvailablePage(size_t size);
 
 private:
 

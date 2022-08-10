@@ -24,6 +24,8 @@ ETH_NAMESPACE_BEGIN
 
 ResourceContext::ResourceContext(CommandContext& context, const std::wstring& name)
 	: m_Context(&context)
+    , m_RtvDescriptorAllocator(RhiDescriptorHeapType::Rtv)
+    , m_DsvDescriptorAllocator(RhiDescriptorHeapType::Dsv)
 {
 }
 
@@ -66,9 +68,12 @@ bool ResourceContext::CreateRenderTargetView(RhiResourceHandle resource, RhiRend
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
+    m_DescriptorAllocations.push_back(m_RtvDescriptorAllocator.Allocate());
+
     RhiRenderTargetViewDesc rtvDesc = {};
     rtvDesc.m_Format = GetResourceFormat(resource.GetName());
     rtvDesc.m_Resource = resource;
+    rtvDesc.m_DescriptorHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
     GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 
@@ -80,9 +85,12 @@ bool ResourceContext::CreateDepthStencilView(RhiResourceHandle resource, RhiDept
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
+	m_DescriptorAllocations.push_back(m_DsvDescriptorAllocator.Allocate());
+
 	RhiDepthStencilViewDesc dsvDesc = {};
 	dsvDesc.m_Format = GetResourceFormat(resource.GetName());
 	dsvDesc.m_Resource = resource;
+    dsvDesc.m_DescriptorHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
 	GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 

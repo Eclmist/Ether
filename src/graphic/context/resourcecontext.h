@@ -58,6 +58,11 @@ private:
     std::set<std::wstring> m_NewlyCreatedResources;
     std::unordered_map<std::wstring, RhiCommitedResourceDesc> m_ResourceTable;
 
+    // TODO: This is clearly the wrong place to allocate descriptors, but where should it go?
+	DescriptorAllocator m_RtvDescriptorAllocator;
+	DescriptorAllocator m_DsvDescriptorAllocator;
+    std::vector<std::shared_ptr<DescriptorAllocation>> m_DescriptorAllocations;
+
     CommandContext* m_Context;
 };
 

@@ -139,8 +139,8 @@ D3D12_DESCRIPTOR_HEAP_TYPE Translate(const RhiDescriptorHeapType& rhiType)
 	switch (rhiType)
 	{
 	case RhiDescriptorHeapType::CbvSrvUav:                  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	case RhiDescriptorHeapType::RTV:                        return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	case RhiDescriptorHeapType::DSV:                        return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	case RhiDescriptorHeapType::Rtv:                        return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	case RhiDescriptorHeapType::Dsv:                        return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	case RhiDescriptorHeapType::Sampler:                    return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 	default:                                                return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	}
@@ -150,9 +150,9 @@ D3D12_DESCRIPTOR_RANGE_TYPE Translate(const RhiDescriptorRangeType& rhiType)
 {
 	switch (rhiType)
 	{
-	case RhiDescriptorRangeType::SRV:						return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	case RhiDescriptorRangeType::CBV:						return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-	case RhiDescriptorRangeType::UAV:						return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+	case RhiDescriptorRangeType::Srv:						return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	case RhiDescriptorRangeType::Cbv:						return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	case RhiDescriptorRangeType::Uav:						return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 	case RhiDescriptorRangeType::Sampler:					return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
 	default:												return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	}

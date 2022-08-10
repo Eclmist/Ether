@@ -267,8 +267,8 @@ void GBufferProducer::InitializeRootSignature()
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
     tempRS[1]->SetAsConstantBufferView({ 1, 0, RhiShaderVisibility::All });
     tempRS[2]->SetAsConstantBufferView({ 2, 0, RhiShaderVisibility::All });
-	tempRS[3]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // albedo
-	tempRS[4]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 }); // specular
+	tempRS[3]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 }); // albedo
+	tempRS[4]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 }); // specular
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
 }

@@ -22,7 +22,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-RhiCpuHandle Dx12DescriptorHeap::GetBaseHandleCpu() const
+RhiCpuHandle Dx12DescriptorHeap::GetBaseCpuHandle() const
 {
     RhiCpuHandle handle;
     handle.m_Ptr = m_Heap->GetCPUDescriptorHandleForHeapStart().ptr;
@@ -38,7 +38,7 @@ RhiGpuHandle Dx12DescriptorHeap::GetBaseGpuHandle() const
 
 RhiCpuHandle Dx12DescriptorHeap::GetNextCpuHandle() const
 {
-    RhiCpuHandle handle = GetBaseHandleCpu();
+    RhiCpuHandle handle = GetBaseCpuHandle();
     handle.m_Ptr += m_Offset;
     return handle;
 }
@@ -48,6 +48,11 @@ RhiGpuHandle Dx12DescriptorHeap::GetNextGpuHandle() const
     RhiGpuHandle handle = GetBaseGpuHandle();
     handle.m_Ptr += m_Offset;
     return handle;
+}
+
+uint32_t Dx12DescriptorHeap::GetHandleIncrementSize() const
+{
+    return m_HandleIncrementSize;
 }
 
 RhiResult Dx12DescriptorHeap::IncrementHandle()

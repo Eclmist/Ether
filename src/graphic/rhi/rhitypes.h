@@ -299,11 +299,13 @@ struct RhiResourceViewDesc
 struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
 {
     RhiFormat m_Format;
+    RhiCpuHandle m_DescriptorHandle;
 };
 
 struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 {
     RhiFormat m_Format;
+	RhiCpuHandle m_DescriptorHandle;
 };
 
 struct RhiShaderResourceViewDesc : public RhiResourceViewDesc

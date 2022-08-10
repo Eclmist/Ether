@@ -295,7 +295,7 @@ void BloomPass::InitializeRootSignature()
     tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
     tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
 
     RhiRootSignature tempRS2(8, 3);
@@ -303,13 +303,13 @@ void BloomPass::InitializeRootSignature()
     tempRS2.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
     tempRS2.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
     tempRS2[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
-    tempRS2[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
-    tempRS2[2]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
-    tempRS2[3]->SetAsDescriptorRange({ 2, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
-    tempRS2[4]->SetAsDescriptorRange({ 3, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
-    tempRS2[5]->SetAsDescriptorRange({ 4, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
-    tempRS2[6]->SetAsDescriptorRange({ 5, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
-    tempRS2[7]->SetAsDescriptorRange({ 6, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::SRV, 1 });
+    tempRS2[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
+    tempRS2[2]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
+    tempRS2[3]->SetAsDescriptorRange({ 2, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
+    tempRS2[4]->SetAsDescriptorRange({ 3, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
+    tempRS2[5]->SetAsDescriptorRange({ 4, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
+    tempRS2[6]->SetAsDescriptorRange({ 5, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
+    tempRS2[7]->SetAsDescriptorRange({ 6, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
     tempRS2.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature2);
 }
 

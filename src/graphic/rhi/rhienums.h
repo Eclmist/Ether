@@ -105,8 +105,8 @@ enum class RhiDepthWriteMask
 enum class RhiDescriptorHeapType
 {
     CbvSrvUav,
-    RTV,
-    DSV,
+    Rtv,
+    Dsv,
     Sampler,
 };
 
@@ -118,9 +118,9 @@ enum class RhiDescriptorHeapFlag
 
 enum class RhiDescriptorRangeType
 {
-    SRV,
-    UAV,
-    CBV,
+    Srv,
+    Uav,
+    Cbv,
     Sampler,
 };
 

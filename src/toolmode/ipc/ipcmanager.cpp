@@ -46,7 +46,7 @@ void IpcManager::ProcessPendingCommands()
     std::queue<std::shared_ptr<Command>> commandQueueCopy;
 
     {
-        std::lock_guard guard(m_CommandMutex);
+        std::lock_guard<std::mutex> guard(m_CommandMutex);
 
         // Make a copy and flush the real queue because more commands may be added
         // by command.execute(), usually because adding response commands
@@ -69,13 +69,13 @@ void IpcManager::QueueCommand(std::shared_ptr<Command> command)
     if (command == nullptr)
         return;
 
-    std::lock_guard guard(m_CommandMutex);
+    std::lock_guard<std::mutex> guard(m_CommandMutex);
     m_CommandQueue.push(command);
 }
 
 void IpcManager::QueueMessage(const std::string& message)
 {
-    std::lock_guard guard(m_MessageMutex);
+    std::lock_guard<std::mutex> guard(m_MessageMutex);
     m_OutgoingMessageQueue.push(message);
 }
 
@@ -88,7 +88,7 @@ void IpcManager::Disconnect()
 
 void IpcManager::ClearMessageQueue()
 {
-    std::lock_guard guard(m_MessageMutex);
+    std::lock_guard<std::mutex> guard(m_MessageMutex);
     while (!m_OutgoingMessageQueue.empty())
         m_OutgoingMessageQueue.pop();
 }
@@ -119,7 +119,7 @@ void IpcManager::OutgoingMessageHandler()
         if (!m_Socket->HasActiveConnection())
             continue;
 
-        std::lock_guard guard(m_MessageMutex);
+        std::lock_guard<std::mutex> guard(m_MessageMutex);
 
         if (m_OutgoingMessageQueue.empty())
             continue;
@@ -141,7 +141,7 @@ std::shared_ptr<Command> IpcManager::ParseMessage(const std::string& rawRequest)
     }
     catch (...) 
     {
-        LogToolmodeWarning("Received invalid request from connected editor: \"%s\"", rawRequest.c_str());
+        LogToolmodeWarning("Received invalid request from connected editor: \"%s\"", rawRequest.substr(0, 2048).c_str());
     }
 
     return nullptr;

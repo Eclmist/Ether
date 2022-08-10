@@ -18,79 +18,72 @@
 */
 
 #include "descriptorallocator.h"
+#include "descriptorallocatorpage.h"
 
 ETH_NAMESPACE_BEGIN
 
-//DescriptorAllocator::DescriptorAllocator(RhiDescriptorHeapType type, uint32_t numDescriptorsPerHeap)
-//    : m_HeapType(type)
-//    , m_NumDescriptorsPerHeap(numDescriptorsPerHeap)
-//{
-//}
-//
-//std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
-//{
-//    auto newPage = std::make_shared<DescriptorAllocatorPage>(m_HeapType, m_NumDescriptorsPerHeap);
-//
-//    m_HeapPool.emplace_back(newPage);
-//    m_AvailableHeaps.insert(m_HeapPool.size() - 1);
-//
-//    return newPage;
-//}
-//
-//DescriptorAllocation DescriptorAllocator::Allocate(uint32_t numDescriptors)
-//{
-//    std::lock_guard<std::mutex> lock(m_AllocationMutex);
-//
-//    DescriptorAllocation allocation;
-//
-//    for (auto iter = m_AvailableHeaps.begin(); iter != m_AvailableHeaps.end(); ++iter)
-//    {
-//        auto allocatorPage = m_HeapPool[*iter];
-//
-//        allocation = allocatorPage->Allocate(numDescriptors);
-//
-//        if (allocatorPage->NumFreeHandles() == 0)
-//        {
-//            iter = m_AvailableHeaps.erase(iter);
-//        }
-//
-//        // A valid allocation has been found.
-//        if (!allocation.IsNull())
-//        {
-//            break;
-//        }
-//
-//        // No available heap could satisfy the requested number of descriptors.
-//        if (allocation.IsNull())
-//        {
-//            m_NumDescriptorsPerHeap = std::max(m_NumDescriptorsPerHeap, numDescriptors);
-//            auto newPage = CreateAllocatorPage();
-//
-//            allocation = newPage->Allocate(numDescriptors);
-//        }
-//
-//        return allocation;
-//    }
-//}
-//
-//void DescriptorAllocator::ReleaseStaleDescriptors(uint64_t frameNumber)
-//{
-//    std::lock_guard<std::mutex> lock(m_AllocationMutex);
-//
-//    for (size_t i = 0; i < m_HeapPool.size(); ++i)
-//    {
-//        auto page = m_HeapPool[i];
-//
-//        page->ReleaseStaleDescriptors(frameNumber);
-//
-//        if (page->NumFreeHandles() > 0)
-//        {
-//            m_AvailableHeaps.insert(i);
-//        }
-//    }
-//}
+// Arbitrary max page size
+constexpr uint32_t MaxDescriptorsPerHeap = 256;
 
+DescriptorAllocator::DescriptorAllocator(RhiDescriptorHeapType type) 
+    : m_HeapType(type)
+{
+}
 
+std::shared_ptr<DescriptorAllocation> DescriptorAllocator::Allocate(uint32_t numDescriptors)
+{
+	std::lock_guard<std::mutex> guard(m_AllocationMutex);
+	std::shared_ptr<DescriptorAllocatorPage> pageWithEnoughSpace;
+
+	if (numDescriptors > MaxDescriptorsPerHeap)
+	{
+		LogGraphicsFatal("An attempt was made to allocate more descriptors (%d) than allowed (%d)", numDescriptors, MaxDescriptorsPerHeap);
+		throw std::bad_alloc();
+	}
+
+    auto availablePage = GetAvailablePages(numDescriptors);
+
+    if (availablePage == nullptr)
+        availablePage = CreateAllocatorPage();
+
+	return availablePage->Allocate(numDescriptors);
+}
+
+void DescriptorAllocator::ReleaseStaleDescriptors(uint64_t frameNumber)
+{
+    std::lock_guard<std::mutex> guard(m_AllocationMutex);
+
+    for (size_t i = 0; i < m_AllocatorPagePool.size(); ++i)
+    {
+        auto page = m_AllocatorPagePool[i];
+        page->ReleaseStaleDescriptors(frameNumber);
+        if (page->GetNumFreeHandles() > 0)
+            m_AvailablePageIndices.insert(i);
+    }
+}
+
+std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
+{
+	auto newPage = std::make_shared<DescriptorAllocatorPage>(m_HeapType, MaxDescriptorsPerHeap);
+	m_AllocatorPagePool.emplace_back(newPage);
+	m_AvailablePageIndices.insert(m_AllocatorPagePool.size() - 1);
+	return newPage;
+}
+
+std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::GetAvailablePages(uint32_t numDescriptors)
+{
+	for (auto iter = m_AvailablePageIndices.begin(); iter != m_AvailablePageIndices.end(); ++iter)
+	{
+		auto allocatorPage = m_AllocatorPagePool[*iter];
+        if (allocatorPage->HasSpace(numDescriptors))
+            return allocatorPage;
+
+		if (m_AllocatorPagePool[*iter]->GetNumFreeHandles() <= 0)
+			iter = m_AvailablePageIndices.erase(iter);
+	}
+
+    return nullptr;
+}
 
 ETH_NAMESPACE_END
 

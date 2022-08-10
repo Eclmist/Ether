@@ -23,32 +23,29 @@
 
 ETH_NAMESPACE_BEGIN
 
-//class DescriptorAllocatorPage;
-//
-//class DescriptorAllocator
-//{
-//public:
-//    DescriptorAllocator(RhiDescriptorHeapType type, uint32_t numDescriptorsPerHeap = 256);
-//    virtual ~DescriptorAllocator();
-//
-//    DescriptorAllocation Allocate(uint32_t numDescriptors = 1);
-//    void ReleaseStaleDescriptors(uint64_t frameNumber);
-//
-//private:
-//    using DescriptorHeapPool = std::vector<std::shared_ptr<DescriptorAllocatorPage>>;
-//
-//    // Create a new heap with a specific number of descriptors.
-//    std::shared_ptr<DescriptorAllocatorPage> CreateAllocatorPage();
-//
-//    RhiDescriptorHeapType m_HeapType;
-//    uint32_t m_NumDescriptorsPerHeap;
-//
-//    DescriptorHeapPool m_HeapPool;
-//    // Indices of available heaps in the heap pool.
-//    std::set<size_t> m_AvailableHeaps;
-//
-//    std::mutex m_AllocationMutex;
-//};
+class DescriptorAllocatorPage;
+
+class DescriptorAllocator : public NonCopyable
+{
+public:
+    DescriptorAllocator(RhiDescriptorHeapType type);
+    ~DescriptorAllocator() = default;
+
+public:
+    std::shared_ptr<DescriptorAllocation> Allocate(uint32_t numDescriptors = 1);
+    void ReleaseStaleDescriptors(uint64_t frameNumber);
+
+private:
+    std::shared_ptr<DescriptorAllocatorPage> CreateAllocatorPage();
+    std::shared_ptr<DescriptorAllocatorPage> GetAvailablePages(uint32_t numDescriptors);
+    
+private:
+    RhiDescriptorHeapType m_HeapType;
+
+    std::vector<std::shared_ptr<DescriptorAllocatorPage>> m_AllocatorPagePool;
+    std::set<size_t> m_AvailablePageIndices;
+    std::mutex m_AllocationMutex;
+};
 
 ETH_NAMESPACE_END
 

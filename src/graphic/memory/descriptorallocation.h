@@ -21,12 +21,40 @@
 
 ETH_NAMESPACE_BEGIN
 
-//class DescriptorAllocation
-//{
-//public:
-//    DescriptorAllocation() = default;
-//    ~DescriptorAllocation() = default;
-//};
+class DescriptorAllocatorPage;
+
+class DescriptorAllocation
+{
+public:
+    DescriptorAllocation(
+        RhiCpuHandle allocBaseHandle,
+        uint32_t numDescriptors,
+		uint32_t pageOffset,
+        uint32_t descriptorSize,
+        DescriptorAllocatorPage* parentPage);
+
+    ~DescriptorAllocation();
+
+public:
+    inline bool IsValid() const { return m_AllocationBaseHandle.m_Ptr == 0; };
+    inline DescriptorAllocatorPage* GetParentPage() const { return m_ParentPage; }
+    inline uint32_t GetNumDescriptors() const { return m_NumDescriptors; }
+    inline uint32_t GetPageOffset() const { return m_PageOffset; }
+
+public:
+    RhiCpuHandle GetDescriptorHandle(uint32_t offset = 0) const;
+
+private:
+    void Free();
+
+private:
+    RhiCpuHandle m_AllocationBaseHandle;
+    uint32_t m_NumDescriptors;
+    uint32_t m_PageOffset;
+    uint32_t m_DescriptorSize;
+
+    DescriptorAllocatorPage* m_ParentPage;
+};
 
 ETH_NAMESPACE_END
 
