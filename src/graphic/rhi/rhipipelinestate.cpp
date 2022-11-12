@@ -54,7 +54,7 @@ RhiResult RhiPipelineState::SetDepthStencilState(const RhiDepthStencilDesc& desc
 
 RhiResult RhiPipelineState::SetDepthTargetFormat(RhiFormat dsvFormat)
 {
-    m_CreationDesc.m_DSVFormat = dsvFormat;
+    m_CreationDesc.m_DsvFormat = dsvFormat;
     return RhiResult::Success;
 }
 
@@ -67,7 +67,7 @@ RhiResult RhiPipelineState::SetRenderTargetFormats(uint32_t numRtv, const RhiFor
 {
     m_CreationDesc.m_NumRenderTargets = numRtv;
     for (int i = 0; i < numRtv; ++i)
-        m_CreationDesc.m_RTVFormats[i] = rtvFormats[i];
+        m_CreationDesc.m_RtvFormats[i] = rtvFormats[i];
 
     return RhiResult::Success;
 }

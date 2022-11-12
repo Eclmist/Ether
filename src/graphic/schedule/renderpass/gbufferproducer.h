@@ -37,33 +37,8 @@ private:
     void InitializeShaders();
     void InitializeDepthStencilState();
     void InitializePipelineState();
-    void InitializeRootSignature();
 
 private:
-    struct InstanceParams
-    {
-        ethMatrix4x4 m_ModelMatrix;
-        ethMatrix4x4 m_NormalMatrix;
-
-#ifdef ETH_TOOLMODE
-        ethVector4u m_PickerColor;
-#else
-        float m_Padding2[4];
-#endif
-        float m_Padding[28];
-    };
-    static_assert((sizeof(InstanceParams) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
-
-    struct MaterialParams
-    {
-        ethVector4 m_BaseColor;
-        ethVector4 m_SpecularColor;
-        float m_Roughness;
-        float m_Metalness;
-        float m_Padding[54];
-    };
-    static_assert((sizeof(MaterialParams) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
-
     struct CommonConstants
     {
         ethMatrix4x4 m_ViewMatrix;
@@ -78,11 +53,9 @@ private:
     };
     static_assert((sizeof(CommonConstants) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
 
-
 private:
     RhiDepthStencilDesc m_DepthStencilState;
     RhiPipelineStateHandle m_PipelineState;
-    RhiRootSignatureHandle m_RootSignature;
 
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;

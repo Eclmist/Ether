@@ -220,6 +220,7 @@ LRESULT Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
+        EngineCore::GetMainApplication().ScheduleExit();
         break;
     case WM_ERASEBKGND:
         return 1;

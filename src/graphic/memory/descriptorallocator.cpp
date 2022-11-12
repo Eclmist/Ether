@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -18,74 +18,83 @@
 */
 
 #include "descriptorallocator.h"
-#include "descriptorallocatorpage.h"
+#include "graphic/rhi/rhidevice.h"
 
 ETH_NAMESPACE_BEGIN
 
-// Arbitrary max page size
-constexpr uint32_t MaxDescriptorsPerHeap = 256;
-
-DescriptorAllocator::DescriptorAllocator(RhiDescriptorHeapType type) 
+DescriptorAllocator::DescriptorAllocator(
+    RhiDescriptorHeapType type,
+    bool isShaderVisible,
+    uint32_t maxHeapSize)
     : m_HeapType(type)
+    , m_MaxDescriptors(maxHeapSize)
+    , m_IsShaderVisible(isShaderVisible)
+    , m_FreeListAllocator(maxHeapSize)
 {
+    GraphicCore::GetDevice()->CreateDescriptorHeap({
+        type,
+        isShaderVisible ? RhiDescriptorHeapFlag::ShaderVisible : RhiDescriptorHeapFlag::None,
+        maxHeapSize
+    }, m_DescriptorHeap);
 }
 
 std::shared_ptr<DescriptorAllocation> DescriptorAllocator::Allocate(uint32_t numDescriptors)
 {
-    std::lock_guard<std::mutex> guard(m_AllocationMutex);
-    std::shared_ptr<DescriptorAllocatorPage> pageWithEnoughSpace;
-
-    if (numDescriptors > MaxDescriptorsPerHeap)
+    if (!m_FreeListAllocator.HasSpace(numDescriptors))
     {
-        LogGraphicsFatal("An attempt was made to allocate more descriptors (%d) than allowed (%d)", numDescriptors, MaxDescriptorsPerHeap);
-        throw std::bad_alloc();
+        bool result = ReclaimStaleAllocations(numDescriptors);
+        if (!result)
+        {
+            LogGraphicsError("Descriptor allocation failed - heap is already full");
+            throw std::bad_alloc();
+        }
     }
 
-    auto availablePage = GetAvailablePages(numDescriptors);
+    auto alloc = m_FreeListAllocator.Allocate(numDescriptors);
+    uint32_t descriptorIdx = alloc.m_Offset;
+    uint32_t descriptorSize = m_DescriptorHeap->GetHandleIncrementSize();
+    RhiCpuHandle allocBaseCpuHandle = { m_DescriptorHeap->GetBaseCpuHandle().m_Ptr + descriptorIdx * descriptorSize };
+    RhiGpuHandle allocBaseGpuHandle = m_IsShaderVisible
+        ? RhiGpuHandle{ m_DescriptorHeap->GetBaseGpuHandle().m_Ptr + descriptorIdx * descriptorSize }
+        : RhiGpuHandle{};
 
-    if (availablePage == nullptr)
-        availablePage = CreateAllocatorPage();
-
-    return availablePage->Allocate(numDescriptors);
+    return std::make_shared<DescriptorAllocation>(
+        allocBaseCpuHandle,
+        allocBaseGpuHandle,
+        numDescriptors,
+        descriptorSize,
+        descriptorIdx,
+        this);
 }
 
-void DescriptorAllocator::ReleaseStaleDescriptors(uint64_t frameNumber)
+void DescriptorAllocator::Free(const DescriptorAllocation& allocation)
 {
-    std::lock_guard<std::mutex> guard(m_AllocationMutex);
+    // Mark index as free, but don't actually do anything because
+    // it may still be in flight. We will reclaim these when we completely 
+    // run out of space
 
-    for (size_t i = 0; i < m_AllocatorPagePool.size(); ++i)
+    m_StaleAllocations.emplace(allocation.GetDescriptorIndex(), allocation.GetNumDescriptors());
+}
+
+bool DescriptorAllocator::ReclaimStaleAllocations(uint32_t numIndices)
+{
+
+    while (numIndices > 0)
     {
-        auto page = m_AllocatorPagePool[i];
-        page->ReleaseStaleDescriptors(frameNumber);
-        if (page->GetNumFreeHandles() > 0)
-            m_AvailablePageIndices.insert(i);
-    }
-}
+        if (m_StaleAllocations.empty())
+        {
+            LogGraphicsWarning("Descriptor heap is full - no stale indices to reclaim");
+            return false;
+        }
 
-std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
-{
-    auto newPage = std::make_shared<DescriptorAllocatorPage>(
-        m_HeapType,
-        MaxDescriptorsPerHeap);
+        StaleAllocation staleAlloc = m_StaleAllocations.front();
+        m_StaleAllocations.pop();
+        m_FreeListAllocator.FreeBlock(staleAlloc.m_IndexInHeap, staleAlloc.m_NumDescriptors);
 
-    m_AllocatorPagePool.emplace_back(newPage);
-    m_AvailablePageIndices.insert(m_AllocatorPagePool.size() - 1);
-    return newPage;
-}
-
-std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::GetAvailablePages(uint32_t numDescriptors)
-{
-    for (auto iter = m_AvailablePageIndices.begin(); iter != m_AvailablePageIndices.end(); ++iter)
-    {
-        auto allocatorPage = m_AllocatorPagePool[*iter];
-        if (allocatorPage->HasSpace(numDescriptors))
-            return allocatorPage;
-
-        if (m_AllocatorPagePool[*iter]->GetNumFreeHandles() <= 0)
-            iter = m_AvailablePageIndices.erase(iter);
+        numIndices -= staleAlloc.m_NumDescriptors;
     }
 
-    return nullptr;
+    return true;
 }
 
 ETH_NAMESPACE_END

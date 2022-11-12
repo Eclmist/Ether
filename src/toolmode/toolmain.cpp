@@ -49,7 +49,7 @@ public:
 
     void LoadContent() override
     {
-        for (int i = 0; i < 400; ++i)
+        for (int i = 0; i < 0; ++i)
         {
             std::string modelPath = modelsGroupPath + std::to_string(i);
             if (!PathUtils::IsValidPath(modelPath))
@@ -59,7 +59,7 @@ public:
             compiledMesh->Deserialize(IFileStream(modelPath));
 
 
-            Entity* entity = EngineCore::GetECSManager().CreateEntity();
+            Entity* entity = EngineCore::GetEcsManager().CreateEntity();
             entity->SetName(compiledMesh->GetName());
 
             MeshComponent* mesh = entity->AddComponent<MeshComponent>();
@@ -80,15 +80,12 @@ public:
             LoadTexture(compiledMesh->GetMaterial()->m_SpecularTexturePath, "_SpecularTexture");
             if (m_Textures.find(compiledMesh->GetMaterial()->m_SpecularTexturePath) != m_Textures.end())
                 visual->GetMaterial()->SetTexture("_SpecularTexture", m_Textures[compiledMesh->GetMaterial()->m_SpecularTexturePath]);
-
-            //{
-            //}
         }
 
-        std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
-        IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
-        hdri->Deserialize(iistream);
-        GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
+        //std::shared_ptr<CompiledTexture> hdri = std::make_shared<CompiledTexture>();
+        //IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
+        //hdri->Deserialize(iistream);
+        //GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
     };
 
     void LoadTexture(const std::string& path, const std::string& key)
@@ -107,7 +104,6 @@ public:
             }
         }
     }
-
 
     void UnloadContent() override {};
     void Shutdown() override {};

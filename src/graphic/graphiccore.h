@@ -24,6 +24,7 @@
 #include "graphic/rhi/rhimodule.h"
 
 // Allocators
+#include "graphic/memory/bindlessresourcemanager.h"
 #include "graphic/memory/descriptorallocator.h"
 
 // Contexts
@@ -53,21 +54,16 @@ public:
     static void Shutdown();
     static bool IsInitialized();
 
-    static CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
-    static GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
-    static GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
-    static GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
-    static ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
+    static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
+    static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
+    static inline DescriptorAllocator& GetGpuDescriptorAllocator() { return *Instance().m_GpuDescriptorAllocator; }
+    static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
+    static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
+    static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
+    static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
-    static DescriptorAllocator& GetGlobalRtvDescriptorAllocator() { return *Instance().m_RtvDescriptorAllocator; }
-    static DescriptorAllocator& GetGlobalDsvDescriptorAllocator() { return *Instance().m_DsvDescriptorAllocator; }
-
-    static RhiDeviceHandle GetDevice() { return Instance().m_RhiDevice; }
-    static RhiModuleHandle GetModule() { return Instance().m_RhiModule; }
-
-    // TODO: Move away from here into some dynamic descriptor heap allocator or something
-    static inline RhiDescriptorHeapHandle GetSRVDescriptorHeap() { return Instance().m_SRVDescriptorHeap; }
-    static inline RhiDescriptorHeapHandle GetSamplerDescriptorHeap() { return Instance().m_SamplerDescriptorHeap; }
+    static inline RhiDeviceHandle GetDevice() { return Instance().m_RhiDevice; }
+    static inline RhiModuleHandle GetModule() { return Instance().m_RhiModule; }
 
     static inline uint64_t GetFrameNumber() { return Instance().m_FrameNumber; }
 
@@ -75,25 +71,17 @@ public:
     static void FlushGpu();
 
 private:
-    void InitializeDebugLayer();
-
-private:
+    std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
     std::unique_ptr<CommandManager> m_CommandManager;
+    std::unique_ptr<DescriptorAllocator> m_GpuDescriptorAllocator;
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
     std::unique_ptr<GuiRenderer> m_GuiRenderer;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
-    std::unique_ptr<DescriptorAllocator> m_RtvDescriptorAllocator;
-    std::unique_ptr<DescriptorAllocator> m_DsvDescriptorAllocator;
-
     RhiDeviceHandle m_RhiDevice;
     RhiModuleHandle m_RhiModule;
-
-    // TODO: Move away from here into some dynamic descriptor heap allocator or something
-    RhiDescriptorHeapHandle m_SRVDescriptorHeap;
-    RhiDescriptorHeapHandle m_SamplerDescriptorHeap;
 
 private:
     bool m_IsInitialized;

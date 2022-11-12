@@ -22,33 +22,28 @@
 
 struct InstanceParams
 {
-    float4x4 ModelMatrix;
-    float4x4 NormalMatrix;
+    struct MaterialParams
+    {
+        float4 m_BaseColor;
+        float4 m_SpecularColor;
+        float m_Roughness;
+        float m_Metalness;
+
+        uint m_AlbedoTextureIndex;
+        uint m_SpecularTextureIndex;
+    };
+
+    MaterialParams m_MaterialParams;
+
+    float4x4 m_ModelMatrix;
+    float4x4 m_NormalMatrix;
 
 #ifdef ETH_TOOLMODE
-    uint4 PickerColor;
-#else
-    float m_Padding2[4];
+    uint4 m_PickerColor;
 #endif
-
-    float m_Padding[28];
 };
 
-struct MaterialParams
-{
-    float4 BaseColor;
-    float4 SpecularColor;
-    float Roughness;
-    float Metalness;
-
-    float m_Padding[54];
-};
-
-ConstantBuffer<InstanceParams> InstanceParams : register(b1);
-ConstantBuffer<MaterialParams> MaterialParams : register(b2);
-
-Texture2D albedo : register(t0);
-Texture2D specular : register(t1);
+ConstantBuffer<InstanceParams> m_InstanceParams : register(b1);
 
 struct VS_INPUT
 {
@@ -84,12 +79,12 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 
     float3 pos = IN.Position;
 
-    float4x4 mv = mul(g_CommonConstants.ViewMatrix, InstanceParams.ModelMatrix);
+    float4x4 mv = mul(g_CommonConstants.ViewMatrix, m_InstanceParams.m_ModelMatrix);
     float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);
 
     o.Position = mul(mvp, float4(pos, 1.0));
-    o.PositionWS = mul(InstanceParams.ModelMatrix, float4(pos, 1.0)).xyz;
-    o.NormalWS = mul(InstanceParams.NormalMatrix, float4(IN.Normal, 1.0)).xyz;
+    o.PositionWS = mul(m_InstanceParams.m_ModelMatrix, float4(pos, 1.0)).xyz;
+    o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0)).xyz;
     o.UV = IN.TexCoord;
 
     return o;
@@ -97,22 +92,25 @@ VS_OUTPUT VS_Main(VS_INPUT IN, uint ID: SV_InstanceID)
 
 PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
-    float4 col = albedo.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
-    float4 spec = specular.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
+    Texture2D m_AlbedoTex = ResourceDescriptorHeap[m_InstanceParams.m_MaterialParams.m_AlbedoTextureIndex];
+    Texture2D m_SpecularTex = ResourceDescriptorHeap[m_InstanceParams.m_MaterialParams.m_SpecularTextureIndex];
+
+    float4 col = m_AlbedoTex.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y)); // TODO: why is uv.y flipped?
+    float4 spec = m_SpecularTex.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
     float3 normal = normalize(IN.NormalWS);
     float3 positionWS = IN.PositionWS;
 
     PS_OUTPUT output;
-    output.Albedo.xyz = col.xyz * MaterialParams.BaseColor.xyz;
-    output.Albedo.a = spec.y;// max(MaterialParams.Roughness, 0.02);
-    output.Specular.xyz = 1.0 - spec.xyz * MaterialParams.SpecularColor.xyz;
-    output.Specular.w = 1.0 - spec.y;// 1.0;// MaterialParams.Metalness;
+    output.Albedo.xyz = col.xyz * m_InstanceParams.m_MaterialParams.m_BaseColor.xyz;
+    output.Albedo.w = 0.75;// max(m_InstanceParams.m_MaterialParams.m_Roughness, 0.02);
+    output.Specular.xyz = 1.0 - spec.xyz * m_InstanceParams.m_MaterialParams.m_SpecularColor.xyz;
+    output.Specular.w = m_InstanceParams.m_MaterialParams.m_Metalness;
     output.Normal = normal.xyzz;
     output.Position.xyz = positionWS.xyz;
     output.Position.w = mul(g_CommonConstants.ViewMatrix, float4(positionWS, 1.0)).z;
 
 #ifdef ETH_TOOLMODE
-    output.Picker = InstanceParams.PickerColor / 255.0;
+    output.Picker = m_InstanceParams.m_PickerColor / 255.0;
 #endif
 
     return output;

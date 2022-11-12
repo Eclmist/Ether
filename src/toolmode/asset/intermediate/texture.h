@@ -33,8 +33,10 @@ private:
     friend class ImageFileParser;
     friend class HdrFileParser;
     friend class CompiledTexture;
+
     uint32_t m_Width;
     uint32_t m_Height;
+    uint32_t m_Depth;
     RhiFormat m_Format;
     unsigned char* m_Data;
 };

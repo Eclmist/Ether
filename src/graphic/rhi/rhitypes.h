@@ -23,6 +23,9 @@
 
 ETH_NAMESPACE_BEGIN
 
+// TODO: Remove all of these handle types. They are convenient to pass around
+// but ownership becomes ambiguous and its kind of worst than using C++ smart pointers
+
 // Rhi type handles
 typedef RhiHandle<class RhiBuffer>              RhiBufferHandle;
 typedef RhiHandle<class RhiCommandAllocator>    RhiCommandAllocatorHandle;
@@ -45,6 +48,8 @@ typedef RhiHandle<class RhiDepthStencilView>    RhiDepthStencilViewHandle;
 typedef RhiHandle<class RhiShaderResourceView>  RhiShaderResourceViewHandle;
 typedef RhiHandle<class RhiConstantBufferView>  RhiConstantBufferViewHandle;
 typedef RhiHandle<class RhiUnorderedAccessView> RhiUnorderedAccessViewHandle;
+
+typedef RhiHandle<class RhiShaderVisibleResourceView>  RhiShaderVisibleResourceViewHandle;
 
 typedef uint64_t RhiFenceValue;
 typedef uint32_t RhiStencilValue;
@@ -199,8 +204,8 @@ struct RhiPipelineStateDesc
     RhiInputLayoutDesc m_InputLayoutDesc;
     RhiPrimitiveTopologyType m_PrimitiveTopologyType;
     uint32_t m_NumRenderTargets;
-    RhiFormat m_RTVFormats[8];
-    RhiFormat m_DSVFormat;
+    RhiFormat m_RtvFormats[8];
+    RhiFormat m_DsvFormat;
     RhiSampleDesc m_SampleDesc;
     uint32_t m_NodeMask;
 };
@@ -217,11 +222,11 @@ struct RhiRootParameterConstantDesc : RhiRootParameterDesc
     uint32_t m_NumDwords;
 };
 
-struct RhiRootParameterCBVDesc : RhiRootParameterDesc
+struct RhiRootParameterCbvDesc : RhiRootParameterDesc
 {
 };
 
-struct RhiRootParameterSRVDesc : RhiRootParameterDesc
+struct RhiRootParameterSrvDesc : RhiRootParameterDesc
 {
 };
 
@@ -247,9 +252,9 @@ struct RhiSamplerParameterDesc : RhiRootParameterDesc
 
     uint32_t m_MaxAnisotropy;
 
-    float m_MipLODBias;
-    float m_MinLOD;
-    float m_MaxLOD;
+    float m_MipLodBias;
+    float m_MinLod;
+    float m_MaxLod;
 };
 
 struct RhiRootSignatureDesc
@@ -294,7 +299,7 @@ struct RhiViewportDesc
 struct RhiResourceViewDesc
 {
     RhiResourceHandle m_Resource;
-    RhiCpuHandle m_CpuHandle;
+    RhiCpuHandle m_TargetCpuHandle;
 };
 
 struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
@@ -309,19 +314,20 @@ struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 
 struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
-    RhiGpuHandle m_GpuHandle;
+    RhiGpuHandle m_TargetGpuHandle;
     RhiFormat m_Format;
     RhiShaderResourceDims m_Dimensions;
 };
 
 struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
 {
+    RhiGpuHandle m_TargetGpuHandle;
     size_t m_BufferSize;
-    RhiGpuHandle m_GpuHandle;
 };
 
 struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
 {
+    RhiGpuHandle m_TargetGpuHandle;
 };
 
 struct RhiIndexBufferViewDesc : public RhiResourceViewDesc
@@ -373,7 +379,9 @@ struct RhiCopyBufferRegionDesc
 
 struct RhiCopyTextureRegionDesc
 {
-    RhiResourceHandle m_Source;
+    RhiResourceHandle m_IntermediateResource;
+    uint32_t m_IntermediateResourceOffset;
+
     RhiResourceHandle m_Destination;
 
     uint32_t m_Width;
@@ -387,14 +395,14 @@ struct RhiCopyTextureRegionDesc
 struct RhiClearRenderTargetViewDesc
 {
     ethVector4 m_ClearColor;
-    RhiRenderTargetViewHandle m_RTVHandle;
+    RhiRenderTargetViewHandle m_RtvHandle;
 };
 
 struct RhiClearDepthStencilViewDesc
 {
     float m_ClearDepth;
     float m_ClearStencil;
-    RhiDepthStencilViewHandle m_DSVHandle;
+    RhiDepthStencilViewHandle m_DsvHandle;
 };
 
 struct RhiDrawInstancedDesc
@@ -429,9 +437,16 @@ struct RhiSetDescriptorHeapsDesc
 
 struct RhiSetRenderTargetsDesc
 {
-    uint32_t m_NumRTV;
-    RhiRenderTargetViewHandle m_RTVHandles[8];
-    RhiDepthStencilViewHandle m_DSVHandle;
+    uint32_t m_NumRtv;
+    RhiRenderTargetViewHandle m_RtvHandles[8];
+    RhiDepthStencilViewHandle m_DsvHandle;
+};
+
+struct RhiSetRootConstantDesc
+{
+    uint32_t m_RootParameterIndex;
+    uint32_t m_SrcData;
+    uint32_t m_DestOffset;
 };
 
 struct RhiSetRootConstantsDesc
@@ -445,7 +460,7 @@ struct RhiSetRootConstantsDesc
 struct RhiSetRootDescriptorTableDesc
 {
     uint32_t m_RootParameterIndex;
-    RhiShaderResourceViewHandle m_BaseSRVHandle;
+    RhiGpuHandle m_BaseSrvHandle;
 };
 
 struct RhiSetRootShaderResourceDesc

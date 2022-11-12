@@ -33,7 +33,7 @@ RhiResult D3D12RootParameter::SetAsConstant(const RhiRootParameterConstantDesc& 
     return RhiResult::Success;
 }
 
-RhiResult D3D12RootParameter::SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc)
+RhiResult D3D12RootParameter::SetAsConstantBufferView(const RhiRootParameterCbvDesc& desc)
 {
     m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
@@ -43,7 +43,7 @@ RhiResult D3D12RootParameter::SetAsConstantBufferView(const RhiRootParameterCBVD
     return RhiResult::Success;
 }
 
-RhiResult D3D12RootParameter::SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc)
+RhiResult D3D12RootParameter::SetAsShaderResourceView(const RhiRootParameterSrvDesc& desc)
 {
     m_Parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
     m_Parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);

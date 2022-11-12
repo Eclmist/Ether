@@ -44,17 +44,18 @@ GraphicCommon::GraphicCommon()
     InitializeRasterizerStates();
     InitializeDepthStates();
     InitializeBlendingStates();
+    InitializeSamplers();
     InitializeRootSignatures();
     InitializeShaders();
     InitializePipelineStates();
-    InitializeSamplers();
+    InitializeDefaultTextures();
 }
 
 GraphicCommon::~GraphicCommon()
 {
     m_DefaultPSO.Destroy();
     m_DefaultWireframePSO.Destroy();
-    m_EmptyRootSignature.Destroy();
+    m_BindlessRootSignature.Destroy();
 }
 
 void GraphicCommon::InitializeRasterizerStates()
@@ -69,7 +70,6 @@ void GraphicCommon::InitializeRasterizerStates()
     m_RasterizerDefault.m_MultisampleEnable = false;
     m_RasterizerDefault.m_AntialiasedLineEnable = false;
     m_RasterizerDefault.m_ForcedSampleCount = 0;
-
     m_RasterizerDefaultCw = m_RasterizerDefault;
     m_RasterizerDefaultCw.m_FrontCounterClockwise = false;
 
@@ -135,19 +135,29 @@ void GraphicCommon::InitializeBlendingStates()
 
 void GraphicCommon::InitializeRootSignatures()
 {
-    m_EmptyRootSignature.SetName(L"GraphicCommon::EmptyRootSignature");
+    m_BindlessRootSignature.SetName(L"GraphicCommon::DefaultBindlessRootSignature");
 
-    m_DefaultRootSignatureFlags = 
+    m_BindlessRootSignatureFlags = 
         RhiRootSignatureFlag::AllowIAInputLayout |
         RhiRootSignatureFlag::DenyHSRootAccess |
         RhiRootSignatureFlag::DenyGSRootAccess |
-        RhiRootSignatureFlag::DenyDSRootAccess;
+        RhiRootSignatureFlag::DenyDSRootAccess |
+        RhiRootSignatureFlag::DirectlyIndexed;
 
-    RhiRootSignature tempRS(2, 0);
+    RhiRootSignature tempRS(3, 3);
+
+    tempRS.GetSampler(0) = m_PointSampler;
+    tempRS.GetSampler(1) = m_BilinearSampler;
+    tempRS.GetSampler(2) = m_EnvMapSampler;
+
+    // Global Common Constants
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
-    tempRS[1]->SetAsConstant({ 1, 0, RhiShaderVisibility::All, 32 });
+    // Local Constants 1
+    tempRS[1]->SetAsConstantBufferView({ 1, 0, RhiShaderVisibility::All });
+    // Local Constants 2
+    tempRS[2]->SetAsConstantBufferView({ 2, 0, RhiShaderVisibility::All });
 
-    tempRS.Finalize(m_DefaultRootSignatureFlags, m_EmptyRootSignature);
+    tempRS.Finalize(m_BindlessRootSignatureFlags, m_BindlessRootSignature);
 }
 
 RhiInputElementDesc inputElementDesc[4] = 
@@ -163,8 +173,8 @@ void GraphicCommon::InitializeShaders()
     m_DefaultInputLayout.m_NumElements = 4;
     m_DefaultInputLayout.m_InputElementDescs = inputElementDesc;
 
-    m_DefaultVS = std::make_unique<Shader>(L"default.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_DefaultPS = std::make_unique<Shader>(L"default.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_DefaultVS = std::make_unique<Shader>(L"default.hlsl", L"VS_Main", L"vs_6_6", ShaderType::Vertex);
+    m_DefaultPS = std::make_unique<Shader>(L"default.hlsl", L"PS_Main", L"ps_6_6", ShaderType::Pixel);
 
     m_DefaultVS->Compile();
     m_DefaultPS->Compile();
@@ -177,22 +187,22 @@ void GraphicCommon::InitializePipelineStates()
     m_DefaultPSO.SetName(L"GraphicCommon::DefaultPSO");
     m_DefaultWireframePSO.SetName(L"GraphicCommon::DefaultWireframePSO");
 
-    RhiPipelineState creationPSO;
-    creationPSO.SetBlendState(m_BlendDisabled);
-    creationPSO.SetRasterizerState(m_RasterizerDefault);
-    creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
-    creationPSO.SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
-    creationPSO.SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
-    creationPSO.SetInputLayout(m_DefaultInputLayout);
-    creationPSO.SetRenderTargetFormat(BackBufferFormat);
-    creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
-    creationPSO.SetDepthStencilState(m_DepthStateReadWrite);
-    creationPSO.SetSamplingDesc(1, 0);
-    creationPSO.SetRootSignature(m_EmptyRootSignature);
-    creationPSO.Finalize(m_DefaultPSO);
+    //RhiPipelineState creationPSO;
+    //creationPSO.SetBlendState(m_BlendDisabled);
+    //creationPSO.SetRasterizerState(m_RasterizerDefault);
+    //creationPSO.SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
+    //creationPSO.SetVertexShader(m_DefaultVS->GetCompiledShader(), m_DefaultVS->GetCompiledShaderSize());
+    //creationPSO.SetPixelShader(m_DefaultPS->GetCompiledShader(), m_DefaultPS->GetCompiledShaderSize());
+    //creationPSO.SetInputLayout(m_DefaultInputLayout);
+    //creationPSO.SetRenderTargetFormat(BackBufferFormat);
+    //creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
+    //creationPSO.SetDepthStencilState(m_DepthStateReadWrite);
+    //creationPSO.SetSamplingDesc(1, 0);
+    //creationPSO.SetRootSignature(m_EmptyRootSignature);
+    //creationPSO.Finalize(m_DefaultPSO);
 
-    creationPSO.SetRasterizerState(m_RasterizerWireframe);
-    creationPSO.Finalize(m_DefaultWireframePSO);
+    //creationPSO.SetRasterizerState(m_RasterizerWireframe);
+    //creationPSO.Finalize(m_DefaultWireframePSO);
 }
 
 void GraphicCommon::InitializeSamplers()
@@ -201,11 +211,11 @@ void GraphicCommon::InitializeSamplers()
     m_PointSampler.m_AddressU = RhiTextureAddressMode::Wrap;
     m_PointSampler.m_AddressV = RhiTextureAddressMode::Wrap;
     m_PointSampler.m_AddressW = RhiTextureAddressMode::Wrap;
-    m_PointSampler.m_MipLODBias = 0;
+    m_PointSampler.m_MipLodBias = 0;
     m_PointSampler.m_MaxAnisotropy = 0;
     m_PointSampler.m_ComparisonFunc = RhiComparator::Never;
-    m_PointSampler.m_MinLOD = 0;
-    m_PointSampler.m_MinLOD = std::numeric_limits<float_t>().max();
+    m_PointSampler.m_MinLod = 0;
+    m_PointSampler.m_MinLod = std::numeric_limits<float_t>().max();
     m_PointSampler.m_ShaderRegister = 0;
     m_PointSampler.m_RegisterSpace = 0;
     m_PointSampler.m_ShaderVisibility = RhiShaderVisibility::All;
@@ -217,6 +227,15 @@ void GraphicCommon::InitializeSamplers()
     m_EnvMapSampler = m_BilinearSampler;
     m_EnvMapSampler.m_ShaderRegister = 2;
 
+}
+
+void GraphicCommon::InitializeDefaultTextures()
+{
+    m_ErrorTexture2D.m_Width = 1;
+    m_ErrorTexture2D.m_Height = 1;
+    m_ErrorTexture2D.m_Depth = 1;
+    m_ErrorTexture2D.m_Format = RhiFormat::R8G8B8A8Unorm;
+    m_ErrorTexture2D.m_Data = new unsigned char(0xFF00FFFF);
 }
 
 ETH_NAMESPACE_END

@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -18,45 +18,46 @@
 */
 
 #include "descriptorallocation.h"
-#include "descriptorallocatorpage.h"
 
 ETH_NAMESPACE_BEGIN
 
 DescriptorAllocation::DescriptorAllocation(
-    RhiCpuHandle allocBaseHandle,
+    RhiCpuHandle allocBaseCpuHandle,
+    RhiGpuHandle allocBaseGpuHandle,
     uint32_t numDescriptors,
-    uint32_t pageOffset,
     uint32_t descriptorSize,
-    DescriptorAllocatorPage* parentPage)
-    : m_AllocationBaseHandle(allocBaseHandle)
+    uint32_t indexInAllocator,
+    DescriptorAllocator* parentAllocator)
+    : m_BaseCpuHandle(allocBaseCpuHandle)
+    , m_BaseGpuHandle(allocBaseGpuHandle)
     , m_NumDescriptors(numDescriptors)
-    , m_PageOffset(pageOffset)
     , m_DescriptorSize(descriptorSize)
-    , m_ParentPage(parentPage)
+    , m_IndexInAllocator(indexInAllocator)
+    , m_Parent(parentAllocator)
 {
 }
 
 DescriptorAllocation::~DescriptorAllocation()
 {
-    Free();
+    m_Parent->Free(*this);
 }
 
-RhiCpuHandle DescriptorAllocation::GetDescriptorHandle(uint32_t offset) const
+uint32_t DescriptorAllocation::GetDescriptorIndex(uint32_t offset) const
 {
-    AssertGraphics(offset < m_NumDescriptors, "Specified offset is greater than total number of descriptor handles");
-    return { m_AllocationBaseHandle.m_Ptr + (m_DescriptorSize * offset) };
+    return m_IndexInAllocator + offset;
 }
 
-void DescriptorAllocation::Free()
+RhiCpuHandle DescriptorAllocation::GetCpuHandle(uint32_t offset) const
 {
-    AssertGraphics(m_ParentPage != nullptr, "A descriptor allocation has an invalid parent page");
+    return { m_BaseCpuHandle.m_Ptr + offset * m_DescriptorSize };
+}
 
-    m_ParentPage->Free(std::move(*this), GraphicCore::GetFrameNumber());
-    m_AllocationBaseHandle.m_Ptr = 0;
-    m_NumDescriptors = 0;
-    m_PageOffset = 0;
-    m_DescriptorSize = 0;
-    m_ParentPage = nullptr;
+RhiGpuHandle DescriptorAllocation::GetGpuHandle(uint32_t offset) const
+{
+    if (!m_Parent->IsShaderVisible())
+        return {};
+
+    return { m_BaseGpuHandle.m_Ptr + offset * m_DescriptorSize };
 }
 
 ETH_NAMESPACE_END

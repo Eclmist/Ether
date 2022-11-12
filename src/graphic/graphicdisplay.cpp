@@ -31,6 +31,7 @@ GraphicDisplay::GraphicDisplay()
     , m_Viewport({ 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight, 0.0f, 1.0f })
     , m_VSyncEnabled(true)
     , m_VSyncVBlanks(1)
+    , m_RtvAllocator(RhiDescriptorHeapType::Rtv)
 {
     CreateSwapChain();
     CreateResourcesFromSwapChain();
@@ -45,8 +46,7 @@ GraphicDisplay::~GraphicDisplay()
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {
         m_RenderTargets[i].Destroy();
-        m_RenderTargetViews[i].Destroy();
-        m_ShaderResourceViews[i].Destroy();
+        m_RenderTargetCpuDescriptors[i].Destroy();
     }
 }
 
@@ -88,14 +88,14 @@ RhiResourceHandle GraphicDisplay::GetCurrentBackBuffer() const
     return m_RenderTargets[m_CurrentBackBufferIndex];
 }
 
-RhiRenderTargetViewHandle GraphicDisplay::GetCurrentBackBufferRTV() const
+RhiRenderTargetViewHandle GraphicDisplay::GetCurrentBackBufferRtv() const
 {
-    return m_RenderTargetViews[m_CurrentBackBufferIndex];
+    return m_RenderTargetCpuDescriptors[m_CurrentBackBufferIndex];
 }
 
-RhiShaderResourceViewHandle GraphicDisplay::GetCurrentBackBufferSRV() const
+RhiShaderResourceViewHandle GraphicDisplay::GetCurrentBackBufferSrv() const
 {
-    return m_ShaderResourceViews[m_CurrentBackBufferIndex];
+    return m_RenderTargetGpuDescriptors[m_CurrentBackBufferIndex];
 }
 
 void GraphicDisplay::QueueBufferResize(uint32_t width, uint32_t height)
@@ -135,21 +135,30 @@ void GraphicDisplay::CreateResourcesFromSwapChain()
 
 void GraphicDisplay::CreateViewsFromSwapChain()
 {
-    static auto m_RtvDescriptors = GraphicCore::GetGlobalRtvDescriptorAllocator().Allocate(3);
+    // Let destructor handle deallocation during the next call to CreateViewsFromSwapChain()
+    static auto rtvAllocation = m_RtvAllocator.Allocate(3);
+    static auto srvAllocation = GraphicCore::GetGpuDescriptorAllocator().Allocate(3);
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {
-        RhiRenderTargetViewDesc desc = {};
-        desc.m_Format = BackBufferFormat;
-        desc.m_Resource = m_RenderTargets[i];
-        desc.m_CpuHandle = m_RtvDescriptors->GetDescriptorHandle(i);
-        GraphicCore::GetDevice()->CreateRenderTargetView(desc, m_RenderTargetViews[i]);
+        RhiRenderTargetViewDesc rtvDesc = {};
+        rtvDesc.m_Format = BackBufferFormat;
+        rtvDesc.m_Resource = m_RenderTargets[i];
+        rtvDesc.m_TargetCpuHandle = rtvAllocation->GetCpuHandle(i);
+        GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, m_RenderTargetCpuDescriptors[i]);
 
         RhiShaderResourceViewDesc srvDesc = {};
-        srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
         srvDesc.m_Format = BackBufferFormat;
         srvDesc.m_Resource = m_RenderTargets[i];
-        GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, m_ShaderResourceViews[i]);
+        srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
+        srvDesc.m_TargetCpuHandle = srvAllocation->GetCpuHandle();
+        srvDesc.m_TargetGpuHandle = srvAllocation->GetGpuHandle();
+        GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, m_RenderTargetGpuDescriptors[i]);
+
+        GraphicCore::GetBindlessResourceManager().RegisterView<RhiShaderResourceView>(
+            &m_RenderTargetGpuDescriptors[i].Get(),
+            srvAllocation->GetDescriptorIndex(i)
+        );
     }
 }
 

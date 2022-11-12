@@ -42,7 +42,7 @@ void GraphicContext::ClearColor(RhiRenderTargetViewHandle renderTarget, ethVecto
     
     RhiClearRenderTargetViewDesc desc = {};
     desc.m_ClearColor = color;
-    desc.m_RTVHandle = renderTarget;
+    desc.m_RtvHandle = renderTarget;
     m_CommandList->ClearRenderTargetView(desc);
 }
 
@@ -51,16 +51,16 @@ void GraphicContext::ClearDepthStencil(RhiDepthStencilViewHandle depthTarget, fl
     RhiClearDepthStencilViewDesc desc = {};
     desc.m_ClearDepth = depth;
     desc.m_ClearStencil = stencil;
-    desc.m_DSVHandle = depthTarget;
+    desc.m_DsvHandle = depthTarget;
     m_CommandList->ClearDepthStencilView(desc);
 }
 
 void GraphicContext::SetRenderTarget(RhiRenderTargetViewHandle rtv, RhiDepthStencilViewHandle dsv)
 {
     RhiSetRenderTargetsDesc desc = {};
-    desc.m_NumRTV = 1;
-    desc.m_RTVHandles[0] = rtv;
-    desc.m_DSVHandle = dsv;
+    desc.m_NumRtv = 1;
+    desc.m_RtvHandles[0] = rtv;
+    desc.m_DsvHandle = dsv;
 
     m_CommandList->SetRenderTargets(desc);
 }
@@ -68,11 +68,11 @@ void GraphicContext::SetRenderTarget(RhiRenderTargetViewHandle rtv, RhiDepthSten
 void GraphicContext::SetRenderTargets(uint32_t numTargets, RhiRenderTargetViewHandle* rtv, RhiDepthStencilViewHandle dsv)
 {
     RhiSetRenderTargetsDesc desc = {};
-    desc.m_NumRTV = numTargets;
-    desc.m_DSVHandle = dsv;
+    desc.m_NumRtv = numTargets;
+    desc.m_DsvHandle = dsv;
 
-    for (int i = 0; i < desc.m_NumRTV; ++i)
-        desc.m_RTVHandles[i] = rtv[i];
+    for (int i = 0; i < desc.m_NumRtv; ++i)
+        desc.m_RtvHandles[i] = rtv[i];
 
     m_CommandList->SetRenderTargets(desc);
 }

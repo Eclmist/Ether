@@ -31,8 +31,8 @@ public:
 
 public:
     RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) override;
-    RhiResult SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc) override;
-    RhiResult SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc) override;
+    RhiResult SetAsConstantBufferView(const RhiRootParameterCbvDesc& desc) override;
+    RhiResult SetAsShaderResourceView(const RhiRootParameterSrvDesc& desc) override;
     RhiResult SetAsDescriptorTable(const RhiDescriptorTableDesc& desc) override;
     RhiResult SetAsDescriptorRange(const RhiDescriptorRangeDesc& desc) override;
 

@@ -18,6 +18,7 @@
 */
 
 #include "compiledtexture.h"
+#include "toolmode/utility/pathutils.h"
 
 ETH_NAMESPACE_BEGIN
 
@@ -25,6 +26,7 @@ CompiledTexture::~CompiledTexture()
 {
     m_View.Destroy();
     m_Resource.Destroy();
+    free(m_Data);
 }
 
 void CompiledTexture::Serialize(OStream& ostream)
@@ -33,10 +35,11 @@ void CompiledTexture::Serialize(OStream& ostream)
 
     ostream << m_Width;
     ostream << m_Height;
+    ostream << m_Depth;
     ostream << static_cast<uint32_t>(m_Format);
 
     for (int i = 0; i < GetSizeInBytes(); ++i)
-        ostream << reinterpret_cast<char*>(m_Data)[i];
+        ostream << m_Data[i];
 }
 
 void CompiledTexture::Deserialize(IStream& istream)
@@ -47,19 +50,21 @@ void CompiledTexture::Deserialize(IStream& istream)
 
     istream >> m_Width;
     istream >> m_Height;
+    istream >> m_Depth;
     istream >> format;
 
     m_Format = static_cast<RhiFormat>(format);
 
+    // TODO: Use proper texture names
     static int tempIdx = 0;
     tempIdx++;
 
     m_Resource.SetName(L"TextureResource" + std::to_wstring(tempIdx));
     m_View.SetName(L"TextureView" + std::to_wstring(tempIdx));
 
-    m_Data = malloc(GetSizeInBytes());
+    m_Data = (unsigned char*)malloc(GetSizeInBytes());
     for (int i = 0; i < GetSizeInBytes(); ++i)
-        istream >> reinterpret_cast<char*>(m_Data)[i];
+        istream >> m_Data[i];
 
 }
 
@@ -80,17 +85,15 @@ void CompiledTexture::SetRawTexture(std::shared_ptr<Texture> rawTexture)
     m_RawTexture = rawTexture;
     m_Width = m_RawTexture->m_Width;
     m_Height = m_RawTexture->m_Height;
+    m_Depth = m_RawTexture->m_Depth;
     m_Format = m_RawTexture->m_Format;
 
     if (m_Data != nullptr)
         free(m_Data);
 
     const size_t size = GetSizeInBytes();
-    m_Data = malloc(size);
+    m_Data = (unsigned char*)malloc(size);
     memcpy(m_Data, m_RawTexture->m_Data, size);
-
-    m_Resource.SetName(L"TODOResourceName");
-    m_View.SetName(L"TODOViewName");
 }
 
 #endif // ETH_TOOLMODE

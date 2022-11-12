@@ -44,6 +44,7 @@ public:
     RhiResult SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) override;
     RhiResult SetRenderTargets(const RhiSetRenderTargetsDesc& desc) override;
 
+    RhiResult SetRootConstant(const RhiSetRootConstantDesc& desc) override;
     RhiResult SetRootConstants(const RhiSetRootConstantsDesc& desc) override;
     RhiResult SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc) override;
     RhiResult SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc) override;

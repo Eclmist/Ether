@@ -42,6 +42,7 @@ public:
     virtual RhiResult SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) = 0;
     virtual RhiResult SetRenderTargets(const RhiSetRenderTargetsDesc& desc) = 0;
 
+    virtual RhiResult SetRootConstant(const RhiSetRootConstantDesc& desc) = 0;
     virtual RhiResult SetRootConstants(const RhiSetRootConstantsDesc& desc) = 0;
     virtual RhiResult SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc) = 0;
     virtual RhiResult SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc) = 0;

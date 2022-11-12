@@ -23,7 +23,7 @@ ETH_NAMESPACE_BEGIN
 
 TransformationSystem::TransformationSystem()
 {
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<TransformComponent>());
+    m_Signature.set(EngineCore::GetEcsManager().GetComponentID<TransformComponent>());
 }
 
 void TransformationSystem::OnEntityRegister(EntityID id)
@@ -34,6 +34,10 @@ void TransformationSystem::OnEntityDeregister(EntityID id)
 {
 }
 
+void TransformationSystem::OnSceneLoad()
+{
+}
+
 void TransformationSystem::OnUpdate()
 {
     OPTICK_EVENT("ECS - Transformation System - Update");
@@ -41,7 +45,7 @@ void TransformationSystem::OnUpdate()
     for (EntityID id : m_MatchingEntities)
     {
         OPTICK_EVENT("ECS - Transformation System - Update matrices");
-        auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
+        auto* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);
         transform->UpdateMatrices();
     }
 }

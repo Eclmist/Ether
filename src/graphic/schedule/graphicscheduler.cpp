@@ -25,28 +25,31 @@
 #include "graphic/schedule/renderpass/globalconstantbufferproducer.h"
 #include "graphic/schedule/renderpass/deferredlightingproducer.h"
 #include "graphic/schedule/renderpass/gbufferproducer.h"
-#include "graphic/schedule/renderpass/proceduralskypass.h"
-#include "graphic/schedule/renderpass/bloompass.h"
+//#include "graphic/schedule/renderpass/proceduralskypass.h"
+//#include "graphic/schedule/renderpass/bloompass.h"
 
 #ifdef ETH_TOOLMODE
 #include "graphic/schedule/renderpass/editorgizmospass.h"
-#include "graphic/schedule/renderpass/texturedebugpass.h"
+//#include "graphic/schedule/renderpass/texturedebugpass.h"
 #endif
+
+#include "graphic/schedule/renderpass/debugpass.h"
 
 ETH_NAMESPACE_BEGIN
 
-DECLARE_GFX_PASS(BloomPass);
+//DECLARE_GFX_PASS(BloomPass);
 DECLARE_GFX_PASS(ClearFrameBufferPass);
 DECLARE_GFX_PASS(GlobalConstantBufferProducer);
 DECLARE_GFX_PASS(DeferredLightingProducer);
 DECLARE_GFX_PASS(GBufferProducer);
-DECLARE_GFX_PASS(ProceduralSkyPass);
+//DECLARE_GFX_PASS(ProceduralSkyPass);
 
 DECLARE_GFX_PASS(DepthStencilProducer);
+DECLARE_GFX_PASS(DebugPass);
 
 #ifdef ETH_TOOLMODE
 DECLARE_GFX_PASS(EditorGizmosPass);
-DECLARE_GFX_PASS(TextureDebugPass);
+//DECLARE_GFX_PASS(TextureDebugPass);
 #endif
 
 void GraphicScheduler::RegisterRenderPasses()
@@ -54,12 +57,14 @@ void GraphicScheduler::RegisterRenderPasses()
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GlobalConstantBufferProducer));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DepthStencilProducer));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(ClearFrameBufferPass));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
+    //m_RegisteredRenderPasses.push_back(&GFX_PASS(ProceduralSkyPass));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(GBufferProducer));
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingProducer));
-    m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
+    //m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
-    ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
+    //ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
+
+    //m_RegisteredRenderPasses.push_back(&GFX_PASS(DebugPass));
 
     for (auto renderPass : m_RegisteredRenderPasses)
         renderPass->Initialize();

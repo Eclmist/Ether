@@ -41,12 +41,6 @@ DEFINE_GFX_RTV(GBufferNormalTexture);
 DEFINE_GFX_RTV(GBufferPositionTexture);
 
 DECLARE_GFX_RESOURCE(GlobalCommonConstants);
-//DECLARE_GFX_RESOURCE(MaterialConstants);
-
-DEFINE_GFX_RESOURCE(InstanceParams);
-DEFINE_GFX_RESOURCE(MaterialParams);
-DEFINE_GFX_CBV(InstanceParams);
-DEFINE_GFX_CBV(MaterialParams);
 DECLARE_GFX_DSV(DepthStencilTexture);
 
 #ifdef ETH_TOOLONLY
@@ -70,7 +64,6 @@ void GBufferProducer::Initialize()
 {
     InitializeShaders();
     InitializeDepthStencilState();
-    InitializeRootSignature();
     InitializePipelineState();
 }
 
@@ -88,15 +81,9 @@ void GBufferProducer::RegisterInputOutput(GraphicContext& context, ResourceConte
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferNormalTexture), GFX_RTV(GBufferNormalTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(GBufferPositionTexture), GFX_RTV(GBufferPositionTexture));
 
-    rc.CreateConstantBuffer(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams));
-    rc.CreateConstantBuffer(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams));
-    rc.CreateConstantBufferView(sizeof(InstanceParams), GFX_RESOURCE(InstanceParams), GFX_CBV(InstanceParams));
-    rc.CreateConstantBufferView(sizeof(MaterialParams), GFX_RESOURCE(MaterialParams), GFX_CBV(MaterialParams));
-
 #ifdef ETH_TOOLMODE
     rc.CreateTexture2DResource(vp.m_Width, vp.m_Height, RhiFormat::R8G8B8A8Unorm, GFX_RESOURCE(EntityPickerTexture));
     rc.CreateRenderTargetView(GFX_RESOURCE(EntityPickerTexture), GFX_RTV(EntityPickerTexture));
-
 #endif
 }
 
@@ -145,15 +132,11 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
     context.SetScissor(gfxDisplay.GetScissorRect());
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
-    context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
-    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
+    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetGpuDescriptorAllocator().GetDescriptorHeap() });
+    context.GetCommandList()->SetGraphicRootSignature(GraphicCore::GetGraphicCommon().m_BindlessRootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
-
-    void *mappedInstanceParams, *mappedMaterialParams;
-    GFX_RESOURCE(InstanceParams)->Map(&mappedInstanceParams);
-    GFX_RESOURCE(MaterialParams)->Map(&mappedMaterialParams);
 
     for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
@@ -162,54 +145,39 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
         normalMat = normalMat.Inversed();
         normalMat = normalMat.Transposed();
 
-        context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
+        visual->GetMappedParams()->m_ModelMatrix = modelMat;
+        visual->GetMappedParams()->m_NormalMatrix = normalMat;
 
-        InstanceParams params;
-        params.m_ModelMatrix = modelMat;
-        params.m_NormalMatrix = normalMat;
-        ETH_TOOLONLY(params.m_PickerColor = visual->GetPickerColor());
-        memcpy(mappedInstanceParams, &params, sizeof(params));
-        context.GetCommandList()->SetRootConstantBuffer({ 1, GFX_RESOURCE(InstanceParams) });
+        ETH_TOOLONLY(visual->GetMappedParams()->m_PickerColor = visual->GetPickerColor());
 
-        MaterialParams matParams;
-        const Material* material = visual->GetMaterial();
-        matParams.m_BaseColor = material->GetBaseColor();
-        matParams.m_SpecularColor = material->GetSpecularColor();
-        matParams.m_Roughness = material->GetRoughness();
-        matParams.m_Metalness = material->GetMetalness();
-        memcpy(mappedMaterialParams, &matParams, sizeof(MaterialParams));
-        context.GetCommandList()->SetRootConstantBuffer({ 2, GFX_RESOURCE(MaterialParams) });
+        visual->GetMappedParams()->m_MaterialParams = {};
+        visual->GetMappedParams()->m_MaterialParams.m_BaseColor = visual->GetMaterial()->GetBaseColor();
+        visual->GetMappedParams()->m_MaterialParams.m_SpecularColor = visual->GetMaterial()->GetSpecularColor();
+        visual->GetMappedParams()->m_MaterialParams.m_Roughness = visual->GetMaterial()->GetRoughness();
+        visual->GetMappedParams()->m_MaterialParams.m_Metalness = visual->GetMaterial()->GetMetalness();
 
-        // TODO: Setup bindless textures
-        // TODO: If null, bind default texture
         auto albedoTex = visual->GetMaterial()->GetTexture("_AlbedoTexture");
         if (albedoTex != nullptr)
-        {
-            rc.InitializeTexture2D(*albedoTex);
-            context.GetCommandList()->SetRootDescriptorTable({ 3, albedoTex->GetView() });
-        }
+            visual->GetMappedParams()->m_MaterialParams.m_AlbedoTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(albedoTex->GetView());
 
         auto specTex = visual->GetMaterial()->GetTexture("_SpecularTexture");
         if (specTex != nullptr)
-        {
-            rc.InitializeTexture2D(*specTex);
-            context.GetCommandList()->SetRootDescriptorTable({ 4, specTex->GetView() });
-        }
+            visual->GetMappedParams()->m_MaterialParams.m_SpecularTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(specTex->GetView());
 
+        context.GetCommandList()->SetRootConstantBuffer({ 1, visual->GetInstanceParams() });
+        context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
         context.GetCommandList()->DrawInstanced({ visual->GetNumVertices(), 1, 0, 0 });
     }
 
-    GFX_RESOURCE(InstanceParams)->Unmap();
-    GFX_RESOURCE(MaterialParams)->Unmap();
-
     context.FinalizeAndExecute();
     context.Reset();
+
 }
 
 void GBufferProducer::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"lighting\\gbuffer.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"lighting\\gbuffer.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"lighting\\gbuffer.hlsl", L"VS_Main", L"vs_6_6", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"lighting\\gbuffer.hlsl", L"PS_Main", L"ps_6_6", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -252,25 +220,8 @@ void GBufferProducer::InitializePipelineState()
     creationPSO.SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     creationPSO.SetDepthStencilState(m_DepthStencilState);
     creationPSO.SetSamplingDesc(1, 0);
-    creationPSO.SetRootSignature(m_RootSignature);
+    creationPSO.SetRootSignature(GraphicCore::GetGraphicCommon().m_BindlessRootSignature);
     creationPSO.Finalize(m_PipelineState);
-}
-
-void GBufferProducer::InitializeRootSignature()
-{
-    m_RootSignature.SetName(L"GBufferPass::RootSignature");
-
-    RhiRootSignature tempRS(5, 3);
-    tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
-    tempRS.GetSampler(1) = GraphicCore::GetGraphicCommon().m_BilinearSampler;
-    tempRS.GetSampler(2) = GraphicCore::GetGraphicCommon().m_EnvMapSampler;
-    tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
-    tempRS[1]->SetAsConstantBufferView({ 1, 0, RhiShaderVisibility::All });
-    tempRS[2]->SetAsConstantBufferView({ 2, 0, RhiShaderVisibility::All });
-    tempRS[3]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 }); // albedo
-    tempRS[4]->SetAsDescriptorRange({ 1, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 }); // specular
-    tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
-
 }
 
 ETH_NAMESPACE_END

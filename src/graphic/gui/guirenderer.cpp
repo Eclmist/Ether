@@ -39,8 +39,8 @@ GuiRenderer::GuiRenderer()
 
     const auto d3dDevice = GraphicCore::GetDevice().As<Dx12Device>();
 
-    m_SRVDescriptorHeap.SetName(L"GUIRenderer::SRVDescriptorHeap");
-    GraphicCore::GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 4096 }, m_SRVDescriptorHeap);
+    m_SrvDescriptorHeap.SetName(L"GUIRenderer::SRVDescriptorHeap");
+    GraphicCore::GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 4096 }, m_SrvDescriptorHeap);
 
     RegisterComponents();
     CreateImGuiContext();
@@ -49,9 +49,9 @@ GuiRenderer::GuiRenderer()
         d3dDevice->m_Device.Get(),
         3, // ETH_MAX_NUM_SWAPCHAIN_BUFFERS,
         DXGI_FORMAT_R8G8B8A8_UNORM,
-        m_SRVDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap.Get(),
-        m_SRVDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap->GetCPUDescriptorHandleForHeapStart(),
-        m_SRVDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap->GetGPUDescriptorHandleForHeapStart()
+        m_SrvDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap.Get(),
+        m_SrvDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap->GetCPUDescriptorHandleForHeapStart(),
+        m_SrvDescriptorHeap.As<Dx12DescriptorHeap>()->m_Heap->GetGPUDescriptorHandleForHeapStart()
     );
 
     SetImGuiStyle();
@@ -83,10 +83,10 @@ void GuiRenderer::Render()
 
     ImGui::Render();
     m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
-    m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferRTV());
+    m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferRtv());
 
     
-    m_Context.GetCommandList()->SetDescriptorHeaps({ 1, &m_SRVDescriptorHeap });
+    m_Context.GetCommandList()->SetDescriptorHeaps({ 1, &m_SrvDescriptorHeap });
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_Context.GetCommandList().As<Dx12CommandList>()->m_CommandList.Get());
     m_Context.FinalizeAndExecute();
     m_Context.Reset();

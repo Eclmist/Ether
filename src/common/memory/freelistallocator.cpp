@@ -21,6 +21,11 @@
 
 ETH_NAMESPACE_BEGIN
 
+FreeListAllocator::FreeListAllocator(uint32_t size)
+{
+    AddBlock(0, size);
+}
+
 FreeListAllocation FreeListAllocator::Allocate(uint32_t size)
 {
     auto smallestFreeBlockIter = m_SizeToFreeBlocksMap.lower_bound(size);
@@ -41,6 +46,11 @@ FreeListAllocation FreeListAllocator::Allocate(uint32_t size)
         AddBlock(newOffset, newSize);
 
     return { offset, size };
+}
+
+bool FreeListAllocator::HasSpace(uint32_t size) const
+{
+    return m_SizeToFreeBlocksMap.lower_bound(size) != m_SizeToFreeBlocksMap.end();
 }
 
 void FreeListAllocator::AddBlock(uint32_t offset, uint32_t size)
@@ -67,11 +77,6 @@ void FreeListAllocator::FreeBlock(uint32_t offset, uint32_t size)
         // block comes before the one being freed.
         prevBlockIter = m_OffsetToFreeBlockMap.end();
     }
-}
-
-bool FreeListAllocator::HasSpace(uint32_t size) const
-{
-    return m_SizeToFreeBlocksMap.lower_bound(size) != m_SizeToFreeBlocksMap.end();
 }
 
 ETH_NAMESPACE_END

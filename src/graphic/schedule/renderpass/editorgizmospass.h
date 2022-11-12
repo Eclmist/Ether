@@ -43,6 +43,9 @@ private:
     RhiPipelineStateHandle m_PipelineState;
     RhiRootSignatureHandle m_RootSignature;
 
+    RhiResourceHandle m_TextureIndicesBuffer;
+    RhiConstantBufferViewHandle m_TextureIndicesCbv;
+
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;
 };

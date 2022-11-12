@@ -35,6 +35,7 @@ public:
     void InitializeShaders();
     void InitializePipelineStates();
     void InitializeSamplers();
+    void InitializeDefaultTextures();
 
 public:
     // TODO: Privatize with getters
@@ -61,12 +62,14 @@ public:
 
     RhiPipelineStateHandle m_DefaultPSO;
     RhiPipelineStateHandle m_DefaultWireframePSO;
-    RhiRootSignatureHandle m_EmptyRootSignature;
-    RhiRootSignatureFlag m_DefaultRootSignatureFlags;
+    RhiRootSignatureHandle m_BindlessRootSignature;
+    RhiRootSignatureFlag m_BindlessRootSignatureFlags;
 
     RhiSamplerParameterDesc m_PointSampler;
     RhiSamplerParameterDesc m_BilinearSampler;
     RhiSamplerParameterDesc m_EnvMapSampler;
+
+    CompiledTexture m_ErrorTexture2D;
 };
 
 ETH_NAMESPACE_END

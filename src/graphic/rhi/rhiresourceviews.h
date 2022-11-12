@@ -39,6 +39,8 @@ class RhiShaderVisibleResourceView : public RhiResourceView
 public:
     RhiShaderVisibleResourceView() = default;
     ~RhiShaderVisibleResourceView() = default;
+
+public:
     inline RhiGpuHandle GetGpuHandle() const { return m_GpuHandle; }
 
 protected:

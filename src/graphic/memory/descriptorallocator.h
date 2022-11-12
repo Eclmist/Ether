@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -19,32 +19,55 @@
 
 #pragma once
 
+#include "common/memory/freelistallocator.h"
+#include "graphic/rhi/rhidescriptorheap.h"
 #include "descriptorallocation.h"
 
 ETH_NAMESPACE_BEGIN
 
-class DescriptorAllocatorPage;
+constexpr uint32_t DefaultMaxHeapSize = 262144; // 2^18, but can theoretically be infinite
 
-class DescriptorAllocator : public NonCopyable
+class DescriptorAllocator
 {
 public:
-    DescriptorAllocator(RhiDescriptorHeapType type);
+    DescriptorAllocator(
+        RhiDescriptorHeapType type,
+        bool isShaderVisible = false,
+        uint32_t maxHeapSize = DefaultMaxHeapSize
+    );
+
     ~DescriptorAllocator() = default;
 
 public:
-    std::shared_ptr<DescriptorAllocation> Allocate(uint32_t numDescriptors = 1);
-    void ReleaseStaleDescriptors(uint64_t frameNumber);
+    inline RhiDescriptorHeapHandle GetDescriptorHeap() const { return m_DescriptorHeap; }
+    inline bool IsShaderVisible() const { return m_IsShaderVisible; }
 
-private:
-    std::shared_ptr<DescriptorAllocatorPage> CreateAllocatorPage();
-    std::shared_ptr<DescriptorAllocatorPage> GetAvailablePages(uint32_t numDescriptors);
+public:
+    std::shared_ptr<DescriptorAllocation> Allocate(uint32_t numDescriptors = 1);
+    void Free(const DescriptorAllocation& allocation);
     
 private:
-    RhiDescriptorHeapType m_HeapType;
+    bool ReclaimStaleAllocations(uint32_t numIndices);
 
-    std::vector<std::shared_ptr<DescriptorAllocatorPage>> m_AllocatorPagePool;
-    std::set<size_t> m_AvailablePageIndices;
-    std::mutex m_AllocationMutex;
+private:
+    struct StaleAllocation
+    {
+        StaleAllocation(uint32_t offset, uint32_t numDescriptors)
+            : m_IndexInHeap(offset)
+            , m_NumDescriptors(numDescriptors) {}
+
+        uint32_t m_IndexInHeap;
+        uint32_t m_NumDescriptors;
+    };
+
+    uint32_t m_MaxDescriptors;
+    bool m_IsShaderVisible;
+
+    RhiDescriptorHeapType m_HeapType;
+    RhiDescriptorHeapHandle m_DescriptorHeap;
+    FreeListAllocator m_FreeListAllocator;
+
+    std::queue<StaleAllocation> m_StaleAllocations;
 };
 
 ETH_NAMESPACE_END

@@ -24,7 +24,7 @@ ETH_NAMESPACE_BEGIN
 
 RhiResult Dx12Module::Initialize()
 {
-    InitializeDebugLayer();
+    //InitializeDebugLayer();
     RhiResult result = InitializeAdapter();
 
     return result;

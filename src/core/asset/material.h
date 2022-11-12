@@ -49,6 +49,7 @@ public:
     void SetColor(const std::string& key, ethVector4 color);
 
 private:
+    friend class RenderingSystem;
     friend class VisualComponent;
 
     std::unordered_map<std::string, std::shared_ptr<CompiledTexture>> m_Textures;

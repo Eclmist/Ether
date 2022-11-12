@@ -105,6 +105,7 @@ void ObjFileParser::Parse(const std::string& path)
                 }
 
                 // Check if `texcoord_index` is zero or positive. negative = no texcoord data
+                // TODO: y-axis is flipped (pos/norm) because .obj specs specifies that vertices be in RH coordinate system
                 if (idx.texcoord_index >= 0) {
                     tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
                     tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];

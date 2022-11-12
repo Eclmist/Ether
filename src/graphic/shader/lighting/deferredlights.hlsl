@@ -27,6 +27,17 @@
 
 #define NUM_SAMPLES 1
 
+struct GBufferIndices
+{
+    uint m_AlbedoTextureIndex;
+    uint m_SpecularTextureIndex;
+    uint m_NormalTextureIndex;
+    uint m_PositionTextureIndex;
+    uint m_EnvironmentHdriTextureIndex;
+};
+
+ConstantBuffer<GBufferIndices> m_GBufferIndices : register(b1);
+
 float2 SampleSphericalMap(float3 direction)
 {
     float2 uv = float2(0.5 + atan2(direction.z,direction.x)/(PI*2), 0.5 - asin(direction.y)/PI);
@@ -56,12 +67,6 @@ float2 Hammersley(uint i, uint sequenceLength)
 {
     return float2(float(i) / float(sequenceLength), VanDerCorputBase2(i));
 }
-
-Texture2D AlbedoTex : register(t0);
-Texture2D SpecularTex : register(t1);
-Texture2D NormalTex : register(t2);
-Texture2D PositionTex : register(t3);
-Texture2D EnvironmentHdriTex : register(t4);
 
 struct VS_OUTPUT
 {
@@ -210,7 +215,8 @@ float3 SpecularIBL(float3 normal, float3 wo, Material material)
             const float alphaSqr = Sqr(alpha);
             const float3 D = DistributionGGX(alphaSqr, NoH);
 
-            float3 Li = EnvironmentHdriTex.Sample(g_BilinearSampler, SampleSphericalMap(wi)).rgb;
+            Texture2D hdriTex = ResourceDescriptorHeap[m_GBufferIndices.m_EnvironmentHdriTextureIndex];
+            float3 Li = hdriTex.Sample(g_BilinearSampler, SampleSphericalMap(wi)).rgb;
             float3 f0 = lerp(0.08 * material.SpecularColor, material.BaseColor, material.Metalness);
             float3 brdf = Microfacet(material.Roughness, f0, NoL, NoV, NoH, VoH);
             float3 pdfInv = (4 * VoH) / (D * NoH);
@@ -231,7 +237,8 @@ float3 DiffuseIBL(float3 normal, float3 wo, Material material)
         wi = dot(normal, wi) < 0.0f ? -wi : wi;
         float NoL = saturate(dot(normal, wi));
 
-        float3 Li = EnvironmentHdriTex.Sample(g_BilinearSampler, SampleSphericalMap(wi)).rgb;
+        Texture2D hdriTex = ResourceDescriptorHeap[m_GBufferIndices.m_EnvironmentHdriTextureIndex];
+        float3 Li = hdriTex.Sample(g_BilinearSampler, SampleSphericalMap(wi)).rgb;
         float3 brdf = Lambert(material.BaseColor) * (1.0 - material.Metalness);
 
         // return Li * brdf;
@@ -243,13 +250,8 @@ float3 DiffuseIBL(float3 normal, float3 wo, Material material)
     return DiffuseLighting / NUM_SAMPLES;
 }
 
-float3 ComputePointLight(float2 uv, Material material, PointLight light)
+float3 ComputePointLight(float2 uv, float3 pos, float3 normal, Material material, PointLight light)
 {
-    const float3 pos = PositionTex.Sample(g_PointSampler, uv).xyz;
-    const float3 normal = NormalTex.Sample(g_PointSampler, uv).xyz;
-    const float4 albedo = AlbedoTex.Sample(g_PointSampler, uv).xyzw;
-    const float roughness = albedo.w;
-
     const float3 wi = normalize(light.Position - pos);
     const float3 wo = normalize(g_CommonConstants.EyePosition.xyz - pos);
     const float3 n = normalize(normal);
@@ -265,6 +267,7 @@ float3 ComputePointLight(float2 uv, Material material, PointLight light)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
+
     PointLight lights[7];
 
     const float4 time = g_CommonConstants.Time;
@@ -311,21 +314,27 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     lights[0].Radius = 3.0f;
 }
 
-    const float4 albedo = AlbedoTex.Sample(g_PointSampler, IN.UV);
-    const float4 specular = SpecularTex.Sample(g_PointSampler, IN.UV);
-    const float3 pos = PositionTex.Sample(g_PointSampler, IN.UV).xyz;
-    const float3 normal = NormalTex.Sample(g_PointSampler, IN.UV).xyz;
 
+    Texture2D m_AlbedoTex = ResourceDescriptorHeap[m_GBufferIndices.m_AlbedoTextureIndex];
+    Texture2D m_SpecularTex = ResourceDescriptorHeap[m_GBufferIndices.m_SpecularTextureIndex];
+    Texture2D m_PositionTex = ResourceDescriptorHeap[m_GBufferIndices.m_PositionTextureIndex];
+    Texture2D m_NormalTex = ResourceDescriptorHeap[m_GBufferIndices.m_NormalTextureIndex];
+
+
+    float4 albedo = m_AlbedoTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y));
+    float4 specular = m_SpecularTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y));
+    float3 pos = m_PositionTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y)).xyz;
+    float3 normal = m_NormalTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y)).xyz;
 
     Material mat;
     mat.BaseColor = albedo.xyz;
     mat.SpecularColor = specular.xyz;
-    mat.Roughness = 1;// max(0.1, albedo.w - abs(albedo.b - (0.5 * albedo.g + 0.5 * albedo.r)));
+    mat.Roughness = albedo.w;
     mat.Metalness = specular.w;
 
     const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
     const float3 n = normalize(normal);
-    float3 finalColor = DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
+    float3 finalColor = 0;// DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
 
     for (int i = 0; i < 6; ++i)
     {
@@ -333,7 +342,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
         lights[i].Position *= 5.2;
         lights[i].Intensity *= 4.9;
         lights[i].Color = 1.0;
-        finalColor += ComputePointLight(IN.UV, mat, lights[i]);
+        finalColor += ComputePointLight(IN.UV, pos, normal, mat, lights[i]);
     }
 
     // fog

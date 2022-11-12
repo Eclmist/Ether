@@ -32,7 +32,12 @@ struct VS_OUTPUT
     float3 PositionWS   : TEXCOORD0;
 };
 
-Texture2D positionDepthTex : register(t0);
+struct GBufferPositionTexIndex
+{
+    uint m_Index;
+};
+
+ConstantBuffer<GBufferPositionTexIndex> m_GBufferPositionTexIndex : register(b1);
 
 float2 GetScreenUV(float2 pos)
 {
@@ -72,7 +77,9 @@ float4 GetGridLevel(float level, float3 wPos, float3 dydx)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float depthTex = positionDepthTex.Sample(g_PointSampler, GetScreenUV(IN.Position.xy)).w;
+    Texture2D gBufferPositionTex = ResourceDescriptorHeap[m_GBufferPositionTexIndex.m_Index];
+;
+    float depthTex = gBufferPositionTex.Sample(g_PointSampler, GetScreenUV(IN.Position.xy)).w;
     float depth = mul(g_CommonConstants.ViewMatrix, float4(IN.PositionWS, 1.0)).z;
 
     float3 ddxPos = ddx(IN.PositionWS);

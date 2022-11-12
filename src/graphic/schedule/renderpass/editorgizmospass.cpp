@@ -68,16 +68,16 @@ void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    context.SetRenderTargets(1, &gfxDisplay.GetCurrentBackBufferRTV(), GFX_DSV(DepthStencilTexture));
+    context.SetRenderTargets(1, &gfxDisplay.GetCurrentBackBufferRtv(), GFX_DSV(DepthStencilTexture));
     context.SetViewport(gfxDisplay.GetViewport());
     context.SetScissor(gfxDisplay.GetScissorRect());
 
     context.GetCommandList()->SetPipelineState(m_PipelineState);
     context.GetCommandList()->SetGraphicRootSignature(m_RootSignature);
     context.GetCommandList()->SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
-    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetSRVDescriptorHeap() });
+    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetGpuDescriptorAllocator().GetDescriptorHeap() });
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
-    context.GetCommandList()->SetRootDescriptorTable({ 1, GFX_SRV(GBufferPositionTexture) });
+    context.GetCommandList()->SetRootConstant({ 1, GraphicCore::GetBindlessResourceManager().GetViewIndex(GFX_SRV(GBufferPositionTexture)), 0 });
     context.GetCommandList()->DrawInstanced({ 4, 1, 0, 0 });
 
     context.FinalizeAndExecute();
@@ -86,8 +86,8 @@ void EditorGizmosPass::Render(GraphicContext& context, ResourceContext& rc)
 
 void EditorGizmosPass::InitializeShaders()
 {
-    m_VertexShader = std::make_unique<Shader>(L"toolmode\\editorgizmos.hlsl", L"VS_Main", L"vs_6_0", ShaderType::Vertex);
-    m_PixelShader = std::make_unique<Shader>(L"toolmode\\editorgizmos.hlsl", L"PS_Main", L"ps_6_0", ShaderType::Pixel);
+    m_VertexShader = std::make_unique<Shader>(L"toolmode\\editorgizmos.hlsl", L"VS_Main", L"vs_6_6", ShaderType::Vertex);
+    m_PixelShader = std::make_unique<Shader>(L"toolmode\\editorgizmos.hlsl", L"PS_Main", L"ps_6_6", ShaderType::Pixel);
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -123,12 +123,11 @@ void EditorGizmosPass::InitializeRasterizerDesc()
 void EditorGizmosPass::InitializeRootSignature()
 {
     m_RootSignature.SetName(L"EditorGizmosPass::RootSignature");
-
     RhiRootSignature tempRS(2, 1);
     tempRS.GetSampler(0) = GraphicCore::GetGraphicCommon().m_PointSampler;
     tempRS[0]->SetAsConstantBufferView({ 0, 0, RhiShaderVisibility::All });
-    tempRS[1]->SetAsDescriptorRange({ 0, 0, RhiShaderVisibility::Pixel, RhiDescriptorRangeType::Srv, 1 });
-    tempRS.Finalize(GraphicCore::GetGraphicCommon().m_DefaultRootSignatureFlags, m_RootSignature);
+    tempRS[1]->SetAsConstant({ 1, 0, RhiShaderVisibility::All, 1 });
+    tempRS.Finalize(GraphicCore::GetGraphicCommon().m_BindlessRootSignatureFlags, m_RootSignature);
 }
 
 ETH_NAMESPACE_END

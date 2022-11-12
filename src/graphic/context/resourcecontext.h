@@ -36,13 +36,12 @@ public:
 
     bool CreateRenderTargetView(RhiResourceHandle resource, RhiRenderTargetViewHandle& view);
     bool CreateDepthStencilView(RhiResourceHandle resource, RhiDepthStencilViewHandle& view);
+
     bool CreateShaderResourceView(RhiResourceHandle resource, RhiShaderResourceViewHandle& view);
-    bool CreateShaderResourceViewCube(RhiResourceHandle resource, RhiShaderResourceViewHandle& view);
     bool CreateConstantBufferView(uint32_t bufferSize, RhiResourceHandle resource, RhiConstantBufferViewHandle& view);
     bool CreateUnorderedAccessView(RhiResourceHandle resource, RhiUnorderedAccessViewHandle& view);
 
     bool InitializeTexture2D(CompiledTexture& texture);
-    bool InitializeTextureCube(CompiledTexture& texture);
 
     void Reset();
 
@@ -59,7 +58,6 @@ private:
     std::set<std::wstring> m_NewlyCreatedResources;
     std::unordered_map<std::wstring, RhiCommitedResourceDesc> m_ResourceTable;
 
-    // TODO: This is clearly the wrong place to allocate descriptors, but where should it go?
     DescriptorAllocator m_RtvDescriptorAllocator;
     DescriptorAllocator m_DsvDescriptorAllocator;
 

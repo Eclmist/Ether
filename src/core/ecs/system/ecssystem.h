@@ -30,6 +30,7 @@ public:
 public:
     virtual void OnEntityRegister(EntityID id) = 0;
     virtual void OnEntityDeregister(EntityID id) = 0;
+    virtual void OnSceneLoad() = 0;
     virtual void OnUpdate() = 0;
 
 public:

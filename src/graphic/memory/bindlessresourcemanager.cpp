@@ -10,39 +10,16 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "bindlessresourcemanager.h"
 
 ETH_NAMESPACE_BEGIN
 
-class IApplicationBase
-{
-public:
-    virtual void Initialize() = 0;
-    virtual void LoadContent() = 0;
-    virtual void UnloadContent() = 0;
-    virtual void Shutdown() = 0;
-
-public:
-    virtual void OnUpdate(const UpdateEventArgs& e) = 0;
-    virtual void OnRender(const RenderEventArgs& e) = 0;
-
-public:
-    inline bool ShouldExit() const { return m_ShouldExit; }
-    inline void ScheduleExit() { m_ShouldExit = true; }
-    void ScheduleExitImmdiate();
-
-protected:
-    void Exit();
-
-private:
-    bool m_ShouldExit;
-};
-
 ETH_NAMESPACE_END
+

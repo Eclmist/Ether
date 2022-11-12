@@ -273,6 +273,7 @@ enum class RhiRootSignatureFlag : uint64_t
     DenyPSRootAccess        = 0x20,
     AllowStreamOutput       = 0x40,
     LocalRootSignature      = 0x80,
+    DirectlyIndexed         = 0x400,
 }; ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 
 enum class RhiScalingMode

@@ -35,7 +35,8 @@ public:
     inline const SystemsArray GetSystems() const { return m_Systems; }
 
 public:
-    void InitializeSystems();
+    void OnInitialize();
+    void OnSceneLoad();
     ETH_ENGINE_DLL void AssignEntityToSystems(EntityID id, ComponentSignature signature);
 
 private:

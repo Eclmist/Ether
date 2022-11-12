@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -21,39 +21,39 @@
 
 ETH_NAMESPACE_BEGIN
 
-class DescriptorAllocatorPage;
+class DescriptorAllocator;
 
 class DescriptorAllocation
 {
 public:
     DescriptorAllocation(
-        RhiCpuHandle allocBaseHandle,
+        RhiCpuHandle allocBaseCpuHandle,
+        RhiGpuHandle allocBaseGpuHandle,
         uint32_t numDescriptors,
-        uint32_t pageOffset,
         uint32_t descriptorSize,
-        DescriptorAllocatorPage* parentPage);
+        uint32_t indexInAllocator,
+        DescriptorAllocator* parentAllocator
+    );
 
     ~DescriptorAllocation();
 
 public:
-    inline bool IsValid() const { return m_AllocationBaseHandle.m_Ptr == 0; };
-    inline DescriptorAllocatorPage* GetParentPage() const { return m_ParentPage; }
     inline uint32_t GetNumDescriptors() const { return m_NumDescriptors; }
-    inline uint32_t GetPageOffset() const { return m_PageOffset; }
 
 public:
-    RhiCpuHandle GetDescriptorHandle(uint32_t offset = 0) const;
+    uint32_t GetDescriptorIndex(uint32_t offset = 0) const;
+    RhiCpuHandle GetCpuHandle(uint32_t offset = 0) const;
+    RhiGpuHandle GetGpuHandle(uint32_t offset = 0) const;
 
 private:
-    void Free();
+    RhiCpuHandle m_BaseCpuHandle;
+    RhiGpuHandle m_BaseGpuHandle;
 
-private:
-    RhiCpuHandle m_AllocationBaseHandle;
-    uint32_t m_NumDescriptors;
-    uint32_t m_PageOffset;
+    uint32_t m_IndexInAllocator;
     uint32_t m_DescriptorSize;
+    uint32_t m_NumDescriptors;
 
-    DescriptorAllocatorPage* m_ParentPage;
+    DescriptorAllocator* m_Parent;
 };
 
 ETH_NAMESPACE_END

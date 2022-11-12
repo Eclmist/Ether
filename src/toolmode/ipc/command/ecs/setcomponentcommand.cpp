@@ -30,7 +30,7 @@ SetComponentCommand::SetComponentCommand(const CommandData& data)
 
 void SetComponentCommand::Execute()
 {
-    Component* component = EngineCore::GetECSManager().GetComponentByGuid(m_ComponentData["guid"]);
+    Component* component = EngineCore::GetEcsManager().GetComponentByGuid(m_ComponentData["guid"]);
     if (component == nullptr)
         return;
 

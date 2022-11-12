@@ -77,14 +77,14 @@ void DebugMenuGuiComponent::Draw()
         {
             for (int i = 0; i < ETH_ECS_MAX_ENTITIES; ++i)
             {
-                auto entity = EngineCore::GetECSManager().GetEntity(i);
+                auto entity = EngineCore::GetEcsManager().GetEntity(i);
                 if (entity != nullptr)
                     ImGui::BulletText(entity->GetName().c_str());
             }
 
             if (ImGui::Button("Add entity"))
             {
-                Entity* newEntity = EngineCore::GetECSManager().CreateEntity("New Entity");
+                Entity* newEntity = EngineCore::GetEcsManager().CreateEntity("New Entity");
                 newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50)});
                 newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
                 newEntity->AddComponent<MeshComponent>();

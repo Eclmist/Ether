@@ -57,6 +57,7 @@ public:
 
 public:
     void OnInitialize();
+    void OnSceneLoad();
     void OnUpdate();
 
 public:

@@ -92,14 +92,15 @@ void CommandContext::CopyBufferRegion(RhiResourceHandle src, RhiResourceHandle d
     m_CommandList->CopyBufferRegion(desc);
 }
 
-void CommandContext::CopyTextureRegion(RhiResourceHandle src, RhiResourceHandle dest, const CompiledTexture& texture)
+void CommandContext::CopyTextureRegion(RhiResourceHandle uploadHeap, RhiResourceHandle dest, const CompiledTexture& texture, size_t uploadHeapOffset)
 {
     RhiCopyTextureRegionDesc desc = {};
-    desc.m_Source = src;
+    desc.m_IntermediateResource = uploadHeap;
+    desc.m_IntermediateResourceOffset = uploadHeapOffset;
     desc.m_Destination = dest;
     desc.m_Width = texture.GetWidth();
     desc.m_Height = texture.GetHeight();
-    desc.m_Depth = 0;
+    desc.m_Depth = texture.GetDepth();
     desc.m_BytesPerPixel = texture.GetBytesPerPixel();
     desc.m_Data = texture.GetData();
 
@@ -121,7 +122,7 @@ void CommandContext::InitializeTexture(const CompiledTexture& texture)
     size_t size = texture.GetSizeInBytes();
     UploadBufferAllocation alloc = m_UploadBufferAllocator.Allocate(size);
 
-    CopyTextureRegion(alloc.GetUploadBuffer().GetResource(), texture.GetResource(), texture);
+    CopyTextureRegion(alloc.GetUploadBuffer().GetResource(), texture.GetResource(), texture, alloc.GetOffset());
     TransitionResource(texture.GetResource(), RhiResourceState::GenericRead);
 }
 

@@ -19,30 +19,29 @@
 
 #pragma once
 
+#include "renderpass.h"
+
 ETH_NAMESPACE_BEGIN
 
-class IApplicationBase
+class DebugPass : public RenderPass
 {
 public:
-    virtual void Initialize() = 0;
-    virtual void LoadContent() = 0;
-    virtual void UnloadContent() = 0;
-    virtual void Shutdown() = 0;
+    DebugPass();
 
-public:
-    virtual void OnUpdate(const UpdateEventArgs& e) = 0;
-    virtual void OnRender(const RenderEventArgs& e) = 0;
-
-public:
-    inline bool ShouldExit() const { return m_ShouldExit; }
-    inline void ScheduleExit() { m_ShouldExit = true; }
-    void ScheduleExitImmdiate();
-
-protected:
-    void Exit();
+    void Initialize() override;
+    void RegisterInputOutput(GraphicContext& context, ResourceContext& rc) override;
+    void Render(GraphicContext& context, ResourceContext& rc) override;
 
 private:
-    bool m_ShouldExit;
+    void InitializeShaders();
+    void InitializePipelineState();
+
+private:
+    RhiPipelineStateHandle m_PipelineState;
+
+    std::unique_ptr<Shader> m_VertexShader;
+    std::unique_ptr<Shader> m_PixelShader;
 };
 
 ETH_NAMESPACE_END
+

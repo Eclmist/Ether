@@ -29,8 +29,8 @@ public:
 
 public:
     virtual RhiResult SetAsConstant(const RhiRootParameterConstantDesc& desc) = 0;
-    virtual RhiResult SetAsConstantBufferView(const RhiRootParameterCBVDesc& desc) = 0;
-    virtual RhiResult SetAsShaderResourceView(const RhiRootParameterSRVDesc& desc) = 0;
+    virtual RhiResult SetAsConstantBufferView(const RhiRootParameterCbvDesc& desc) = 0;
+    virtual RhiResult SetAsShaderResourceView(const RhiRootParameterSrvDesc& desc) = 0;
     virtual RhiResult SetAsDescriptorTable(const RhiDescriptorTableDesc& desc) = 0;
     virtual RhiResult SetAsDescriptorRange(const RhiDescriptorRangeDesc& desc) = 0;
 };

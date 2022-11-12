@@ -49,7 +49,7 @@ std::vector<std::shared_ptr<Asset>> TextureImporter::Compile(IStream& istream)
     parser->Parse(istream.GetPath());
 
     std::shared_ptr<Texture> texture = std::dynamic_pointer_cast<Texture>(parser->GetRawAsset());
-    //texture->Compile(); Texture don't need compiling for now. Might need to change when not using DX (TODO)
+    //texture->Compile(); Texture don't need compiling for now. Might need to change when not using DX (XPlatform Todo)
 
     std::vector<std::shared_ptr<Asset>> compiledTextures;
 

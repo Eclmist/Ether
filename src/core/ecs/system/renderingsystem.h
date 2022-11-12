@@ -34,6 +34,7 @@ public:
 protected:
     void OnEntityRegister(EntityID id) override;
     void OnEntityDeregister(EntityID id) override;
+    void OnSceneLoad() override;
     void OnUpdate() override;
 
     std::unordered_map<EntityID, std::unique_ptr<VisualNode>> m_VisualNodes;

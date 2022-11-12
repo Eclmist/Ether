@@ -24,7 +24,7 @@ ETH_NAMESPACE_BEGIN
 
 Serializable::Serializable()
     : m_ClassID(typeid(this).hash_code())
-    , m_Version(1)
+    , m_Version(2)
 {
     GUID guid;
     CoCreateGuid(&guid);

@@ -38,8 +38,8 @@ public:
     inline ethVector3 GetScale() const { return m_Scale; }
 
     inline void SetPosition(const ethVector3& position) { m_Position = position; }
-    inline void SetRotation(const ethVector3& eulerRotation) { m_EulerRotation = eulerRotation; };
-    inline void SetScale(const ethVector3& scale) { m_Scale = scale; };
+    inline void SetRotation(const ethVector3& eulerRotation) { m_EulerRotation = eulerRotation; }
+    inline void SetScale(const ethVector3& scale) { m_Scale = scale; }
 
     inline ethMatrix4x4 GetMatrix() const { return m_ModelMatrix; }
     inline const ethMatrix4x4* GetMatrixReference() const { return &m_ModelMatrix; }

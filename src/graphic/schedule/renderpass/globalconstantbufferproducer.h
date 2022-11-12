@@ -48,7 +48,6 @@ private:
 
     static_assert((sizeof(CommonConstants) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
 
-
     CommonConstants m_CommonConstants;
 };
 

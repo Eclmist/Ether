@@ -55,8 +55,8 @@ public:
 
 public:
     RhiResourceHandle GetCurrentBackBuffer() const;
-    RhiRenderTargetViewHandle GetCurrentBackBufferRTV() const;
-    RhiShaderResourceViewHandle GetCurrentBackBufferSRV() const;
+    RhiRenderTargetViewHandle GetCurrentBackBufferRtv() const;
+    RhiShaderResourceViewHandle GetCurrentBackBufferSrv() const;
     void QueueBufferResize(uint32_t width, uint32_t height);
 
 private:
@@ -71,8 +71,11 @@ private:
     const BufferingMode m_BufferingMode;
 
     RhiResourceHandle m_RenderTargets[MaxSwapChainBuffers];
-    RhiRenderTargetViewHandle m_RenderTargetViews[MaxSwapChainBuffers];
-    RhiShaderResourceViewHandle m_ShaderResourceViews[MaxSwapChainBuffers];
+    RhiRenderTargetViewHandle m_RenderTargetCpuDescriptors[MaxSwapChainBuffers];
+    RhiShaderResourceViewHandle m_RenderTargetGpuDescriptors[MaxSwapChainBuffers];
+    
+    DescriptorAllocator m_RtvAllocator;
+
     uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
 
     uint32_t m_CurrentBackBufferIndex;

@@ -109,15 +109,27 @@ RhiResult Dx12CommandList::SetRenderTargets(const RhiSetRenderTargetsDesc& desc)
 {
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
 
-    for (int i = 0; i < desc.m_NumRTV; ++i)
-        rtvHandles[i] = Translate(desc.m_RTVHandles[i]->GetCpuAddress());
+    for (int i = 0; i < desc.m_NumRtv; ++i)
+        rtvHandles[i] = Translate(desc.m_RtvHandles[i]->GetCpuAddress());
 
     m_CommandList->OMSetRenderTargets
     (
-        desc.m_NumRTV,
+        desc.m_NumRtv,
         rtvHandles,
         false,
-        desc.m_DSVHandle.IsNull() ? nullptr : &Translate(desc.m_DSVHandle->GetCpuAddress())
+        desc.m_DsvHandle.IsNull() ? nullptr : &Translate(desc.m_DsvHandle->GetCpuAddress())
+    );
+
+    return RhiResult::Success;
+}
+
+RhiResult Dx12CommandList::SetRootConstant(const RhiSetRootConstantDesc& desc)
+{
+    m_CommandList->SetGraphicsRoot32BitConstant
+    (
+        desc.m_RootParameterIndex,
+        desc.m_SrcData,
+        desc.m_DestOffset
     );
 
     return RhiResult::Success;
@@ -141,7 +153,7 @@ RhiResult Dx12CommandList::SetRootDescriptorTable(const RhiSetRootDescriptorTabl
     m_CommandList->SetGraphicsRootDescriptorTable
     (
         desc.m_RootParameterIndex,
-        Translate(desc.m_BaseSRVHandle->GetGpuHandle())
+        Translate(desc.m_BaseSrvHandle)
     );
 
     return RhiResult::Success;
@@ -192,7 +204,7 @@ RhiResult Dx12CommandList::ClearRenderTargetView(const RhiClearRenderTargetViewD
 
     m_CommandList->ClearRenderTargetView
     (
-        Translate(desc.m_RTVHandle->GetCpuAddress()),
+        Translate(desc.m_RtvHandle->GetCpuAddress()),
         clearColor,
         0,
         nullptr
@@ -205,7 +217,7 @@ RhiResult Dx12CommandList::ClearDepthStencilView(const RhiClearDepthStencilViewD
 {
     m_CommandList->ClearDepthStencilView
     (
-        Translate(desc.m_DSVHandle->GetCpuAddress()),
+        Translate(desc.m_DsvHandle->GetCpuAddress()),
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
         desc.m_ClearDepth,
         desc.m_ClearStencil,
@@ -235,7 +247,7 @@ RhiResult Dx12CommandList::CopyBufferRegion(const RhiCopyBufferRegionDesc& desc)
 
 RhiResult Dx12CommandList::CopyTextureRegion(const RhiCopyTextureRegionDesc& desc)
 {
-    const auto d3dSrcResource = desc.m_Source.As<Dx12Resource>();
+    const auto d3dIntermediateResource = desc.m_IntermediateResource.As<Dx12Resource>();
     const auto d3dDestResource = desc.m_Destination.As<Dx12Resource>();
 
     D3D12_SUBRESOURCE_DATA textureData = {};
@@ -248,8 +260,8 @@ RhiResult Dx12CommandList::CopyTextureRegion(const RhiCopyTextureRegionDesc& des
     (
         m_CommandList.Get(),
         d3dDestResource->m_Resource.Get(),
-        d3dSrcResource->m_Resource.Get(),
-        0, // offset
+        d3dIntermediateResource->m_Resource.Get(),
+        desc.m_IntermediateResourceOffset, // offset
         0, // subresource idx
         1, // subresource count
         &textureData

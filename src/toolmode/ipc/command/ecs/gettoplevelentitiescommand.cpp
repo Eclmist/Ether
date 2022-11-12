@@ -45,10 +45,10 @@ std::string GetTopLevelEntitiesCommandResponse::GetSendableData() const
     auto topLevelEntities = EngineCore::GetActiveWorld().GetSceneGraph().GetChildren(ETH_ECS_ROOT_ENTITY_ID);
     for (int i = 0; i < topLevelEntities.size(); ++i)
     {
-        command["args"]["entities"][i]["name"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetName();
-        command["args"]["entities"][i]["guid"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->GetGuid();
+        command["args"]["entities"][i]["name"] = EngineCore::GetEcsManager().GetEntity(topLevelEntities[i])->GetName();
+        command["args"]["entities"][i]["guid"] = EngineCore::GetEcsManager().GetEntity(topLevelEntities[i])->GetGuid();
         command["args"]["entities"][i]["parent"] = "";
-        command["args"]["entities"][i]["enabled"] = EngineCore::GetECSManager().GetEntity(topLevelEntities[i])->IsEnabled();
+        command["args"]["entities"][i]["enabled"] = EngineCore::GetEcsManager().GetEntity(topLevelEntities[i])->IsEnabled();
     }
     return command.dump();
 }

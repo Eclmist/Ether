@@ -32,7 +32,12 @@ EcsManager::EcsManager()
 
 void EcsManager::OnInitialize()
 {
-    m_SystemManager->InitializeSystems();
+    m_SystemManager->OnInitialize();
+}
+
+void EcsManager::OnSceneLoad()
+{
+    m_SystemManager->OnSceneLoad();
 }
 
 void EcsManager::OnUpdate()
@@ -68,6 +73,7 @@ Component* EcsManager::GetComponentByGuid(const std::string& guid) const
 {
     return m_ComponentManager->GetComponentByGuid(guid);
 }
+
 #endif
 
 ETH_NAMESPACE_END

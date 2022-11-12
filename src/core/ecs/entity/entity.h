@@ -46,19 +46,19 @@ public:
     template <typename T>
     T* const GetComponent() const
     {
-        return EngineCore::GetECSManager().GetComponent<T>(m_ID);
+        return EngineCore::GetEcsManager().GetComponent<T>(m_ID);
     }
 
     template <typename T>
     T* const AddComponent() const
     {
-        return EngineCore::GetECSManager().AddComponent<T>(m_ID);
+        return EngineCore::GetEcsManager().AddComponent<T>(m_ID);
     }
 
     template <typename T>
     T* const RemoveComponent() const
     {
-        return EngineCore::GetECSManager().RemoveComponent()<T>(m_ID);
+        return EngineCore::GetEcsManager().RemoveComponent()<T>(m_ID);
     }
 
 public:

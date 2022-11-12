@@ -38,14 +38,15 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
-    inline RhiResourceHandle& GetResource() { return m_Resource; };
-    inline RhiResourceHandle GetResource() const { return m_Resource; };
-    inline RhiShaderResourceViewHandle& GetView() { return m_View; };
-    inline RhiShaderResourceViewHandle GetView() const { return m_View; };
+    inline RhiResourceHandle& GetResource() { return m_Resource; }
+    inline RhiResourceHandle GetResource() const { return m_Resource; }
+    inline RhiShaderResourceViewHandle& GetView() { return m_View; }
+    inline RhiShaderResourceViewHandle GetView() const { return m_View; }
 
-    inline uint32_t GetWidth() const { return m_Width; };
-    inline uint32_t GetHeight() const { return m_Height; };
-    inline RhiFormat GetFormat() const { return m_Format; };
+    inline uint32_t GetWidth() const { return m_Width; }
+    inline uint32_t GetHeight() const { return m_Height; }
+    inline uint32_t GetDepth() const { return m_Depth; }
+    inline RhiFormat GetFormat() const { return m_Format; }
 
     inline void* GetData() const { return m_Data; }
 
@@ -56,14 +57,17 @@ public:
     ETH_TOOLONLY(void SetRawTexture(std::shared_ptr<Texture> rawTexture));
 
 private:
+    friend class GraphicCommon;
+
     ETH_TOOLONLY(std::shared_ptr<Texture> m_RawTexture);
     uint32_t m_Width;
     uint32_t m_Height;
+    uint32_t m_Depth;
     RhiFormat m_Format;
-    void* m_Data;
+    unsigned char* m_Data;
 
-    RhiResourceHandle m_Resource;
-    RhiShaderResourceViewHandle m_View;
+    RhiResourceHandle m_Resource = RhiResourceHandle(nullptr, L"CompiledTextureResource");
+    RhiShaderResourceViewHandle m_View = RhiShaderResourceViewHandle(nullptr, L"CompiledTextureView");;
 };
 
 ETH_NAMESPACE_END

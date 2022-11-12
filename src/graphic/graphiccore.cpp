@@ -32,23 +32,15 @@ void GraphicCore::Initialize()
     Instance().m_RhiModule = RhiModule::CreateModule();
     Instance().m_RhiModule->Initialize();
     RhiResult result = Instance().m_RhiModule->CreateDevice(Instance().m_RhiDevice);
-
     AssertGraphics(result == RhiResult::Success, "Failed to create graphic device");
 
-    Instance().m_SRVDescriptorHeap.SetName(L"GraphicCore::SRVDescriptorHeap");
-    Instance().m_SamplerDescriptorHeap.SetName(L"GraphicCore::SamplerDescriptorHeap");
-
-    GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 4096 }, Instance().m_SRVDescriptorHeap);
-    GetDevice()->CreateDescriptorHeap({ RhiDescriptorHeapType::Sampler, RhiDescriptorHeapFlag::None, 512 }, Instance().m_SamplerDescriptorHeap);
-
-    Instance().m_RtvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv);
-    Instance().m_DsvDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv);
-
+    Instance().m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
+    Instance().m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true);
     Instance().m_ShaderDaemon = std::make_unique<ShaderDaemon>();
     Instance().m_CommandManager = std::make_unique<CommandManager>();
     Instance().m_GraphicCommon = std::make_unique<GraphicCommon>();
-    Instance().m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     Instance().m_GraphicRenderer = std::make_unique<GraphicRenderer>();
+    Instance().m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     Instance().m_GuiRenderer = std::make_unique<GuiRenderer>();
     Instance().m_IsInitialized = true;
 }
@@ -61,31 +53,23 @@ void GraphicCore::Render()
     Instance().m_GuiRenderer->Render();
     Instance().m_GraphicRenderer->Present();
     Instance().m_GraphicRenderer->CleanUp();
-
-    // TODO: Move this somewhere
-    Instance().m_RtvDescriptorAllocator->ReleaseStaleDescriptors(Instance().m_FrameNumber);
-    Instance().m_DsvDescriptorAllocator->ReleaseStaleDescriptors(Instance().m_FrameNumber);
     Instance().m_FrameNumber++;
 }
 
 void GraphicCore::Shutdown()
 {
     FlushGpu();
+    Instance().m_GpuDescriptorAllocator.reset();
     Instance().m_GraphicCommon.reset();
     Instance().m_GuiRenderer.reset();
-    Instance().m_GraphicRenderer.reset();
     Instance().m_GraphicDisplay.reset();
+    Instance().m_GraphicRenderer.reset();
     Instance().m_CommandManager.reset();
     Instance().m_ShaderDaemon.reset();
-
-    Instance().m_RtvDescriptorAllocator.reset();
-    Instance().m_DsvDescriptorAllocator.reset();
+    Instance().m_BindlessResourceManager.reset();
 
     Instance().m_RhiDevice.Destroy();
     Instance().m_RhiModule.Destroy();
-
-    Instance().m_SRVDescriptorHeap.Destroy();
-    Instance().m_SamplerDescriptorHeap.Destroy();
 
     Reset();
 }
@@ -98,10 +82,6 @@ bool GraphicCore::IsInitialized()
 void GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
-}
-
-void GraphicCore::InitializeDebugLayer()
-{
 }
 
 ETH_NAMESPACE_END

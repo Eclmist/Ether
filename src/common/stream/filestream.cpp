@@ -77,6 +77,12 @@ IFileStream& IFileStream::operator>>(unsigned long& value)
     return *this;
 }
 
+IFileStream& IFileStream::operator>>(unsigned char& value)
+{
+    m_File.read(reinterpret_cast<char*>(&value), sizeof(unsigned char));
+    return *this;
+}
+
 IFileStream& IFileStream::operator>>(std::string& value)
 {
     value = "";
@@ -173,6 +179,12 @@ OFileStream& OFileStream::operator<<(const unsigned int value)
 OFileStream& OFileStream::operator<<(const unsigned long value)
 {
     m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned long));
+    return *this;
+}
+
+OFileStream& OFileStream::operator<<(const unsigned char value)
+{
+    m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned char));
     return *this;
 }
 

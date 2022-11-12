@@ -38,6 +38,7 @@ public:
     void CleanUp();
 
     inline GraphicContext& GetGraphicContext() { return m_GraphicContext; }
+    inline ResourceContext& GetResourceContext() { return m_ResourceContext; }
 
 public:
     void DrawNode(VisualNode*); // TODO: Move this responsibility into the various render passes

@@ -23,9 +23,9 @@ ETH_NAMESPACE_BEGIN
 
 RenderingSystem::RenderingSystem()
 {
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<TransformComponent>());
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<MeshComponent>());
-    m_Signature.set(EngineCore::GetECSManager().GetComponentID<VisualComponent>());
+    m_Signature.set(EngineCore::GetEcsManager().GetComponentID<TransformComponent>());
+    m_Signature.set(EngineCore::GetEcsManager().GetComponentID<MeshComponent>());
+    m_Signature.set(EngineCore::GetEcsManager().GetComponentID<VisualComponent>());
 }
 
 void RenderingSystem::OnEntityRegister(EntityID id)
@@ -35,6 +35,27 @@ void RenderingSystem::OnEntityRegister(EntityID id)
 void RenderingSystem::OnEntityDeregister(EntityID id)
 {
     m_VisualNodes.erase(id);
+}
+
+void RenderingSystem::OnSceneLoad()
+{
+    OPTICK_EVENT("ECS - Rendering System - OnSceneLoad");
+
+    for (EntityID id : m_MatchingEntities)
+    {
+        auto* visual = EngineCore::GetEcsManager().GetComponent<VisualComponent>(id);
+
+        for (auto pair : visual->GetMaterial()->m_Textures)
+        {
+            std::shared_ptr<CompiledTexture> texture = pair.second;
+
+            if (texture == nullptr)
+                continue;
+
+            if (texture->GetDepth() == 1)
+                GraphicCore::GetGraphicRenderer().GetResourceContext().InitializeTexture2D(*texture);
+        }
+    }
 }
 
 void RenderingSystem::OnUpdate()
@@ -47,9 +68,9 @@ void RenderingSystem::OnUpdate()
     {
         OPTICK_EVENT("ECS - Rendering System - Visual Node Validation");
 
-        auto* mesh = EngineCore::GetECSManager().GetComponent<MeshComponent>(id);
-        auto* transform = EngineCore::GetECSManager().GetComponent<TransformComponent>(id);
-        auto* visual = EngineCore::GetECSManager().GetComponent<VisualComponent>(id);
+        auto* mesh = EngineCore::GetEcsManager().GetComponent<MeshComponent>(id);
+        auto* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);
+        auto* visual = EngineCore::GetEcsManager().GetComponent<VisualComponent>(id);
 
         if (!mesh->IsEnabled())
             return;
@@ -67,12 +88,13 @@ void RenderingSystem::OnUpdate()
         // visuals can be created in "onregister" once only.
         if (mesh->IsMeshChanged())
         {
-            VisualNodeData data;
+            VisualNodeDesc data;
+            data.m_NodeId = id;
             data.m_VertexBuffer = mesh->GetCompiledMesh()->GetVertexBuffer();
             data.m_NumVertices = mesh->GetCompiledMesh()->GetNumVertices();
             data.m_ModelMatrix = transform->GetMatrixReference();
             data.m_Material = visual->GetMaterial();
-            ETH_TOOLONLY(data.m_PickerColor = EngineCore::GetECSManager().GetPickierColorFromID(id));
+            ETH_TOOLONLY(data.m_PickerColor = EngineCore::GetEcsManager().GetPickierColorFromID(id));
 
             m_VisualNodes[id] = std::make_unique<VisualNode>(data);
             mesh->SetMeshChanged(false);

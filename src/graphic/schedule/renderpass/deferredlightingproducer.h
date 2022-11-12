@@ -36,12 +36,22 @@ private:
     void InitializeShaders();
     void InitializeDepthStencilState();
     void InitializePipelineState();
-    void InitializeRootSignature();
 
 private:
+    struct GBufferIndices
+    {
+        uint32_t m_AlbedoTextureIndex;
+        uint32_t m_SpecularTextureIndex;
+        uint32_t m_NormalTextureIndex;
+        uint32_t m_PositionTextureIndex;
+        uint32_t m_EnvironmentHdriTextureIndex;
+
+        float m_Padding[59];
+    };
+    static_assert((sizeof(GBufferIndices) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
+
     RhiDepthStencilDesc m_DepthStencilState;
     RhiPipelineStateHandle m_PipelineState;
-    RhiRootSignatureHandle m_RootSignature;
 
     std::unique_ptr<Shader> m_VertexShader;
     std::unique_ptr<Shader> m_PixelShader;

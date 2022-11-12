@@ -29,8 +29,8 @@ void EngineCore::Initialize(IApplicationBase& app)
     Instance().m_LoggingManager = std::make_unique<LoggingManager>();
     Instance().m_MainWindow = std::make_unique<Win32::Window>();
     Instance().m_ActiveWorld = std::make_unique<World>();
-    Instance().m_ECSManager = std::make_unique<EcsManager>();
-    Instance().m_ECSManager->OnInitialize(); // TODO: This looks ugly, can we move this away?
+    Instance().m_EcsManager = std::make_unique<EcsManager>();
+    Instance().m_EcsManager->OnInitialize(); // TODO: This looks ugly, can we move this away?
 
 #ifdef ETH_TOOLMODE
     Instance().m_NotificationTray = std::make_unique<Win32::NotificationTray>();
@@ -45,17 +45,21 @@ void EngineCore::LoadContent()
 {
     // Other engine content can be loaded here before or after main application
     Instance().m_MainApplication->LoadContent();
+
+    // Initialize all resources that needs to be initialized during scene load
+    // TODO: Replace with scene loading system in the future
+    Instance().m_EcsManager->OnSceneLoad();
 }
 
 void EngineCore::Update()
 {
     OPTICK_EVENT("Engine Core - Update");
-    Instance().m_ECSManager->OnUpdate();
+    Instance().m_EcsManager->OnUpdate();
 }
 
 void EngineCore::Shutdown()
 {
-    Instance().m_ECSManager.reset();
+    Instance().m_EcsManager.reset();
     Instance().m_ActiveWorld.reset();
     Instance().m_MainWindow.reset();
     Instance().m_LoggingManager.reset();

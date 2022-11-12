@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 ETH_NAMESPACE_BEGIN
 
 struct FreeListAllocation
@@ -28,15 +30,15 @@ struct FreeListAllocation
 class FreeListAllocator : public NonCopyable
 {
 public:
-    FreeListAllocator() = default;
+    FreeListAllocator(uint32_t size);
     ~FreeListAllocator() = default;
 
 public:
     FreeListAllocation Allocate(uint32_t size);
+    bool HasSpace(uint32_t size) const;
 
     void AddBlock(uint32_t offset, uint32_t size);
     void FreeBlock(uint32_t offset, uint32_t size);
-    bool HasSpace(uint32_t size) const;
 
 private:
     struct FreeBlockInfo;

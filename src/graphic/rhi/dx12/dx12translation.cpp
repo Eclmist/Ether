@@ -150,10 +150,10 @@ D3D12_DESCRIPTOR_RANGE_TYPE Translate(const RhiDescriptorRangeType& rhiType)
 {
     switch (rhiType)
     {
-    case RhiDescriptorRangeType::Srv:                        return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    case RhiDescriptorRangeType::Cbv:                        return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-    case RhiDescriptorRangeType::Uav:                        return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-    case RhiDescriptorRangeType::Sampler:                    return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+    case RhiDescriptorRangeType::Srv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    case RhiDescriptorRangeType::Cbv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    case RhiDescriptorRangeType::Uav:                       return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    case RhiDescriptorRangeType::Sampler:                   return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
     default:                                                return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     }
 }
@@ -184,7 +184,7 @@ DXGI_FORMAT Translate(const RhiFormat& rhiType)
     {
     case RhiFormat::Unknown:                                return DXGI_FORMAT_UNKNOWN;
     case RhiFormat::R8G8B8A8Unorm:                          return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case RhiFormat::R16G16B16A16Float:                        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case RhiFormat::R16G16B16A16Float:                      return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case RhiFormat::R32G32Float:                            return DXGI_FORMAT_R32G32_FLOAT;
     case RhiFormat::R32G32B32Float:                         return DXGI_FORMAT_R32G32B32_FLOAT;
     case RhiFormat::R32G32B32A32Float:                      return DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -192,7 +192,7 @@ DXGI_FORMAT Translate(const RhiFormat& rhiType)
     case RhiFormat::R32Uint:                                return DXGI_FORMAT_R32_UINT;
     case RhiFormat::R16Uint:                                return DXGI_FORMAT_R16_UINT;
     case RhiFormat::D24UnormS8Uint:                         return DXGI_FORMAT_D24_UNORM_S8_UINT;
-    case RhiFormat::R11G11B10Float:                            return DXGI_FORMAT_R11G11B10_FLOAT;
+    case RhiFormat::R11G11B10Float:                         return DXGI_FORMAT_R11G11B10_FLOAT;
     default:                                                return DXGI_FORMAT_UNKNOWN;
     }
 }
@@ -218,10 +218,10 @@ D3D12_HEAP_TYPE Translate(const RhiHeapType& rhiType)
 {
     switch (rhiType)
     {
-    case RhiHeapType::Default:                                return D3D12_HEAP_TYPE_DEFAULT;
-    case RhiHeapType::Upload:                                return D3D12_HEAP_TYPE_UPLOAD;
-    case RhiHeapType::Readback:                                return D3D12_HEAP_TYPE_READBACK;
-    case RhiHeapType::Custom:                                return D3D12_HEAP_TYPE_CUSTOM;
+    case RhiHeapType::Default:                              return D3D12_HEAP_TYPE_DEFAULT;
+    case RhiHeapType::Upload:                               return D3D12_HEAP_TYPE_UPLOAD;
+    case RhiHeapType::Readback:                             return D3D12_HEAP_TYPE_READBACK;
+    case RhiHeapType::Custom:                               return D3D12_HEAP_TYPE_CUSTOM;
     default:                                                return D3D12_HEAP_TYPE_DEFAULT;
     }
 }
@@ -292,7 +292,7 @@ D3D12_RESOURCE_DIMENSION Translate(const RhiResourceDimension& rhiType)
     switch (rhiType)
     {
     case RhiResourceDimension::Unknown:                     return D3D12_RESOURCE_DIMENSION_UNKNOWN;
-    case RhiResourceDimension::Buffer:                        return D3D12_RESOURCE_DIMENSION_BUFFER;
+    case RhiResourceDimension::Buffer:                      return D3D12_RESOURCE_DIMENSION_BUFFER;
     case RhiResourceDimension::Texture1D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
     case RhiResourceDimension::Texture2D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     case RhiResourceDimension::Texture3D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -304,7 +304,7 @@ D3D12_RESOURCE_FLAGS Translate(const RhiResourceFlag& rhiType)
 {
     switch (rhiType)
     {
-    case RhiResourceFlag::None:                                return D3D12_RESOURCE_FLAG_NONE;
+    case RhiResourceFlag::None:                             return D3D12_RESOURCE_FLAG_NONE;
     case RhiResourceFlag::AllowRenderTarget:                return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     case RhiResourceFlag::AllowDepthStencil:                return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     case RhiResourceFlag::AllowUnorderedAccess:             return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -341,6 +341,7 @@ D3D12_ROOT_SIGNATURE_FLAGS Translate(const RhiRootSignatureFlag& rhiType)
     case RhiRootSignatureFlag::DenyPSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
     case RhiRootSignatureFlag::AllowStreamOutput:           return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
     case RhiRootSignatureFlag::LocalRootSignature:          return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+    case RhiRootSignatureFlag::DirectlyIndexed:             return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
     default:                                                return static_cast<D3D12_ROOT_SIGNATURE_FLAGS>(rhiType);
     }
 }
@@ -427,7 +428,7 @@ D3D12_TEXTURE_LAYOUT Translate(const RhiResourceLayout& rhiType)
     switch (rhiType)
     {
     case RhiResourceLayout::Unknown:                        return D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    case RhiResourceLayout::RowMajor:                        return D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    case RhiResourceLayout::RowMajor:                       return D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     default:                                                return D3D12_TEXTURE_LAYOUT_UNKNOWN;
     }
 }
@@ -556,15 +557,15 @@ D3D12_GRAPHICS_PIPELINE_STATE_DESC Translate(const RhiPipelineStateDesc& rhiDesc
     d3dDesc.DepthStencilState = Translate(rhiDesc.m_DepthStencilDesc);
     d3dDesc.PrimitiveTopologyType = Translate(rhiDesc.m_PrimitiveTopologyType);
     d3dDesc.NumRenderTargets = rhiDesc.m_NumRenderTargets;
-    d3dDesc.RTVFormats[0] = Translate(rhiDesc.m_RTVFormats[0]);
-    d3dDesc.RTVFormats[1] = Translate(rhiDesc.m_RTVFormats[1]);
-    d3dDesc.RTVFormats[2] = Translate(rhiDesc.m_RTVFormats[2]);
-    d3dDesc.RTVFormats[3] = Translate(rhiDesc.m_RTVFormats[3]);
-    d3dDesc.RTVFormats[4] = Translate(rhiDesc.m_RTVFormats[4]);
-    d3dDesc.RTVFormats[5] = Translate(rhiDesc.m_RTVFormats[5]);
-    d3dDesc.RTVFormats[6] = Translate(rhiDesc.m_RTVFormats[6]);
-    d3dDesc.RTVFormats[7] = Translate(rhiDesc.m_RTVFormats[7]);
-    d3dDesc.DSVFormat = Translate(rhiDesc.m_DSVFormat);
+    d3dDesc.RTVFormats[0] = Translate(rhiDesc.m_RtvFormats[0]);
+    d3dDesc.RTVFormats[1] = Translate(rhiDesc.m_RtvFormats[1]);
+    d3dDesc.RTVFormats[2] = Translate(rhiDesc.m_RtvFormats[2]);
+    d3dDesc.RTVFormats[3] = Translate(rhiDesc.m_RtvFormats[3]);
+    d3dDesc.RTVFormats[4] = Translate(rhiDesc.m_RtvFormats[4]);
+    d3dDesc.RTVFormats[5] = Translate(rhiDesc.m_RtvFormats[5]);
+    d3dDesc.RTVFormats[6] = Translate(rhiDesc.m_RtvFormats[6]);
+    d3dDesc.RTVFormats[7] = Translate(rhiDesc.m_RtvFormats[7]);
+    d3dDesc.DSVFormat = Translate(rhiDesc.m_DsvFormat);
     d3dDesc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
     d3dDesc.NodeMask = rhiDesc.m_NodeMask;
     d3dDesc.SampleMask = 0xffffffff;
@@ -593,7 +594,7 @@ D3D12_ROOT_PARAMETER Translate(const RhiRootParameterConstantDesc& rhiDesc)
     return d3dDesc;
 }
 
-D3D12_ROOT_PARAMETER Translate(const RhiRootParameterCBVDesc& rhiDesc)
+D3D12_ROOT_PARAMETER Translate(const RhiRootParameterCbvDesc& rhiDesc)
 {
     D3D12_ROOT_PARAMETER d3dDesc = {};
     d3dDesc.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -604,7 +605,7 @@ D3D12_ROOT_PARAMETER Translate(const RhiRootParameterCBVDesc& rhiDesc)
     return d3dDesc;
 }
 
-D3D12_ROOT_PARAMETER Translate(const RhiRootParameterSRVDesc& rhiDesc)
+D3D12_ROOT_PARAMETER Translate(const RhiRootParameterSrvDesc& rhiDesc)
 {
     D3D12_ROOT_PARAMETER d3dDesc = {};
     d3dDesc.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
@@ -651,12 +652,12 @@ D3D12_STATIC_SAMPLER_DESC Translate(const RhiSamplerParameterDesc& rhiDesc)
     d3dDesc.AddressU = Translate(rhiDesc.m_AddressU);
     d3dDesc.AddressV = Translate(rhiDesc.m_AddressV);
     d3dDesc.AddressW = Translate(rhiDesc.m_AddressW);
-    d3dDesc.MipLODBias = rhiDesc.m_MipLODBias;
+    d3dDesc.MipLODBias = rhiDesc.m_MipLodBias;
     d3dDesc.MaxAnisotropy = rhiDesc.m_MaxAnisotropy;
     d3dDesc.ComparisonFunc = Translate(rhiDesc.m_ComparisonFunc);
     d3dDesc.BorderColor = Translate(rhiDesc.m_BorderColor);
-    d3dDesc.MinLOD = rhiDesc.m_MinLOD;
-    d3dDesc.MaxLOD = rhiDesc.m_MaxLOD;
+    d3dDesc.MinLOD = rhiDesc.m_MinLod;
+    d3dDesc.MaxLOD = rhiDesc.m_MaxLod;
     d3dDesc.ShaderRegister = rhiDesc.m_ShaderRegister;
     d3dDesc.RegisterSpace = rhiDesc.m_RegisterSpace;
 
@@ -812,7 +813,7 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RhiConstantBufferViewDesc& rhiDe
 {
     D3D12_CONSTANT_BUFFER_VIEW_DESC d3dDesc = {};
     d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
-    d3dDesc.BufferLocation = rhiDesc.m_GpuHandle.m_Ptr;
+    d3dDesc.BufferLocation = rhiDesc.m_Resource->GetGpuHandle().m_Ptr;
 
     return d3dDesc;
 }

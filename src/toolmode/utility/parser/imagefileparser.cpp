@@ -35,6 +35,7 @@ void ImageFileParser::Parse(const std::string& path)
     m_RawTexture->m_Format = RhiFormat::R8G8B8A8Unorm;
     m_RawTexture->m_Width = static_cast<uint32_t>(w);
     m_RawTexture->m_Height = static_cast<uint32_t>(h);
+    m_RawTexture->m_Depth = 1;
     m_RawTexture->m_Data = image;
 }
 

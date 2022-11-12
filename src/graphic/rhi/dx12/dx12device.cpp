@@ -159,7 +159,7 @@ RhiResult Dx12Device::CreateRootSignature(const RhiRootSignatureDesc& desc, RhiR
     d3dDesc.pStaticSamplers = d3dRootSignature->m_D3DStaticSamplers.data();
 
     ASSERT_SUCCESS(D3D12SerializeRootSignature(&d3dDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-        rsBlob.GetAddressOf(), errBlob.GetAddressOf()));
+        rsBlob.GetAddressOf(), errBlob.GetAddressOf()), errBlob->GetBufferPointer());
 
     HRESULT hr = m_Device->CreateRootSignature(
         1,
@@ -201,7 +201,7 @@ RhiResult Dx12Device::CreateSwapChain(const RhiSwapChainDesc& desc, RhiSwapChain
 RhiResult Dx12Device::CreateRenderTargetView(const RhiRenderTargetViewDesc& desc, RhiRenderTargetViewHandle& rtvHandle) const
 {
     Dx12RenderTargetView* d3dRtv = new Dx12RenderTargetView();
-    d3dRtv->m_CpuHandle = desc.m_CpuHandle;
+    d3dRtv->m_CpuHandle = desc.m_TargetCpuHandle;
 
     const auto d3dResource = desc.m_Resource.As<Dx12Resource>();
 
@@ -218,7 +218,7 @@ RhiResult Dx12Device::CreateRenderTargetView(const RhiRenderTargetViewDesc& desc
 RhiResult Dx12Device::CreateDepthStencilView(const RhiDepthStencilViewDesc& desc, RhiDepthStencilViewHandle& dsvHandle) const
 {
     D3D12DepthStencilView* d3dDsv = new D3D12DepthStencilView();
-    d3dDsv->m_CpuHandle = desc.m_CpuHandle;
+    d3dDsv->m_CpuHandle = desc.m_TargetCpuHandle;
 
     const auto d3dResource = desc.m_Resource.As<Dx12Resource>();
 
@@ -235,9 +235,8 @@ RhiResult Dx12Device::CreateDepthStencilView(const RhiDepthStencilViewDesc& desc
 RhiResult Dx12Device::CreateShaderResourceView(const RhiShaderResourceViewDesc& desc, RhiShaderResourceViewHandle& srvHandle) const
 {
     D3D12ShaderResourceView* d3dSrv = new D3D12ShaderResourceView();
-    d3dSrv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextCpuHandle();
-    d3dSrv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextGpuHandle();
-    GraphicCore::GetSRVDescriptorHeap()->IncrementHandle();
+    d3dSrv->m_CpuHandle = desc.m_TargetCpuHandle;
+    d3dSrv->m_GpuHandle = desc.m_TargetGpuHandle;
 
     const auto d3dResource = desc.m_Resource.As<Dx12Resource>();
 
@@ -254,9 +253,8 @@ RhiResult Dx12Device::CreateShaderResourceView(const RhiShaderResourceViewDesc& 
 RhiResult Dx12Device::CreateConstantBufferView(const RhiConstantBufferViewDesc& desc, RhiConstantBufferViewHandle& cbvHandle) const
 {
     D3D12ConstantBufferView* d3dCbv = new D3D12ConstantBufferView();
-    d3dCbv->m_CpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextCpuHandle();
-    d3dCbv->m_GpuHandle = GraphicCore::GetSRVDescriptorHeap()->GetNextGpuHandle();
-    GraphicCore::GetSRVDescriptorHeap()->IncrementHandle();
+    d3dCbv->m_CpuHandle = desc.m_TargetCpuHandle;
+    d3dCbv->m_GpuHandle = desc.m_TargetGpuHandle;
 
     const auto d3dResource = desc.m_Resource.As<Dx12Resource>();
 

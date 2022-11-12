@@ -38,6 +38,7 @@ public:
     IFileStream& operator>>(char& v) override final;
     IFileStream& operator>>(unsigned int& v) override final;
     IFileStream& operator>>(unsigned long& v) override final;
+    IFileStream& operator>>(unsigned char& v) override final;
     IFileStream& operator>>(std::string& v) override final;
     IFileStream& operator>>(bool& v) override final;
     IFileStream& operator>>(ethVector2& v) override final;
@@ -63,6 +64,7 @@ public:
     OFileStream& operator<<(const char v) override final;
     OFileStream& operator<<(const unsigned int v) override final;
     OFileStream& operator<<(const unsigned long v) override final;
+    OFileStream& operator<<(const unsigned char v) override final;
     OFileStream& operator<<(const std::string& v) override final;
     OFileStream& operator<<(const bool v) override final;
     OFileStream& operator<<(const ethVector2 v) override final;

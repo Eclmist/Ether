@@ -24,8 +24,8 @@ ETH_NAMESPACE_BEGIN
 
 ResourceContext::ResourceContext(CommandContext& context, const std::wstring& name)
     : m_Context(&context)
-    , m_RtvDescriptorAllocator(RhiDescriptorHeapType::Rtv)
-    , m_DsvDescriptorAllocator(RhiDescriptorHeapType::Dsv)
+    , m_RtvDescriptorAllocator(RhiDescriptorHeapType::Rtv, false, 4096)
+    , m_DsvDescriptorAllocator(RhiDescriptorHeapType::Dsv, false, 4096)
 {
 }
 
@@ -68,12 +68,13 @@ bool ResourceContext::CreateRenderTargetView(RhiResourceHandle resource, RhiRend
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-    m_DescriptorAllocations.push_back(m_RtvDescriptorAllocator.Allocate());
+    auto alloc = m_RtvDescriptorAllocator.Allocate();
+    m_DescriptorAllocations.push_back(alloc);
 
     RhiRenderTargetViewDesc rtvDesc = {};
     rtvDesc.m_Format = GetResourceFormat(resource.GetName());
     rtvDesc.m_Resource = resource;
-    rtvDesc.m_CpuHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
+    rtvDesc.m_TargetCpuHandle = alloc->GetCpuHandle();
     GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 
@@ -85,12 +86,13 @@ bool ResourceContext::CreateDepthStencilView(RhiResourceHandle resource, RhiDept
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
-    m_DescriptorAllocations.push_back(m_DsvDescriptorAllocator.Allocate());
+    auto alloc = m_DsvDescriptorAllocator.Allocate();
+    m_DescriptorAllocations.push_back(alloc);
 
     RhiDepthStencilViewDesc dsvDesc = {};
     dsvDesc.m_Format = GetResourceFormat(resource.GetName());
     dsvDesc.m_Resource = resource;
-    dsvDesc.m_CpuHandle = m_DescriptorAllocations.back()->GetDescriptorHandle();
+    dsvDesc.m_TargetCpuHandle = alloc->GetCpuHandle();
     GraphicCore::GetDevice()->CreateDepthStencilView(dsvDesc, view);
     m_ResourceEntries.emplace(view.GetName());
 
@@ -102,41 +104,37 @@ bool ResourceContext::CreateShaderResourceView(RhiResourceHandle resource, RhiSh
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
+    auto alloc = GraphicCore::GetGpuDescriptorAllocator().Allocate();
+    m_DescriptorAllocations.push_back(alloc);
+
     RhiShaderResourceViewDesc srvDesc = {};
     srvDesc.m_Format = GetResourceFormat(resource.GetName());
     srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
     srvDesc.m_Resource = resource;
+    srvDesc.m_TargetCpuHandle = alloc->GetCpuHandle();
+    srvDesc.m_TargetGpuHandle = alloc->GetGpuHandle();
     GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
+    GraphicCore::GetBindlessResourceManager().RegisterView<RhiShaderResourceView>(view, alloc->GetDescriptorIndex());
     m_ResourceEntries.emplace(view.GetName());
 
     return true;
 }
-
-bool ResourceContext::CreateShaderResourceViewCube(RhiResourceHandle resource, RhiShaderResourceViewHandle& view)
-{
-    if (!ShouldRecreateView(resource.GetName()))
-        return false;
-
-    RhiShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Format = GetResourceFormat(resource.GetName());
-    srvDesc.m_Dimensions = RhiShaderResourceDims::TextureCube;
-    srvDesc.m_Resource = resource;
-    GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, view);
-    m_ResourceEntries.emplace(view.GetName());
-
-    return true;
-}
-
 
 bool ResourceContext::CreateConstantBufferView(uint32_t bufferSize, RhiResourceHandle resource, RhiConstantBufferViewHandle& view)
 {
     if (!ShouldRecreateView(resource.GetName()))
         return false;
 
+    auto alloc = GraphicCore::GetGpuDescriptorAllocator().Allocate();
+    m_DescriptorAllocations.push_back(alloc);
+
     RhiConstantBufferViewDesc cbvDesc = {};
     cbvDesc.m_Resource = resource;
     cbvDesc.m_BufferSize = bufferSize;
+    cbvDesc.m_TargetCpuHandle = alloc->GetCpuHandle();
+    cbvDesc.m_TargetGpuHandle = alloc->GetGpuHandle();
     GraphicCore::GetDevice()->CreateConstantBufferView(cbvDesc, view);
+    GraphicCore::GetBindlessResourceManager().RegisterView<RhiConstantBufferView>(view, alloc->GetDescriptorIndex());
     m_ResourceEntries.emplace(view.GetName());
 
     return true;
@@ -154,21 +152,6 @@ bool ResourceContext::InitializeTexture2D(CompiledTexture& texture)
 {
     bool resourceRecreated = CreateTexture2DResource(texture.GetWidth(), texture.GetHeight(), texture.GetFormat(), texture.GetResource());
     bool viewRecreated = CreateShaderResourceView(texture.GetResource(), texture.GetView());
-
-    // TODO: multiple of the same view can be created in a frame where the resource was created. This is a waste.
-    //AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");
-
-    if (!resourceRecreated)
-        return false;
-
-    m_Context->InitializeTexture(texture);
-    return true;
-}
-
-bool ResourceContext::InitializeTextureCube(CompiledTexture& texture)
-{
-    bool resourceRecreated = CreateTexture2DResource(texture.GetWidth(), texture.GetHeight(), texture.GetFormat(), texture.GetResource());
-    bool viewRecreated = CreateShaderResourceViewCube(texture.GetResource(), texture.GetView());
 
     // TODO: multiple of the same view can be created in a frame where the resource was created. This is a waste.
     //AssertGraphics(resourceRecreated == viewRecreated, "Resource and view should either both be recreated or both not");

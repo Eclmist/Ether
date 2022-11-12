@@ -59,6 +59,8 @@ void UpdateEngine()
 
         ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
 
+        Input::Instance().NewFrame(); // Todo: make it Input::Newframe();
+
         if (EngineCore::GetMainApplication().ShouldExit())
             break;
     }
@@ -68,8 +70,6 @@ void WindowsUpdateLoop()
 {
     while(true)
     {
-        Input::Instance().NewFrame(); // Todo: make it Input::Newframe();
-
         MSG msg = {};
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {

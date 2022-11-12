@@ -31,6 +31,8 @@ GraphicRenderer::GraphicRenderer()
     , m_ResourceContext(m_GraphicContext, L"GraphicRenderer::ResourceContext")
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
+
+    m_ResourceContext.InitializeTexture2D(GraphicCore::GetGraphicCommon().m_ErrorTexture2D);
     m_Scheduler.RegisterRenderPasses();
 }
 
