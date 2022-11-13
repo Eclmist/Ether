@@ -55,12 +55,8 @@ void CompiledTexture::Deserialize(IStream& istream)
 
     m_Format = static_cast<RhiFormat>(format);
 
-    // TODO: Use proper texture names
-    static int tempIdx = 0;
-    tempIdx++;
-
-    m_Resource.SetName(L"TextureResource" + std::to_wstring(tempIdx));
-    m_View.SetName(L"TextureView" + std::to_wstring(tempIdx));
+    m_Resource.SetName(ToWideString(m_Name));
+    m_View.SetName(ToWideString(m_Name + "View"));
 
     m_Data = (unsigned char*)malloc(GetSizeInBytes());
     for (int i = 0; i < GetSizeInBytes(); ++i)
