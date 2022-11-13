@@ -29,6 +29,7 @@ public:
 
 public:
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
+    inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
     ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
 
 private:
@@ -36,6 +37,7 @@ private:
 
 private:
     bool m_UseSourceShaders;
+    bool m_UseValidationLayer;
     ETH_TOOLONLY(uint16_t m_ToolmodePort);
 };
  

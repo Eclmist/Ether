@@ -24,7 +24,9 @@ ETH_NAMESPACE_BEGIN
 
 RhiResult Dx12Module::Initialize()
 {
-    InitializeDebugLayer();
+    if (EngineCore::GetCommandLineOptions().GetUseValidationLayer())
+        InitializeDebugLayer();
+
     RhiResult result = InitializeAdapter();
 
     return result;
@@ -87,11 +89,11 @@ RhiResult Dx12Module::InitializeAdapter()
 
 RhiResult Dx12Module::InitializeDebugLayer()
 {
-#if defined(_DEBUG)
+    LogGraphicsInfo("Initializing DX12 Debug Layer");
+
     wrl::ComPtr<ID3D12Debug> debugInterface;
     ASSERT_SUCCESS(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
-#endif
     return RhiResult::Success;
 }
 

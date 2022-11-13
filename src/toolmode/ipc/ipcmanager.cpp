@@ -95,6 +95,8 @@ void IpcManager::ClearMessageQueue()
 
 void IpcManager::IncomingMessageHandler()
 {
+    ETH_MARKER_THREAD("Incoming IPC Handler");
+
     while (true)
     {
         if (!m_Socket->HasActiveConnection())
@@ -114,6 +116,8 @@ void IpcManager::IncomingMessageHandler()
 
 void IpcManager::OutgoingMessageHandler()
 {
+    ETH_MARKER_THREAD("Outgoing IPC Handler");
+
     while (true)
     {
         if (!m_Socket->HasActiveConnection())

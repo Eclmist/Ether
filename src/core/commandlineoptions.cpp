@@ -26,6 +26,7 @@ ETH_NAMESPACE_BEGIN
 
 CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
+    , m_UseValidationLayer(false)
 #ifdef ETH_TOOLMODE
     , m_ToolmodePort(2134)
 #endif
@@ -52,6 +53,8 @@ void CommandLineOptions::InitializeArg(const std::wstring& flag, const std::wstr
 {
     if (flag == L"-sourceshaders")
         m_UseSourceShaders = true;
+    else if (flag == L"-usevalidationlayer")
+        m_UseValidationLayer = true;
 #ifdef ETH_TOOLMODE
     else if (flag == L"-port")
         m_ToolmodePort = stoi(arg);

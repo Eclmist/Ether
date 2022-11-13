@@ -57,6 +57,8 @@ std::wstring ShaderDaemon::GetShaderDirectory()
 
 void ShaderDaemon::DaemonThreadMain()
 {
+    ETH_MARKER_EVENT("Shader Daemon");
+
     std::wstring shaderDir = GetShaderDirectory();
     HANDLE hDir = CreateFileW(shaderDir.c_str(),  FILE_LIST_DIRECTORY,
         FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 

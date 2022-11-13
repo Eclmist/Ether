@@ -43,13 +43,13 @@ GraphicRenderer::~GraphicRenderer()
 
 void GraphicRenderer::WaitForPresent()
 {
-    OPTICK_EVENT("Renderer - WaitForPresent");
+    ETH_MARKER_EVENT("Renderer - WaitForPresent");
     m_GraphicContext.GetCommandQueue()->StallForFence(GraphicCore::GetGraphicDisplay().GetCurrentBackBufferFence());
 }
 
 void GraphicRenderer::Render()
 {
-    OPTICK_EVENT("Renderer - Render");
+    ETH_MARKER_EVENT("Renderer - Render");
     
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
@@ -61,7 +61,7 @@ void GraphicRenderer::Render()
 
 void GraphicRenderer::Present()
 {
-    OPTICK_EVENT("Renderer - Present");
+    ETH_MARKER_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
     m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RhiResourceState::Present);
@@ -74,13 +74,13 @@ void GraphicRenderer::Present()
 
 void GraphicRenderer::CleanUp()
 {
-    OPTICK_EVENT("Renderer - CleanUp");
+    ETH_MARKER_EVENT("Renderer - CleanUp");
     m_PendingVisualNodes.clear();
 }
 
 void GraphicRenderer::DrawNode(VisualNode* node)
 {
-    OPTICK_EVENT("Renderer - DrawNode");
+    ETH_MARKER_EVENT("Renderer - DrawNode");
     m_PendingVisualNodes.push_back(node);
 }
 

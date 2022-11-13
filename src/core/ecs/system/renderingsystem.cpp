@@ -39,7 +39,7 @@ void RenderingSystem::OnEntityDeregister(EntityID id)
 
 void RenderingSystem::OnSceneLoad()
 {
-    OPTICK_EVENT("ECS - Rendering System - OnSceneLoad");
+    ETH_MARKER_EVENT("ECS - Rendering System - OnSceneLoad");
 
     for (EntityID id : m_MatchingEntities)
     {
@@ -60,13 +60,13 @@ void RenderingSystem::OnSceneLoad()
 
 void RenderingSystem::OnUpdate()
 {
-    OPTICK_EVENT("ECS - Rendering System - Update");
+    ETH_MARKER_EVENT("ECS - Rendering System - Update");
 
     bool hasMeshChanges = false;
 
     for (EntityID id : m_MatchingEntities)
     {
-        OPTICK_EVENT("ECS - Rendering System - Visual Node Validation");
+        ETH_MARKER_EVENT("ECS - Rendering System - Visual Node Validation");
 
         auto* mesh = EngineCore::GetEcsManager().GetComponent<MeshComponent>(id);
         auto* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);

@@ -132,13 +132,15 @@ ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float
 
 void SampleApp::UpdateOrbitCam(float deltaTime)
 {
-    m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
+    const float sensitivity = 0.15f;
+
+    m_CameraDistance -= Input::GetMouseWheelDelta() * deltaTime;
     m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 
-    if (Input::GetMouseButton(1))
+    //if (Input::GetMouseButton(1))
     {
-        m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-        m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+        m_CameraRotation.x -= 0; //Input::GetMouseDeltaY() * sensitivity * deltaTime;
+        m_CameraRotation.y -= /*Input::GetMouseDeltaX() * */ sensitivity * deltaTime;
         m_CameraRotation.x = ethClamp(m_CameraRotation.x, -ethDegToRad(90.0f), ethDegToRad(90.0f));
     }
 
@@ -151,6 +153,42 @@ void SampleApp::UpdateOrbitCam(float deltaTime)
     float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
     m_ProjectionMatrix = GetPerspectiveMatrixLH(80, aspectRatio, 0.01f, 1000.0f);
 }
+
+    void UpdateFlyCam(float deltaTime)
+    {
+        //if (Input::GetMouseButton(2))
+        //{
+        //    m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
+        //    m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
+        //    m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90), DEG_TO_RAD(90));
+        //}
+
+        //ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
+        //ethVector3 forwardVec = (rotationMatrix.Transposed() * {0, 0, 1}).Normalized();
+        //ethVector3 upVec = XMVector4Normalize(g_XMIdentityR1);
+        //ethVector3 rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
+
+        //if (Input::GetMouseButton(2))
+        //{
+        //    if (Input::GetKey(Win32::KeyCode::W))
+        //        m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
+        //    if (Input::GetKey(Win32::KeyCode::S))
+        //        m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
+        //    if (Input::GetKey(Win32::KeyCode::A))
+        //        m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
+        //    if (Input::GetKey(Win32::KeyCode::D))
+        //        m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
+        //}
+
+        //m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
+
+        //m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
+        //m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
+
+        //float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
+        //m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
+    }
+
 
 void SampleApp::LoadTexture(const std::string& path, const std::string& key)
 {

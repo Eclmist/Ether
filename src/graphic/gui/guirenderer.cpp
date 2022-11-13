@@ -66,7 +66,7 @@ GuiRenderer::~GuiRenderer()
 
 void GuiRenderer::Render()
 {
-    OPTICK_EVENT("Gui Renderer - Render");
+    ETH_MARKER_EVENT("Gui Renderer - Render");
 
     if (m_Components.empty())
         return;

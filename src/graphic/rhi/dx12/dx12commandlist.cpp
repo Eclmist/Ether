@@ -30,21 +30,20 @@ ETH_NAMESPACE_BEGIN
 
 RhiResult Dx12CommandList::SetMarker(const char* name)
 {
-    // Requires pix event runtime
-    return RhiResult::NotSupported;
+    PIXSetMarker(PIX_COLOR_INDEX(0), name);
+    return RhiResult::Success;
 }
-
 
 RhiResult Dx12CommandList::PushMarker(const char* name)
 {
-    // Requires pix event runtime
-    return RhiResult::NotSupported;
+    PIXBeginEvent(m_CommandList.Get(), PIX_COLOR_INDEX(0), name);
+    return RhiResult::Success;
 }
 
 RhiResult Dx12CommandList::PopMarker()
 {
-    // Requires pix event runtime
-    return RhiResult::NotSupported;
+    PIXEndEvent(m_CommandList.Get());
+    return RhiResult::Success;
 }
 
 RhiResult Dx12CommandList::SetViewport(const RhiViewportDesc& viewport)

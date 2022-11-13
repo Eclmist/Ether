@@ -46,3 +46,6 @@ namespace chrono = std::chrono;
 #include "core/core.h"
 #include "graphic/graphic.h"
 
+// Debugging
+#include "common/debugging/markers.h"
+

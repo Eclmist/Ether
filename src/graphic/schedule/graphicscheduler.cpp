@@ -72,7 +72,7 @@ void GraphicScheduler::RegisterRenderPasses()
 
 void GraphicScheduler::ScheduleRenderPasses(GraphicContext& context, ResourceContext& rc)
 {
-    OPTICK_EVENT("Graphic Scheduler - Schedule");
+    ETH_MARKER_EVENT("Graphic Scheduler - Schedule");
 
     for (auto renderPass : m_RegisteredRenderPasses)
         renderPass->RegisterInputOutput(context, rc);
@@ -86,9 +86,10 @@ void GraphicScheduler::RenderPasses(GraphicContext& context, ResourceContext& rc
 {
     for (int i = 0; i < m_OrderedRenderPasses.size(); ++i)
     {
-        OPTICK_EVENT((m_OrderedRenderPasses[i]->GetName() + " - Render").c_str());
-        context.SetMarker(m_OrderedRenderPasses[i]->GetName() + " - Render");
+        ETH_MARKER_EVENT(m_OrderedRenderPasses[i]->GetName().c_str());
+        context.PushMarker(m_OrderedRenderPasses[i]->GetName().c_str());
         m_OrderedRenderPasses[i]->Render(context, rc);
+        context.PopMarker();
     }
 
     m_OrderedRenderPasses.clear();

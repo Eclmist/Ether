@@ -100,10 +100,15 @@ set_property(TARGET ${TOOLMODE_PROJECT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "
 #                          LINK EXTERNAL LIBRARIES                            #
 # =========================================================================== #
 
-# Link DX12
+target_link_libraries(${ENGINE_PROJECT_DX12} 
+    d3d12.lib dxgi.lib dxguid.lib 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/dxc/dxcompiler.lib 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib)
 
-target_link_libraries(${ENGINE_PROJECT_DX12} d3d12.lib dxgi.lib dxguid.lib ${CMAKE_CURRENT_SOURCE_DIR}/include/dxc/dxcompiler.lib)
-target_link_libraries(${TOOLMODE_PROJECT} d3d12.lib dxgi.lib dxguid.lib ${CMAKE_CURRENT_SOURCE_DIR}/include/dxc/dxcompiler.lib ws2_32.lib)
+target_link_libraries(${TOOLMODE_PROJECT}
+    d3d12.lib dxgi.lib dxguid.lib ws2_32.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/dxc/dxcompiler.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib)
 
 # =========================================================================== #
 #                             INCLUDE SUBPROJECTS                             #

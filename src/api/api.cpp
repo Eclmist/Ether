@@ -25,15 +25,18 @@ ETH_NAMESPACE_BEGIN
 
 void UpdateEngine()
 {
+    ETH_MARKER_THREAD("Engine");
+
     while (true)
     {
-        OPTICK_FRAME("Engine - MainThread");
+        ETH_MARKER_FRAME("Engine - MainThread");
+
         Input::NewFrame();
 
         static double lastTime = 0;
 
         {
-            OPTICK_FRAME("Application (ToolMain) - Update");
+            ETH_MARKER_EVENT("Application (ToolMain) - Update");
             UpdateEventArgs updateArgs;
             updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
             updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
@@ -51,11 +54,11 @@ void UpdateEngine()
         lastTime = renderArgs.m_TotalElapsedTime;
 
         {
-            OPTICK_EVENT("Application - OnRender");
+            ETH_MARKER_EVENT("Application - OnRender");
             EngineCore::GetMainApplication().OnRender(renderArgs);
         }
         {
-            OPTICK_EVENT("Graphic Core - Render");
+            ETH_MARKER_EVENT("Graphic Core - Render");
             GraphicCore::Render();
         }
 

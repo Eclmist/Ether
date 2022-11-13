@@ -53,7 +53,7 @@ void EngineCore::LoadContent()
 
 void EngineCore::Update()
 {
-    OPTICK_EVENT("Engine Core - Update");
+    ETH_MARKER_EVENT("Engine Core - Update");
     Instance().m_EcsManager->OnUpdate();
 }
 

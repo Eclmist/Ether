@@ -69,8 +69,6 @@
 #include "toolmode/ipc/ipcmanager.h"
 #endif
 
-#include "optick/optick.h"
-
 ETH_NAMESPACE_BEGIN
 
 class ETH_ENGINE_DLL EngineCore : public Singleton<EngineCore>
