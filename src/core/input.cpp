@@ -38,46 +38,58 @@ Input::Input()
 
 void Input::SetKeyDown(Win32::KeyCode key)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_KeyStates[(int)key] = true;
     m_TransientKeyDownStates[(int)key] = true;
 }
 
 void Input::SetKeyUp(Win32::KeyCode key)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_KeyStates[(int)key] = false;
     m_TransientKeyUpStates[(int)key] = true;
 }
 
 void Input::SetMouseButtonDown(int index)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseStates[index] = true;
     m_TransientMouseDownStates[index] = true;
 }
 
 void Input::SetMouseButtonUp(int index)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseStates[index] = false;
     m_TransientKeyUpStates[index] = true;
 }
 
 void Input::SetMouseWheelDelta(double delta)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseWheelDelta = delta;
 }
 
 void Input::SetMousePosX(double posX)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseDeltaX = posX - m_MousePosX;
     m_MousePosX = posX;
 }
 
 void Input::SetMousePosY(double posY)
 {
+    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseDeltaY = posY - m_MousePosY;
     m_MousePosY = posY;
 }
 
-void Input::NewFrame()
+void Input::NewFrame_Impl()
+{
+    m_FrameMutex.lock();
+}
+
+void Input::EndFrame_Impl()
 {
     memset(m_TransientKeyDownStates, 0, sizeof(m_TransientKeyDownStates));
     memset(m_TransientKeyUpStates, 0, sizeof(m_TransientKeyUpStates));
@@ -87,6 +99,8 @@ void Input::NewFrame()
     m_MouseWheelDelta = 0;
     m_MouseDeltaX = 0;
     m_MouseDeltaY = 0;
+
+    m_FrameMutex.unlock();
 }
 
 ETH_NAMESPACE_END

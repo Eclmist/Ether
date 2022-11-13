@@ -43,6 +43,10 @@ public:
     ETH_ENGINE_DLL static double GetMouseDeltaY() { return Instance().m_MouseDeltaY; }
 
 public:
+    static void NewFrame() { return Instance().NewFrame_Impl(); }
+    static void EndFrame() { return Instance().EndFrame_Impl(); }
+
+public:
     void SetKeyDown(Win32::KeyCode key);
     void SetKeyUp(Win32::KeyCode key);
 
@@ -53,7 +57,9 @@ public:
     void SetMousePosX(double posX);
     void SetMousePosY(double posY);
 
-    void NewFrame();
+private:
+    void NewFrame_Impl();
+    void EndFrame_Impl();
 
 private:
     bool m_KeyStates[NUM_KEYCODES];
@@ -68,6 +74,8 @@ private:
     double m_MousePosY;
     double m_MouseDeltaX;
     double m_MouseDeltaY;
+
+    std::mutex m_FrameMutex;
 };
 
 ETH_NAMESPACE_END

@@ -49,7 +49,7 @@ public:
 
     void LoadContent() override
     {
-        for (int i = 0; i < 0; ++i)
+        for (int i = 0; i < 400; ++i)
         {
             std::string modelPath = modelsGroupPath + std::to_string(i);
             if (!PathUtils::IsValidPath(modelPath))

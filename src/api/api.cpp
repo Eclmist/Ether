@@ -28,6 +28,7 @@ void UpdateEngine()
     while (true)
     {
         OPTICK_FRAME("Engine - MainThread");
+        Input::NewFrame();
 
         static double lastTime = 0;
 
@@ -41,6 +42,7 @@ void UpdateEngine()
         }
 
         EngineCore::Update();
+        Input::EndFrame();
 
         RenderEventArgs renderArgs;
         renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
@@ -58,8 +60,6 @@ void UpdateEngine()
         }
 
         ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
-
-        Input::Instance().NewFrame(); // Todo: make it Input::Newframe();
 
         if (EngineCore::GetMainApplication().ShouldExit())
             break;
