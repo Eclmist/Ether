@@ -29,7 +29,7 @@ GraphicDisplay::GraphicDisplay()
     , m_BufferingMode(BufferingMode::Triple)
     , m_ScissorRect({ 0, 0, 99999, 99999 })
     , m_Viewport({ 0.0f, 0.0f, (float)m_FrameBufferWidth, (float)m_FrameBufferHeight, 0.0f, 1.0f })
-    , m_VSyncEnabled(true)
+    , m_VSyncEnabled(false)
     , m_VSyncVBlanks(1)
     , m_RtvAllocator(RhiDescriptorHeapType::Rtv)
 {
@@ -52,6 +52,7 @@ GraphicDisplay::~GraphicDisplay()
 
 void GraphicDisplay::Present()
 {
+    ETH_MARKER_EVENT("Display - Present");
     m_SwapChain->Present(m_VSyncEnabled ? m_VSyncVBlanks : 0);
 
     // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model, 

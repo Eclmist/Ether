@@ -103,12 +103,16 @@ set_property(TARGET ${TOOLMODE_PROJECT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "
 target_link_libraries(${ENGINE_PROJECT_DX12} 
     d3d12.lib dxgi.lib dxguid.lib 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/dxc/dxcompiler.lib 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/optick/OptickCore.lib
+)
 
 target_link_libraries(${TOOLMODE_PROJECT}
     d3d12.lib dxgi.lib dxguid.lib ws2_32.lib
     ${CMAKE_CURRENT_SOURCE_DIR}/include/dxc/dxcompiler.lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/optick/OptickCore.lib
+)
 
 # =========================================================================== #
 #                             INCLUDE SUBPROJECTS                             #
