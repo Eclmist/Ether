@@ -1,7 +1,7 @@
 /*
     This file is part of Ether, an open-source DirectX 12 renderer.
 
-    Copyright (c) 2020-2022 Samuel Huang - All rights reserved.
+    Copyright (c) 2020-2023 Samuel Huang - All rights reserved.
 
     Ether is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -333,7 +333,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     mat.Roughness = albedo.w;
     mat.Metalness = specular.w;
 
-    const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos);
+    const float3 v = normalize(g_CommonConstants.EyePosition.xyz - pos.xyz);
     const float3 n = normalize(normal);
     float3 finalColor = 0;// DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
 
@@ -343,11 +343,11 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
         lights[i].Position *= 5.2;
         lights[i].Intensity *= 4.9;
         lights[i].Color = 1.0;
-        finalColor += ComputePointLight(IN.UV, pos, normal, mat, lights[i]);
+        finalColor += ComputePointLight(IN.UV, pos.xyz, normal, mat, lights[i]);
     }
 
     // fog
-    finalColor = lerp(finalColor, float3(0.05, 0.05, 0.04) * 2, saturate(pos.w / 100.0));
+    finalColor = lerp(finalColor, float3(0.05, 0.05, 0.04), saturate(pos.w / 1000.0));
 
     return float4(finalColor, 1.0f);
 

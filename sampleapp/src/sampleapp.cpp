@@ -1,7 +1,7 @@
 /*
     This file is part of Ether, an open-source DirectX 12 renderer.
 
-    Copyright (c) 2020-2022 Samuel Huang - All rights reserved.
+    Copyright (c) 2020-2023 Samuel Huang - All rights reserved.
 
     Ether is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -10,7 +10,7 @@
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
@@ -111,6 +111,25 @@ void SampleApp::UpdateCamera(float deltaTime)
     UpdateOrbitCam(deltaTime);
 }
 
+// TODO: Move into a camera component
+ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
+{
+    const float range = tan(ethDegToRad(fovy / 2)) * znear;
+    const float left = -range * aspect;
+    const float right = range * aspect;
+    const float bottom = -range;
+    const float top = range;
+    const float Q = zfar / (zfar - znear);
+
+    ethMatrix4x4 dst(0.0f);
+    dst.m_Data2D[0][0] = (2 * znear) / (right - left);
+    dst.m_Data2D[1][1] = (2 * znear) / (top - bottom);
+    dst.m_Data2D[2][2] = Q;
+    dst.m_Data2D[2][3] = -znear * Q;
+    dst.m_Data2D[3][2] = 1;
+    return dst;
+}
+
 void SampleApp::UpdateOrbitCam(float deltaTime)
 {
     m_CameraDistance -= Input::GetMouseWheelDelta() / 121;
@@ -130,24 +149,7 @@ void SampleApp::UpdateOrbitCam(float deltaTime)
     m_ViewMatrixInv = m_ViewMatrix.Inversed();
 
     float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-    const float fovy = 80;
-    const float zfar = 1000.0f;
-    const float znear = 0.01f;
-    const float range = tan(ethDegToRad(fovy / 2)) * znear;
-    const float left = -range * aspectRatio;
-    const float right = range * aspectRatio;
-    const float bottom = -range;
-    const float top = range;
-    const float Q = zfar / (zfar - znear);
-
-    ethMatrix4x4 dst(0.0f);
-    dst.m_Data2D[0][0] = (2 * znear) / (right - left);
-    dst.m_Data2D[1][1] = (2 * znear) / (top - bottom);
-    dst.m_Data2D[2][2] = Q;
-    dst.m_Data2D[2][3] = -znear * Q;
-    dst.m_Data2D[3][2] = 1;
-    m_ProjectionMatrix = dst;
-
+    m_ProjectionMatrix = GetPerspectiveMatrixLH(80, aspectRatio, 0.01f, 1000.0f);
 }
 
 void SampleApp::LoadTexture(const std::string& path, const std::string& key)
