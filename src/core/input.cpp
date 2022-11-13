@@ -66,21 +66,18 @@ void Input::SetMouseButtonUp(int index)
 
 void Input::SetMouseWheelDelta(double delta)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseWheelDelta = delta;
 }
 
 void Input::SetMousePosX(double posX)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
-    m_MouseDeltaX = posX - m_MousePosX;
+    m_MouseDeltaX += (posX - m_MousePosX);
     m_MousePosX = posX;
 }
 
 void Input::SetMousePosY(double posY)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
-    m_MouseDeltaY = posY - m_MousePosY;
+    m_MouseDeltaY += (posY - m_MousePosY);
     m_MousePosY = posY;
 }
 
