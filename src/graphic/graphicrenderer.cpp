@@ -64,10 +64,8 @@ void GraphicRenderer::Present()
     ETH_MARKER_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    m_GraphicContext.PushMarker("Present Frame");
     m_GraphicContext.TransitionResource(gfxDisplay.GetCurrentBackBuffer(), RhiResourceState::Present);
     m_GraphicContext.FinalizeAndExecute();
-    m_GraphicContext.PopMarker();
     m_GraphicContext.Reset();
     m_ResourceContext.Reset();
     gfxDisplay.SetCurrentBackBufferFence(m_GraphicContext.GetCompletionFenceValue());

@@ -43,12 +43,17 @@ void EngineCore::Initialize(IApplicationBase& app)
 
 void EngineCore::LoadContent()
 {
+    LogInfo("Loading content");
+    ETH_MARKER_EVENT("Engine Core - Load Content");
+
     // Other engine content can be loaded here before or after main application
     Instance().m_MainApplication->LoadContent();
 
     // Initialize all resources that needs to be initialized during scene load
     // TODO: Replace with scene loading system in the future
     Instance().m_EcsManager->OnSceneLoad();
+
+    LogInfo("Content loaded");
 }
 
 void EngineCore::Update()
@@ -59,6 +64,7 @@ void EngineCore::Update()
 
 void EngineCore::Shutdown()
 {
+    LogInfo("Shutting down Ether");
     Instance().m_EcsManager.reset();
     Instance().m_ActiveWorld.reset();
     Instance().m_MainWindow.reset();

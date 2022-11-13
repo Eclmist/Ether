@@ -45,7 +45,7 @@ void TransformationSystem::OnUpdate()
     for (EntityID id : m_MatchingEntities)
     {
         ETH_MARKER_EVENT("ECS - Transformation System - Update matrices");
-        auto* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);
+        TransformComponent* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);
         transform->UpdateMatrices();
     }
 }

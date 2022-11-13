@@ -35,7 +35,12 @@ public:
         DescriptorAllocator* parentAllocator
     );
 
-    ~DescriptorAllocation();
+    ~DescriptorAllocation() noexcept;
+
+    DescriptorAllocation(const DescriptorAllocation& copy) = delete;
+    DescriptorAllocation& operator=(const DescriptorAllocation& copy) = delete;
+    DescriptorAllocation(DescriptorAllocation&& move) noexcept;
+    DescriptorAllocation& operator=(DescriptorAllocation&& move) noexcept;
 
 public:
     inline uint32_t GetNumDescriptors() const { return m_NumDescriptors; }
@@ -54,6 +59,8 @@ private:
     uint32_t m_NumDescriptors;
 
     DescriptorAllocator* m_Parent;
+
+    bool m_IsValid;
 };
 
 ETH_NAMESPACE_END

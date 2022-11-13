@@ -136,29 +136,34 @@ void GraphicDisplay::CreateResourcesFromSwapChain()
 
 void GraphicDisplay::CreateViewsFromSwapChain()
 {
-    // Let destructor handle deallocation during the next call to CreateViewsFromSwapChain()
-    static auto rtvAllocation = m_RtvAllocator.Allocate(3);
-    static auto srvAllocation = GraphicCore::GetGpuDescriptorAllocator().Allocate(3);
+    m_DescriptorAllocations.clear();
+
+    DescriptorAllocation rtvAllocation = m_RtvAllocator.Allocate(3);
+    DescriptorAllocation srvAllocation = GraphicCore::GetGpuDescriptorAllocator().Allocate(1);
+
+    m_DescriptorAllocations.emplace_back(std::move(rtvAllocation));
+    m_DescriptorAllocations.emplace_back(std::move(srvAllocation));
+
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {
         RhiRenderTargetViewDesc rtvDesc = {};
         rtvDesc.m_Format = BackBufferFormat;
         rtvDesc.m_Resource = m_RenderTargets[i];
-        rtvDesc.m_TargetCpuHandle = rtvAllocation->GetCpuHandle(i);
+        rtvDesc.m_TargetCpuHandle = rtvAllocation.GetCpuHandle(i);
         GraphicCore::GetDevice()->CreateRenderTargetView(rtvDesc, m_RenderTargetCpuDescriptors[i]);
 
         RhiShaderResourceViewDesc srvDesc = {};
         srvDesc.m_Format = BackBufferFormat;
         srvDesc.m_Resource = m_RenderTargets[i];
         srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
-        srvDesc.m_TargetCpuHandle = srvAllocation->GetCpuHandle();
-        srvDesc.m_TargetGpuHandle = srvAllocation->GetGpuHandle();
+        srvDesc.m_TargetCpuHandle = srvAllocation.GetCpuHandle();
+        srvDesc.m_TargetGpuHandle = srvAllocation.GetGpuHandle();
         GraphicCore::GetDevice()->CreateShaderResourceView(srvDesc, m_RenderTargetGpuDescriptors[i]);
 
         GraphicCore::GetBindlessResourceManager().RegisterView<RhiShaderResourceView>(
             &m_RenderTargetGpuDescriptors[i].Get(),
-            srvAllocation->GetDescriptorIndex(i)
+            srvAllocation.GetDescriptorIndex(i)
         );
     }
 }

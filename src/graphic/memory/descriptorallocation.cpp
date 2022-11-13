@@ -34,12 +34,45 @@ DescriptorAllocation::DescriptorAllocation(
     , m_DescriptorSize(descriptorSize)
     , m_IndexInAllocator(indexInAllocator)
     , m_Parent(parentAllocator)
+    , m_IsValid(true)
 {
 }
 
-DescriptorAllocation::~DescriptorAllocation()
+DescriptorAllocation::~DescriptorAllocation() noexcept
 {
+    if (m_IsValid)
+        m_Parent->Free(*this);
+}
+
+DescriptorAllocation::DescriptorAllocation(DescriptorAllocation&& move) noexcept
+    : m_BaseCpuHandle(move.m_BaseCpuHandle)
+    , m_BaseGpuHandle(move.m_BaseGpuHandle)
+    , m_NumDescriptors(move.m_NumDescriptors)
+    , m_DescriptorSize(move.m_DescriptorSize)
+    , m_IndexInAllocator(move.m_IndexInAllocator)
+    , m_Parent(move.m_Parent)
+    , m_IsValid(move.m_IsValid)
+{
+    AssertGraphics(move.m_IsValid, "Invalid allocations should never be moved");
+    move.m_IsValid = false;
+}
+
+DescriptorAllocation& DescriptorAllocation::operator=(DescriptorAllocation&& move) noexcept
+{
+    AssertGraphics(move.m_IsValid, "Invalid allocations should never be moved");
     m_Parent->Free(*this);
+
+    m_BaseCpuHandle = move.m_BaseCpuHandle;
+    m_BaseGpuHandle = move.m_BaseGpuHandle;
+    m_NumDescriptors = move.m_NumDescriptors;
+    m_DescriptorSize = move.m_DescriptorSize;
+    m_IndexInAllocator = move.m_IndexInAllocator;
+    m_Parent = move.m_Parent;
+    m_IsValid = move.m_IsValid;
+
+    move.m_IsValid = false;
+
+    return *this;
 }
 
 uint32_t DescriptorAllocation::GetDescriptorIndex(uint32_t offset) const

@@ -45,9 +45,9 @@ std::string GetComponentsCommandResponse::GetSendableData() const
     CommandData command;
     command["command"] = "getcomponents";
 
-    auto entityID = EngineCore::GetEcsManager().GetEntityID(m_EntityGuid);
-    auto entity = EngineCore::GetEcsManager().GetEntity(entityID);
-    auto components = entity->m_Components;
+    EntityID entityID = EngineCore::GetEcsManager().GetEntityID(m_EntityGuid);
+    Entity* entity = EngineCore::GetEcsManager().GetEntity(entityID);
+    Component** components = entity->m_Components;
 
     for (int i = 0; i < ETH_ECS_MAX_COMPONENTS; ++i)
     {

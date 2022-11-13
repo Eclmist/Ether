@@ -49,7 +49,7 @@ private:
     bool CreateResource(const RhiCommitedResourceDesc& desc, RhiResourceHandle& resource);
     bool ResourceExists(const std::wstring& resourceID) const;
     bool ShouldRecreateResource(const std::wstring& resourceID, const RhiCommitedResourceDesc& desc) const;
-    bool ShouldRecreateView(const std::wstring& resourceID) const;
+    bool ShouldRecreateView(const std::wstring& resourceName, std::wstring& viewName) const;
 
     RhiFormat GetResourceFormat(const std::wstring& resourceID) const;
 
@@ -57,11 +57,10 @@ private:
     std::set<std::wstring> m_ResourceEntries;
     std::set<std::wstring> m_NewlyCreatedResources;
     std::unordered_map<std::wstring, RhiCommitedResourceDesc> m_ResourceTable;
+    std::unordered_map<std::wstring, DescriptorAllocation> m_DescriptorTable;
 
     DescriptorAllocator m_RtvDescriptorAllocator;
     DescriptorAllocator m_DsvDescriptorAllocator;
-
-    std::vector<std::shared_ptr<DescriptorAllocation>> m_DescriptorAllocations;
 
     CommandContext* m_Context;
 };

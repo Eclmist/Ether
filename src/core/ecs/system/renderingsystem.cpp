@@ -43,7 +43,7 @@ void RenderingSystem::OnSceneLoad()
 
     for (EntityID id : m_MatchingEntities)
     {
-        auto* visual = EngineCore::GetEcsManager().GetComponent<VisualComponent>(id);
+        VisualComponent* visual = EngineCore::GetEcsManager().GetComponent<VisualComponent>(id);
 
         for (auto pair : visual->GetMaterial()->m_Textures)
         {
@@ -51,6 +51,9 @@ void RenderingSystem::OnSceneLoad()
 
             if (texture == nullptr)
                 continue;
+
+            //if (GraphicCore::GetBindlessResourceManager().GetViewIndex(texture->GetView().GetName()) == 0)
+            //    continue;
 
             if (texture->GetDepth() == 1)
                 GraphicCore::GetGraphicRenderer().GetResourceContext().InitializeTexture2D(*texture);
@@ -68,9 +71,9 @@ void RenderingSystem::OnUpdate()
     {
         ETH_MARKER_EVENT("ECS - Rendering System - Visual Node Validation");
 
-        auto* mesh = EngineCore::GetEcsManager().GetComponent<MeshComponent>(id);
-        auto* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);
-        auto* visual = EngineCore::GetEcsManager().GetComponent<VisualComponent>(id);
+        MeshComponent* mesh = EngineCore::GetEcsManager().GetComponent<MeshComponent>(id);
+        TransformComponent* transform = EngineCore::GetEcsManager().GetComponent<TransformComponent>(id);
+        VisualComponent* visual = EngineCore::GetEcsManager().GetComponent<VisualComponent>(id);
 
         if (!mesh->IsEnabled())
             return;

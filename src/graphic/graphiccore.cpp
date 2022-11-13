@@ -59,13 +59,13 @@ void GraphicCore::Render()
 void GraphicCore::Shutdown()
 {
     FlushGpu();
-    Instance().m_GpuDescriptorAllocator.reset();
     Instance().m_GraphicCommon.reset();
     Instance().m_GuiRenderer.reset();
     Instance().m_GraphicDisplay.reset();
     Instance().m_GraphicRenderer.reset();
     Instance().m_CommandManager.reset();
     Instance().m_ShaderDaemon.reset();
+    Instance().m_GpuDescriptorAllocator.reset();
     Instance().m_BindlessResourceManager.reset();
 
     Instance().m_RhiDevice.Destroy();

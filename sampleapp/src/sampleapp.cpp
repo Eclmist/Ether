@@ -137,10 +137,10 @@ void SampleApp::UpdateOrbitCam(float deltaTime)
     m_CameraDistance -= Input::GetMouseWheelDelta() * deltaTime;
     m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
 
-    //if (Input::GetMouseButton(1))
+    if (Input::GetMouseButton(1))
     {
-        m_CameraRotation.x -= 0; //Input::GetMouseDeltaY() * sensitivity * deltaTime;
-        m_CameraRotation.y -= /*Input::GetMouseDeltaX() * */ sensitivity * deltaTime;
+        m_CameraRotation.x -= Input::GetMouseDeltaY() * sensitivity * deltaTime;
+        m_CameraRotation.y -= Input::GetMouseDeltaX() * sensitivity * deltaTime;
         m_CameraRotation.x = ethClamp(m_CameraRotation.x, -ethDegToRad(90.0f), ethDegToRad(90.0f));
     }
 

@@ -25,7 +25,7 @@
 
 ETH_NAMESPACE_BEGIN
 
-constexpr uint32_t DefaultMaxHeapSize = 262144; // 2^18, but can theoretically be infinite
+constexpr uint32_t DefaultMaxHeapSize = 0x1 << 18; // 2^18, but can theoretically be infinite
 
 class DescriptorAllocator
 {
@@ -40,14 +40,14 @@ public:
 
 public:
     inline RhiDescriptorHeapHandle GetDescriptorHeap() const { return m_DescriptorHeap; }
+
+    inline uint32_t GetMaxNumDescriptors() const { return m_MaxDescriptors; }
     inline bool IsShaderVisible() const { return m_IsShaderVisible; }
 
 public:
-    std::shared_ptr<DescriptorAllocation> Allocate(uint32_t numDescriptors = 1);
+    DescriptorAllocation Allocate(uint32_t numDescriptors = 1);
     void Free(const DescriptorAllocation& allocation);
-    
-private:
-    bool ReclaimStaleAllocations(uint32_t numIndices);
+    void ReclaimStaleAllocations(uint32_t numIndices);
 
 private:
     struct StaleAllocation

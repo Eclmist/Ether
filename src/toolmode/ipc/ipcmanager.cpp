@@ -108,8 +108,8 @@ void IpcManager::IncomingMessageHandler()
             m_Socket->WaitForConnection();
         }
 
-        auto next = m_Socket->GetNext();
-        auto request = ParseMessage(next);
+        std::string next = m_Socket->GetNext();
+        std::shared_ptr<Command> request = ParseMessage(next);
         QueueCommand(request);
     }
 }

@@ -68,7 +68,7 @@
 //    context.GetCommandList()->SetDescriptorHeaps({ 1, &GraphicCore::GetGpuDescriptorAllocator().GetDescriptorHeap() });
 //    context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
 //
-//    auto texture = GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI;
+//    CompiledTexture* texture = GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI;
 //    if (texture != nullptr)
 //    {
 //        rc.InitializeTexture2D(*texture);

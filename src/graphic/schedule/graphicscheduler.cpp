@@ -66,7 +66,7 @@ void GraphicScheduler::RegisterRenderPasses()
 
     //m_RegisteredRenderPasses.push_back(&GFX_PASS(DebugPass));
 
-    for (auto renderPass : m_RegisteredRenderPasses)
+    for (RenderPass* renderPass : m_RegisteredRenderPasses)
         renderPass->Initialize();
 }
 

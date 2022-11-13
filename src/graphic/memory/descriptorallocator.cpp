@@ -30,6 +30,7 @@ DescriptorAllocator::DescriptorAllocator(
     , m_MaxDescriptors(maxHeapSize)
     , m_IsShaderVisible(isShaderVisible)
     , m_FreeListAllocator(maxHeapSize)
+    , m_StaleAllocations()
 {
     GraphicCore::GetDevice()->CreateDescriptorHeap({
         type,
@@ -38,19 +39,12 @@ DescriptorAllocator::DescriptorAllocator(
     }, m_DescriptorHeap);
 }
 
-std::shared_ptr<DescriptorAllocation> DescriptorAllocator::Allocate(uint32_t numDescriptors)
+DescriptorAllocation DescriptorAllocator::Allocate(uint32_t numDescriptors)
 {
     if (!m_FreeListAllocator.HasSpace(numDescriptors))
-    {
-        bool result = ReclaimStaleAllocations(numDescriptors);
-        if (!result)
-        {
-            LogGraphicsError("Descriptor allocation failed - heap is already full");
-            throw std::bad_alloc();
-        }
-    }
+        ReclaimStaleAllocations(numDescriptors);
 
-    auto alloc = m_FreeListAllocator.Allocate(numDescriptors);
+    FreeListAllocation alloc = m_FreeListAllocator.Allocate(numDescriptors);
     uint32_t descriptorIdx = alloc.m_Offset;
     uint32_t descriptorSize = m_DescriptorHeap->GetHandleIncrementSize();
     RhiCpuHandle allocBaseCpuHandle = { m_DescriptorHeap->GetBaseCpuHandle().m_Ptr + descriptorIdx * descriptorSize };
@@ -58,33 +52,30 @@ std::shared_ptr<DescriptorAllocation> DescriptorAllocator::Allocate(uint32_t num
         ? RhiGpuHandle{ m_DescriptorHeap->GetBaseGpuHandle().m_Ptr + descriptorIdx * descriptorSize }
         : RhiGpuHandle{};
 
-    return std::make_shared<DescriptorAllocation>(
+    return DescriptorAllocation(
         allocBaseCpuHandle,
         allocBaseGpuHandle,
         numDescriptors,
         descriptorSize,
         descriptorIdx,
-        this);
+        this
+    );
 }
 
 void DescriptorAllocator::Free(const DescriptorAllocation& allocation)
 {
-    // Mark index as free, but don't actually do anything because
-    // it may still be in flight. We will reclaim these when we completely 
-    // run out of space
-
     m_StaleAllocations.emplace(allocation.GetDescriptorIndex(), allocation.GetNumDescriptors());
 }
 
-bool DescriptorAllocator::ReclaimStaleAllocations(uint32_t numIndices)
+void DescriptorAllocator::ReclaimStaleAllocations(uint32_t numIndices)
 {
-
     while (numIndices > 0)
     {
         if (m_StaleAllocations.empty())
         {
-            LogGraphicsWarning("Descriptor heap is full - no stale indices to reclaim");
-            return false;
+            LogGraphicsError("Descriptor heap is full - no stale indices to reclaim");
+            LogGraphicsError("Descriptor allocation failed - heap is already full");
+            throw std::bad_alloc();
         }
 
         StaleAllocation staleAlloc = m_StaleAllocations.front();
@@ -93,8 +84,6 @@ bool DescriptorAllocator::ReclaimStaleAllocations(uint32_t numIndices)
 
         numIndices -= staleAlloc.m_NumDescriptors;
     }
-
-    return true;
 }
 
 ETH_NAMESPACE_END

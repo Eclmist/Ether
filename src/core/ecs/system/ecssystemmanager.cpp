@@ -29,7 +29,7 @@ void EcsSystemManager::AssignEntityToSystems(EntityID id, ComponentSignature sig
     for (auto& pair : m_Systems)
     {
         auto& system = pair.second;
-        auto systemSign = system->GetSignature();
+        ComponentSignature systemSign = system->GetSignature();
         if ((signature & systemSign) == systemSign)
         {
             system->m_MatchingEntities.insert(id);

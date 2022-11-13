@@ -75,6 +75,7 @@ private:
     RhiShaderResourceViewHandle m_RenderTargetGpuDescriptors[MaxSwapChainBuffers];
     
     DescriptorAllocator m_RtvAllocator;
+    std::vector<DescriptorAllocation> m_DescriptorAllocations;
 
     uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
 

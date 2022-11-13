@@ -138,7 +138,7 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
     context.GetCommandList()->SetStencilRef(255);
     context.GetCommandList()->SetRootConstantBuffer({ 0, GFX_RESOURCE(GlobalCommonConstants) });
 
-    for (auto&& visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
+    for (VisualNode* visual : GraphicCore::GetGraphicRenderer().m_PendingVisualNodes)
     {
         ethMatrix4x4 modelMat = visual->GetModelMatrix();
         ethMatrix4x4 normalMat = ethMatrix4x4::From3x3(modelMat.Upper3x3());
@@ -156,11 +156,11 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
         visual->GetMappedParams()->m_MaterialParams.m_Roughness = visual->GetMaterial()->GetRoughness();
         visual->GetMappedParams()->m_MaterialParams.m_Metalness = visual->GetMaterial()->GetMetalness();
 
-        auto albedoTex = visual->GetMaterial()->GetTexture("_AlbedoTexture");
+        CompiledTexture* albedoTex = visual->GetMaterial()->GetTexture("_AlbedoTexture");
         if (albedoTex != nullptr)
             visual->GetMappedParams()->m_MaterialParams.m_AlbedoTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(albedoTex->GetView());
 
-        auto specTex = visual->GetMaterial()->GetTexture("_SpecularTexture");
+        CompiledTexture* specTex = visual->GetMaterial()->GetTexture("_SpecularTexture");
         if (specTex != nullptr)
             visual->GetMappedParams()->m_MaterialParams.m_SpecularTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(specTex->GetView());
 
