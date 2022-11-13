@@ -52,6 +52,9 @@ private:
         SizeToBlockMap::iterator m_SizeToBlockIterator;
     };
 
+    void MergeBlock(OffsetToBlockMap::iterator blockIter, FreeListAllocation newBlock);
+
+
 private:
     OffsetToBlockMap m_OffsetToFreeBlockMap;
     SizeToBlockMap m_SizeToFreeBlocksMap;

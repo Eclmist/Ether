@@ -65,18 +65,42 @@ void FreeListAllocator::FreeBlock(uint32_t offset, uint32_t size)
     auto nextBlockIter = m_OffsetToFreeBlockMap.upper_bound(offset);
     auto prevBlockIter = nextBlockIter;
 
-    // If it's not the first block in the list.
     if (prevBlockIter != m_OffsetToFreeBlockMap.begin())
-    {
-        // Go to the previous block in the list.
         prevBlockIter--;
-    }
     else
-    {
-        // Otherwise, just set it to the end of the list to indicate that no
-        // block comes before the one being freed.
         prevBlockIter = m_OffsetToFreeBlockMap.end();
+
+    // The previous block is exactly behind the block that is to be freed.
+    if (prevBlockIter != m_OffsetToFreeBlockMap.end() && offset == prevBlockIter->first + prevBlockIter->second.m_Size)
+    {
+        MergeBlock(prevBlockIter, { offset, size });
+        return;
     }
+
+    // The next block is exactly in front of the block that is to be freed.
+    if (nextBlockIter != m_OffsetToFreeBlockMap.end() && offset + size == nextBlockIter->first)
+    {
+        MergeBlock(nextBlockIter, { offset, size });
+        return;
+    }
+
+    // The freed block is not next to any other freed block
+    AddBlock(offset, size);
+}
+
+void FreeListAllocator::MergeBlock(OffsetToBlockMap::iterator blockIter, FreeListAllocation newBlock)
+{
+    AssertEngine(
+        newBlock.m_Offset + newBlock.m_Size == blockIter->first ||
+        blockIter->first + blockIter->second.m_Size == newBlock.m_Offset,
+        "FreeListAllocator - Misaligned blocks cannot be merged");
+
+    uint32_t newSize = newBlock.m_Size + blockIter->second.m_Size;
+    uint32_t newOffset = (newBlock.m_Offset < blockIter->first) ? newBlock.m_Offset : blockIter->first;
+
+    m_SizeToFreeBlocksMap.erase(blockIter->second.m_SizeToBlockIterator);
+    m_OffsetToFreeBlockMap.erase(blockIter);
+    AddBlock(newOffset, newSize);
 }
 
 ETH_NAMESPACE_END
