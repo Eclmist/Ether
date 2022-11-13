@@ -95,8 +95,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     Texture2D m_AlbedoTex = ResourceDescriptorHeap[m_InstanceParams.m_MaterialParams.m_AlbedoTextureIndex];
     Texture2D m_SpecularTex = ResourceDescriptorHeap[m_InstanceParams.m_MaterialParams.m_SpecularTextureIndex];
 
-    float4 col = m_AlbedoTex.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y)); // TODO: why is uv.y flipped?
-    float4 spec = m_SpecularTex.Sample(g_PointSampler, float2(IN.UV.x, -IN.UV.y));
+    float4 col = m_AlbedoTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y)); // TODO: why is uv.y flipped?
+    float4 spec = m_SpecularTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y));
     float3 normal = normalize(IN.NormalWS);
     float3 positionWS = IN.PositionWS;
 

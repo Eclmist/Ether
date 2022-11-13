@@ -268,50 +268,51 @@ float3 ComputePointLight(float2 uv, float3 pos, float3 normal, Material material
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
 
-    PointLight lights[7];
+    PointLight lights[1];
 
     const float4 time = g_CommonConstants.Time;
 {
 
-    lights[6].Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
-    lights[6].Color = float3(0.3, 0.1, 0.3);
-    lights[6].Intensity = 6.0f;
-    lights[6].Radius = 10.0f;
+    //lights[6].Position = float3(sin(time.z+2.9) * 2, -7.0, cos(time.z+ 5.2) * 2);
+    //lights[6].Color = float3(0.3, 0.1, 0.3);
+    //lights[6].Intensity = 6.0f;
+    //lights[6].Radius = 10.0f;
 
-    lights[1].Position = float3(10.0, sin(time.z) * 2.0, cos(time.y+10.3)* 6.0);
-    lights[1].Color = float3(saturate(sin(time.w+0.12)), 0.0, .3);
-    lights[1].Intensity = 2.0f;
-    lights[1].Radius = 20.0f;
+    //lights[1].Position = float3(10.0, sin(time.z) * 2.0, cos(time.y+10.3)* 6.0);
+    //lights[1].Color = float3(saturate(sin(time.w+0.12)), 0.0, .3);
+    //lights[1].Intensity = 2.0f;
+    //lights[1].Radius = 20.0f;
 
-    lights[2].Position = float3(sin(time.y + 0.34) * 10.0, 9.0, 14.0);
-    lights[2].Color = float3(0.3, 0.0, 1.0);
-    lights[2].Intensity = 4.0f;
-    lights[2].Radius = 50.0f;
+    //lights[2].Position = float3(sin(time.y + 0.34) * 10.0, 9.0, 14.0);
+    //lights[2].Color = float3(0.3, 0.0, 1.0);
+    //lights[2].Intensity = 4.0f;
+    //lights[2].Radius = 50.0f;
 
-    lights[3].Position = float3(-10.0, 9.0, sin(time.y+ 1.4) * 4.0);
-    lights[3].Color = float3(0.6, saturate(sin(time.y + 0.5)), 0.1);
-    lights[3].Intensity = 4.0f;
-    lights[3].Radius = 30.0f;
+    //lights[3].Position = float3(-10.0, 9.0, sin(time.y+ 1.4) * 4.0);
+    //lights[3].Color = float3(0.6, saturate(sin(time.y + 0.5)), 0.1);
+    //lights[3].Intensity = 4.0f;
+    //lights[3].Radius = 30.0f;
 
-    lights[4].Position = float3(-2.0, -6.0, -14.0);
-    lights[4].Color = float3(0.15, 0.83, 0.57);
-    lights[4].Intensity = 8.0f;
-    lights[4].Radius = 40.0f;
+    //lights[4].Position = float3(-2.0, -6.0, -14.0);
+    //lights[4].Color = float3(0.15, 0.83, 0.57);
+    //lights[4].Intensity = 8.0f;
+    //lights[4].Radius = 40.0f;
 
-    lights[5].Position = float3(4.5, 9.0, 16.0);
-    lights[5].Color = float3(saturate(sin(time.y+1.6)), 0.73, 0.57);
-    lights[5].Intensity =  5.0f;
-    lights[5].Radius = 20.0f;
+    //lights[5].Position = float3(4.5, 9.0, 16.0);
+    //lights[5].Color = float3(saturate(sin(time.y+1.6)), 0.73, 0.57);
+    //lights[5].Intensity =  5.0f;
+    //lights[5].Radius = 20.0f;
 
-    //lights[0].Position = float3(-60.5, 0.0, 0.0);
-    //lights[0].Color = float3(0.7, 0.78, 0.92);
-    //lights[0].Intensity = 30.0f;
-    //lights[0].Radius = 100.0f;
+    lights[0].Position = float3(-5.5, 0.0, 0.0);
+    lights[0].Color = float3(0.7, 0.78, 0.92);
+    lights[0].Intensity = 1.0f;
 
-    lights[0].Position = float3(5.0, 2.0, 0.0);
-    lights[0].Color = float3(1.0, 1.0, 1.0);
-    lights[0].Intensity = 10.0f;// (sin(time.z) * 0.5 + 0.5) * 10.0f;
-    lights[0].Radius = 3.0f;
+    lights[0].Radius = 100.0f;
+
+    //lights[0].Position = float3(5.0, 2.0, 0.0);
+    //lights[0].Color = float3(1.0, 1.0, 1.0);
+    //lights[0].Intensity = 10.0f;// (sin(time.z) * 0.5 + 0.5) * 10.0f;
+    //lights[0].Radius = 3.0f;
 }
 
 
@@ -323,7 +324,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float4 albedo = m_AlbedoTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y));
     float4 specular = m_SpecularTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y));
-    float3 pos = m_PositionTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y)).xyz;
+    float4 pos = m_PositionTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y));
     float3 normal = m_NormalTex.Sample(g_PointSampler, float2(IN.UV.x, IN.UV.y)).xyz;
 
     Material mat;
@@ -336,7 +337,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     const float3 n = normalize(normal);
     float3 finalColor = 0;// DiffuseIBL(n, v, mat) + SpecularIBL(n, v, mat);
 
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 1; ++i)
     {
         lights[i].Radius *= 0.7;
         lights[i].Position *= 5.2;
@@ -346,7 +347,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     }
 
     // fog
-    // finalColor = lerp(finalColor, float3(0.07, 0.06, 0.077), saturate(PositionTex.Sample(g_PointSampler, IN.UV).w / 100.0));
+    finalColor = lerp(finalColor, float3(0.05, 0.05, 0.04) * 2, saturate(pos.w / 100.0));
 
     return float4(finalColor, 1.0f);
 
