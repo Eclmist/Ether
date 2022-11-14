@@ -28,14 +28,10 @@ struct VS_OUTPUT
 
 struct TextureDebugParam
 {
-    uint TextureIndex;
+    uint m_TextureIndex;
 };
 
-ConstantBuffer<TextureDebugParam> TextureDebugParam : register(b0);
-
-Texture2D albedo : register(t0);
-Texture2D normal : register(t1);
-Texture2D position : register(t2);
+ConstantBuffer<TextureDebugParam> m_TextureDebugParam : register(b1);
 
 VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 {
@@ -52,12 +48,6 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    if (TextureDebugParam.TextureIndex == 1)
-        return albedo.Sample(g_PointSampler, IN.UV);
-    if (TextureDebugParam.TextureIndex == 2)
-        return normal.Sample(g_PointSampler, IN.UV);
-    if (TextureDebugParam.TextureIndex == 3)
-        return position.Sample(g_PointSampler, IN.UV);
-
-    return float4(1.0, 0.0, 1.0, 1.0);
+    Texture2D debugTex = ResourceDescriptorHeap[m_TextureDebugParam.m_TextureIndex];
+    return debugTex.Sample(g_PointSampler, IN.UV);
 }

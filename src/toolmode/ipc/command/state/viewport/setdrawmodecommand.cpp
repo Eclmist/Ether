@@ -34,10 +34,14 @@ void SetDrawModeCommand::Execute()
         EngineCore::GetEngineConfig().m_DebugTextureIndex = 0;
     if (m_DrawModeKey == "albedo")
         EngineCore::GetEngineConfig().m_DebugTextureIndex = 1;
-    if (m_DrawModeKey == "normal")
+    if (m_DrawModeKey == "specular")
         EngineCore::GetEngineConfig().m_DebugTextureIndex = 2;
-    if (m_DrawModeKey == "position")
+    if (m_DrawModeKey == "normal")
         EngineCore::GetEngineConfig().m_DebugTextureIndex = 3;
+    if (m_DrawModeKey == "position")
+        EngineCore::GetEngineConfig().m_DebugTextureIndex = 4;
+    if (m_DrawModeKey == "picker")
+        EngineCore::GetEngineConfig().m_DebugTextureIndex = 5;
 }
 
 ETH_NAMESPACE_END

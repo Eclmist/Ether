@@ -30,7 +30,7 @@
 
 #ifdef ETH_TOOLMODE
 #include "graphic/schedule/renderpass/editorgizmospass.h"
-//#include "graphic/schedule/renderpass/texturedebugpass.h"
+#include "graphic/schedule/renderpass/texturedebugpass.h"
 #endif
 
 #include "graphic/schedule/renderpass/debugpass.h"
@@ -49,7 +49,7 @@ DECLARE_GFX_PASS(DebugPass);
 
 #ifdef ETH_TOOLMODE
 DECLARE_GFX_PASS(EditorGizmosPass);
-//DECLARE_GFX_PASS(TextureDebugPass);
+DECLARE_GFX_PASS(TextureDebugPass);
 #endif
 
 void GraphicScheduler::RegisterRenderPasses()
@@ -62,7 +62,8 @@ void GraphicScheduler::RegisterRenderPasses()
     m_RegisteredRenderPasses.push_back(&GFX_PASS(DeferredLightingProducer));
     //m_RegisteredRenderPasses.push_back(&GFX_PASS(BloomPass));
     ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(EditorGizmosPass)));
-    //ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
+    ETH_TOOLONLY(m_RegisteredRenderPasses.push_back(&GFX_PASS(TextureDebugPass)));
+
 
     //m_RegisteredRenderPasses.push_back(&GFX_PASS(DebugPass));
 
