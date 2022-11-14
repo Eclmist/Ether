@@ -145,26 +145,31 @@ void GBufferProducer::Render(GraphicContext& context, ResourceContext& rc)
         normalMat = normalMat.Inversed();
         normalMat = normalMat.Transposed();
 
-        visual->GetMappedParams()->m_ModelMatrix = modelMat;
-        visual->GetMappedParams()->m_NormalMatrix = normalMat;
+        auto cbvResource = visual->GetInstanceParams(GraphicCore::GetFrameNumber() % 3);
+        VisualNodeInstanceParams* mappedParams;
 
-        ETH_TOOLONLY(visual->GetMappedParams()->m_PickerColor = visual->GetPickerColor());
+        cbvResource->Map((void**)&mappedParams);
 
-        visual->GetMappedParams()->m_MaterialParams = {};
-        visual->GetMappedParams()->m_MaterialParams.m_BaseColor = visual->GetMaterial()->GetBaseColor();
-        visual->GetMappedParams()->m_MaterialParams.m_SpecularColor = visual->GetMaterial()->GetSpecularColor();
-        visual->GetMappedParams()->m_MaterialParams.m_Roughness = visual->GetMaterial()->GetRoughness();
-        visual->GetMappedParams()->m_MaterialParams.m_Metalness = visual->GetMaterial()->GetMetalness();
+        mappedParams->m_ModelMatrix = modelMat;
+        mappedParams->m_NormalMatrix = normalMat;
+
+        ETH_TOOLONLY(mappedParams->m_PickerColor = visual->GetPickerColor());
+
+        mappedParams->m_MaterialParams = {};
+        mappedParams->m_MaterialParams.m_BaseColor = visual->GetMaterial()->GetBaseColor();
+        mappedParams->m_MaterialParams.m_SpecularColor = visual->GetMaterial()->GetSpecularColor();
+        mappedParams->m_MaterialParams.m_Roughness = visual->GetMaterial()->GetRoughness();
+        mappedParams->m_MaterialParams.m_Metalness = visual->GetMaterial()->GetMetalness();
 
         CompiledTexture* albedoTex = visual->GetMaterial()->GetTexture("_AlbedoTexture");
         if (albedoTex != nullptr)
-            visual->GetMappedParams()->m_MaterialParams.m_AlbedoTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(albedoTex->GetView());
+            mappedParams->m_MaterialParams.m_AlbedoTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(albedoTex->GetView());
 
         CompiledTexture* specTex = visual->GetMaterial()->GetTexture("_SpecularTexture");
         if (specTex != nullptr)
-            visual->GetMappedParams()->m_MaterialParams.m_SpecularTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(specTex->GetView());
+            mappedParams->m_MaterialParams.m_SpecularTextureIndex = GraphicCore::GetBindlessResourceManager().GetViewIndex(specTex->GetView());
 
-        context.GetCommandList()->SetRootConstantBuffer({ 1, visual->GetInstanceParams() });
+        context.GetCommandList()->SetRootConstantBuffer({ 1, cbvResource });
         context.GetCommandList()->SetVertexBuffer(visual->GetVertexBufferView());
         context.GetCommandList()->DrawInstanced({ visual->GetNumVertices(), 1, 0, 0 });
     }

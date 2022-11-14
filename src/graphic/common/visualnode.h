@@ -71,8 +71,7 @@ public:
     inline uint32_t GetNumVertices() const { return m_NodeDesc.m_NumVertices; }
     inline const ethMatrix4x4 GetModelMatrix() const { return *m_NodeDesc.m_ModelMatrix; }
     inline const Material* GetMaterial() const { return m_NodeDesc.m_Material; }
-    inline RhiResourceHandle GetInstanceParams() const { return m_InstanceParams; }
-    inline VisualNodeInstanceParams* GetMappedParams() const { return m_MappedParams; }
+    inline RhiResourceHandle GetInstanceParams(uint32_t frameIdx) const { return m_InstanceParams[frameIdx]; }
 
     ETH_TOOLONLY(inline const ethVector4u GetPickerColor() const { return m_NodeDesc.m_PickerColor; })
 
@@ -84,13 +83,12 @@ private:
 private:
     RhiResourceHandle m_VertexBuffer;
     RhiResourceHandle m_IndexBuffer;
-    RhiResourceHandle m_InstanceParams;
+    RhiResourceHandle m_InstanceParams[3];
 
     RhiVertexBufferViewDesc m_VertexBufferView;
     RhiIndexBufferViewDesc m_IndexBufferView;
 
     VisualNodeDesc m_NodeDesc;
-    VisualNodeInstanceParams* m_MappedParams;
 };
 
 ETH_NAMESPACE_END

@@ -25,7 +25,6 @@ ETH_NAMESPACE_BEGIN
 
 VisualNode::VisualNode(const VisualNodeDesc desc)
     : m_NodeDesc(desc)
-    , m_InstanceParams((L"Visual Node Instance Params " + std::to_wstring(desc.m_NodeId)).c_str())
 {
     UploadVertexBuffer(m_NodeDesc.m_VertexBuffer, m_NodeDesc.m_NumVertices);
     InitVertexBufferView(m_NodeDesc.m_NumVertices * sizeof(VertexFormats::VertexFormatStatic), sizeof(VertexFormats::VertexFormatStatic));
@@ -36,7 +35,6 @@ VisualNode::~VisualNode()
 {
     m_VertexBuffer.Destroy();
     m_IndexBuffer.Destroy();
-    m_InstanceParams->Unmap();
 }
 
 void VisualNode::UploadVertexBuffer(const void* data, uint32_t numVertices)
@@ -62,8 +60,11 @@ void VisualNode::InitVertexBufferView(size_t bufferSize, size_t stride)
 
 void VisualNode::InitInstanceParams()
 {
-    GraphicCore::GetGraphicRenderer().GetResourceContext().CreateConstantBuffer(sizeof(VisualNodeInstanceParams), m_InstanceParams);
-    m_InstanceParams->Map((void**)&m_MappedParams);
+    for (uint32_t i = 0; i < MaxSwapChainBuffers; ++i)
+    {
+        m_InstanceParams[i] = RhiResourceHandle((L"Visual Node Instance Params " + std::to_wstring(m_NodeDesc.m_NodeId) + std::to_wstring(i)).c_str());
+        GraphicCore::GetGraphicRenderer().GetResourceContext().CreateConstantBuffer(sizeof(VisualNodeInstanceParams), m_InstanceParams[i]);
+    }
 }
 
 ETH_NAMESPACE_END
