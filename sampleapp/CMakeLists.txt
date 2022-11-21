@@ -21,7 +21,8 @@
 #                        ADD SOURCE FILES TO PROJECT                          #
 # =========================================================================== #
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/src")
 
 file(GLOB_RECURSE sample_app src/*)
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
@@ -29,14 +30,17 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
 # =========================================================================== #
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
+
 add_executable(SampleApp WIN32 ${sample_app})
-target_compile_definitions(SampleApp PRIVATE ETH_PLATFORM_WIN32)
-target_compile_definitions(SampleApp PRIVATE ETH_GRAPHICS_DX12)
+
+# Set working directory to bin folder so Ether dlls can be found
 set_property(TARGET SampleApp PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
 # =========================================================================== #
 #                                LINK LIBRARIES                               #
 # =========================================================================== #
 
-target_link_libraries(SampleApp ${ENGINE_PROJECT_DX12})
-set_target_properties(SampleApp PROPERTIES LINK_FLAGS ${CMAKE_SOURCE_DIR}/resource/Ether.res)
+target_link_libraries(SampleApp Ether)
+set_target_properties(SampleApp PROPERTIES LINK_FLAGS "${CMAKE_SOURCE_DIR}/resource/Ether.res")
+
+

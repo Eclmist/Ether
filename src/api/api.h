@@ -19,8 +19,26 @@
 
 #pragma once
 
-ETH_NAMESPACE_BEGIN
+#include "api/iapplicationbase.h"
 
-ETH_ENGINE_DLL int Start(IApplicationBase& app);
+#include "common/logging/loggingmanager.h"
+#include "engine/input/input.h"
 
-ETH_NAMESPACE_END
+namespace Ether
+{
+    ETH_ENGINE_DLL int Start(IApplicationBase& app);
+    ETH_ENGINE_DLL void Shutdown();
+}
+
+namespace Ether::Client
+{
+    ETH_ENGINE_DLL void SetClientTitle(const std::string& title);
+    ETH_ENGINE_DLL std::string GetClientTitle();
+
+    ETH_ENGINE_DLL void SetClientSize(ethVector2u size);
+    ETH_ENGINE_DLL ethVector2u GetClientSize();
+
+    ETH_ENGINE_DLL void SetFullscreen(bool enabled);
+    ETH_ENGINE_DLL bool IsFullscreen();
+}
+

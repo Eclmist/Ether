@@ -19,45 +19,66 @@
 
 #pragma once
 
-ETH_NAMESPACE_BEGIN
+#include "common/memory/memoryallocator.h"
+#include <map>
 
-struct FreeListAllocation
+namespace Ether
 {
-    uint32_t m_Offset;
-    uint32_t m_Size;
-};
-
-class FreeListAllocator : public NonCopyable
-{
-public:
-    FreeListAllocator(uint32_t size);
-    ~FreeListAllocator() = default;
-
-public:
-    FreeListAllocation Allocate(uint32_t size);
-    bool HasSpace(uint32_t size) const;
-
-    void AddBlock(uint32_t offset, uint32_t size);
-    void FreeBlock(uint32_t offset, uint32_t size);
-
-private:
-    struct FreeBlockInfo;
-    using OffsetToBlockMap = std::map<uint32_t, FreeBlockInfo>;
-    using SizeToBlockMap = std::multimap<uint32_t, OffsetToBlockMap::iterator>;
-
-    struct FreeBlockInfo
+    /**
+     * An alignment aware free-list allocator implementation.
+     * Inspired by DiligentGraphics
+     * http://diligentgraphics.com/diligent-engine/architecture/d3d12/variable-size-memory-allocations-manager/
+     */
+    class ETH_COMMON_DLL FreeListAllocation : public MemoryAllocation
     {
-        FreeBlockInfo(uint32_t size) : m_Size(size) {}
-        uint32_t m_Size;
-        SizeToBlockMap::iterator m_SizeToBlockIterator;
+    public:
+        FreeListAllocation() = default;
+        FreeListAllocation(size_t offset, size_t size)
+            : m_Offset(offset)
+            , m_Size(size) {}
+        ~FreeListAllocation() override {}
+
+        virtual size_t GetOffset() const override { return m_Offset; }
+        virtual size_t GetSize() const override { return m_Size; }
+        virtual void* GetBaseAddress() const override { return nullptr; }
+
+    protected:
+        size_t m_Offset;
+        size_t m_Size;
     };
 
-    void MergeBlock(OffsetToBlockMap::iterator blockIter, FreeListAllocation newBlock);
+    class ETH_COMMON_DLL FreeListAllocator : public MemoryAllocator
+    {
+    public:
+        FreeListAllocator(size_t capacity);
+        ~FreeListAllocator() = default;
 
-private:
-    OffsetToBlockMap m_OffsetToFreeBlockMap;
-    SizeToBlockMap m_SizeToFreeBlocksMap;
-};
+    public:
+        std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
+        void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
+        bool HasSpace(SizeAlign sizeAlign) const override;
+        void Reset() override;
+
+    protected:
+        struct FreeBlockInfo;
+        using OffsetToBlockMap = std::map<size_t, FreeBlockInfo>;
+        using SizeToOffsetMap = std::multimap<size_t, OffsetToBlockMap::iterator>;
+
+        struct FreeBlockInfo
+        {
+            FreeBlockInfo(size_t size) : m_Size(size) {}
+            size_t m_Size;
+            SizeToOffsetMap::iterator m_SizeToOffsetIter;
+        };
+
+        FreeBlockInfo* FindFreeBlock(SizeAlign sizeAlign) const;
+        void AddBlock(size_t offset, size_t size);
+        void FreeBlock(size_t offset, size_t size);
+        void MergeBlock(OffsetToBlockMap::iterator existingBlock, FreeListAllocation newBlock);
 
 
-ETH_NAMESPACE_END
+    protected:
+        OffsetToBlockMap m_OffsetToBlockMap;
+        SizeToOffsetMap m_SizeToOffsetMap;
+    };
+}

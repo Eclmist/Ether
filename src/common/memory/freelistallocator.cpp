@@ -19,66 +19,103 @@
 
 #include "freelistallocator.h"
 
-ETH_NAMESPACE_BEGIN
-
-FreeListAllocator::FreeListAllocator(uint32_t size)
+Ether::FreeListAllocator::FreeListAllocator(size_t capacity)
+    : MemoryAllocator(capacity)
 {
-    AddBlock(0, size);
+    AddBlock(0, capacity);
 }
 
-FreeListAllocation FreeListAllocator::Allocate(uint32_t size)
+std::unique_ptr<Ether::MemoryAllocation> Ether::FreeListAllocator::Allocate(SizeAlign sizeAlign)
 {
-    auto smallestFreeBlockIter = m_SizeToFreeBlocksMap.lower_bound(size);
-    uint32_t blockSize = smallestFreeBlockIter->first;
-    auto offsetIter = smallestFreeBlockIter->second;
-    uint32_t offset = offsetIter->first;
+    auto smallestFreeBlockIter = FindFreeBlock(sizeAlign);
+    if (smallestFreeBlockIter == nullptr)
+        return nullptr;
+
+    uint32_t blockSize = smallestFreeBlockIter->m_Size;
+    uint32_t offset = smallestFreeBlockIter->m_SizeToOffsetIter->second->first;
+    uint32_t alignedOffset = AlignUp(offset, sizeAlign.m_Alignment);
+    uint32_t alignedSize = AlignUp(sizeAlign.m_Size, sizeAlign.m_Alignment);
 
     // Remove the existing free block from the free list.
-    m_SizeToFreeBlocksMap.erase(smallestFreeBlockIter);
-    m_OffsetToFreeBlockMap.erase(offsetIter);
+    auto offsetToBlockIter = smallestFreeBlockIter->m_SizeToOffsetIter->second;
+    auto m_SizeToOffsetIter = smallestFreeBlockIter->m_SizeToOffsetIter;
+    m_OffsetToBlockMap.erase(offsetToBlockIter);
+    m_SizeToOffsetMap.erase(m_SizeToOffsetIter);
 
-    // Compute the new free block that results from splitting this block.
-    uint32_t newOffset = offset + size;
-    uint32_t newSize = blockSize - size;
+    // Compute the new left free block (due to alignment requirements) from splitting this block
+    if (alignedOffset - offset > 0)
+        AddBlock(offset, alignedOffset - offset);
 
-    // Requested size does not match exactly, split and create new block
-    if (newSize > 0)
-        AddBlock(newOffset, newSize);
+    // Compute the new right free block that results from splitting this block.
+    uint32_t remainingSize = blockSize - alignedSize - (alignedOffset - offset);
+    if (remainingSize > 0)
+        AddBlock(alignedOffset + alignedSize, remainingSize);
 
-    return { offset, size };
+    return std::make_unique<FreeListAllocation>(alignedOffset, alignedSize);
 }
 
-bool FreeListAllocator::HasSpace(uint32_t size) const
+void Ether::FreeListAllocator::Free(std::unique_ptr<MemoryAllocation>&& alloc)
 {
-    return m_SizeToFreeBlocksMap.lower_bound(size) != m_SizeToFreeBlocksMap.end();
+    FreeBlock(alloc->GetOffset(), alloc->GetSize());
 }
 
-void FreeListAllocator::AddBlock(uint32_t offset, uint32_t size)
+bool Ether::FreeListAllocator::HasSpace(SizeAlign sizeAlign) const
 {
-    auto offsetIter = m_OffsetToFreeBlockMap.emplace(offset, size);
-    auto sizeIter = m_SizeToFreeBlocksMap.emplace(size, offsetIter.first);
-    offsetIter.first->second.m_SizeToBlockIterator = sizeIter;
+    return FindFreeBlock(sizeAlign) != nullptr;
 }
 
-void FreeListAllocator::FreeBlock(uint32_t offset, uint32_t size)
+void Ether::FreeListAllocator::Reset()
 {
-    auto nextBlockIter = m_OffsetToFreeBlockMap.upper_bound(offset);
+    m_OffsetToBlockMap.clear();
+    m_SizeToOffsetMap.clear();
+    AddBlock(0, m_Capacity);
+}
+
+Ether::FreeListAllocator::FreeBlockInfo* Ether::FreeListAllocator::FindFreeBlock(SizeAlign sizeAlign) const
+{
+    size_t minimumBlockSize = AlignUp(sizeAlign.m_Size, sizeAlign.m_Alignment);
+
+    for (auto iter = m_SizeToOffsetMap.lower_bound(minimumBlockSize); iter != m_SizeToOffsetMap.end(); ++iter)
+    {
+        size_t blockSize = iter->first;
+        size_t blockOffset = iter->second->first;
+        size_t alignedOffset = AlignUp(blockOffset, sizeAlign.m_Alignment);
+        size_t alignedSize = AlignUp(blockSize, sizeAlign.m_Alignment);
+        size_t leftPadding = alignedOffset - blockOffset;
+
+        if (blockSize - leftPadding >= alignedSize)
+            return &iter->second->second;
+    }
+
+    return nullptr;
+}
+
+void Ether::FreeListAllocator::AddBlock(size_t offset, size_t size)
+{
+    auto offsetIter = m_OffsetToBlockMap.emplace(offset, size);
+    auto sizeIter = m_SizeToOffsetMap.emplace(size, offsetIter.first);
+    offsetIter.first->second.m_SizeToOffsetIter = sizeIter;
+}
+
+void Ether::FreeListAllocator::FreeBlock(size_t offset, size_t size)
+{
+    auto nextBlockIter = m_OffsetToBlockMap.upper_bound(offset);
     auto prevBlockIter = nextBlockIter;
 
-    if (prevBlockIter != m_OffsetToFreeBlockMap.begin())
+    if (prevBlockIter != m_OffsetToBlockMap.begin())
         prevBlockIter--;
     else
-        prevBlockIter = m_OffsetToFreeBlockMap.end();
+        prevBlockIter = m_OffsetToBlockMap.end();
 
     // The previous block is exactly behind the block that is to be freed.
-    if (prevBlockIter != m_OffsetToFreeBlockMap.end() && offset == prevBlockIter->first + prevBlockIter->second.m_Size)
+    if (prevBlockIter != m_OffsetToBlockMap.end() && offset == prevBlockIter->first + prevBlockIter->second.m_Size)
     {
         MergeBlock(prevBlockIter, { offset, size });
         return;
     }
 
     // The next block is exactly in front of the block that is to be freed.
-    if (nextBlockIter != m_OffsetToFreeBlockMap.end() && offset + size == nextBlockIter->first)
+    if (nextBlockIter != m_OffsetToBlockMap.end() && offset + size == nextBlockIter->first)
     {
         MergeBlock(nextBlockIter, { offset, size });
         return;
@@ -88,19 +125,18 @@ void FreeListAllocator::FreeBlock(uint32_t offset, uint32_t size)
     AddBlock(offset, size);
 }
 
-void FreeListAllocator::MergeBlock(OffsetToBlockMap::iterator blockIter, FreeListAllocation newBlock)
+void Ether::FreeListAllocator::MergeBlock(OffsetToBlockMap::iterator blockIter, FreeListAllocation newBlock)
 {
-    AssertEngine(
-        newBlock.m_Offset + newBlock.m_Size == blockIter->first ||
-        blockIter->first + blockIter->second.m_Size == newBlock.m_Offset,
+    assert(
+        (newBlock.GetOffset() + newBlock.GetSize() == blockIter->first ||
+        blockIter->first + blockIter->second.m_Size == newBlock.GetOffset()) &&
         "FreeListAllocator - Misaligned blocks cannot be merged");
 
-    uint32_t newSize = newBlock.m_Size + blockIter->second.m_Size;
-    uint32_t newOffset = (newBlock.m_Offset < blockIter->first) ? newBlock.m_Offset : blockIter->first;
+    size_t newSize = newBlock.GetSize() + blockIter->second.m_Size;
+    size_t newOffset = (newBlock.GetOffset() < blockIter->first) ? newBlock.GetOffset() : blockIter->first;
 
-    m_SizeToFreeBlocksMap.erase(blockIter->second.m_SizeToBlockIterator);
-    m_OffsetToFreeBlockMap.erase(blockIter);
+    m_SizeToOffsetMap.erase(blockIter->second.m_SizeToOffsetIter);
+    m_OffsetToBlockMap.erase(blockIter);
     AddBlock(newOffset, newSize);
 }
 
-ETH_NAMESPACE_END

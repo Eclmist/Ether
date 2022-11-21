@@ -19,33 +19,8 @@
 
 #pragma once
 
-// Absolute first thing to include. Since we are not sure were someone might include a <Window.h>
-#include "system/platform/win32/ethwin.h"
+#include "common/common.h"
 
-// STL Headers
-#include <algorithm>
-#include <string>
-#include <memory>
+#include "api/api.h"
 
-// Chrono
-#include <chrono>
-namespace chrono = std::chrono;
-
-// Common Containers
-#include <vector>
-#include <list>
-#include <stack>
-#include <unordered_set>
-#include <set>
-#include <map>
-
-// Resources
-#include "../resource/resource.h"
-
-// Ether includes
-#include "core/core.h"
-#include "graphic/graphic.h"
-
-// Debugging
-#include "common/debugging/markers.h"
 

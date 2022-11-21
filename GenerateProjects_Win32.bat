@@ -1,7 +1,7 @@
 @echo off
 
-:: ============== WINDOWS ============== ::
-echo Generating Visual Studio solutions for Ether (Windows)
+:: ============== STANDALONE CONFIG (WIN32) ============== ::
+echo Generating Visual Studio solutions for Ether
 cmake -B build\win32
 if %errorlevel% neq 0 (
     echo CMake exited with error code %errorlevel%
@@ -23,5 +23,25 @@ if %errorlevel% neq 0 (
     exit
 )
 
-echo Windows solutions generated successfully
+echo Ether solution generated successfully
+
+:: ================== TOOLMODE CONFIG ================== ::
+
+echo Generating Visual Studio solutions for Ether (Toolmode)
+
+cmake -D CONFIGURE_AS_TOOLMODE:BOOL=1 -B build\win32
+
+if %errorlevel% neq 0 (
+    echo CMake exited with error code %errorlevel%
+    echo Projects generation failed
+    color CF
+    pause
+    exit
+)
+
+echo Ether (toolmode) solution generated successfully
+
+color 2F
+echo All configurations generated successfully
 PAUSE
+

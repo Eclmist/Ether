@@ -19,21 +19,21 @@
 
 #pragma once
 
+#include "common/common.h"
 #include "optick/optick.h"
-#include "pix/pix3.h"
 
-ETH_NAMESPACE_BEGIN
+#ifdef ETH_PLATFORM_WIN32
+	#define ETH_MARKER_FRAME(name) \
+		OPTICK_FRAME(name);
+	#define ETH_MARKER_THREAD(name) \
+		OPTICK_THREAD(name);
+	#define ETH_MARKER_EVENT(name) \
+		OPTICK_EVENT(name);
+#else
+	#define ETH_MARKER_FRAME(name) 
+	#define ETH_MARKER_THREAD(name) 
+	#define ETH_MARKER_EVENT(name) 
+#endif
 
-#define ETH_MARKER_FRAME(name) \
-    OPTICK_FRAME(name); \
-    PIXScopedEvent(PIX_COLOR_INDEX(1), name)
 
-#define ETH_MARKER_THREAD(name) \
-    OPTICK_THREAD(name); \
-    PIXScopedEvent(PIX_COLOR_INDEX(2), name)
 
-#define ETH_MARKER_EVENT(name) \
-    OPTICK_EVENT(name); \
-    PIXScopedEvent(PIX_COLOR_INDEX(3), name)
-
-ETH_NAMESPACE_END

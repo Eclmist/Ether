@@ -105,8 +105,8 @@ public:
         }
     }
 
-    void UnloadContent() override {};
-    void Shutdown() override {};
+    void UnloadContent() override {}
+    void Shutdown() override {}
 
 public:
     void OnUpdate(const UpdateEventArgs& e) override

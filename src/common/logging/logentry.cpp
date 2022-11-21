@@ -18,28 +18,35 @@
 */
 
 #include "logentry.h"
+#include "common/utils/time.h"
 
-ETH_NAMESPACE_BEGIN
-
-LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
+Ether::LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
     : m_Text(text)
     , m_Level(level)
     , m_Type(type)
-    , m_Time(GetSystemTime())
+    , m_Time(Time::GetCurrentTime())
 {
 }
 
-std::string LogEntry::GetText() const
+std::string Ether::LogEntry::GetText() const
 {
+#if defined (ETH_PLATFORM_WIN32)
     return GetTimePrefix() + " " + GetLogTypePrefix() + " " + m_Text;
+#elif defined (ETH_PLATFORM_PS5)
+    return "[Ether] " + GetLogTypePrefix() + " " + m_Text;
+#endif
 }
 
-std::string LogEntry::GetFullText() const
+std::string Ether::LogEntry::GetFullText() const
 {
-    return GetTimePrefix() + " " + GetLogTypePrefix() + " " + GetLogLevelPrefix() + " " + m_Text;
+#if defined (ETH_PLATFORM_WIN32)
+	return GetTimePrefix() + " " + GetLogTypePrefix() + " " + GetLogLevelPrefix() + " " + m_Text;
+#elif defined (ETH_PLATFORM_PS5)
+	return "[ Ether ] " + GetLogTypePrefix() + GetLogLevelPrefix() + " " + m_Text;
+#endif
 }
 
-std::string LogEntry::GetLogLevelPrefix() const
+std::string Ether::LogEntry::GetLogLevelPrefix() const
 {
     switch (m_Level)
     {
@@ -55,7 +62,7 @@ std::string LogEntry::GetLogLevelPrefix() const
     }
 }
 
-std::string LogEntry::GetLogTypePrefix() const
+std::string Ether::LogEntry::GetLogTypePrefix() const
 {
     switch (m_Type)
     {
@@ -65,18 +72,34 @@ std::string LogEntry::GetLogTypePrefix() const
         return "[ Graphics ]";
     case LogType::Win32:
         return "[ Platform ]";
+#ifdef ETH_TOOLMODE
     case LogType::Toolmode:
         return "[ Toolmode ]";
+#endif
     case LogType::None:
     default:
         return "[  Engine  ]";
     }
 }
 
-std::string LogEntry::GetTimePrefix() const
+std::string Ether::LogEntry::GetTimePrefix() const
 {
-    return "[ " + FormatTime(m_Time, "%Y/%m/%d %X") + " ]";
+    time_t epochTime = m_Time / 1000.0f;
+    return "[ " + FormatTime(epochTime, "%Y/%m/%d %X") + " ]";
 }
 
-ETH_NAMESPACE_END
+std::string Ether::LogEntry::FormatTime(const time_t t, const char* format) const
+{
+    char formatted[80];
+    tm newTime;
+
+#if defined (ETH_PLATFORM_WIN32)
+    localtime_s(&newTime, &t);
+#elif defined (ETH_PLATFORM_PS5)
+    localtime_s(&t, &newTime);
+#endif
+
+    strftime(formatted, 80, format, &newTime);
+    return formatted;
+}
 

@@ -18,99 +18,62 @@
 */
 
 #include "api.h"
-#include "graphic/graphic.h"
-#include <dxgidebug.h>
+#include "engine/engine.h"
 
-ETH_NAMESPACE_BEGIN
-
-void UpdateEngine()
+int Ether::Start(IApplicationBase& app)
 {
-    ETH_MARKER_THREAD("Engine");
+    Time::Instance().Initialize();
+    Input::Instance().Initialize();
+    LoggingManager::Instance().Initialize();
 
-    while (true)
-    {
-        ETH_MARKER_FRAME("Engine - MainThread");
-
-        Input::NewFrame();
-
-        static double lastTime = 0;
-
-        {
-            ETH_MARKER_EVENT("Application (ToolMain) - Update");
-            UpdateEventArgs updateArgs;
-            updateArgs.m_TotalElapsedTime = GetTimeSinceStart();
-            updateArgs.m_DeltaTime = updateArgs.m_TotalElapsedTime - lastTime;
-
-            EngineCore::GetMainApplication().OnUpdate(updateArgs);
-        }
-
-        EngineCore::Update();
-        Input::EndFrame();
-
-        RenderEventArgs renderArgs;
-        renderArgs.m_TotalElapsedTime = GetTimeSinceStart();
-        renderArgs.m_GraphicContext = &GraphicCore::GetGraphicRenderer().GetGraphicContext();
-        renderArgs.m_DeltaTime = renderArgs.m_TotalElapsedTime - lastTime;
-        lastTime = renderArgs.m_TotalElapsedTime;
-
-        {
-            ETH_MARKER_EVENT("Application - OnRender");
-            EngineCore::GetMainApplication().OnRender(renderArgs);
-        }
-        {
-            ETH_MARKER_EVENT("Graphic Core - Render");
-            GraphicCore::Render();
-        }
-
-        ETH_TOOLONLY(EngineCore::GetIpcManager().ProcessPendingCommands());
-
-        if (EngineCore::GetMainApplication().ShouldExit())
-            break;
-    }
-}
-
-void WindowsUpdateLoop()
-{
-    while(true)
-    {
-        MSG msg = {};
-        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        if (msg.message == WM_QUIT)
-            break;
-    } 
-}
-
-int Start(IApplicationBase& app)
-{
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
+    Engine::Instance().Initialize();
+    Engine::Instance().LoadApplication(app);
+    Engine::Instance().GetMainWindow().Show();
+	Engine::Instance().Run();
 
-    EngineCore::Initialize(app);
-    GraphicCore::Initialize();
+    LogInfo("Shutting down Ether"); 
+    Engine::Instance().Shutdown();
 
-    EngineCore::LoadContent();
-    ETH_ENGINEONLY(EngineCore::GetMainWindow().Show());
-
-    std::thread mainEngineThread(UpdateEngine);
-    WindowsUpdateLoop();
-
-    mainEngineThread.join();
-
-    GraphicCore::Shutdown();
-    EngineCore::Shutdown();
-
-#ifdef _DEBUG
-    wrl::ComPtr<IDXGIDebug1> dxgiDebug;
-    DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug));
-    dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_SUMMARY | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
-#endif
-
+    Input::Reset();
+    Time::Reset();
+    LoggingManager::Reset();
     return 0;
 }
 
-ETH_NAMESPACE_END
+void Ether::Shutdown()
+{
+#ifdef ETH_PLATFORM_WIN32
+    //PostQuitMessage(0);
+#endif
+}
+
+void Ether::Client::SetClientTitle(const std::string& title)
+{
+    Engine::GetEngineConfig().SetClientTitle(title);
+}
+
+std::string Ether::Client::GetClientTitle()
+{
+    return Engine::GetEngineConfig().GetClientName();
+}
+
+void Ether::Client::SetClientSize(ethVector2u size)
+{
+    Engine::GetEngineConfig().SetClientSize(size);
+}
+
+Ether::ethVector2u Ether::Client::GetClientSize()
+{
+    return Engine::GetEngineConfig().GetClientSize();
+}
+void Ether::Client::SetFullscreen(bool enabled)
+{
+    Engine::GetMainWindow().SetFullscreen(enabled);
+}
+
+bool Ether::Client::IsFullscreen()
+{
+    return Engine::GetMainWindow().IsFullscreen();
+}
 

@@ -17,8 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "getcomponentscommand.h"
 
 ETH_NAMESPACE_BEGIN

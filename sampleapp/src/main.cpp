@@ -18,14 +18,20 @@
 */
 
 #include "sampleapp.h"
-#include "api/api.h"
 
-#if defined(ETH_PLATFORM_WIN32)
+#if defined (ETH_PLATFORM_WIN32)
+#include <windows.h>
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
-#else
-int main()
+#elif defined (ETH_PLATFORM_PS5)
+int main(void)
 #endif
 {
-    return Ether::Start(SampleApp());
+#if defined (ETH_PLATFORM_PS5)
+	sceKernelLoadStartModule("/app0/Common.prx", 0, NULL, 0, NULL, NULL);
+	sceKernelLoadStartModule("/app0/Ether.prx", 0, NULL, 0, NULL, NULL);
+#endif
+
+    SampleApp sample;
+    return Ether::Start(sample);
 }
 

@@ -18,18 +18,39 @@
 */
 
 #include "loggingmanager.h"
-#include <iosfwd>
-#include <ShlObj_core.h>
-#include <iostream>
+
+#include <stdarg.h>
 #include <sstream>
+#include <filesystem>
 
-ETH_NAMESPACE_BEGIN
+#include "common/utils/time.h"
 
-#define MAX_LOG_ENTRIES 512
+#ifdef ETH_PLATFORM_WIN32
+#define _AMD64_ // So we don't have to include <windows.h> here
+#include <debugapi.h> // For OutputDebugStringA
+#endif
 
-std::queue<LogEntry> g_PreInitBuffer;
+constexpr uint32_t MaxLogEntries = 512;
+constexpr std::string_view OutputFilePath = ".\\Logs";
+constexpr std::string_view OutputFileSuffix = ".log";
 
-void Log(LogLevel level, LogType type, const char* fmt, ...)
+Ether::LoggingManager::~LoggingManager()
+{
+    m_LogFileStream.close();
+}
+
+void Ether::LoggingManager::Initialize()
+{
+#if defined (ETH_PLATFORM_WIN32)
+    std::filesystem::create_directory(OutputFilePath);
+    m_LogFileStream.open(GetOutputDirectory() + "/" + GetTimestampedFileName(), std::ios_base::app);
+
+    if (!m_LogFileStream.is_open())
+        LogWarning("Unable to open log file for serialization.Logs will be lost when the application exits");
+#endif
+}
+
+void Ether::LoggingManager::Log(LogLevel level, LogType type, const char* fmt, ...)
 {
     char formattedBuffer[4096];
 
@@ -46,85 +67,50 @@ void Log(LogLevel level, LogType type, const char* fmt, ...)
     while (std::getline(ss, individualLine, '\n')) {
         LogEntry entry(individualLine, level, type);
 
-        // Output the log entry to visual studio's debug output window
-        OutputDebugStringA((entry.GetFullText() + "\n").c_str());
-
-        if (EngineCore::HasInstance())
-        {
-            EngineCore::GetLoggingManager().AddLog(entry);
-            EngineCore::GetLoggingManager().Serialize(entry);
-        }
-        else
-            g_PreInitBuffer.push(entry);
+        AddLog(entry);
+        Serialize(entry);
     }
 }
 
-LoggingManager::LoggingManager()
-{
-    m_LogFileStream.open(std::wstring(GetOutputDirectory() + GetTimestampedFileName()), std::ios_base::app);
-
-    if (!m_LogFileStream.is_open())
-    {
-        // Warning must push to the pre-init buffer manually instead of calling any of the
-        // Logging functions because the logging manager is in the middle of initialization.
-        g_PreInitBuffer.emplace(
-            "Unable to open log file for serialization. Logs may be lost",
-            LogLevel::Warning, LogType::Engine);
-
-        return;
-    }
-
-    while (!g_PreInitBuffer.empty())
-    {
-        AddLog(g_PreInitBuffer.front());
-        Serialize(g_PreInitBuffer.front());
-        g_PreInitBuffer.pop();
-    }
-}
-
-LoggingManager::~LoggingManager()
-{
-    m_LogFileStream.close();
-}
-
-void LoggingManager::AddLog(const LogEntry entry)
+void Ether::LoggingManager::AddLog(const LogEntry entry)
  {
-    std::lock_guard<std::mutex> guard(m_Mutex);
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
-    if (m_LogEntries.size() > MAX_LOG_ENTRIES)
+    if (m_LogEntries.size() > MaxLogEntries)
         m_LogEntries.pop_front();
 
     m_LogEntries.emplace_back(entry);
 }
 
-void LoggingManager::Clear()
+void Ether::LoggingManager::Serialize(const LogEntry entry)
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+#if defined (ETH_PLATFORM_WIN32)
+    m_LogFileStream << entry.GetFullText().c_str() << "\n";
+    m_LogFileStream.flush();
+
+    // TODO: Also output the log entry to visual studio's debug output window
+    OutputDebugStringA((entry.GetFullText() + "\n").c_str());
+
+#elif defined (ETH_PLATFORM_PS5)
+	fprintf((&_CSTD _Stdout), "%s\n", entry.GetFullText().c_str());
+#endif
+}
+
+void Ether::LoggingManager::Clear()
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
     m_LogEntries.clear();
 }
 
-void LoggingManager::Serialize(const LogEntry entry)
+const std::string Ether::LoggingManager::GetOutputDirectory() const
 {
-    std::lock_guard<std::mutex> guard(m_Mutex);
-    m_LogFileStream << entry.GetFullText().c_str() << "\n";
-    m_LogFileStream.flush();
+    return std::string(OutputFilePath);
 }
 
-const std::wstring LoggingManager::GetOutputDirectory() const
+const std::string Ether::LoggingManager::GetTimestampedFileName() const
 {
-    wchar_t path[1024];
-    wcscpy_s(path, L"./Logs");
-    CreateDirectoryW(path, NULL);
-    wcscat_s(path, L"/");
-    return path;
+    return std::to_string(Time::GetStartupTime()) + std::string(OutputFileSuffix);
 }
-
-const std::wstring LoggingManager::GetTimestampedFileName() const
-{
-    wchar_t filename[1024];
-    wcscpy_s(filename, WFormatTime(GetSystemTime(), L"%Y%m%d_%H%M%S").c_str());
-    wcscat_s(filename, L".log");
-    return filename;
-}
-
-ETH_NAMESPACE_END
 

@@ -19,14 +19,8 @@
 
 #pragma once
 
-#include "core/core.h"
-#include "graphic/graphiccore.h"
-
-namespace Ether
-{
-    class CompiledTexture;
-    class Material;
-}
+#include "ether.h"
+#include <string>
 
 class SampleApp : public Ether::IApplicationBase
 {
@@ -39,6 +33,7 @@ public:
 public:
     void OnUpdate(const Ether::UpdateEventArgs& e) override;
     void OnRender(const Ether::RenderEventArgs& e) override;
+    void OnShutdown() override;
 
 private:
     void UpdateCamera(float deltaTime);
@@ -46,20 +41,20 @@ private:
     void LoadTexture(const std::string& path, const std::string& key);
 
     // Orbit Cam
-    float m_CameraDistance;
-    Ether::ethVector3 m_CameraRotation;
+    //float m_CameraDistance;
+    //Ether::ethVector3 m_CameraRotation;
 
-    // Fly Cam
-    Ether::ethVector3 m_CameraPosition;
+    //// Fly Cam
+    //Ether::ethVector3 m_CameraPosition;
 
-    // Ortho Cam
-    Ether::ethVector2 m_DragStartPos;
-    float m_OrthoX, m_OrthoZ;
+    //// Ortho Cam
+    //Ether::ethVector2 m_DragStartPos;
+    //float m_OrthoX, m_OrthoZ;
 
-    Ether::ethMatrix4x4 m_ViewMatrix;
-    Ether::ethMatrix4x4 m_ViewMatrixInv;
-    Ether::ethMatrix4x4 m_ProjectionMatrix;
+    //Ether::ethMatrix4x4 m_ViewMatrix;
+    //Ether::ethMatrix4x4 m_ViewMatrixInv;
+    //Ether::ethMatrix4x4 m_ProjectionMatrix;
 
-    std::shared_ptr<Ether::Material> m_Material;
-    std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
+    //std::shared_ptr<Ether::Material> m_Material;
+    //std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
 };

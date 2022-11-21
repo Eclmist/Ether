@@ -19,7 +19,3 @@
 
 #include "markers.h"
 
-ETH_NAMESPACE_BEGIN
-
-ETH_NAMESPACE_END
-

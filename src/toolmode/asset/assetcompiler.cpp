@@ -17,8 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "assetcompiler.h"
 #include "common/stream/filestream.h"
 #include "importer/meshimporter.h"
