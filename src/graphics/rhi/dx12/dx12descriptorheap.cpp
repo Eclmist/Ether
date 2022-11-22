@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
@@ -58,4 +60,5 @@ void Ether::Graphics::Dx12DescriptorHeap::IncrementHandle()
     m_Offset += m_HandleIncrementSize;
 }
 
+#endif // ETH_GRAPHICS_DX12
 

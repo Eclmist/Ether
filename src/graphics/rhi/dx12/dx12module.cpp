@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/core.h"
 #include "graphics/rhi/dx12/dx12module.h"
 #include "graphics/rhi/dx12/dx12device.h"
@@ -114,4 +116,6 @@ void Ether::Graphics::Dx12Module::ReportLiveObjects()
         pDebug->Release();
     }
 }
+
+#endif // ETH_GRAPHICS_DX12
 
