@@ -38,10 +38,11 @@ namespace Ether::Graphics
     class RhiResource;
     class RhiRootParameter;
     class RhiRootSignature;
+    class RhiRootSignatureDesc;
     class RhiPipelineState;
+    class RhiPipelineStateDesc;
     class RhiSwapChain;
 
-    // TODO: Move these
     typedef uint64_t RhiFenceValue;
     typedef uint32_t RhiStencilValue;
 
@@ -181,25 +182,9 @@ namespace Ether::Graphics
         uint32_t m_MsaaQuality;
     };
 
-    struct RhiPipelineStateDesc
-    {
-        RhiRootSignature* m_RootSignature;
-        RhiShaderDesc m_VS;
-        RhiShaderDesc m_PS;
-        RhiBlendDesc m_BlendDesc;
-        RhiRasterizerDesc m_RasterizerDesc;
-        RhiDepthStencilDesc m_DepthStencilDesc;
-        RhiInputLayoutDesc m_InputLayoutDesc;
-        RhiPrimitiveTopologyType m_PrimitiveTopologyType;
-        uint32_t m_NumRenderTargets;
-        RhiFormat m_RtvFormats[8];
-        RhiFormat m_DsvFormat;
-        RhiSampleDesc m_SampleDesc;
-        uint32_t m_NodeMask;
-    };
-
     struct RhiRootParameterDesc
     {
+        uint32_t m_ApiBindSlot;
         uint32_t m_ShaderRegister;
         uint32_t m_RegisterSpace;
         RhiShaderVisibility m_ShaderVisibility;
@@ -243,15 +228,6 @@ namespace Ether::Graphics
         float m_MipLodBias;
         float m_MinLod;
         float m_MaxLod;
-    };
-
-    struct RhiRootSignatureDesc
-    {
-        uint32_t m_NumParameters;
-        uint32_t m_NumStaticSamplers;
-        RhiRootParameter** m_Parameters;
-        RhiSamplerParameterDesc* m_StaticSamplers;
-        RhiRootSignatureFlag m_Flags;
     };
 
     struct RhiSwapChainDesc

@@ -32,27 +32,27 @@ namespace Ether::Graphics
 		virtual void PushMarker(const std::string& name) = 0;
 		virtual void PopMarker() = 0;
 
-		//virtual RhiResult SetViewport(const RhiViewportDesc& viewport) = 0;
-		//virtual RhiResult SetScissor(const RhiScissorDesc& scissor) = 0;
-		//virtual RhiResult SetStencilRef(const RhiStencilValue& val) = 0;
+		//virtual RhiResult SetViewport(RhiViewportDesc viewport) = 0;
+		//virtual RhiResult SetScissor(RhiScissorDesc scissor) = 0;
+		//virtual RhiResult SetStencilRef(RhiStencilValue val) = 0;
 		//virtual RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
-		//virtual RhiResult SetPipelineState(const RhiPipelineStateHandle pipelineState) = 0;
-		//virtual RhiResult SetGraphicRootSignature(const RhiRootSignatureHandle rootSignature) = 0;
-		//virtual RhiResult SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer) = 0;
-		//virtual RhiResult SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) = 0;
-		virtual void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) = 0;
+		//virtual RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) = 0;
+		//virtual RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) = 0;
+		//virtual RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
+		//virtual RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
+		virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
 
-		//virtual RhiResult SetRootConstant(const RhiSetRootConstantDesc& desc) = 0;
-		//virtual RhiResult SetRootConstants(const RhiSetRootConstantsDesc& desc) = 0;
-		//virtual RhiResult SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc) = 0;
-		//virtual RhiResult SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc) = 0;
-		//virtual RhiResult SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc) = 0;
-		virtual void SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) = 0;
+		//virtual RhiResult SetRootConstant(RhiSetRootConstantDesc desc) = 0;
+		//virtual RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) = 0;
+		//virtual RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) = 0;
+		//virtual RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) = 0;
+		//virtual RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) = 0;
+		virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
 
-		virtual void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) = 0;
+		virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
 		//virtual RhiResult ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
 
-		virtual void TransitionResource(const RhiResourceTransitionDesc& desc) = 0;
+		virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
 		//virtual RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
 		//virtual RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
 		//virtual RhiResult DrawInstanced(const RhiDrawInstancedDesc& desc) = 0;

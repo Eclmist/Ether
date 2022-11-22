@@ -35,31 +35,31 @@ namespace Ether::Graphics
 		void PushMarker(const std::string& name) override;
 		void PopMarker() override;
 
-		//RhiResult SetViewport(const RhiViewportDesc& viewport) override;
-		//RhiResult SetScissor(const RhiScissorDesc& scissor) override;
-		//RhiResult SetStencilRef(const RhiStencilValue& val) override;
+		//RhiResult SetViewport(RhiViewportDesc& viewport) override;
+		//RhiResult SetScissor(RhiScissorDesc scissor) override;
+		//RhiResult SetStencilRef(RhiStencilValue val) override;
 		//RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
-		//RhiResult SetPipelineState(const RhiPipelineStateHandle pipelineState) override;
-		//RhiResult SetGraphicRootSignature(const RhiRootSignatureHandle rootSignature) override;
-		//RhiResult SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer) override;
-		//RhiResult SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) override;
-		void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) override;
+		//RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) override;
+		//RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) override;
+		//RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
+		//RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
+		void SetRenderTargets(RhiSetRenderTargetsDesc desc) override;
 
-		//RhiResult SetRootConstant(const RhiSetRootConstantDesc& desc) override;
-		//RhiResult SetRootConstants(const RhiSetRootConstantsDesc& desc) override;
-		//RhiResult SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc) override;
-		//RhiResult SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc) override;
-		//RhiResult SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc) override;
-		void SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) override;
+		//RhiResult SetRootConstant(RhiSetRootConstantDesc desc) override;
+		//RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) override;
+		//RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) override;
+		//RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) override;
+		//RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) override;
+		void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
 
-		void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) override;
-		//RhiResult ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) override;
+		void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
+		//RhiResult ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
 
-		void TransitionResource(const RhiResourceTransitionDesc& desc) override;
-		//RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) override;
-		//RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) override;
-		//RhiResult DrawInstanced(const RhiDrawInstancedDesc& desc) override;
-		//RhiResult DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) override;
+		void TransitionResource(RhiResourceTransitionDesc desc) override;
+		//RhiResult CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
+		//RhiResult CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
+		//RhiResult DrawInstanced(RhiDrawInstancedDesc desc) override;
+		//RhiResult DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
 
 		void Reset(const RhiCommandAllocator& commandAllocator) override;
 		void Close() override;

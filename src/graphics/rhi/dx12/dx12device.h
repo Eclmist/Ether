@@ -31,23 +31,25 @@ namespace Ether::Graphics
         ~Dx12Device() override = default;
 
     public:
-        std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandAllocatorDesc& desc) const override;
-        std::unique_ptr<RhiCommandList> CreateCommandList(const RhiCommandListDesc& desc) const override;
-        std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandQueueDesc& desc) const override;
-        std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc) const override;
+        std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const override;
+        std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const override;
+        std::unique_ptr<RhiRootSignature> CreateRootSignature(const RhiRootSignatureDesc& desc) const override;
+        std::unique_ptr<RhiPipelineState> CreatePipelineState(const RhiPipelineStateDesc& desc) const override;
+
+        std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(RhiCommandAllocatorDesc desc) const override;
+        std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandListDesc desc) const override;
+        std::unique_ptr<RhiCommandQueue> CreateCommandQueue(RhiCommandQueueDesc desc) const override;
+        std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(RhiDescriptorHeapDesc desc) const override;
         std::unique_ptr<RhiFence> CreateFence() const override;
-        //RhiPipelineState CreatePipelineState(const RhiPipelineStateDesc& desc) const override;
-        //RhiRootParameter CreateRootParameter(const RhiRootParameterDesc& desc) const override;
-        //RhiRootSignature CreateRootSignature(const RhiRootSignatureDesc& desc) const override;
-		std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const override;
+        std::unique_ptr<RhiSwapChain> CreateSwapChain(RhiSwapChainDesc desc) const override;
 
-		std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const override;
-		std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const override;
-		std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(const RhiShaderResourceViewDesc& desc) const override;
-		std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const override;
-		std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const override;
+		std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(RhiRenderTargetViewDesc desc) const override;
+		std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(RhiDepthStencilViewDesc desc) const override;
+		std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(RhiShaderResourceViewDesc desc) const override;
+		std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(RhiConstantBufferViewDesc desc) const override;
+		std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const override;
 
-        std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const override;
+        std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const override;
 
     protected:
         friend class Dx12Module;

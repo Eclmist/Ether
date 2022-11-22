@@ -435,242 +435,200 @@ D3D12_TEXTURE_LAYOUT Ether::Graphics::Translate(const RhiResourceLayout& rhiType
 
 D3D12_BLEND_DESC Ether::Graphics::Translate(const RhiBlendDesc& rhiDesc)
 {
-    D3D12_BLEND_DESC d3dDesc = {};
-    d3dDesc.RenderTarget[0].BlendEnable = rhiDesc.m_BlendingEnabled;
-    d3dDesc.RenderTarget[0].LogicOpEnable = rhiDesc.m_LogicOpEnabled;
-    d3dDesc.RenderTarget[0].SrcBlend = Ether::Graphics::Translate(rhiDesc.m_SrcBlend);
-    d3dDesc.RenderTarget[0].DestBlend = Ether::Graphics::Translate(rhiDesc.m_DestBlend);
-    d3dDesc.RenderTarget[0].BlendOp = Ether::Graphics::Translate(rhiDesc.m_BlendOp);
-    d3dDesc.RenderTarget[0].SrcBlendAlpha = Ether::Graphics::Translate(rhiDesc.m_SrcBlendAlpha);
-    d3dDesc.RenderTarget[0].DestBlendAlpha = Ether::Graphics::Translate(rhiDesc.m_DestBlendAlpha);
-    d3dDesc.RenderTarget[0].BlendOpAlpha = Ether::Graphics::Translate(rhiDesc.m_BlendOpAlpha);
-    d3dDesc.RenderTarget[0].LogicOp = Ether::Graphics::Translate(rhiDesc.m_LogicOp);
-    d3dDesc.RenderTarget[0].RenderTargetWriteMask = rhiDesc.m_WriteMask;
+    D3D12_BLEND_DESC dx12Desc = {};
+    dx12Desc.RenderTarget[0].BlendEnable = rhiDesc.m_BlendingEnabled;
+    dx12Desc.RenderTarget[0].LogicOpEnable = rhiDesc.m_LogicOpEnabled;
+    dx12Desc.RenderTarget[0].SrcBlend = Translate(rhiDesc.m_SrcBlend);
+    dx12Desc.RenderTarget[0].DestBlend = Translate(rhiDesc.m_DestBlend);
+    dx12Desc.RenderTarget[0].BlendOp = Translate(rhiDesc.m_BlendOp);
+    dx12Desc.RenderTarget[0].SrcBlendAlpha = Translate(rhiDesc.m_SrcBlendAlpha);
+    dx12Desc.RenderTarget[0].DestBlendAlpha = Translate(rhiDesc.m_DestBlendAlpha);
+    dx12Desc.RenderTarget[0].BlendOpAlpha = Translate(rhiDesc.m_BlendOpAlpha);
+    dx12Desc.RenderTarget[0].LogicOp = Translate(rhiDesc.m_LogicOp);
+    dx12Desc.RenderTarget[0].RenderTargetWriteMask = rhiDesc.m_WriteMask;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_CLEAR_VALUE Ether::Graphics::Translate(const RhiClearValue& rhiDesc)
 {
-    D3D12_CLEAR_VALUE d3dDesc = {};
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.Color[0] = rhiDesc.m_Color[0];
-    d3dDesc.Color[1] = rhiDesc.m_Color[1];
-    d3dDesc.Color[2] = rhiDesc.m_Color[2];
-    d3dDesc.Color[3] = rhiDesc.m_Color[3];
-    d3dDesc.DepthStencil = Ether::Graphics::Translate(rhiDesc.m_DepthStencil);
+    D3D12_CLEAR_VALUE dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.Color[0] = rhiDesc.m_Color[0];
+    dx12Desc.Color[1] = rhiDesc.m_Color[1];
+    dx12Desc.Color[2] = rhiDesc.m_Color[2];
+    dx12Desc.Color[3] = rhiDesc.m_Color[3];
+    dx12Desc.DepthStencil = Translate(rhiDesc.m_DepthStencil);
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_COMMAND_QUEUE_DESC Ether::Graphics::Translate(const RhiCommandQueueDesc& rhiDesc)
 {
-    D3D12_COMMAND_QUEUE_DESC d3dDesc = {};
-    d3dDesc.Type = Ether::Graphics::Translate(rhiDesc.m_Type);
-    d3dDesc.NodeMask = 0;
-    d3dDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-    d3dDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    D3D12_COMMAND_QUEUE_DESC dx12Desc = {};
+    dx12Desc.Type = Translate(rhiDesc.m_Type);
+    dx12Desc.NodeMask = 0;
+    dx12Desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    dx12Desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_DEPTH_STENCIL_DESC Ether::Graphics::Translate(const RhiDepthStencilDesc& rhiDesc)
 {
-    D3D12_DEPTH_STENCIL_DESC d3dDesc = {};
-    d3dDesc.DepthEnable = rhiDesc.m_DepthEnabled;
-    d3dDesc.DepthWriteMask = Ether::Graphics::Translate(rhiDesc.m_DepthWriteMask);
-    d3dDesc.DepthFunc = Ether::Graphics::Translate(rhiDesc.m_DepthComparator);
-    d3dDesc.StencilEnable = rhiDesc.m_StencilEnabled;
-    d3dDesc.StencilReadMask = rhiDesc.m_StencilReadMask;
-    d3dDesc.StencilWriteMask = rhiDesc.m_StencilWriteMask;
-    d3dDesc.FrontFace = Ether::Graphics::Translate(rhiDesc.m_FrontFace);
-    d3dDesc.BackFace = Ether::Graphics::Translate(rhiDesc.m_BackFace);
+    D3D12_DEPTH_STENCIL_DESC dx12Desc = {};
+    dx12Desc.DepthEnable = rhiDesc.m_DepthEnabled;
+    dx12Desc.DepthWriteMask = Translate(rhiDesc.m_DepthWriteMask);
+    dx12Desc.DepthFunc = Translate(rhiDesc.m_DepthComparator);
+    dx12Desc.StencilEnable = rhiDesc.m_StencilEnabled;
+    dx12Desc.StencilReadMask = rhiDesc.m_StencilReadMask;
+    dx12Desc.StencilWriteMask = rhiDesc.m_StencilWriteMask;
+    dx12Desc.FrontFace = Translate(rhiDesc.m_FrontFace);
+    dx12Desc.BackFace = Translate(rhiDesc.m_BackFace);
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_DEPTH_STENCIL_VALUE Ether::Graphics::Translate(const RhiDepthStencilValue& rhiDesc)
 {
-    D3D12_DEPTH_STENCIL_VALUE d3dDesc = {};
-    d3dDesc.Depth = rhiDesc.m_Depth;
-    d3dDesc.Stencil = rhiDesc.m_Stencil;
+    D3D12_DEPTH_STENCIL_VALUE dx12Desc = {};
+    dx12Desc.Depth = rhiDesc.m_Depth;
+    dx12Desc.Stencil = rhiDesc.m_Stencil;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_DEPTH_STENCILOP_DESC Ether::Graphics::Translate(const RhiDepthStencilOperationDesc& rhiDesc)
 {
-    D3D12_DEPTH_STENCILOP_DESC d3dDesc = {};
-    d3dDesc.StencilFailOp = Ether::Graphics::Translate(rhiDesc.m_StencilFailOp);
-    d3dDesc.StencilDepthFailOp = Ether::Graphics::Translate(rhiDesc.m_StencilDepthFailOp);
-    d3dDesc.StencilPassOp = Ether::Graphics::Translate(rhiDesc.m_StencilPassOp);
-    d3dDesc.StencilFunc = Ether::Graphics::Translate(rhiDesc.m_StencilFunc);
+    D3D12_DEPTH_STENCILOP_DESC dx12Desc = {};
+    dx12Desc.StencilFailOp = Translate(rhiDesc.m_StencilFailOp);
+    dx12Desc.StencilDepthFailOp = Translate(rhiDesc.m_StencilDepthFailOp);
+    dx12Desc.StencilPassOp = Translate(rhiDesc.m_StencilPassOp);
+    dx12Desc.StencilFunc = Translate(rhiDesc.m_StencilFunc);
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Ether::Graphics::Translate(const RhiCpuHandle& rhiDesc)
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE d3dDesc = {};
-    d3dDesc.ptr = rhiDesc.m_Ptr;
-    return d3dDesc;
+    D3D12_CPU_DESCRIPTOR_HANDLE dx12Desc = {};
+    dx12Desc.ptr = rhiDesc.m_Ptr;
+    return dx12Desc;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE Ether::Graphics::Translate(const RhiGpuHandle& rhiDesc)
 {
-    D3D12_GPU_DESCRIPTOR_HANDLE d3dDesc = {};
-    d3dDesc.ptr = rhiDesc.m_Ptr;
-    return d3dDesc;
+    D3D12_GPU_DESCRIPTOR_HANDLE dx12Desc = {};
+    dx12Desc.ptr = rhiDesc.m_Ptr;
+    return dx12Desc;
 }
 
 D3D12_DESCRIPTOR_HEAP_DESC Ether::Graphics::Translate(const RhiDescriptorHeapDesc& rhiDesc)
 {
-    D3D12_DESCRIPTOR_HEAP_DESC d3dDesc = {};
-    d3dDesc.Flags = Ether::Graphics::Translate(rhiDesc.m_Flags);
-    d3dDesc.Type = Ether::Graphics::Translate(rhiDesc.m_Type);
-    d3dDesc.NumDescriptors = rhiDesc.m_NumDescriptors;
+    D3D12_DESCRIPTOR_HEAP_DESC dx12Desc = {};
+    dx12Desc.Flags = Translate(rhiDesc.m_Flags);
+    dx12Desc.Type = Translate(rhiDesc.m_Type);
+    dx12Desc.NumDescriptors = rhiDesc.m_NumDescriptors;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_INPUT_ELEMENT_DESC Ether::Graphics::Translate(const RhiInputElementDesc& rhiDesc)
 {
-    D3D12_INPUT_ELEMENT_DESC d3dDesc = {};
-    d3dDesc.SemanticName = rhiDesc.m_SemanticName;
-    d3dDesc.SemanticIndex = rhiDesc.m_SemanticIndex;
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.InputSlot = rhiDesc.m_InputSlot;
-    d3dDesc.AlignedByteOffset = rhiDesc.m_AlignedByteOffset;
-    d3dDesc.InputSlotClass = Ether::Graphics::Translate(rhiDesc.m_InputSlotClass);
-    d3dDesc.InstanceDataStepRate = rhiDesc.m_InstanceDataStepRate;
+    D3D12_INPUT_ELEMENT_DESC dx12Desc = {};
+    dx12Desc.SemanticName = rhiDesc.m_SemanticName;
+    dx12Desc.SemanticIndex = rhiDesc.m_SemanticIndex;
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.InputSlot = rhiDesc.m_InputSlot;
+    dx12Desc.AlignedByteOffset = rhiDesc.m_AlignedByteOffset;
+    dx12Desc.InputSlotClass = Translate(rhiDesc.m_InputSlotClass);
+    dx12Desc.InstanceDataStepRate = rhiDesc.m_InstanceDataStepRate;
 
-    return d3dDesc;
-}
-
-D3D12_GRAPHICS_PIPELINE_STATE_DESC Ether::Graphics::Translate(const RhiPipelineStateDesc& rhiDesc)
-{
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dDesc = {};
-    d3dDesc.VS = Ether::Graphics::Translate(rhiDesc.m_VS);
-    d3dDesc.PS = Ether::Graphics::Translate(rhiDesc.m_PS);
-    d3dDesc.BlendState = Ether::Graphics::Translate(rhiDesc.m_BlendDesc);
-    d3dDesc.RasterizerState = Ether::Graphics::Translate(rhiDesc.m_RasterizerDesc);
-    d3dDesc.DepthStencilState = Ether::Graphics::Translate(rhiDesc.m_DepthStencilDesc);
-    d3dDesc.PrimitiveTopologyType = Ether::Graphics::Translate(rhiDesc.m_PrimitiveTopologyType);
-    d3dDesc.NumRenderTargets = rhiDesc.m_NumRenderTargets;
-    d3dDesc.RTVFormats[0] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[0]);
-    d3dDesc.RTVFormats[1] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[1]);
-    d3dDesc.RTVFormats[2] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[2]);
-    d3dDesc.RTVFormats[3] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[3]);
-    d3dDesc.RTVFormats[4] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[4]);
-    d3dDesc.RTVFormats[5] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[5]);
-    d3dDesc.RTVFormats[6] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[6]);
-    d3dDesc.RTVFormats[7] = Ether::Graphics::Translate(rhiDesc.m_RtvFormats[7]);
-    d3dDesc.DSVFormat = Ether::Graphics::Translate(rhiDesc.m_DsvFormat);
-    d3dDesc.SampleDesc = Ether::Graphics::Translate(rhiDesc.m_SampleDesc);
-    d3dDesc.NodeMask = rhiDesc.m_NodeMask;
-    d3dDesc.SampleMask = 0xffffffff;
-
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_INDEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiIndexBufferViewDesc& rhiDesc)
 {
-    D3D12_INDEX_BUFFER_VIEW d3dDesc = {};
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
+    D3D12_INDEX_BUFFER_VIEW dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
 
-    return d3dDesc;
-}
-
-D3D12_ROOT_PARAMETER Ether::Graphics::Translate(const RhiRootParameterConstantDesc& rhiDesc)
-{
-    D3D12_ROOT_PARAMETER d3dDesc = {};
-    d3dDesc.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    d3dDesc.ShaderVisibility = Ether::Graphics::Translate(rhiDesc.m_ShaderVisibility);
-    d3dDesc.Constants.Num32BitValues = rhiDesc.m_NumDwords;
-    d3dDesc.Constants.RegisterSpace = rhiDesc.m_RegisterSpace;
-    d3dDesc.Constants.ShaderRegister = rhiDesc.m_ShaderRegister;
-
-    return d3dDesc;
-}
-
-D3D12_ROOT_PARAMETER Ether::Graphics::Translate(const RhiRootParameterCbvDesc& rhiDesc)
-{
-    D3D12_ROOT_PARAMETER d3dDesc = {};
-    d3dDesc.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    d3dDesc.ShaderVisibility = Ether::Graphics::Translate(rhiDesc.m_ShaderVisibility);
-    d3dDesc.Descriptor.RegisterSpace = rhiDesc.m_RegisterSpace;
-    d3dDesc.Descriptor.ShaderRegister = rhiDesc.m_ShaderRegister;
-
-    return d3dDesc;
-}
-
-D3D12_ROOT_PARAMETER Ether::Graphics::Translate(const RhiRootParameterSrvDesc& rhiDesc)
-{
-    D3D12_ROOT_PARAMETER d3dDesc = {};
-    d3dDesc.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-    d3dDesc.ShaderVisibility = Ether::Graphics::Translate(rhiDesc.m_ShaderVisibility);
-    d3dDesc.Descriptor.RegisterSpace = rhiDesc.m_RegisterSpace;
-    d3dDesc.Descriptor.ShaderRegister = rhiDesc.m_ShaderRegister;
-
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_RESOURCE_BARRIER Ether::Graphics::Translate(const RhiResourceTransitionDesc& rhiDesc)
 {
-    D3D12_RESOURCE_BARRIER d3dDesc = {};
-    d3dDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    d3dDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    d3dDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    d3dDesc.Transition.StateBefore = Ether::Graphics::Translate(rhiDesc.m_FromState);
-    d3dDesc.Transition.StateAfter = Ether::Graphics::Translate(rhiDesc.m_ToState);
+    D3D12_RESOURCE_BARRIER dx12Desc = {};
+    dx12Desc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    dx12Desc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    dx12Desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    dx12Desc.Transition.StateBefore = Translate(rhiDesc.m_FromState);
+    dx12Desc.Transition.StateAfter = Translate(rhiDesc.m_ToState);
     
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_RESOURCE_DESC Ether::Graphics::Translate(const RhiResourceDesc& rhiDesc)
 {
-    D3D12_RESOURCE_DESC d3dDesc = {};
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.Width = rhiDesc.m_Width;
-    d3dDesc.Height = rhiDesc.m_Height;
-    d3dDesc.DepthOrArraySize = rhiDesc.m_DepthOrArraySize;
-    d3dDesc.MipLevels = rhiDesc.m_MipLevels;
-    d3dDesc.SampleDesc = Ether::Graphics::Translate(rhiDesc.m_SampleDesc);
-    d3dDesc.Flags = Ether::Graphics::Translate(rhiDesc.m_Flag);
-    d3dDesc.Layout = Ether::Graphics::Translate(rhiDesc.m_Layout);
-    d3dDesc.Alignment = rhiDesc.m_Alignment;
-    d3dDesc.Dimension = Ether::Graphics::Translate(rhiDesc.m_Dimension);
+    D3D12_RESOURCE_DESC dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.Width = rhiDesc.m_Width;
+    dx12Desc.Height = rhiDesc.m_Height;
+    dx12Desc.DepthOrArraySize = rhiDesc.m_DepthOrArraySize;
+    dx12Desc.MipLevels = rhiDesc.m_MipLevels;
+    dx12Desc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
+    dx12Desc.Flags = Translate(rhiDesc.m_Flag);
+    dx12Desc.Layout = Translate(rhiDesc.m_Layout);
+    dx12Desc.Alignment = rhiDesc.m_Alignment;
+    dx12Desc.Dimension = Translate(rhiDesc.m_Dimension);
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_STATIC_SAMPLER_DESC Ether::Graphics::Translate(const RhiSamplerParameterDesc& rhiDesc)
 {
-    D3D12_STATIC_SAMPLER_DESC d3dDesc = {};
-    d3dDesc.Filter = Ether::Graphics::Translate(rhiDesc.m_Filter);
-    d3dDesc.AddressU = Ether::Graphics::Translate(rhiDesc.m_AddressU);
-    d3dDesc.AddressV = Ether::Graphics::Translate(rhiDesc.m_AddressV);
-    d3dDesc.AddressW = Ether::Graphics::Translate(rhiDesc.m_AddressW);
-    d3dDesc.MipLODBias = rhiDesc.m_MipLodBias;
-    d3dDesc.MaxAnisotropy = rhiDesc.m_MaxAnisotropy;
-    d3dDesc.ComparisonFunc = Ether::Graphics::Translate(rhiDesc.m_ComparisonFunc);
-    d3dDesc.BorderColor = Ether::Graphics::Translate(rhiDesc.m_BorderColor);
-    d3dDesc.MinLOD = rhiDesc.m_MinLod;
-    d3dDesc.MaxLOD = rhiDesc.m_MaxLod;
-    d3dDesc.ShaderRegister = rhiDesc.m_ShaderRegister;
-    d3dDesc.RegisterSpace = rhiDesc.m_RegisterSpace;
+    D3D12_STATIC_SAMPLER_DESC dx12Desc = {};
+    dx12Desc.Filter = Translate(rhiDesc.m_Filter);
+    dx12Desc.AddressU = Translate(rhiDesc.m_AddressU);
+    dx12Desc.AddressV = Translate(rhiDesc.m_AddressV);
+    dx12Desc.AddressW = Translate(rhiDesc.m_AddressW);
+    dx12Desc.MipLODBias = rhiDesc.m_MipLodBias;
+    dx12Desc.MaxAnisotropy = rhiDesc.m_MaxAnisotropy;
+    dx12Desc.ComparisonFunc = Translate(rhiDesc.m_ComparisonFunc);
+    dx12Desc.BorderColor = Translate(rhiDesc.m_BorderColor);
+    dx12Desc.MinLOD = rhiDesc.m_MinLod;
+    dx12Desc.MaxLOD = rhiDesc.m_MaxLod;
+    dx12Desc.ShaderRegister = rhiDesc.m_ShaderRegister;
+    dx12Desc.RegisterSpace = rhiDesc.m_RegisterSpace;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_VERTEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiVertexBufferViewDesc& rhiDesc)
 {
-    D3D12_VERTEX_BUFFER_VIEW d3dDesc = {};
-    d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
-    d3dDesc.StrideInBytes = rhiDesc.m_Stride;
+    D3D12_VERTEX_BUFFER_VIEW dx12Desc = {};
+    dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
+    dx12Desc.StrideInBytes = rhiDesc.m_Stride;
 
-    return d3dDesc;
+    return dx12Desc;
+}
+
+DXGI_SWAP_CHAIN_DESC1 Ether::Graphics::Translate(const RhiSwapChainDesc& rhiDesc)
+{
+    DXGI_SWAP_CHAIN_DESC1 dx12Desc = {};
+    dx12Desc.Width = rhiDesc.m_Resolution.x;
+    dx12Desc.Height = rhiDesc.m_Resolution.y;
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.Stereo = false;
+    dx12Desc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
+    dx12Desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    dx12Desc.BufferCount = rhiDesc.m_BufferCount;
+    dx12Desc.Scaling = Translate(rhiDesc.m_ScalingMode);
+    dx12Desc.SwapEffect = Translate(rhiDesc.m_SwapEffect);
+    dx12Desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+    dx12Desc.Flags = Translate(rhiDesc.m_Flag);
+
+    return dx12Desc;
 }
 
 DXGI_SAMPLE_DESC Ether::Graphics::Translate(const RhiSampleDesc& rhiDesc)
@@ -682,140 +640,103 @@ DXGI_SAMPLE_DESC Ether::Graphics::Translate(const RhiSampleDesc& rhiDesc)
     return d3dDesc;
 }
 
-D3D12_SHADER_BYTECODE Ether::Graphics::Translate(const RhiShaderDesc& rhiDesc)
-{
-    D3D12_SHADER_BYTECODE d3dDesc = {};
-    d3dDesc.BytecodeLength = rhiDesc.m_BytecodeLength;
-    d3dDesc.pShaderBytecode = rhiDesc.m_Bytecode;
-
-    return d3dDesc;
-}
-
-DXGI_SWAP_CHAIN_DESC1 Ether::Graphics::Translate(const RhiSwapChainDesc& rhiDesc)
-{
-    DXGI_SWAP_CHAIN_DESC1 d3dDesc = {};
-    d3dDesc.Width = rhiDesc.m_Resolution.x;
-    d3dDesc.Height = rhiDesc.m_Resolution.y;
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.Stereo = false;
-    d3dDesc.SampleDesc = Ether::Graphics::Translate(rhiDesc.m_SampleDesc);
-    d3dDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    d3dDesc.BufferCount = rhiDesc.m_BufferCount;
-    d3dDesc.Scaling = Ether::Graphics::Translate(rhiDesc.m_ScalingMode);
-    d3dDesc.SwapEffect = Ether::Graphics::Translate(rhiDesc.m_SwapEffect);
-    d3dDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    d3dDesc.Flags = Ether::Graphics::Translate(rhiDesc.m_Flag);
-
-    return d3dDesc;
-}
-
 D3D12_RASTERIZER_DESC Ether::Graphics::Translate(const RhiRasterizerDesc& rhiDesc)
 {
-    D3D12_RASTERIZER_DESC d3dDesc = {};
-    d3dDesc.FillMode = Ether::Graphics::Translate(rhiDesc.m_FillMode);
-    d3dDesc.CullMode = Ether::Graphics::Translate(rhiDesc.m_CullMode);
-    d3dDesc.FrontCounterClockwise = rhiDesc.m_FrontCounterClockwise;
-    d3dDesc.DepthBias = rhiDesc.m_DepthBias;
-    d3dDesc.DepthBiasClamp = rhiDesc.m_DepthBiasClamp;
-    d3dDesc.SlopeScaledDepthBias = rhiDesc.m_SlopeScaledDepthBias;
-    d3dDesc.DepthClipEnable = rhiDesc.m_DepthClipEnable;
-    d3dDesc.MultisampleEnable = rhiDesc.m_MultisampleEnable;
-    d3dDesc.AntialiasedLineEnable = rhiDesc.m_AntialiasedLineEnable;
-    d3dDesc.ForcedSampleCount = rhiDesc.m_ForcedSampleCount;
+    D3D12_RASTERIZER_DESC dx12Desc = {};
+    dx12Desc.FillMode = Translate(rhiDesc.m_FillMode);
+    dx12Desc.CullMode = Translate(rhiDesc.m_CullMode);
+    dx12Desc.FrontCounterClockwise = rhiDesc.m_FrontCounterClockwise;
+    dx12Desc.DepthBias = rhiDesc.m_DepthBias;
+    dx12Desc.DepthBiasClamp = rhiDesc.m_DepthBiasClamp;
+    dx12Desc.SlopeScaledDepthBias = rhiDesc.m_SlopeScaledDepthBias;
+    dx12Desc.DepthClipEnable = rhiDesc.m_DepthClipEnable;
+    dx12Desc.MultisampleEnable = rhiDesc.m_MultisampleEnable;
+    dx12Desc.AntialiasedLineEnable = rhiDesc.m_AntialiasedLineEnable;
+    dx12Desc.ForcedSampleCount = rhiDesc.m_ForcedSampleCount;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_RECT Ether::Graphics::Translate(const RhiScissorDesc& rhiDesc)
 {
-    D3D12_RECT d3dDesc = {};
-    d3dDesc.left = rhiDesc.m_X;
-    d3dDesc.top = rhiDesc.m_Y;
-    d3dDesc.right = rhiDesc.m_Width + rhiDesc.m_X;
-    d3dDesc.bottom = rhiDesc.m_Height + rhiDesc.m_Y;
+    D3D12_RECT dx12Desc = {};
+    dx12Desc.left = rhiDesc.m_X;
+    dx12Desc.top = rhiDesc.m_Y;
+    dx12Desc.right = rhiDesc.m_Width + rhiDesc.m_X;
+    dx12Desc.bottom = rhiDesc.m_Height + rhiDesc.m_Y;
 
-    return d3dDesc;
-}
-
-D3D12_ROOT_SIGNATURE_DESC Ether::Graphics::Translate(const RhiRootSignatureDesc& rhiDesc)
-{
-    D3D12_ROOT_SIGNATURE_DESC d3dDesc = {};
-    d3dDesc.NumParameters = rhiDesc.m_NumParameters;
-    d3dDesc.NumStaticSamplers = rhiDesc.m_NumStaticSamplers;
-    d3dDesc.Flags = Ether::Graphics::Translate(rhiDesc.m_Flags);
-
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_VIEWPORT Ether::Graphics::Translate(const RhiViewportDesc& rhiDesc)
 {
-    D3D12_VIEWPORT d3dDesc = {};
-    d3dDesc.TopLeftX = rhiDesc.m_X;
-    d3dDesc.TopLeftY = rhiDesc.m_Y;
-    d3dDesc.Width = rhiDesc.m_Width;
-    d3dDesc.Height = rhiDesc.m_Height;
-    d3dDesc.MinDepth = rhiDesc.m_MinDepth;
-    d3dDesc.MaxDepth = rhiDesc.m_MaxDepth;
+    D3D12_VIEWPORT dx12Desc = {};
+    dx12Desc.TopLeftX = rhiDesc.m_X;
+    dx12Desc.TopLeftY = rhiDesc.m_Y;
+    dx12Desc.Width = rhiDesc.m_Width;
+    dx12Desc.Height = rhiDesc.m_Height;
+    dx12Desc.MinDepth = rhiDesc.m_MinDepth;
+    dx12Desc.MaxDepth = rhiDesc.m_MaxDepth;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_RENDER_TARGET_VIEW_DESC Ether::Graphics::Translate(const RhiRenderTargetViewDesc& rhiDesc)
 {
-    D3D12_RENDER_TARGET_VIEW_DESC d3dDesc = {};
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-    d3dDesc.Texture2D.MipSlice = 0;
+    D3D12_RENDER_TARGET_VIEW_DESC dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+    dx12Desc.Texture2D.MipSlice = 0;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_DEPTH_STENCIL_VIEW_DESC Ether::Graphics::Translate(const RhiDepthStencilViewDesc& rhiDesc)
 {
-    D3D12_DEPTH_STENCIL_VIEW_DESC d3dDesc = {};
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-    d3dDesc.Texture2D.MipSlice = 0;
-    d3dDesc.Flags = D3D12_DSV_FLAG_NONE;
+    D3D12_DEPTH_STENCIL_VIEW_DESC dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    dx12Desc.Texture2D.MipSlice = 0;
+    dx12Desc.Flags = D3D12_DSV_FLAG_NONE;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResourceViewDesc& rhiDesc)
 {
-    D3D12_SHADER_RESOURCE_VIEW_DESC d3dDesc = {};
-    d3dDesc.Format = Ether::Graphics::Translate(rhiDesc.m_Format);
-    d3dDesc.ViewDimension = Ether::Graphics::Translate(rhiDesc.m_Dimensions);
-    d3dDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    D3D12_SHADER_RESOURCE_VIEW_DESC dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.ViewDimension = Translate(rhiDesc.m_Dimensions);
+    dx12Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
     switch (rhiDesc.m_Dimensions)
     {
     case RhiShaderResourceDims::Texture2D:
-        d3dDesc.Texture2D.MipLevels = 1;
-        d3dDesc.Texture2D.MostDetailedMip = 0;
-        d3dDesc.Texture2D.PlaneSlice = 0;
-        d3dDesc.Texture2D.ResourceMinLODClamp = 0;
+        dx12Desc.Texture2D.MipLevels = 1;
+        dx12Desc.Texture2D.MostDetailedMip = 0;
+        dx12Desc.Texture2D.PlaneSlice = 0;
+        dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
     case RhiShaderResourceDims::TextureCube:
-        d3dDesc.Texture2D.MipLevels = 1;
-        d3dDesc.Texture2D.MostDetailedMip = 0;
-        d3dDesc.Texture2D.PlaneSlice = 0;
-        d3dDesc.Texture2D.ResourceMinLODClamp = 0;
+        dx12Desc.Texture2D.MipLevels = 1;
+        dx12Desc.Texture2D.MostDetailedMip = 0;
+        dx12Desc.Texture2D.PlaneSlice = 0;
+        dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
     default:
         LogGraphicsFatal("Not yet supported");
     }
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBufferViewDesc& rhiDesc)
 {
-    D3D12_CONSTANT_BUFFER_VIEW_DESC d3dDesc = {};
-    d3dDesc.SizeInBytes = rhiDesc.m_BufferSize;
-    d3dDesc.BufferLocation = rhiDesc.m_Resource->GetGpuHandle().m_Ptr;
+    D3D12_CONSTANT_BUFFER_VIEW_DESC dx12Desc = {};
+    dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
+    dx12Desc.BufferLocation = rhiDesc.m_Resource->GetGpuHandle().m_Ptr;
 
-    return d3dDesc;
+    return dx12Desc;
 }
 
 #endif // ETH_GRAPHICS_DX12

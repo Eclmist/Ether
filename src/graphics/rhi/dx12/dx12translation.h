@@ -63,21 +63,15 @@ namespace Ether::Graphics
     D3D12_DEPTH_STENCILOP_DESC Translate(const RhiDepthStencilOperationDesc& rhiDesc);
     D3D12_DESCRIPTOR_HEAP_DESC Translate(const RhiDescriptorHeapDesc& rhiDesc);
     D3D12_GPU_DESCRIPTOR_HANDLE Translate(const RhiGpuHandle& rhiDesc);
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC Translate(const RhiPipelineStateDesc& rhiDesc);
     D3D12_INPUT_ELEMENT_DESC Translate(const RhiInputElementDesc& rhiDesc);
     D3D12_RASTERIZER_DESC Translate(const RhiRasterizerDesc& rhiDesc);
     D3D12_RECT Translate(const RhiScissorDesc& rhiDesc);
     D3D12_RESOURCE_BARRIER Translate(const RhiResourceTransitionDesc& rhiDesc);
     D3D12_RESOURCE_DESC Translate(const RhiResourceDesc& rhiDesc);
-    D3D12_ROOT_PARAMETER Translate(const RhiRootParameterCbvDesc& rhiDesc);
-    D3D12_ROOT_PARAMETER Translate(const RhiRootParameterConstantDesc& rhiDesc);
-    D3D12_ROOT_PARAMETER Translate(const RhiRootParameterSrvDesc& rhiDesc);
-    D3D12_ROOT_SIGNATURE_DESC Translate(const RhiRootSignatureDesc& rhiDesc);
-    D3D12_SHADER_BYTECODE Translate(const RhiShaderDesc& rhiDesc);
     D3D12_STATIC_SAMPLER_DESC Translate(const RhiSamplerParameterDesc& rhiDesc);
     D3D12_VIEWPORT Translate(const RhiViewportDesc& rhiDesc);
-    DXGI_SAMPLE_DESC Translate(const RhiSampleDesc& rhiDesc);
     DXGI_SWAP_CHAIN_DESC1 Translate(const RhiSwapChainDesc& rhiDesc);
+    DXGI_SAMPLE_DESC Translate(const RhiSampleDesc& rhiDesc);
 
     D3D12_RENDER_TARGET_VIEW_DESC Translate(const RhiRenderTargetViewDesc& rhiDesc);
     D3D12_DEPTH_STENCIL_VIEW_DESC Translate(const RhiDepthStencilViewDesc& rhiDesc);

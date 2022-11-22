@@ -22,10 +22,10 @@
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12commandallocator.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
-//#include "graphics/rhi/dx12/dx12pipelinestate.h"
+#include "graphics/rhi/dx12/dx12pipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12resourceviews.h"
-//#include "graphics/rhi/dx12/dx12rootsignature.h"
+#include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
 void Ether::Graphics::Dx12CommandList::SetMarker(const std::string& name)
@@ -62,21 +62,21 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetViewport(const RhiViewportDesc& viewport)
+//RhiResult Dx12CommandList::SetViewport(RhiViewportDesc viewport)
 //{
 //    D3D12_VIEWPORT d3d12viewport = Translate(viewport);
 //    m_CommandList->RSSetViewports(1, &d3d12viewport);
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetScissor(const RhiScissorDesc& scissor)
+//RhiResult Dx12CommandList::SetScissor(RhiScissorDesc scissor)
 //{
 //    D3D12_RECT scissorRect = Translate(scissor);
 //    m_CommandList->RSSetScissorRects(1, &scissorRect);
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetStencilRef(const RhiStencilValue& val)
+//RhiResult Dx12CommandList::SetStencilRef(RhiStencilValue val)
 //{
 //    m_CommandList->OMSetStencilRef(val);
 //    return RhiResult::Success;
@@ -88,21 +88,21 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetPipelineState(const RhiPipelineStateHandle pipelineState)
+//RhiResult Dx12CommandList::SetPipelineState(RhiPipelineStateHandle pipelineState)
 //{
 //    const auto d3dPipelineState = pipelineState.As<Dx12PipelineState>();
 //    m_CommandList->SetPipelineState(d3dPipelineState->m_PipelineState.Get());
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetGraphicRootSignature(const RhiRootSignatureHandle rootSignature)
+//RhiResult Dx12CommandList::SetGraphicRootSignature(RhiRootSignatureHandle rootSignature)
 //{
 //    const auto d3dRootSignature = rootSignature.As<Dx12RootSignature>();
 //    m_CommandList->SetGraphicsRootSignature(d3dRootSignature->m_RootSignature.Get());
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer)
+//RhiResult Dx12CommandList::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
 //{
 //    const auto d3dResource = vertexBuffer.m_Resource.As<Dx12Resource>();
 //    D3D12_VERTEX_BUFFER_VIEW d3dView = Translate(vertexBuffer);
@@ -111,7 +111,7 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer)
+//RhiResult Dx12CommandList::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
 //{
 //    const auto d3dResource = indexBuffer.m_Resource.As<Dx12Resource>();
 //    D3D12_INDEX_BUFFER_VIEW d3dView = Translate(indexBuffer);
@@ -120,7 +120,7 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
 //    return RhiResult::Success;
 //}
 
-void Ether::Graphics::Dx12CommandList::SetRenderTargets(const RhiSetRenderTargetsDesc& desc)
+void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc desc)
 {
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
@@ -198,7 +198,7 @@ void Ether::Graphics::Dx12CommandList::SetRenderTargets(const RhiSetRenderTarget
 //    return RhiResult::Success;
 //}
 
-void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc)
+void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc)
 {
     // Only one heap of each type ([SRV/CBV/UAV] & [Sampler]) can be bound for each command list
     AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
@@ -210,7 +210,7 @@ void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiSetDescriptor
     m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps);
 }
 
-void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc)
+void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(RhiClearRenderTargetViewDesc desc)
 {
     m_CommandList->ClearRenderTargetView
     (
@@ -279,7 +279,7 @@ void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(const RhiClearRende
 //    return RhiResult::Success;
 //}
 //
-void Ether::Graphics::Dx12CommandList::TransitionResource(const RhiResourceTransitionDesc& desc)
+void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
 {
     D3D12_RESOURCE_BARRIER barrier = Translate(desc);
     Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
@@ -288,11 +288,11 @@ void Ether::Graphics::Dx12CommandList::TransitionResource(const RhiResourceTrans
     desc.m_Resource->SetState(desc.m_ToState);
 }
 
-//RhiResult Dx12CommandList::TransitionResource(const RhiResourceTransitionDesc& desc)
+//RhiResult Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
 //{
 //}
 //
-//RhiResult Dx12CommandList::DrawInstanced(const RhiDrawInstancedDesc& desc)
+//RhiResult Dx12CommandList::DrawInstanced(RhiDrawInstancedDesc desc)
 //{
 //    m_CommandList->DrawInstanced
 //    (
@@ -305,7 +305,7 @@ void Ether::Graphics::Dx12CommandList::TransitionResource(const RhiResourceTrans
 //    return RhiResult::Success;
 //}
 //
-//RhiResult Dx12CommandList::DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc)
+//RhiResult Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc)
 //{
 //    m_CommandList->DrawIndexedInstanced
 //    (

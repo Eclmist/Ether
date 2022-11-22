@@ -25,7 +25,7 @@ namespace Ether
     {
     public:
         PlatformLaunchArgs() = default;
-		virtual ~PlatformLaunchArgs() {};
+		virtual ~PlatformLaunchArgs() {}
 
     public:
         inline std::vector<std::pair<std::string, std::string>> GetLaunchArgs() const { return m_LaunchArgs; }

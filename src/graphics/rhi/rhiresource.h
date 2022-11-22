@@ -27,7 +27,7 @@ namespace Ether::Graphics
     class RhiResource : public NonCopyable, public NonMovable
     {
     public:
-		RhiResource(const std::string& name);
+		RhiResource(const std::string& name) : m_ResourceID(name) {}
         virtual ~RhiResource() = default;
 
     public:

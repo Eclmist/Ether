@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include "graphics/rhi/rhirootsignature.h"
+#include "graphics/rhi/rhipipelinestate.h"
+
 namespace Ether::Graphics
 {
     class RhiDevice : public NonCopyable, public NonMovable
@@ -28,23 +31,25 @@ namespace Ether::Graphics
         virtual ~RhiDevice() = default;
 
     public:
-        virtual std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandAllocatorDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiCommandList> CreateCommandList(const RhiCommandListDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandQueueDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc) const = 0;
+        virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const = 0;
+        virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
+        virtual std::unique_ptr<RhiRootSignature> CreateRootSignature(const RhiRootSignatureDesc& desc) const = 0;
+        virtual std::unique_ptr<RhiPipelineState> CreatePipelineState(const RhiPipelineStateDesc& desc) const = 0;
+
+        virtual std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(RhiCommandAllocatorDesc desc) const = 0;
+        virtual std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandListDesc desc) const = 0;
+        virtual std::unique_ptr<RhiCommandQueue> CreateCommandQueue(RhiCommandQueueDesc desc) const = 0;
+        virtual std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(RhiDescriptorHeapDesc desc) const = 0;
         virtual std::unique_ptr<RhiFence> CreateFence() const = 0;
-        //virtual RhiPipelineState CreatePipelineState(const RhiPipelineStateDesc& desc) const = 0;
-        //virtual RhiRootParameter CreateRootParameter(const RhiRootParameterDesc& desc) const = 0;
-        //virtual RhiRootSignature CreateRootSignature(const RhiRootSignatureDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const = 0;
+        virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(RhiSwapChainDesc desc) const = 0;
 
-        virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(const RhiShaderResourceViewDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const = 0;
-        virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const = 0;
+        virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(RhiRenderTargetViewDesc desc) const = 0;
+        virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(RhiDepthStencilViewDesc desc) const = 0;
+        virtual std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(RhiShaderResourceViewDesc desc) const = 0;
+        virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(RhiConstantBufferViewDesc desc) const = 0;
+        virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const = 0;
 
-        virtual std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const = 0;
+        virtual std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const = 0;
     };
 }
 
