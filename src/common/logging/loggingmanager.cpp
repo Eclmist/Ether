@@ -17,13 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "loggingmanager.h"
+#include "common/logging/loggingmanager.h"
+#include "common/utils/time.h"
 
 #include <stdarg.h>
 #include <sstream>
 #include <filesystem>
-
-#include "common/utils/time.h"
 
 #ifdef ETH_PLATFORM_WIN32
 #define _AMD64_ // So we don't have to include <windows.h> here

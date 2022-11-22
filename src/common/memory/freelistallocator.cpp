@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "freelistallocator.h"
+#include "common/memory/freelistallocator.h"
 
 Ether::FreeListAllocator::FreeListAllocator(size_t capacity)
     : MemoryAllocator(capacity)

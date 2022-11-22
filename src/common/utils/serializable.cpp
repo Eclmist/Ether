@@ -17,19 +17,31 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/utils/time.h"
-#include <mutex>
+#include "common/utils/serializable.h"
+#include "common/stream/filestream.h"
 
-void Ether::Time::Initialize()
+Ether::Serializable::Serializable()
+    : m_ClassID(typeid(this).hash_code())
+    , m_Version(0)
 {
-    m_StartupTime = Clock::now();
-    m_PreviousTime = m_StartupTime;
-    m_CurrentTime = m_StartupTime;
+    m_Guid = std::format(
+        "{:X}-{:X}-{:X}-{:X}",
+        SMath::Random::UniformInt(),
+        SMath::Random::UniformInt(),
+        SMath::Random::UniformInt(),
+        SMath::Random::UniformInt()
+    );
 }
 
-void Ether::Time::NewFrame_Impl()
+void Ether::Serializable::Serialize(OStream& ostream)
 {
-    m_PreviousTime = m_CurrentTime;
-    m_CurrentTime = Clock::now();
+    ostream << m_Version;
+    ostream << m_ClassID;
+}
+
+void Ether::Serializable::Deserialize(IStream& istream)
+{
+    istream >> m_Version;
+    istream >> m_ClassID;
 }
 

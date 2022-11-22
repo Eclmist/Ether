@@ -35,17 +35,17 @@ namespace Ether
     public:
         static inline void NewFrame() { Instance().NewFrame_Impl(); }
 
-        static inline uint64_t GetStartupTime() { return Instance().m_StartupTime.time_since_epoch().count(); }
-        static inline uint64_t GetCurrentTime() { return Instance().m_CurrentTime.time_since_epoch().count(); }
-        static inline uint64_t GetTimeSinceStartup() { return GetCurrentTime() - GetStartupTime(); }
-        static inline uint64_t GetDeltaTime() { return GetCurrentTime() - GetPreviousTime(); }
+        static inline double GetStartupTime() { return Instance().m_StartupTime.time_since_epoch().count(); }
+        static inline double GetCurrentTime() { return Instance().m_CurrentTime.time_since_epoch().count(); }
+        static inline double GetTimeSinceStartup() { return GetCurrentTime() - GetStartupTime(); }
+        static inline double GetDeltaTime() { return GetCurrentTime() - GetPreviousTime(); }
 
     private:
-        static inline uint64_t GetPreviousTime() { return Instance().m_PreviousTime.time_since_epoch().count(); }
+        static inline double GetPreviousTime() { return Instance().m_PreviousTime.time_since_epoch().count(); }
 
     private:
         // Only ever use high resolution clock
-        using Clock = std::chrono::high_resolution_clock;
+        using Clock = std::chrono::system_clock;
         using Duration = std::chrono::duration<double, std::milli>;
         using TimePoint = std::chrono::time_point<Clock, Duration>;
 

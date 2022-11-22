@@ -54,6 +54,6 @@ namespace Ether
         void Reset() override;
 
     protected:
-        uint32_t m_Offset;
+        size_t m_Offset;
     };
 }

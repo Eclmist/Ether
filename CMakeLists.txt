@@ -74,6 +74,13 @@ endif()
 add_library(${ETHER_PROJECT} SHARED ${engine_files})
 target_compile_definitions(${ETHER_PROJECT} PRIVATE $<IF:$<BOOL:${CONFIGURE_AS_TOOLMODE}>, ETH_TOOLMODE, ETH_ENGINE>)
 
+if(WIN32)
+    # Enable multi-threaded compilation on Windows
+    include(ProcessorCount)
+    ProcessorCount(N)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
+endif()
+
 # =========================================================================== #
 #                            PRECOMPILED HEADERS                              #
 # =========================================================================== #
@@ -94,7 +101,7 @@ else()
 endif()
 
 # =========================================================================== #
-#                          SET COMPILATION TARGETS                            #
+#                             LINK DEPENDENCIES                               #
 # =========================================================================== #
 
 target_link_libraries(${ETHER_PROJECT}

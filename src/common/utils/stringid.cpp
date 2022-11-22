@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "stringid.h"
+#include "common/utils/stringid.h"
 
 std::unordered_map<Ether::sid_t, std::string> Ether::StringID::s_HashToStringMap;
 

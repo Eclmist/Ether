@@ -17,14 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "logentry.h"
+#include "common/logging/logentry.h"
 #include "common/utils/time.h"
 
 Ether::LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
     : m_Text(text)
     , m_Level(level)
     , m_Type(type)
-    , m_Time(Time::GetCurrentTime())
+    , m_Time(Time::GetCurrentTime() / 1000.0f)
 {
 }
 
@@ -84,7 +84,7 @@ std::string Ether::LogEntry::GetLogTypePrefix() const
 
 std::string Ether::LogEntry::GetTimePrefix() const
 {
-    time_t epochTime = m_Time / 1000.0f;
+    time_t epochTime = m_Time;
     return "[ " + FormatTime(epochTime, "%Y/%m/%d %X") + " ]";
 }
 

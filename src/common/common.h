@@ -33,6 +33,7 @@
 #include "common/utils/types.h"
 #include "common/utils/time.h"
 #include "common/utils/exceptions.h"
+#include "common/utils/serializable.h"
 #include "common/utils/stringid.h"
 #include "common/utils/stringutils.h"
 

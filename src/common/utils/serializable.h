@@ -17,19 +17,43 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/utils/time.h"
-#include <mutex>
+#pragma once
 
-void Ether::Time::Initialize()
-{
-    m_StartupTime = Clock::now();
-    m_PreviousTime = m_StartupTime;
-    m_CurrentTime = m_StartupTime;
-}
+#include "common/common.h"
+#include <unordered_map>
 
-void Ether::Time::NewFrame_Impl()
+namespace Ether
 {
-    m_PreviousTime = m_CurrentTime;
-    m_CurrentTime = Clock::now();
+    class OStream;
+    class IStream;
+
+    /*
+        Derive from this class to make other classes serializable
+    */
+    class Serializable
+    {
+    public:
+        Serializable();
+        ~Serializable() = default;
+
+        inline std::string GetGuid() const { return m_Guid; }
+
+        virtual void Serialize(OStream& ostream);
+        virtual void Deserialize(IStream& istream);
+
+    protected:
+        struct SerializableField
+        {
+            void* m_Data;
+            size_t m_Size;
+        };
+
+    protected:
+        std::string m_Guid;
+        uint32_t m_Version;
+        uint32_t m_ClassID;
+
+        std::unordered_map<std::string, Serializable::SerializableField> m_Fields;
+    };
 }
 
