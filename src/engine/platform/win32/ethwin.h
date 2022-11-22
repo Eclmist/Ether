@@ -53,6 +53,7 @@
 #define NOPROXYSTUB
 #define NOIMAGE
 #define NOTAPE
+// #define UNICODE
 
 #include <Windows.h>
 

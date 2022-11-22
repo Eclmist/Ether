@@ -94,7 +94,7 @@ LRESULT CALLBACK Ether::Win32::Win32NotificationTray::SysTrayWndProc(HWND hWnd, 
             POINT pt;
             GetCursorPos(&pt);
             HMENU hmenu = CreatePopupMenu();
-            InsertMenu(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, "Force Quit (Debug)");
+            InsertMenuA(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, "Force Quit (Debug)");
             SetForegroundWindow(hWnd);
             int cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
             PostMessage(hWnd, WM_NULL, 0, 0);

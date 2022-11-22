@@ -27,6 +27,12 @@
 #include <shellapi.h>
 #include <winuser.h>
 
+#if defined UNICODE
+#define ETH_WINDOW_CLASS                    L"Ether"
+#else
+#define ETH_WINDOW_CLASS                    "Ether"
+#endif
+
 #define ETH_WINDOWCLASS_STYLE               CS_HREDRAW | CS_VREDRAW
 
 #ifdef ETH_TOOLMODE
@@ -38,14 +44,12 @@
 #define ETH_WINDOW_STYLE_FULLSCREEN         WS_VISIBLE | WS_POPUP
 
 Ether::Win32::Win32Window::Win32Window()
-    : m_ClassName(Engine::GetEngineConfig().GetClientName())
-
 {
     RegisterWindowClass();
     m_WindowHandle = (void*)::CreateWindowEx(
         WS_EX_NOREDIRECTIONBITMAP,
-        m_ClassName.c_str(),
-        m_ClassName.c_str(),
+        ETH_WINDOW_CLASS,
+        ETH_WINDOW_CLASS,
         ETH_WINDOW_STYLE,
         0,
         0,
@@ -61,12 +65,13 @@ Ether::Win32::Win32Window::Win32Window()
 #if defined(ETH_ENGINE)
     CentralizeWindow();
 #endif
+
 }
 
 Ether::Win32::Win32Window::~Win32Window()
 {
     ::DestroyWindow((HWND)m_WindowHandle);
-    UnregisterClassA(m_ClassName.c_str(), ::GetModuleHandle(nullptr));
+    UnregisterClass(ETH_WINDOW_CLASS, ::GetModuleHandle(nullptr));
 }
 
 void Ether::Win32::Win32Window::Show()
@@ -114,6 +119,7 @@ void Ether::Win32::Win32Window::SetFullscreen(bool isFullscreen)
     if (m_WindowHandle == nullptr)
         return;
 
+    m_IsFullscreen = isFullscreen;
     static Rect cachedWindowedRect = { 0,0,0,0 };
 
     if (isFullscreen)
@@ -133,8 +139,6 @@ void Ether::Win32::Win32Window::SetFullscreen(bool isFullscreen)
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ::ShowWindow((HWND)m_WindowHandle, SW_NORMAL);
     }
-
-    m_IsFullscreen = isFullscreen;
 }
 
 void Ether::Win32::Win32Window::SetTitle(const std::string& title)
@@ -142,7 +146,11 @@ void Ether::Win32::Win32Window::SetTitle(const std::string& title)
     if (m_WindowHandle == nullptr)
         return;
 
+#if defined UNICODE
+    ::SetWindowText((HWND)m_WindowHandle, ToWideString(title).c_str());
+#else
     ::SetWindowText((HWND)m_WindowHandle, title.c_str());
+#endif
 }
 
 void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
@@ -192,7 +200,7 @@ Ether::Win32::Rect Ether::Win32::Win32Window::GetCurrentWindowRect()
 void Ether::Win32::Win32Window::ToWindowRect(Rect& clientRect)
 {
     RECT windowRect = { clientRect.x, clientRect.y, clientRect.x + clientRect.w, clientRect.y + clientRect.h };
-    ::AdjustWindowRect(&windowRect, ETH_WINDOW_STYLE, false);
+    ::AdjustWindowRect(&windowRect, m_IsFullscreen ? ETH_WINDOW_STYLE_FULLSCREEN : ETH_WINDOW_STYLE, false);
 
     clientRect = {
         windowRect.left,
@@ -206,7 +214,7 @@ void Ether::Win32::Win32Window::ToClientRect(Rect& windowRect)
 {
     RECT rc;
     ::SetRectEmpty(&rc);
-    ::AdjustWindowRect(&rc, ETH_WINDOW_STYLE, false);
+    ::AdjustWindowRect(&rc, m_IsFullscreen ? ETH_WINDOW_STYLE_FULLSCREEN : ETH_WINDOW_STYLE, false);
 
     windowRect.w -= (rc.right - rc.left);
     windowRect.h -= (rc.bottom - rc.top);
@@ -242,7 +250,7 @@ void Ether::Win32::Win32Window::RegisterWindowClass() const
     windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
     windowClass.hbrBackground = nullptr;
     windowClass.lpszMenuName = nullptr;
-    windowClass.lpszClassName = m_ClassName.c_str();
+    windowClass.lpszClassName = ETH_WINDOW_CLASS;
     windowClass.hIconSm = nullptr;
     windowClass.hIcon = ::LoadIcon(::GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ENGINEICON));
 

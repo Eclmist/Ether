@@ -52,10 +52,6 @@ namespace Ether::Win32
         void RegisterWindowClass() const;
         static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
         LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-    private:
-        std::string m_ClassName;
-		std::thread m_OsEventThread;
     };
 }
 
