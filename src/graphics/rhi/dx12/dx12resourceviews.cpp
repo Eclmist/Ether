@@ -17,5 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/rhi/dx12/dx12resourceviews.h"
+
+#endif // ETH_GRAPHICS_DX12
 

@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/rhi/dx12/dx12swapchain.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12translation.h"
@@ -73,4 +75,6 @@ void Ether::Graphics::Dx12SwapChain::Present(uint8_t numVblanks)
     if (FAILED(hr))
         LogGraphicsFatal("Failed to present swapchain buffers");
 }
+
+#endif // ETH_GRAPHICS_DX12
 

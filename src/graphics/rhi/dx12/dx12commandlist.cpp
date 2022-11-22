@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12commandallocator.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
@@ -331,4 +333,6 @@ void Ether::Graphics::Dx12CommandList::Close()
 	if (FAILED(hr))
 		LogGraphicsError("Failed to close Dx12 Command List");
 }
+
+#endif // ETH_GRAPHICS_DX12
 

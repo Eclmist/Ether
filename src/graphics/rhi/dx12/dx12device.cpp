@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/core.h"
 #include "graphics/rhi/dx12/dx12device.h"
 #include "graphics/rhi/dx12/dx12module.h"
@@ -316,4 +318,6 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
 	dx12Obj->m_Resource->SetName(reinterpret_cast<const wchar_t*>(desc.m_Name.c_str()));
     return dx12Obj;
 }
+
+#endif // ETH_GRAPHICS_DX12
 

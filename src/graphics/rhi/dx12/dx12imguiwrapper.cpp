@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/core.h"
 #include "graphics/rhi/dx12/dx12imguiwrapper.h"
 #include "graphics/rhi/dx12/dx12translation.h"
@@ -56,3 +58,6 @@ void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData()
 {
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), ((Dx12CommandList&)m_Context.GetCommandList()).m_CommandList.Get());
 }
+
+#endif // ETH_GRAPHICS_DX12
+

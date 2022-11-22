@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ETH_GRAPHICS_DX12
+
 #include "graphics/rhi/dx12/dx12translation.h"
 
 D3D12_STATIC_BORDER_COLOR Ether::Graphics::Translate(const RhiBorderColor& rhiType)
@@ -815,4 +817,6 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBuff
 
     return d3dDesc;
 }
+
+#endif // ETH_GRAPHICS_DX12
 
