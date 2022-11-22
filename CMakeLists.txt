@@ -99,7 +99,7 @@ endif()
 
 target_link_libraries(${ETHER_PROJECT}
     Common
-    Graphics.Dx12
+    Graphics
     "${CMAKE_SOURCE_DIR}/include/optick/OptickCore.lib"
 )
 

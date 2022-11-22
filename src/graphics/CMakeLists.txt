@@ -21,7 +21,7 @@
 #                     PROJECT DEFINITIONS & PROPERTIES                        #
 # =========================================================================== #
 
-set(ETHER_GRAPHICS Graphics.Dx12)
+set(ETHER_GRAPHICS Graphics)
 
 # =========================================================================== #
 #                        ADD SOURCE FILES TO PROJECT                          #
