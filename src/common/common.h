@@ -34,5 +34,6 @@
 #include "common/utils/time.h"
 #include "common/utils/exceptions.h"
 #include "common/utils/stringid.h"
+#include "common/utils/stringutils.h"
 
 #include "common/memory/memoryutils.h"

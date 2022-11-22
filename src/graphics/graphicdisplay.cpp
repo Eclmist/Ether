@@ -63,13 +63,11 @@ void Ether::Graphics::GraphicDisplay::Present()
 
 void Ether::Graphics::GraphicDisplay::ResizeBuffers(ethVector2u size)
 {
-    m_Viewport = { 0.0f, 0.0f, (float)size.x, (float)size.y, 0.0f, 1.0f };
-
     Core::FlushGpu();
+    ResizeViewport(size);
 
-    RhiResizeDesc resizeDesc = {};
-    resizeDesc.m_Size = size;
-    m_SwapChain->ResizeBuffers(resizeDesc);
+    m_SwapChain->ResizeBuffers({ size });
+
     ResetCurrentBufferIndex();
     CreateResourcesFromSwapChain();
     CreateViewsFromSwapChain();
@@ -130,6 +128,11 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 
     m_DescriptorLifetimeMaintainer.emplace_back(std::move(rtvAllocation));
     m_DescriptorLifetimeMaintainer.emplace_back(std::move(srvAllocation));
+}
+
+void Ether::Graphics::GraphicDisplay::ResizeViewport(ethVector2u& size)
+{
+    m_Viewport = { 0.0f, 0.0f, (float)size.x, (float)size.y, 0.0f, 1.0f };
 }
 
 void Ether::Graphics::GraphicDisplay::ResetCurrentBufferIndex()

@@ -68,7 +68,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::Cr
 	if (FAILED(hr))
 		LogGraphicsError("Failed to create DX12 Command List");
 
-    dx12Obj->m_CommandList->SetName(reinterpret_cast<const wchar_t*>(desc.m_Name.c_str()));
+    dx12Obj->m_CommandList->SetName(ToWideString(desc.m_Name).c_str());
 	return dx12Obj;
 }
 
@@ -315,7 +315,10 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         IID_PPV_ARGS(&dx12Obj->m_Resource)
     );
 
-	dx12Obj->m_Resource->SetName(reinterpret_cast<const wchar_t*>(desc.m_Name.c_str()));
+	if (FAILED(hr))
+		LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name);
+
+	dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
     return dx12Obj;
 }
 

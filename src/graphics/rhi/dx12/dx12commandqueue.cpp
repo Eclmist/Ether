@@ -63,8 +63,8 @@ void Ether::Graphics::Dx12CommandQueue::StallForFence(RhiFenceValue fenceValue)
 
 void Ether::Graphics::Dx12CommandQueue::Flush()
 {
-    const auto d3d12Fence = dynamic_cast<Dx12Fence*>(m_Fence.get());
-    HRESULT hr = m_CommandQueue->Signal(d3d12Fence->m_Fence.Get(), ++m_FinalFenceValue);
+    const auto dx12Fence = dynamic_cast<Dx12Fence*>(m_Fence.get());
+    HRESULT hr = m_CommandQueue->Signal(dx12Fence->m_Fence.Get(), ++m_FinalFenceValue);
 
 	if (FAILED(hr))
 		LogGraphicsError("Failed to signal command queue with fence");

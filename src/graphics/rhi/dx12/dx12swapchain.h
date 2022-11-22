@@ -33,7 +33,8 @@ namespace Ether::Graphics
     public:
         uint32_t GetCurrentBackBufferIndex() const override;
         RhiResource& GetBuffer(uint8_t index) const override;
-        void ResizeBuffers(RhiResizeDesc& desc) override;
+        void ResizeBuffers(RhiResizeDesc desc) override;
+        void ResetBuffers() override;
         void Present(uint8_t numVblanks) override;
 
     private:

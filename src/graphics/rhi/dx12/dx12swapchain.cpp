@@ -25,8 +25,7 @@
 
 Ether::Graphics::Dx12SwapChain::Dx12SwapChain()
 {
-    for (int i = 0; i < MaxSwapChainBuffers; ++i)
-        m_BufferResources[i] = std::make_unique<Dx12Resource>("Swapchain RenderTarget" + std::to_string(i));
+    ResetBuffers();
 }
 
 uint32_t Ether::Graphics::Dx12SwapChain::GetCurrentBackBufferIndex() const
@@ -37,6 +36,7 @@ uint32_t Ether::Graphics::Dx12SwapChain::GetCurrentBackBufferIndex() const
 Ether::Graphics::RhiResource& Ether::Graphics::Dx12SwapChain::GetBuffer(uint8_t index) const
 {
     Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(m_BufferResources[index].get());
+
     if (dx12Resource->m_Resource != nullptr)
         return *m_BufferResources[index];
 
@@ -44,8 +44,10 @@ Ether::Graphics::RhiResource& Ether::Graphics::Dx12SwapChain::GetBuffer(uint8_t 
     return *m_BufferResources[index];
 }
 
-void Ether::Graphics::Dx12SwapChain::ResizeBuffers(RhiResizeDesc& desc)
+void Ether::Graphics::Dx12SwapChain::ResizeBuffers(RhiResizeDesc desc)
 {
+    ResetBuffers();
+
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     HRESULT hr = m_SwapChain->GetDesc(&swapChainDesc);
     if (FAILED(hr))
@@ -61,8 +63,15 @@ void Ether::Graphics::Dx12SwapChain::ResizeBuffers(RhiResizeDesc& desc)
         swapChainDesc.BufferDesc.Format,
         swapChainDesc.Flags
     );
+
     if (FAILED(hr))
         LogGraphicsError("Failed to resize swapchain buffers");
+}
+
+void Ether::Graphics::Dx12SwapChain::ResetBuffers()
+{
+    for (int i = 0; i < MaxSwapChainBuffers; ++i)
+        m_BufferResources[i] = std::make_unique<Dx12Resource>("Swapchain RenderTarget" + std::to_string(i));
 }
 
 void Ether::Graphics::Dx12SwapChain::Present(uint8_t numVblanks)

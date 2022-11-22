@@ -49,7 +49,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     m_Context.NewFrame();
     m_Context.TransitionResource(Core::GetGraphicsDisplay().GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
     m_Context.SetRenderTarget(Core::GetGraphicsDisplay().GetCurrentBackBufferRtv());
-    m_Context.SetDescriptorHeap(Core::GetGpuDescriptorAllocator().GetDescriptorHeap());
+    m_Context.SetDescriptorHeap(*m_DescriptorHeap);
 
     RenderDrawData();
 

@@ -43,7 +43,10 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::A
     std::unique_ptr<MemoryAllocation> baseAlloc = FreeListAllocator::Allocate(sizeAlign);
 
     if (baseAlloc == nullptr)
+    {
         ReclaimStaleAllocations(sizeAlign.m_Size);
+        baseAlloc = FreeListAllocator::Allocate(sizeAlign);
+    }
 
     uint32_t descriptorIdx = baseAlloc->GetOffset();
     uint32_t descriptorSize = m_DescriptorHeap->GetHandleIncrementSize();
@@ -74,19 +77,21 @@ void Ether::Graphics::DescriptorAllocator::Free(const DescriptorAllocation& allo
 
 void Ether::Graphics::DescriptorAllocator::ReclaimStaleAllocations(uint32_t numIndices)
 {
-    while (numIndices > 0)
+    while (!m_StaleAllocations.empty())
     {
-        if (m_StaleAllocations.empty())
-        {
-            LogGraphicsError("Descriptor heap is full - no stale indices to reclaim");
-            LogGraphicsError("Descriptor allocation failed - heap is already full");
-            throw std::bad_alloc();
-        }
-
         FreeListAllocation staleAlloc = m_StaleAllocations.front();
         m_StaleAllocations.pop();
         FreeBlock(staleAlloc.GetOffset(), staleAlloc.GetSize());
-        numIndices -= staleAlloc.GetSize();
+
+        if (numIndices > 0)
+            numIndices -= staleAlloc.GetSize();
+    }
+
+    if (numIndices > 0)
+    {
+        LogGraphicsError("Descriptor heap is full - no stale indices to reclaim");
+        LogGraphicsError("Descriptor allocation failed - heap is already full");
+        throw std::bad_alloc();
     }
 }
 

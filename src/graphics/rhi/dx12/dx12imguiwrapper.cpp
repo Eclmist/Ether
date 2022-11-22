@@ -30,14 +30,16 @@
 
 Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
 {
+    m_DescriptorHeap = Core::GetDevice().CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 1024 });
+
     ImGui_ImplWin32_Init(Core::GetConfig().m_WindowHandle);
     ImGui_ImplDX12_Init(
         ((Dx12Device&)Core::GetDevice()).m_Device.Get(),
         Core::GetGraphicsDisplay().GetNumBuffers(),
         Translate(BackBufferFormat),
-        ((Dx12DescriptorHeap&)Core::GetGpuDescriptorAllocator().GetDescriptorHeap()).m_Heap.Get(),
-        Translate(Core::GetGpuDescriptorAllocator().GetDescriptorHeap().GetBaseCpuHandle()),
-        Translate(Core::GetGpuDescriptorAllocator().GetDescriptorHeap().GetBaseGpuHandle())
+        ((Dx12DescriptorHeap&)m_DescriptorHeap).m_Heap.Get(),
+        Translate(m_DescriptorHeap->GetBaseCpuHandle()),
+        Translate(m_DescriptorHeap->GetBaseGpuHandle())
     );
 }
 

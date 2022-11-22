@@ -19,25 +19,27 @@
 
 #pragma once
 
-#include "graphics/context/graphiccontext.h"
+#include "common/common.h"
 
-namespace Ether::Graphics
+namespace Ether
 {
-    class RhiImguiWrapper : public NonCopyable, public NonMovable
+    //inline std::string ToNarrowString(const std::wstring& wide)
+    //{
+    //    std::string str(wide.length(), 0);
+    //    std::transform(wide.begin(), wide.end(), str.begin(), [](wchar_t c) {
+    //        return (char)c;
+    //        });
+    //    return str;
+    //}
+
+    inline std::wstring ToWideString(const std::string& narrow)
     {
-    public:
-        RhiImguiWrapper();
-        virtual ~RhiImguiWrapper();
+        std::wstring str(narrow.length(), 0);
+        std::transform(narrow.begin(), narrow.end(), str.begin(), [](char c) {
+            return (wchar_t)c;
+        });
 
-    public:
-        virtual void Render();
-        virtual void RenderDrawData() = 0;
-
-    public:
-        static std::unique_ptr<RhiImguiWrapper> InitForPlatform();
-
-    protected:
-        GraphicContext m_Context;
-        std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
-    };
+        return str;
+    }
 }
+

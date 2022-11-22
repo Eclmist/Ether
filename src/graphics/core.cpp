@@ -23,8 +23,7 @@
 
 Ether::Graphics::Core::~Core()
 {
-	m_StopGraphicsThread = true;
-	m_GraphicsThread.join();
+    FlushGpu();
     m_Imgui.reset();
 }
 
@@ -41,19 +40,6 @@ void Ether::Graphics::Core::Initialize(const GraphicConfig& config)
 	m_GraphicsDisplay = std::make_unique<GraphicDisplay>();
 
     m_Imgui = RhiImguiWrapper::InitForPlatform();
-
-	m_GraphicsThread = std::thread(&Core::MainGraphicsThread, this);
-}
-
-void Ether::Graphics::Core::UpdateConfigs(const GraphicConfig& config)
-{
-    if (m_Config.m_Resolution != config.m_Resolution)
-        m_GraphicsDisplay->ResizeBuffers(config.m_Resolution);
-
-    if (m_Config.m_WindowHandle != config.m_WindowHandle)
-        throw std::exception("Operation not (yet) supported"); // Easiest to just recreate the display object?
-
-    m_Config = config;
 }
 
 void Ether::Graphics::Core::FlushGpu()
@@ -61,30 +47,18 @@ void Ether::Graphics::Core::FlushGpu()
     GetCommandManager().Flush();
 }
 
-void Ether::Graphics::Core::MainGraphicsThread()
+void Ether::Graphics::Core::Update()
 {
-    LogGraphicsInfo("Graphics thread started");
-	while (!m_StopGraphicsThread)
-	{
-		ETH_MARKER_FRAME("Rendering Frame");
-		Render();
-	}
-
-    FlushGpu();
-    LogGraphicsInfo("Graphics thread stopped");
-}
-
-void Ether::Graphics::Core::Render()
-{
+    ETH_MARKER_FRAME("Graphics Update");
     GraphicContext context("Clear Framebuffer Context");
     context.NewFrame();
     context.SetMarker("Render");
-    context.TransitionResource(m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
-    context.ClearColor(m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 1000.0f),1,1,1 });
-    context.TransitionResource(m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
+    context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
+    context.ClearColor(m_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 1000.0f),1,1,1 });
+    context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
     context.FinalizeAndExecute();
 
-    m_Imgui->Render();
-    m_GraphicsDisplay->Present();
+    m_Instance->m_Imgui->Render();
+    m_Instance->m_GraphicsDisplay->Present();
 }
 

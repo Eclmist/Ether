@@ -72,9 +72,7 @@ void Ether::Engine::MainEngineThread()
     }
 
     Input::EndFrame();
-
-	// Update ecs
-	// Update whatever
+    Graphics::Core::Update();
 }
 
 

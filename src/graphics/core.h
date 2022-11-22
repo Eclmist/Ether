@@ -46,7 +46,6 @@ namespace Ether::Graphics
         ~Core();
 
 		void Initialize(const GraphicConfig& config);
-        void UpdateConfigs(const GraphicConfig& config);
 
 	public:
 		static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
@@ -59,11 +58,8 @@ namespace Ether::Graphics
         static inline const GraphicConfig& GetConfig() { return Instance().m_Config; }
 
     public:
+		static void Update();
         static void FlushGpu();
-
-	private:
-		void MainGraphicsThread();
-		void Render();
 
     private:
 		std::unique_ptr<RhiModule> m_RhiModule;
@@ -76,9 +72,6 @@ namespace Ether::Graphics
         std::unique_ptr<GraphicDisplay> m_GraphicsDisplay;
 
 	private:
-		std::thread m_GraphicsThread;
-		bool m_StopGraphicsThread;
-
         GraphicConfig m_Config;
     };
 }
