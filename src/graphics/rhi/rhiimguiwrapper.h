@@ -24,7 +24,7 @@
 
 namespace Ether::Graphics
 {
-    class RhiImguiWrapper : public NonCopyable, public NonMovable
+    class ETH_GRAPHIC_DLL RhiImguiWrapper : public NonCopyable, public NonMovable
     {
     public:
         RhiImguiWrapper();

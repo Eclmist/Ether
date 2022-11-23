@@ -52,6 +52,7 @@ namespace Ether::Graphics
         static inline GraphicDisplay& GetGraphicsDisplay() { return *Instance().m_GraphicsDisplay; }
         static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
         static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
+        static inline RhiImguiWrapper& GetImguiWrapper() { return *Instance().m_Imgui; }
 
         static inline const GraphicConfig& GetConfig() { return Instance().m_Config; }
 

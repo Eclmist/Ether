@@ -61,5 +61,10 @@ void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData()
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), ((Dx12CommandList&)m_Context.GetCommandList()).m_CommandList.Get());
 }
 
+bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam)
+{
+    return ImGui_ImplWin32_WndProcHandler((HWND)hWnd, msg, wParam, lParam);
+}
+
 #endif // ETH_GRAPHICS_DX12
 

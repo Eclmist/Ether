@@ -24,7 +24,7 @@
 
 namespace Ether::Graphics
 {
-    class Dx12ImguiWrapper : public RhiImguiWrapper
+    class ETH_GRAPHIC_DLL Dx12ImguiWrapper : public RhiImguiWrapper
     {
     public:
         Dx12ImguiWrapper();
@@ -33,6 +33,9 @@ namespace Ether::Graphics
     public:
         void Render() override;
         void RenderDrawData() override;
+
+    public:
+        bool Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam);
     };
 }
 

@@ -21,8 +21,8 @@
 
 #include "engine/engine.h"
 #include "engine/platform/win32/win32window.h"
+#include "graphics/rhi/dx12/dx12imguiwrapper.h"
 #include "resource.h"
-//#include "imgui/imgui_impl_win32.h"
 #include <strsafe.h>
 #include <shellapi.h>
 #include <winuser.h>
@@ -255,12 +255,11 @@ void Ether::Win32::Win32Window::RegisterWindowClass() const
 
 LRESULT CALLBACK Ether::Win32::Win32Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    if (!Engine::IsInitialized()) // TODO
+    if (!Engine::IsInitialized())
         return DefWindowProc(hWnd, msg, wParam, lParam);
 
-    // TODO: Pass this along to graphics dll, and then graphics can call imgui
-    //if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-    //    return true;
+    if (((Graphics::Dx12ImguiWrapper&)Graphics::Core::GetImguiWrapper()).Win32MessageHandler(hWnd, msg, wParam, lParam))
+        return true;
 
     switch (msg)
     {
