@@ -19,56 +19,57 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-	class Dx12CommandList : public RhiCommandList
-	{
-	public:
-		Dx12CommandList(RhiCommandType type) : RhiCommandList(type) {}
-		~Dx12CommandList() override = default;
+    class Dx12CommandList : public RhiCommandList
+    {
+    public:
+        Dx12CommandList(RhiCommandType type) : RhiCommandList(type) {}
+        ~Dx12CommandList() override = default;
 
-	public:
-		void SetMarker(const std::string& name) override;
-		void PushMarker(const std::string& name) override;
-		void PopMarker() override;
+    public:
+        void SetMarker(const std::string& name) override;
+        void PushMarker(const std::string& name) override;
+        void PopMarker() override;
 
-		//RhiResult SetViewport(RhiViewportDesc& viewport) override;
-		//RhiResult SetScissor(RhiScissorDesc scissor) override;
-		//RhiResult SetStencilRef(RhiStencilValue val) override;
-		//RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
-		//RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) override;
-		//RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) override;
-		//RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
-		//RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
-		void SetRenderTargets(RhiSetRenderTargetsDesc desc) override;
+        //RhiResult SetViewport(RhiViewportDesc& viewport) override;
+        //RhiResult SetScissor(RhiScissorDesc scissor) override;
+        //RhiResult SetStencilRef(RhiStencilValue val) override;
+        //RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
+        //RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) override;
+        //RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) override;
+        //RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
+        //RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
+        void SetRenderTargets(RhiSetRenderTargetsDesc desc) override;
 
-		//RhiResult SetRootConstant(RhiSetRootConstantDesc desc) override;
-		//RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) override;
-		//RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) override;
-		//RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) override;
-		//RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) override;
-		void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
+        //RhiResult SetRootConstant(RhiSetRootConstantDesc desc) override;
+        //RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) override;
+        //RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) override;
+        //RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) override;
+        //RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) override;
+        void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
 
-		void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
-		//RhiResult ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
+        void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
+        //RhiResult ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
 
-		void TransitionResource(RhiResourceTransitionDesc desc) override;
-		//RhiResult CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
-		//RhiResult CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
-		//RhiResult DrawInstanced(RhiDrawInstancedDesc desc) override;
-		//RhiResult DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
+        void TransitionResource(RhiResourceTransitionDesc desc) override;
+        //RhiResult CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
+        //RhiResult CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
+        //RhiResult DrawInstanced(RhiDrawInstancedDesc desc) override;
+        //RhiResult DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
 
-		void Reset(const RhiCommandAllocator& commandAllocator) override;
-		void Close() override;
+        void Reset(const RhiCommandAllocator& commandAllocator) override;
+        void Close() override;
 
-	private:
-		friend class Dx12Device;
-		friend class Dx12CommandQueue;
-		friend class Dx12ImguiWrapper;
+    private:
+        friend class Dx12Device;
+        friend class Dx12CommandQueue;
+        friend class Dx12ImguiWrapper;
 
-		wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
-	};
+        wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+    };
 }

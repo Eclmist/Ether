@@ -17,6 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "pch.h"
 #include "engine/platform/platformlaunchargs.h"
 
 namespace Ether::PS5
@@ -24,7 +25,7 @@ namespace Ether::PS5
     class PS5LaunchArgs : public PlatformLaunchArgs
     {
     public:
-		PS5LaunchArgs();
+        PS5LaunchArgs();
         ~PS5LaunchArgs() override = default;
     };
 }

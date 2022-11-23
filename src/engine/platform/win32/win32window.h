@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "pch.h"
 #include "engine/platform/platformwindow.h"
 #include "engine/platform/win32/ethwin.h"
 
@@ -42,16 +43,20 @@ namespace Ether::Win32
         void SetParentWindowHandle(void* parentHandle) override;
 
     public:
-		void PlatformMessageLoop(std::function<void()> engineUpdateCallback) override;
+        void PlatformMessageLoop(std::function<void()> engineUpdateCallback) override;
+
+    public:
+        void ToWindowRect(Rect& clientRect);
+        void ToClientRect(Rect& windowRect);
 
     private:
         Rect GetCurrentWindowRect();
-        void ToWindowRect(Rect& clientRect);
-        void ToClientRect(Rect& windowRect);
         void CentralizeWindow();
         void RegisterWindowClass() const;
-        static LRESULT CALLBACK WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-        LRESULT WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+        static LRESULT CALLBACK WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+    private:
+        bool m_QuitMessageReceived;
     };
 }
 

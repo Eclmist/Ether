@@ -30,7 +30,7 @@ int Ether::Start(IApplicationBase& app)
     Engine::Instance().Initialize();
     Engine::Instance().LoadApplication(app);
     Engine::Instance().GetMainWindow().Show();
-	Engine::Instance().Run();
+    Engine::Instance().Run();
 
     LogInfo("Shutting down Ether"); 
     Engine::Instance().Shutdown();

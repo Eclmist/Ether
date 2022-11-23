@@ -17,6 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "pch.h"
 #include "engine/platform/platformlaunchargs.h"
 
 namespace Ether::Win32

@@ -24,13 +24,13 @@
 #include "graphics/rhi/rhidevice.h"
 
 Ether::Graphics::CommandManager::CommandManager()
-	: m_GraphicAllocatorPool(RhiCommandType::Graphic)
-	, m_ComputeAllocatorPool(RhiCommandType::Compute)
-	, m_CopyAllocatorPool(RhiCommandType::Copy)
+    : m_GraphicAllocatorPool(RhiCommandType::Graphic)
+    , m_ComputeAllocatorPool(RhiCommandType::Compute)
+    , m_CopyAllocatorPool(RhiCommandType::Copy)
 {
-	m_GraphicsQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Graphic });
-	m_ComputeQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Compute });
-	m_CopyQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Copy });
+    m_GraphicsQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Graphic });
+    m_ComputeQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Compute });
+    m_CopyQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Copy });
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::CommandManager::CreateCommandList(
@@ -60,7 +60,7 @@ void Ether::Graphics::CommandManager::Execute(RhiCommandList& cmdList)
         m_CopyQueue->Execute(cmdList);
         break;
     default:
-		LogGraphicsError("An unsupported command list type (%s) was sent for execution", cmdList.GetType());
+        LogGraphicsError("An unsupported command list type (%s) was sent for execution", cmdList.GetType());
         break;
     }
 }

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/memory/uploadbufferallocation.h"
 
 namespace Ether::Graphics

@@ -27,8 +27,8 @@ int main(void)
 #endif
 {
 #if defined (ETH_PLATFORM_PS5)
-	sceKernelLoadStartModule("/app0/Common.prx", 0, NULL, 0, NULL, NULL);
-	sceKernelLoadStartModule("/app0/Ether.prx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("/app0/Common.prx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("/app0/Ether.prx", 0, NULL, 0, NULL, NULL);
 #endif
 
     SampleApp sample;

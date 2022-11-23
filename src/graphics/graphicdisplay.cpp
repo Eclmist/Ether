@@ -28,11 +28,11 @@ constexpr uint32_t DefaultFrameBufferHeight = 1080;
 
 Ether::Graphics::GraphicDisplay::GraphicDisplay()
     : m_BufferingMode(BufferingMode::Triple)
+    , m_RtvAllocator(RhiDescriptorHeapType::Rtv)
     , m_ScissorRect({ 0, 0, 99999, 99999 })
     , m_Viewport({ 0.0f, 0.0f, (float)DefaultFrameBufferWidth, (float)DefaultFrameBufferHeight, 0.0f, 1.0f })
     , m_VSyncEnabled(false)
     , m_VSyncVBlanks(1)
-    , m_RtvAllocator(RhiDescriptorHeapType::Rtv)
 {
     CreateSwapChain(Core::GetConfig().m_WindowHandle);
     CreateResourcesFromSwapChain();

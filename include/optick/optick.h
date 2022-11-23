@@ -370,7 +370,7 @@ namespace Optick
 		};
 	};
 
-	#define OPTICK_MAKE_CATEGORY(filter, color) ((Optick::Category::Type)(((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color))
+	#define OPTICK_MAKE_CATEGORY(filter, color) (uint64_t)((Optick::Category::Type)(((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color))
 
 	struct Category
 	{

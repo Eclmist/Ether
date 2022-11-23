@@ -33,7 +33,7 @@ namespace Ether
         LoggingManager() = default;
         ~LoggingManager();
 
-		void Initialize();
+        void Initialize();
 
     public:
         void Log(LogLevel level, LogType type, const char* fmt, ...);

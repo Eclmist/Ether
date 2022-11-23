@@ -26,7 +26,7 @@
 #include <string>
 
 Ether::Graphics::Dx12Resource::Dx12Resource(const std::string& name)
-	: RhiResource(name)
+    : RhiResource(name)
 {
 }
 

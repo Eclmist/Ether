@@ -25,7 +25,7 @@ std::unordered_map<Ether::sid_t, std::string> Ether::StringID::s_HashToStringMap
 // https://create.stephan-brumme.com/crc32/#bitwise
 constexpr unsigned int crc32_bitwise(const char* data, std::size_t length)
 {
-	constexpr unsigned int Polynomial = 0xEDB88320;
+    constexpr unsigned int Polynomial = 0xEDB88320;
     unsigned int crc = 0;
     while (length--) {
         crc ^= *data++;
@@ -43,27 +43,27 @@ constexpr unsigned int crc32_bitwise(const char* data, std::size_t length)
 }
 
 Ether::StringID::StringID()
-	: m_Hash(InvalidSid)
+    : m_Hash(InvalidSid)
 {
 }
 
 Ether::StringID::StringID(const char* str)
     : m_Hash(Hash(str))
 {
-	s_HashToStringMap[m_Hash] = str;
+    s_HashToStringMap[m_Hash] = str;
 }
 
 std::string Ether::StringID::GetString()
 {
-	return s_HashToStringMap.find(m_Hash) == s_HashToStringMap.end()
-		? "Invalid StringID"
-		: s_HashToStringMap.at(m_Hash);
+    return s_HashToStringMap.find(m_Hash) == s_HashToStringMap.end()
+        ? "Invalid StringID"
+        : s_HashToStringMap.at(m_Hash);
 }
 
 Ether::StringID::StringID(const std::string& str)
     : m_Hash(Hash(str.c_str()))
 {
-	s_HashToStringMap[m_Hash] = str;
+    s_HashToStringMap[m_Hash] = str;
 }
 
 bool Ether::StringID::operator!=(const StringID& other) const

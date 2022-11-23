@@ -1,8 +1,11 @@
 @echo off
 
+:: ============== CLEAN UP PAST BUILD  ============== ::
+rmdir /s build\
+
 :: ============== STANDALONE CONFIG (WIN32) ============== ::
 echo Generating Visual Studio solutions for Ether
-cmake -B build\win32
+cmake -B build\win32 -DUSE_PRECOMPILED_HEADERS=ON
 if %errorlevel% neq 0 (
     echo CMake exited with error code %errorlevel%
     echo Projects generation failed

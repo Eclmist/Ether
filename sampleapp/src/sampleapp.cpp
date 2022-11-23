@@ -94,7 +94,7 @@ void SampleApp::Shutdown()
 
 void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
-    uint32_t y = (uint32_t)(200 * (sin(Time::GetCurrentTime() / 10000.0) + 2));
+    //uint32_t y = (uint32_t)(200 * (sin(Time::GetCurrentTime() / 10000.0) + 2));
 
     //Ether::Client::SetClientSize({ 1920, 1080 });
 

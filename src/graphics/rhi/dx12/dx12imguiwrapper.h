@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
 
 namespace Ether::Graphics

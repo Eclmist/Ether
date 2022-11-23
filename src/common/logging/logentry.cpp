@@ -18,7 +18,7 @@
 */
 
 #include "common/logging/logentry.h"
-#include "common/utils/time.h"
+#include "common/time/time.h"
 
 Ether::LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
     : m_Text(text)
@@ -40,9 +40,9 @@ std::string Ether::LogEntry::GetText() const
 std::string Ether::LogEntry::GetFullText() const
 {
 #if defined (ETH_PLATFORM_WIN32)
-	return GetTimePrefix() + " " + GetLogTypePrefix() + " " + GetLogLevelPrefix() + " " + m_Text;
+    return GetTimePrefix() + " " + GetLogTypePrefix() + " " + GetLogLevelPrefix() + " " + m_Text;
 #elif defined (ETH_PLATFORM_PS5)
-	return "[ Ether ] " + GetLogTypePrefix() + GetLogLevelPrefix() + " " + m_Text;
+    return "[ Ether ] " + GetLogTypePrefix() + GetLogLevelPrefix() + " " + m_Text;
 #endif
 }
 

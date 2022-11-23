@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
     enum class RhiBorderColor

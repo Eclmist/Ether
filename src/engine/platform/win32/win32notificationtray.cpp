@@ -32,12 +32,12 @@ Ether::Win32::Win32NotificationTray::Win32NotificationTray()
 {
     WNDCLASS wc = {};
     wc.lpfnWndProc = &SysTrayWndProc;
-    wc.hInstance = GetModuleHandle(NULL);
+    wc.hInstance = ::GetModuleHandle(NULL);
     wc.lpszClassName = TEXT("Ether::NotificationTray");
     AssertWin32(RegisterClass(&wc) != 0, "Failed to register notification tray Window Class");
 
     m_Handle = (void*)CreateWindowEx(0, TEXT("Ether::NotificationTray"),
-        NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, GetModuleHandle(NULL), NULL);
+        NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, ::GetModuleHandle(NULL), NULL);
     
     if (!m_Handle)
     {
@@ -51,7 +51,7 @@ Ether::Win32::Win32NotificationTray::Win32NotificationTray()
 Ether::Win32::Win32NotificationTray::~Win32NotificationTray()
 {
     RemoveTrayIcon();
-    DestroyWindow((HWND)m_Handle);
+    ::DestroyWindow((HWND)m_Handle);
 }
 
 void Ether::Win32::Win32NotificationTray::AddTrayIcon()
@@ -63,10 +63,10 @@ void Ether::Win32::Win32NotificationTray::AddTrayIcon()
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = NOTIFICATION_TRAY_ICON_MSG;
     nid.uVersion = NOTIFYICON_VERSION_4;
-    nid.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ENGINEICON));
+    nid.hIcon = ::LoadIcon(::GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ENGINEICON));
 
-    if (Shell_NotifyIcon(NIM_ADD, &nid))
-        Shell_NotifyIcon(NIM_SETVERSION, &nid);
+    if (::Shell_NotifyIcon(NIM_ADD, &nid))
+        ::Shell_NotifyIcon(NIM_SETVERSION, &nid);
 }
 
 void Ether::Win32::Win32NotificationTray::RemoveTrayIcon()
@@ -76,7 +76,7 @@ void Ether::Win32::Win32NotificationTray::RemoveTrayIcon()
     nid.hWnd = (HWND)m_Handle;
     nid.uID = NOTIFICATION_TRAY_UID;
 
-    Shell_NotifyIcon(NIM_DELETE, &nid);
+    ::Shell_NotifyIcon(NIM_DELETE, &nid);
 }
 
 LRESULT CALLBACK Ether::Win32::Win32NotificationTray::SysTrayWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -92,12 +92,12 @@ LRESULT CALLBACK Ether::Win32::Win32NotificationTray::SysTrayWndProc(HWND hWnd, 
         case WM_CONTEXTMENU:
         {
             POINT pt;
-            GetCursorPos(&pt);
-            HMENU hmenu = CreatePopupMenu();
-            InsertMenuA(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, "Force Quit (Debug)");
-            SetForegroundWindow(hWnd);
-            int cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
-            PostMessage(hWnd, WM_NULL, 0, 0);
+            ::GetCursorPos(&pt);
+            HMENU hmenu = ::CreatePopupMenu();
+            ::InsertMenu(hmenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT, "Force Quit (Debug)");
+            ::SetForegroundWindow(hWnd);
+            ::TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
+            ::PostMessage(hWnd, WM_NULL, 0, 0);
             break;
         }
         }
@@ -107,11 +107,11 @@ LRESULT CALLBACK Ether::Win32::Win32NotificationTray::SysTrayWndProc(HWND hWnd, 
 
     case WM_COMMAND:
         if (lParam == 0 && LOWORD(wParam) == IDM_EXIT)
-            exit(EXIT_SUCCESS);
+            ::exit(EXIT_SUCCESS);
         break;
     }
 
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 #endif // ETH_PLATFORM_WIN32

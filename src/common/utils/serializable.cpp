@@ -19,10 +19,11 @@
 
 #include "common/utils/serializable.h"
 #include "common/stream/filestream.h"
+#include <format>
 
 Ether::Serializable::Serializable()
-    : m_ClassID(typeid(this).hash_code())
-    , m_Version(0)
+    : m_Version(0)
+    , m_ClassID(typeid(this).hash_code())
 {
     m_Guid = std::format(
         "{:X}-{:X}-{:X}-{:X}",

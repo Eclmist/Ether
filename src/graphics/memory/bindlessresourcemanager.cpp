@@ -21,13 +21,13 @@
 
 void Ether::Graphics::BindlessResourceManager::RegisterView(StringID viewID, uint32_t indexInHeap)
 {
-	m_KeyToIndexMap[viewID.GetHash()] = indexInHeap;
+    m_KeyToIndexMap[viewID.GetHash()] = indexInHeap;
 }
 
 uint32_t Ether::Graphics::BindlessResourceManager::GetViewIndex(StringID viewID) const
 {
-	if (m_KeyToIndexMap.find(viewID.GetHash()) == m_KeyToIndexMap.end())
-		return 0; // TODO: Reserve 0 for default texture
+    if (m_KeyToIndexMap.find(viewID.GetHash()) == m_KeyToIndexMap.end())
+        return 0; // TODO: Reserve 0 for default texture
 
-	return m_KeyToIndexMap.at(viewID.GetHash());
+    return m_KeyToIndexMap.at(viewID.GetHash());
 }

@@ -19,21 +19,23 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
-	class RhiCommandAllocator
-	{
-	public:
+    class RhiCommandAllocator
+    {
+    public:
         RhiCommandAllocator(RhiCommandType type) : m_Type(type) {}
-		virtual ~RhiCommandAllocator() = default;
+        virtual ~RhiCommandAllocator() = default;
 
         inline RhiCommandType GetType() const { return m_Type; }
 
-	public:
-		virtual void Reset() const = 0;
+    public:
+        virtual void Reset() const = 0;
 
     private:
         const RhiCommandType m_Type;
-	};
+    };
 }
 

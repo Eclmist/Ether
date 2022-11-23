@@ -22,6 +22,7 @@
 # =========================================================================== #
 
 set(ETHER_GRAPHICS Graphics)
+option(USE_PRECOMPILED_HEADERS "Use precompiled headers")
 
 # =========================================================================== #
 #                        ADD SOURCE FILES TO PROJECT                          #
@@ -49,14 +50,16 @@ target_compile_definitions(${ETHER_GRAPHICS} PRIVATE "ETH_GRAPHICS_DX12")
 #                            PRECOMPILED HEADERS                              #
 # =========================================================================== #
 
-target_precompile_headers(${ETHER_GRAPHICS} PRIVATE "pch.h")
+if (USE_PRECOMPILED_HEADERS)
+    target_precompile_headers(${ETHER_GRAPHICS} PRIVATE "${CMAKE_SOURCE_DIR}/src/graphics/pch.h")
+endif()
 
 # =========================================================================== #
 #                                LINK LIBRARIES                               #
 # =========================================================================== #
 
 target_link_libraries(${ETHER_GRAPHICS} 
-	Common
+    Common
     d3d12.lib dxgi.lib dxguid.lib 
     "${CMAKE_SOURCE_DIR}/include/dxc/dxcompiler.lib"
     "${CMAKE_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib"

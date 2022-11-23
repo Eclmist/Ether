@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "pch.h"
+
 #include "api/iapplicationbase.h"
 #include "engine/config/engineconfig.h"
 #include "engine/config/commandlineoptions.h"
@@ -34,7 +36,7 @@ namespace Ether
         Engine() = default;
         ~Engine() = default;
 
-		void Initialize();
+        void Initialize();
         void Shutdown();
 
     public:
@@ -47,21 +49,21 @@ namespace Ether
     public:
         void LoadApplication(IApplicationBase& app);
 
-	public:
-		void Run();
+    public:
+        void Run();
 
-	private:
+    private:
         void MainEngineThread();
 
     private:
         std::atomic_bool m_ShouldExit;
         std::unique_ptr<PlatformWindow> m_MainWindow;
 
-        IApplicationBase* m_MainApplication;
+        IApplicationBase* m_MainApplication = nullptr;
         EngineConfig m_EngineConfig;
         CommandLineOptions m_CommandLineOptions;
 
-        bool m_IsInitialized;
+        bool m_IsInitialized = false;
     };
 }
 

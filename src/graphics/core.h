@@ -19,8 +19,6 @@
 
 #pragma once
 
-// Since this file will be the main file included by consumers of Graphics.dll, the
-// pch should also be included here so that the consumers will get references
 #include "graphics/pch.h"
 
 #include "graphics/rhi/rhicommandlist.h"
@@ -29,13 +27,13 @@
 #include "graphics/rhi/rhidescriptorheap.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
 
-#include "graphics/graphicdisplay.h"
-
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessresourcemanager.h"
 
-#include "graphics/commandmanager.h"
 #include "graphics/config/graphicconfig.h"
+
+#include "graphics/commandmanager.h"
+#include "graphics/graphicdisplay.h"
 
 namespace Ether::Graphics
 {
@@ -45,12 +43,12 @@ namespace Ether::Graphics
         Core() = default;
         ~Core();
 
-		void Initialize(const GraphicConfig& config);
+        void Initialize(const GraphicConfig& config);
 
-	public:
-		static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
-		static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
-		static inline DescriptorAllocator& GetGpuDescriptorAllocator() { return *Instance().m_GpuDescriptorAllocator; }
+    public:
+        static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
+        static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
+        static inline DescriptorAllocator& GetGpuDescriptorAllocator() { return *Instance().m_GpuDescriptorAllocator; }
         static inline GraphicDisplay& GetGraphicsDisplay() { return *Instance().m_GraphicsDisplay; }
         static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
         static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
@@ -58,20 +56,20 @@ namespace Ether::Graphics
         static inline const GraphicConfig& GetConfig() { return Instance().m_Config; }
 
     public:
-		static void Update();
+        static void Update();
         static void FlushGpu();
 
     private:
-		std::unique_ptr<RhiModule> m_RhiModule;
-		std::unique_ptr<RhiDevice> m_RhiDevice;
+        std::unique_ptr<RhiModule> m_RhiModule;
+        std::unique_ptr<RhiDevice> m_RhiDevice;
         std::unique_ptr<RhiImguiWrapper> m_Imgui;
 
-		std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
-		std::unique_ptr<CommandManager> m_CommandManager;
-		std::unique_ptr<DescriptorAllocator> m_GpuDescriptorAllocator;
+        std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
+        std::unique_ptr<CommandManager> m_CommandManager;
+        std::unique_ptr<DescriptorAllocator> m_GpuDescriptorAllocator;
         std::unique_ptr<GraphicDisplay> m_GraphicsDisplay;
 
-	private:
+    private:
         GraphicConfig m_Config;
     };
 }

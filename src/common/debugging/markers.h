@@ -19,20 +19,19 @@
 
 #pragma once
 
-#include "common/common.h"
 #include "optick/optick.h"
 
 #ifdef ETH_PLATFORM_WIN32
-	#define ETH_MARKER_FRAME(name) \
-		OPTICK_FRAME(name);
-	#define ETH_MARKER_THREAD(name) \
-		OPTICK_THREAD(name);
-	#define ETH_MARKER_EVENT(name) \
-		OPTICK_EVENT(name);
+    #define ETH_MARKER_FRAME(name) \
+        OPTICK_FRAME(name);
+    #define ETH_MARKER_THREAD(name) \
+        OPTICK_THREAD(name);
+    #define ETH_MARKER_EVENT(name) \
+        OPTICK_EVENT(name);
 #else
-	#define ETH_MARKER_FRAME(name) 
-	#define ETH_MARKER_THREAD(name) 
-	#define ETH_MARKER_EVENT(name) 
+    #define ETH_MARKER_FRAME(name) 
+    #define ETH_MARKER_THREAD(name) 
+    #define ETH_MARKER_EVENT(name) 
 #endif
 
 

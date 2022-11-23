@@ -19,75 +19,77 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
-	class RhiResourceView : public NonCopyable, public NonMovable
-	{
-	public:
-		RhiResourceView()
-		{
-			// Make each view unique
-			static uint32_t i = 0;
-			m_ViewID = std::to_string(i++);
-		};
+    class RhiResourceView : public NonCopyable, public NonMovable
+    {
+    public:
+        RhiResourceView()
+        {
+            // Make each view unique
+            static uint32_t i = 0;
+            m_ViewID = std::to_string(i++);
+        };
 
-		virtual ~RhiResourceView() = 0;
-		inline RhiCpuHandle GetCpuAddress() const { return m_CpuHandle; }
-		inline StringID GetViewID() const { return m_ViewID; }
+        virtual ~RhiResourceView() = 0;
+        inline RhiCpuHandle GetCpuAddress() const { return m_CpuHandle; }
+        inline StringID GetViewID() const { return m_ViewID; }
 
-	protected:
-		RhiCpuHandle m_CpuHandle;
-		StringID m_ViewID;
-	};
+    protected:
+        RhiCpuHandle m_CpuHandle;
+        StringID m_ViewID;
+    };
 
-	inline RhiResourceView::~RhiResourceView() { }
+    inline RhiResourceView::~RhiResourceView() { }
 
-	class RhiShaderVisibleResourceView : public RhiResourceView
-	{
-	public:
-		RhiShaderVisibleResourceView() = default;
-		~RhiShaderVisibleResourceView() = default;
+    class RhiShaderVisibleResourceView : public RhiResourceView
+    {
+    public:
+        RhiShaderVisibleResourceView() = default;
+        ~RhiShaderVisibleResourceView() = default;
 
-	public:
-		inline RhiGpuHandle GetGpuHandle() const { return m_GpuHandle; }
+    public:
+        inline RhiGpuHandle GetGpuHandle() const { return m_GpuHandle; }
 
-	protected:
-		RhiGpuHandle m_GpuHandle;
-	};
+    protected:
+        RhiGpuHandle m_GpuHandle;
+    };
 
-	class RhiRenderTargetView : public RhiResourceView
-	{
-	public:
-		RhiRenderTargetView() = default;
-		~RhiRenderTargetView() = default;
-	};
+    class RhiRenderTargetView : public RhiResourceView
+    {
+    public:
+        RhiRenderTargetView() = default;
+        ~RhiRenderTargetView() = default;
+    };
 
-	class RhiDepthStencilView : public RhiResourceView
-	{
-	public:
-		RhiDepthStencilView() = default;
-		~RhiDepthStencilView() = default;
-	};
+    class RhiDepthStencilView : public RhiResourceView
+    {
+    public:
+        RhiDepthStencilView() = default;
+        ~RhiDepthStencilView() = default;
+    };
 
-	class RhiShaderResourceView : public RhiShaderVisibleResourceView
-	{
-	public:
-		RhiShaderResourceView() = default;
-		~RhiShaderResourceView() = default;
-	};
+    class RhiShaderResourceView : public RhiShaderVisibleResourceView
+    {
+    public:
+        RhiShaderResourceView() = default;
+        ~RhiShaderResourceView() = default;
+    };
 
-	class RhiConstantBufferView : public RhiShaderVisibleResourceView
-	{
-	public:
-		RhiConstantBufferView() = default;
-		~RhiConstantBufferView() = default;
-	};
+    class RhiConstantBufferView : public RhiShaderVisibleResourceView
+    {
+    public:
+        RhiConstantBufferView() = default;
+        ~RhiConstantBufferView() = default;
+    };
 
-	class RhiUnorderedAccessView : public RhiShaderVisibleResourceView
-	{
-	public:
-		RhiUnorderedAccessView() = default;
-		~RhiUnorderedAccessView() = default;
-	};
+    class RhiUnorderedAccessView : public RhiShaderVisibleResourceView
+    {
+    public:
+        RhiUnorderedAccessView() = default;
+        ~RhiUnorderedAccessView() = default;
+    };
 }
 

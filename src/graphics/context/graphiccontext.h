@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhitypes.h"
 

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhirootsignature.h"
 
 namespace Ether::Graphics

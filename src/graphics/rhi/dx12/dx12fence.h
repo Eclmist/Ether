@@ -19,24 +19,25 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhifence.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-	class Dx12Fence : public RhiFence
-	{
-	public:
-		Dx12Fence() = default;
-		~Dx12Fence() override = default;
+    class Dx12Fence : public RhiFence
+    {
+    public:
+        Dx12Fence() = default;
+        ~Dx12Fence() override = default;
 
-	public:
-		RhiFenceValue GetCompletedValue() override;
-		void SetEventOnCompletion(RhiFenceValue value, void* eventHandle) override;
+    public:
+        RhiFenceValue GetCompletedValue() override;
+        void SetEventOnCompletion(RhiFenceValue value, void* eventHandle) override;
 
-	private:
-		friend class Dx12Device;
-		friend class Dx12CommandQueue;
-		wrl::ComPtr<ID3D12Fence> m_Fence;
-	};
+    private:
+        friend class Dx12Device;
+        friend class Dx12CommandQueue;
+        wrl::ComPtr<ID3D12Fence> m_Fence;
+    };
 }

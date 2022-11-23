@@ -24,8 +24,8 @@
 #include "graphics/rhi/rhiresource.h"
 
 Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::string& contextName)
-    : m_Type(type)
-    , m_Name(contextName)
+    : m_Name(contextName)
+    , m_Type(type)
 {
     m_CommandQueue = &Core::GetCommandManager().GetQueue(type);
     m_CommandAllocatorPool = &Core::GetCommandManager().GetAllocatorPool(type);

@@ -31,21 +31,21 @@ namespace Ether
     class ETH_COMMON_DLL StringID
     {
     public:
-		StringID();
+        StringID();
         StringID(const char* str);
         StringID(const std::string& str);
 
         bool operator!=(const StringID& other) const;
 
         inline sid_t GetHash() const { return m_Hash; }
-		inline std::string GetString();
+        inline std::string GetString();
 
     private:
         static sid_t Hash(const char* str);
 
     private:
         sid_t m_Hash;
-		static std::unordered_map<sid_t, std::string> s_HashToStringMap;
+        static std::unordered_map<sid_t, std::string> s_HashToStringMap;
     };
 
     // Make sure the size of StringID is no larger than its internal representation.

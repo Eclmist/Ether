@@ -19,22 +19,23 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include <map>
 
 namespace Ether::Graphics
 {
-	class BindlessResourceManager
-	{
-	public:
-		BindlessResourceManager() = default;
-		~BindlessResourceManager() = default;
+    class BindlessResourceManager
+    {
+    public:
+        BindlessResourceManager() = default;
+        ~BindlessResourceManager() = default;
 
-	public:
-		void RegisterView(StringID viewID, uint32_t indexInHeap);
-		uint32_t GetViewIndex(StringID viewID) const;
+    public:
+        void RegisterView(StringID viewID, uint32_t indexInHeap);
+        uint32_t GetViewIndex(StringID viewID) const;
 
-	private:
-		std::map<sid_t, uint32_t> m_KeyToIndexMap;
-	};
+    private:
+        std::map<sid_t, uint32_t> m_KeyToIndexMap;
+    };
 }
 

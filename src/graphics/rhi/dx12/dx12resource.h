@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhiresource.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
@@ -27,7 +28,7 @@ namespace Ether::Graphics
     class Dx12Resource : public RhiResource
     {
     public:
-		Dx12Resource(const std::string& name);
+        Dx12Resource(const std::string& name);
 
     public:
         RhiGpuHandle GetGpuHandle() const override;

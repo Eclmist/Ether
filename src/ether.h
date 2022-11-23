@@ -20,7 +20,6 @@
 #pragma once
 
 #include "common/common.h"
-
 #include "api/api.h"
 
 

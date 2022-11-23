@@ -28,8 +28,6 @@ Ether::Graphics::GraphicContext::GraphicContext(const std::string& contextName)
 
 void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, ethVector4 color)
 {
-    double clearColor[] = { color.x, color.y, color.z, color.w };
-    
     RhiClearRenderTargetViewDesc desc = {};
     desc.m_ClearColor = color;
     desc.m_RtvHandle = &rtv;

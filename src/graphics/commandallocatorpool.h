@@ -19,27 +19,28 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhicommandallocator.h"
 #include <queue>
 
 namespace Ether::Graphics
 {
-	class CommandAllocatorPool : public NonCopyable, public NonMovable
-	{
-	public:
-		CommandAllocatorPool(RhiCommandType type);
-		~CommandAllocatorPool() = default;
+    class CommandAllocatorPool : public NonCopyable, public NonMovable
+    {
+    public:
+        CommandAllocatorPool(RhiCommandType type);
+        ~CommandAllocatorPool() = default;
 
-		RhiCommandAllocator& RequestAllocator(RhiFenceValue completedFenceValue);
-		void DiscardAllocator(RhiCommandAllocator& allocator, RhiFenceValue fenceValue);
+        RhiCommandAllocator& RequestAllocator(RhiFenceValue completedFenceValue);
+        void DiscardAllocator(RhiCommandAllocator& allocator, RhiFenceValue fenceValue);
 
-	private:
-		RhiCommandAllocator& CreateNewAllocator();
+    private:
+        RhiCommandAllocator& CreateNewAllocator();
 
-	private:
-		const RhiCommandType m_Type;
+    private:
+        const RhiCommandType m_Type;
 
-		std::vector<std::unique_ptr<RhiCommandAllocator>> m_AllocatorPool;
-		std::queue<std::pair<RhiCommandAllocator&, RhiFenceValue>> m_DiscardedAllocators;
-	};
+        std::vector<std::unique_ptr<RhiCommandAllocator>> m_AllocatorPool;
+        std::queue<std::pair<RhiCommandAllocator&, RhiFenceValue>> m_DiscardedAllocators;
+    };
 }

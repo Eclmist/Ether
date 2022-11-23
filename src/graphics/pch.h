@@ -21,6 +21,7 @@
 
 #include "common/common.h"
 #include "common/logging/loggingmanager.h"
+#include "common/time/time.h"
 
 #include "graphics/rhi/rhitypes.h"
 #include "graphics/rhi/rhiresource.h"

@@ -19,35 +19,36 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhicommandqueue.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-	class Dx12CommandQueue : public RhiCommandQueue
-	{
-	public:
-		Dx12CommandQueue(RhiCommandType type = RhiCommandType::Graphic);
-		~Dx12CommandQueue() = default;
+    class Dx12CommandQueue : public RhiCommandQueue
+    {
+    public:
+        Dx12CommandQueue(RhiCommandType type = RhiCommandType::Graphic);
+        ~Dx12CommandQueue() = default;
 
-	public:
-		inline RhiFenceValue GetFinalFenceValue() const override;
-		inline RhiFenceValue GetCurrentFenceValue() override;
+    public:
+        RhiFenceValue GetFinalFenceValue() const override;
+        RhiFenceValue GetCurrentFenceValue() override;
 
-		bool IsFenceComplete(RhiFenceValue fenceValue) override;
-		void StallForFence(RhiFenceValue fenceValue) override;
-		void Flush() override;
-		void Execute(RhiCommandList& cmdList) override;
+        bool IsFenceComplete(RhiFenceValue fenceValue) override;
+        void StallForFence(RhiFenceValue fenceValue) override;
+        void Flush() override;
+        void Execute(RhiCommandList& cmdList) override;
 
-	private:
-		friend class Dx12Device;
-		wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
+    private:
+        friend class Dx12Device;
+        wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 
-		std::unique_ptr<RhiFence> m_Fence;
-		RhiFenceValue m_FinalFenceValue;
-		RhiFenceValue m_LastKnownFenceValue;
+        std::unique_ptr<RhiFence> m_Fence;
+        RhiFenceValue m_FinalFenceValue;
+        RhiFenceValue m_LastKnownFenceValue;
 
-		void* m_FenceEventHandle;
-	};
+        void* m_FenceEventHandle;
+    };
 }
 

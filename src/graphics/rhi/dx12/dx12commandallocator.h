@@ -19,23 +19,24 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhicommandallocator.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-	class Dx12CommandAllocator : public RhiCommandAllocator
-	{
-	public:
-		Dx12CommandAllocator(RhiCommandType type);
-		~Dx12CommandAllocator() override = default;
+    class Dx12CommandAllocator : public RhiCommandAllocator
+    {
+    public:
+        Dx12CommandAllocator(RhiCommandType type);
+        ~Dx12CommandAllocator() override = default;
 
-	public:
-		void Reset() const override;
+    public:
+        void Reset() const override;
 
-	private:
-		friend class Dx12Device;
-		friend class Dx12CommandList;
-		wrl::ComPtr<ID3D12CommandAllocator> m_Allocator;
-	};
+    private:
+        friend class Dx12Device;
+        friend class Dx12CommandList;
+        wrl::ComPtr<ID3D12CommandAllocator> m_Allocator;
+    };
 }

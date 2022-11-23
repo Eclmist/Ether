@@ -21,66 +21,66 @@
 
 namespace Ether
 {
-	/*
-		Global Singleton that forbids object creation through explicit new/delete.
-		This is mainly used by engine subsystems where it is important that object
-		lifecycle is controlled manually.
-	*/
-	template <typename T>
-	class Singleton : public NonCopyable
-	{
-	public:
-		static bool HasInstance()
-		{
-			return m_Instance != nullptr;
-		}
+    /*
+        Global Singleton that forbids object creation through explicit new/delete.
+        This is mainly used by engine subsystems where it is important that object
+        lifecycle is controlled manually.
+    */
+    template <typename T>
+    class Singleton : public NonCopyable
+    {
+    public:
+        static bool HasInstance()
+        {
+            return m_Instance != nullptr;
+        }
 
-		static T& Instance()
-		{
-			if (m_Instance != nullptr)
-				return *m_Instance;
+        static T& Instance()
+        {
+            if (m_Instance != nullptr)
+                return *m_Instance;
 
-			m_IsInitializing = true;
-			m_Instance = new T();
-			m_IsInitializing = false;
-			return *m_Instance;
-		};
+            m_IsInitializing = true;
+            m_Instance = new T();
+            m_IsInitializing = false;
+            return *m_Instance;
+        };
 
-		static void Reset()
-		{
-			assert(m_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
-			m_IsDestroying = true;
-			delete(m_Instance);
-			m_Instance = nullptr;
-		};
+        static void Reset()
+        {
+            assert(m_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
+            m_IsDestroying = true;
+            delete(m_Instance);
+            m_Instance = nullptr;
+        };
 
-	protected:
-		Singleton()
-		{
-			assert(m_IsInitializing &&
-				"Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
-		};
+    protected:
+        Singleton()
+        {
+            assert(m_IsInitializing &&
+                "Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
+        };
 
-		~Singleton()
-		{
-			assert(m_IsDestroying &&
-				"Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
-			m_IsDestroying = false;
-		};
+        ~Singleton()
+        {
+            assert(m_IsDestroying &&
+                "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
+            m_IsDestroying = false;
+        };
 
-	protected:
-		static T* m_Instance;
-		static bool m_IsInitializing;
-		static bool m_IsDestroying;
-	};
+    protected:
+        static T* m_Instance;
+        static bool m_IsInitializing;
+        static bool m_IsDestroying;
+    };
 
-	template <typename T>
-	T* Singleton<T>::m_Instance = nullptr;
+    template <typename T>
+    T* Singleton<T>::m_Instance = nullptr;
 
-	template <typename T>
-	bool Singleton<T>::m_IsInitializing = false;
+    template <typename T>
+    bool Singleton<T>::m_IsInitializing = false;
 
-	template <typename T>
-	bool Singleton<T>::m_IsDestroying = false;
+    template <typename T>
+    bool Singleton<T>::m_IsDestroying = false;
 }
 

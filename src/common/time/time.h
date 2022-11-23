@@ -20,6 +20,7 @@
 #pragma once
 
 #include "common/common.h"
+
 #include <chrono>
 
 namespace Ether
@@ -30,7 +31,7 @@ namespace Ether
         Time() = default;
         ~Time() = default;
 
-		void Initialize();
+        void Initialize();
 
     public:
         static inline void NewFrame() { Instance().NewFrame_Impl(); }

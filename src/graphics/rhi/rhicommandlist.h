@@ -19,53 +19,55 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
-	class RhiCommandList : public NonCopyable, public NonMovable
-	{
-	public:
-		RhiCommandList(RhiCommandType type) : m_Type(type) {}
-		virtual ~RhiCommandList() = default;
+    class RhiCommandList : public NonCopyable, public NonMovable
+    {
+    public:
+        RhiCommandList(RhiCommandType type) : m_Type(type) {}
+        virtual ~RhiCommandList() = default;
 
-	public:
-		virtual void SetMarker(const std::string& name) = 0;
-		virtual void PushMarker(const std::string& name) = 0;
-		virtual void PopMarker() = 0;
+    public:
+        virtual void SetMarker(const std::string& name) = 0;
+        virtual void PushMarker(const std::string& name) = 0;
+        virtual void PopMarker() = 0;
 
-		//virtual RhiResult SetViewport(RhiViewportDesc viewport) = 0;
-		//virtual RhiResult SetScissor(RhiScissorDesc scissor) = 0;
-		//virtual RhiResult SetStencilRef(RhiStencilValue val) = 0;
-		//virtual RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
-		//virtual RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) = 0;
-		//virtual RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) = 0;
-		//virtual RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
-		//virtual RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
-		virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
+        //virtual RhiResult SetViewport(RhiViewportDesc viewport) = 0;
+        //virtual RhiResult SetScissor(RhiScissorDesc scissor) = 0;
+        //virtual RhiResult SetStencilRef(RhiStencilValue val) = 0;
+        //virtual RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
+        //virtual RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) = 0;
+        //virtual RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) = 0;
+        //virtual RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
+        //virtual RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
+        virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
 
-		//virtual RhiResult SetRootConstant(RhiSetRootConstantDesc desc) = 0;
-		//virtual RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) = 0;
-		//virtual RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) = 0;
-		//virtual RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) = 0;
-		//virtual RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) = 0;
-		virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
+        //virtual RhiResult SetRootConstant(RhiSetRootConstantDesc desc) = 0;
+        //virtual RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) = 0;
+        //virtual RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) = 0;
+        //virtual RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) = 0;
+        //virtual RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) = 0;
+        virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
 
-		virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
-		//virtual RhiResult ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
+        virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
+        //virtual RhiResult ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
 
-		virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
-		//virtual RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
-		//virtual RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
-		//virtual RhiResult DrawInstanced(const RhiDrawInstancedDesc& desc) = 0;
-		//virtual RhiResult DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) = 0;
+        virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
+        //virtual RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
+        //virtual RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
+        //virtual RhiResult DrawInstanced(const RhiDrawInstancedDesc& desc) = 0;
+        //virtual RhiResult DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) = 0;
 
-		virtual void Reset(const RhiCommandAllocator& commandAllocator) = 0;
-		virtual void Close() = 0;
+        virtual void Reset(const RhiCommandAllocator& commandAllocator) = 0;
+        virtual void Close() = 0;
 
-	public:
-		RhiCommandType GetType() const { return m_Type; }
+    public:
+        RhiCommandType GetType() const { return m_Type; }
 
-	protected:
-		RhiCommandType m_Type;
-	};
+    protected:
+        RhiCommandType m_Type;
+    };
 }
 

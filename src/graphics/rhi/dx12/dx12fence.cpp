@@ -29,8 +29,8 @@ Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12Fence::GetCompletedValue()
 void Ether::Graphics::Dx12Fence::SetEventOnCompletion(RhiFenceValue value, void* eventHandle)
 {
     HRESULT hr = m_Fence->SetEventOnCompletion(value, eventHandle);
-	if (FAILED(hr))
-		LogGraphicsError("Failed to set fence completion event");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to set fence completion event");
 }
 
 #endif // ETH_GRAPHICS_DX12

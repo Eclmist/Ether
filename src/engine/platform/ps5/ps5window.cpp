@@ -59,10 +59,10 @@ void Ether::PS5::PS5Window::SetTitle(const std::string& title)
 
 void Ether::PS5::PS5Window::PlatformMessageLoop(std::function<void()> engineUpdateCallback)
 {
-	while (true)
-	{
-		engineUpdateCallback();
-	}
+    while (true)
+    {
+        engineUpdateCallback();
+    }
 }
 
 #endif  // ETH_PLATFORM_PS5

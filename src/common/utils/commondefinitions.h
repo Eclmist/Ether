@@ -47,21 +47,21 @@ static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the
 #endif
 
 #if defined(ETH_ENGINE)
-	#define ETH_ENGINE_DLL __declspec(dllexport)
-	#define ETH_GRAPHIC_DLL __declspec(dllimport)
-	#define ETH_COMMON_DLL __declspec(dllimport)
+    #define ETH_ENGINE_DLL __declspec(dllexport)
+    #define ETH_GRAPHIC_DLL __declspec(dllimport)
+    #define ETH_COMMON_DLL __declspec(dllimport)
 #elif defined (ETH_GRAPHICS)
-	#define ETH_ENGINE_DLL __declspec(dllimport)
-	#define ETH_GRAPHIC_DLL __declspec(dllexport)
-	#define ETH_COMMON_DLL __declspec(dllimport)
+    #define ETH_ENGINE_DLL __declspec(dllimport)
+    #define ETH_GRAPHIC_DLL __declspec(dllexport)
+    #define ETH_COMMON_DLL __declspec(dllimport)
 #elif defined (ETH_COMMON)
-	#define ETH_ENGINE_DLL __declspec(dllimport)
-	#define ETH_GRAPHIC_DLL __declspec(dllimport)
-	#define ETH_COMMON_DLL __declspec(dllexport)
+    #define ETH_ENGINE_DLL __declspec(dllimport)
+    #define ETH_GRAPHIC_DLL __declspec(dllimport)
+    #define ETH_COMMON_DLL __declspec(dllexport)
 #else
-	#define ETH_ENGINE_DLL __declspec(dllimport)
-	#define ETH_GRAPHIC_DLL __declspec(dllimport)
-	#define ETH_COMMON_DLL __declspec(dllimport)
+    #define ETH_ENGINE_DLL __declspec(dllimport)
+    #define ETH_GRAPHIC_DLL __declspec(dllimport)
+    #define ETH_COMMON_DLL __declspec(dllimport)
 #endif
 
 #define LogInfo(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Info, Ether::LogType::None, msg, ##__VA_ARGS__)

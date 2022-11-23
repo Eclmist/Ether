@@ -22,6 +22,7 @@
 #include "api/iapplicationbase.h"
 
 #include "common/logging/loggingmanager.h"
+#include "common/time/time.h"
 #include "engine/input/input.h"
 
 namespace Ether

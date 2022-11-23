@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/rhi/rhimodule.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 

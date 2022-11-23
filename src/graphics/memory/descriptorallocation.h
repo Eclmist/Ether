@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "common/memory/freelistallocator.h"
 
 namespace Ether::Graphics

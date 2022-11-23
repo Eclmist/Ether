@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "pch.h"
 #include "engine/platform/platformkeycodes.h"
 
 namespace Ether
@@ -29,7 +30,7 @@ namespace Ether
         Input() = default;
         ~Input() = default;
 
-		void Initialize();
+        void Initialize();
 
     public:
         static bool GetKey(KeyCode key) { return Instance().m_KeyStates[key]; }
@@ -66,18 +67,18 @@ namespace Ether
         void EndFrame_Impl();
 
     private:
-        bool m_KeyStates[MaxNumKeycodes];
-        bool m_TransientKeyDownStates[MaxNumKeycodes];
-        bool m_TransientKeyUpStates[MaxNumKeycodes];
-        bool m_MouseStates[3];
-        bool m_TransientMouseDownStates[3];
-        bool m_TransientMouseUpStates[3];
+        bool m_KeyStates[MaxNumKeycodes] = {};
+        bool m_TransientKeyDownStates[MaxNumKeycodes] = {};
+        bool m_TransientKeyUpStates[MaxNumKeycodes] = {};
+        bool m_MouseStates[3] = {};
+        bool m_TransientMouseDownStates[3] = {};
+        bool m_TransientMouseUpStates[3] = {};
 
-        double m_MousePosX;
-        double m_MousePosY;
-        double m_MouseDeltaX;
-        double m_MouseDeltaY;
-        double m_MouseWheelDelta;
+        double m_MousePosX = 0.0;
+        double m_MousePosY = 0.0;
+        double m_MouseDeltaX = 0.0;
+        double m_MouseDeltaY = 0.0;
+        double m_MouseWheelDelta = 0.0;
 
         std::mutex m_FrameMutex;
     };

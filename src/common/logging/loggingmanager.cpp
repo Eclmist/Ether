@@ -18,7 +18,7 @@
 */
 
 #include "common/logging/loggingmanager.h"
-#include "common/utils/time.h"
+#include "common/time/time.h"
 
 #include <stdarg.h>
 #include <sstream>
@@ -93,7 +93,7 @@ void Ether::LoggingManager::Serialize(const LogEntry entry)
     OutputDebugStringA((entry.GetFullText() + "\n").c_str());
 
 #elif defined (ETH_PLATFORM_PS5)
-	fprintf((&_CSTD _Stdout), "%s\n", entry.GetFullText().c_str());
+    fprintf((&_CSTD _Stdout), "%s\n", entry.GetFullText().c_str());
 #endif
 }
 

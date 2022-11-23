@@ -25,6 +25,7 @@ cmake_minimum_required (VERSION "3.18")
 
 # Options
 option(CONFIGURE_AS_TOOLMODE "Configure as Toolmode" OFF)
+option(USE_PRECOMPILED_HEADERS "Use precompiled headers" ON)
 
 if (CONFIGURE_AS_TOOLMODE)
     project(Ether.Toolmode)
@@ -50,7 +51,7 @@ add_compile_definitions("ETH_PLATFORM_WIN32")
 # =========================================================================== #
 
 include_directories("${CMAKE_SOURCE_DIR}/src")
-include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/resource")
 
 file(GLOB_RECURSE engine_files "${CMAKE_SOURCE_DIR}/src/engine/*")
@@ -85,7 +86,9 @@ endif()
 #                            PRECOMPILED HEADERS                              #
 # =========================================================================== #
 
-target_precompile_headers(${ETHER_PROJECT} PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
+if (USE_PRECOMPILED_HEADERS)
+    target_precompile_headers(${ETHER_PROJECT} PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
+endif()
 
 # =========================================================================== #
 #                              ADD SUBPROJECTS                                #

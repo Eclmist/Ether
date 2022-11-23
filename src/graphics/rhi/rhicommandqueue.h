@@ -19,28 +19,30 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
-	class RhiCommandQueue : public NonCopyable, public NonMovable
-	{
-	public:
-		RhiCommandQueue(RhiCommandType type = RhiCommandType::Graphic) : m_Type(type) {}
-		virtual ~RhiCommandQueue() = default;
+    class RhiCommandQueue : public NonCopyable, public NonMovable
+    {
+    public:
+        RhiCommandQueue(RhiCommandType type = RhiCommandType::Graphic) : m_Type(type) {}
+        virtual ~RhiCommandQueue() = default;
 
-	public:
-		virtual RhiFenceValue GetFinalFenceValue() const = 0;
-		virtual RhiFenceValue GetCurrentFenceValue() = 0;
+    public:
+        virtual RhiFenceValue GetFinalFenceValue() const = 0;
+        virtual RhiFenceValue GetCurrentFenceValue() = 0;
 
-		virtual bool IsFenceComplete(RhiFenceValue fenceValue) = 0;
-		virtual void StallForFence(RhiFenceValue fenceValue) = 0;
-		virtual void Flush() = 0;
-		virtual void Execute(RhiCommandList& cmdList) = 0;
+        virtual bool IsFenceComplete(RhiFenceValue fenceValue) = 0;
+        virtual void StallForFence(RhiFenceValue fenceValue) = 0;
+        virtual void Flush() = 0;
+        virtual void Execute(RhiCommandList& cmdList) = 0;
 
-	public:
-		RhiCommandType GetType() const { return m_Type; }
+    public:
+        RhiCommandType GetType() const { return m_Type; }
 
-	protected:
-		RhiCommandType m_Type;
-	};
+    protected:
+        RhiCommandType m_Type;
+    };
 }
 

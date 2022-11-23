@@ -37,9 +37,9 @@
 #include "graphics/rhi/dx12/dx12translation.h"
 
 std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Device::CreateRootSignatureDesc(
-	uint32_t numParams, uint32_t numSamplers) const
+    uint32_t numParams, uint32_t numSamplers) const
 {
-	return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers);
+    return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers);
 }
 
 std::unique_ptr<Ether::Graphics::RhiPipelineStateDesc> Ether::Graphics::Dx12Device::CreatePipelineStateDesc() const
@@ -66,13 +66,16 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
         IID_PPV_ARGS(&dx12Obj->m_RootSignature)
     );
 
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Root Signature");
+
     return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreatePipelineState(const RhiPipelineStateDesc& desc) const
 {
     std::unique_ptr<Dx12PipelineState> dx12Obj = std::make_unique<Dx12PipelineState>();
-	const Dx12PipelineStateDesc& dx12Desc = dynamic_cast<const Dx12PipelineStateDesc&>(desc);
+    const Dx12PipelineStateDesc& dx12Desc = dynamic_cast<const Dx12PipelineStateDesc&>(desc);
 
     HRESULT hr = m_Device->CreateGraphicsPipelineState(
         &dx12Desc.m_Dx12PsoDesc,
@@ -82,102 +85,105 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
     if (FAILED(hr))
         LogGraphicsError("Failed to create DX12 Pipeline State Object");
 
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandAllocator> Ether::Graphics::Dx12Device::CreateCommandAllocator(RhiCommandAllocatorDesc desc) const
 {
-	std::unique_ptr<Dx12CommandAllocator> dx12View = std::make_unique<Dx12CommandAllocator>(desc.m_Type);
+    std::unique_ptr<Dx12CommandAllocator> dx12View = std::make_unique<Dx12CommandAllocator>(desc.m_Type);
 
-	HRESULT hr = m_Device->CreateCommandAllocator(
-		Translate(desc.m_Type),
-		IID_PPV_ARGS(&dx12View->m_Allocator)
-	);
+    HRESULT hr = m_Device->CreateCommandAllocator(
+        Translate(desc.m_Type),
+        IID_PPV_ARGS(&dx12View->m_Allocator)
+    );
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to create DX12 Command Allocator");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Command Allocator");
 
-	return dx12View;
+    return dx12View;
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::CreateCommandList(RhiCommandListDesc desc) const
 {
-	std::unique_ptr<Dx12CommandList> dx12Obj = std::make_unique<Dx12CommandList>(desc.m_Type);
-	Dx12CommandAllocator* allocator = dynamic_cast<Dx12CommandAllocator*>(desc.m_Allocator);
+    std::unique_ptr<Dx12CommandList> dx12Obj = std::make_unique<Dx12CommandList>(desc.m_Type);
+    Dx12CommandAllocator* allocator = dynamic_cast<Dx12CommandAllocator*>(desc.m_Allocator);
 
-	HRESULT hr = m_Device->CreateCommandList(
-		1,
-		Translate(desc.m_Type),
-		allocator->m_Allocator.Get(),
-		nullptr,
-		IID_PPV_ARGS(&dx12Obj->m_CommandList)
-	);
+    HRESULT hr = m_Device->CreateCommandList(
+        1,
+        Translate(desc.m_Type),
+        allocator->m_Allocator.Get(),
+        nullptr,
+        IID_PPV_ARGS(&dx12Obj->m_CommandList)
+    );
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to create DX12 Command List");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Command List");
 
     dx12Obj->m_CommandList->SetName(ToWideString(desc.m_Name).c_str());
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::CreateCommandQueue(RhiCommandQueueDesc desc) const
 {
-	std::unique_ptr<Dx12CommandQueue> dx12Obj = std::make_unique<Dx12CommandQueue>(desc.m_Type);
+    std::unique_ptr<Dx12CommandQueue> dx12Obj = std::make_unique<Dx12CommandQueue>(desc.m_Type);
 
-	auto creationDesc = Translate(desc);
-	HRESULT hr = m_Device->CreateCommandQueue(
-		&creationDesc,
-		IID_PPV_ARGS(&dx12Obj->m_CommandQueue)
-	);
+    auto creationDesc = Translate(desc);
+    HRESULT hr = m_Device->CreateCommandQueue(
+        &creationDesc,
+        IID_PPV_ARGS(&dx12Obj->m_CommandQueue)
+    );
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to create DX12 Command Queue");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Command Queue");
 
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiDescriptorHeap> Ether::Graphics::Dx12Device::CreateDescriptorHeap(RhiDescriptorHeapDesc desc) const
 {
-	std::unique_ptr<Dx12DescriptorHeap> dx12Obj = std::make_unique<Dx12DescriptorHeap>();
+    std::unique_ptr<Dx12DescriptorHeap> dx12Obj = std::make_unique<Dx12DescriptorHeap>();
 
-	auto creationDesc = Translate(desc);
-	HRESULT hr = m_Device->CreateDescriptorHeap(
-		&creationDesc,
-		IID_PPV_ARGS(&dx12Obj->m_Heap)
-	);
+    auto creationDesc = Translate(desc);
+    HRESULT hr = m_Device->CreateDescriptorHeap(
+        &creationDesc,
+        IID_PPV_ARGS(&dx12Obj->m_Heap)
+    );
 
-	dx12Obj->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
-	return dx12Obj;
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Descriptor Heap");
+
+    dx12Obj->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiFence> Ether::Graphics::Dx12Device::CreateFence() const
 {
-	std::unique_ptr<Dx12Fence> dx12Obj = std::make_unique<Dx12Fence>();
+    std::unique_ptr<Dx12Fence> dx12Obj = std::make_unique<Dx12Fence>();
     HRESULT hr = m_Device->CreateFence(
         0,
         D3D12_FENCE_FLAG_NONE,
         IID_PPV_ARGS(&dx12Obj->m_Fence)
     );
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to create DX12 Fence");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Fence");
 
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::CreateSwapChain(RhiSwapChainDesc desc) const
 {
-	std::unique_ptr<Dx12SwapChain> dx12Obj = std::make_unique<Dx12SwapChain>();
+    std::unique_ptr<Dx12SwapChain> dx12Obj = std::make_unique<Dx12SwapChain>();
 
     const auto dx12CommandQueue = dynamic_cast<Dx12CommandQueue*>(desc.m_CommandQueue);
 
-	wrl::ComPtr<IDXGIFactory4> dxgiFactory = ((Dx12Module&)Core::GetModule()).m_DxgiFactory;
+    wrl::ComPtr<IDXGIFactory4> dxgiFactory = ((Dx12Module&)Core::GetModule()).m_DxgiFactory;
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
-	auto creationDesc = Translate(desc);
-	HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(
-		dx12CommandQueue->m_CommandQueue.Get(),
+    auto creationDesc = Translate(desc);
+    HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(
+        dx12CommandQueue->m_CommandQueue.Get(),
         (HWND)desc.m_SurfaceTarget,
-		&creationDesc,
+        &creationDesc,
         nullptr,
         nullptr,
         &swapChain1
@@ -187,96 +193,94 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
 
 
     hr = dxgiFactory->MakeWindowAssociation((HWND)desc.m_SurfaceTarget, DXGI_MWA_NO_ALT_ENTER);
-	if (FAILED(hr))
-		LogGraphicsWarning("Failed to disable alt-enter for hwnd");
+    if (FAILED(hr))
+        LogGraphicsWarning("Failed to disable alt-enter for hwnd");
 
     swapChain1.As(&dx12Obj->m_SwapChain);
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Device::CreateRenderTargetView(RhiRenderTargetViewDesc desc) const
 {
-	std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
+    std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
 
-	dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
-	const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
-	auto creationDesc = Translate(desc);
-	m_Device->CreateRenderTargetView(
-		d3dResource->m_Resource.Get(),
-		&creationDesc,
-		Translate(dx12Obj->m_CpuHandle)
-	);
+    auto creationDesc = Translate(desc);
+    m_Device->CreateRenderTargetView(
+        d3dResource->m_Resource.Get(),
+        &creationDesc,
+        Translate(dx12Obj->m_CpuHandle)
+    );
 
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Device::CreateDepthStencilView(RhiDepthStencilViewDesc desc) const
 {
-	std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
+    std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
 
-	dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
-	const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
-	auto creationDesc = Translate(desc);
-	m_Device->CreateDepthStencilView(
-		d3dResource->m_Resource.Get(),
-		&creationDesc,
-		Translate(dx12Obj->m_CpuHandle)
-	);
+    auto creationDesc = Translate(desc);
+    m_Device->CreateDepthStencilView(
+        d3dResource->m_Resource.Get(),
+        &creationDesc,
+        Translate(dx12Obj->m_CpuHandle)
+    );
 
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Device::CreateShaderResourceView(RhiShaderResourceViewDesc desc) const
 {
-	std::unique_ptr<Dx12ShaderResourceView> dx12Obj = std::make_unique<Dx12ShaderResourceView>();
+    std::unique_ptr<Dx12ShaderResourceView> dx12Obj = std::make_unique<Dx12ShaderResourceView>();
 
-	dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
-	const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
-	auto creationDesc = Translate(desc);
-	m_Device->CreateShaderResourceView(
-		d3dResource->m_Resource.Get(),
-		&creationDesc,
-		Translate(dx12Obj->m_CpuHandle)
-	);
+    auto creationDesc = Translate(desc);
+    m_Device->CreateShaderResourceView(
+        d3dResource->m_Resource.Get(),
+        &creationDesc,
+        Translate(dx12Obj->m_CpuHandle)
+    );
 
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Device::CreateConstantBufferView(RhiConstantBufferViewDesc desc) const
 {
-	std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
+    std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
+    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
 
-	dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
-	const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    auto creationDesc = Translate(desc);
+    m_Device->CreateConstantBufferView(
+        &creationDesc,
+        Translate(dx12Obj->m_CpuHandle)
+    );
 
-	auto creationDesc = Translate(desc);
-	m_Device->CreateConstantBufferView(
-		&creationDesc,
-		Translate(dx12Obj->m_CpuHandle)
-	);
-
-	return dx12Obj;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12Device::CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const
 {
-	throw std::runtime_error("Not yet implemented");
-	//std::unique_ptr<Ether::Graphics::Dx12UnorderedAccessView> dx12View = std::make_unique<Ether::Graphics::Dx12UnorderedAccessView>();
+    throw std::runtime_error("Not yet implemented");
+    //std::unique_ptr<Ether::Graphics::Dx12UnorderedAccessView> dx12View = std::make_unique<Ether::Graphics::Dx12UnorderedAccessView>();
 
-	//dx12View->m_CpuHandle = desc.m_TargetCpuHandle;
-	//const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    //dx12View->m_CpuHandle = desc.m_TargetCpuHandle;
+    //const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
-	//auto creationDesc = Translate(desc);
-	//m_Device->CreateUnorderedAccessView(
-	//	d3dResource->m_Resource.Get(),
-	//	&creationDesc,
-	//	Translate(dx12View->m_CpuHandle)
-	//);
+    //auto creationDesc = Translate(desc);
+    //m_Device->CreateUnorderedAccessView(
+    //    d3dResource->m_Resource.Get(),
+    //    &creationDesc,
+    //    Translate(dx12View->m_CpuHandle)
+    //);
 
-	//return dx12View;
+    //return dx12View;
 }
 
 std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateCommittedResource(RhiCommitedResourceDesc desc) const
@@ -284,10 +288,10 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
     std::unique_ptr<Dx12Resource> dx12Obj = std::make_unique<Dx12Resource>(desc.m_Name);
 
     auto creationDesc = Translate(desc.m_ResourceDesc);
-	auto heapDesc = CD3DX12_HEAP_PROPERTIES(Translate(desc.m_HeapType));
+    auto heapDesc = CD3DX12_HEAP_PROPERTIES(Translate(desc.m_HeapType));
 
-	D3D12_CLEAR_VALUE clearValue;
-	if (desc.m_ClearValue != nullptr)
+    D3D12_CLEAR_VALUE clearValue;
+    if (desc.m_ClearValue != nullptr)
         clearValue = Translate(*desc.m_ClearValue);
 
     HRESULT hr = m_Device->CreateCommittedResource(
@@ -299,10 +303,10 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         IID_PPV_ARGS(&dx12Obj->m_Resource)
     );
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name);
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name.c_str());
 
-	dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
+    dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
     return dx12Obj;
 }
 

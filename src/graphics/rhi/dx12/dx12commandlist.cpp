@@ -330,8 +330,8 @@ void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandA
 void Ether::Graphics::Dx12CommandList::Close()
 {
     HRESULT hr = m_CommandList->Close();
-	if (FAILED(hr))
-		LogGraphicsError("Failed to close Dx12 Command List");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to close Dx12 Command List");
 }
 
 #endif // ETH_GRAPHICS_DX12

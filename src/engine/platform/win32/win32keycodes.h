@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "pch.h"
+
 namespace Ether::Win32
 {
     enum class KeyCode : uint32_t

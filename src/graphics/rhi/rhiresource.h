@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
     constexpr RhiGpuHandle NullAddress = { 0 };
@@ -27,7 +29,7 @@ namespace Ether::Graphics
     class RhiResource : public NonCopyable, public NonMovable
     {
     public:
-		RhiResource(const std::string& name) : m_ResourceID(name) {}
+        RhiResource(const std::string& name) : m_ResourceID(name) {}
         virtual ~RhiResource() = default;
 
     public:
@@ -41,73 +43,73 @@ namespace Ether::Graphics
 
     protected:
         RhiResourceState m_CurrentState = RhiResourceState::Common;
-		StringID m_ResourceID;
+        StringID m_ResourceID;
     };
 
-	static RhiResourceDesc RhiCreateBaseResourceDesc()
-	{
-		RhiResourceDesc desc = {};
-		desc.m_Alignment = 0;
-		desc.m_Format = RhiFormat::Unknown;
-		desc.m_Height = 1;
-		desc.m_DepthOrArraySize = 1;
-		desc.m_MipLevels = 1;
-		desc.m_SampleDesc.m_NumMsaaSamples = 1;
-		desc.m_SampleDesc.m_MsaaQuality = 0;
-		desc.m_Layout = RhiResourceLayout::Unknown;
-		desc.m_Flag = RhiResourceFlag::None;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateBaseResourceDesc()
+    {
+        RhiResourceDesc desc = {};
+        desc.m_Alignment = 0;
+        desc.m_Format = RhiFormat::Unknown;
+        desc.m_Height = 1;
+        desc.m_DepthOrArraySize = 1;
+        desc.m_MipLevels = 1;
+        desc.m_SampleDesc.m_NumMsaaSamples = 1;
+        desc.m_SampleDesc.m_MsaaQuality = 0;
+        desc.m_Layout = RhiResourceLayout::Unknown;
+        desc.m_Flag = RhiResourceFlag::None;
+        return desc;
+    }
 
-	static RhiResourceDesc RhiCreateBufferResourceDesc(size_t size)
-	{
-		RhiResourceDesc desc = RhiCreateBaseResourceDesc();
-		desc.m_Dimension = RhiResourceDimension::Buffer;
-		desc.m_Width = size;
-		desc.m_Layout = RhiResourceLayout::RowMajor;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateBufferResourceDesc(size_t size)
+    {
+        RhiResourceDesc desc = RhiCreateBaseResourceDesc();
+        desc.m_Dimension = RhiResourceDimension::Buffer;
+        desc.m_Width = size;
+        desc.m_Layout = RhiResourceLayout::RowMajor;
+        return desc;
+    }
 
-	static RhiResourceDesc RhiCreateTextureBaseResourceDesc(RhiFormat format)
-	{
-		RhiResourceDesc desc = RhiCreateBaseResourceDesc();
-		desc.m_Flag = RhiResourceFlag::AllowRenderTarget;
-		desc.m_Layout = RhiResourceLayout::Unknown;
-		desc.m_Format = format;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateTextureBaseResourceDesc(RhiFormat format)
+    {
+        RhiResourceDesc desc = RhiCreateBaseResourceDesc();
+        desc.m_Flag = RhiResourceFlag::AllowRenderTarget;
+        desc.m_Layout = RhiResourceLayout::Unknown;
+        desc.m_Format = format;
+        return desc;
+    }
 
-	static RhiResourceDesc RhiCreateTexture1DResourceDesc(RhiFormat format, uint32_t width)
-	{
-		RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
-		desc.m_Dimension = RhiResourceDimension::Texture1D;
-		desc.m_Width = width;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateTexture1DResourceDesc(RhiFormat format, uint32_t width)
+    {
+        RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
+        desc.m_Dimension = RhiResourceDimension::Texture1D;
+        desc.m_Width = width;
+        return desc;
+    }
 
-	static RhiResourceDesc RhiCreateTexture2DResourceDesc(RhiFormat format, ethVector2u res)
-	{
-		RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
-		desc.m_Dimension = RhiResourceDimension::Texture2D;
-		desc.m_Width = res.x;
-		desc.m_Height = res.y;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateTexture2DResourceDesc(RhiFormat format, ethVector2u res)
+    {
+        RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
+        desc.m_Dimension = RhiResourceDimension::Texture2D;
+        desc.m_Width = res.x;
+        desc.m_Height = res.y;
+        return desc;
+    }
 
-	static RhiResourceDesc RhiCreateTexture3DResourceDesc(RhiFormat format, ethVector3u res)
-	{
-		RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
-		desc.m_Dimension = RhiResourceDimension::Texture3D;
-		desc.m_Width = res.x;
-		desc.m_Height = res.y;
-		desc.m_DepthOrArraySize = res.z;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateTexture3DResourceDesc(RhiFormat format, ethVector3u res)
+    {
+        RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
+        desc.m_Dimension = RhiResourceDimension::Texture3D;
+        desc.m_Width = res.x;
+        desc.m_Height = res.y;
+        desc.m_DepthOrArraySize = res.z;
+        return desc;
+    }
 
-	static RhiResourceDesc RhiCreateDepthStencilResourceDesc(RhiFormat format, ethVector2u res)
-	{
-		RhiResourceDesc desc = RhiCreateTexture2DResourceDesc(format, res);
-		desc.m_Flag = RhiResourceFlag::AllowDepthStencil;
-		return desc;
-	}
+    static RhiResourceDesc RhiCreateDepthStencilResourceDesc(RhiFormat format, ethVector2u res)
+    {
+        RhiResourceDesc desc = RhiCreateTexture2DResourceDesc(format, res);
+        desc.m_Flag = RhiResourceFlag::AllowDepthStencil;
+        return desc;
+    }
 }

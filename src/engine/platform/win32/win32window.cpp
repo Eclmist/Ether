@@ -44,6 +44,7 @@
 #define ETH_WINDOW_STYLE_FULLSCREEN         WS_VISIBLE | WS_POPUP
 
 Ether::Win32::Win32Window::Win32Window()
+    : m_QuitMessageReceived(false)
 {
     RegisterWindowClass();
     m_WindowHandle = (void*)::CreateWindowEx(
@@ -120,25 +121,20 @@ void Ether::Win32::Win32Window::SetFullscreen(bool isFullscreen)
         return;
 
     m_IsFullscreen = isFullscreen;
-    static Rect cachedWindowedRect = { 0,0,0,0 };
+    static Rect previousRect = { 0,0,0,0 };
 
-    if (isFullscreen)
-    {
-        cachedWindowedRect = GetCurrentWindowRect();
-        ::SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, WS_POPUP);
-        ::SetWindowPos((HWND)m_WindowHandle, HWND_TOP,
-            0, 0, GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN),
-            SWP_FRAMECHANGED | SWP_NOACTIVATE);
-        ::ShowWindow((HWND)m_WindowHandle, SW_MAXIMIZE);
-    }
-    else
-    {
-        ::SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, ETH_WINDOW_STYLE);
-        ::SetWindowPos((HWND)m_WindowHandle, HWND_TOP,
-            cachedWindowedRect.x, cachedWindowedRect.y, cachedWindowedRect.w, cachedWindowedRect.h,
-            SWP_FRAMECHANGED | SWP_NOACTIVATE);
-        ::ShowWindow((HWND)m_WindowHandle, SW_NORMAL);
-    }
+    auto style = isFullscreen ? WS_POPUP : ETH_WINDOW_STYLE;
+    auto showFlag = isFullscreen ? SW_MAXIMIZE : SW_NORMAL;
+    auto posFlag = SWP_FRAMECHANGED | SWP_NOACTIVATE;
+    Rect newRect = isFullscreen 
+        ? Rect(0, 0, GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN)) 
+        : previousRect;
+
+    previousRect = GetCurrentWindowRect();
+
+    ::SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, style);
+    ::SetWindowPos((HWND)m_WindowHandle, HWND_TOP, newRect.x, newRect.y, newRect.w, newRect.h, posFlag);
+    ::ShowWindow((HWND)m_WindowHandle, showFlag);
 }
 
 void Ether::Win32::Win32Window::SetTitle(const std::string& title)
@@ -165,36 +161,20 @@ void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
 
 void Ether::Win32::Win32Window::PlatformMessageLoop(std::function<void()> engineUpdateCallback)
 {
-	while (true)
-	{
-		MSG msg = {};
-		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			::TranslateMessage(&msg);
-			::DispatchMessage(&msg);
-		}
+    while (true)
+    {
+        MSG msg = {};
+        if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
 
-		if (msg.message == WM_QUIT)
-			break;
+        if (m_QuitMessageReceived || msg.message == WM_QUIT)
+            return;
 
-		engineUpdateCallback();
-	}
-}
-
-Ether::Win32::Rect Ether::Win32::Win32Window::GetCurrentWindowRect()
-{
-    if (m_WindowHandle == nullptr)
-        return { 0,0,0,0 };
-
-    RECT currentWindowRect;
-    ::GetWindowRect((HWND)m_WindowHandle, &currentWindowRect);
-
-    return {
-        currentWindowRect.left,
-        currentWindowRect.top,
-        currentWindowRect.right - currentWindowRect.left,
-        currentWindowRect.bottom - currentWindowRect.top
-    };
+        engineUpdateCallback();
+    }
 }
 
 void Ether::Win32::Win32Window::ToWindowRect(Rect& clientRect)
@@ -222,6 +202,22 @@ void Ether::Win32::Win32Window::ToClientRect(Rect& windowRect)
     windowRect.y += rc.top;
 }
 
+Ether::Win32::Rect Ether::Win32::Win32Window::GetCurrentWindowRect()
+{
+    if (m_WindowHandle == nullptr)
+        return { 0,0,0,0 };
+
+    RECT currentWindowRect;
+    ::GetWindowRect((HWND)m_WindowHandle, &currentWindowRect);
+
+    return {
+        currentWindowRect.left,
+        currentWindowRect.top,
+        currentWindowRect.right - currentWindowRect.left,
+        currentWindowRect.bottom - currentWindowRect.top
+    };
+}
+
 void Ether::Win32::Win32Window::CentralizeWindow()
 {
     if (m_WindowHandle == nullptr)
@@ -243,7 +239,7 @@ void Ether::Win32::Win32Window::RegisterWindowClass() const
 
     windowClass.cbSize = sizeof(windowClass);
     windowClass.style = ETH_WINDOWCLASS_STYLE;
-    windowClass.lpfnWndProc = &WndProcSetup;
+    windowClass.lpfnWndProc = &WndProcInternal;
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
     windowClass.hInstance = ::GetModuleHandle(nullptr);
@@ -257,23 +253,7 @@ void Ether::Win32::Win32Window::RegisterWindowClass() const
     AssertWin32(::RegisterClassEx(&windowClass) != 0, "Failed to register Window Class");
 }
 
-LRESULT CALLBACK Ether::Win32::Win32Window::WndProcSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    if (msg == WM_NCCREATE)
-    {
-        const CREATESTRUCT* cstruct = reinterpret_cast<CREATESTRUCT*>(lParam);
-        Win32Window* ethWnd = static_cast<Win32Window*>(cstruct->lpCreateParams);
-        ::SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(ethWnd));
-        return ethWnd->WndProcInternal(hWnd, msg, wParam, lParam);
-    }
-    else
-    {
-        Win32Window* ethWnd = reinterpret_cast<Win32Window*>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
-        return ethWnd->WndProcInternal(hWnd, msg, wParam, lParam);
-    }
-}
-
-LRESULT Ether::Win32::Win32Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Ether::Win32::Win32Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (!Engine::IsInitialized()) // TODO
         return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -285,89 +265,64 @@ LRESULT Ether::Win32::Win32Window::WndProcInternal(HWND hWnd, UINT msg, WPARAM w
     switch (msg)
     {
     case WM_MOUSEACTIVATE:
-    {
         ETH_TOOLONLY(::SetFocus((HWND)m_WindowHandle));
         break;
-    }
     case WM_SIZE:
-    {
-        if (Engine::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(lParam), (uint32_t)HIWORD(lParam) });
+        if (Engine::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(lParam), (uint32_t)HIWORD(lParam) })
             Engine::GetEngineConfig().SetClientSize({ LOWORD(lParam), HIWORD(lParam) });
         break;
-    }
     case WM_MOVE:
     {
-        Rect clientRect = { (uint32_t)LOWORD(lParam), (uint32_t)HIWORD(lParam), 0, 0 };
-        ToClientRect(clientRect);
+        Rect clientRect = { LOWORD(lParam), HIWORD(lParam), 0, 0 };
+        ((Win32Window&)Engine::GetMainWindow()).ToClientRect(clientRect);
         ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
 
-        if (Engine::GetEngineConfig().GetClientPosition() != clientPos);
+        if (Engine::GetEngineConfig().GetClientPosition() != clientPos)
             Engine::GetEngineConfig().SetClientPosition(clientPos);
         break;
     }
     case WM_KEYDOWN:
-    {
         Input::Instance().SetKeyDown(static_cast<Ether::KeyCode>(wParam));
         break;
-    }
     case WM_KEYUP:
-    {
         Input::Instance().SetKeyUp(static_cast<Ether::KeyCode>(wParam));
         break;
-    }
     case WM_MOUSEWHEEL:
-    {
         Input::Instance().SetMouseWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam));
         break;
-    }
     case WM_MOUSEMOVE:
-    {
         Input::Instance().SetMousePosX((short)LOWORD(lParam));
         Input::Instance().SetMousePosY((short)HIWORD(lParam));
         break;
-    }
     case WM_LBUTTONDOWN:
-    {
         Input::Instance().SetMouseButtonDown(0);
         break;
-    }
     case WM_LBUTTONUP:
-    {
         Input::Instance().SetMouseButtonUp(0);
         break;
-    }
     case WM_MBUTTONDOWN:
-    {
         Input::Instance().SetMouseButtonDown(1);
         break;
-    }
     case WM_MBUTTONUP:
-    {
         Input::Instance().SetMouseButtonUp(1);
         break;
-    }
     case WM_RBUTTONDOWN:
-    {
         Input::Instance().SetMouseButtonDown(2);
         break;
-    }
     case WM_RBUTTONUP:
-    {
         Input::Instance().SetMouseButtonUp(2);
         break;
-    }
     case WM_DESTROY:
-    {
         ::PostQuitMessage(0);
+        ((Win32Window&)Engine::GetMainWindow()).m_QuitMessageReceived = true;
         break;
-    }
     case WM_ERASEBKGND:
-    {
         return 1;
-    }
+    default:
+        return ::DefWindowProc(hWnd, msg, wParam, lParam);
     }
 
-    return ::DefWindowProc(hWnd, msg, wParam, lParam);
+    return 0;
 }
 
 #endif // ETH_PLATFORM_WIN32

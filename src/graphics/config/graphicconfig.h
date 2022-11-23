@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "graphics/pch.h"
+
 namespace Ether::Graphics
 {
     // This is mainly used for consumers of graphics.dll to pass data in

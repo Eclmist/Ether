@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "pch.h"
 #include "engine/config/engineconfig.h"
 #include <functional>
 
@@ -44,8 +45,8 @@ namespace Ether
         inline void* GetWindowHandle() const { return m_WindowHandle; }
         inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
 
-	public:
-		virtual void PlatformMessageLoop(std::function<void()> engineUpdateCallback) = 0;
+    public:
+        virtual void PlatformMessageLoop(std::function<void()> engineUpdateCallback) = 0;
 
     protected:
         bool m_IsFullscreen;

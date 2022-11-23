@@ -39,7 +39,6 @@ void Ether::Engine::Initialize()
     config.m_UseValidationLayer = m_CommandLineOptions.GetUseValidationLayer();
     config.m_WindowHandle = m_MainWindow->GetWindowHandle();
     Graphics::Core::Instance().Initialize(config);
-
     m_IsInitialized = true;
 }
 
@@ -47,6 +46,7 @@ void Ether::Engine::Shutdown()
 {
     m_MainApplication->OnShutdown();
     Graphics::Core::Reset();
+    m_IsInitialized = false;
 }
 
 void Ether::Engine::LoadApplication(IApplicationBase& app)
@@ -57,12 +57,12 @@ void Ether::Engine::LoadApplication(IApplicationBase& app)
 
 void Ether::Engine::Run()
 {
-	m_MainWindow->PlatformMessageLoop(std::bind(&Engine::MainEngineThread, this));
+    m_MainWindow->PlatformMessageLoop(std::bind(&Engine::MainEngineThread, this));
 }
 
 void Ether::Engine::MainEngineThread()
 {
-	ETH_MARKER_FRAME("Update");
+    ETH_MARKER_FRAME("Update");
     Time::NewFrame();
     Input::NewFrame();
 

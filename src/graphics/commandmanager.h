@@ -19,43 +19,44 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/commandallocatorpool.h"
 #include "graphics/rhi/rhicommandqueue.h"
 
 namespace Ether::Graphics
 {
-	class CommandManager : public NonCopyable, public NonMovable
-	{
-	public:
-		CommandManager();
-		~CommandManager() = default;
+    class CommandManager : public NonCopyable, public NonMovable
+    {
+    public:
+        CommandManager();
+        ~CommandManager() = default;
 
-		std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandType type, const std::string& name);
+        std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandType type, const std::string& name);
 
-	public:
-		void Execute(RhiCommandList& cmdList);
-		void Flush();
+    public:
+        void Execute(RhiCommandList& cmdList);
+        void Flush();
 
-	public:
-		inline RhiCommandQueue& GetGraphicsQueue() { return *m_GraphicsQueue; }
-		inline RhiCommandQueue& GetComputeQueue() { return *m_ComputeQueue; }
-		inline RhiCommandQueue& GetCopyQueue() { return *m_CopyQueue; }
+    public:
+        inline RhiCommandQueue& GetGraphicsQueue() { return *m_GraphicsQueue; }
+        inline RhiCommandQueue& GetComputeQueue() { return *m_ComputeQueue; }
+        inline RhiCommandQueue& GetCopyQueue() { return *m_CopyQueue; }
 
-		inline CommandAllocatorPool& GetGraphicAllocatorPool() { return m_GraphicAllocatorPool; }
-		inline CommandAllocatorPool& GetComputeAllocatorPool() { return m_ComputeAllocatorPool; }
-		inline CommandAllocatorPool& GetCopyAllocatorPool() { return m_CopyAllocatorPool; }
+        inline CommandAllocatorPool& GetGraphicAllocatorPool() { return m_GraphicAllocatorPool; }
+        inline CommandAllocatorPool& GetComputeAllocatorPool() { return m_ComputeAllocatorPool; }
+        inline CommandAllocatorPool& GetCopyAllocatorPool() { return m_CopyAllocatorPool; }
 
-		RhiCommandQueue& GetQueue(RhiCommandType type);
-		CommandAllocatorPool& GetAllocatorPool(RhiCommandType type);
+        RhiCommandQueue& GetQueue(RhiCommandType type);
+        CommandAllocatorPool& GetAllocatorPool(RhiCommandType type);
 
-	private:
-		std::unique_ptr<RhiCommandQueue> m_GraphicsQueue;
-		std::unique_ptr<RhiCommandQueue> m_ComputeQueue;
-		std::unique_ptr<RhiCommandQueue> m_CopyQueue;
+    private:
+        std::unique_ptr<RhiCommandQueue> m_GraphicsQueue;
+        std::unique_ptr<RhiCommandQueue> m_ComputeQueue;
+        std::unique_ptr<RhiCommandQueue> m_CopyQueue;
 
-		CommandAllocatorPool m_GraphicAllocatorPool;
-		CommandAllocatorPool m_ComputeAllocatorPool;
-		CommandAllocatorPool m_CopyAllocatorPool;
-	};
+        CommandAllocatorPool m_GraphicAllocatorPool;
+        CommandAllocatorPool m_ComputeAllocatorPool;
+        CommandAllocatorPool m_CopyAllocatorPool;
+    };
 }
 

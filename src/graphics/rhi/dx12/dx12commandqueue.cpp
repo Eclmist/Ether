@@ -56,7 +56,7 @@ void Ether::Graphics::Dx12CommandQueue::StallForFence(RhiFenceValue fenceValue)
 {
     if (!IsFenceComplete(fenceValue))
     {
-		m_Fence->SetEventOnCompletion(fenceValue, m_FenceEventHandle);
+        m_Fence->SetEventOnCompletion(fenceValue, m_FenceEventHandle);
         WaitForSingleObject(m_FenceEventHandle, INFINITE);
     }
 }
@@ -66,8 +66,8 @@ void Ether::Graphics::Dx12CommandQueue::Flush()
     const auto dx12Fence = dynamic_cast<Dx12Fence*>(m_Fence.get());
     HRESULT hr = m_CommandQueue->Signal(dx12Fence->m_Fence.Get(), ++m_FinalFenceValue);
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to signal command queue with fence");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to signal command queue with fence");
 
     StallForFence(m_FinalFenceValue);
 }
@@ -82,8 +82,8 @@ void Ether::Graphics::Dx12CommandQueue::Execute(RhiCommandList& cmdList)
 
     HRESULT hr = m_CommandQueue->Signal(dx12Fence->m_Fence.Get(), ++m_FinalFenceValue);
 
-	if (FAILED(hr))
-		LogGraphicsError("Failed to signal command queue with fence");
+    if (FAILED(hr))
+        LogGraphicsError("Failed to signal command queue with fence");
 }
 
 #endif // ETH_GRAPHICS_DX12

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "pch.h"
 #include "engine/platform/platformwindow.h"
 
 namespace Ether::PS5
@@ -26,7 +27,7 @@ namespace Ether::PS5
     class PS5Window : public PlatformWindow
     {
     public:
-		PS5Window();
+        PS5Window();
         ~PS5Window();
 
         void Show() override;
@@ -38,8 +39,8 @@ namespace Ether::PS5
         void SetParentWindowHandle(void* parentHandle) override;
         void SetTitle(const std::string& title) override;
 
-	public:
-		void PlatformMessageLoop(std::function<void()> engineUpdateCallback) override;
+    public:
+        void PlatformMessageLoop(std::function<void()> engineUpdateCallback) override;
     };
 }
 

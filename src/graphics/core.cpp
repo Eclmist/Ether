@@ -31,13 +31,13 @@ void Ether::Graphics::Core::Initialize(const GraphicConfig& config)
 {
     m_Config = config;
 
-	m_RhiModule = RhiModule::InitForPlatform();
-	m_RhiDevice = m_RhiModule->CreateDevice();
+    m_RhiModule = RhiModule::InitForPlatform();
+    m_RhiDevice = m_RhiModule->CreateDevice();
 
-	m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
-	m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true);
-	m_CommandManager = std::make_unique<CommandManager>();
-	m_GraphicsDisplay = std::make_unique<GraphicDisplay>();
+    m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
+    m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true);
+    m_CommandManager = std::make_unique<CommandManager>();
+    m_GraphicsDisplay = std::make_unique<GraphicDisplay>();
 
     m_Imgui = RhiImguiWrapper::InitForPlatform();
 }

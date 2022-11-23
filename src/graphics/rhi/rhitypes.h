@@ -322,7 +322,7 @@ namespace Ether::Graphics
 
     struct RhiCommitedResourceDesc
     {
-		std::string m_Name;
+        std::string m_Name;
         RhiHeapType m_HeapType;
         RhiResourceState m_State;
         RhiResourceDesc m_ResourceDesc;

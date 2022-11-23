@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "graphics/pch.h"
 #include "graphics/memory/descriptorallocator.h"
 
 namespace Ether::Graphics
@@ -66,6 +67,7 @@ namespace Ether::Graphics
 
     private:
         std::unique_ptr<RhiSwapChain> m_SwapChain;
+        BufferingMode m_BufferingMode;
 
         RhiResource* m_RenderTargets[MaxSwapChainBuffers];
         std::unique_ptr<RhiRenderTargetView> m_RenderTargetRtv[MaxSwapChainBuffers];
@@ -82,7 +84,6 @@ namespace Ether::Graphics
 
         bool m_VSyncEnabled;
         uint8_t m_VSyncVBlanks;
-        BufferingMode m_BufferingMode;
     };
 }
 
