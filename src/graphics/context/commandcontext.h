@@ -33,13 +33,11 @@ namespace Ether::Graphics
     {
     public:
         CommandContext(RhiCommandType type, const std::string& contextName = "Unnamed Command Context");
-        ~CommandContext();
+        ~CommandContext() = default;
 
         inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
 
     public:
-        void NewFrame();
-
         void SetMarker(const std::string& name);
         void PushMarker(const std::string& name);
         void PopMarker();

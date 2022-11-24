@@ -50,13 +50,11 @@ void Ether::Graphics::Core::FlushGpu()
 void Ether::Graphics::Core::Update()
 {
     ETH_MARKER_FRAME("Graphics Update");
-    GraphicContext context("Clear Framebuffer Context");
-    context.NewFrame();
-    context.SetMarker("Render");
-    context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
-    context.ClearColor(m_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 1000.0f),1,1,1 });
-    context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
-    context.FinalizeAndExecute();
+    //context.SetMarker("Render");
+    //context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
+    //context.ClearColor(m_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 100.0f) / 2.0f + 0.5f,1,1,1 });
+    //context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
+    //context.FinalizeAndExecute();
 
     m_Instance->m_Imgui->Render();
     m_Instance->m_GraphicsDisplay->Present();

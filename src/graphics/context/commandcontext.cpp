@@ -27,42 +27,36 @@ Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::
     : m_Name(contextName)
     , m_Type(type)
 {
+    ETH_MARKER_EVENT("Command Context - Constructor");
+
     m_CommandQueue = &Core::GetCommandManager().GetQueue(type);
     m_CommandAllocatorPool = &Core::GetCommandManager().GetAllocatorPool(type);
-    m_CommandList = Core::GetCommandManager().CreateCommandList(type, m_Name + "::CommandList");
-    m_CommandList->Close();
-}
-
-Ether::Graphics::CommandContext::~CommandContext()
-{
-    if (m_CommandAllocator != nullptr)
-        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
-}
-
-void Ether::Graphics::CommandContext::NewFrame()
-{
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
-    m_CommandList->Reset(*m_CommandAllocator);
-    m_UploadBufferAllocator.Reset();
+    m_CommandList = Core::GetCommandManager().CreateCommandList(type, *m_CommandAllocator, m_Name + "::CommandList");
 }
 
 void Ether::Graphics::CommandContext::SetMarker(const std::string& name)
 {
+    ETH_MARKER_EVENT("Command Context - Set Marker");
     m_CommandList->SetMarker(name);
 }
 
 void Ether::Graphics::CommandContext::PushMarker(const std::string& name)
 {
+    ETH_MARKER_EVENT("Command Context - Push Marker");
     m_CommandList->PushMarker(name);
 }
 
 void Ether::Graphics::CommandContext::PopMarker()
 {
+    ETH_MARKER_EVENT("Command Context - Pop Marker");
     m_CommandList->PopMarker();
 }
 
 void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, RhiResourceState newState)
 {
+    ETH_MARKER_EVENT("Command Context - Transition Resource");
+
     if (resource.GetCurrentState() == newState)
         return;
 
@@ -75,6 +69,8 @@ void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, 
 
 void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
 {
+    ETH_MARKER_EVENT("Command Context - Set Descriptor Heap");
+
     const RhiDescriptorHeap* heaps[1] = { &descriptorHeap };
 
     RhiSetDescriptorHeapsDesc desc;
@@ -85,9 +81,13 @@ void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap&
 
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
+    ETH_MARKER_EVENT("Command Context - Finalize and Execute");
+
     Core::GetCommandManager().Execute(*m_CommandList);
     m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
-    m_CommandAllocator = nullptr;
+    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
+    m_CommandList->Reset(*m_CommandAllocator);
+    m_UploadBufferAllocator.Reset();
 
     if (waitForCompletion)
         m_CommandQueue->Flush();

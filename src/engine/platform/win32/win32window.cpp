@@ -154,7 +154,7 @@ void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
         return;
 
     m_ParentWindowHandle = parentHandle;
-    ::SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, m_ParentWindowHandle == nullptr ? ETH_WINDOW_STYLE : WS_CHILD | WS_CLIPCHILDREN);
+    ::SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, m_ParentWindowHandle == nullptr ? ETH_WINDOW_STYLE : WS_CHILD);
     ::SetParent((HWND)m_WindowHandle, (HWND)m_ParentWindowHandle);
 }
 
@@ -173,6 +173,9 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
     uint8_t backBufferIdx = m_MessageQueueFrontBufferIdx;
     m_MessageQueueFrontBufferIdx = 1 - m_MessageQueueFrontBufferIdx;
 
+    bool hasResized = false;
+    bool hasMoved = false;
+
     while (!m_Win32MessageQueue[backBufferIdx].empty())
     {
         MSG msg = m_Win32MessageQueue[backBufferIdx].front();
@@ -185,11 +188,19 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
             ETH_TOOLONLY(::SetFocus((HWND)win32window.m_WindowHandle));
             continue;
         case WM_SIZE:
+            if (hasResized)
+                continue;
+
+            hasResized = true;
             if (Engine::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(msg.lParam), (uint32_t)HIWORD(msg.lParam) })
                 Engine::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
             continue;
         case WM_MOVE:
         {
+            if (hasMoved)
+                continue;
+
+            hasMoved = true;
             Rect clientRect = { LOWORD(msg.lParam), HIWORD(msg.lParam), 0, 0 };
             win32window.ToClientRect(clientRect);
             ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
@@ -348,7 +359,7 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
     case WM_DESTROY:
     case WM_QUIT:
         win32window.m_Win32MessageQueue[win32window.m_MessageQueueFrontBufferIdx].push({ hWnd, msg, wParam, lParam });
-        return 1;
+        return 0;
     }
 
     return ::DefWindowProc(hWnd, msg, wParam, lParam);

@@ -34,15 +34,12 @@ Ether::Graphics::CommandManager::CommandManager()
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::CommandManager::CreateCommandList(
-    RhiCommandType type, const std::string& name)
+    RhiCommandType type, RhiCommandAllocator& alloc, const std::string& name)
 {
-    RhiCommandAllocator& cmdAlloc = GetAllocatorPool(type).RequestAllocator(GetQueue(type).GetCurrentFenceValue());
     RhiCommandListDesc desc;
-    desc.m_Allocator = &cmdAlloc;
+    desc.m_Allocator = &alloc;
     desc.m_Type = type;
     desc.m_Name = name;
-
-    GetAllocatorPool(type).DiscardAllocator(cmdAlloc, GetQueue(type).GetFinalFenceValue()); 
     return Core::GetDevice().CreateCommandList(desc);
 }
 

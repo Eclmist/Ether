@@ -38,6 +38,9 @@ namespace Ether::Graphics
         static std::unique_ptr<RhiImguiWrapper> InitForPlatform();
 
     protected:
+        void SetStyle() const;
+
+    protected:
         GraphicContext m_Context;
         std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
     };

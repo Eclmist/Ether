@@ -31,7 +31,7 @@ namespace Ether::Graphics
         CommandManager();
         ~CommandManager() = default;
 
-        std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandType type, const std::string& name);
+        std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandType type, RhiCommandAllocator& alloc, const std::string& name);
 
     public:
         void Execute(RhiCommandList& cmdList);

@@ -43,7 +43,11 @@ namespace Ether::Graphics
         Core() = default;
         ~Core();
 
+    public:
         void Initialize(const GraphicConfig& config);
+
+    public:
+        static uint64_t inline GetFrameNumber() { return Instance().m_FrameNumber; }
 
     public:
         static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
@@ -72,6 +76,8 @@ namespace Ether::Graphics
 
     private:
         GraphicConfig m_Config;
+
+        uint64_t m_FrameNumber;
     };
 }
 
