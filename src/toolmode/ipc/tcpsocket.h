@@ -19,47 +19,52 @@
 
 #pragma once
 
+#include "toolmode/pch.h"
+
+#define NOMINMAX
 #include <WinSock2.h>
 
-ETH_NAMESPACE_BEGIN
-
-struct CommandPacketHeader
+namespace Ether::Toolmode
 {
-    uint32_t m_MessageLength;
-};
+    struct CommandPacketHeader
+    {
+        uint32_t m_MessageLength;
+    };
 
-class TcpSocket : public NonCopyable
-{
-public:
-    TcpSocket();
-    ~TcpSocket();
+    class TcpSocket : public NonCopyable
+    {
+    public:
+        TcpSocket();
+        ~TcpSocket();
 
-public:
-    inline bool HasActiveConnection() const { return m_HasActiveConnection; }
+    public:
+        inline bool IsInitialized() const { return m_IsInitialized; }
+        inline bool HasActiveConnection() const { return m_HasActiveConnection; }
 
-    void WaitForConnection();
+        void WaitForConnection();
 
-    std::string GetNext();
-    void Send(const std::string& message);
-    void Close();
+        std::string GetNext();
+        void Send(const std::string& message);
+        void Close();
 
-private:
-    bool StartWsa();
-    bool RequestPlatformSocket();
-    bool BindSocket() const;
-    bool SetSocketListenState() const;
+    private:
+        bool StartWsa();
+        bool RequestPlatformSocket();
+        bool BindSocket() const;
+        bool SetSocketListenState() const;
 
-    CommandPacketHeader GetNextHeader();
-    bool GetBytes(char* bytes, const size_t numBytes);
+        CommandPacketHeader GetNextHeader();
+        void GetBytes(char* bytes, const size_t numBytes);
 
-private:
-    int m_SocketFd;
-    int m_Port;
-    sockaddr_in m_Address;
-    bool m_IsSocketListening;
-    bool m_HasActiveConnection;
-    SOCKET m_ActiveSocket;
-};
+    private:
+        int m_SocketFd;
+        int m_Port;
+        sockaddr_in m_Address;
+        SOCKET m_ActiveSocket;
+
+        bool m_IsInitialized;
+        bool m_HasActiveConnection;
+    };
+}
  
-ETH_NAMESPACE_END
 

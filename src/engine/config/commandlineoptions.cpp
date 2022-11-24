@@ -26,9 +26,14 @@
 #include "engine/platform/ps5/ps5launchargs.h"
 #endif
 
+constexpr uint16_t DefaultToolmodePort = 2134;
+
 Ether::CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
     , m_UseValidationLayer(false)
+#if defined (ETH_TOOLMODE)
+    , m_ToolmodePort(DefaultToolmodePort)
+#endif
 {
     std::unique_ptr<PlatformLaunchArgs> args;
 
@@ -50,5 +55,9 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseSourceShaders = true;
     else if (flag == "-usevalidationlayer")
         m_UseValidationLayer = true;
+#if defined (ETH_TOOLMODE)
+    else if (flag == "-toolmodeport")
+        m_ToolmodePort = stoi(arg);
+#endif
 }
 

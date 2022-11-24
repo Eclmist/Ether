@@ -17,44 +17,40 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "commandfactory.h"
+#include "toolmode/ipc/command/commandfactory.h"
 
-#include "initializecommand.h"
-#include "detachcommand.h"
-#include "resizecommand.h"
+#include "toolmode/ipc/command/initializecommand.h"
+#include "toolmode/ipc/command/detachcommand.h"
 
-#include "asset/importassetcommand.h"
+//#include "toolmode/ipc/command/asset/importassetcommand.h"
+//
+//#include "toolmode/ipc/command/ecs/gettoplevelentitiescommand.h"
+//#include "toolmode/ipc/command/ecs/getcomponentscommand.h"
+//#include "toolmode/ipc/command/ecs/setcomponentcommand.h"
+//
+//#include "toolmode/ipc/command/state/viewport/setdrawmodecommand.h"
 
-#include "ecs/gettoplevelentitiescommand.h"
-#include "ecs/getcomponentscommand.h"
-#include "ecs/setcomponentcommand.h"
+#define REGISTER_COMMAND(id, T) RegisterCommand(id, [](const CommandData* data) { return std::make_unique<T>(data); })
 
-#include "state/viewport/setdrawmodecommand.h"
-
-
-ETH_NAMESPACE_BEGIN
-
-#define REGISTER_COMMAND(id, T) RegisterCommand(id, [](const CommandData& c) { return std::make_unique<T>(c); })
-
-CommandFactory::CommandFactory()
+Ether::Toolmode::CommandFactory::CommandFactory()
 {
     REGISTER_COMMAND("initialize", InitializeCommand);
     REGISTER_COMMAND("detach", DetachCommand);
-    REGISTER_COMMAND("resize", ResizeCommand);
 
-    // Asset
-    REGISTER_COMMAND("importasset", ImportAssetCommand);
+    //// Asset
+    //REGISTER_COMMAND("importasset", ImportAssetCommand);
 
-    // ECS
-    REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
-    REGISTER_COMMAND("getcomponents", GetComponentsCommand);
-    REGISTER_COMMAND("setcomponent", SetComponentCommand);
+    //// ECS
+    //REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
+    //REGISTER_COMMAND("getcomponents", GetComponentsCommand);
+    //REGISTER_COMMAND("setcomponent", SetComponentCommand);
 
-    // State
-    REGISTER_COMMAND("setdrawmode", SetDrawModeCommand);
+    //// State
+    //REGISTER_COMMAND("setdrawmode", SetDrawModeCommand);
 }
 
-std::unique_ptr<Command> CommandFactory::CreateCommand(const std::string& commandID, const CommandData& data) const
+std::unique_ptr<Ether::Toolmode::Command> Ether::Toolmode::CommandFactory::CreateCommand(
+    const std::string& commandID, const CommandData* data) const
 {
     if (m_FactoryMap.find(commandID) == m_FactoryMap.end())
         return nullptr;
@@ -62,7 +58,8 @@ std::unique_ptr<Command> CommandFactory::CreateCommand(const std::string& comman
     return (m_FactoryMap.find(commandID)->second)(data);
 }
 
-void CommandFactory::RegisterCommand(const std::string& commandID, FactoryFunction factoryFunction)
+void Ether::Toolmode::CommandFactory::RegisterCommand(
+    const std::string& commandID, FactoryFunction factoryFunction)
 {
     if (m_FactoryMap.find(commandID) != m_FactoryMap.end())
     {
@@ -72,6 +69,4 @@ void CommandFactory::RegisterCommand(const std::string& commandID, FactoryFuncti
 
     m_FactoryMap[commandID] = factoryFunction;
 }
-
-ETH_NAMESPACE_END
 

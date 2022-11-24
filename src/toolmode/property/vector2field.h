@@ -19,39 +19,39 @@
 
 #pragma once
 
-#include "field.h"
+#include "toolmode/pch.h"
+#include "toolmode/property/field.h"
 
-ETH_NAMESPACE_BEGIN
-
-class Vector2Field : public Field
+namespace Ether::Toolmode
 {
-public:
-    Vector2Field(std::string name, ethVector2& data)
-        : Field(name)
-        , m_Data(&data)
+    class Vector2Field : public Field
     {
-    }
-    ~Vector2Field() = default;
+    public:
+        Vector2Field(const std::string& name, const ethVector2& data)
+            : Field(name)
+            , m_Data(&data)
+        {
+        }
+        ~Vector2Field() = default;
 
-    std::string GetData() override
-    {
-        nlohmann::json data;
-        data["name"] = m_Name;
-        data["type"] = "Vector2";
-        data["values"][0] = m_Data->x;
-        data["values"][1] = m_Data->y;
-        return data.dump();
-    }
+        std::string GetData() override
+        {
+            nlohmann::json data;
+            data["name"] = m_Name;
+            data["type"] = "Vector2";
+            data["values"][0] = m_Data->x;
+            data["values"][1] = m_Data->y;
+            return data.dump();
+        }
 
-    void SetData(const nlohmann::json& data) override
-    {
-        m_Data->x = data["values"][0];
-        m_Data->y = data["values"][1];
-    }
+        void SetData(const nlohmann::json& data) override
+        {
+            m_Data->x = data["values"][0];
+            m_Data->y = data["values"][1];
+        }
 
-private:
-    ethVector2* const m_Data;
-};
-
-ETH_NAMESPACE_END
+    private:
+        ethVector2* const m_Data;
+    };
+}
 

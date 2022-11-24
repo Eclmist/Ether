@@ -19,61 +19,61 @@
 
 #pragma once
 
-#include "field.h"
+#include "toolmode/pch.h"
+#include "toolmode/property/field.h"
 
-ETH_NAMESPACE_BEGIN
-
-class FloatField : public Field
+namespace Ether::Toolmode
 {
-public:
-    FloatField(std::string name, float& data)
-        : Field(name)
-        , m_Data(&data)
-        , m_HasMinMax(false)
-        , m_MinValue(-1)
-        , m_MaxValue(-1)
+    class FloatField : public Field
     {
-    }
-
-    FloatField(std::string name, float& data, float minVal, float maxVal)
-        : Field(name)
-        , m_Data(&data)
-        , m_HasMinMax(true)
-        , m_MinValue(minVal)
-        , m_MaxValue(maxVal)
-    {
-    }
-
-    ~FloatField() = default;
-
-    std::string GetData() override
-    {
-        nlohmann::json data;
-        data["name"] = m_Name;
-        data["type"] = "Float";
-        data["values"][0] = *m_Data;
-
-        if (m_HasMinMax)
+    public:
+        FloatField(const std::string& name, float& data)
+            : Field(name)
+            , m_Data(&data)
+            , m_HasMinMax(false)
+            , m_MinValue(-1)
+            , m_MaxValue(-1)
         {
-            data["properties"]["range"]["min"] = m_MinValue;
-            data["properties"]["range"]["max"] = m_MaxValue;
         }
 
-        return data.dump();
-    }
+        FloatField(const std::string& name, float& data, float minVal, float maxVal)
+            : Field(name)
+            , m_Data(&data)
+            , m_HasMinMax(true)
+            , m_MinValue(minVal)
+            , m_MaxValue(maxVal)
+        {
+        }
 
-    void SetData(const nlohmann::json& data) override
-    {
-        *m_Data = data["values"][0];
-    }
+        ~FloatField() = default;
 
-private:
-    float* const m_Data;
+        std::string GetData() override
+        {
+            nlohmann::json data;
+            data["name"] = m_Name;
+            data["type"] = "Float";
+            data["values"][0] = *m_Data;
 
-    const bool m_HasMinMax;
-    const float m_MinValue;
-    const float m_MaxValue;
-};
+            if (m_HasMinMax)
+            {
+                data["properties"]["range"]["min"] = m_MinValue;
+                data["properties"]["range"]["max"] = m_MaxValue;
+            }
 
-ETH_NAMESPACE_END
+            return data.dump();
+        }
+
+        void SetData(const nlohmann::json& data) override
+        {
+            *m_Data = data["values"][0];
+        }
+
+    protected:
+        float* const m_Data;
+
+        const bool m_HasMinMax;
+        const float m_MinValue;
+        const float m_MaxValue;
+    };
+}
 

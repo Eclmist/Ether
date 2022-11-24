@@ -87,7 +87,7 @@ namespace Ether::Graphics
         return desc;
     }
 
-    static RhiResourceDesc RhiCreateTexture2DResourceDesc(RhiFormat format, ethVector2u res)
+    static RhiResourceDesc RhiCreateTexture2DResourceDesc(RhiFormat format, const ethVector2u& res)
     {
         RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
         desc.m_Dimension = RhiResourceDimension::Texture2D;
@@ -96,7 +96,7 @@ namespace Ether::Graphics
         return desc;
     }
 
-    static RhiResourceDesc RhiCreateTexture3DResourceDesc(RhiFormat format, ethVector3u res)
+    static RhiResourceDesc RhiCreateTexture3DResourceDesc(RhiFormat format, const ethVector3u& res)
     {
         RhiResourceDesc desc = RhiCreateTextureBaseResourceDesc(format);
         desc.m_Dimension = RhiResourceDimension::Texture3D;
@@ -106,7 +106,7 @@ namespace Ether::Graphics
         return desc;
     }
 
-    static RhiResourceDesc RhiCreateDepthStencilResourceDesc(RhiFormat format, ethVector2u res)
+    static RhiResourceDesc RhiCreateDepthStencilResourceDesc(RhiFormat format, const ethVector2u& res)
     {
         RhiResourceDesc desc = RhiCreateTexture2DResourceDesc(format, res);
         desc.m_Flag = RhiResourceFlag::AllowDepthStencil;

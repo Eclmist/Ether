@@ -38,7 +38,7 @@ namespace Ether::Graphics
         ~GraphicDisplay();
 
         void Present();
-        ETH_GRAPHIC_DLL void ResizeBuffers(ethVector2u size);
+        ETH_GRAPHIC_DLL void ResizeBuffers(const ethVector2u& size);
 
     public:
         inline RhiResource& GetCurrentBackBuffer() const { return *m_RenderTargets[m_CurrentBackBufferIndex]; }
@@ -61,7 +61,7 @@ namespace Ether::Graphics
         void CreateSwapChain(void* hwnd);
         void CreateResourcesFromSwapChain();
         void CreateViewsFromSwapChain();
-        void ResizeViewport(ethVector2u& size);
+        void ResizeViewport(const ethVector2u& size);
         void ResetCurrentBufferIndex();
         void ResetFences();
 

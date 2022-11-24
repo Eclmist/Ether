@@ -17,28 +17,28 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "initializecommand.h"
+#include "toolmode/ipc/command/initializecommand.h"
+#include "toolmode/ipc/ipcmanager.h"
 
-ETH_NAMESPACE_BEGIN
-
-InitializeCommand::InitializeCommand(const CommandData& data)
-    : m_ParentWindowHandle((void*)(uint64_t)data["args"]["hwnd"]) {
+Ether::Toolmode::InitializeCommand::InitializeCommand(const CommandData* data)
+    : m_ParentWindowHandle((void*)(uint64_t)(*data)["args"]["hwnd"]) {
 }
 
-void InitializeCommand::Execute()
+void Ether::Toolmode::InitializeCommand::Execute()
 {
-    EngineCore::GetMainWindow().SetParentWindowHandle(m_ParentWindowHandle);
-    EngineCore::GetMainWindow().Show();
-    auto initResponse = std::make_shared<InitCommandResponse>(EngineCore::GetMainWindow().GetWindowHandle());
-    EngineCore::GetIpcManager().QueueCommand(initResponse);
+    SetParentWindow(m_ParentWindowHandle);
+    ShowWindow();
+
+    auto initResponse = std::make_unique<InitCommandResponse>(GetWindowHandle());
+    IpcManager::Instance().QueueOutgoingCommand(std::move(initResponse));
 }
 
-InitCommandResponse::InitCommandResponse(void* engineWindowHandle)
+Ether::Toolmode::InitCommandResponse::InitCommandResponse(void* engineWindowHandle)
     : m_EngineWindowHandle(engineWindowHandle)
 {
 }
 
-std::string InitCommandResponse::GetSendableData() const
+std::string Ether::Toolmode::InitCommandResponse::GetSendableData() const
 {
     CommandData command = {
         { "command", "initialize" },
@@ -49,6 +49,4 @@ std::string InitCommandResponse::GetSendableData() const
 
     return command.dump();
 }
-
-ETH_NAMESPACE_END
 

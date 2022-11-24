@@ -19,23 +19,22 @@
 
 #pragma once
 
-#include "toolmode/asset/importer/importer.h"
+#include "toolmode/pch.h"
 
-ETH_NAMESPACE_BEGIN
-
-class FileParser;
-
-class TextureImporter : public Importer
+namespace Ether::Toolmode
 {
+    class EtherHeadless : public Ether::IApplicationBase
+    {
+    public:
+        void Initialize() override;
+        void LoadContent() override;
+        void UnloadContent() override;
+        void Shutdown() override;
 
-public:
-    TextureImporter();
-    ~TextureImporter() = default;
-
-public:
-    bool HasSupport(const std::string& extension) override;
-    std::vector<std::shared_ptr<Asset>> Compile(IStream& istream) override;
-};
-
-ETH_NAMESPACE_END
+    public:
+        void OnUpdate(const Ether::UpdateEventArgs& e) override;
+        void OnRender(const Ether::RenderEventArgs& e) override;
+        void OnShutdown() override;
+    };
+}
 

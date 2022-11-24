@@ -26,7 +26,7 @@ Ether::Graphics::GraphicContext::GraphicContext(const std::string& contextName)
 {
 }
 
-void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, ethVector4 color)
+void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const ethVector4& color)
 {
     RhiClearRenderTargetViewDesc desc = {};
     desc.m_ClearColor = color;

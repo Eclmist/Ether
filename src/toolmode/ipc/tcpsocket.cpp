@@ -17,20 +17,19 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "tcpsocket.h"
+#include "toolmode/ipc/tcpsocket.h"
+#include <algorithm>
 
-ETH_NAMESPACE_BEGIN
-
-#define TCP_FAILED(res)         (res == 0 || res == SOCKET_ERROR)
+#define TCP_FAILED(res)             (res == 0 || res == SOCKET_ERROR)
 
 // Arbitrary max buffer size. Might be worth profiling the average size of requests from
 // editor to optimize this value.
 constexpr uint32_t MaxBufferSize = 2048;
 
-TcpSocket::TcpSocket()
+Ether::Toolmode::TcpSocket::TcpSocket()
     : m_SocketFd(0)
-    , m_Port(EngineCore::GetCommandLineOptions().GetToolmodePort())
-    , m_IsSocketListening(false)
+    , m_Port(GetCommandLineOptions().GetToolmodePort())
+    , m_IsInitialized(false)
     , m_HasActiveConnection(false)
     , m_ActiveSocket(INVALID_SOCKET)
 {
@@ -41,144 +40,115 @@ TcpSocket::TcpSocket()
     m_Address.sin_port = htons(m_Port);
 
     if (!StartWsa())
-        return;
+        throw std::runtime_error("Failed to find a suitable WinSock DLL");
 
     if (!RequestPlatformSocket())
-        return;
+        throw std::runtime_error("Failed to create socket descriptor");
 
     if (!BindSocket())
-        return;
+        throw std::runtime_error(std::format("Failed to bind socket on port {}", m_Port));
 
     if (!SetSocketListenState())
-        return;
+        throw std::runtime_error("Failed to mark socket as passive (listener)");
 
-    m_IsSocketListening = true;
+    m_IsInitialized = true;
     LogToolmodeInfo("IPC network socket listening on port %d", m_Port);
 }
 
-TcpSocket::~TcpSocket()
+Ether::Toolmode::TcpSocket::~TcpSocket()
 {
-    closesocket(m_SocketFd);
-    WSACleanup();
+    ::closesocket(m_SocketFd);
+    ::WSACleanup();
 }
 
-void TcpSocket::WaitForConnection()
+void Ether::Toolmode::TcpSocket::WaitForConnection()
 {
-    if (!m_IsSocketListening)
+    if (!m_IsInitialized)
         return;
 
     if (m_HasActiveConnection)
-        return;
-
-    m_ActiveSocket = accept(m_SocketFd, nullptr, nullptr);
-
-    if (m_ActiveSocket == INVALID_SOCKET)
     {
-        LogToolmodeFatal("Failed to accept incoming IPC connection (%d)", WSAGetLastError());
+        LogToolmodeWarning("Socket already has an established connection");
         return;
     }
+
+    if ((m_ActiveSocket = accept(m_SocketFd, nullptr, nullptr)) == INVALID_SOCKET)
+        throw std::runtime_error(std::format("Failed to accept incoming IPC connection ({})", WSAGetLastError()));
 
     LogToolmodeInfo("IPC network socket connected on port %d", m_Port);
     m_HasActiveConnection = true;
-    return;
 }
 
-std::string TcpSocket::GetNext()
+std::string Ether::Toolmode::TcpSocket::GetNext()
 {
     CommandPacketHeader header = GetNextHeader();
-    char* bytes = (char*)malloc(header.m_MessageLength);
-    GetBytes(bytes, header.m_MessageLength);
-    std::string fullPacket = std::string(bytes, header.m_MessageLength);
-    free(bytes);
-    //LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
+
+    char packetData[MaxBufferSize];
+    GetBytes(packetData, header.m_MessageLength);
+    std::string fullPacket = std::string(packetData, header.m_MessageLength);
+
+    LogToolmodeInfo("IPC: Full packet received - %s", fullPacket.c_str());
     return fullPacket;
 }
 
-void TcpSocket::Send(const std::string& message)
+void Ether::Toolmode::TcpSocket::Send(const std::string& message)
 {
-    //LogToolmodeInfo("Sending response: %s", message.c_str());
+    LogToolmodeInfo("Sending response: %s", message.c_str());
     size_t messageLength = message.length();
 
-    AssertToolmode(send(m_ActiveSocket, (char*)&messageLength, sizeof(CommandPacketHeader), 0) == sizeof(CommandPacketHeader), "Failed to send TCP header");
-    int result = send(m_ActiveSocket, message.c_str(), messageLength, 0);
-
-    if (TCP_FAILED(result))
+    uint32_t err = send(m_ActiveSocket, (char*)&messageLength, sizeof(CommandPacketHeader), 0);
+    if (TCP_FAILED(err))
     {
         m_HasActiveConnection = false;
-        return;
+        throw std::runtime_error("Failed to send command header");
+    }
+    
+    err = send(m_ActiveSocket, message.c_str(), messageLength, 0);
+    if (TCP_FAILED(err))
+    {
+        m_HasActiveConnection = false;
+        throw std::runtime_error("Failed to send command packet");
     }
 }
 
-void TcpSocket::Close()
+void Ether::Toolmode::TcpSocket::Close()
 {
     closesocket(m_SocketFd);
 }
 
-bool TcpSocket::StartWsa()
+bool Ether::Toolmode::TcpSocket::StartWsa()
 {
-    WORD wVersionRequested;
+    WORD wVersionRequested = MAKEWORD(2, 2);
     WSADATA wsaData;
-    int err;
-
-    /* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
-    wVersionRequested = MAKEWORD(2, 2);
-
-    err = WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-    if (err != 0)
-        LogToolmodeWarning("Could not find a suitable WinSock DLL. Editor will not be available");
-
-    return err == 0;
+    return WSAStartup(wVersionRequested, &wsaData) == 0;
 }
 
-bool TcpSocket::RequestPlatformSocket()
+bool Ether::Toolmode::TcpSocket::RequestPlatformSocket()
 {
-    if ((m_SocketFd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
-
-    {
-        LogToolmodeWarning("Failed to create a network socket for IPC (%d). Editor will not be available", WSAGetLastError());
-        return false;
-    }
-    
-    return true;
+    return (m_SocketFd = socket(AF_INET, SOCK_STREAM, 0)) != INVALID_SOCKET;
 }
 
-bool TcpSocket::BindSocket() const
+bool Ether::Toolmode::TcpSocket::BindSocket() const
 {
-    if (bind(m_SocketFd, (struct sockaddr*)&m_Address, sizeof(m_Address)) == SOCKET_ERROR)
-    {
-        LogToolmodeWarning("Failed to bind network socket on port %d. Editor will not be available", m_Port);
-        return false;
-    }
-
-    return true;
+    return bind(m_SocketFd, (struct sockaddr*)&m_Address, sizeof(m_Address)) != SOCKET_ERROR;
 }
 
-bool TcpSocket::SetSocketListenState() const
+bool Ether::Toolmode::TcpSocket::SetSocketListenState() const
 {
-    if (listen(m_SocketFd, SOMAXCONN) == SOCKET_ERROR)
-    {
-        LogToolmodeWarning("Failed to set network socket to LISTEN state (%d). Editor will not be available", WSAGetLastError());
-        return false;
-    }
-
-    return true;
+    return listen(m_SocketFd, SOMAXCONN) != SOCKET_ERROR;
 }
 
-CommandPacketHeader TcpSocket::GetNextHeader()
+Ether::Toolmode::CommandPacketHeader Ether::Toolmode::TcpSocket::GetNextHeader()
 {
-    char headerBytes[sizeof(CommandPacketHeader)];
-    GetBytes(headerBytes, sizeof(CommandPacketHeader));
-    return *reinterpret_cast<CommandPacketHeader*>(headerBytes);
+    CommandPacketHeader commandHeader;
+    GetBytes(reinterpret_cast<char*>(&commandHeader), sizeof(CommandPacketHeader));
+    return commandHeader;
 }
 
-bool TcpSocket::GetBytes(char* bytes, const size_t numBytes)
+void Ether::Toolmode::TcpSocket::GetBytes(char* bytes, const size_t numBytes)
 {
     if (!m_HasActiveConnection)
-    {
-        LogToolmodeError("An attempt was made to read from the socket before a connection has been established");
-        return false;
-    }
+        throw std::runtime_error("An attempt was made to read from the socket before a connection has been established");
 
     char tempBuffer[MaxBufferSize];
     for (int totalReceivedBytes = 0; totalReceivedBytes < numBytes;)
@@ -186,21 +156,17 @@ bool TcpSocket::GetBytes(char* bytes, const size_t numBytes)
         memset(tempBuffer, 0, sizeof(tempBuffer));
 
         uint32_t numBytesRemaining = numBytes - totalReceivedBytes;
-        uint32_t sizeToRecv = ethMin(MaxBufferSize, numBytesRemaining);
+        uint32_t sizeToRecv = std::min(MaxBufferSize, numBytesRemaining);
         uint32_t numBytesReceived = recv(m_ActiveSocket, tempBuffer, sizeToRecv, 0);
 
         if (TCP_FAILED(numBytesReceived))
         {
             m_HasActiveConnection = false;
-            return false;
+            throw std::runtime_error("Failed to receive data from blocking recv() call");
         }
 
         memcpy(bytes + totalReceivedBytes, tempBuffer, numBytesReceived);
         totalReceivedBytes += numBytesReceived;
     }
-
-    return true;
 }
-
-ETH_NAMESPACE_END
 

@@ -37,11 +37,11 @@ void Ether::PS5::PS5Window::Hide()
 {
 }
 
-void Ether::PS5::PS5Window::SetClientSize(ethVector2u size)
+void Ether::PS5::PS5Window::SetClientSize(const ethVector2u& size)
 {
 }
 
-void Ether::PS5::PS5Window::SetClientPosition(ethVector2u position)
+void Ether::PS5::PS5Window::SetClientPosition(const ethVector2u& position)
 {
 }
 
@@ -63,6 +63,11 @@ void Ether::PS5::PS5Window::PlatformMessageLoop(std::function<void()> engineUpda
     {
         engineUpdateCallback();
     }
+}
+
+void Ether::PS5::PS5Window::ProcessPlatformMessages()
+{
+
 }
 
 #endif  // ETH_PLATFORM_PS5

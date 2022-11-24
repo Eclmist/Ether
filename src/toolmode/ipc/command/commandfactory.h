@@ -19,24 +19,25 @@
 
 #pragma once
 
-#include "command.h"
+#include "toolmode/pch.h"
+#include "toolmode/ipc/command/command.h"
 
-ETH_NAMESPACE_BEGIN
-
-class CommandFactory
+namespace Ether::Toolmode
 {
-public:
-    CommandFactory();
-    ~CommandFactory() = default;
+    class CommandFactory
+    {
+    public:
+        CommandFactory();
+        ~CommandFactory() = default;
 
-    std::unique_ptr<Command> CreateCommand(const std::string& commandID, const CommandData& data) const;
+        std::unique_ptr<Command> CreateCommand(const std::string& commandID, const CommandData* command) const;
 
-private:
-    using FactoryFunction = std::function<std::unique_ptr<Command>(const CommandData& command)>;
-    void RegisterCommand(const std::string& commandID, FactoryFunction factoryFunction);
+    private:
+        using FactoryFunction = std::function<std::unique_ptr<Command>(const CommandData* data)>;
+        void RegisterCommand(const std::string& commandID, FactoryFunction factoryFunction);
 
-private:
-    std::unordered_map<std::string, FactoryFunction> m_FactoryMap;
-};
+    private:
+        std::unordered_map<std::string, FactoryFunction> m_FactoryMap;
+    };
+}
 
-ETH_NAMESPACE_END

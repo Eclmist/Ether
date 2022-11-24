@@ -18,27 +18,28 @@
 */
 
 #pragma once
+
+#include "toolmode/pch.h"
 #include "parser/json/json.hpp"
 
-ETH_NAMESPACE_BEGIN
-
-class Field
+namespace Ether::Toolmode
 {
-public:
-    Field(std::string name = "Unnamed Property")
-        : m_Name(name)
+    class Field
     {
-    }
+    public:
+        Field(const std::string& name = "Unnamed Property")
+            : m_Name(name)
+        {
+        }
 
-    virtual std::string GetData() = 0;
-    virtual void SetData(const nlohmann::json& data) = 0;
+        virtual std::string GetData() = 0;
+        virtual void SetData(const nlohmann::json& data) = 0;
 
-public:
-    inline std::string GetName() const { return m_Name; }
+    public:
+        inline const std::string& GetName() const { return m_Name; }
 
-protected:
-    std::string m_Name;
-};
-
-ETH_NAMESPACE_END
+    protected:
+        std::string m_Name;
+    };
+}
 

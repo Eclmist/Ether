@@ -19,22 +19,19 @@
 
 #pragma once
 
+#include "toolmode/pch.h"
 #include "toolmode/ipc/command/command.h"
-#include "toolmode/ipc/command/sendablecommand.h"
 
-ETH_NAMESPACE_BEGIN
-
-class SetComponentCommand : public Command
+namespace Ether::Toolmode
 {
-public:
-    SetComponentCommand(const CommandData& data);
-    ~SetComponentCommand() = default;
+    class IncomingCommand : public Command
+    {
+    public:
+        IncomingCommand() = default;
+        virtual ~IncomingCommand() = 0;
 
-    void Execute() override;
-
-private:
-    CommandData m_ComponentData;
-};
-
-ETH_NAMESPACE_END
+    public:
+        virtual void Execute() = 0;
+    };
+}
 

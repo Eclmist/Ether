@@ -21,37 +21,47 @@
 
 #include "toolmode/ipc/tcpsocket.h"
 #include "toolmode/ipc/command/commandfactory.h"
+#include "toolmode/ipc/command/incomingcommand.h"
+#include "toolmode/ipc/command/outgoingcommand.h"
+#include <queue>
 
-ETH_NAMESPACE_BEGIN
-
-class IpcManager : public NonCopyable
+namespace Ether::Toolmode
 {
-public:
-    IpcManager();
-    ~IpcManager();
+    class IpcManager : public Singleton<IpcManager>
+    {
+    public:
+        IpcManager();
+        ~IpcManager();
 
-    void ProcessPendingCommands();
-    void QueueCommand(std::shared_ptr<Command> command);
-    void QueueMessage(const std::string& message);
-    void Disconnect();
+    public:
+        inline bool HasConnection() const { return m_Socket->HasActiveConnection(); }
 
-private:
-    void ClearMessageQueue();
-    void IncomingMessageHandler();
-    void OutgoingMessageHandler();
-    std::shared_ptr<Command> ParseMessage(const std::string& rawRequest) const;
+    public:
+        void QueueIncomingCommand(std::shared_ptr<IncomingCommand>&& incomingCommand);
+        void QueueOutgoingCommand(std::shared_ptr<OutgoingCommand>&& outgoingCommand);
+        void ProcessIncomingCommands();
+        void ProcessOutgoingCommands();
 
-private:
-    CommandFactory m_CommandFactory;
-    std::unique_ptr<TcpSocket> m_Socket;
+        void Connect();
+        void Disconnect();
 
-    std::thread m_IncomingMessageHandlerThread;
-    std::thread m_OutgoingMessageHandlerThread;
+    private:
+        void ClearCommandQueues();
+        std::shared_ptr<IncomingCommand> ParseMessage(const std::string& rawRequest) const;
 
-    std::mutex m_CommandMutex, m_MessageMutex;
-    std::queue<std::shared_ptr<Command>> m_CommandQueue;
-    std::queue<std::string> m_OutgoingMessageQueue;
-};
+    private:
+        void CommandListenerThread();
+
+    private:
+        CommandFactory m_CommandFactory;
+        std::unique_ptr<TcpSocket> m_Socket;
+
+        std::queue<std::shared_ptr<IncomingCommand>> m_IncommingCommandQueue;
+        std::queue<std::shared_ptr<OutgoingCommand>> m_OutgoingCommandQueue;
+
+        std::mutex m_IncomingCommandQueueMutex;
+        std::thread m_IncomingCommandListener;
+    };
+}
  
-ETH_NAMESPACE_END
 

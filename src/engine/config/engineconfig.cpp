@@ -35,23 +35,23 @@ void Ether::EngineConfig::SetClientTitle(const std::string& title)
     Engine::GetMainWindow().SetTitle(title);
 }
 
-void Ether::EngineConfig::SetClientSize(ethVector2u clientSize)
+void Ether::EngineConfig::SetClientSize(const ethVector2u& clientSize)
 {
     if (m_ClientSize == clientSize)
         return;
 
     m_ClientSize = clientSize;
-    Engine::GetMainWindow().SetClientSize(clientSize);
+    //Engine::GetMainWindow().SetClientSize(clientSize);
     Graphics::Core::GetGraphicsDisplay().ResizeBuffers(clientSize);
 }
 
-void Ether::EngineConfig::SetClientPosition(ethVector2u clientPosition)
+void Ether::EngineConfig::SetClientPosition(const ethVector2u& clientPosition)
 {
     if (m_ClientPosition == clientPosition)
         return;
 
     m_ClientPosition = clientPosition;
-    Engine::GetMainWindow().SetClientPosition(clientPosition);
+    //Engine::GetMainWindow().SetClientPosition(clientPosition);
 }
 
 

@@ -25,28 +25,32 @@
 #define AssertWin32(cond, msg, ...) if (!(cond)) { LogWin32Fatal(msg, ##__VA_ARGS__); assert(false && msg); }
 
 #ifdef ETH_TOOLMODE
-#define AssertToolmode(cond, msg, ...) if (!(cond)) { LogToolmodeFatal(msg, ##__VA_ARGS__); assert(false && msg); }
+    #define AssertToolmode(cond, msg, ...) if (!(cond)) { LogToolmodeFatal(msg, ##__VA_ARGS__); assert(false && msg); }
 #endif
 
 #if defined(ETH_ENGINE) && defined(ETH_TOOLMODE)
-static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the same project");
+    static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the same project");
 #endif
 
 #ifdef ETH_ENGINE
-#define ETH_ENGINEONLY(code) code
-#define ETH_ENGINE_OR_TOOL(engine, tool) engine
+    #define ETH_ENGINEONLY(code) code
+    #define ETH_ENGINE_OR_TOOL(engine, tool) engine
 #else
-#define ETH_ENGINEONLY(code) 
+    #define ETH_ENGINEONLY(code) 
 #endif
 
 #ifdef ETH_TOOLMODE
-#define ETH_TOOLONLY(code) code
-#define ETH_ENGINE_OR_TOOL(engine, tool) tool
+    #define ETH_TOOLONLY(code) code
+    #define ETH_ENGINE_OR_TOOL(engine, tool) tool
 #else
-#define ETH_TOOLONLY(code)
+    #define ETH_TOOLONLY(code)
 #endif
 
 #if defined(ETH_ENGINE)
+    #define ETH_ENGINE_DLL __declspec(dllexport)
+    #define ETH_GRAPHIC_DLL __declspec(dllimport)
+    #define ETH_COMMON_DLL __declspec(dllimport)
+#elif defined (ETH_TOOLMODE)
     #define ETH_ENGINE_DLL __declspec(dllexport)
     #define ETH_GRAPHIC_DLL __declspec(dllimport)
     #define ETH_COMMON_DLL __declspec(dllimport)
@@ -85,9 +89,9 @@ static_assert(false, "ETH_ENGINE and ETH_TOOLMODE cannot both be defined for the
 #define LogWin32Fatal(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Fatal, Ether::LogType::Win32, msg, ##__VA_ARGS__)
 
 #ifdef ETH_TOOLMODE
-#define LogToolmodeInfo(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Info, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
-#define LogToolmodeWarning(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Warning, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
-#define LogToolmodeError(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Error, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
-#define LogToolmodeFatal(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Fatal, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+    #define LogToolmodeInfo(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Info, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+    #define LogToolmodeWarning(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Warning, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+    #define LogToolmodeError(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Error, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
+    #define LogToolmodeFatal(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Fatal, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
 #endif
 

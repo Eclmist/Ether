@@ -19,43 +19,43 @@
 
 #pragma once
 
-#include "field.h"
+#include "toolmode/pch.h"
+#include "toolmode/property/field.h"
 
-ETH_NAMESPACE_BEGIN
-
-class Vector4Field : public Field
+namespace Ether::Toolmode
 {
-public:
-    Vector4Field(std::string name, ethVector4& data)
-        : Field(name)
-        , m_Data(&data)
+    class Vector4Field : public Field
     {
-    }
-    ~Vector4Field() = default;
+    public:
+        Vector4Field(const std::string& name, const ethVector4& data)
+            : Field(name)
+            , m_Data(&data)
+        {
+        }
+        ~Vector4Field() = default;
 
-    std::string GetData() override
-    {
-        nlohmann::json data;
-        data["name"] = m_Name;
-        data["type"] = "Vector4";
-        data["values"][0] = m_Data->x;
-        data["values"][1] = m_Data->y;
-        data["values"][2] = m_Data->z;
-        data["values"][3] = m_Data->w;
-        return data.dump();
-    }
+        std::string GetData() override
+        {
+            nlohmann::json data;
+            data["name"] = m_Name;
+            data["type"] = "Vector4";
+            data["values"][0] = m_Data->x;
+            data["values"][1] = m_Data->y;
+            data["values"][2] = m_Data->z;
+            data["values"][3] = m_Data->w;
+            return data.dump();
+        }
 
-    void SetData(const nlohmann::json& data) override
-    {
-        m_Data->x = data["values"][0];
-        m_Data->y = data["values"][1];
-        m_Data->z = data["values"][2];
-        m_Data->w = data["values"][3];
-    }
+        void SetData(const nlohmann::json& data) override
+        {
+            m_Data->x = data["values"][0];
+            m_Data->y = data["values"][1];
+            m_Data->z = data["values"][2];
+            m_Data->w = data["values"][3];
+        }
 
-private:
-    ethVector4* const m_Data;
-};
-
-ETH_NAMESPACE_END
+    private:
+        ethVector4* const m_Data;
+    };
+}
 

@@ -19,19 +19,18 @@
 
 #pragma once
 
-#include "command.h"
-#include "sendablecommand.h"
+#include "toolmode/pch.h"
+#include "toolmode/ipc/command/incomingcommand.h"
 
-ETH_NAMESPACE_BEGIN
-
-class DetachCommand : public Command
+namespace Ether::Toolmode
 {
-public:
-    DetachCommand(const CommandData& data);
-    ~DetachCommand() = default;
+    class DetachCommand : public IncomingCommand
+    {
+    public:
+        DetachCommand(const CommandData* data = nullptr);
+        ~DetachCommand() override = default;
 
-    void Execute() override;
-};
-
-ETH_NAMESPACE_END
+        void Execute() override;
+    };
+}
 

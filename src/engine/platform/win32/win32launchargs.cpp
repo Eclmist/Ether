@@ -30,6 +30,7 @@ Ether::Win32::Win32LaunchArgs::Win32LaunchArgs()
     // TODO: Get windows command line args 
     m_LaunchArgs.emplace_back("-sourceshaders", "");
     m_LaunchArgs.emplace_back("-usevalidationlayer", "");
+    m_LaunchArgs.emplace_back("-toolmodeport", "2134");
 }
 
 #endif // ETH_PLATFORM_WIN32

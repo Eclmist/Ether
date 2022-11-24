@@ -19,27 +19,18 @@
 
 #pragma once
 
-ETH_NAMESPACE_BEGIN
+#include "toolmode/pch.h"
+#include "toolmode/ipc/command/command.h"
 
-class CompiledTexture;
-
-class Texture : public Asset
+namespace Ether::Toolmode
 {
-public:
-    Texture() = default;
-    ~Texture() = default;
+    class OutgoingCommand : public Command
+    {
+    public:
+        OutgoingCommand() = default;
+        virtual ~OutgoingCommand() = 0;
 
-private:
-    friend class ImageFileParser;
-    friend class HdrFileParser;
-    friend class CompiledTexture;
-
-    uint32_t m_Width;
-    uint32_t m_Height;
-    uint32_t m_Depth;
-    RhiFormat m_Format;
-    unsigned char* m_Data;
-};
-
-ETH_NAMESPACE_END
+        virtual std::string GetSendableData() const = 0;
+    };
+}
 

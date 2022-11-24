@@ -23,7 +23,7 @@
 
 namespace Ether
 {
-    class CommandLineOptions
+    class ETH_ENGINE_DLL CommandLineOptions
     {
     public:
         CommandLineOptions();
@@ -33,12 +33,18 @@ namespace Ether
         inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
         inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
 
+    public:
+        ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
+
     private:
         void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
 
     private:
         bool m_UseSourceShaders;
         bool m_UseValidationLayer;
+
+    private:
+        ETH_TOOLONLY(uint16_t m_ToolmodePort);
     };
 }
 

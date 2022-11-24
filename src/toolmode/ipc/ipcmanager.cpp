@@ -17,131 +17,119 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ipcmanager.h"
+#include "toolmode/ipc/ipcmanager.h"
+#include "toolmode/ipc/command/commandfactory.h"
+#include "toolmode/ipc/command/detachcommand.h"
 #include "parser/json/json.hpp"
 
-#include "command/commandfactory.h"
-
-ETH_NAMESPACE_BEGIN
-
-IpcManager::IpcManager()
+Ether::Toolmode::IpcManager::IpcManager()
 {
     LogToolmodeInfo("Initializing IPC Manager");
-    m_Socket = std::make_unique<TcpSocket>();
-    m_IncomingMessageHandlerThread = std::thread(&IpcManager::IncomingMessageHandler, this);
-    m_OutgoingMessageHandlerThread = std::thread(&IpcManager::OutgoingMessageHandler, this);
-
-    SetThreadPriority(m_IncomingMessageHandlerThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
-    SetThreadPriority(m_OutgoingMessageHandlerThread.native_handle(), THREAD_PRIORITY_BELOW_NORMAL);
+    m_IncomingCommandListener = std::thread(&IpcManager::CommandListenerThread, this);
 }
 
-IpcManager::~IpcManager()
+Ether::Toolmode::IpcManager::~IpcManager()
 {
-    m_IncomingMessageHandlerThread.join();
-    m_OutgoingMessageHandlerThread.join();
+    m_IncomingCommandListener.join();
 }
 
-void IpcManager::ProcessPendingCommands()
+void Ether::Toolmode::IpcManager::QueueIncomingCommand(std::shared_ptr<IncomingCommand>&& incomingCommand)
 {
-    std::queue<std::shared_ptr<Command>> commandQueueCopy;
-
-    {
-        std::lock_guard<std::mutex> guard(m_CommandMutex);
-
-        // Make a copy and flush the real queue because more commands may be added
-        // by command.execute(), usually because adding response commands
-        while (!m_CommandQueue.empty())
-        {
-            commandQueueCopy.emplace(m_CommandQueue.front());
-            m_CommandQueue.pop();
-        }
-    }
-
-    while (!commandQueueCopy.empty())
-    {
-        commandQueueCopy.front()->Execute();
-        commandQueueCopy.pop();
-    }
-}
-
-void IpcManager::QueueCommand(std::shared_ptr<Command> command)
-{
-    if (command == nullptr)
+    if (incomingCommand == nullptr)
         return;
 
-    std::lock_guard<std::mutex> guard(m_CommandMutex);
-    m_CommandQueue.push(command);
+    std::lock_guard<std::mutex> lock(m_IncomingCommandQueueMutex);
+    m_IncommingCommandQueue.emplace(std::move(incomingCommand));
 }
 
-void IpcManager::QueueMessage(const std::string& message)
+void Ether::Toolmode::IpcManager::QueueOutgoingCommand(std::shared_ptr<OutgoingCommand>&& outgoingCommand)
 {
-    std::lock_guard<std::mutex> guard(m_MessageMutex);
-    m_OutgoingMessageQueue.push(message);
+    if (outgoingCommand == nullptr)
+        return;
+
+    m_OutgoingCommandQueue.emplace(std::move(outgoingCommand));
 }
 
-void IpcManager::Disconnect()
+void Ether::Toolmode::IpcManager::ProcessIncomingCommands()
 {
-    ClearMessageQueue();
-    m_Socket->Close();
-    m_Socket = std::make_unique<TcpSocket>();
-}
+    std::lock_guard<std::mutex> lock(m_IncomingCommandQueueMutex);
 
-void IpcManager::ClearMessageQueue()
-{
-    std::lock_guard<std::mutex> guard(m_MessageMutex);
-    while (!m_OutgoingMessageQueue.empty())
-        m_OutgoingMessageQueue.pop();
-}
-
-void IpcManager::IncomingMessageHandler()
-{
-    ETH_MARKER_THREAD("Incoming IPC Handler");
-
-    while (true)
+    while (!m_IncommingCommandQueue.empty())
     {
-        if (!m_Socket->HasActiveConnection())
+        m_IncommingCommandQueue.front()->Execute();
+
+        // Queue has to be checked again because the previous command might have been a detach command
+        // which will clear this queue.
+        if (!m_IncommingCommandQueue.empty())
+            m_IncommingCommandQueue.pop();
+    }
+}
+
+void Ether::Toolmode::IpcManager::ProcessOutgoingCommands()
+{
+    if (m_Socket == nullptr)
+        return;
+
+    if (!m_Socket->HasActiveConnection())
+        return;
+
+    while (!m_OutgoingCommandQueue.empty())
+    {
+        try
         {
-            ClearMessageQueue();
-            EngineCore::GetMainWindow().SetParentWindowHandle(nullptr);
-            EngineCore::GetMainWindow().Hide();
-            LogToolmodeInfo("Waiting for incoming editor connection");
-            m_Socket->WaitForConnection();
+            m_Socket->Send(m_OutgoingCommandQueue.front()->GetSendableData());
+        }
+        catch(std::runtime_error err)
+        {
+            LogToolmodeError(err.what());
+            QueueIncomingCommand(std::make_unique<DetachCommand>(nullptr));
+            Disconnect();
         }
 
-        std::string next = m_Socket->GetNext();
-        std::shared_ptr<Command> request = ParseMessage(next);
-        QueueCommand(request);
+        m_OutgoingCommandQueue.pop();
     }
 }
 
-void IpcManager::OutgoingMessageHandler()
+void Ether::Toolmode::IpcManager::Connect()
 {
-    ETH_MARKER_THREAD("Outgoing IPC Handler");
+    LogToolmodeInfo("Waiting for incoming editor connection");
 
-    while (true)
+    try
     {
-        if (!m_Socket->HasActiveConnection())
-            continue;
-
-        std::lock_guard<std::mutex> guard(m_MessageMutex);
-
-        if (m_OutgoingMessageQueue.empty())
-            continue;
-
-        m_Socket->Send(m_OutgoingMessageQueue.front());
-        m_OutgoingMessageQueue.pop();
+        m_Socket = std::make_unique<TcpSocket>();
+        m_Socket->WaitForConnection();
+    }
+    catch (std::runtime_error err)
+    {
+        LogToolmodeError(err.what());
     }
 }
 
-std::shared_ptr<Command> IpcManager::ParseMessage(const std::string& rawRequest) const
+void Ether::Toolmode::IpcManager::Disconnect()
+{
+    ClearCommandQueues();
+    m_Socket->Close();
+    m_Socket.reset();
+}
+
+void Ether::Toolmode::IpcManager::ClearCommandQueues()
+{
+    m_IncommingCommandQueue = std::queue<std::shared_ptr<IncomingCommand>>();
+    m_OutgoingCommandQueue = std::queue<std::shared_ptr<OutgoingCommand>>();
+}
+
+std::shared_ptr<Ether::Toolmode::IncomingCommand> Ether::Toolmode::IpcManager::ParseMessage(const std::string& rawRequest) const
 {
     try 
     {
         CommandData data = CommandData::parse(rawRequest);
         std::string commandID = data["command"];
-        //LogToolmodeInfo("Received %s command", commandID.c_str());
+        LogToolmodeInfo("Received %s command", commandID.c_str());
 
-        return std::move(m_CommandFactory.CreateCommand(commandID, data));
+        std::shared_ptr<Command> command = m_CommandFactory.CreateCommand(commandID, &data);
+        std::shared_ptr<IncomingCommand> bp = std::dynamic_pointer_cast<IncomingCommand>(command);
+
+        return bp;
     }
     catch (...) 
     {
@@ -151,5 +139,25 @@ std::shared_ptr<Command> IpcManager::ParseMessage(const std::string& rawRequest)
     return nullptr;
 }
 
-ETH_NAMESPACE_END
+void Ether::Toolmode::IpcManager::CommandListenerThread()
+{
+    while (true)
+    {
+        if (m_Socket == nullptr)
+        {
+            Connect();
+        }
 
+        try
+        {
+            std::string nextFullCommand = m_Socket->GetNext();
+            QueueIncomingCommand(ParseMessage(nextFullCommand));
+        }
+        catch (std::runtime_error err)
+        {
+            LogToolmodeError(err.what());
+            QueueIncomingCommand(std::make_unique<DetachCommand>(nullptr));
+            Disconnect();
+        }
+    }
+}

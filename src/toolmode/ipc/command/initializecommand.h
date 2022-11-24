@@ -19,34 +19,34 @@
 
 #pragma once
 
-#include "command.h"
-#include "sendablecommand.h"
+#include "toolmode/pch.h"
+#include "toolmode/ipc/command/incomingcommand.h"
+#include "toolmode/ipc/command/outgoingcommand.h"
 
-ETH_NAMESPACE_BEGIN
-
-class InitializeCommand : public Command
+namespace Ether::Toolmode
 {
-public:
-    InitializeCommand(const CommandData& data);
-    ~InitializeCommand() = default;
+    class InitializeCommand : public IncomingCommand
+    {
+    public:
+        InitializeCommand(const CommandData* data = nullptr);
+        ~InitializeCommand() override = default;
 
-    void Execute() override;
+        void Execute() override;
 
-private:
-    void* m_ParentWindowHandle;
-};
+    private:
+        void* m_ParentWindowHandle;
+    };
 
-class InitCommandResponse : public SendableCommand
-{
-public:
-    InitCommandResponse(void* engineWindowHandle);
-    ~InitCommandResponse() = default;
+    class InitCommandResponse : public OutgoingCommand
+    {
+    public:
+        InitCommandResponse(void* engineWindowHandle);
+        ~InitCommandResponse() = default;
 
-    std::string GetSendableData() const override;
+        std::string GetSendableData() const override;
 
-private:
-    void* m_EngineWindowHandle;
-};
-
-ETH_NAMESPACE_END
+    private:
+        void* m_EngineWindowHandle;
+    };
+}
 

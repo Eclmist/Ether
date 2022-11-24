@@ -72,10 +72,8 @@ std::string Ether::LogEntry::GetLogTypePrefix() const
         return "[ Graphics ]";
     case LogType::Win32:
         return "[ Platform ]";
-#ifdef ETH_TOOLMODE
     case LogType::Toolmode:
         return "[ Toolmode ]";
-#endif
     case LogType::None:
     default:
         return "[  Engine  ]";

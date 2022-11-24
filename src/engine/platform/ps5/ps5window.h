@@ -33,14 +33,15 @@ namespace Ether::PS5
         void Show() override;
         void Hide() override;
 
-        void SetClientSize(ethVector2u size) override;
-        void SetClientPosition(ethVector2u position) override;
+        void SetClientSize(const ethVector2u& size) override;
+        void SetClientPosition(const ethVector2u& position) override;
         void SetFullscreen(bool isFullscreen) override;
         void SetParentWindowHandle(void* parentHandle) override;
         void SetTitle(const std::string& title) override;
 
     public:
-        void PlatformMessageLoop(std::function<void()> engineUpdateCallback) override;
+        void PlatformMessageLoop() override;
+        void ProcessPlatformMessages() override;
     };
 }
 

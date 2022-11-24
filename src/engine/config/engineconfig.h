@@ -36,8 +36,8 @@ namespace Ether
         inline ethVector2u GetClientPosition() const { return m_ClientPosition; }
 
         void SetClientTitle(const std::string& title);
-        void SetClientSize(ethVector2u clientSize);
-        void SetClientPosition(ethVector2u clientPosition);
+        void SetClientSize(const ethVector2u& clientSize);
+        void SetClientPosition(const ethVector2u& clientPosition);
 
     private:
         std::string m_ClientTitle;

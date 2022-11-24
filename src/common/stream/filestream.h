@@ -67,9 +67,9 @@ namespace Ether
         OFileStream& operator<<(const unsigned char v) override final;
         OFileStream& operator<<(const std::string& v) override final;
         OFileStream& operator<<(const bool v) override final;
-        OFileStream& operator<<(const ethVector2 v) override final;
-        OFileStream& operator<<(const ethVector3 v) override final;
-        OFileStream& operator<<(const ethVector4 v) override final;
+        OFileStream& operator<<(const ethVector2& v) override final;
+        OFileStream& operator<<(const ethVector3& v) override final;
+        OFileStream& operator<<(const ethVector4& v) override final;
 
     private:
         std::ofstream m_File;

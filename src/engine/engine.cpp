@@ -53,26 +53,35 @@ void Ether::Engine::LoadApplication(IApplicationBase& app)
 {
     m_MainApplication = &app;
     m_MainApplication->Initialize();
+    m_MainApplication->LoadContent();
 }
 
 void Ether::Engine::Run()
 {
-    m_MainWindow->PlatformMessageLoop(std::bind(&Engine::MainEngineThread, this));
+    m_MainEngineThread = std::thread(&Engine::MainEngineThread, this);
+    m_MainWindow->PlatformMessageLoop();
+    m_MainEngineThread.join();
 }
 
 void Ether::Engine::MainEngineThread()
 {
-    ETH_MARKER_FRAME("Update");
-    Time::NewFrame();
-    Input::NewFrame();
-
+    while (true)
     {
-        ETH_MARKER_EVENT("Game Application - OnUpdate");
-        m_MainApplication->OnUpdate({}); // No useful args for now
-    }
+        ETH_MARKER_FRAME("Update");
+        if (!m_MainWindow->ProcessPlatformMessages())
+            break;
 
-    Input::EndFrame();
-    Graphics::Core::Update();
+        Time::NewFrame();
+        Input::NewFrame();
+
+        {
+            ETH_MARKER_EVENT("Game Application - OnUpdate");
+            m_MainApplication->OnUpdate({}); // No useful args for now
+        }
+
+        Input::EndFrame();
+        Graphics::Core::Update();
+    }
 }
 
 

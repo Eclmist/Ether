@@ -202,14 +202,14 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const bool value)
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector2 v)
+Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector2& v)
 {
     m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
     m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector3 v)
+Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector3& v)
 {
     m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
     m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
@@ -217,7 +217,7 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector3 v)
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector4 v)
+Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector4& v)
 {
     m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
     m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));

@@ -36,14 +36,15 @@ namespace Ether::Win32
         void Show() override;
         void Hide() override;
 
-        void SetClientSize(ethVector2u size) override;
-        void SetClientPosition(ethVector2u pos) override;
+        void SetClientSize(const ethVector2u& size) override;
+        void SetClientPosition(const ethVector2u& pos) override;
         void SetFullscreen(bool isFullscreen) override;
         void SetTitle(const std::string& title) override;
         void SetParentWindowHandle(void* parentHandle) override;
 
     public:
-        void PlatformMessageLoop(std::function<void()> engineUpdateCallback) override;
+        void PlatformMessageLoop() override;
+        bool ProcessPlatformMessages() override;
 
     public:
         void ToWindowRect(Rect& clientRect);
@@ -53,10 +54,11 @@ namespace Ether::Win32
         Rect GetCurrentWindowRect();
         void CentralizeWindow();
         void RegisterWindowClass() const;
-        static LRESULT CALLBACK WndProcInternal(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+        static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     private:
-        bool m_QuitMessageReceived;
+        std::atomic_uint8_t m_MessageQueueFrontBufferIdx = 0;
+        std::queue<MSG> m_Win32MessageQueue[2];
     };
 }
 

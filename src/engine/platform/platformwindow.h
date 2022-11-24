@@ -34,8 +34,8 @@ namespace Ether
         virtual void Show() = 0;
         virtual void Hide() = 0;
 
-        virtual void SetClientSize(ethVector2u size) = 0;
-        virtual void SetClientPosition(ethVector2u pos) = 0;
+        virtual void SetClientSize(const ethVector2u& size) = 0;
+        virtual void SetClientPosition(const ethVector2u& pos) = 0;
         virtual void SetFullscreen(bool isFullscreen) = 0;
         virtual void SetParentWindowHandle(void* parentHandle) = 0;
         virtual void SetTitle(const std::string& title) = 0;
@@ -46,7 +46,8 @@ namespace Ether
         inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
 
     public:
-        virtual void PlatformMessageLoop(std::function<void()> engineUpdateCallback) = 0;
+        virtual void PlatformMessageLoop() = 0;
+        virtual bool ProcessPlatformMessages() = 0;
 
     protected:
         bool m_IsFullscreen;

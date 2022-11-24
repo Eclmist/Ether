@@ -56,14 +56,13 @@ namespace Ether
         void MainEngineThread();
 
     private:
-        std::atomic_bool m_ShouldExit;
-        std::unique_ptr<PlatformWindow> m_MainWindow;
+        bool m_IsInitialized = false;
+        std::thread m_MainEngineThread;
 
+        std::unique_ptr<PlatformWindow> m_MainWindow;
         IApplicationBase* m_MainApplication = nullptr;
         EngineConfig m_EngineConfig;
         CommandLineOptions m_CommandLineOptions;
-
-        bool m_IsInitialized = false;
     };
 }
 

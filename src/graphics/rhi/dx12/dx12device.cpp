@@ -177,7 +177,7 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
 
     const auto dx12CommandQueue = dynamic_cast<Dx12CommandQueue*>(desc.m_CommandQueue);
 
-    wrl::ComPtr<IDXGIFactory4> dxgiFactory = ((Dx12Module&)Core::GetModule()).m_DxgiFactory;
+    wrl::ComPtr<IDXGIFactory4> dxgiFactory = dynamic_cast<Dx12Module&>(Core::GetModule()).m_DxgiFactory;
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
     auto creationDesc = Translate(desc);
     HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(

@@ -36,9 +36,7 @@ namespace Ether
         Engine,
         Graphics,
         Win32,
-#ifdef ETH_TOOLMODE
         Toolmode,
-#endif
         None,
     };
 

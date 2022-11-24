@@ -79,7 +79,7 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormats(uint32_t num
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetRootSignature(RhiRootSignature& rootSignature)
 {
-    m_Dx12PsoDesc.pRootSignature = ((Dx12RootSignature&)rootSignature).m_RootSignature.Get();
+    m_Dx12PsoDesc.pRootSignature = static_cast<Dx12RootSignature&>(rootSignature).m_RootSignature.Get();
 }
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)

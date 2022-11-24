@@ -40,11 +40,11 @@ namespace Ether::Graphics
 
         //inline void SetViewMatrix(ethMatrix4x4 viewMatrix) { m_ViewMatrix = viewMatrix; }
         //inline void SetProjectionMatrix(ethMatrix4x4 projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
-        //inline void SetEyeDirection(ethVector4 eyeDirection) { m_EyeDirection = eyeDirection; }
-        //inline void SetEyePosition(ethVector4 eyePosition) { m_EyePosition = eyePosition; }
+        //inline void SetEyeDirection(const ethVector4& eyeDirection) { m_EyeDirection = eyeDirection; }
+        //inline void SetEyePosition(const ethVector4& eyePosition) { m_EyePosition = eyePosition; }
 
     public:
-        void ClearColor(RhiRenderTargetView& rtv, ethVector4 color = { 0, 0, 0, 0 });
+        void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
         //void ClearDepthStencil(RhiDepthStencilViewHandle depthTex, float depth, float stencil);
 
         void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);

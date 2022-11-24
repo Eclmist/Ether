@@ -21,17 +21,15 @@
 
 #include "parser/json/json.hpp"
 
-ETH_NAMESPACE_BEGIN
-
-using CommandData = nlohmann::json;
-
-class Command
+namespace Ether::Toolmode
 {
-public:
-    Command() = default;
-    ~Command() = default;
+    using CommandData = nlohmann::json;
 
-    virtual void Execute() = 0;
-};
+    class Command
+    {
+    public:
+        Command() = default;
+        virtual ~Command() = default;
+    };
+}
 
-ETH_NAMESPACE_END

@@ -21,7 +21,7 @@
 #                     PROJECT DEFINITIONS & PROPERTIES                        #
 # =========================================================================== #
 
-set(ETHER_TOOLMODE Toolmode)
+set(ETHER_TOOLMODE Toolmode.Headless)
 
 # =========================================================================== #
 #                        ADD SOURCE FILES TO PROJECT                          #
@@ -50,8 +50,9 @@ target_precompile_headers(${ETHER_TOOLMODE} PRIVATE "pch.h")
 # =========================================================================== #
 
 target_link_libraries(${ETHER_TOOLMODE}
-	ws2_32.lib
-    ${ETHER_ENGINE}
-    ${ETHER_COMMON}
+    ws2_32.lib
+    Ether.Toolmode
 )
+
+set_target_properties(${ETHER_TOOLMODE} PROPERTIES LINK_FLAGS "${CMAKE_SOURCE_DIR}/resource/Ether.res")
 

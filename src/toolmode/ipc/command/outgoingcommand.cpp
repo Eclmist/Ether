@@ -17,9 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "fileparser.h"
+#include "toolmode/ipc/command/outgoingcommand.h"
+#include "toolmode/ipc/ipcmanager.h"
 
-ETH_NAMESPACE_BEGIN
-
-ETH_NAMESPACE_END
-
+Ether::Toolmode::OutgoingCommand::~OutgoingCommand()
+{
+}

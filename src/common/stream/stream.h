@@ -64,9 +64,9 @@ namespace Ether
         virtual OStream& operator<<(const unsigned char v) = 0;
         virtual OStream& operator<<(const std::string& v) = 0;
         virtual OStream& operator<<(const bool v) = 0;
-        virtual OStream& operator<<(const ethVector2 v) = 0;
-        virtual OStream& operator<<(const ethVector3 v) = 0;
-        virtual OStream& operator<<(const ethVector4 v) = 0;
+        virtual OStream& operator<<(const ethVector2& v) = 0;
+        virtual OStream& operator<<(const ethVector3& v) = 0;
+        virtual OStream& operator<<(const ethVector4& v) = 0;
     };
 }
 

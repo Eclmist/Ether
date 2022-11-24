@@ -17,20 +17,17 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "detachcommand.h"
+#include "toolmode/ipc/command/detachcommand.h"
+#include "toolmode/ipc/ipcmanager.h"
 
-ETH_NAMESPACE_BEGIN
-
-DetachCommand::DetachCommand(const CommandData& data)
+Ether::Toolmode::DetachCommand::DetachCommand(const CommandData* data)
 {
 }
 
-void DetachCommand::Execute()
+void Ether::Toolmode::DetachCommand::Execute()
 {
-    EngineCore::GetMainWindow().SetParentWindowHandle(nullptr);
-    EngineCore::GetMainWindow().Hide();
-    //EngineCore::GetIpcManager().Disconnect();
+    LogToolmodeInfo("Detaching from editor");
+    SetParentWindow(nullptr);
+    HideWindow();
 }
-
-ETH_NAMESPACE_END
 

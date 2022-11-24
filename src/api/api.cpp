@@ -29,7 +29,8 @@ int Ether::Start(IApplicationBase& app)
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
     Engine::Instance().Initialize();
     Engine::Instance().LoadApplication(app);
-    Engine::Instance().GetMainWindow().Show();
+    ETH_ENGINEONLY(Engine::Instance().GetMainWindow().Show());
+
     Engine::Instance().Run();
 
     LogInfo("Shutting down Ether"); 
@@ -48,6 +49,11 @@ void Ether::Shutdown()
 #endif
 }
 
+Ether::CommandLineOptions& Ether::GetCommandLineOptions()
+{
+    return Engine::GetCommandLineOptions();
+}
+
 void Ether::Client::SetClientTitle(const std::string& title)
 {
     Engine::GetEngineConfig().SetClientTitle(title);
@@ -58,7 +64,7 @@ std::string Ether::Client::GetClientTitle()
     return Engine::GetEngineConfig().GetClientName();
 }
 
-void Ether::Client::SetClientSize(ethVector2u size)
+void Ether::Client::SetClientSize(const ethVector2u& size)
 {
     Engine::GetEngineConfig().SetClientSize(size);
 }
@@ -75,5 +81,25 @@ void Ether::Client::SetFullscreen(bool enabled)
 bool Ether::Client::IsFullscreen()
 {
     return Engine::GetMainWindow().IsFullscreen();
+}
+
+void Ether::Toolmode::SetParentWindow(void* hwnd)
+{
+    Engine::GetMainWindow().SetParentWindowHandle(hwnd);
+}
+
+void* Ether::Toolmode::GetWindowHandle()
+{
+    return Engine::GetMainWindow().GetWindowHandle();
+}
+
+void Ether::Toolmode::ShowWindow()
+{
+    Engine::GetMainWindow().Show();
+}
+
+void Ether::Toolmode::HideWindow()
+{
+    Engine::GetMainWindow().Hide();
 }
 
