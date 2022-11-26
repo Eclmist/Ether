@@ -1,8 +1,5 @@
 @echo off
 
-:: ============== CLEAN UP PAST BUILD  ============== ::
-rmdir /s build\
-
 :: ============== STANDALONE CONFIG (WIN32) ============== ::
 echo Generating Visual Studio solutions for Ether
 cmake -D CONFIGURE_AS_TOOLMODE:BOOL=0 -B build\win32 -DUSE_PRECOMPILED_HEADERS=ON

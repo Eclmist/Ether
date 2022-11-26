@@ -136,6 +136,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     m_Context.TransitionResource(Core::GetGraphicsDisplay().GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
     m_Context.SetRenderTarget(Core::GetGraphicsDisplay().GetCurrentBackBufferRtv());
     m_Context.SetDescriptorHeap(*m_DescriptorHeap);
+    m_Context.SetRootSignature(*Core::GetGraphicsCommon().m_BindlessRootSignature);
 
     RenderDrawData();
 

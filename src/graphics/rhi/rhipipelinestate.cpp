@@ -17,11 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
-#include "graphics/config/graphicconfig.h"
+#pragma once
 
-void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution)
-{
-    m_Resolution = resolution;
-    Core::GetGraphicsDisplay().ResizeBuffers(resolution);
-}
+#include "graphics/core.h"
+#include "graphics/rhi/rhipipelinestate.h"
+

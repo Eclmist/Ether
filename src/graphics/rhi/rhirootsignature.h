@@ -33,12 +33,13 @@ namespace Ether::Graphics
         virtual ~RhiRootSignatureDesc() {}
 
     public:
-        virtual void SetAsConstant(RhiRootParameterConstantDesc desc) = 0;
-        virtual void SetAsConstantBufferView(RhiRootParameterCbvDesc desc) = 0;
-        virtual void SetAsShaderResourceView(RhiRootParameterSrvDesc desc) = 0;
-        virtual void SetAsDescriptorTable(RhiDescriptorTableDesc desc) = 0;
-        virtual void SetAsDescriptorRange(RhiDescriptorRangeDesc desc) = 0;
-        virtual void SetAsSampler(RhiSamplerParameterDesc desc) = 0;
+        virtual void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) = 0;
+        virtual void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
+        virtual void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
+        virtual void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) = 0;
+        virtual void SetAsDescriptorRange(uint32_t slot, uint32_t reg, uint32_t numDescriptors, RhiDescriptorType type, RhiShaderVisibility vis) = 0;
+        virtual void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) = 0;
+        virtual void SetFlags(RhiRootSignatureFlag flag) = 0;
 
     protected:
         uint32_t m_NumParameters;

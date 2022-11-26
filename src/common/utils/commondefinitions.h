@@ -95,3 +95,13 @@
     #define LogToolmodeFatal(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Fatal, Ether::LogType::Toolmode, msg, ##__VA_ARGS__)
 #endif
 
+// Enum Utils
+#define ETH_DEFINE_ENUM_FLAGS(T) \
+inline constexpr T operator | (T a, T b) { return T(((uint64_t)a) | ((uint64_t)b)); } \
+inline T &operator |= (T &a, T b) { return (T &)(((uint64_t &)a) |= ((uint64_t)b)); } \
+inline constexpr T operator & (T a, T b) { return T(((uint64_t)a) & ((uint64_t)b)); } \
+inline T &operator &= (T &a, T b) { return (T &)(((uint64_t &)a) &= ((uint64_t)b)); } \
+inline constexpr T operator ~ (T a) { return T(~((uint64_t)a)); } \
+inline constexpr T operator ^ (T a, T b) { return T(((uint64_t)a) ^ ((uint64_t)b)); } \
+inline T &operator ^= (T &a, T b) { return (T &)(((uint64_t &)a) ^= ((uint64_t)b)); } \
+

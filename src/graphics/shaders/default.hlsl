@@ -17,11 +17,30 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
-#include "graphics/config/graphicconfig.h"
+#include "common/fullscreenhelpers.hlsl"
 
-void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution)
+struct VS_OUTPUT
 {
-    m_Resolution = resolution;
-    Core::GetGraphicsDisplay().ResizeBuffers(resolution);
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD0;
+};
+
+VS_OUTPUT VS_Main(uint ID : SV_VertexID)
+{
+    VS_OUTPUT o;
+
+    float2 pos;
+    float2 uv;
+    GetVertexFromID(ID, pos, uv);
+
+    o.Position = float4(pos, 1.0f, 1.0f);
+    o.TexCoord = uv;
+
+    return o;
 }
+
+float4 PS_Main(VS_OUTPUT IN) : SV_Target
+{
+    return float4(IN.TexCoord, 1.0f, 1.0f);
+}
+

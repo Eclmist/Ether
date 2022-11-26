@@ -20,27 +20,35 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/context/commandcontext.h"
-#include "graphics/rhi/rhitypes.h"
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL GraphicContext : public CommandContext
+    class RhiShader
     {
     public:
-        GraphicContext(const std::string& contextName = "Unnamed Graphic Context");
-        ~GraphicContext() = default;
+        RhiShader(RhiShaderType type) 
+            : m_Type(type)
+            , m_IsCompiled(false)
+            , m_CompiledSize(0)
+            , m_CompiledData(nullptr) {}
+
+        virtual ~RhiShader() = default;
 
     public:
-        void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
-        void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil);
+        inline RhiShaderType GetType() const { return m_Type; }
+        inline bool IsCompiled() const { return m_IsCompiled; }
+        inline size_t GetCompiledSize() const { return m_CompiledSize; }
+        inline void* GetCompiledData() const { return m_CompiledData; }
 
-        void SetViewport(RhiViewportDesc viewport);
-        void SetScissorRect(RhiScissorDesc scissor);
-        void SetPrimitiveTopology(RhiPrimitiveTopology topology);
-        void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
+    public:
+        virtual void Compile() = 0;
 
-        void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
-        void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
+    protected:
+        RhiShaderType m_Type;
+
+        std::atomic_bool m_IsCompiled;
+        size_t m_CompiledSize;
+        void* m_CompiledData;
     };
 }
+

@@ -23,17 +23,29 @@
 
 namespace Ether::Graphics
 {
-    // This is mainly used for consumers of graphics.dll to pass data in
-    struct ETH_GRAPHIC_DLL GraphicConfig 
+    class ETH_GRAPHIC_DLL GraphicConfig 
     {
+    public:
         GraphicConfig() = default;
         ~GraphicConfig() = default;
 
+    public:
+        inline ethVector2u GetResolution() const { return m_Resolution; }
+        void SetResolution(const ethVector2u& resolution);
+
+        inline std::string GetShaderSourceDir() const { return m_ShaderSourceDir; }
+        inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourceDir = dir; }
+
+        inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
+        inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
+
+        inline void* GetWindowHandle() const { return m_WindowHandle; }
+        inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
+
+    private:
         ethVector2u m_Resolution;
-
-        bool m_UseValidationLayer;
-        bool m_UseSourceShaders;
-
+        std::string m_ShaderSourceDir;
+        bool m_IsValidationLayerEnabled;
         void* m_WindowHandle;
     };
 }

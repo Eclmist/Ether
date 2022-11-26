@@ -17,11 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
-#include "graphics/config/graphicconfig.h"
-
-void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution)
+void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
 {
-    m_Resolution = resolution;
-    Core::GetGraphicsDisplay().ResizeBuffers(resolution);
+    uint2 v = uint2(vertexID % 2, vertexID / 2);
+
+    pos.x = v.x * 2.0 - 1.0;
+    pos.y = v.y * 2.0 - 1.0;
+
+    uv.x = v.x;
+    uv.y = 1.0 - v.y;
 }
+

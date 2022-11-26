@@ -43,6 +43,7 @@ namespace Ether::Graphics
         virtual std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(RhiDescriptorHeapDesc desc) const = 0;
         virtual std::unique_ptr<RhiFence> CreateFence() const = 0;
         virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(RhiSwapChainDesc desc) const = 0;
+        virtual std::unique_ptr<RhiShader> CreateShader(RhiShaderDesc desc) const = 0;
 
         virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(RhiRenderTargetViewDesc desc) const = 0;
         virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(RhiDepthStencilViewDesc desc) const = 0;

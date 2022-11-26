@@ -33,6 +33,7 @@
 #include "graphics/rhi/dx12/dx12resourceviews.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12swapchain.h"
+#include "graphics/rhi/dx12/dx12shader.h"
 
 #include "graphics/rhi/dx12/dx12translation.h"
 
@@ -205,6 +206,7 @@ std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Devic
     std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
 
     dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    dx12Obj->m_Format = desc.m_Format;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
@@ -222,6 +224,7 @@ std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Devic
     std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
 
     dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    dx12Obj->m_Format = desc.m_Format;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
@@ -307,6 +310,15 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name.c_str());
 
     dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(RhiShaderDesc desc) const
+{
+    std::unique_ptr<Dx12Shader> dx12Obj = std::make_unique<Dx12Shader>(desc);
+
+
+
     return dx12Obj;
 }
 

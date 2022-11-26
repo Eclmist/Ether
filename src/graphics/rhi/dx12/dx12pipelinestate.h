@@ -21,6 +21,7 @@
 
 #include "graphics/pch.h"
 #include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
@@ -40,12 +41,15 @@ namespace Ether::Graphics
         void SetDepthTargetFormat(RhiFormat dsvFormat) override;
         void SetRenderTargetFormat(RhiFormat rtvFormat) override;
         void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) override;
-        void SetRootSignature(RhiRootSignature& rootSignature) override;
+        void SetRootSignature(const RhiRootSignature& rootSignature) override;
         void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
-        void SetVertexShader(const void* binary, size_t size) override;
-        void SetPixelShader(const void* binary, size_t size) override;
+        void SetVertexShader(const RhiShader& vs) override;
+        void SetPixelShader(const RhiShader& ps) override;
         void SetNodeMask(uint32_t mask) override;
         void SetSampleMask(uint32_t mask) override;
+
+    public:
+        void Reset() override;
 
     protected:
         friend class Dx12Device;
@@ -61,6 +65,7 @@ namespace Ether::Graphics
 
     private:
         friend class Dx12Device;
+        friend class Dx12CommandList;
         wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
     };
 }

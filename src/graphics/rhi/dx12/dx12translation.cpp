@@ -146,25 +146,15 @@ D3D12_DESCRIPTOR_HEAP_TYPE Ether::Graphics::Translate(const RhiDescriptorHeapTyp
     }
 }
 
-D3D12_DESCRIPTOR_RANGE_TYPE Ether::Graphics::Translate(const RhiDescriptorRangeType& rhiType)
+D3D12_DESCRIPTOR_RANGE_TYPE Ether::Graphics::Translate(const RhiDescriptorType& rhiType)
 {
     switch (rhiType)
     {
-    case RhiDescriptorRangeType::Srv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    case RhiDescriptorRangeType::Cbv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-    case RhiDescriptorRangeType::Uav:                       return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-    case RhiDescriptorRangeType::Sampler:                   return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+    case RhiDescriptorType::Srv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    case RhiDescriptorType::Cbv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    case RhiDescriptorType::Uav:                       return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    case RhiDescriptorType::Sampler:                   return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
     default:                                                return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    }
-}
-
-D3D12_DESCRIPTOR_HEAP_FLAGS Ether::Graphics::Translate(const RhiDescriptorHeapFlag& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiDescriptorHeapFlag::None:                       return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    case RhiDescriptorHeapFlag::ShaderVisible:              return D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    default:                                                return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     }
 }
 
@@ -300,18 +290,6 @@ D3D12_RESOURCE_DIMENSION Ether::Graphics::Translate(const RhiResourceDimension& 
     }
 }
 
-D3D12_RESOURCE_FLAGS Ether::Graphics::Translate(const RhiResourceFlag& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiResourceFlag::None:                             return D3D12_RESOURCE_FLAG_NONE;
-    case RhiResourceFlag::AllowRenderTarget:                return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    case RhiResourceFlag::AllowDepthStencil:                return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-    case RhiResourceFlag::AllowUnorderedAccess:             return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    default:                                                return D3D12_RESOURCE_FLAG_NONE;
-    }
-}
-
 D3D12_RESOURCE_STATES Ether::Graphics::Translate(const RhiResourceState& rhiType)
 {
     switch (rhiType)
@@ -325,24 +303,6 @@ D3D12_RESOURCE_STATES Ether::Graphics::Translate(const RhiResourceState& rhiType
     case RhiResourceState::Present:                         return D3D12_RESOURCE_STATE_PRESENT;
     case RhiResourceState::RenderTarget:                    return D3D12_RESOURCE_STATE_RENDER_TARGET;
     default:                                                return D3D12_RESOURCE_STATE_COMMON;
-    }
-}
-
-D3D12_ROOT_SIGNATURE_FLAGS Ether::Graphics::Translate(const RhiRootSignatureFlag& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiRootSignatureFlag::None:                        return D3D12_ROOT_SIGNATURE_FLAG_NONE;
-    case RhiRootSignatureFlag::AllowIAInputLayout:          return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-    case RhiRootSignatureFlag::DenyVSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyHSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyDSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyGSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyPSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::AllowStreamOutput:           return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
-    case RhiRootSignatureFlag::LocalRootSignature:          return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-    //case RhiRootSignatureFlag::DirectlyIndexed:             return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
-    default:                                                return static_cast<D3D12_ROOT_SIGNATURE_FLAGS>(rhiType);
     }
 }
 
@@ -401,15 +361,6 @@ DXGI_SWAP_EFFECT Ether::Graphics::Translate(const RhiSwapEffect& rhiType)
     }
 }
 
-DXGI_SWAP_CHAIN_FLAG Ether::Graphics::Translate(const RhiSwapChainFlag& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiSwapChainFlag::AllowTearing:                    return DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-    default:                                                return DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-    }
-}
-
 D3D12_TEXTURE_ADDRESS_MODE Ether::Graphics::Translate(const RhiTextureAddressMode& rhiType)
 {
     switch (rhiType)
@@ -430,6 +381,55 @@ D3D12_TEXTURE_LAYOUT Ether::Graphics::Translate(const RhiResourceLayout& rhiType
     case RhiResourceLayout::Unknown:                        return D3D12_TEXTURE_LAYOUT_UNKNOWN;
     case RhiResourceLayout::RowMajor:                       return D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
     default:                                                return D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    }
+}
+
+D3D12_DESCRIPTOR_HEAP_FLAGS Ether::Graphics::Translate(const RhiDescriptorHeapFlag& rhiType)
+{
+    switch (rhiType)
+    {
+    case RhiDescriptorHeapFlag::None:                       return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    case RhiDescriptorHeapFlag::ShaderVisible:              return D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    default:                                                return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    }
+}
+
+D3D12_RESOURCE_FLAGS Ether::Graphics::Translate(const RhiResourceFlag& rhiType)
+{
+    switch (rhiType)
+    {
+    case RhiResourceFlag::None:                             return D3D12_RESOURCE_FLAG_NONE;
+    case RhiResourceFlag::AllowRenderTarget:                return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    case RhiResourceFlag::AllowDepthStencil:                return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+    case RhiResourceFlag::AllowUnorderedAccess:             return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    default:                                                return D3D12_RESOURCE_FLAG_NONE;
+    }
+}
+
+D3D12_ROOT_SIGNATURE_FLAGS Ether::Graphics::Translate(const RhiRootSignatureFlag& rhiType)
+{
+    switch (rhiType)
+    {
+    case RhiRootSignatureFlag::None:                        return D3D12_ROOT_SIGNATURE_FLAG_NONE;
+    case RhiRootSignatureFlag::AllowIAInputLayout:          return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    case RhiRootSignatureFlag::DenyVSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyHSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyDSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyGSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyPSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::AllowStreamOutput:           return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
+    case RhiRootSignatureFlag::LocalRootSignature:          return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+    case RhiRootSignatureFlag::DirectlyIndexed:             return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
+    default:                                                return D3D12_ROOT_SIGNATURE_FLAG_NONE;
+    }
+}
+
+DXGI_SWAP_CHAIN_FLAG Ether::Graphics::Translate(const RhiSwapChainFlag& rhiType)
+{
+    switch (rhiType)
+    {
+    case RhiSwapChainFlag::AllowTearing:                    return DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    default:                                                return (DXGI_SWAP_CHAIN_FLAG)0;
     }
 }
 
@@ -526,7 +526,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE Ether::Graphics::Translate(const RhiGpuHandle& rhiDe
 D3D12_DESCRIPTOR_HEAP_DESC Ether::Graphics::Translate(const RhiDescriptorHeapDesc& rhiDesc)
 {
     D3D12_DESCRIPTOR_HEAP_DESC dx12Desc = {};
-    dx12Desc.Flags = Translate(rhiDesc.m_Flags);
+    dx12Desc.Flags = (D3D12_DESCRIPTOR_HEAP_FLAGS)TranslateFlags(rhiDesc.m_Flags);
     dx12Desc.Type = Translate(rhiDesc.m_Type);
     dx12Desc.NumDescriptors = rhiDesc.m_NumDescriptors;
 
@@ -577,7 +577,7 @@ D3D12_RESOURCE_DESC Ether::Graphics::Translate(const RhiResourceDesc& rhiDesc)
     dx12Desc.DepthOrArraySize = rhiDesc.m_DepthOrArraySize;
     dx12Desc.MipLevels = rhiDesc.m_MipLevels;
     dx12Desc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
-    dx12Desc.Flags = Translate(rhiDesc.m_Flag);
+    dx12Desc.Flags = (D3D12_RESOURCE_FLAGS)TranslateFlags(rhiDesc.m_Flag);
     dx12Desc.Layout = Translate(rhiDesc.m_Layout);
     dx12Desc.Alignment = rhiDesc.m_Alignment;
     dx12Desc.Dimension = Translate(rhiDesc.m_Dimension);
@@ -598,8 +598,7 @@ D3D12_STATIC_SAMPLER_DESC Ether::Graphics::Translate(const RhiSamplerParameterDe
     dx12Desc.BorderColor = Translate(rhiDesc.m_BorderColor);
     dx12Desc.MinLOD = rhiDesc.m_MinLod;
     dx12Desc.MaxLOD = rhiDesc.m_MaxLod;
-    dx12Desc.ShaderRegister = rhiDesc.m_ShaderRegister;
-    dx12Desc.RegisterSpace = rhiDesc.m_RegisterSpace;
+    dx12Desc.RegisterSpace = 0;
 
     return dx12Desc;
 }
@@ -626,7 +625,7 @@ DXGI_SWAP_CHAIN_DESC1 Ether::Graphics::Translate(const RhiSwapChainDesc& rhiDesc
     dx12Desc.Scaling = Translate(rhiDesc.m_ScalingMode);
     dx12Desc.SwapEffect = Translate(rhiDesc.m_SwapEffect);
     dx12Desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    dx12Desc.Flags = Translate(rhiDesc.m_Flag);
+    dx12Desc.Flags = (UINT)TranslateFlags(rhiDesc.m_Flag);
 
     return dx12Desc;
 }

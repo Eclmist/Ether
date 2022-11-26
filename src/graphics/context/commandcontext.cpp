@@ -43,19 +43,16 @@ Ether::Graphics::CommandContext::~CommandContext()
 
 void Ether::Graphics::CommandContext::SetMarker(const std::string& name)
 {
-    ETH_MARKER_EVENT("Command Context - Set Marker");
     m_CommandList->SetMarker(name);
 }
 
 void Ether::Graphics::CommandContext::PushMarker(const std::string& name)
 {
-    ETH_MARKER_EVENT("Command Context - Push Marker");
     m_CommandList->PushMarker(name);
 }
 
 void Ether::Graphics::CommandContext::PopMarker()
 {
-    ETH_MARKER_EVENT("Command Context - Pop Marker");
     m_CommandList->PopMarker();
 }
 
@@ -85,11 +82,20 @@ void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap&
     m_CommandList->SetDescriptorHeaps(desc);
 }
 
+void Ether::Graphics::CommandContext::SetRootSignature(const RhiRootSignature& rootSignature)
+{
+    m_CommandList->SetGraphicRootSignature(rootSignature);
+}
+
+void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& pipelineState)
+{
+    m_CommandList->SetPipelineState(pipelineState);
+}
+
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
     ETH_MARKER_EVENT("Command Context - Finalize and Execute");
-
-    Core::GetCommandManager().Execute(*m_CommandList);
+    m_CommandQueue->Execute(*m_CommandList);
     m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
 
     if (waitForCompletion)

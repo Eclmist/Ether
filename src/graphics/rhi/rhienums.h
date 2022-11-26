@@ -118,8 +118,10 @@ namespace Ether::Graphics
         ShaderVisible,
     };
 
-    enum class RhiDescriptorRangeType
+    enum class RhiDescriptorType
     {
+        Rtv,
+        Dsv,
         Srv,
         Uav,
         Cbv,
@@ -220,7 +222,7 @@ namespace Ether::Graphics
         Blue = 0x4,
         Alpha = 0x8,
         All = (Red | Green | Blue | Alpha)
-    }; // TODO: ETH_DEFINE_ENUM_FLAGS(RhiRenderTargetWriteMask);
+    }; ETH_DEFINE_ENUM_FLAGS(RhiRenderTargetWriteMask);
 
     enum class RhiResourceDimension
     {
@@ -269,7 +271,7 @@ namespace Ether::Graphics
         AllowStreamOutput = 0x40,
         LocalRootSignature = 0x80,
         DirectlyIndexed = 0x400,
-    }; // TODO: ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
+    }; ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 
     enum class RhiScalingMode
     {
@@ -277,7 +279,6 @@ namespace Ether::Graphics
         Stretch,
         AspectRatioStretch,
     };
-
 
     enum class RhiShaderResourceDims
     {
@@ -291,6 +292,13 @@ namespace Ether::Graphics
         TextureCube,
         TextureCubeArray,
         RTAccelerationStructure,
+    };
+
+    enum class RhiShaderType
+    {
+        Vertex,
+        Pixel,
+        Compute
     };
 
     enum class RhiShaderVisibility

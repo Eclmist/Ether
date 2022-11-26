@@ -39,12 +39,15 @@ namespace Ether::Graphics
         virtual void SetDepthTargetFormat(RhiFormat dsvFormat) = 0;
         virtual void SetRenderTargetFormat(RhiFormat rtvFormat) = 0;
         virtual void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) = 0;
-        virtual void SetRootSignature(RhiRootSignature& rootSignatur) = 0;
+        virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
         virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
-        virtual void SetVertexShader(const void* binary, size_t size) = 0;
-        virtual void SetPixelShader(const void* binary, size_t size) = 0;
+        virtual void SetVertexShader(const RhiShader& vs) = 0;
+        virtual void SetPixelShader(const RhiShader& ps) = 0;
         virtual void SetNodeMask(uint32_t mask) = 0;
         virtual void SetSampleMask(uint32_t mask) = 0;
+
+    public:
+        virtual void Reset() = 0;
     };
 
     class RhiPipelineState

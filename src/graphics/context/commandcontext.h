@@ -22,6 +22,7 @@
 #include "graphics/pch.h"
 #include "graphics/memory/uploadbufferallocator.h"
 #include "graphics/rhi/rhicommandlist.h"
+#include "graphics/rhi/rhipipelinestate.h"
 
 namespace Ether::Graphics
 {
@@ -44,6 +45,8 @@ namespace Ether::Graphics
 
         void TransitionResource(RhiResource& resource, RhiResourceState newState);
         void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
+        void SetRootSignature(const RhiRootSignature& rootSignature);
+        void SetPipelineState(const RhiPipelineState& pipelineState);
 
         void FinalizeAndExecute(bool waitForCompletion = false);
         void Reset();

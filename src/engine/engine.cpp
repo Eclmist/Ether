@@ -33,20 +33,9 @@ void Ether::Engine::Initialize()
     m_MainWindow = std::make_unique<PS5::PS5Window>();
 #endif
 
-    Graphics::GraphicConfig config;
-    config.m_Resolution = m_EngineConfig.GetClientSize();
-    config.m_UseSourceShaders = m_CommandLineOptions.GetUseSourceShaders();
-    config.m_UseValidationLayer = m_CommandLineOptions.GetUseValidationLayer();
-    config.m_WindowHandle = m_MainWindow->GetWindowHandle();
-    Graphics::Core::Instance().Initialize(config);
-    m_IsInitialized = true;
-}
+    InitializeGraphicsLayer();
 
-void Ether::Engine::Shutdown()
-{
-    m_MainApplication->OnShutdown();
-    Graphics::Core::Reset();
-    m_IsInitialized = false;
+    m_IsInitialized = true;
 }
 
 void Ether::Engine::LoadApplication(IApplicationBase& app)
@@ -61,6 +50,23 @@ void Ether::Engine::Run()
     m_MainEngineThread = std::thread(&Engine::MainEngineThread, this);
     m_MainWindow->PlatformMessageLoop();
     m_MainEngineThread.join();
+}
+
+void Ether::Engine::Shutdown()
+{
+    m_MainApplication->OnShutdown();
+    Graphics::Core::Reset();
+    m_IsInitialized = false;
+}
+
+void Ether::Engine::InitializeGraphicsLayer()
+{
+    Graphics::GraphicConfig& config = Graphics::Core::Instance().GetGraphicsConfig();
+    config.SetWindowHandle(m_MainWindow->GetWindowHandle());
+    config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
+    config.SetShaderSourceDir(m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "shaders/");
+
+    Graphics::Core::Instance().Initialize();
 }
 
 void Ether::Engine::MainEngineThread()
@@ -83,6 +89,4 @@ void Ether::Engine::MainEngineThread()
         Graphics::Core::MainGraphicsThread();
     }
 }
-
-
 

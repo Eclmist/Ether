@@ -30,9 +30,8 @@ namespace Ether::Graphics
     D3D12_COMPARISON_FUNC Translate(const RhiComparator& rhiType);
     D3D12_CULL_MODE Translate(const RhiCullMode& rhiType);
     D3D12_DEPTH_WRITE_MASK Translate(const RhiDepthWriteMask& rhiType);
-    D3D12_DESCRIPTOR_HEAP_FLAGS Translate(const RhiDescriptorHeapFlag& rhiType);
     D3D12_DESCRIPTOR_HEAP_TYPE Translate(const RhiDescriptorHeapType& rhiType);
-    D3D12_DESCRIPTOR_RANGE_TYPE Translate(const RhiDescriptorRangeType& rhiType);
+    D3D12_DESCRIPTOR_RANGE_TYPE Translate(const RhiDescriptorType& rhiType);
     D3D12_FILL_MODE Translate(const RhiFillMode& rhiType);
     D3D12_FILTER Translate(const RhiFilter& rhiType);
     D3D12_HEAP_TYPE Translate(const RhiHeapType& rhiType);
@@ -41,9 +40,7 @@ namespace Ether::Graphics
     D3D12_PRIMITIVE_TOPOLOGY Translate(const RhiPrimitiveTopology& rhiType);
     D3D12_PRIMITIVE_TOPOLOGY_TYPE Translate(const RhiPrimitiveTopologyType& rhiType);
     D3D12_RESOURCE_DIMENSION Translate(const RhiResourceDimension& rhiType);
-    D3D12_RESOURCE_FLAGS Translate(const RhiResourceFlag& rhiType);
     D3D12_RESOURCE_STATES Translate(const RhiResourceState& rhiType);
-    D3D12_ROOT_SIGNATURE_FLAGS Translate(const RhiRootSignatureFlag& rhiType);
     D3D12_SHADER_VISIBILITY Translate(const RhiShaderVisibility& rhiType);
     D3D12_SRV_DIMENSION Translate(const RhiShaderResourceDims& rhiType);
     D3D12_STATIC_BORDER_COLOR Translate(const RhiBorderColor& rhiType);
@@ -52,8 +49,11 @@ namespace Ether::Graphics
     D3D12_TEXTURE_LAYOUT Translate(const RhiResourceLayout& rhiType);
     DXGI_FORMAT Translate(const RhiFormat& rhiType);
     DXGI_SCALING Translate(const RhiScalingMode& rhiType);
-    DXGI_SWAP_CHAIN_FLAG Translate(const RhiSwapChainFlag& rhiType);
     DXGI_SWAP_EFFECT Translate(const RhiSwapEffect& rhiType);
+    D3D12_DESCRIPTOR_HEAP_FLAGS Translate(const RhiDescriptorHeapFlag& rhiType);
+    D3D12_ROOT_SIGNATURE_FLAGS Translate(const RhiRootSignatureFlag& rhiType);
+    D3D12_RESOURCE_FLAGS Translate(const RhiResourceFlag& rhiType);
+    DXGI_SWAP_CHAIN_FLAG Translate(const RhiSwapChainFlag& rhiType);
 
     D3D12_BLEND_DESC Translate(const RhiBlendDesc& rhiDesc);
     D3D12_CLEAR_VALUE Translate(const RhiClearValue& rhiDesc);
@@ -80,4 +80,17 @@ namespace Ether::Graphics
     D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RhiConstantBufferViewDesc& rhiDesc);
     D3D12_VERTEX_BUFFER_VIEW Translate(const RhiVertexBufferViewDesc& rhiDesc);
     D3D12_INDEX_BUFFER_VIEW Translate(const RhiIndexBufferViewDesc& rhiDesc);
+
+    template<typename RhiType>
+    uint32_t TranslateFlags(const RhiType& rhiType);
 }
+
+template<typename RhiType>
+uint32_t Ether::Graphics::TranslateFlags(const RhiType& rhiType)
+{
+    uint32_t flags = 0;
+    for (uint32_t i = 0; i < 32; ++i)
+        flags |= Translate((RhiType)(((uint32_t)rhiType >> i) & 0x1));
+    return flags;
+}
+

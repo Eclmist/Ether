@@ -36,11 +36,12 @@ namespace Ether::Graphics
         void PushMarker(const std::string& name) override;
         void PopMarker() override;
 
-        //RhiResult SetViewport(RhiViewportDesc& viewport) override;
-        //RhiResult SetScissor(RhiScissorDesc scissor) override;
-        //RhiResult SetStencilRef(RhiStencilValue val) override;
-        //RhiResult SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
-        //RhiResult SetPipelineState(RhiPipelineStateHandle pipelineState) override;
+        void SetViewport(RhiViewportDesc viewport) override;
+        void SetScissorRect(RhiScissorDesc scissor) override;
+        void SetStencilRef(RhiStencilValue val) override;
+        void SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
+        void SetPipelineState(const RhiPipelineState& pso) override;
+        void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
         //RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) override;
         //RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
         //RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
@@ -54,13 +55,13 @@ namespace Ether::Graphics
         void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
 
         void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
-        //RhiResult ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
+        void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
 
         void TransitionResource(RhiResourceTransitionDesc desc) override;
         //RhiResult CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
         //RhiResult CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
-        //RhiResult DrawInstanced(RhiDrawInstancedDesc desc) override;
-        //RhiResult DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
+        void DrawInstanced(RhiDrawInstancedDesc desc) override;
+        void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
 
         void Reset(const RhiCommandAllocator& commandAllocator) override;
         void Close() override;

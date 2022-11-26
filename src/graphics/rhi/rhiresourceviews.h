@@ -63,6 +63,12 @@ namespace Ether::Graphics
     public:
         RhiRenderTargetView() = default;
         ~RhiRenderTargetView() = default;
+
+    public:
+        inline RhiFormat GetFormat() const { return m_Format; }
+
+    protected:
+        RhiFormat m_Format;
     };
 
     class RhiDepthStencilView : public RhiResourceView
@@ -70,6 +76,12 @@ namespace Ether::Graphics
     public:
         RhiDepthStencilView() = default;
         ~RhiDepthStencilView() = default;
+
+    public:
+        inline RhiFormat GetFormat() const { return m_Format; }
+
+    protected:
+        RhiFormat m_Format;
     };
 
     class RhiShaderResourceView : public RhiShaderVisibleResourceView

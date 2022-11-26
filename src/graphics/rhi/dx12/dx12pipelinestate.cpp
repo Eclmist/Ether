@@ -19,16 +19,23 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
+#include "graphics/core.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 
 Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
-    : m_Dx12PsoDesc({})
+    : RhiPipelineStateDesc()
+    , m_Dx12PsoDesc{}
 {
-    // Defaults
-    m_Dx12PsoDesc.NodeMask = 0;
-    m_Dx12PsoDesc.SampleMask = 0xFFFFFFFF;
+    SetBlendState(Core::GetGraphicsCommon().m_BlendDisabled);
+    SetRasterizerState(Core::GetGraphicsCommon().m_RasterizerDefault);
+    SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
+    SetDepthStencilState(Core::GetGraphicsCommon().m_DepthStateDisabled);
+    SetDepthStencilState(Core::GetGraphicsCommon().m_DepthStateDisabled);
+    SetSamplingDesc(1, 0);
+    SetNodeMask(0);
+    SetSampleMask(0xFFFFFFFF);
 }
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetBlendState(RhiBlendDesc desc)
@@ -77,9 +84,9 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormats(uint32_t num
         m_Dx12PsoDesc.RTVFormats[i] = Translate(rtvFormats[i]);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRootSignature(RhiRootSignature& rootSignature)
+void Ether::Graphics::Dx12PipelineStateDesc::SetRootSignature(const RhiRootSignature& rootSignature)
 {
-    m_Dx12PsoDesc.pRootSignature = static_cast<Dx12RootSignature&>(rootSignature).m_RootSignature.Get();
+    m_Dx12PsoDesc.pRootSignature = static_cast<const Dx12RootSignature&>(rootSignature).m_RootSignature.Get();
 }
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)
@@ -88,16 +95,20 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSam
     m_Dx12PsoDesc.SampleDesc.Quality = msaaQuality;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(const void* binary, size_t size)
+void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(const RhiShader& vs)
 {
-    m_Dx12PsoDesc.VS.pShaderBytecode = binary;
-    m_Dx12PsoDesc.VS.BytecodeLength = size;
+    AssertGraphics(vs.GetType() == RhiShaderType::Vertex, "Vertex shader expected, but encountered %u", (uint32_t)vs.GetType());
+    AssertGraphics(vs.IsCompiled(), "Input vertex shader has yet to compile");
+    m_Dx12PsoDesc.VS.pShaderBytecode = vs.GetCompiledData();
+    m_Dx12PsoDesc.VS.BytecodeLength = vs.GetCompiledSize();
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(const void* binary, size_t size)
+void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(const RhiShader& ps)
 {
-    m_Dx12PsoDesc.PS.pShaderBytecode = binary;
-    m_Dx12PsoDesc.PS.BytecodeLength = size;
+    AssertGraphics(ps.GetType() == RhiShaderType::Pixel, "Pixel shader expected, but encountered %u", (uint32_t)ps.GetType());
+    AssertGraphics(ps.IsCompiled(), "Input pixel shader has yet to compile");
+    m_Dx12PsoDesc.PS.pShaderBytecode = ps.GetCompiledData();
+    m_Dx12PsoDesc.PS.BytecodeLength = ps.GetCompiledSize();
 }
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetNodeMask(uint32_t mask)
@@ -108,6 +119,11 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetNodeMask(uint32_t mask)
 void Ether::Graphics::Dx12PipelineStateDesc::SetSampleMask(uint32_t mask)
 {
     m_Dx12PsoDesc.SampleMask = mask;
+}
+
+void Ether::Graphics::Dx12PipelineStateDesc::Reset()
+{
+    m_Dx12PsoDesc = {};
 }
 
 #endif // ETH_GRAPHICS_DX12

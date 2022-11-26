@@ -20,6 +20,7 @@
 #include "graphics/context/graphiccontext.h"
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/rhidevice.h"
+#include "graphics/rhi/rhiresourceviews.h"
 
 Ether::Graphics::GraphicContext::GraphicContext(const std::string& contextName)
     : CommandContext(RhiCommandType::Graphic, contextName)
@@ -34,6 +35,30 @@ void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const
     m_CommandList->ClearRenderTargetView(desc);
 }
 
+void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil)
+{
+    RhiClearDepthStencilViewDesc desc = {};
+    desc.m_ClearDepth = depth;
+    desc.m_ClearStencil = stencil;
+    desc.m_DsvHandle = &dsv;
+    m_CommandList->ClearDepthStencilView(desc);
+}
+
+void Ether::Graphics::GraphicContext::SetViewport(RhiViewportDesc viewport)
+{
+    m_CommandList->SetViewport(viewport);
+}
+
+void Ether::Graphics::GraphicContext::SetScissorRect(RhiScissorDesc scissor)
+{
+    m_CommandList->SetScissorRect(scissor);
+}
+
+void Ether::Graphics::GraphicContext::SetPrimitiveTopology(RhiPrimitiveTopology topology)
+{
+    m_CommandList->SetPrimitiveTopology(topology);
+}
+
 void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv /*= nullptr*/)
 {
     RhiSetRenderTargetsDesc desc = {};
@@ -44,37 +69,26 @@ void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView&
     m_CommandList->SetRenderTargets(desc);
 }
 
-//void GraphicContext::ClearDepthStencil(RhiDepthStencilViewHandle depthTarget, float depth, float stencil)
-//{
-//    RhiClearDepthStencilViewDesc desc = {};
-//    desc.m_ClearDepth = depth;
-//    desc.m_ClearStencil = stencil;
-//    desc.m_DsvHandle = depthTarget;
-//    m_CommandList->ClearDepthStencilView(desc);
-//}
-//
-//void GraphicContext::SetRenderTargets(uint32_t numTargets, RhiRenderTargetViewHandle* rtv, RhiDepthStencilViewHandle dsv)
-//{
-//    RhiSetRenderTargetsDesc desc = {};
-//    desc.m_NumRtv = numTargets;
-//    desc.m_DsvHandle = dsv;
-//
-//    for (int i = 0; i < desc.m_NumRtv; ++i)
-//        desc.m_RtvHandles[i] = rtv[i];
-//
-//    m_CommandList->SetRenderTargets(desc);
-//}
-//
-//void GraphicContext::SetViewport(const RhiViewportDesc& viewport)
-//{
-//    m_Viewport = viewport;
-//    m_CommandList->SetViewport(viewport);
-//}
-//
-//void GraphicContext::SetScissor(const RhiScissorDesc& scissor)
-//{
-//    m_CommandList->SetScissor(scissor);
-//}
-//
-//ETH_NAMESPACE_END
-//
+void Ether::Graphics::GraphicContext::DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances)
+{
+    RhiDrawIndexedInstancedDesc desc = {};
+    desc.m_IndexCount = numInstances;
+    desc.m_InstanceCount = numInstances;
+    desc.m_FirstIndex = 0;
+    desc.m_FirstInstance = 0;
+    desc.m_VertexOffset = 0;
+
+    m_CommandList->DrawIndexedInstanced(desc);
+}
+
+void Ether::Graphics::GraphicContext::DrawInstanced(uint32_t numVertices, uint32_t numInstances)
+{
+    RhiDrawInstancedDesc desc = {};
+    desc.m_VertexCount = numVertices;
+    desc.m_InstanceCount = numInstances;
+    desc.m_FirstVertex = 0;
+    desc.m_FirstInstance = 0;
+
+    m_CommandList->DrawInstanced(desc);
+}
+

@@ -34,73 +34,79 @@ Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(uint32_t numParams
     m_Dx12RootSignatureDesc.pStaticSamplers = m_Dx12StaticSamplers.data();
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(RhiRootParameterConstantDesc desc)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis)
 {
-    const uint32_t bindSlot = desc.m_ApiBindSlot;
+    const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
 
     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
-    parameter.Constants.Num32BitValues = desc.m_NumDwords;
-    parameter.Constants.ShaderRegister = desc.m_ShaderRegister;
+    parameter.ShaderVisibility = Translate(vis);
+    parameter.Constants.Num32BitValues = numDword;
+    parameter.Constants.ShaderRegister = reg;
     parameter.Constants.RegisterSpace = 0;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstantBufferView(RhiRootParameterCbvDesc desc)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis)
 {
-    const uint32_t bindSlot = desc.m_ApiBindSlot;
+    const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
 
     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
-    parameter.Descriptor.ShaderRegister = desc.m_ShaderRegister;
+    parameter.ShaderVisibility = Translate(vis);
+    parameter.Descriptor.ShaderRegister = reg;
     parameter.Descriptor.RegisterSpace = 0;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsShaderResourceView(RhiRootParameterSrvDesc desc)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis)
 {
-    const uint32_t bindSlot = desc.m_ApiBindSlot;
+    const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
 
     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-    parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
-    parameter.Descriptor.ShaderRegister = desc.m_ShaderRegister;
+    parameter.ShaderVisibility = Translate(vis);
+    parameter.Descriptor.ShaderRegister = reg;
     parameter.Descriptor.RegisterSpace = 0;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorTable(RhiDescriptorTableDesc desc)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis)
 {
-    const uint32_t bindSlot = desc.m_ApiBindSlot;
+    const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
 
     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    parameter.ShaderVisibility = Translate(desc.m_ShaderVisibility);
-    parameter.DescriptorTable.NumDescriptorRanges = desc.m_RangeCount;
-    parameter.DescriptorTable.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE[desc.m_RangeCount]; // TODO: fix this memory leak?
+    parameter.ShaderVisibility = Translate(vis);
+    parameter.DescriptorTable.NumDescriptorRanges = numRanges;
+    parameter.DescriptorTable.pDescriptorRanges = m_Dx12DescriptorRange.data();
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorRange(RhiDescriptorRangeDesc desc)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorRange(uint32_t slot, uint32_t reg, uint32_t numDescriptors, RhiDescriptorType type, RhiShaderVisibility vis)
 {
-    const uint32_t bindSlot = desc.m_ApiBindSlot;
+    const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
 
-    RhiDescriptorTableDesc tableDesc = {};
-    tableDesc.m_RangeCount = 1;
-    tableDesc.m_ShaderVisibility = desc.m_ShaderVisibility;
+    D3D12_DESCRIPTOR_RANGE range;
+    range.RangeType = Translate(type);
+    range.NumDescriptors = numDescriptors;
+    range.BaseShaderRegister = reg;
+    range.RegisterSpace = 0;
+    range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    SetAsDescriptorTable(tableDesc);
+    m_Dx12DescriptorRange.clear();
+    m_Dx12DescriptorRange.push_back(range);
 
-    D3D12_DESCRIPTOR_RANGE* range = const_cast<D3D12_DESCRIPTOR_RANGE*>(parameter.DescriptorTable.pDescriptorRanges);
-    range->RangeType = Translate(desc.m_Type);
-    range->NumDescriptors = desc.m_NumDescriptors;
-    range->BaseShaderRegister = desc.m_ShaderRegister;
-    range->RegisterSpace = 0;
-    range->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    SetAsDescriptorTable(slot, reg, 1, vis);
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsSampler(RhiSamplerParameterDesc desc)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis)
 {
-    m_Dx12StaticSamplers[desc.m_ApiBindSlot] = Translate(desc);
+    m_Dx12StaticSamplers[reg] = Translate(desc);
+    m_Dx12StaticSamplers[reg].ShaderRegister = reg;
+    m_Dx12StaticSamplers[reg].ShaderVisibility = Translate(vis);
+}
+
+void Ether::Graphics::Dx12RootSignatureDesc::SetFlags(RhiRootSignatureFlag flag)
+{
+    m_Dx12RootSignatureDesc.Flags = (D3D12_ROOT_SIGNATURE_FLAGS)TranslateFlags(flag);
 }
 
 #endif // ETH_GRAPHICS_DX12

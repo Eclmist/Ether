@@ -42,7 +42,7 @@ void Ether::EngineConfig::SetClientSize(const ethVector2u& clientSize)
 
     m_ClientSize = clientSize;
     //Engine::GetMainWindow().SetClientSize(clientSize);
-    Graphics::Core::GetGraphicsDisplay().ResizeBuffers(clientSize);
+    Graphics::Core::GetGraphicsConfig().SetResolution(clientSize);
 }
 
 void Ether::EngineConfig::SetClientPosition(const ethVector2u& clientPosition)

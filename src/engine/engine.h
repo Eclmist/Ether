@@ -37,6 +37,8 @@ namespace Ether
         ~Engine() = default;
 
         void Initialize();
+        void LoadApplication(IApplicationBase& app);
+        void Run();
         void Shutdown();
 
     public:
@@ -46,13 +48,8 @@ namespace Ether
 
         static bool IsInitialized() { return Instance().m_IsInitialized; }
 
-    public:
-        void LoadApplication(IApplicationBase& app);
-
-    public:
-        void Run();
-
     private:
+        void InitializeGraphicsLayer();
         void MainEngineThread();
 
     private:

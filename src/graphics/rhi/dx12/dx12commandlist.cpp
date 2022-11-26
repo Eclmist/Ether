@@ -44,57 +44,39 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
     PIXEndEvent(m_CommandList.Get());
 }
 
-//RhiResult Dx12CommandList::SetMarker(const char* name)
-//{
-//    PIXSetMarker(PIX_COLOR_INDEX(0), name);
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::PushMarker(const char* name)
-//{
-//    PIXBeginEvent(m_CommandList.Get(), PIX_COLOR_INDEX(0), name);
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::PopMarker()
-//{
-//    PIXEndEvent(m_CommandList.Get());
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetViewport(RhiViewportDesc viewport)
-//{
-//    D3D12_VIEWPORT d3d12viewport = Translate(viewport);
-//    m_CommandList->RSSetViewports(1, &d3d12viewport);
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetScissor(RhiScissorDesc scissor)
-//{
-//    D3D12_RECT scissorRect = Translate(scissor);
-//    m_CommandList->RSSetScissorRects(1, &scissorRect);
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetStencilRef(RhiStencilValue val)
-//{
-//    m_CommandList->OMSetStencilRef(val);
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology)
-//{
-//    m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetPipelineState(RhiPipelineStateHandle pipelineState)
-//{
-//    const auto d3dPipelineState = pipelineState.As<Dx12PipelineState>();
-//    m_CommandList->SetPipelineState(d3dPipelineState->m_PipelineState.Get());
-//    return RhiResult::Success;
-//}
-//
+void Ether::Graphics::Dx12CommandList::SetViewport(RhiViewportDesc viewport)
+{
+    D3D12_VIEWPORT dx12Viewport = Translate(viewport);
+    m_CommandList->RSSetViewports(1, &dx12Viewport);
+}
+
+void Ether::Graphics::Dx12CommandList::SetScissorRect(RhiScissorDesc scissor)
+{
+    D3D12_RECT dx12Scissor = Translate(scissor);
+    m_CommandList->RSSetScissorRects(1, &dx12Scissor);
+}
+
+void Ether::Graphics::Dx12CommandList::SetStencilRef(RhiStencilValue val)
+{
+    m_CommandList->OMSetStencilRef(val);
+}
+
+void Ether::Graphics::Dx12CommandList::SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology)
+{
+    m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));
+}
+
+void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
+{
+    m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+{
+    const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
+    m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
+}
+
 //RhiResult Dx12CommandList::SetGraphicRootSignature(RhiRootSignatureHandle rootSignature)
 //{
 //    const auto d3dRootSignature = rootSignature.As<Dx12RootSignature>();
@@ -221,22 +203,19 @@ void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(RhiClearRenderTarge
     );
 }
 
+void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(RhiClearDepthStencilViewDesc desc)
+{
+    m_CommandList->ClearDepthStencilView
+    (
+        Translate(desc.m_DsvHandle->GetCpuAddress()),
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+        desc.m_ClearDepth,
+        desc.m_ClearStencil,
+        0,
+        nullptr
+    );
+}
 
-//RhiResult Dx12CommandList::ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc)
-//{
-//    m_CommandList->ClearDepthStencilView
-//    (
-//        Translate(desc.m_DsvHandle->GetCpuAddress()),
-//        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-//        desc.m_ClearDepth,
-//        desc.m_ClearStencil,
-//        0,
-//        nullptr
-//    );
-//
-//    return RhiResult::Success;
-//}
-//
 //RhiResult Dx12CommandList::CopyBufferRegion(const RhiCopyBufferRegionDesc& desc)
 //{
 //    const auto d3dSrcResource = desc.m_Source.As<Dx12Resource>();
@@ -291,34 +270,30 @@ void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionD
 //RhiResult Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
 //{
 //}
-//
-//RhiResult Dx12CommandList::DrawInstanced(RhiDrawInstancedDesc desc)
-//{
-//    m_CommandList->DrawInstanced
-//    (
-//        desc.m_VertexCount,
-//        desc.m_InstanceCount,
-//        desc.m_FirstVertex,
-//        desc.m_FirstInstance
-//    );
-//
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc)
-//{
-//    m_CommandList->DrawIndexedInstanced
-//    (
-//        desc.m_IndexCount,
-//        desc.m_InstanceCount,
-//        desc.m_FirstIndex,
-//        desc.m_VertexOffset,
-//        desc.m_FirstInstance
-//    );
-//
-//    return RhiResult::Success;
-//}
-//
+
+void Ether::Graphics::Dx12CommandList::DrawInstanced(RhiDrawInstancedDesc desc)
+{
+    m_CommandList->DrawInstanced
+    (
+        desc.m_VertexCount,
+        desc.m_InstanceCount,
+        desc.m_FirstVertex,
+        desc.m_FirstInstance
+    );
+}
+
+void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc)
+{
+    m_CommandList->DrawIndexedInstanced
+    (
+        desc.m_IndexCount,
+        desc.m_InstanceCount,
+        desc.m_FirstIndex,
+        desc.m_VertexOffset,
+        desc.m_FirstInstance
+    );
+}
+
 void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandAllocator)
 {
     const auto allocator = dynamic_cast<const Dx12CommandAllocator&>(commandAllocator);

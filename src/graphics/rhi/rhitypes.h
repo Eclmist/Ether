@@ -42,6 +42,7 @@ namespace Ether::Graphics
     class RhiPipelineState;
     class RhiPipelineStateDesc;
     class RhiSwapChain;
+    class RhiShader;
 
     typedef uint64_t RhiFenceValue;
     typedef uint32_t RhiStencilValue;
@@ -156,12 +157,6 @@ namespace Ether::Graphics
         uint32_t m_NumElements;
     };
 
-    struct RhiShaderDesc
-    {
-        const void* m_Bytecode;
-        uint32_t m_BytecodeLength;
-    };
-
     struct RhiRasterizerDesc
     {
         RhiFillMode m_FillMode;
@@ -182,39 +177,7 @@ namespace Ether::Graphics
         uint32_t m_MsaaQuality;
     };
 
-    struct RhiRootParameterDesc
-    {
-        uint32_t m_ApiBindSlot;
-        uint32_t m_ShaderRegister;
-        uint32_t m_RegisterSpace;
-        RhiShaderVisibility m_ShaderVisibility;
-    };
-
-    struct RhiRootParameterConstantDesc : RhiRootParameterDesc
-    {
-        uint32_t m_NumDwords;
-    };
-
-    struct RhiRootParameterCbvDesc : RhiRootParameterDesc
-    {
-    };
-
-    struct RhiRootParameterSrvDesc : RhiRootParameterDesc
-    {
-    };
-
-    struct RhiDescriptorTableDesc : RhiRootParameterDesc
-    {
-        uint32_t m_RangeCount;
-    };
-
-    struct RhiDescriptorRangeDesc : RhiRootParameterDesc
-    {
-        RhiDescriptorRangeType m_Type;
-        uint32_t m_NumDescriptors;
-    };
-
-    struct RhiSamplerParameterDesc : RhiRootParameterDesc
+    struct RhiSamplerParameterDesc
     {
         RhiFilter m_Filter;
         RhiTextureAddressMode m_AddressU;
@@ -228,6 +191,14 @@ namespace Ether::Graphics
         float m_MipLodBias;
         float m_MinLod;
         float m_MaxLod;
+    };
+
+    struct RhiShaderDesc
+    {
+        std::string m_Filename;
+        std::string m_EntryPoint;
+
+        RhiShaderType m_Type;
     };
 
     struct RhiSwapChainDesc
