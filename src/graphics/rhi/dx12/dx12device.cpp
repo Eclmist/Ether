@@ -75,7 +75,7 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
 
 std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreatePipelineState(const RhiPipelineStateDesc& desc) const
 {
-    std::unique_ptr<Dx12PipelineState> dx12Obj = std::make_unique<Dx12PipelineState>();
+    std::unique_ptr<Dx12PipelineState> dx12Obj = std::make_unique<Dx12PipelineState>(desc);
     const Dx12PipelineStateDesc& dx12Desc = dynamic_cast<const Dx12PipelineStateDesc&>(desc);
 
     HRESULT hr = m_Device->CreateGraphicsPipelineState(
@@ -316,9 +316,7 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
 std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(RhiShaderDesc desc) const
 {
     std::unique_ptr<Dx12Shader> dx12Obj = std::make_unique<Dx12Shader>(desc);
-
-
-
+    Core::GetShaderDaemon().RegisterShader(*dx12Obj);
     return dx12Obj;
 }
 

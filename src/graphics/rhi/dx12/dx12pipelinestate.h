@@ -43,8 +43,8 @@ namespace Ether::Graphics
         void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) override;
         void SetRootSignature(const RhiRootSignature& rootSignature) override;
         void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
-        void SetVertexShader(const RhiShader& vs) override;
-        void SetPixelShader(const RhiShader& ps) override;
+        void SetVertexShader(RhiShader& vs) override;
+        void SetPixelShader(RhiShader& ps) override;
         void SetNodeMask(uint32_t mask) override;
         void SetSampleMask(uint32_t mask) override;
 
@@ -60,7 +60,7 @@ namespace Ether::Graphics
     class Dx12PipelineState : public RhiPipelineState
     {
     public:
-        Dx12PipelineState() = default;
+        Dx12PipelineState(const RhiPipelineStateDesc& desc) : RhiPipelineState(desc) {}
         ~Dx12PipelineState() override = default;
 
     private:

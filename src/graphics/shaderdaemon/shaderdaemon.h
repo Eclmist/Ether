@@ -17,30 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/fullscreenhelpers.hlsl"
+#pragma once
 
-struct VS_OUTPUT
+#include "graphics/pch.h"
+#include <unordered_map>
+
+namespace Ether::Graphics
 {
-    float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD0;
-};
+    class RhiShader;
 
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
-{
-    VS_OUTPUT o;
+    class ShaderDaemon : public NonCopyable
+    {
+    public:
+        ShaderDaemon();
+        ~ShaderDaemon();
 
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
+        void RegisterShader(RhiShader& shader);
 
-    o.Position = float4(pos, 1.0f, 1.0f);
-    o.TexCoord = uv;
+    private:
+        void DaemonThreadMain();
 
-    return o;
+        void WaitForFileUnlock(const std::wstring& shaderFileName);
+        void ProcessModifiedShaders(char* notifyInfo);
+
+    private:
+        std::unordered_map<std::wstring, std::vector<RhiShader*>> m_RegisteredShaders;
+
+        std::thread m_ShaderDaemonThread;
+        void* m_TerminationEvent;
+    };
 }
-
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
-{
-    return float4(IN.TexCoord, 0.0f, 1.0f);
-}
-

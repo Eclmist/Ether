@@ -28,10 +28,7 @@ wrl::ComPtr<IDxcUtils> Ether::Graphics::Dx12Shader::s_DxcUtils;
 wrl::ComPtr<IDxcIncludeHandler> Ether::Graphics::Dx12Shader::s_IncludeHandler;
 
 Ether::Graphics::Dx12Shader::Dx12Shader(RhiShaderDesc desc)
-    : RhiShader(desc.m_Type)
-    , m_FileName(desc.m_Filename)
-    , m_FilePath(Core::GetGraphicsConfig().GetShaderSourceDir() + desc.m_Filename)
-    , m_EntryPoint(desc.m_EntryPoint)
+    : RhiShader(desc)
 {
     InitializeTargetProfile(desc.m_Type);
     InitializeDxc();

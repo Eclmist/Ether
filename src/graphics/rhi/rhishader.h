@@ -20,14 +20,18 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/core.h"
 
 namespace Ether::Graphics
 {
     class RhiShader
     {
     public:
-        RhiShader(RhiShaderType type) 
-            : m_Type(type)
+        RhiShader(RhiShaderDesc desc) 
+            : m_Type(desc.m_Type)
+            , m_FileName(desc.m_Filename)
+            , m_FilePath(Core::GetGraphicsConfig().GetShaderSourceDir() + desc.m_Filename)
+            , m_EntryPoint(desc.m_EntryPoint)
             , m_IsCompiled(false)
             , m_CompiledSize(0)
             , m_CompiledData(nullptr) {}
@@ -36,19 +40,30 @@ namespace Ether::Graphics
 
     public:
         inline RhiShaderType GetType() const { return m_Type; }
+
         inline bool IsCompiled() const { return m_IsCompiled; }
         inline size_t GetCompiledSize() const { return m_CompiledSize; }
         inline void* GetCompiledData() const { return m_CompiledData; }
+
+        inline std::string GetFileName() const { return m_FileName; }
+        inline std::string GetFilePath() const { return m_FilePath; }
+        inline std::string GetEntryPoint() const { return m_EntryPoint; }
 
     public:
         virtual void Compile() = 0;
 
     protected:
+        friend class ShaderDaemon;
+
         RhiShaderType m_Type;
 
         std::atomic_bool m_IsCompiled;
         size_t m_CompiledSize;
         void* m_CompiledData;
+
+        std::string m_FileName = "";
+        std::string m_FilePath = "";
+        std::string m_EntryPoint = "";
     };
 }
 

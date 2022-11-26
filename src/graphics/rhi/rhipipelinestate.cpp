@@ -21,4 +21,43 @@
 
 #include "graphics/core.h"
 #include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhishader.h"
+
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiPipelineStateDesc::Compile() const
+{
+    return Core::GetDevice().CreatePipelineState(*this);
+}
+
+bool Ether::Graphics::RhiPipelineStateDesc::RequiresShaderCompilation() const
+{
+    for (auto shader : m_Shaders)
+        if (!shader.second->IsCompiled())
+            return true;
+
+    return false;
+}
+
+void Ether::Graphics::RhiPipelineStateDesc::CompileShaders()
+{
+    for (auto shader : m_Shaders)
+    {
+        if (!shader.second->IsCompiled())
+        {
+            shader.second->Compile();
+            
+            switch (shader.first)
+            {
+            case RhiShaderType::Vertex:
+                SetVertexShader(*shader.second);
+                break;
+            case RhiShaderType::Pixel:
+                SetPixelShader(*shader.second);
+                break;
+            default:
+                LogGraphicsError("Failed to recompile PSO - invalid shader type");
+                break;
+            }
+        }
+    }
+}
 

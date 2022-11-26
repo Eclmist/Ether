@@ -46,10 +46,12 @@ namespace Ether::Graphics
         void TransitionResource(RhiResource& resource, RhiResourceState newState);
         void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
         void SetRootSignature(const RhiRootSignature& rootSignature);
-        void SetPipelineState(const RhiPipelineState& pipelineState);
+        void SetPipelineState(RhiPipelineStateDesc& psoDesc);
 
         void FinalizeAndExecute(bool waitForCompletion = false);
         void Reset();
+    protected:
+        static std::unordered_map<const RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> s_PipelineStateCache;
 
     protected:
         std::string m_Name;

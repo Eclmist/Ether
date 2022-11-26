@@ -32,55 +32,55 @@ namespace Ether
     public:
         static bool HasInstance()
         {
-            return m_Instance != nullptr;
+            return s_Instance != nullptr;
         }
 
         static T& Instance()
         {
-            if (m_Instance != nullptr)
-                return *m_Instance;
+            if (s_Instance != nullptr)
+                return *s_Instance;
 
-            m_IsInitializing = true;
-            m_Instance = new T();
-            m_IsInitializing = false;
-            return *m_Instance;
+            s_IsInitializing = true;
+            s_Instance = new T();
+            s_IsInitializing = false;
+            return *s_Instance;
         };
 
         static void Reset()
         {
-            assert(m_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
-            m_IsDestroying = true;
-            delete(m_Instance);
-            m_Instance = nullptr;
+            assert(s_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
+            s_IsDestroying = true;
+            delete(s_Instance);
+            s_Instance = nullptr;
         };
 
     protected:
         Singleton()
         {
-            assert(m_IsInitializing &&
+            assert(s_IsInitializing &&
                 "Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
         };
 
         ~Singleton()
         {
-            assert(m_IsDestroying &&
+            assert(s_IsDestroying &&
                 "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
-            m_IsDestroying = false;
+            s_IsDestroying = false;
         };
 
     protected:
-        static T* m_Instance;
-        static bool m_IsInitializing;
-        static bool m_IsDestroying;
+        static T* s_Instance;
+        static bool s_IsInitializing;
+        static bool s_IsDestroying;
     };
 
     template <typename T>
-    T* Singleton<T>::m_Instance = nullptr;
+    T* Singleton<T>::s_Instance = nullptr;
 
     template <typename T>
-    bool Singleton<T>::m_IsInitializing = false;
+    bool Singleton<T>::s_IsInitializing = false;
 
     template <typename T>
-    bool Singleton<T>::m_IsDestroying = false;
+    bool Singleton<T>::s_IsDestroying = false;
 }
 

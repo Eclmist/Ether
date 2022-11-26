@@ -65,11 +65,6 @@ namespace Ether::Graphics
     protected:
         friend class Dx12Device;
         wrl::ComPtr<IDxcBlob> m_ShaderBlob;
-
-        const std::string m_FileName;
-        const std::string m_FilePath;
-        const std::string m_EntryPoint;
-
         std::string m_TargetProfile;
     };
 

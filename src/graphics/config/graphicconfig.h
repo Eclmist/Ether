@@ -39,6 +39,9 @@ namespace Ether::Graphics
         inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
         inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
 
+        inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
+        inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
+
         inline void* GetWindowHandle() const { return m_WindowHandle; }
         inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
 
@@ -46,6 +49,7 @@ namespace Ether::Graphics
         ethVector2u m_Resolution;
         std::string m_ShaderSourceDir;
         bool m_IsValidationLayerEnabled;
+        bool m_UseSourceShaders;
         void* m_WindowHandle;
     };
 }

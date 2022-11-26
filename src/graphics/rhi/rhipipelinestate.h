@@ -41,20 +41,29 @@ namespace Ether::Graphics
         virtual void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) = 0;
         virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
         virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
-        virtual void SetVertexShader(const RhiShader& vs) = 0;
-        virtual void SetPixelShader(const RhiShader& ps) = 0;
+        virtual void SetVertexShader(RhiShader& vs) = 0;
+        virtual void SetPixelShader(RhiShader& ps) = 0;
         virtual void SetNodeMask(uint32_t mask) = 0;
         virtual void SetSampleMask(uint32_t mask) = 0;
+        virtual void Reset() = 0;
 
     public:
-        virtual void Reset() = 0;
+        std::unique_ptr<RhiPipelineState> Compile() const;
+        bool RequiresShaderCompilation() const;
+        void CompileShaders();
+
+    protected:
+        std::unordered_map<RhiShaderType, RhiShader*> m_Shaders;
     };
 
     class RhiPipelineState
     {
     public:
-        RhiPipelineState() = default;
+        RhiPipelineState(const RhiPipelineStateDesc& desc) : m_CreationDesc(desc) {}
         virtual ~RhiPipelineState() = default;
+
+    protected:
+        const RhiPipelineStateDesc& m_CreationDesc;
     };
 }
 

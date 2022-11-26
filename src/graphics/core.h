@@ -29,12 +29,13 @@
 
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessresourcemanager.h"
-
 #include "graphics/config/graphicconfig.h"
+#include "graphics/shaderdaemon/shaderdaemon.h"
 
 #include "graphics/commandmanager.h"
 #include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
+
 
 namespace Ether::Graphics
 {
@@ -61,6 +62,7 @@ namespace Ether::Graphics
         static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
         static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
         static inline RhiImguiWrapper& GetImguiWrapper() { return *Instance().m_Imgui; }
+        static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
     public:
         static void MainGraphicsThread();
@@ -77,6 +79,7 @@ namespace Ether::Graphics
         std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
         std::unique_ptr<GraphicCommon> m_GraphicsCommon;
         std::unique_ptr<GraphicDisplay> m_GraphicsDisplay;
+        std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
     private:
         GraphicConfig m_Config;

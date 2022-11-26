@@ -23,6 +23,11 @@
 #include "graphics/rhi/rhicommandqueue.h"
 #include "graphics/rhi/rhiresource.h"
 
+namespace Ether::Graphics
+{
+std::unordered_map<const RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> CommandContext::s_PipelineStateCache;
+}
+
 Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::string& contextName)
     : m_Name(contextName)
     , m_Type(type)
@@ -87,9 +92,18 @@ void Ether::Graphics::CommandContext::SetRootSignature(const RhiRootSignature& r
     m_CommandList->SetGraphicRootSignature(rootSignature);
 }
 
-void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& pipelineState)
+void Ether::Graphics::CommandContext::SetPipelineState(RhiPipelineStateDesc& psoDesc)
 {
-    m_CommandList->SetPipelineState(pipelineState);
+    if (psoDesc.RequiresShaderCompilation())
+    {
+        psoDesc.CompileShaders();
+        s_PipelineStateCache[&psoDesc] = psoDesc.Compile();
+    }
+
+    if (s_PipelineStateCache.find(&psoDesc) == s_PipelineStateCache.end())
+        s_PipelineStateCache[&psoDesc] = psoDesc.Compile();
+
+    m_CommandList->SetPipelineState(*s_PipelineStateCache.at(&psoDesc));
 }
 
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
