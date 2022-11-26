@@ -98,6 +98,7 @@ void Ether::Graphics::Dx12Module::InitializeAdapter()
 
 void Ether::Graphics::Dx12Module::InitializeDebugLayer()
 {
+#if defined(_DEBUG)
     LogGraphicsInfo("Graphics Debug Layer is enabled");
     wrl::ComPtr<ID3D12Debug> debugInterface;
     HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface));
@@ -105,16 +106,19 @@ void Ether::Graphics::Dx12Module::InitializeDebugLayer()
         LogGraphicsWarning("Failed to create DX12 debug interface");
     else
         debugInterface->EnableDebugLayer();
+#endif
 }
 
 void Ether::Graphics::Dx12Module::ReportLiveObjects()
 {
+#if defined(_DEBUG)
     IDXGIDebug1* pDebug = NULL;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
     {
         pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
         pDebug->Release();
     }
+#endif
 }
 
 #endif // ETH_GRAPHICS_DX12

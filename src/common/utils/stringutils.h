@@ -23,14 +23,14 @@
 
 namespace Ether
 {
-    //inline std::string ToNarrowString(const std::wstring& wide)
-    //{
-    //    std::string str(wide.length(), 0);
-    //    std::transform(wide.begin(), wide.end(), str.begin(), [](wchar_t c) {
-    //        return (char)c;
-    //        });
-    //    return str;
-    //}
+    inline std::string ToNarrowString(const std::wstring& wide)
+    {
+        std::string str(wide.length(), 0);
+        std::transform(wide.begin(), wide.end(), str.begin(), [](wchar_t c) {
+            return (char)c;
+            });
+        return str;
+    }
 
     inline std::wstring ToWideString(const std::string& narrow)
     {

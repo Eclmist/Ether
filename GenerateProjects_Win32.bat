@@ -5,7 +5,7 @@ rmdir /s build\
 
 :: ============== STANDALONE CONFIG (WIN32) ============== ::
 echo Generating Visual Studio solutions for Ether
-cmake -B build\win32 -DUSE_PRECOMPILED_HEADERS=ON
+cmake -D CONFIGURE_AS_TOOLMODE:BOOL=0 -B build\win32 -DUSE_PRECOMPILED_HEADERS=ON
 if %errorlevel% neq 0 (
     echo CMake exited with error code %errorlevel%
     echo Projects generation failed
@@ -32,7 +32,7 @@ echo Ether solution generated successfully
 
 echo Generating Visual Studio solutions for Ether (Toolmode)
 
-cmake -D CONFIGURE_AS_TOOLMODE:BOOL=1 -B build\win32
+cmake -D CONFIGURE_AS_TOOLMODE:BOOL=1 -B build\win32\toolmode
 
 if %errorlevel% neq 0 (
     echo CMake exited with error code %errorlevel%

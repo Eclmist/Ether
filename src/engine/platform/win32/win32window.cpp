@@ -190,7 +190,6 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
         case WM_SIZE:
             if (hasResized)
                 continue;
-
             hasResized = true;
             if (Engine::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(msg.lParam), (uint32_t)HIWORD(msg.lParam) })
                 Engine::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
@@ -199,7 +198,6 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
         {
             if (hasMoved)
                 continue;
-
             hasMoved = true;
             Rect clientRect = { LOWORD(msg.lParam), HIWORD(msg.lParam), 0, 0 };
             win32window.ToClientRect(clientRect);

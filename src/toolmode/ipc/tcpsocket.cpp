@@ -162,7 +162,7 @@ void Ether::Toolmode::TcpSocket::GetBytes(char* bytes, const size_t numBytes)
         if (TCP_FAILED(numBytesReceived))
         {
             m_HasActiveConnection = false;
-            throw std::runtime_error("Failed to receive data from blocking recv() call");
+            throw std::runtime_error("Editor connection was terminated");
         }
 
         memcpy(bytes + totalReceivedBytes, tempBuffer, numBytesReceived);

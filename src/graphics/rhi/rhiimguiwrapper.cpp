@@ -141,6 +141,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     m_Context.TransitionResource(Core::GetGraphicsDisplay().GetCurrentBackBuffer(), RhiResourceState::Present);
     m_Context.FinalizeAndExecute();
+    m_Context.Reset();
 }
 
 std::unique_ptr<Ether::Graphics::RhiImguiWrapper> Ether::Graphics::RhiImguiWrapper::InitForPlatform()

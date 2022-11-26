@@ -21,16 +21,26 @@
 
 #include "engine/platform/win32/win32launchargs.h"
 #include <windows.h>
-#include <stdio.h>
-#include <shellapi.h>
-#include <stdlib.h>
+#include <string>
+#include <sstream>
+#include <processenv.h>
 
 Ether::Win32::Win32LaunchArgs::Win32LaunchArgs()
 {
-    // TODO: Get windows command line args 
-    m_LaunchArgs.emplace_back("-sourceshaders", "");
-    m_LaunchArgs.emplace_back("-usevalidationlayer", "");
-    m_LaunchArgs.emplace_back("-toolmodeport", "2134");
+    LPWSTR cmdLineRaw = GetCommandLineW();
+    int argc = 0;
+    LPWSTR* argv = CommandLineToArgvW(cmdLineRaw, &argc);
+
+    for (int i = 1; i < argc; ++i) // Start from 1 to ignore application path
+    {
+        std::wstring flag = argv[i];
+        std::wstring arg = L"";
+
+        if (i + 1 < argc && argv[i + 1][0] != '-')
+            arg = argv[++i];
+
+        m_LaunchArgs.emplace_back(ToNarrowString(flag), ToNarrowString(arg));
+    }
 }
 
 #endif // ETH_PLATFORM_WIN32

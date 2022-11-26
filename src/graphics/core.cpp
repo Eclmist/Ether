@@ -36,6 +36,7 @@ void Ether::Graphics::Core::Initialize(const GraphicConfig& config)
 
     m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
     m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true);
+    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>();
     m_CommandManager = std::make_unique<CommandManager>();
     m_GraphicsDisplay = std::make_unique<GraphicDisplay>();
 
@@ -47,16 +48,22 @@ void Ether::Graphics::Core::FlushGpu()
     GetCommandManager().Flush();
 }
 
-void Ether::Graphics::Core::Update()
+void Ether::Graphics::Core::MainGraphicsThread()
 {
-    ETH_MARKER_FRAME("Graphics Update");
-    //context.SetMarker("Render");
-    //context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
-    //context.ClearColor(m_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 100.0f) / 2.0f + 0.5f,1,1,1 });
-    //context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
-    //context.FinalizeAndExecute();
+    ETH_MARKER_EVENT("Graphics Update");
+    GraphicContext context;
+    context.SetMarker("Render");
+    context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
+    context.ClearColor(m_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 100.0f) / 2.0f + 0.5f,1,1,1 });
+    context.TransitionResource(m_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
+    context.FinalizeAndExecute();
+    context.Reset();
 
     m_Instance->m_Imgui->Render();
     m_Instance->m_GraphicsDisplay->Present();
+
+    m_Instance->m_UploadBufferAllocator->Reset();
+
+    m_Instance->m_FrameNumber++;
 }
 

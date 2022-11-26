@@ -66,11 +66,7 @@ source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${engine_files})
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
 
-if (CONFIGURE_AS_TOOLMODE)
-    set(ETHER_PROJECT "Ether.Toolmode")
-else()
-    set(ETHER_PROJECT "Ether")
-endif()
+set(ETHER_PROJECT "Ether")
 
 add_library(${ETHER_PROJECT} SHARED ${engine_files})
 target_compile_definitions(${ETHER_PROJECT} PRIVATE $<IF:$<BOOL:${CONFIGURE_AS_TOOLMODE}>, ETH_TOOLMODE, ETH_ENGINE>)

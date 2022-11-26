@@ -155,7 +155,7 @@ void Ether::Toolmode::IpcManager::CommandListenerThread()
         }
         catch (std::runtime_error err)
         {
-            LogToolmodeError(err.what());
+            LogToolmodeInfo(err.what());
             QueueIncomingCommand(std::make_unique<DetachCommand>(nullptr));
             Disconnect();
         }

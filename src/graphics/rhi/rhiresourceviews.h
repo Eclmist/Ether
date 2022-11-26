@@ -27,6 +27,7 @@ namespace Ether::Graphics
     {
     public:
         RhiResourceView()
+            : m_CpuHandle({})
         {
             // Make each view unique
             static uint32_t i = 0;

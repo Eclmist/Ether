@@ -53,6 +53,7 @@ namespace Ether::Graphics
         static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
         static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
         static inline DescriptorAllocator& GetGpuDescriptorAllocator() { return *Instance().m_GpuDescriptorAllocator; }
+        static inline UploadBufferAllocator& GetUploadBufferAllocator() { return *Instance().m_UploadBufferAllocator; }
         static inline GraphicDisplay& GetGraphicsDisplay() { return *Instance().m_GraphicsDisplay; }
         static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
         static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
@@ -61,7 +62,7 @@ namespace Ether::Graphics
         static inline const GraphicConfig& GetConfig() { return Instance().m_Config; }
 
     public:
-        static void Update();
+        static void MainGraphicsThread();
         static void FlushGpu();
 
     private:
@@ -72,6 +73,7 @@ namespace Ether::Graphics
         std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
         std::unique_ptr<CommandManager> m_CommandManager;
         std::unique_ptr<DescriptorAllocator> m_GpuDescriptorAllocator;
+        std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
         std::unique_ptr<GraphicDisplay> m_GraphicsDisplay;
 
     private:

@@ -137,6 +137,7 @@ void Ether::Graphics::GraphicDisplay::ResizeViewport(const ethVector2u& size)
 
 void Ether::Graphics::GraphicDisplay::ResetCurrentBufferIndex()
 {
+    ETH_MARKER_EVENT("SwapChain - Get Current Back Buffer Index");
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
 

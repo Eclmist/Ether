@@ -35,6 +35,12 @@ Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::
     m_CommandList = Core::GetCommandManager().CreateCommandList(type, *m_CommandAllocator, m_Name + "::CommandList");
 }
 
+Ether::Graphics::CommandContext::~CommandContext()
+{
+    if (m_CommandAllocator != nullptr)
+        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
+}
+
 void Ether::Graphics::CommandContext::SetMarker(const std::string& name)
 {
     ETH_MARKER_EVENT("Command Context - Set Marker");
@@ -85,11 +91,14 @@ void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 
     Core::GetCommandManager().Execute(*m_CommandList);
     m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
-    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
-    m_CommandList->Reset(*m_CommandAllocator);
-    m_UploadBufferAllocator.Reset();
 
     if (waitForCompletion)
         m_CommandQueue->Flush();
+}
+
+void Ether::Graphics::CommandContext::Reset()
+{
+    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
+    m_CommandList->Reset(*m_CommandAllocator);
 }
 

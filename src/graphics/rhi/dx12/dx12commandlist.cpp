@@ -122,7 +122,7 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
 
 void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc desc)
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8];
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
 
     for (int i = 0; i < desc.m_NumRtv; ++i)

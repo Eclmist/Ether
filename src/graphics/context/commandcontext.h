@@ -33,7 +33,7 @@ namespace Ether::Graphics
     {
     public:
         CommandContext(RhiCommandType type, const std::string& contextName = "Unnamed Command Context");
-        ~CommandContext() = default;
+        ~CommandContext();
 
         inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
 
@@ -46,6 +46,7 @@ namespace Ether::Graphics
         void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
 
         void FinalizeAndExecute(bool waitForCompletion = false);
+        void Reset();
 
     protected:
         std::string m_Name;
@@ -56,8 +57,6 @@ namespace Ether::Graphics
         CommandAllocatorPool* m_CommandAllocatorPool;
 
         std::unique_ptr<RhiCommandList> m_CommandList;
-
-        UploadBufferAllocator m_UploadBufferAllocator;
     };
 }
 

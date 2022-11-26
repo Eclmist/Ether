@@ -80,7 +80,7 @@ void Ether::Engine::MainEngineThread()
         }
 
         Input::EndFrame();
-        Graphics::Core::Update();
+        Graphics::Core::MainGraphicsThread();
     }
 }
 
