@@ -133,6 +133,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 void Ether::Graphics::GraphicDisplay::ResizeViewport(const ethVector2u& size)
 {
     m_Viewport = { 0.0f, 0.0f, (float)size.x, (float)size.y, 0.0f, 1.0f };
+    m_ScissorRect = { 0.0f, 0.0f, (float)size.x, (float)size.y };
 }
 
 void Ether::Graphics::GraphicDisplay::ResetCurrentBufferIndex()

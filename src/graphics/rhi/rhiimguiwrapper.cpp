@@ -133,6 +133,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     ImGui::Render();
 
+    m_Context.PushMarker("Imgui Render");
     m_Context.TransitionResource(Core::GetGraphicsDisplay().GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
     m_Context.SetRenderTarget(Core::GetGraphicsDisplay().GetCurrentBackBufferRtv());
     m_Context.SetDescriptorHeap(*m_DescriptorHeap);
@@ -141,6 +142,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     RenderDrawData();
 
     m_Context.TransitionResource(Core::GetGraphicsDisplay().GetCurrentBackBuffer(), RhiResourceState::Present);
+    m_Context.PopMarker();
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
 }
