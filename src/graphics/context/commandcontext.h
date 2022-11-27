@@ -37,6 +37,7 @@ namespace Ether::Graphics
         ~CommandContext();
 
         inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
+        inline RhiCommandQueue& GetCommandQueue() const { return *m_CommandQueue; }
 
     public:
         void SetMarker(const std::string& name);
@@ -45,11 +46,13 @@ namespace Ether::Graphics
 
         void TransitionResource(RhiResource& resource, RhiResourceState newState);
         void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
-        void SetRootSignature(const RhiRootSignature& rootSignature);
         void SetPipelineState(RhiPipelineStateDesc& psoDesc);
+
+        void SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr);
 
         void FinalizeAndExecute(bool waitForCompletion = false);
         void Reset();
+
     protected:
         static std::unordered_map<const RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> s_PipelineStateCache;
 

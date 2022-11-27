@@ -509,20 +509,6 @@ D3D12_DEPTH_STENCILOP_DESC Ether::Graphics::Translate(const RhiDepthStencilOpera
     return dx12Desc;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Ether::Graphics::Translate(const RhiCpuHandle& rhiDesc)
-{
-    D3D12_CPU_DESCRIPTOR_HANDLE dx12Desc = {};
-    dx12Desc.ptr = rhiDesc.m_Ptr;
-    return dx12Desc;
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE Ether::Graphics::Translate(const RhiGpuHandle& rhiDesc)
-{
-    D3D12_GPU_DESCRIPTOR_HANDLE dx12Desc = {};
-    dx12Desc.ptr = rhiDesc.m_Ptr;
-    return dx12Desc;
-}
-
 D3D12_DESCRIPTOR_HEAP_DESC Ether::Graphics::Translate(const RhiDescriptorHeapDesc& rhiDesc)
 {
     D3D12_DESCRIPTOR_HEAP_DESC dx12Desc = {};
@@ -733,7 +719,7 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBuff
 {
     D3D12_CONSTANT_BUFFER_VIEW_DESC dx12Desc = {};
     dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
-    dx12Desc.BufferLocation = rhiDesc.m_Resource->GetGpuHandle().m_Ptr;
+    dx12Desc.BufferLocation = rhiDesc.m_Resource->GetGpuAddress();
 
     return dx12Desc;
 }

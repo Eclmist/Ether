@@ -27,14 +27,14 @@ namespace Ether::Graphics
     class RhiShader
     {
     public:
-        RhiShader(RhiShaderDesc desc) 
+        RhiShader(RhiShaderDesc desc)
             : m_Type(desc.m_Type)
-            , m_FileName(desc.m_Filename)
-            , m_FilePath(Core::GetGraphicsConfig().GetShaderSourceDir() + desc.m_Filename)
-            , m_EntryPoint(desc.m_EntryPoint)
             , m_IsCompiled(false)
             , m_CompiledSize(0)
-            , m_CompiledData(nullptr) {}
+            , m_CompiledData(nullptr)
+            , m_FileName(desc.m_Filename)
+            , m_FilePath(Core::GetGraphicConfig().GetShaderSourceDir() + desc.m_Filename)
+            , m_EntryPoint(desc.m_EntryPoint) {}
 
         virtual ~RhiShader() = default;
 

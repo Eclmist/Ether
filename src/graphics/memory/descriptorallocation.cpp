@@ -21,15 +21,15 @@
 #include "graphics/memory/descriptorallocator.h"
 
 Ether::Graphics::DescriptorAllocation::DescriptorAllocation(
-    RhiCpuHandle allocBaseCpuHandle,
-    RhiGpuHandle allocBaseGpuHandle,
+    RhiCpuAddress allocBaseCpuAddr,
+    RhiGpuAddress allocBaseGpuAddr,
     size_t numDescriptors,
     size_t descriptorSize,
     size_t indexInAllocator,
     DescriptorAllocator* parentAllocator)
     : FreeListAllocation(indexInAllocator, numDescriptors)
-    , m_BaseCpuHandle(allocBaseCpuHandle)
-    , m_BaseGpuHandle(allocBaseGpuHandle)
+    , m_BaseCpuAddress(allocBaseCpuAddr)
+    , m_BaseGpuAddress(allocBaseGpuAddr)
     , m_DescriptorSize(descriptorSize)
     , m_Parent(parentAllocator)
     , m_IsValid(true)
@@ -44,8 +44,8 @@ Ether::Graphics::DescriptorAllocation::~DescriptorAllocation() noexcept
 
 Ether::Graphics::DescriptorAllocation::DescriptorAllocation(DescriptorAllocation&& move) noexcept
     :  FreeListAllocation(move.m_Offset, move.m_Size)
-    , m_BaseCpuHandle(move.m_BaseCpuHandle)
-    , m_BaseGpuHandle(move.m_BaseGpuHandle)
+    , m_BaseCpuAddress(move.m_BaseCpuAddress)
+    , m_BaseGpuAddress(move.m_BaseGpuAddress)
     , m_DescriptorSize(move.m_DescriptorSize)
     , m_Parent(move.m_Parent)
     , m_IsValid(move.m_IsValid)
@@ -57,8 +57,8 @@ Ether::Graphics::DescriptorAllocation& Ether::Graphics::DescriptorAllocation::op
 {
     m_Parent->Free(*this);
 
-    m_BaseCpuHandle = move.m_BaseCpuHandle;
-    m_BaseGpuHandle = move.m_BaseGpuHandle;
+    m_BaseCpuAddress = move.m_BaseCpuAddress;
+    m_BaseGpuAddress = move.m_BaseGpuAddress;
     m_Size = move.m_Size;
     m_DescriptorSize = move.m_DescriptorSize;
     m_Offset = move.m_Offset;
@@ -70,21 +70,21 @@ Ether::Graphics::DescriptorAllocation& Ether::Graphics::DescriptorAllocation::op
     return *this;
 }
 
-size_t Ether::Graphics::DescriptorAllocation::GetDescriptorIndex(size_t offset) const
+size_t Ether::Graphics::DescriptorAllocation::GetDescriptorIndex(size_t localIndex) const
 {
-    return m_Offset + offset;
+    return m_Offset + localIndex;
 }
 
-Ether::Graphics::RhiCpuHandle Ether::Graphics::DescriptorAllocation::GetCpuHandle(size_t offset) const
+Ether::Graphics::RhiCpuAddress Ether::Graphics::DescriptorAllocation::GetCpuAddress(size_t localIndex) const
 {
-    return { m_BaseCpuHandle.m_Ptr + offset * m_DescriptorSize };
+    return m_BaseCpuAddress + localIndex * m_DescriptorSize;
 }
 
-Ether::Graphics::RhiGpuHandle Ether::Graphics::DescriptorAllocation::GetGpuHandle(size_t offset) const
+Ether::Graphics::RhiGpuAddress Ether::Graphics::DescriptorAllocation::GetGpuAddress(size_t localIndex) const
 {
     if (!m_Parent->IsShaderVisible())
         return {};
 
-    return { m_BaseGpuHandle.m_Ptr + offset * m_DescriptorSize };
+    return m_BaseGpuAddress + localIndex * m_DescriptorSize;
 }
 

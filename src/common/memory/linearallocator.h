@@ -34,7 +34,7 @@ namespace Ether
 
         virtual size_t GetOffset() const override { return m_Offset; }
         virtual size_t GetSize() const override { return m_Size; }
-        virtual void* GetBaseAddress() const override { return nullptr; }
+        virtual void* GetBaseCpuHandle() const override { return nullptr; }
 
     protected:
         size_t m_Offset;

@@ -21,6 +21,7 @@
 
 Ether::LinearAllocator::LinearAllocator(size_t capacity)
     : MemoryAllocator(capacity)
+    , m_Offset(0)
 {
 }
 

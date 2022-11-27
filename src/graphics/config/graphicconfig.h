@@ -31,18 +31,15 @@ namespace Ether::Graphics
 
     public:
         inline ethVector2u GetResolution() const { return m_Resolution; }
-        void SetResolution(const ethVector2u& resolution);
-
         inline std::string GetShaderSourceDir() const { return m_ShaderSourceDir; }
-        inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourceDir = dir; }
-
         inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
-        inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
-
         inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
-        inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
-
         inline void* GetWindowHandle() const { return m_WindowHandle; }
+
+        void SetResolution(const ethVector2u& resolution);
+        inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourceDir = dir; }
+        inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
+        inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
         inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
 
     private:

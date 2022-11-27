@@ -18,38 +18,27 @@
 */
 
 #pragma once
-//
-//ETH_NAMESPACE_BEGIN
-//
-//class GraphicRenderer : public NonCopyable, public NonMovable
-//{
-//public:
-//    GraphicRenderer();
-//    ~GraphicRenderer();
-//
-//    void WaitForPresent();
-//    void Render();
-//    void Present();
-//    void CleanUp();
-//
-//    inline GraphicContext& GetGraphicContext() { return m_GraphicContext; }
-//    inline ResourceContext& GetResourceContext() { return m_ResourceContext; }
-//
-//public:
-//    void DrawNode(VisualNode*); // TODO: Move this responsibility into the various render passes
-//
-//private:
-//    GraphicContext m_GraphicContext;
-//    ResourceContext m_ResourceContext;
-//
-//    GraphicScheduler m_Scheduler;
-//
-//public: 
-//    // TODO: Move into some kind of geometry render pass. Right now accessed by HardCodedRenderPass as a POC
-//    std::vector<VisualNode*> m_PendingVisualNodes;
-//    // TODO: Move this somewhere sane
-//    std::shared_ptr<CompiledTexture> m_EnvironmentHDRI;
-//};
-//
-//ETH_NAMESPACE_END
 
+#include "graphics/pch.h"
+#include "graphics/context/graphiccontext.h"
+
+namespace Ether::Graphics
+{
+    class GraphicRenderer : public NonCopyable, public NonMovable
+    {
+    public:
+        GraphicRenderer();
+        ~GraphicRenderer() = default;
+
+        void WaitForPresent();
+        void Render();
+        void Present();
+
+        inline GraphicContext& GetGraphicContext() { return m_Context; }
+
+    private:
+        GraphicContext m_Context;
+        
+        std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
+    };
+}

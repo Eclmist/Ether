@@ -24,7 +24,6 @@
 Ether::Graphics::Core::~Core()
 {
     FlushGpu();
-    m_Imgui.reset();
 }
 
 void Ether::Graphics::Core::Initialize()
@@ -34,11 +33,11 @@ void Ether::Graphics::Core::Initialize()
 
     m_ShaderDaemon = std::make_unique<ShaderDaemon>();
     m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
-    m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true);
-    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>();
+    m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true, _64KiB);
     m_CommandManager = std::make_unique<CommandManager>();
-    m_GraphicsCommon = std::make_unique<GraphicCommon>();
-    m_GraphicsDisplay = std::make_unique<GraphicDisplay>();
+    m_GraphicCommon = std::make_unique<GraphicCommon>();
+    m_GraphicDisplay = std::make_unique<GraphicDisplay>();
+    m_GraphicRenderer = std::make_unique<GraphicRenderer>();
 
     m_Imgui = RhiImguiWrapper::InitForPlatform();
 }
@@ -48,58 +47,14 @@ void Ether::Graphics::Core::FlushGpu()
     GetCommandManager().Flush();
 }
 
-#include "graphics/rhi/rhishader.h"
-
 void Ether::Graphics::Core::MainGraphicsThread()
 {
     ETH_MARKER_EVENT("Graphics Update");
 
-    RhiShaderDesc shaderDesc = {};
-    shaderDesc.m_Filename = "default.hlsl";
-    shaderDesc.m_EntryPoint = "VS_Main";
-    shaderDesc.m_Type = RhiShaderType::Vertex;
-    static std::unique_ptr<RhiShader> tempVs = GetDevice().CreateShader(shaderDesc);
+    s_Instance->m_GraphicRenderer->WaitForPresent();
+    s_Instance->m_GraphicRenderer->Render();
+    s_Instance->m_GraphicRenderer->Present();
 
-    shaderDesc.m_Filename = "default.hlsl";
-    shaderDesc.m_EntryPoint = "PS_Main";
-    shaderDesc.m_Type = RhiShaderType::Pixel;
-    static std::unique_ptr<RhiShader> tempPs = GetDevice().CreateShader(shaderDesc);
-
-    static std::unique_ptr<RhiPipelineStateDesc> psoDesc = s_Instance->m_RhiDevice->CreatePipelineStateDesc();
-    psoDesc->SetVertexShader(*tempVs);
-    psoDesc->SetPixelShader(*tempPs);
-    psoDesc->SetRenderTargetFormat(BackBufferFormat);
-    psoDesc->SetRootSignature(*s_Instance->m_GraphicsCommon->m_EmptyRootSignature);
-
-    GraphicContext tempContext;
-    tempContext.PushMarker("Clear");
-    tempContext.SetViewport(s_Instance->m_GraphicsDisplay->GetViewport());
-    tempContext.SetScissorRect(s_Instance->m_GraphicsDisplay->GetScissorRect());
-    tempContext.TransitionResource(s_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::RenderTarget);
-    tempContext.ClearColor(s_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 100.0f) / 2.0f + 0.5f, 1, 1, 1 });
-    tempContext.PopMarker();
-    tempContext.FinalizeAndExecute();
-    tempContext.Reset();
-
-    tempContext.PushMarker("Fullscreen");
-    tempContext.SetViewport(s_Instance->m_GraphicsDisplay->GetViewport());
-    tempContext.SetScissorRect(s_Instance->m_GraphicsDisplay->GetScissorRect());
-    tempContext.SetPipelineState(*psoDesc);
-    tempContext.SetDescriptorHeap(s_Instance->m_GpuDescriptorAllocator->GetDescriptorHeap());
-    tempContext.SetRootSignature(*s_Instance->m_GraphicsCommon->m_EmptyRootSignature);
-    tempContext.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
-    tempContext.SetRenderTarget(s_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv());
-    tempContext.DrawInstanced(4, 1);
-
-    tempContext.TransitionResource(s_Instance->m_GraphicsDisplay->GetCurrentBackBuffer(), RhiResourceState::Present);
-    tempContext.PopMarker();
-    tempContext.FinalizeAndExecute();
-    tempContext.Reset();
-
-    s_Instance->m_Imgui->Render();
-    s_Instance->m_GraphicsDisplay->Present();
-
-    s_Instance->m_UploadBufferAllocator->Reset();
     s_Instance->m_FrameNumber++;
 }
 

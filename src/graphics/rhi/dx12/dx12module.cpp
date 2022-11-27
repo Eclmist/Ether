@@ -28,7 +28,7 @@ Ether::Graphics::Dx12Module::Dx12Module()
 {
     LogGraphicsInfo("Initializing DirectX 12");
 
-    if (Core::GetGraphicsConfig().IsValidationLayerEnabled())
+    if (Core::GetGraphicConfig().IsValidationLayerEnabled())
         InitializeDebugLayer();
 
     InitializeFactory();
@@ -37,7 +37,7 @@ Ether::Graphics::Dx12Module::Dx12Module()
 
 Ether::Graphics::Dx12Module::~Dx12Module()
 {
-    if (Core::GetGraphicsConfig().IsValidationLayerEnabled())
+    if (Core::GetGraphicConfig().IsValidationLayerEnabled())
         ReportLiveObjects();
 }
 

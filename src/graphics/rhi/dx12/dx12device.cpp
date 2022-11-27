@@ -205,7 +205,7 @@ std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Devic
 {
     std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
 
-    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
     dx12Obj->m_Format = desc.m_Format;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
@@ -213,7 +213,7 @@ std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Devic
     m_Device->CreateRenderTargetView(
         d3dResource->m_Resource.Get(),
         &creationDesc,
-        Translate(dx12Obj->m_CpuHandle)
+        { dx12Obj->m_CpuAddress }
     );
 
     return dx12Obj;
@@ -223,7 +223,7 @@ std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Devic
 {
     std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
 
-    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
     dx12Obj->m_Format = desc.m_Format;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
@@ -231,7 +231,7 @@ std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Devic
     m_Device->CreateDepthStencilView(
         d3dResource->m_Resource.Get(),
         &creationDesc,
-        Translate(dx12Obj->m_CpuHandle)
+        { dx12Obj->m_CpuAddress }
     );
 
     return dx12Obj;
@@ -241,14 +241,14 @@ std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Dev
 {
     std::unique_ptr<Dx12ShaderResourceView> dx12Obj = std::make_unique<Dx12ShaderResourceView>();
 
-    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
     m_Device->CreateShaderResourceView(
         d3dResource->m_Resource.Get(),
         &creationDesc,
-        Translate(dx12Obj->m_CpuHandle)
+        { dx12Obj->m_CpuAddress }
     );
 
     return dx12Obj;
@@ -257,12 +257,12 @@ std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Dev
 std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Device::CreateConstantBufferView(RhiConstantBufferViewDesc desc) const
 {
     std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
-    dx12Obj->m_CpuHandle = desc.m_TargetCpuHandle;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
 
     auto creationDesc = Translate(desc);
     m_Device->CreateConstantBufferView(
         &creationDesc,
-        Translate(dx12Obj->m_CpuHandle)
+        { dx12Obj->m_CpuAddress }
     );
 
     return dx12Obj;

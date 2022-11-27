@@ -31,7 +31,7 @@ namespace Ether::Graphics
         Dx12Resource(const std::string& name);
 
     public:
-        RhiGpuHandle GetGpuHandle() const override;
+        RhiGpuAddress GetGpuAddress() const override;
         void Map(void** mappedAddr) const override;
         void Unmap() const override;
 

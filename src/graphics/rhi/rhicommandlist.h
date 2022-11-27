@@ -38,13 +38,15 @@ namespace Ether::Graphics
         virtual void SetScissorRect(RhiScissorDesc scissor) = 0;
         virtual void SetStencilRef(RhiStencilValue val) = 0;
         virtual void SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
-        virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
-        virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
-        //virtual RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
-        //virtual RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
+        virtual void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
+        virtual void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
         virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
-
         virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
+        virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
+        virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
+
+        virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
+
 
         virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
         virtual void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) = 0;

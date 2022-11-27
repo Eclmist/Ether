@@ -40,19 +40,18 @@ namespace Ether::Graphics
         void SetScissorRect(RhiScissorDesc scissor) override;
         void SetStencilRef(RhiStencilValue val) override;
         void SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
-        void SetPipelineState(const RhiPipelineState& pso) override;
-        void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
-        //RhiResult SetGraphicRootSignature(RhiRootSignatureHandle rootSignature) override;
-        //RhiResult SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
-        //RhiResult SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
+        void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
+        void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
         void SetRenderTargets(RhiSetRenderTargetsDesc desc) override;
+        void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
+        void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
+        void SetPipelineState(const RhiPipelineState& pso) override;
 
         //RhiResult SetRootConstant(RhiSetRootConstantDesc desc) override;
         //RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) override;
         //RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) override;
         //RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) override;
-        //RhiResult SetRootConstantBuffer(RhiSetRootConstantBufferDesc desc) override;
-        void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
+        void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) override;
 
         void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
         void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;

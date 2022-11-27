@@ -32,7 +32,7 @@ namespace Ether::Graphics
     public:
         virtual uint32_t GetCurrentBackBufferIndex() const = 0;
         virtual RhiResource& GetBuffer(uint8_t index) const = 0;
-        virtual void ResizeBuffers(RhiResizeDesc desc) = 0;
+        virtual void ResizeBuffers(const ethVector2u& size) = 0;
         virtual void ResetBuffers() = 0;
         virtual void Present(uint8_t numVblanks) = 0;
     };

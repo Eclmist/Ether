@@ -24,7 +24,7 @@
 Ether::Graphics::DescriptorAllocator::DescriptorAllocator(
     RhiDescriptorHeapType type,
     bool isShaderVisible,
-    uint32_t maxHeapSize)
+    size_t maxHeapSize)
     : FreeListAllocator(maxHeapSize)
     , m_MaxDescriptors(maxHeapSize)
     , m_IsShaderVisible(isShaderVisible)
@@ -48,12 +48,12 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::A
         baseAlloc = FreeListAllocator::Allocate(sizeAlign);
     }
 
-    uint32_t descriptorIdx = baseAlloc->GetOffset();
-    uint32_t descriptorSize = m_DescriptorHeap->GetHandleIncrementSize();
-    RhiCpuHandle allocBaseCpuHandle = { m_DescriptorHeap->GetBaseCpuHandle().m_Ptr + descriptorIdx * descriptorSize };
-    RhiGpuHandle allocBaseGpuHandle = m_IsShaderVisible
-        ? RhiGpuHandle{ m_DescriptorHeap->GetBaseGpuHandle().m_Ptr + descriptorIdx * descriptorSize }
-        : RhiGpuHandle{};
+    size_t descriptorIdx = baseAlloc->GetOffset();
+    size_t descriptorSize = m_DescriptorHeap->GetHandleIncrementSize();
+    RhiCpuAddress allocBaseCpuHandle = m_DescriptorHeap->GetBaseCpuAddress() + descriptorIdx * descriptorSize;
+    RhiGpuAddress allocBaseGpuHandle = m_IsShaderVisible
+        ? m_DescriptorHeap->GetBaseGpuAddress() + descriptorIdx * descriptorSize
+        : NullAddress;
 
    return std::make_unique<DescriptorAllocation>(
         allocBaseCpuHandle,
@@ -75,7 +75,7 @@ void Ether::Graphics::DescriptorAllocator::Free(const DescriptorAllocation& allo
     m_StaleAllocations.emplace(allocation.GetDescriptorIndex(), allocation.GetNumDescriptors());
 }
 
-void Ether::Graphics::DescriptorAllocator::ReclaimStaleAllocations(uint32_t numIndices)
+void Ether::Graphics::DescriptorAllocator::ReclaimStaleAllocations(size_t numIndices)
 {
     while (!m_StaleAllocations.empty())
     {

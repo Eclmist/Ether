@@ -20,35 +20,31 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/rhi/rhidescriptorheap.h"
-#include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-    class Dx12DescriptorHeap : public RhiDescriptorHeap
+    class ETH_GRAPHIC_DLL Material
     {
     public:
-        Dx12DescriptorHeap() = default;
-        ~Dx12DescriptorHeap() override = default;
+        Material() = default;
+        ~Material() = default;
 
     public:
-        RhiCpuAddress GetBaseCpuAddress() const override;
-        RhiGpuAddress GetBaseGpuAddress() const override;
-        RhiCpuAddress GetNextCpuAddress() const override;
-        RhiGpuAddress GetNextGpuAddress() const override;
+        inline ethVector4 GetBaseColor() const { return m_BaseColor; }
+        inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
+        inline float GetRoughness() const { return m_Roughness; }
+        inline float GetMetalness() const { return m_Metalness; }
 
-        uint32_t GetHandleIncrementSize() const override;
-        void IncrementHandle() override;
+        inline void SetBaseColor(ethVector4 color) { m_BaseColor = color; }
+        inline void SetSpecularColor(ethVector4 color) { m_SpecularColor = color; }
+        inline void SetRoughness(float roughness) { m_Roughness = roughness; }
+        inline void SetMetalness(float metalness) { m_Metalness = metalness; }
 
     private:
-        friend class Dx12CommandList;
-        friend class Dx12Device;
-        friend class Dx12ImguiWrapper;
-
-        wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
-
-        size_t m_Offset;
-        size_t m_HandleIncrementSize;
+        ethVector4 m_BaseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        ethVector4 m_SpecularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float m_Roughness = 0.5f;
+        float m_Metalness = 1.0f;
     };
 }
 

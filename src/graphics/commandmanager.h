@@ -34,11 +34,11 @@ namespace Ether::Graphics
         std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandType type, RhiCommandAllocator& alloc, const std::string& name);
 
     public:
-        void Execute(RhiCommandList& cmdList);
+        RhiFenceValue Execute(RhiCommandList& cmdList);
         void Flush();
 
     public:
-        inline RhiCommandQueue& GetGraphicsQueue() { return *m_GraphicsQueue; }
+        inline RhiCommandQueue& GetGraphicQueue() { return *m_GraphicQueue; }
         inline RhiCommandQueue& GetComputeQueue() { return *m_ComputeQueue; }
         inline RhiCommandQueue& GetCopyQueue() { return *m_CopyQueue; }
 
@@ -50,7 +50,7 @@ namespace Ether::Graphics
         CommandAllocatorPool& GetAllocatorPool(RhiCommandType type);
 
     private:
-        std::unique_ptr<RhiCommandQueue> m_GraphicsQueue;
+        std::unique_ptr<RhiCommandQueue> m_GraphicQueue;
         std::unique_ptr<RhiCommandQueue> m_ComputeQueue;
         std::unique_ptr<RhiCommandQueue> m_CopyQueue;
 

@@ -37,33 +37,32 @@ namespace Ether::Graphics
         GraphicDisplay();
         ~GraphicDisplay();
 
+    public:
         void Present();
         void ResizeBuffers(const ethVector2u& size);
 
     public:
-        inline RhiResource& GetCurrentBackBuffer() const { return *m_RenderTargets[m_CurrentBackBufferIndex]; }
-        inline RhiRenderTargetView& GetCurrentBackBufferRtv() const { return *m_RenderTargetRtv[m_CurrentBackBufferIndex]; }
-        inline RhiShaderResourceView& GetCurrentBackBufferSrv() const { return *m_RenderTargetSrv[m_CurrentBackBufferIndex]; }
-
-        inline uint64_t GetCurrentBackBufferFence() const { return m_FrameBufferFences[m_CurrentBackBufferIndex]; }
-        inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
-
-        inline bool IsVsyncEnabled() const { return m_VSyncEnabled; }
         inline uint32_t GetNumBuffers() const { return (uint32_t)m_BufferingMode; }
-
+        inline uint32_t GetBackBufferIndex() const { return m_CurrentBackBufferIndex; }
+        inline uint64_t GetBackBufferFence() const { return m_FrameBufferFences[GetBackBufferIndex()]; }
+        inline RhiResource& GetBackBuffer() const { return *m_RenderTargets[GetBackBufferIndex()]; }
+        inline RhiRenderTargetView& GetBackBufferRtv() const { return *m_RenderTargetRtv[GetBackBufferIndex()]; }
+        inline RhiShaderResourceView& GetBackBufferSrv() const { return *m_RenderTargetSrv[GetBackBufferIndex()]; }
         inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
         inline const RhiScissorDesc& GetScissorRect() const { return m_ScissorRect; }
+        inline bool IsVsyncEnabled() const { return m_VSyncEnabled; }
 
+        inline void SetCurrentBackBufferFence(uint64_t fenceValue) { m_FrameBufferFences[m_CurrentBackBufferIndex] = fenceValue; }
         inline void SetVSyncEnabled(bool enabled) { m_VSyncEnabled = enabled; }
         inline void SetVSyncVBlanks(int numVblanks) { m_VSyncVBlanks = numVblanks; }
 
     private:
+        void InitializeFences();
+        void ResizeViewport(const ethVector2u& size);
         void CreateSwapChain(void* hwnd);
         void CreateResourcesFromSwapChain();
         void CreateViewsFromSwapChain();
-        void ResizeViewport(const ethVector2u& size);
-        void ResetCurrentBufferIndex();
-        void ResetFences();
+        void GetNewBackBufferIndex();
 
     private:
         std::unique_ptr<RhiSwapChain> m_SwapChain;
@@ -74,7 +73,7 @@ namespace Ether::Graphics
         std::unique_ptr<RhiShaderResourceView> m_RenderTargetSrv[MaxSwapChainBuffers];
 
         DescriptorAllocator m_RtvAllocator;
-        std::vector<std::unique_ptr<MemoryAllocation>> m_DescriptorLifetimeMaintainer;
+        std::vector<std::unique_ptr<MemoryAllocation>> m_SwapChainDescriptors;
 
         uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
         uint32_t m_CurrentBackBufferIndex;

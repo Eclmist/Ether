@@ -19,13 +19,23 @@
 
 #include "common/fullscreenhelpers.hlsl"
 
+struct Material
+{
+    float4 m_BaseColor;
+    float4 m_SpecularColor;
+    float m_Roughness;
+    float m_Metalness;
+};
+
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD0;
 };
 
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
+ConstantBuffer<Material> m_InstanceParams : register(b0);
+
+VS_OUTPUT VS_Main(uint ID : SV_VertexID, uint INSTANCE : SV_InstanceID)
 {
     VS_OUTPUT o;
 
@@ -33,7 +43,11 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
     float2 uv;
     GetVertexFromID(ID, pos, uv);
 
+    pos /= 4.0f;
+    pos.x += m_InstanceParams.m_Metalness;
+
     o.Position = float4(pos, 1.0f, 1.0f);
+
     o.TexCoord = uv;
 
     return o;
@@ -41,6 +55,12 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    return float4(IN.TexCoord, 0.0f, 1.0f);
+    float d = 0.1f;
+
+    //for (int i = 0; i < 1000000; ++i)
+    //    d += i;
+
+
+    return float4(IN.TexCoord, m_InstanceParams.m_Roughness, d);
 }
 

@@ -87,11 +87,6 @@ void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap&
     m_CommandList->SetDescriptorHeaps(desc);
 }
 
-void Ether::Graphics::CommandContext::SetRootSignature(const RhiRootSignature& rootSignature)
-{
-    m_CommandList->SetGraphicRootSignature(rootSignature);
-}
-
 void Ether::Graphics::CommandContext::SetPipelineState(RhiPipelineStateDesc& psoDesc)
 {
     if (psoDesc.RequiresShaderCompilation())
@@ -104,6 +99,11 @@ void Ether::Graphics::CommandContext::SetPipelineState(RhiPipelineStateDesc& pso
         s_PipelineStateCache[&psoDesc] = psoDesc.Compile();
 
     m_CommandList->SetPipelineState(*s_PipelineStateCache.at(&psoDesc));
+}
+
+void Ether::Graphics::CommandContext::SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootConstantBuffer(bindSlot, resourceAddr);
 }
 
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)

@@ -32,6 +32,7 @@ Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(uint32_t numParams
     m_Dx12RootSignatureDesc.NumStaticSamplers = numSamplers;
     m_Dx12RootSignatureDesc.pParameters = m_Dx12RootParameters.data();
     m_Dx12RootSignatureDesc.pStaticSamplers = m_Dx12StaticSamplers.data();
+    m_Dx12RootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 }
 
 void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis)

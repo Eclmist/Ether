@@ -44,6 +44,7 @@ namespace Ether::Graphics
     class RhiSwapChain;
     class RhiShader;
 
+
     typedef uint64_t RhiFenceValue;
     typedef uint32_t RhiStencilValue;
 
@@ -64,21 +65,13 @@ namespace Ether::Graphics
         };
     };
 
-    struct RhiResizeDesc
-    {
-        ethVector2u m_Size;
-    };
+    //============================= Memory ==============================//
 
-    //========================== Memory Descs ===========================//
-    struct RhiCpuHandle
-    {
-        uint64_t m_Ptr;
-    };
+    typedef uint64_t RhiCpuAddress;
+    typedef uint64_t RhiGpuAddress;
 
-    struct RhiGpuHandle
-    {
-        uint64_t m_Ptr;
-    };
+    constexpr uint64_t UnknownAddress = -1;
+    constexpr uint64_t NullAddress = 0;
 
     //========================= Creation Descs ==========================//
 
@@ -137,7 +130,7 @@ namespace Ether::Graphics
     {
         RhiDescriptorHeapType m_Type;
         RhiDescriptorHeapFlag m_Flags;
-        uint32_t m_NumDescriptors;
+        size_t m_NumDescriptors;
     };
 
     struct RhiInputElementDesc
@@ -233,7 +226,7 @@ namespace Ether::Graphics
     struct RhiResourceViewDesc
     {
         RhiResource* m_Resource;
-        RhiCpuHandle m_TargetCpuHandle;
+        RhiCpuAddress m_TargetCpuAddr;
     };
 
     struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
@@ -248,20 +241,20 @@ namespace Ether::Graphics
 
     struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
     {
-        RhiGpuHandle m_TargetGpuHandle;
+        RhiGpuAddress m_TargetGpuAddr;
         RhiFormat m_Format;
         RhiShaderResourceDims m_Dimensions;
     };
 
     struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
     {
-        RhiGpuHandle m_TargetGpuHandle;
+        RhiGpuAddress m_TargetGpuAddr;
         size_t m_BufferSize;
     };
 
     struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
     {
-        RhiGpuHandle m_TargetGpuHandle;
+        RhiGpuAddress m_TargetGpuAddr;
     };
 
     struct RhiIndexBufferViewDesc : public RhiResourceViewDesc
@@ -375,39 +368,6 @@ namespace Ether::Graphics
         uint32_t m_NumRtv;
         const RhiRenderTargetView* m_RtvHandles[8];
         const RhiDepthStencilView* m_DsvHandle;
-    };
-
-    struct RhiSetRootConstantDesc
-    {
-        uint32_t m_RootParameterIndex;
-        uint32_t m_SrcData;
-        uint32_t m_DestOffset;
-    };
-
-    struct RhiSetRootConstantsDesc
-    {
-        uint32_t m_RootParameterIndex;
-        uint32_t m_NumConstants;
-        uint32_t m_DestOffset;
-        void* m_Data;
-    };
-
-    struct RhiSetRootDescriptorTableDesc
-    {
-        uint32_t m_RootParameterIndex;
-        RhiGpuHandle m_BaseSrvHandle;
-    };
-
-    struct RhiSetRootShaderResourceDesc
-    {
-        uint32_t m_RootParameterIndex;
-        RhiResource* m_Resource;
-    };
-
-    struct RhiSetRootConstantBufferDesc
-    {
-        uint32_t m_RootParameterIndex;
-        RhiResource* m_Resource;
     };
 }
 

@@ -22,32 +22,24 @@
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
-Ether::Graphics::RhiCpuHandle Ether::Graphics::Dx12DescriptorHeap::GetBaseCpuHandle() const
+Ether::Graphics::RhiCpuAddress Ether::Graphics::Dx12DescriptorHeap::GetBaseCpuAddress() const
 {
-    RhiCpuHandle handle;
-    handle.m_Ptr = m_Heap->GetCPUDescriptorHandleForHeapStart().ptr;
-    return handle;
+    return m_Heap->GetCPUDescriptorHandleForHeapStart().ptr;
 }
 
-Ether::Graphics::RhiGpuHandle Ether::Graphics::Dx12DescriptorHeap::GetBaseGpuHandle() const
+Ether::Graphics::RhiGpuAddress Ether::Graphics::Dx12DescriptorHeap::GetBaseGpuAddress() const
 {
-    RhiGpuHandle handle;
-    handle.m_Ptr = m_Heap->GetGPUDescriptorHandleForHeapStart().ptr;
-    return handle;
+    return m_Heap->GetGPUDescriptorHandleForHeapStart().ptr;
 }
 
-Ether::Graphics::RhiCpuHandle Ether::Graphics::Dx12DescriptorHeap::GetNextCpuHandle() const
+Ether::Graphics::RhiCpuAddress Ether::Graphics::Dx12DescriptorHeap::GetNextCpuAddress() const
 {
-    RhiCpuHandle handle = GetBaseCpuHandle();
-    handle.m_Ptr += m_Offset;
-    return handle;
+    return GetBaseCpuAddress() + m_Offset;
 }
 
-Ether::Graphics::RhiGpuHandle Ether::Graphics::Dx12DescriptorHeap::GetNextGpuHandle() const
+Ether::Graphics::RhiGpuAddress Ether::Graphics::Dx12DescriptorHeap::GetNextGpuAddress() const
 {
-    RhiGpuHandle handle = GetBaseGpuHandle();
-    handle.m_Ptr += m_Offset;
-    return handle;
+    return GetBaseGpuAddress() + m_Offset;
 }
 
 uint32_t Ether::Graphics::Dx12DescriptorHeap::GetHandleIncrementSize() const

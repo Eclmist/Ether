@@ -66,41 +66,21 @@ void Ether::Graphics::Dx12CommandList::SetPrimitiveTopology(RhiPrimitiveTopology
     m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));
 }
 
-void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
+void Ether::Graphics::Dx12CommandList::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
 {
-    m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
+    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(vertexBuffer.m_Resource);
+    D3D12_VERTEX_BUFFER_VIEW dx12View = Translate(vertexBuffer);
+    dx12View.BufferLocation = dx12Resource->GetGpuAddress();
+    m_CommandList->IASetVertexBuffers(0, 1, &dx12View);
 }
 
-void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+void Ether::Graphics::Dx12CommandList::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
 {
-    const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
-    m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
+    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(indexBuffer.m_Resource);
+    D3D12_INDEX_BUFFER_VIEW dx12View = Translate(indexBuffer);
+    dx12View.BufferLocation = dx12Resource->GetGpuAddress();
+    m_CommandList->IASetIndexBuffer(&dx12View);
 }
-
-//RhiResult Dx12CommandList::SetGraphicRootSignature(RhiRootSignatureHandle rootSignature)
-//{
-//    const auto d3dRootSignature = rootSignature.As<Dx12RootSignature>();
-//    m_CommandList->SetGraphicsRootSignature(d3dRootSignature->m_RootSignature.Get());
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
-//{
-//    const auto d3dResource = vertexBuffer.m_Resource.As<Dx12Resource>();
-//    D3D12_VERTEX_BUFFER_VIEW d3dView = Translate(vertexBuffer);
-//    d3dView.BufferLocation = d3dResource->GetGpuHandle().m_Ptr;
-//    m_CommandList->IASetVertexBuffers(0, 1, &d3dView);
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
-//{
-//    const auto d3dResource = indexBuffer.m_Resource.As<Dx12Resource>();
-//    D3D12_INDEX_BUFFER_VIEW d3dView = Translate(indexBuffer);
-//    d3dView.BufferLocation = d3dResource->GetGpuHandle().m_Ptr;
-//    m_CommandList->IASetIndexBuffer(&d3dView);
-//    return RhiResult::Success;
-//}
 
 void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc desc)
 {
@@ -108,10 +88,10 @@ void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc 
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
 
     for (int i = 0; i < desc.m_NumRtv; ++i)
-        rtvHandles[i] = Translate(desc.m_RtvHandles[i]->GetCpuAddress());
+        rtvHandles[i] = { desc.m_RtvHandles[i]->GetCpuAddress() };
 
     if (desc.m_DsvHandle != nullptr)
-        dsvHandle = Translate(desc.m_DsvHandle->GetCpuAddress());
+        dsvHandle = { desc.m_DsvHandle->GetCpuAddress() };
 
     m_CommandList->OMSetRenderTargets
     (
@@ -120,6 +100,29 @@ void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc 
         false,
         desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle
     );
+}
+
+void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc)
+{
+    // Only one heap of each type ([SRV/CBV/UAV] & [Sampler]) can be bound for each command list
+    AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
+    ID3D12DescriptorHeap* heaps[2];
+
+    for (int i = 0; i < desc.m_NumHeaps; ++i)
+        heaps[i] = dynamic_cast<const Dx12DescriptorHeap*>(desc.m_Heaps[i])->m_Heap.Get();
+
+    m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps);
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+{
+    const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
+    m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
+{
+    m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
 }
 
 //RhiResult Dx12CommandList::SetRootConstant(const RhiSetRootConstantDesc& desc)
@@ -180,23 +183,16 @@ void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc 
 //    return RhiResult::Success;
 //}
 
-void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc)
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
 {
-    // Only one heap of each type ([SRV/CBV/UAV] & [Sampler]) can be bound for each command list
-    AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
-    ID3D12DescriptorHeap* heaps[2];
-
-    for (int i = 0; i < desc.m_NumHeaps; ++i)
-        heaps[i] = dynamic_cast<const Dx12DescriptorHeap*>(desc.m_Heaps[i])->m_Heap.Get();
-
-    m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps);
+    m_CommandList->SetGraphicsRootConstantBufferView(bindSlot, resourceAddr);
 }
 
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(RhiClearRenderTargetViewDesc desc)
 {
     m_CommandList->ClearRenderTargetView
     (
-        Translate(desc.m_RtvHandle->GetCpuAddress()),
+        { desc.m_RtvHandle->GetCpuAddress() },
         desc.m_ClearColor.m_Data,
         0,
         nullptr
@@ -207,7 +203,7 @@ void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(RhiClearDepthStenci
 {
     m_CommandList->ClearDepthStencilView
     (
-        Translate(desc.m_DsvHandle->GetCpuAddress()),
+        { desc.m_DsvHandle->GetCpuAddress() },
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
         desc.m_ClearDepth,
         desc.m_ClearStencil,
@@ -266,10 +262,6 @@ void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionD
     m_CommandList->ResourceBarrier(1, &barrier);
     desc.m_Resource->SetState(desc.m_ToState);
 }
-
-//RhiResult Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
-//{
-//}
 
 void Ether::Graphics::Dx12CommandList::DrawInstanced(RhiDrawInstancedDesc desc)
 {

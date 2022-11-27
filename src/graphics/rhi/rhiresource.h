@@ -23,9 +23,6 @@
 
 namespace Ether::Graphics
 {
-    constexpr RhiGpuHandle NullAddress = { 0 };
-    constexpr RhiGpuHandle UnknownAddress = { (uint64_t)-1 };
-
     class RhiResource : public NonCopyable, public NonMovable
     {
     public:
@@ -33,7 +30,7 @@ namespace Ether::Graphics
         virtual ~RhiResource() = default;
 
     public:
-        virtual RhiGpuHandle GetGpuHandle() const = 0;
+        virtual RhiGpuAddress GetGpuAddress() const = 0;
         virtual void Map(void** mappedAddr) const = 0;
         virtual void Unmap() const = 0;
 

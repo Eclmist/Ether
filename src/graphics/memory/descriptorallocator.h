@@ -33,7 +33,7 @@ namespace Ether::Graphics
         DescriptorAllocator(
             RhiDescriptorHeapType type,
             bool isShaderVisible = false,
-            uint32_t maxHeapSize = 1 << 12 // 4096
+            size_t maxHeapSize = _4MiB
         );
 
         ~DescriptorAllocator() = default;
@@ -44,16 +44,16 @@ namespace Ether::Graphics
 
     public:
         inline RhiDescriptorHeap& GetDescriptorHeap() const { return *m_DescriptorHeap; }
-        inline uint32_t GetMaxNumDescriptors() const { return m_MaxDescriptors; }
+        inline size_t GetMaxNumDescriptors() const { return m_MaxDescriptors; }
         inline bool IsShaderVisible() const { return m_IsShaderVisible; }
 
     private:
         friend class DescriptorAllocation;
         void Free(const DescriptorAllocation& allocation);
-        void ReclaimStaleAllocations(uint32_t numIndices);
+        void ReclaimStaleAllocations(size_t numIndices);
 
     private:
-        uint32_t m_MaxDescriptors;
+        size_t m_MaxDescriptors;
         bool m_IsShaderVisible;
 
         RhiDescriptorHeapType m_HeapType;

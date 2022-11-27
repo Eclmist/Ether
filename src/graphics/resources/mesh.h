@@ -20,35 +20,28 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/rhi/rhidescriptorheap.h"
-#include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-    class Dx12DescriptorHeap : public RhiDescriptorHeap
+    class Mesh
     {
     public:
-        Dx12DescriptorHeap() = default;
-        ~Dx12DescriptorHeap() override = default;
 
-    public:
-        RhiCpuAddress GetBaseCpuAddress() const override;
-        RhiGpuAddress GetBaseGpuAddress() const override;
-        RhiCpuAddress GetNextCpuAddress() const override;
-        RhiGpuAddress GetNextGpuAddress() const override;
-
-        uint32_t GetHandleIncrementSize() const override;
-        void IncrementHandle() override;
+        inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
+        //inline size_t GetNumVertices() const { return m_Nod}
 
     private:
-        friend class Dx12CommandList;
-        friend class Dx12Device;
-        friend class Dx12ImguiWrapper;
+        void UploadVertexBuffer(const void* data, size_t numVertices);
+        void CreateVertexBufferView(size_t bufferSize, size_t stride);
+        void CreateInstanceParams(const void* data, size_t numVertices);
 
-        wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
+    private:
+        std::unique_ptr<RhiResource> m_VertexBuffer;
+        std::unique_ptr<RhiResource> m_IndexBuffer;
+        std::unique_ptr<RhiResource> m_InstanceParams[MaxSwapChainBuffers];
 
-        size_t m_Offset;
-        size_t m_HandleIncrementSize;
+        RhiVertexBufferViewDesc m_VertexBufferView;
+        RhiIndexBufferViewDesc m_IndexBufferView;
     };
 }
 

@@ -28,7 +28,7 @@ Ether::Graphics::CommandManager::CommandManager()
     , m_ComputeAllocatorPool(RhiCommandType::Compute)
     , m_CopyAllocatorPool(RhiCommandType::Copy)
 {
-    m_GraphicsQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Graphic });
+    m_GraphicQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Graphic });
     m_ComputeQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Compute });
     m_CopyQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Copy });
 }
@@ -43,28 +43,25 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::CommandManager
     return Core::GetDevice().CreateCommandList(desc);
 }
 
-void Ether::Graphics::CommandManager::Execute(RhiCommandList& cmdList)
+Ether::Graphics::RhiFenceValue Ether::Graphics::CommandManager::Execute(RhiCommandList& cmdList)
 {
     switch (cmdList.GetType())
     {
     case RhiCommandType::Graphic:
-        m_GraphicsQueue->Execute(cmdList);
-        break;
+        return m_GraphicQueue->Execute(cmdList);
     case RhiCommandType::Compute:
-        m_ComputeQueue->Execute(cmdList);
-        break;
+        return m_ComputeQueue->Execute(cmdList);
     case RhiCommandType::Copy:
-        m_CopyQueue->Execute(cmdList);
-        break;
+        return m_CopyQueue->Execute(cmdList);
     default:
         LogGraphicsError("An unsupported command list type (%s) was sent for execution", cmdList.GetType());
-        break;
+        return m_GraphicQueue->Execute(cmdList);
     }
 }
 
 void Ether::Graphics::CommandManager::Flush()
 {
-    m_GraphicsQueue->Flush();
+    m_GraphicQueue->Flush();
     m_ComputeQueue->Flush();
     m_CopyQueue->Flush();
 }
@@ -74,14 +71,14 @@ Ether::Graphics::RhiCommandQueue& Ether::Graphics::CommandManager::GetQueue(RhiC
     switch (type)
     {
     case RhiCommandType::Graphic:
-        return *m_GraphicsQueue;
+        return *m_GraphicQueue;
     case RhiCommandType::Compute:
         return *m_ComputeQueue;
     case RhiCommandType::Copy:
         return *m_CopyQueue;
     default:
         LogGraphicsError("An unsupported command list type (%s) was requested", type);
-        return *m_GraphicsQueue;
+        return *m_GraphicQueue;
         break;
     }
 }

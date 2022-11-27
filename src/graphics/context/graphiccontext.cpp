@@ -59,6 +59,11 @@ void Ether::Graphics::GraphicContext::SetPrimitiveTopology(RhiPrimitiveTopology 
     m_CommandList->SetPrimitiveTopology(topology);
 }
 
+void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+{
+    m_CommandList->SetGraphicRootSignature(rootSignature);
+}
+
 void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv /*= nullptr*/)
 {
     RhiSetRenderTargetsDesc desc = {};

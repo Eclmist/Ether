@@ -44,7 +44,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::Dx12SwapChain::GetBuffer(uint8_t 
     return *m_BufferResources[index];
 }
 
-void Ether::Graphics::Dx12SwapChain::ResizeBuffers(RhiResizeDesc desc)
+void Ether::Graphics::Dx12SwapChain::ResizeBuffers(const ethVector2u& size)
 {
     ResetBuffers();
 
@@ -58,8 +58,8 @@ void Ether::Graphics::Dx12SwapChain::ResizeBuffers(RhiResizeDesc desc)
 
     hr = m_SwapChain->ResizeBuffers(
         swapChainDesc.BufferCount,
-        desc.m_Size.x,
-        desc.m_Size.y,
+        size.x,
+        size.y,
         swapChainDesc.BufferDesc.Format,
         swapChainDesc.Flags
     );

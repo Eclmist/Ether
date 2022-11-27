@@ -27,29 +27,9 @@
 
 Ether::Graphics::Dx12CommandQueue::Dx12CommandQueue(RhiCommandType type)
     : RhiCommandQueue(type)
-    , m_FinalFenceValue(0)
-    , m_LastKnownFenceValue(0)
 {
     m_Fence = Core::GetDevice().CreateFence();
     m_FenceEventHandle = CreateEvent(nullptr, false, false, nullptr);
-}
-
-Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12CommandQueue::GetFinalFenceValue() const
-{ 
-    return m_FinalFenceValue; 
-}
-
-Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12CommandQueue::GetCurrentFenceValue()
-{ 
-    return m_Fence->GetCompletedValue();
-}
-
-bool Ether::Graphics::Dx12CommandQueue::IsFenceComplete(RhiFenceValue fenceValue)
-{
-    if (fenceValue > m_LastKnownFenceValue)
-        m_LastKnownFenceValue = m_Fence->GetCompletedValue();
-
-    return fenceValue <= m_LastKnownFenceValue;
 }
 
 void Ether::Graphics::Dx12CommandQueue::StallForFence(RhiFenceValue fenceValue)
@@ -72,7 +52,7 @@ void Ether::Graphics::Dx12CommandQueue::Flush()
     StallForFence(m_FinalFenceValue);
 }
 
-void Ether::Graphics::Dx12CommandQueue::Execute(RhiCommandList& cmdList)
+Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12CommandQueue::Execute(RhiCommandList& cmdList)
 {
     cmdList.Close();
     const auto dx12CmdList = dynamic_cast<Dx12CommandList*>(&cmdList);
@@ -84,6 +64,8 @@ void Ether::Graphics::Dx12CommandQueue::Execute(RhiCommandList& cmdList)
 
     if (FAILED(hr))
         LogGraphicsError("Failed to signal command queue with fence");
+
+    return m_FinalFenceValue;
 }
 
 #endif // ETH_GRAPHICS_DX12

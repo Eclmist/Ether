@@ -36,9 +36,9 @@ Ether::Graphics::Dx12Shader::Dx12Shader(RhiShaderDesc desc)
 
 void Ether::Graphics::Dx12Shader::Compile()
 {
-    LogGraphicsInfo("Compiling shader %s", m_FileName.c_str());
+    LogGraphicsInfo("Compiling %s shader %s", m_TargetProfile.c_str(), m_FileName.c_str());
 
-    std::wstring wSourceDir = ToWideString(Core::GetGraphicsConfig().GetShaderSourceDir());
+    std::wstring wSourceDir = ToWideString(Core::GetGraphicConfig().GetShaderSourceDir());
     std::wstring wFilePath = ToWideString(m_FilePath);
     std::wstring wEntryPoint = ToWideString(m_EntryPoint);
     std::wstring wProfile = ToWideString(m_TargetProfile);

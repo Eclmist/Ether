@@ -26,7 +26,9 @@
 #include "engine/platform/ps5/ps5launchargs.h"
 #endif
 
+#if defined (ETH_TOOLMODE)
 constexpr uint16_t DefaultToolmodePort = 2134;
+#endif
 
 Ether::CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)

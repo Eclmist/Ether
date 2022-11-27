@@ -88,8 +88,6 @@ void Ether::LoggingManager::Serialize(const LogEntry entry)
 #if defined (ETH_PLATFORM_WIN32)
     m_LogFileStream << entry.GetFullText().c_str() << "\n";
     m_LogFileStream.flush();
-
-    // TODO: Also output the log entry to visual studio's debug output window
     OutputDebugStringA((entry.GetFullText() + "\n").c_str());
 
 #elif defined (ETH_PLATFORM_PS5)

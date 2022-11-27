@@ -32,23 +32,13 @@ namespace Ether::Graphics
         ~Dx12CommandQueue() = default;
 
     public:
-        RhiFenceValue GetFinalFenceValue() const override;
-        RhiFenceValue GetCurrentFenceValue() override;
-
-        bool IsFenceComplete(RhiFenceValue fenceValue) override;
         void StallForFence(RhiFenceValue fenceValue) override;
         void Flush() override;
-        void Execute(RhiCommandList& cmdList) override;
+        RhiFenceValue Execute(RhiCommandList& cmdList) override;
 
     private:
         friend class Dx12Device;
         wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-
-        std::unique_ptr<RhiFence> m_Fence;
-        RhiFenceValue m_FinalFenceValue;
-        RhiFenceValue m_LastKnownFenceValue;
-
-        void* m_FenceEventHandle;
     };
 }
 

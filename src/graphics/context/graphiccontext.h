@@ -38,6 +38,7 @@ namespace Ether::Graphics
         void SetViewport(RhiViewportDesc viewport);
         void SetScissorRect(RhiScissorDesc scissor);
         void SetPrimitiveTopology(RhiPrimitiveTopology topology);
+        void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
         void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
 
         void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);

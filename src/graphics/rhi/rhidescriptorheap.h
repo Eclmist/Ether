@@ -30,11 +30,11 @@ namespace Ether::Graphics
         virtual ~RhiDescriptorHeap() = default;
 
     public:
-        virtual RhiCpuHandle GetBaseCpuHandle() const = 0;
-        virtual RhiGpuHandle GetBaseGpuHandle() const = 0;
+        virtual RhiCpuAddress GetBaseCpuAddress() const = 0;
+        virtual RhiGpuAddress GetBaseGpuAddress() const = 0;
 
-        virtual RhiCpuHandle GetNextCpuHandle() const = 0;
-        virtual RhiGpuHandle GetNextGpuHandle() const = 0;
+        virtual RhiCpuAddress GetNextCpuAddress() const = 0;
+        virtual RhiGpuAddress GetNextGpuAddress() const = 0;
 
         virtual uint32_t GetHandleIncrementSize() const = 0;
         virtual void IncrementHandle() = 0;

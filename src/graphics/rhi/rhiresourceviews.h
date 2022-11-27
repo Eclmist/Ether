@@ -26,8 +26,7 @@ namespace Ether::Graphics
     class RhiResourceView : public NonCopyable, public NonMovable
     {
     public:
-        RhiResourceView()
-            : m_CpuHandle({})
+        RhiResourceView() : m_CpuAddress(0)
         {
             // Make each view unique
             static uint32_t i = 0;
@@ -35,11 +34,11 @@ namespace Ether::Graphics
         };
 
         virtual ~RhiResourceView() = 0;
-        inline RhiCpuHandle GetCpuAddress() const { return m_CpuHandle; }
+        inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
         inline StringID GetViewID() const { return m_ViewID; }
 
     protected:
-        RhiCpuHandle m_CpuHandle;
+        RhiCpuAddress m_CpuAddress;
         StringID m_ViewID;
     };
 
@@ -52,10 +51,10 @@ namespace Ether::Graphics
         ~RhiShaderVisibleResourceView() = default;
 
     public:
-        inline RhiGpuHandle GetGpuHandle() const { return m_GpuHandle; }
+        inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
 
     protected:
-        RhiGpuHandle m_GpuHandle;
+        RhiGpuAddress m_GpuAddress;
     };
 
     class RhiRenderTargetView : public RhiResourceView

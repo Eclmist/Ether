@@ -42,8 +42,8 @@ namespace Ether
     public:
         virtual size_t GetOffset() const = 0;
         virtual size_t GetSize() const = 0;
-        virtual void* GetBaseAddress() const = 0;
-        virtual void* GetAddress() const { return (uint8_t*)GetBaseAddress() + GetOffset(); }
+        virtual void* GetBaseCpuHandle() const = 0;
+        virtual void* GetCpuHandle() const { return (uint8_t*)GetBaseCpuHandle() + GetOffset(); }
     };
 
     class ETH_COMMON_DLL MemoryAllocator : public NonCopyable, public NonMovable

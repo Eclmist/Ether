@@ -34,10 +34,10 @@ Ether::Graphics::GraphicDisplay::GraphicDisplay()
     , m_VSyncEnabled(false)
     , m_VSyncVBlanks(1)
 {
-    CreateSwapChain(Core::GetGraphicsConfig().GetWindowHandle());
+    CreateSwapChain(Core::GetGraphicConfig().GetWindowHandle());
     CreateResourcesFromSwapChain();
     CreateViewsFromSwapChain();
-    ResetFences();
+    InitializeFences();
 }
 
 Ether::Graphics::GraphicDisplay::~GraphicDisplay()
@@ -58,7 +58,7 @@ void Ether::Graphics::GraphicDisplay::Present()
 
     // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model, 
     // the order of back buffer indices are not guaranteed to be sequential
-    ResetCurrentBufferIndex();
+    UpdateBackBufferIndex();
 }
 
 void Ether::Graphics::GraphicDisplay::ResizeBuffers(const ethVector2u& size)
@@ -68,9 +68,21 @@ void Ether::Graphics::GraphicDisplay::ResizeBuffers(const ethVector2u& size)
 
     m_SwapChain->ResizeBuffers({ size });
 
-    ResetCurrentBufferIndex();
+    UpdateBackBufferIndex();
     CreateResourcesFromSwapChain();
     CreateViewsFromSwapChain();
+}
+
+void Ether::Graphics::GraphicDisplay::InitializeFences()
+{
+    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
+        m_FrameBufferFences[i] = 0;
+}
+
+void Ether::Graphics::GraphicDisplay::ResizeViewport(const ethVector2u& size)
+{
+    m_Viewport = { 0.0f, 0.0f, (float)size.x, (float)size.y, 0.0f, 1.0f };
+    m_ScissorRect = { 0.0f, 0.0f, (float)size.x, (float)size.y };
 }
 
 void Ether::Graphics::GraphicDisplay::CreateSwapChain(void* hwnd)
@@ -83,11 +95,11 @@ void Ether::Graphics::GraphicDisplay::CreateSwapChain(void* hwnd)
     desc.m_ScalingMode = RhiScalingMode::Stretch;
     desc.m_SwapEffect = RhiSwapEffect::FlipDiscard;
     desc.m_Flag = RhiSwapChainFlag::AllowTearing;
-    desc.m_CommandQueue = &Core::GetCommandManager().GetGraphicsQueue();
+    desc.m_CommandQueue = &Core::GetCommandManager().GetGraphicQueue();
     desc.m_SurfaceTarget = hwnd;
 
     m_SwapChain = Core::GetDevice().CreateSwapChain(desc);
-    ResetCurrentBufferIndex();
+    UpdateBackBufferIndex();
 }
 
 void Ether::Graphics::GraphicDisplay::CreateResourcesFromSwapChain()
@@ -98,7 +110,7 @@ void Ether::Graphics::GraphicDisplay::CreateResourcesFromSwapChain()
 
 void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 {
-    m_DescriptorLifetimeMaintainer.clear();
+    m_SwapChainDescriptors.clear();
 
     auto rtvAllocation = m_RtvAllocator.Allocate(3);
     auto srvAllocation = Core::GetGpuDescriptorAllocator().Allocate(1);
@@ -108,7 +120,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         RhiRenderTargetViewDesc rtvDesc = {};
         rtvDesc.m_Format = BackBufferFormat;
         rtvDesc.m_Resource = m_RenderTargets[i];
-        rtvDesc.m_TargetCpuHandle = dynamic_cast<DescriptorAllocation&>(*rtvAllocation).GetCpuHandle(i);
+        rtvDesc.m_TargetCpuAddr = dynamic_cast<DescriptorAllocation&>(*rtvAllocation).GetCpuAddress(i);
 
         m_RenderTargetRtv[i] = Core::GetDevice().CreateRenderTargetView(rtvDesc);
 
@@ -116,8 +128,8 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         srvDesc.m_Format = BackBufferFormat;
         srvDesc.m_Resource = m_RenderTargets[i];
         srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
-        srvDesc.m_TargetCpuHandle = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuHandle();
-        srvDesc.m_TargetGpuHandle = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuHandle();
+        srvDesc.m_TargetCpuAddr = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuAddress();
+        srvDesc.m_TargetGpuAddr = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuAddress();
         m_RenderTargetSrv[i] = Core::GetDevice().CreateShaderResourceView(srvDesc);
 
         Core::GetBindlessResourceManager().RegisterView(
@@ -126,25 +138,13 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         );
     }
 
-    m_DescriptorLifetimeMaintainer.emplace_back(std::move(rtvAllocation));
-    m_DescriptorLifetimeMaintainer.emplace_back(std::move(srvAllocation));
+    m_SwapChainDescriptors.emplace_back(std::move(rtvAllocation));
+    m_SwapChainDescriptors.emplace_back(std::move(srvAllocation));
 }
 
-void Ether::Graphics::GraphicDisplay::ResizeViewport(const ethVector2u& size)
-{
-    m_Viewport = { 0.0f, 0.0f, (float)size.x, (float)size.y, 0.0f, 1.0f };
-    m_ScissorRect = { 0.0f, 0.0f, (float)size.x, (float)size.y };
-}
-
-void Ether::Graphics::GraphicDisplay::ResetCurrentBufferIndex()
+void Ether::Graphics::GraphicDisplay::UpdateBackBufferIndex()
 {
     ETH_MARKER_EVENT("SwapChain - Get Current Back Buffer Index");
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
-}
-
-void Ether::Graphics::GraphicDisplay::ResetFences()
-{
-    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
-        m_FrameBufferFences[i] = 0;
 }
 

@@ -17,32 +17,5 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphics/pch.h"
-#include "common/memory/linearallocator.h"
-
-namespace Ether::Graphics
-{
-    class UploadBufferAllocation : public LinearAllocation
-    {
-    public:
-        UploadBufferAllocation(
-            size_t offset,
-            size_t size,
-            void* mappedBaseAddr,
-            RhiGpuAddress gpuAddr
-        );
-
-    public:
-        void* GetBaseCpuHandle() const override { return m_MappedBaseAddress; }
-
-        RhiGpuAddress GetBaseGpuAddress() const { return m_GpuAddress; }
-        RhiGpuAddress GetGpuAddress() const { return GetBaseGpuAddress() + m_Offset; }
-
-    protected:
-        void* m_MappedBaseAddress;
-        RhiGpuAddress m_GpuAddress;
-    };
-}
+#include "graphics/resources/mesh.h"
 

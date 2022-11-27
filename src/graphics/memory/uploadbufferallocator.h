@@ -27,7 +27,7 @@ namespace Ether::Graphics
     class UploadBufferAllocator : public MemoryAllocator
     {
     public:
-        UploadBufferAllocator(size_t pageSize = 1 << 26 /*(64MiB)*/);
+        UploadBufferAllocator(size_t pageSize = _4KiB);
         ~UploadBufferAllocator() = default;
 
     public:

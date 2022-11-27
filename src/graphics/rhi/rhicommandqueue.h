@@ -20,29 +20,44 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhifence.h"
 
 namespace Ether::Graphics
 {
     class RhiCommandQueue : public NonCopyable, public NonMovable
     {
     public:
-        RhiCommandQueue(RhiCommandType type = RhiCommandType::Graphic) : m_Type(type) {}
+        RhiCommandQueue(RhiCommandType type = RhiCommandType::Graphic) 
+            : m_Type(type)
+            , m_FinalFenceValue(0)
+            , m_LastKnownFenceValue(0)
+            , m_FenceEventHandle(nullptr) {}
+
         virtual ~RhiCommandQueue() = default;
 
     public:
-        virtual RhiFenceValue GetFinalFenceValue() const = 0;
-        virtual RhiFenceValue GetCurrentFenceValue() = 0;
+        inline RhiFenceValue GetFinalFenceValue() const { return m_FinalFenceValue; }
+        inline RhiFenceValue GetCurrentFenceValue() const { return m_Fence->GetCompletedValue(); }
 
-        virtual bool IsFenceComplete(RhiFenceValue fenceValue) = 0;
+    public:
+        bool IsFenceComplete(RhiFenceValue fenceValue);
+
+    public:
         virtual void StallForFence(RhiFenceValue fenceValue) = 0;
         virtual void Flush() = 0;
-        virtual void Execute(RhiCommandList& cmdList) = 0;
+        virtual RhiFenceValue Execute(RhiCommandList& cmdList) = 0;
 
     public:
         RhiCommandType GetType() const { return m_Type; }
 
     protected:
         RhiCommandType m_Type;
+
+        std::unique_ptr<RhiFence> m_Fence;
+        RhiFenceValue m_FinalFenceValue;
+        RhiFenceValue m_LastKnownFenceValue;
+
+        void* m_FenceEventHandle;
     };
 }
 

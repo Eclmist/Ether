@@ -30,8 +30,8 @@ namespace Ether::Graphics
     {
     public:
         DescriptorAllocation(
-            RhiCpuHandle allocBaseCpuHandle,
-            RhiGpuHandle allocBaseGpuHandle,
+            RhiCpuAddress allocBaseCpuHandle,
+            RhiGpuAddress allocBaseGpuHandle,
             size_t numDescriptors,
             size_t descriptorSize,
             size_t indexInAllocator,
@@ -53,13 +53,13 @@ namespace Ether::Graphics
         inline size_t GetNumDescriptors() const { return m_Size; }
 
     public:
-        size_t GetDescriptorIndex(size_t offset = 0) const;
-        RhiCpuHandle GetCpuHandle(size_t offset = 0) const;
-        RhiGpuHandle GetGpuHandle(size_t offset = 0) const;
+        size_t GetDescriptorIndex(size_t localIndex = 0) const;
+        RhiCpuAddress GetCpuAddress(size_t localIndex = 0) const;
+        RhiGpuAddress GetGpuAddress(size_t localIndex = 0) const;
 
     private:
-        RhiCpuHandle m_BaseCpuHandle;
-        RhiGpuHandle m_BaseGpuHandle;
+        RhiCpuAddress m_BaseCpuAddress;
+        RhiGpuAddress m_BaseGpuAddress;
 
         size_t m_DescriptorSize;
 
