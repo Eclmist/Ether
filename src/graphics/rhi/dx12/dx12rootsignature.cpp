@@ -77,23 +77,16 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorTable(uint32_t slot,
     parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     parameter.ShaderVisibility = Translate(vis);
     parameter.DescriptorTable.NumDescriptorRanges = numRanges;
-    parameter.DescriptorTable.pDescriptorRanges = m_Dx12DescriptorRange.data();
+    parameter.DescriptorTable.pDescriptorRanges = &m_Dx12DescriptorRange;
 }
 
 void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorRange(uint32_t slot, uint32_t reg, uint32_t numDescriptors, RhiDescriptorType type, RhiShaderVisibility vis)
 {
-    const uint32_t bindSlot = slot;
-    D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
-
-    D3D12_DESCRIPTOR_RANGE range;
-    range.RangeType = Translate(type);
-    range.NumDescriptors = numDescriptors;
-    range.BaseShaderRegister = reg;
-    range.RegisterSpace = 0;
-    range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-    m_Dx12DescriptorRange.clear();
-    m_Dx12DescriptorRange.push_back(range);
+    m_Dx12DescriptorRange.RangeType = Translate(type);
+    m_Dx12DescriptorRange.NumDescriptors = numDescriptors;
+    m_Dx12DescriptorRange.BaseShaderRegister = reg;
+    m_Dx12DescriptorRange.RegisterSpace = 0;
+    m_Dx12DescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     SetAsDescriptorTable(slot, reg, 1, vis);
 }

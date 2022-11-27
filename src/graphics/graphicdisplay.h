@@ -62,7 +62,7 @@ namespace Ether::Graphics
         void CreateSwapChain(void* hwnd);
         void CreateResourcesFromSwapChain();
         void CreateViewsFromSwapChain();
-        void GetNewBackBufferIndex();
+        void UpdateBackBufferIndex();
 
     private:
         std::unique_ptr<RhiSwapChain> m_SwapChain;

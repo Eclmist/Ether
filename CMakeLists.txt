@@ -51,7 +51,7 @@ add_compile_definitions("ETH_PLATFORM_WIN32")
 # =========================================================================== #
 
 include_directories("${CMAKE_SOURCE_DIR}/src")
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/resource")
 
 file(GLOB_RECURSE engine_files "${CMAKE_SOURCE_DIR}/src/engine/*")

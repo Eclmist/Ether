@@ -44,7 +44,7 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID, uint INSTANCE : SV_InstanceID)
     GetVertexFromID(ID, pos, uv);
 
     pos /= 4.0f;
-    pos.x += m_InstanceParams.m_Metalness;
+    pos.x += m_InstanceParams.m_Roughness;
 
     o.Position = float4(pos, 1.0f, 1.0f);
 

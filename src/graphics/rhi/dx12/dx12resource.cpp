@@ -32,7 +32,7 @@ Ether::Graphics::Dx12Resource::Dx12Resource(const std::string& name)
 
 Ether::Graphics::RhiGpuAddress Ether::Graphics::Dx12Resource::GetGpuAddress() const
 {
-    return { m_Resource->GetGPUVirtualAddress() };
+    return m_Resource->GetGPUVirtualAddress();
 }
 
 void Ether::Graphics::Dx12Resource::Map(void** mappedAddr) const

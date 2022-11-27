@@ -17,8 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
 #include "graphics/core.h"
 #include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhishader.h"

@@ -44,7 +44,7 @@ namespace Ether::Graphics
         friend class Dx12Device;
         std::vector<D3D12_ROOT_PARAMETER> m_Dx12RootParameters;
         std::vector<D3D12_STATIC_SAMPLER_DESC> m_Dx12StaticSamplers;
-        std::vector<D3D12_DESCRIPTOR_RANGE> m_Dx12DescriptorRange;
+        D3D12_DESCRIPTOR_RANGE m_Dx12DescriptorRange;
 
         D3D12_ROOT_SIGNATURE_DESC m_Dx12RootSignatureDesc;
     };
