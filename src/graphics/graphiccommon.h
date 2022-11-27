@@ -63,7 +63,8 @@ namespace Ether::Graphics
         RhiSamplerParameterDesc m_BilinearSampler;
         RhiSamplerParameterDesc m_EnvMapSampler;
 
-        std::unique_ptr<RhiRootSignature> m_BindlessRootSignature;
+        std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;
+        std::unique_ptr<RhiRootSignature> m_DefaultRootSignature;
     };
 }
 

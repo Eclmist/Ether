@@ -69,9 +69,9 @@ void Ether::Graphics::Core::MainGraphicsThread()
     psoDesc->SetVertexShader(*tempVs);
     psoDesc->SetPixelShader(*tempPs);
     psoDesc->SetRenderTargetFormat(BackBufferFormat);
-    psoDesc->SetRootSignature(*s_Instance->m_GraphicsCommon->m_BindlessRootSignature);
+    psoDesc->SetRootSignature(*s_Instance->m_GraphicsCommon->m_EmptyRootSignature);
 
-    static GraphicContext tempContext;
+    GraphicContext tempContext;
     tempContext.PushMarker("Clear");
     tempContext.SetViewport(s_Instance->m_GraphicsDisplay->GetViewport());
     tempContext.SetScissorRect(s_Instance->m_GraphicsDisplay->GetScissorRect());
@@ -86,7 +86,7 @@ void Ether::Graphics::Core::MainGraphicsThread()
     tempContext.SetScissorRect(s_Instance->m_GraphicsDisplay->GetScissorRect());
     tempContext.SetPipelineState(*psoDesc);
     tempContext.SetDescriptorHeap(s_Instance->m_GpuDescriptorAllocator->GetDescriptorHeap());
-    tempContext.SetRootSignature(*s_Instance->m_GraphicsCommon->m_BindlessRootSignature);
+    tempContext.SetRootSignature(*s_Instance->m_GraphicsCommon->m_EmptyRootSignature);
     tempContext.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
     tempContext.SetRenderTarget(s_Instance->m_GraphicsDisplay->GetCurrentBackBufferRtv());
     tempContext.DrawInstanced(4, 1);

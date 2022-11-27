@@ -41,6 +41,9 @@ namespace Ether::Graphics
         virtual void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) = 0;
         virtual void SetFlags(RhiRootSignatureFlag flag) = 0;
 
+    public:
+        std::unique_ptr<RhiRootSignature> Compile() const;
+
     protected:
         uint32_t m_NumParameters;
         uint32_t m_NumSamplers;

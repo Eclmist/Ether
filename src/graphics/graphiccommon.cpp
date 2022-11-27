@@ -109,15 +109,16 @@ void Ether::Graphics::GraphicCommon::InitializeBlendingStates()
 
 void Ether::Graphics::GraphicCommon::InitializeRootSignatures()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rootSignatureDesc = Core::GetDevice().CreateRootSignatureDesc(1, 3);
+    std::unique_ptr<RhiRootSignatureDesc> rootSignatureDesc = Core::GetDevice().CreateRootSignatureDesc(0, 0);
+    rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
+    m_EmptyRootSignature = rootSignatureDesc->Compile();
 
-    rootSignatureDesc->SetAsConstant(0, 0, 1, RhiShaderVisibility::All);
+    rootSignatureDesc = Core::GetDevice().CreateRootSignatureDesc(0, 3);
+    rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
     rootSignatureDesc->SetAsSampler(0, m_PointSampler, RhiShaderVisibility::All);
     rootSignatureDesc->SetAsSampler(1, m_BilinearSampler, RhiShaderVisibility::All);
     rootSignatureDesc->SetAsSampler(2, m_EnvMapSampler, RhiShaderVisibility::All);
-    rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
-
-    m_BindlessRootSignature = Core::GetDevice().CreateRootSignature(*rootSignatureDesc);
+    m_DefaultRootSignature = rootSignatureDesc->Compile();
 }
 
 void Ether::Graphics::GraphicCommon::InitializeShaders()
