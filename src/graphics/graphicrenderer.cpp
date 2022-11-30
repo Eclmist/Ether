@@ -89,7 +89,7 @@ void Ether::Graphics::GraphicRenderer::Render()
     psoDesc->SetRenderTargetFormat(BackBufferFormat);
     psoDesc->SetRootSignature(*rootSignature);
     psoDesc->SetInputLayout({ inputElementDesc, sizeof(inputElementDesc) / sizeof(inputElementDesc[0]) });
-    //psoDesc->SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
+    psoDesc->SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     psoDesc->SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateDisabled);
 
     m_Context.PushMarker("Clear");

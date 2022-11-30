@@ -32,10 +32,10 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath) const
     Assimp::Importer importer;
 
     auto scene = importer.ReadFile(assetPath,
-        aiProcess_CalcTangentSpace      |
-        aiProcess_Triangulate           |
-        aiProcess_JoinIdenticalVertices |
-        aiProcess_SortByPType);
+        aiProcess_ConvertToLeftHanded           |
+        aiProcessPreset_TargetRealtime_Quality  |
+        aiProcess_TransformUVCoords
+    );
 
     if (scene == nullptr)
     {

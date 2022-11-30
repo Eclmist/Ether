@@ -38,6 +38,10 @@ void Ether::Graphics::Dx12Shader::Compile()
 {
     LogGraphicsInfo("Compiling %s shader %s", m_TargetProfile.c_str(), m_FileName.c_str());
 
+    // Set this flag regardless of if compilation pass.
+    // This is so that PSO won't keep trying to recompile broken shaders every frame
+    m_IsCompiled = true;
+
     std::wstring wSourceDir = ToWideString(Core::GetGraphicConfig().GetShaderSourceDir());
     std::wstring wFilePath = ToWideString(m_FilePath);
     std::wstring wEntryPoint = ToWideString(m_EntryPoint);
@@ -105,7 +109,6 @@ void Ether::Graphics::Dx12Shader::Compile()
 
     m_CompiledData = m_ShaderBlob->GetBufferPointer();
     m_CompiledSize = m_ShaderBlob->GetBufferSize();
-    m_IsCompiled = true;
 }
 
 void Ether::Graphics::Dx12Shader::InitializeTargetProfile(RhiShaderType type)
