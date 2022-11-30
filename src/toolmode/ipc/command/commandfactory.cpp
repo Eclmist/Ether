@@ -22,8 +22,8 @@
 #include "toolmode/ipc/command/initializecommand.h"
 #include "toolmode/ipc/command/detachcommand.h"
 
-//#include "toolmode/ipc/command/asset/importassetcommand.h"
-//
+#include "toolmode/ipc/command/asset/importassetcommand.h"
+
 //#include "toolmode/ipc/command/ecs/gettoplevelentitiescommand.h"
 //#include "toolmode/ipc/command/ecs/getcomponentscommand.h"
 //#include "toolmode/ipc/command/ecs/setcomponentcommand.h"
@@ -37,8 +37,8 @@ Ether::Toolmode::CommandFactory::CommandFactory()
     REGISTER_COMMAND("initialize", InitializeCommand);
     REGISTER_COMMAND("detach", DetachCommand);
 
-    //// Asset
-    //REGISTER_COMMAND("importasset", ImportAssetCommand);
+    // Asset
+    REGISTER_COMMAND("importasset", ImportAssetCommand);
 
     //// ECS
     //REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);

@@ -52,8 +52,8 @@ namespace Ether::Graphics
         virtual void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) = 0;
 
         virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
-        //virtual RhiResult CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
-        //virtual RhiResult CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
+        virtual void CopyBufferRegion(RhiCopyBufferRegionDesc desc) = 0;
+        virtual void CopyTextureRegion(RhiCopyTextureRegionDesc desc) = 0;
         virtual void DrawInstanced(RhiDrawInstancedDesc desc) = 0;
         virtual void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) = 0;
 

@@ -50,6 +50,9 @@ namespace Ether::Graphics
 
         void SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr);
 
+        void CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
+        void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
+
         void FinalizeAndExecute(bool waitForCompletion = false);
         void Reset();
 
@@ -65,6 +68,7 @@ namespace Ether::Graphics
         CommandAllocatorPool* m_CommandAllocatorPool;
 
         std::unique_ptr<RhiCommandList> m_CommandList;
+        std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
     };
 }
 

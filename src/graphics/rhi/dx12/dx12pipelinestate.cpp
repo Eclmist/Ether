@@ -30,12 +30,11 @@ Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
 {
     SetBlendState(Core::GetGraphicCommon().m_BlendDisabled);
     SetRasterizerState(Core::GetGraphicCommon().m_RasterizerDefault);
+    SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateDisabled);
     SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
-    SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateDisabled);
-    SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateDisabled);
     SetSamplingDesc(1, 0);
-    SetNodeMask(0);
     SetSampleMask(0xFFFFFFFF);
+    SetNodeMask(0);
 }
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetBlendState(RhiBlendDesc desc)

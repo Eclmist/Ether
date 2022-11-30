@@ -46,15 +46,7 @@
     #define ETH_TOOLONLY(code)
 #endif
 
-#if defined(ETH_ENGINE)
-    #define ETH_ENGINE_DLL __declspec(dllexport)
-    #define ETH_GRAPHIC_DLL __declspec(dllimport)
-    #define ETH_COMMON_DLL __declspec(dllimport)
-#elif defined (ETH_TOOLMODE)
-    #define ETH_ENGINE_DLL __declspec(dllexport)
-    #define ETH_GRAPHIC_DLL __declspec(dllimport)
-    #define ETH_COMMON_DLL __declspec(dllimport)
-#elif defined (ETH_GRAPHICS)
+#if defined (ETH_GRAPHICS)
     #define ETH_ENGINE_DLL __declspec(dllimport)
     #define ETH_GRAPHIC_DLL __declspec(dllexport)
     #define ETH_COMMON_DLL __declspec(dllimport)
@@ -62,8 +54,8 @@
     #define ETH_ENGINE_DLL __declspec(dllimport)
     #define ETH_GRAPHIC_DLL __declspec(dllimport)
     #define ETH_COMMON_DLL __declspec(dllexport)
-#else
-    #define ETH_ENGINE_DLL __declspec(dllimport)
+#elif defined (ETH_ENGINE) || defined (ETH_TOOLMODE)
+    #define ETH_ENGINE_DLL __declspec(dllexport)
     #define ETH_GRAPHIC_DLL __declspec(dllimport)
     #define ETH_COMMON_DLL __declspec(dllimport)
 #endif

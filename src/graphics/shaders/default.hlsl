@@ -27,40 +27,46 @@ struct Material
     float m_Metalness;
 };
 
+struct VS_INPUT
+{
+    float3 Position     : POSITION;
+    float3 Normal       : NORMAL;
+    float3 Tangent      : TANGENT;
+    float3 BiTangent    : BITANGENT;
+    float2 TexCoord     : TEXCOORD;
+};
+
 struct VS_OUTPUT
 {
-    float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD0;
+    float4 Position     : SV_POSITION;
+    float3 Normal       : NORMAL;
+    float2 TexCoord     : TEXCOORD0;
 };
 
 ConstantBuffer<Material> m_InstanceParams : register(b0);
 
-VS_OUTPUT VS_Main(uint ID : SV_VertexID, uint INSTANCE : SV_InstanceID)
+VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
+    //float3 pos = IN.Position;
 
-    pos /= 4.0f;
-    pos.x += m_InstanceParams.m_Roughness;
+    //float4x4 mv = mul(g_CommonConstants.ViewMatrix, m_InstanceParams.m_ModelMatrix);
+    //float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);
 
-    o.Position = float4(pos, 1.0f, 1.0f);
+    //o.Position = mul(mvp, float4(pos, 1.0));
+    //o.PositionWS = mul(m_InstanceParams.m_ModelMatrix, float4(pos, 1.0)).xyz;
+    //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0)).xyz;
 
-    o.TexCoord = uv;
+    o.Position = IN.Position.xyzz * 0.0000000000000000001;
+    o.Normal = IN.Normal;
+    o.TexCoord = IN.TexCoord;
 
     return o;
 }
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float d = 0.1f;
-
-    //for (int i = 0; i < 1000000; ++i)
-    //    d += i;
-
-
-    return float4(IN.TexCoord, m_InstanceParams.m_Roughness, d);
+    return float4(IN.Normal, 1);
 }
 

@@ -57,8 +57,8 @@ namespace Ether::Graphics
         void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
 
         void TransitionResource(RhiResourceTransitionDesc desc) override;
-        //RhiResult CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
-        //RhiResult CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
+        void CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
+        void CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
         void DrawInstanced(RhiDrawInstancedDesc desc) override;
         void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
 

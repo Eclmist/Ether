@@ -22,4 +22,8 @@
 #include "common/common.h"
 #include "api/api.h"
 
+namespace Ether
+{
+    constexpr std::string_view WorkspaceDirectory = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug";
+}
 

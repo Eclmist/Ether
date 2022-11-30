@@ -30,10 +30,10 @@ namespace Ether
     /*
         Derive from this class to make other classes serializable
     */
-    class Serializable
+    class ETH_COMMON_DLL Serializable
     {
     public:
-        Serializable();
+        Serializable(uint32_t version, uint32_t classId);
         ~Serializable() = default;
 
         inline std::string GetGuid() const { return m_Guid; }
@@ -42,18 +42,9 @@ namespace Ether
         virtual void Deserialize(IStream& istream);
 
     protected:
-        struct SerializableField
-        {
-            void* m_Data;
-            size_t m_Size;
-        };
-
-    protected:
         std::string m_Guid;
         uint32_t m_Version;
         uint32_t m_ClassID;
-
-        std::unordered_map<std::string, Serializable::SerializableField> m_Fields;
     };
 }
 

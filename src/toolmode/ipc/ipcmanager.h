@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "toolmode/pch.h"
 #include "toolmode/ipc/tcpsocket.h"
 #include "toolmode/ipc/command/commandfactory.h"
 #include "toolmode/ipc/command/incomingcommand.h"

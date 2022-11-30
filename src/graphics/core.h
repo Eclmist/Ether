@@ -27,13 +27,13 @@
 #include "graphics/rhi/rhidescriptorheap.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
 
+#include "graphics/common/graphiccommon.h"
+#include "graphics/config/graphicconfig.h"
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessresourcemanager.h"
-#include "graphics/config/graphicconfig.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
 
 #include "graphics/commandmanager.h"
-#include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
 #include "graphics/graphicrenderer.h"
 

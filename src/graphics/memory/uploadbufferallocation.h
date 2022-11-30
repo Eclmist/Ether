@@ -31,18 +31,19 @@ namespace Ether::Graphics
             size_t offset,
             size_t size,
             void* mappedBaseAddr,
-            RhiGpuAddress gpuAddr
+            RhiResource& resource
         );
 
     public:
-        void* GetBaseCpuHandle() const override { return m_MappedBaseAddress; }
+        inline void* GetBaseCpuHandle() const override { return m_MappedBaseAddress; }
 
-        RhiGpuAddress GetBaseGpuAddress() const { return m_GpuAddress; }
-        RhiGpuAddress GetGpuAddress() const { return GetBaseGpuAddress() + m_Offset; }
+        inline RhiGpuAddress GetBaseGpuAddress() const { return m_Resource.GetGpuAddress(); }
+        inline RhiGpuAddress GetGpuAddress() const { return GetBaseGpuAddress() + m_Offset; }
+        inline RhiResource& GetResource() { return m_Resource; }
 
     protected:
         void* m_MappedBaseAddress;
-        RhiGpuAddress m_GpuAddress;
+        RhiResource& m_Resource;
     };
 }
 

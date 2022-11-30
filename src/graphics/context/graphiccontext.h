@@ -37,6 +37,8 @@ namespace Ether::Graphics
 
         void SetViewport(RhiViewportDesc viewport);
         void SetScissorRect(RhiScissorDesc scissor);
+        void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer);
+        void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer);
         void SetPrimitiveTopology(RhiPrimitiveTopology topology);
         void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
         void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);

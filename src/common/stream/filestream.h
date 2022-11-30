@@ -24,7 +24,7 @@
 
 namespace Ether
 {
-    class IFileStream : public IStream
+    class ETH_COMMON_DLL IFileStream : public IStream
     {
     public:
         IFileStream(const std::string& path);
@@ -50,7 +50,7 @@ namespace Ether
         std::string m_Path;
     };
 
-    class OFileStream : public OStream
+    class ETH_COMMON_DLL OFileStream : public OStream
     {
     public:
         OFileStream(const std::string& path);

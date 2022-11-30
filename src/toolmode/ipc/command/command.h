@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "toolmode/pch.h"
 #include "parser/json/json.hpp"
 
 namespace Ether::Toolmode

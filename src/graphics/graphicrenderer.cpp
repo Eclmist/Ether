@@ -22,6 +22,21 @@
 #include "graphics/resources/material.h"
 #include "graphics/rhi/rhishader.h"
 
+#include "graphics/resources/mesh.h"
+#include "common/stream/filestream.h"
+
+std::vector<std::unique_ptr<Ether::Graphics::Mesh>> g_Meshes;
+std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug";
+
+Ether::Graphics::RhiInputElementDesc inputElementDesc[5] =
+{
+    { "POSITION", 0, Ether::Graphics::RhiFormat::R32G32B32Float, 0, 0xffffffff, Ether::Graphics::RhiInputClassification::PerVertexData, 0 },
+    { "NORMAL", 0, Ether::Graphics::RhiFormat::R32G32B32Float, 0, 0xffffffff, Ether::Graphics::RhiInputClassification::PerVertexData, 0 },
+    { "TANGENT", 0, Ether::Graphics::RhiFormat::R32G32B32Float, 0, 0xffffffff, Ether::Graphics::RhiInputClassification::PerVertexData, 0 },
+    { "BITANGENT", 0, Ether::Graphics::RhiFormat::R32G32B32Float, 0, 0xffffffff, Ether::Graphics::RhiInputClassification::PerVertexData, 0 },
+    { "TEXCOORD", 0, Ether::Graphics::RhiFormat::R32G32Float, 0, 0xffffffff, Ether::Graphics::RhiInputClassification::PerVertexData, 0 },
+};
+
 Ether::Graphics::GraphicRenderer::GraphicRenderer()
     : m_Context("GraphicRenderer::GraphicContext")
 {
@@ -29,6 +44,21 @@ Ether::Graphics::GraphicRenderer::GraphicRenderer()
 
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
         m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>();
+
+#ifdef ETH_ENGINE
+    for (int i = 0; i < 2; ++i)
+    {
+        std::string meshPath = std::format("{}\\mesh{}.ether", sceneRootPath, i);
+
+        //if (!Ether::PathUtils::IsValidPath(meshPath))
+        //    break;
+
+        g_Meshes.push_back(std::make_unique<Mesh>());
+        IFileStream ifstream(meshPath);
+        g_Meshes[i]->Deserialize(ifstream);
+        g_Meshes[i]->CreateGpuResources();
+    }
+#endif
 }
 
 void Ether::Graphics::GraphicRenderer::WaitForPresent()
@@ -50,6 +80,7 @@ void Ether::Graphics::GraphicRenderer::Render()
     static std::unique_ptr<RhiShader> tempPs = gfxDevice.CreateShader({ "default.hlsl", "PS_Main", RhiShaderType::Pixel });
     static std::unique_ptr<RhiRootSignatureDesc> rsDesc = Core::GetDevice().CreateRootSignatureDesc(1, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
+    rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout);
     static std::unique_ptr<RhiRootSignature> rootSignature = rsDesc->Compile();
 
     static std::unique_ptr<RhiPipelineStateDesc> psoDesc = Core::GetDevice().CreatePipelineStateDesc();
@@ -57,6 +88,9 @@ void Ether::Graphics::GraphicRenderer::Render()
     psoDesc->SetPixelShader(*tempPs);
     psoDesc->SetRenderTargetFormat(BackBufferFormat);
     psoDesc->SetRootSignature(*rootSignature);
+    psoDesc->SetInputLayout({ inputElementDesc, sizeof(inputElementDesc) / sizeof(inputElementDesc[0]) });
+    //psoDesc->SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
+    psoDesc->SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateDisabled);
 
     m_Context.PushMarker("Clear");
     m_Context.SetViewport(gfxDisplay.GetViewport());
@@ -67,28 +101,32 @@ void Ether::Graphics::GraphicRenderer::Render()
     m_Context.FinalizeAndExecute();
     m_Context.Reset();
 
-    m_Context.PushMarker("Fullscreen");
+    m_Context.PushMarker("Geometry");
     m_Context.SetViewport(gfxDisplay.GetViewport());
     m_Context.SetScissorRect(gfxDisplay.GetScissorRect());
-    m_Context.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleStrip);
+    m_Context.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
     m_Context.SetDescriptorHeap(Core::GetGpuDescriptorAllocator().GetDescriptorHeap());
     m_Context.SetGraphicRootSignature(*rootSignature);
     m_Context.SetPipelineState(*psoDesc);
     m_Context.SetRenderTarget(gfxDisplay.GetBackBufferRtv());
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < g_Meshes.size(); ++i)
     {
+        Mesh& mesh = *g_Meshes[i];
+
         Material material;
         material.SetBaseColor(ethVector4(1, 0, 1, 1));
         material.SetSpecularColor(ethVector4(1, 1, 0, 1));
-        material.SetMetalness(0.2f * (i));
+        material.SetMetalness(0.5f);
         material.SetRoughness(sin(Time::GetCurrentTime() / 100.0f));
 
         auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
         memcpy(alloc->GetCpuHandle(), &material, sizeof(Material));
 
         m_Context.SetRootConstantBuffer(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
-        m_Context.DrawInstanced(4, 1);
+        m_Context.SetVertexBuffer(mesh.GetVertexBufferView());
+        m_Context.SetIndexBuffer(mesh.GetIndexBufferView());
+        m_Context.DrawIndexedInstanced(mesh.GetNumIndices(), 1);
     }
 
     m_Context.PopMarker();

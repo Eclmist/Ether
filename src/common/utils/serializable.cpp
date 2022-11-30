@@ -21,9 +21,9 @@
 #include "common/stream/filestream.h"
 #include <format>
 
-Ether::Serializable::Serializable()
-    : m_Version(0)
-    , m_ClassID(typeid(this).hash_code())
+Ether::Serializable::Serializable(uint32_t version, uint32_t classId)
+    : m_Version(version)
+    , m_ClassID(classId)
 {
     m_Guid = std::format(
         "{:X}-{:X}-{:X}-{:X}",
@@ -42,7 +42,11 @@ void Ether::Serializable::Serialize(OStream& ostream)
 
 void Ether::Serializable::Deserialize(IStream& istream)
 {
-    istream >> m_Version;
+    uint32_t version;
+    istream >> version;
+    if (m_Version != version)
+        throw std::runtime_error(std::format("Asset version mismatch - expected version {} but found version {}", version, m_Version));
+
     istream >> m_ClassID;
 }
 

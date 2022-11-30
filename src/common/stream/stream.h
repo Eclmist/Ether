@@ -23,7 +23,7 @@
 
 namespace Ether
 {
-    class Stream : public NonCopyable
+    class ETH_COMMON_DLL Stream : public NonCopyable
     {
     public:
         virtual ~Stream() {}
@@ -35,7 +35,7 @@ namespace Ether
         bool m_IsOpen;
     };
 
-    class IStream : public Stream
+    class ETH_COMMON_DLL IStream : public Stream
     {
     public:
         virtual IStream& operator>>(float& v) = 0;
@@ -52,7 +52,7 @@ namespace Ether
         virtual IStream& operator>>(ethVector4& v) = 0;
     };
 
-    class OStream : public Stream
+    class ETH_COMMON_DLL OStream : public Stream
     {
     public:
         virtual OStream& operator<<(const float v) = 0;

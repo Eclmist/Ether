@@ -18,7 +18,7 @@
 */
 
 #include "graphics/core.h"
-#include "graphics/graphiccommon.h"
+#include "graphics/common/graphiccommon.h"
 
 Ether::Graphics::GraphicCommon::GraphicCommon()
 {

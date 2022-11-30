@@ -257,16 +257,19 @@ namespace Ether::Graphics
         RhiGpuAddress m_TargetGpuAddr;
     };
 
-    struct RhiIndexBufferViewDesc : public RhiResourceViewDesc
+    struct RhiIndexBufferViewDesc
     {
         RhiFormat m_Format;
         size_t m_BufferSize;
+        RhiGpuAddress m_TargetGpuAddr;
+
     };
 
-    struct RhiVertexBufferViewDesc : public RhiResourceViewDesc
+    struct RhiVertexBufferViewDesc
     {
         size_t m_BufferSize;
         size_t m_Stride;
+        RhiGpuAddress m_TargetGpuAddr;
     };
 
     struct RhiResourceDesc

@@ -20,24 +20,44 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/common/vertexformats.h"
 
 namespace Ether::Graphics
 {
-    class Mesh
+    class ETH_GRAPHIC_DLL Mesh : public Serializable
     {
     public:
+        Mesh();
+        ~Mesh() = default;
 
+    public:
         inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
-        //inline size_t GetNumVertices() const { return m_Nod}
+        inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
+        inline uint32_t GetNumVertices() const { return m_PackedVertices.size(); }
+        inline uint32_t GetNumIndices() const { return m_Indices.size(); }
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
+
+    public:
+        void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexCoord>&& vertices);
+        void SetIndices(std::vector<uint32_t>&& indices);
+        void CreateGpuResources();
 
     private:
-        void UploadVertexBuffer(const void* data, size_t numVertices);
-        void CreateVertexBufferView(size_t bufferSize, size_t stride);
-        void CreateInstanceParams(const void* data, size_t numVertices);
+        void CreateVertexBuffer();
+        void CreateVertexBufferView();
+        void CreateIndexBufferView();
+        void CreateIndexBuffer();
+        void CreateInstanceParams();
 
     private:
-        std::unique_ptr<RhiResource> m_VertexBuffer;
-        std::unique_ptr<RhiResource> m_IndexBuffer;
+        std::vector<VertexFormats::PositionNormalTangentTexCoord> m_PackedVertices;
+        std::vector<uint32_t> m_Indices;
+
+        std::unique_ptr<RhiResource> m_VertexBufferResource;
+        std::unique_ptr<RhiResource> m_IndexBufferResource;
         std::unique_ptr<RhiResource> m_InstanceParams[MaxSwapChainBuffers];
 
         RhiVertexBufferViewDesc m_VertexBufferView;

@@ -41,7 +41,14 @@ void Ether::Graphics::RhiPipelineStateDesc::CompileShaders()
     {
         if (!shader.second->IsCompiled())
         {
-            shader.second->Compile();
+            try
+            {
+                shader.second->Compile();
+            }
+            catch (std::runtime_error err)
+            {
+                LogGraphicsError(err.what());
+            }
             
             switch (shader.first)
             {

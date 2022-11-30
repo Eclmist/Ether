@@ -214,12 +214,7 @@ void SampleApp::LoadTexture(const std::string& path, const std::string& key)
 
 void SampleApp::OnRender(const RenderEventArgs& e)
 {
-    //const ethVector3 upDir = { 0, 1, 0 };
 
-    //e.m_GraphicContext->SetViewMatrix(m_ViewMatrix);
-    //e.m_GraphicContext->SetProjectionMatrix(m_ProjectionMatrix);
-    //e.m_GraphicContext->SetEyeDirection({ m_ViewMatrix.m_31, m_ViewMatrix.m_32, m_ViewMatrix.m_33, 1.0 });
-    //e.m_GraphicContext->SetEyePosition({ m_ViewMatrixInv.m_14, m_ViewMatrixInv.m_24, m_ViewMatrixInv.m_34, 0.0 });
 }
 
 void SampleApp::OnShutdown()

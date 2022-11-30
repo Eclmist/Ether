@@ -19,10 +19,10 @@
 
 #include "graphics/memory/uploadbufferallocation.h"
 
-Ether::Graphics::UploadBufferAllocation::UploadBufferAllocation(size_t offset, size_t size, void* mappedBaseAddr, RhiGpuAddress gpuAddr)
+Ether::Graphics::UploadBufferAllocation::UploadBufferAllocation(size_t offset, size_t size, void* mappedBaseAddr, RhiResource& resource)
     : LinearAllocation(offset, size)
     , m_MappedBaseAddress(mappedBaseAddr)
-    , m_GpuAddress(gpuAddr)
+    , m_Resource(resource)
 {
 }
 

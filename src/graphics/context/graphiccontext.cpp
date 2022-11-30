@@ -54,6 +54,16 @@ void Ether::Graphics::GraphicContext::SetScissorRect(RhiScissorDesc scissor)
     m_CommandList->SetScissorRect(scissor);
 }
 
+void Ether::Graphics::GraphicContext::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
+{
+    m_CommandList->SetVertexBuffer(vertexBuffer);
+}
+
+void Ether::Graphics::GraphicContext::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
+{
+    m_CommandList->SetIndexBuffer(indexBuffer);
+}
+
 void Ether::Graphics::GraphicContext::SetPrimitiveTopology(RhiPrimitiveTopology topology)
 {
     m_CommandList->SetPrimitiveTopology(topology);
@@ -77,7 +87,7 @@ void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView&
 void Ether::Graphics::GraphicContext::DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances)
 {
     RhiDrawIndexedInstancedDesc desc = {};
-    desc.m_IndexCount = numInstances;
+    desc.m_IndexCount = numIndices;
     desc.m_InstanceCount = numInstances;
     desc.m_FirstIndex = 0;
     desc.m_FirstInstance = 0;

@@ -65,7 +65,7 @@ void Ether::Engine::InitializeGraphicsLayer()
     config.SetWindowHandle(m_MainWindow->GetWindowHandle());
     config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
     config.SetUseSourceShaders(m_CommandLineOptions.GetUseSourceShaders());
-    config.SetShaderSourceDir(m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "shaders/");
+    config.SetShaderSourceDir(m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "Data/shaders/");
 
     Graphics::Core::Instance().Initialize();
 }

@@ -38,6 +38,7 @@ Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::
     m_CommandAllocatorPool = &Core::GetCommandManager().GetAllocatorPool(type);
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
     m_CommandList = Core::GetCommandManager().CreateCommandList(type, *m_CommandAllocator, m_Name + "::CommandList");
+    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_32MiB);
 }
 
 Ether::Graphics::CommandContext::~CommandContext()
@@ -104,6 +105,28 @@ void Ether::Graphics::CommandContext::SetPipelineState(RhiPipelineStateDesc& pso
 void Ether::Graphics::CommandContext::SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
 {
     m_CommandList->SetGraphicsRootConstantBuffer(bindSlot, resourceAddr);
+}
+
+void Ether::Graphics::CommandContext::CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset, size_t destOffset)
+{
+    RhiCopyBufferRegionDesc desc = {};
+    desc.m_Source = &src;
+    desc.m_SourceOffset = srcOffset;
+    desc.m_Destination = &dest;
+    desc.m_DestinationOffset = destOffset;
+    desc.m_Size = size;
+
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    m_CommandList->CopyBufferRegion(desc);
+}
+
+void Ether::Graphics::CommandContext::InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset)
+{
+    auto alloc = m_UploadBufferAllocator->Allocate(size);
+    memcpy(alloc->GetCpuHandle(), data, size);
+
+    CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), dest, size, alloc->GetOffset(), destOffset);
+    TransitionResource(dest, RhiResourceState::GenericRead);
 }
 
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)

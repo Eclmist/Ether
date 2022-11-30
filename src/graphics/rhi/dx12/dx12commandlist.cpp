@@ -68,17 +68,13 @@ void Ether::Graphics::Dx12CommandList::SetPrimitiveTopology(RhiPrimitiveTopology
 
 void Ether::Graphics::Dx12CommandList::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
 {
-    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(vertexBuffer.m_Resource);
     D3D12_VERTEX_BUFFER_VIEW dx12View = Translate(vertexBuffer);
-    dx12View.BufferLocation = dx12Resource->GetGpuAddress();
     m_CommandList->IASetVertexBuffers(0, 1, &dx12View);
 }
 
 void Ether::Graphics::Dx12CommandList::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
 {
-    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(indexBuffer.m_Resource);
     D3D12_INDEX_BUFFER_VIEW dx12View = Translate(indexBuffer);
-    dx12View.BufferLocation = dx12Resource->GetGpuAddress();
     m_CommandList->IASetIndexBuffer(&dx12View);
 }
 
@@ -212,48 +208,44 @@ void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(RhiClearDepthStenci
     );
 }
 
-//RhiResult Dx12CommandList::CopyBufferRegion(const RhiCopyBufferRegionDesc& desc)
-//{
-//    const auto d3dSrcResource = desc.m_Source.As<Dx12Resource>();
-//    const auto d3dDestResource = desc.m_Destination.As<Dx12Resource>();
-//
-//    m_CommandList->CopyBufferRegion
-//    (
-//        d3dDestResource->m_Resource.Get(),
-//        desc.m_DestinationOffset,
-//        d3dSrcResource->m_Resource.Get(),
-//        desc.m_SourceOffset,
-//        desc.m_Size
-//    );
-//
-//    return RhiResult::Success;
-//}
-//
-//RhiResult Dx12CommandList::CopyTextureRegion(const RhiCopyTextureRegionDesc& desc)
-//{
-//    const auto d3dIntermediateResource = desc.m_IntermediateResource.As<Dx12Resource>();
-//    const auto d3dDestResource = desc.m_Destination.As<Dx12Resource>();
-//
-//    D3D12_SUBRESOURCE_DATA textureData = {};
-//    textureData.pData = desc.m_Data;
-//    textureData.RowPitch = desc.m_Width * desc.m_BytesPerPixel;
-//    textureData.SlicePitch = desc.m_Height * textureData.RowPitch;
-//
-//    // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
-//    UpdateSubresources
-//    (
-//        m_CommandList.Get(),
-//        d3dDestResource->m_Resource.Get(),
-//        d3dIntermediateResource->m_Resource.Get(),
-//        desc.m_IntermediateResourceOffset, // offset
-//        0, // subresource idx
-//        1, // subresource count
-//        &textureData
-//    );
-//
-//    return RhiResult::Success;
-//}
-//
+void Ether::Graphics::Dx12CommandList::CopyBufferRegion(RhiCopyBufferRegionDesc desc)
+{
+    const auto dx12SrcResource = (Dx12Resource*)desc.m_Source;
+    const auto dx12DstResource = (Dx12Resource*)desc.m_Destination;
+
+    m_CommandList->CopyBufferRegion
+    (
+        dx12DstResource->m_Resource.Get(),
+        desc.m_DestinationOffset,
+        dx12SrcResource->m_Resource.Get(),
+        desc.m_SourceOffset,
+        desc.m_Size
+    );
+}
+
+void Ether::Graphics::Dx12CommandList::CopyTextureRegion(RhiCopyTextureRegionDesc desc)
+{
+    const auto d3dIntermediateResource = (Dx12Resource*)desc.m_IntermediateResource;
+    const auto d3dDestResource = (Dx12Resource*)desc.m_Destination;
+
+    D3D12_SUBRESOURCE_DATA textureData = {};
+    textureData.pData = desc.m_Data;
+    textureData.RowPitch = desc.m_Width * desc.m_BytesPerPixel;
+    textureData.SlicePitch = desc.m_Height * textureData.RowPitch;
+
+    // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
+    UpdateSubresources
+    (
+        m_CommandList.Get(),
+        d3dDestResource->m_Resource.Get(),
+        d3dIntermediateResource->m_Resource.Get(),
+        desc.m_IntermediateResourceOffset, // offset
+        0, // subresource idx
+        1, // subresource count
+        &textureData
+    );
+}
+
 void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
 {
     D3D12_RESOURCE_BARRIER barrier = Translate(desc);

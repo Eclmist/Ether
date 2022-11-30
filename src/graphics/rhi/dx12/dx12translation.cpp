@@ -538,6 +538,7 @@ D3D12_INDEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiIndexBufferViewDesc&
     D3D12_INDEX_BUFFER_VIEW dx12Desc = {};
     dx12Desc.Format = Translate(rhiDesc.m_Format);
     dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
+    dx12Desc.BufferLocation = rhiDesc.m_TargetGpuAddr;
 
     return dx12Desc;
 }
@@ -594,7 +595,7 @@ D3D12_VERTEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiVertexBufferViewDes
     D3D12_VERTEX_BUFFER_VIEW dx12Desc = {};
     dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
     dx12Desc.StrideInBytes = rhiDesc.m_Stride;
-
+    dx12Desc.BufferLocation = rhiDesc.m_TargetGpuAddr;
     return dx12Desc;
 }
 
