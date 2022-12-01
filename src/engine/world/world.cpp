@@ -17,34 +17,25 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "engine/world/world.h"
 
-#include "common/common.h"
-#include <unordered_map>
+constexpr uint32_t WorldVersion = 0;
 
-namespace Ether
+Ether::World::World()
+    : Serializable(WorldVersion, StringID("Engine::World").GetHash())
 {
-    class OStream;
-    class IStream;
-
-    /*
-        Derive from this class to make other classes serializable
-    */
-    class ETH_COMMON_DLL Serializable
-    {
-    public:
-        Serializable(uint32_t version, uint32_t classId);
-        virtual ~Serializable() = 0;
-
-        inline std::string GetGuid() const { return m_Guid; }
-
-        virtual void Serialize(OStream& ostream);
-        virtual void Deserialize(IStream& istream);
-
-    protected:
-        std::string m_Guid;
-        uint32_t m_Version;
-        uint32_t m_ClassID;
-    };
 }
 
+void Ether::World::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+    ostream << m_WorldName;
+    m_SceneGraph.Serialize(ostream);
+}
+
+void Ether::World::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+    istream >> m_WorldName;
+    m_SceneGraph.Deserialize(istream);
+}

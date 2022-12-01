@@ -28,7 +28,7 @@ namespace Ether::Graphics
     {
     public:
         Mesh();
-        ~Mesh() = default;
+        ~Mesh() override = default;
 
     public:
         inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }

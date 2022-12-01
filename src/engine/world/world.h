@@ -19,32 +19,26 @@
 
 #pragma once
 
-#include "common/common.h"
-#include <unordered_map>
+#include "pch.h"
+#include "engine/world/scenegraph.h"
 
 namespace Ether
 {
-    class OStream;
-    class IStream;
-
-    /*
-        Derive from this class to make other classes serializable
-    */
-    class ETH_COMMON_DLL Serializable
+    class World : public Serializable
     {
     public:
-        Serializable(uint32_t version, uint32_t classId);
-        virtual ~Serializable() = 0;
+        World();
+        ~World() override = default;
 
-        inline std::string GetGuid() const { return m_Guid; }
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
-        virtual void Serialize(OStream& ostream);
-        virtual void Deserialize(IStream& istream);
+    public:
+        inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
 
-    protected:
-        std::string m_Guid;
-        uint32_t m_Version;
-        uint32_t m_ClassID;
+    private:
+        std::string m_WorldName;
+        SceneGraph m_SceneGraph;
     };
 }
-

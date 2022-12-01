@@ -55,9 +55,9 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     //float4x4 mv = mul(g_GlobalConstants.m_ViewMatrix, m_InstanceParams.m_ModelMatrix); (just leave model matrix as identity for now)
     float4x4 mvp = mul(g_GlobalConstants.m_ProjectionMatrix, g_GlobalConstants.m_ViewMatrix);
 
-    o.Position = mul(mvp, float4(pos, 1.0));
-    //o.PositionWS = mul(m_InstanceParams.m_ModelMatrix, float4(pos, 1.0)).xyz;
-    //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0)).xyz;
+    o.Position = mul(mvp, float4(pos, 1.0f));
+    //o.PositionWS = mul(m_InstanceParams.m_ModelMatrix, float4(pos, 1.0f)).xyz;
+    //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0f)).xyz;
 
     o.TexCoord = IN.Tangent.xy;
     o.Normal = IN.Normal;
@@ -67,6 +67,6 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    return float4(IN.Normal, 1);
+    return float4(IN.Normal, 1.0f);
 }
 

@@ -25,6 +25,7 @@
 #include "engine/config/engineconfig.h"
 #include "engine/config/commandlineoptions.h"
 #include "engine/platform/platformwindow.h"
+#include "engine/world/world.h"
 
 #include "graphics/core.h"
 
@@ -45,6 +46,7 @@ namespace Ether
         static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
         static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
         static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
+        static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
 
         static bool IsInitialized() { return Instance().m_IsInitialized; }
 
@@ -57,6 +59,8 @@ namespace Ether
         std::thread m_MainEngineThread;
 
         std::unique_ptr<PlatformWindow> m_MainWindow;
+        std::unique_ptr<World> m_ActiveWorld;
+
         IApplicationBase* m_MainApplication = nullptr;
         EngineConfig m_EngineConfig;
         CommandLineOptions m_CommandLineOptions;

@@ -34,6 +34,10 @@ Ether::Serializable::Serializable(uint32_t version, uint32_t classId)
     );
 }
 
+Ether::Serializable::~Serializable()
+{
+}
+
 void Ether::Serializable::Serialize(OStream& ostream)
 {
     ostream << m_Version;

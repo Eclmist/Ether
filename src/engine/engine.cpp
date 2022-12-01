@@ -33,6 +33,9 @@ void Ether::Engine::Initialize()
     m_MainWindow = std::make_unique<PS5::PS5Window>();
 #endif
 
+    // Deserialize world here?
+    m_ActiveWorld = std::make_unique<World>();
+
     InitializeGraphicsLayer();
 
     m_IsInitialized = true;
