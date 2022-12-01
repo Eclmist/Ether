@@ -38,7 +38,5 @@ namespace Ether::Graphics
 
     private:
         GraphicContext m_Context;
-        
-        std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
     };
 }

@@ -34,7 +34,8 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath) const
     auto scene = importer.ReadFile(assetPath,
         aiProcess_ConvertToLeftHanded           |
         aiProcessPreset_TargetRealtime_Quality  |
-        aiProcess_TransformUVCoords
+        aiProcess_TransformUVCoords             |
+        aiProcess_PreTransformVertices
     );
 
     if (scene == nullptr)
@@ -56,7 +57,6 @@ void Ether::Toolmode::AssetImporter::ProcessMesh(aiMesh** assimpMesh, uint32_t n
 {
     if (numMeshes <= 0)
         return;
-
 
     for (int i = 0; i < numMeshes; ++i)
     {
@@ -90,13 +90,18 @@ void Ether::Toolmode::AssetImporter::ProcessMesh(aiMesh** assimpMesh, uint32_t n
 
         const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
         std::vector<uint32_t> indices;
-        indices.resize(mesh->mNumFaces * numVerticesPerFace);
+        indices.reserve(mesh->mNumFaces * numVerticesPerFace);
         for (int j = 0; j < mesh->mNumFaces; ++j)
         {
-            assert(mesh->mFaces[j].mNumIndices == numVerticesPerFace);
+            if (mesh->mFaces[j].mNumIndices != numVerticesPerFace)
+                break;
+
             for (int k = 0; k < numVerticesPerFace; ++k)
-                indices[(j * numVerticesPerFace) + k] = mesh->mFaces[j].mIndices[k];
+                indices.emplace_back(mesh->mFaces[j].mIndices[k]);
         }
+
+        if (indices.size() <= 0)
+            continue;
 
         OFileStream ofstream(std::format("{}\\mesh{}.ether", WorkspaceDirectory, i));
 

@@ -33,7 +33,7 @@ namespace Ether::Graphics
 
     public:
         void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
-        void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil);
+        void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
 
         void SetViewport(RhiViewportDesc viewport);
         void SetScissorRect(RhiScissorDesc scissor);

@@ -17,18 +17,5 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-struct GlobalConstants
-{
-    float4x4 m_ViewMatrix;
-    float4x4 m_ProjectionMatrix;
-
-    float4 m_EyePosition;
-    float4 m_EyeDirection;
-    float4 m_Time;
-
-    uint2 m_ScreenResolution;
-};
-
-ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-
+#include "graphics/common/visual.h"
 

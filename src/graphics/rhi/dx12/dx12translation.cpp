@@ -138,7 +138,7 @@ D3D12_DESCRIPTOR_HEAP_TYPE Ether::Graphics::Translate(const RhiDescriptorHeapTyp
 {
     switch (rhiType)
     {
-    case RhiDescriptorHeapType::CbvSrvUav:                  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    case RhiDescriptorHeapType::SrvCbvUav:                  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     case RhiDescriptorHeapType::Rtv:                        return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     case RhiDescriptorHeapType::Dsv:                        return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     case RhiDescriptorHeapType::Sampler:                    return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;

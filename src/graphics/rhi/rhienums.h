@@ -106,7 +106,7 @@ namespace Ether::Graphics
 
     enum class RhiDescriptorHeapType
     {
-        CbvSrvUav,
+        SrvCbvUav,
         Rtv,
         Dsv,
         Sampler,
@@ -217,11 +217,11 @@ namespace Ether::Graphics
 
     enum RhiRenderTargetWriteMask : uint32_t
     {
-        Red = 0x1,
-        Green = 0x2,
-        Blue = 0x4,
-        Alpha = 0x8,
-        All = (Red | Green | Blue | Alpha)
+        Red                     = 0x1,
+        Green                   = 0x2,
+        Blue                    = 0x4,
+        Alpha                   = 0x8,
+        All                     = (Red | Green | Blue | Alpha)
     }; ETH_DEFINE_ENUM_FLAGS(RhiRenderTargetWriteMask);
 
     enum class RhiResourceDimension
@@ -233,13 +233,13 @@ namespace Ether::Graphics
         Texture3D,
     };
 
-    enum class RhiResourceFlag
+    enum class RhiResourceFlag : uint32_t
     {
-        None,
-        AllowRenderTarget,
-        AllowDepthStencil,
-        AllowUnorderedAccess,
-    };
+        None                    = 0x0,
+        AllowRenderTarget       = 0x1,
+        AllowDepthStencil       = 0x2,
+        AllowUnorderedAccess    = 0x4,
+    }; ETH_DEFINE_ENUM_FLAGS(RhiResourceFlag)
 
     enum class RhiResourceLayout
     {
@@ -261,16 +261,16 @@ namespace Ether::Graphics
 
     enum class RhiRootSignatureFlag : uint64_t
     {
-        None = 0x0,
-        AllowIAInputLayout = 0x1,
-        DenyVSRootAccess = 0x2,
-        DenyHSRootAccess = 0x4,
-        DenyDSRootAccess = 0x8,
-        DenyGSRootAccess = 0x10,
-        DenyPSRootAccess = 0x20,
-        AllowStreamOutput = 0x40,
-        LocalRootSignature = 0x80,
-        DirectlyIndexed = 0x400,
+        None                    = 0x0,
+        AllowIAInputLayout      = 0x1,
+        DenyVSRootAccess        = 0x2,
+        DenyHSRootAccess        = 0x4,
+        DenyDSRootAccess        = 0x8,
+        DenyGSRootAccess        = 0x10,
+        DenyPSRootAccess        = 0x20,
+        AllowStreamOutput       = 0x40,
+        LocalRootSignature      = 0x80,
+        DirectlyIndexed         = 0x400,
     }; ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 
     enum class RhiScalingMode

@@ -28,7 +28,6 @@ constexpr uint32_t DefaultFrameBufferHeight = 1080;
 
 Ether::Graphics::GraphicDisplay::GraphicDisplay()
     : m_BufferingMode(BufferingMode::Triple)
-    , m_RtvAllocator(RhiDescriptorHeapType::Rtv)
     , m_ScissorRect({ 0, 0, (float)DefaultFrameBufferWidth, (float)DefaultFrameBufferHeight })
     , m_Viewport({ 0.0f, 0.0f, (float)DefaultFrameBufferWidth, (float)DefaultFrameBufferHeight, 0.0f, 1.0f })
     , m_VSyncEnabled(false)
@@ -112,8 +111,8 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 {
     m_SwapChainDescriptors.clear();
 
-    auto rtvAllocation = m_RtvAllocator.Allocate(3);
-    auto srvAllocation = Core::GetGpuDescriptorAllocator().Allocate(1);
+    auto rtvAllocation = Core::GetRtvAllocator().Allocate(3);
+    auto srvAllocation = Core::GetSrvCbvUavAllocator().Allocate(1);
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {

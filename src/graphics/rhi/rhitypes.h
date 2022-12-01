@@ -26,12 +26,12 @@ namespace Ether::Graphics
     class RhiCommandAllocator;
     class RhiCommandList;
     class RhiCommandQueue;
-    class RhiDepthStencilView;
     class RhiDescriptorHeap;
     class RhiDevice;
     class RhiFence;
     class RhiModule;
     class RhiRenderTargetView;
+    class RhiDepthStencilView;
     class RhiConstantBufferView;
     class RhiShaderResourceView;
     class RhiUnorderedAccessView;

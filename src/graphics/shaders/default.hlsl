@@ -18,6 +18,7 @@
 */
 
 #include "common/fullscreenhelpers.hlsl"
+#include "common/globalconstants.hlsl"
 
 struct Material
 {
@@ -43,24 +44,23 @@ struct VS_OUTPUT
     float2 TexCoord     : TEXCOORD0;
 };
 
-ConstantBuffer<Material> m_InstanceParams : register(b0);
+ConstantBuffer<Material> m_InstanceParams : register(b1);
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    //float3 pos = IN.Position;
+    float3 pos = IN.Position;
 
-    //float4x4 mv = mul(g_CommonConstants.ViewMatrix, m_InstanceParams.m_ModelMatrix);
-    //float4x4 mvp = mul(g_CommonConstants.ProjectionMatrix, mv);
+    //float4x4 mv = mul(g_GlobalConstants.m_ViewMatrix, m_InstanceParams.m_ModelMatrix); (just leave model matrix as identity for now)
+    float4x4 mvp = mul(g_GlobalConstants.m_ProjectionMatrix, g_GlobalConstants.m_ViewMatrix);
 
-    //o.Position = mul(mvp, float4(pos, 1.0));
+    o.Position = mul(mvp, float4(pos, 1.0));
     //o.PositionWS = mul(m_InstanceParams.m_ModelMatrix, float4(pos, 1.0)).xyz;
     //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0)).xyz;
 
-    o.Position = IN.Position.xyzz * 0.0000000000000000001;
+    o.TexCoord = IN.Tangent.xy;
     o.Normal = IN.Normal;
-    o.TexCoord = IN.TexCoord;
 
     return o;
 }

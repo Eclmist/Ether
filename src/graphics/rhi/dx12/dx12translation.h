@@ -88,7 +88,7 @@ uint32_t Ether::Graphics::TranslateFlags(const RhiType& rhiType)
 {
     uint32_t flags = 0;
     for (uint32_t i = 0; i < 32; ++i)
-        flags |= Translate((RhiType)(((uint32_t)rhiType >> i) & 0x1));
+        flags |= Translate((RhiType)((uint32_t)rhiType & (0x1 << i)));
     return flags;
 }
 

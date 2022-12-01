@@ -72,9 +72,7 @@ namespace Ether::Graphics
         std::unique_ptr<RhiRenderTargetView> m_RenderTargetRtv[MaxSwapChainBuffers];
         std::unique_ptr<RhiShaderResourceView> m_RenderTargetSrv[MaxSwapChainBuffers];
 
-        DescriptorAllocator m_RtvAllocator;
         std::vector<std::unique_ptr<MemoryAllocation>> m_SwapChainDescriptors;
-
         uint64_t m_FrameBufferFences[MaxSwapChainBuffers];
         uint32_t m_CurrentBackBufferIndex;
 

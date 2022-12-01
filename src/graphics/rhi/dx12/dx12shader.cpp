@@ -44,13 +44,18 @@ void Ether::Graphics::Dx12Shader::Compile()
 
     std::wstring wSourceDir = ToWideString(Core::GetGraphicConfig().GetShaderSourceDir());
     std::wstring wFilePath = ToWideString(m_FilePath);
+    std::wstring wFileName = ToWideString(m_FileName);
     std::wstring wEntryPoint = ToWideString(m_EntryPoint);
     std::wstring wProfile = ToWideString(m_TargetProfile);
 
     std::vector<LPCWSTR> arguments;
+    arguments.push_back(L"line-directive");
+    arguments.push_back(wFileName.c_str());
+
     arguments.push_back(L"-I");
     arguments.push_back(wSourceDir.c_str());
 
+    // Specify file name using line directive for better error output 
     // -E for the entry point (eg. PSMain)
     arguments.push_back(L"-E");
     arguments.push_back(wEntryPoint.c_str());
@@ -68,7 +73,7 @@ void Ether::Graphics::Dx12Shader::Compile()
 
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
-    //arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
+    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
 
     ETH_TOOLONLY(arguments.push_back(L"-D"));
     ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));

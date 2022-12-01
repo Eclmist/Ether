@@ -31,7 +31,7 @@
 
 Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
 {
-    m_DescriptorHeap = Core::GetDevice().CreateDescriptorHeap({ RhiDescriptorHeapType::CbvSrvUav, RhiDescriptorHeapFlag::ShaderVisible, 1024 });
+    m_DescriptorHeap = Core::GetDevice().CreateDescriptorHeap({ RhiDescriptorHeapType::SrvCbvUav, RhiDescriptorHeapFlag::ShaderVisible, 1024 });
 
     ImGui_ImplWin32_Init(Core::GetGraphicConfig().GetWindowHandle());
     ImGui_ImplDX12_Init(

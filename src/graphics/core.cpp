@@ -33,7 +33,9 @@ void Ether::Graphics::Core::Initialize()
 
     m_ShaderDaemon = std::make_unique<ShaderDaemon>();
     m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
-    m_GpuDescriptorAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::CbvSrvUav, true, _64KiB);
+    m_RtvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv, false, _4KiB);
+    m_DsvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv, false, _4KiB);
+    m_SrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, true, _64KiB);
     m_CommandManager = std::make_unique<CommandManager>();
     m_GraphicCommon = std::make_unique<GraphicCommon>();
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();

@@ -80,13 +80,12 @@ void Ether::Engine::MainEngineThread()
 
         Time::NewFrame();
         Input::NewFrame();
-
         {
             ETH_MARKER_EVENT("Game Application - OnUpdate");
             m_MainApplication->OnUpdate({}); // No useful args for now
         }
-
         Input::EndFrame();
+
         Graphics::Core::MainGraphicsThread();
     }
 }

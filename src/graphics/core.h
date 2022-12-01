@@ -27,13 +27,13 @@
 #include "graphics/rhi/rhidescriptorheap.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
 
-#include "graphics/common/graphiccommon.h"
 #include "graphics/config/graphicconfig.h"
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessresourcemanager.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
 
 #include "graphics/commandmanager.h"
+#include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
 #include "graphics/graphicrenderer.h"
 
@@ -55,7 +55,9 @@ namespace Ether::Graphics
     public:
         static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
         static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
-        static inline DescriptorAllocator& GetGpuDescriptorAllocator() { return *Instance().m_GpuDescriptorAllocator; }
+        static inline DescriptorAllocator& GetRtvAllocator() { return *Instance().m_RtvAllocator; }
+        static inline DescriptorAllocator& GetDsvAllocator() { return *Instance().m_DsvAllocator; }
+        static inline DescriptorAllocator& GetSrvCbvUavAllocator() { return *Instance().m_SrvCbvUavAllocator; }
         static inline GraphicConfig& GetGraphicConfig() { return Instance().m_Config; }
         static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
         static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
@@ -75,7 +77,9 @@ namespace Ether::Graphics
 
         std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
         std::unique_ptr<CommandManager> m_CommandManager;
-        std::unique_ptr<DescriptorAllocator> m_GpuDescriptorAllocator;
+        std::unique_ptr<DescriptorAllocator> m_RtvAllocator;
+        std::unique_ptr<DescriptorAllocator> m_DsvAllocator;
+        std::unique_ptr<DescriptorAllocator> m_SrvCbvUavAllocator;
         std::unique_ptr<GraphicCommon> m_GraphicCommon;
         std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
         std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
