@@ -53,8 +53,12 @@ Ether::CommandLineOptions::CommandLineOptions()
 
 void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, const std::string& arg)
 {
+    LogEngineInfo("Command Line Args: %s %s", flag.c_str(), arg.c_str());
+
     if (flag == "-sourceshaders")
         m_UseSourceShaders = true;
+    else if (flag == "-useshaderdaemon")
+        m_UseShaderDaemon = true;
     else if (flag == "-usevalidationlayer")
         m_UseValidationLayer = true;
 #if defined (ETH_TOOLMODE)

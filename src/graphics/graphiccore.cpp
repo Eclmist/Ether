@@ -17,21 +17,18 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/context/commandcontext.h"
 #include "graphics/context/graphiccontext.h"
 
-Ether::Graphics::Core::~Core()
-{
-    FlushGpu();
-}
-
-void Ether::Graphics::Core::Initialize()
+void Ether::Graphics::GraphicCore::Initialize()
 {
     m_RhiModule = RhiModule::InitForPlatform();
     m_RhiDevice = m_RhiModule->CreateDevice();
 
-    m_ShaderDaemon = std::make_unique<ShaderDaemon>();
+    if (m_Config.GetUseShaderDaemon())
+        m_ShaderDaemon = std::make_unique<ShaderDaemon>();
+
     m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
     m_RtvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv, false, _4KiB);
     m_DsvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv, false, _4KiB);
@@ -40,16 +37,32 @@ void Ether::Graphics::Core::Initialize()
     m_GraphicCommon = std::make_unique<GraphicCommon>();
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     m_GraphicRenderer = std::make_unique<GraphicRenderer>();
-
-    m_Imgui = RhiImguiWrapper::InitForPlatform();
 }
 
-void Ether::Graphics::Core::FlushGpu()
+void Ether::Graphics::GraphicCore::Shutdown()
+{
+    FlushGpu();
+
+    m_GraphicRenderer.reset();
+    m_GraphicDisplay.reset();
+    m_GraphicCommon.reset();
+    m_CommandManager.reset();
+    m_SrvCbvUavAllocator.reset();
+    m_DsvAllocator.reset();
+    m_RtvAllocator.reset();
+    m_BindlessResourceManager.reset();
+    m_ShaderDaemon.reset();
+
+    m_RhiDevice.reset();
+    m_RhiModule.reset();
+}
+
+void Ether::Graphics::GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
 }
 
-void Ether::Graphics::Core::MainGraphicsThread()
+void Ether::Graphics::GraphicCore::Main()
 {
     ETH_MARKER_EVENT("Graphics Update");
 

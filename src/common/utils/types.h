@@ -24,40 +24,38 @@
 
 namespace Ether
 {
-    typedef SMath::Vector<float, 2>         ethVector2;
-    typedef SMath::Vector<float, 3>         ethVector3;
-    typedef SMath::Vector<float, 4>         ethVector4;
+    using ethVector2    = SMath::Vector<float, 2>;
+    using ethVector3    = SMath::Vector<float, 3>;
+    using ethVector4    = SMath::Vector<float, 4>;
 
-    typedef SMath::Vector<int, 2>           ethVector2i;
-    typedef SMath::Vector<int, 3>           ethVector3i;
-    typedef SMath::Vector<int, 4>           ethVector4i;
+    using ethVector2i   = SMath::Vector<int, 2>;
+    using ethVector3i   = SMath::Vector<int, 3>;
+    using ethVector4i   = SMath::Vector<int, 4>;
 
-    typedef SMath::Vector<unsigned int, 2>  ethVector2u;
-    typedef SMath::Vector<unsigned int, 3>  ethVector3u;
-    typedef SMath::Vector<unsigned int, 4>  ethVector4u;
+    using ethVector2u   = SMath::Vector<unsigned int, 2>;
+    using ethVector3u   = SMath::Vector<unsigned int, 3>;
+    using ethVector4u   = SMath::Vector<unsigned int, 4>;
 
-    typedef SMath::Point<float, 2>          ethPoint2;
-    typedef SMath::Point<float, 3>          ethPoint3;
-    typedef SMath::Point<float, 4>          ethPoint4;
+    using ethPoint2     = SMath::Point<float, 2>;
+    using ethPoint3     = SMath::Point<float, 3>;
+    using ethPoint4     = SMath::Point<float, 4>;
 
-    typedef SMath::Point<int, 2>            ethPoint2i;
-    typedef SMath::Point<int, 3>            ethPoint3i;
-    typedef SMath::Point<int, 4>            ethPoint4i;
+    using ethPoint2i    = SMath::Point<int, 2>;
+    using ethPoint3i    = SMath::Point<int, 3>;
+    using ethPoint4i    = SMath::Point<int, 4>;
 
-    typedef SMath::Point<unsigned int, 2>   ethPoint2u;
-    typedef SMath::Point<unsigned int, 3>   ethPoint3u;
-    typedef SMath::Point<unsigned int, 4>   ethPoint4u;
+    using ethPoint2u    = SMath::Point<unsigned int, 2>;
+    using ethPoint3u    = SMath::Point<unsigned int, 3>;
+    using ethPoint4u    = SMath::Point<unsigned int, 4>;
 
-    typedef SMath::Matrix<float, 3>         ethMatrix3x3;
-    typedef SMath::Matrix<float, 4>         ethMatrix4x4;
-    typedef SMath::Matrix<int, 3>           ethMatrix3x3i;
-    typedef SMath::Matrix<int, 4>           ethMatrix4x4i;
-    typedef SMath::Matrix<unsigned int, 3>  ethMatrix3x3u;
-    typedef SMath::Matrix<unsigned int, 4>  ethMatrix4x4u;
+    using ethMatrix3x3  = SMath::Matrix<float, 3>;
+    using ethMatrix4x4  = SMath::Matrix<float, 4>;
+    using ethMatrix3x3i = SMath::Matrix<int, 3>;
+    using ethMatrix4x4i = SMath::Matrix<int, 4>;
+    using ethMatrix3x3u = SMath::Matrix<unsigned int, 3>;
+    using ethMatrix4x4u = SMath::Matrix<unsigned int, 4>;
 
-    typedef SMath::Normal<float, 3>         ethNormal3;
-
-    typedef SMath::Ray                      ethRay;
-    typedef SMath::Rect<unsigned int>       ethRect;
-    typedef SMath::Transform                ethTransform;
+    using Ray           = SMath::Ray;
+    using Rect          = SMath::Rect<unsigned int>;
+    using Transform     = SMath::Transform;
 }

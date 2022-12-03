@@ -19,7 +19,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12imguiwrapper.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include "graphics/rhi/dx12/dx12device.h"
@@ -31,12 +31,12 @@
 
 Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
 {
-    m_DescriptorHeap = Core::GetDevice().CreateDescriptorHeap({ RhiDescriptorHeapType::SrvCbvUav, RhiDescriptorHeapFlag::ShaderVisible, 1024 });
+    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap({ RhiDescriptorHeapType::SrvCbvUav, RhiDescriptorHeapFlag::ShaderVisible, 1024 });
 
-    ImGui_ImplWin32_Init(Core::GetGraphicConfig().GetWindowHandle());
+    ImGui_ImplWin32_Init(GraphicCore::GetGraphicConfig().GetWindowHandle());
     ImGui_ImplDX12_Init(
-        ((Dx12Device&)Core::GetDevice()).m_Device.Get(),
-        Core::GetGraphicDisplay().GetNumBuffers(),
+        ((Dx12Device&)GraphicCore::GetDevice()).m_Device.Get(),
+        GraphicCore::GetGraphicDisplay().GetNumBuffers(),
         Translate(BackBufferFormat),
         ((Dx12DescriptorHeap&)m_DescriptorHeap).m_Heap.Get(),
         { m_DescriptorHeap->GetBaseCpuAddress() },

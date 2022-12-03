@@ -31,6 +31,6 @@ namespace Ether
 {
     constexpr uint32_t MaxNumKeycodes = 256;
 
-    typedef uint32_t KeyCode;
+    using KeyCode = uint32_t;
 }
 

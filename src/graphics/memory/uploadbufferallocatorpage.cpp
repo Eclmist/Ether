@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/memory/uploadbufferallocatorpage.h"
 
 Ether::Graphics::UploadBufferAllocatorPage::UploadBufferAllocatorPage(size_t capacity)
@@ -29,7 +29,7 @@ Ether::Graphics::UploadBufferAllocatorPage::UploadBufferAllocatorPage(size_t cap
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(capacity);
     desc.m_Name = "UploadBufferAllocator::UploadHeap";
 
-    m_UploadHeap = Core::GetDevice().CreateCommittedResource(desc);
+    m_UploadHeap = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_UploadHeap->Map(&m_BaseAddress);
 }
 

@@ -17,16 +17,11 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/rhicommandqueue.h"
 #include "graphics/rhi/rhiresource.h"
-
-namespace Ether::Graphics
-{
-std::unordered_map<const RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> CommandContext::s_PipelineStateCache;
-}
 
 Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::string& contextName)
     : m_Name(contextName)
@@ -34,16 +29,16 @@ Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::
 {
     ETH_MARKER_EVENT("Command Context - Constructor");
 
-    m_CommandQueue = &Core::GetCommandManager().GetQueue(type);
-    m_CommandAllocatorPool = &Core::GetCommandManager().GetAllocatorPool(type);
+    m_CommandQueue = &GraphicCore::GetCommandManager().GetQueue(type);
+    m_CommandAllocatorPool = &GraphicCore::GetCommandManager().GetAllocatorPool(type);
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
-    m_CommandList = Core::GetCommandManager().CreateCommandList(type, *m_CommandAllocator, m_Name + "::CommandList");
+    m_CommandList = GraphicCore::GetCommandManager().CreateCommandList(type, *m_CommandAllocator, m_Name + "::CommandList");
     m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_32MiB);
 }
 
 Ether::Graphics::CommandContext::~CommandContext()
 {
-    if (m_CommandAllocator != nullptr)
+    if (m_CommandAllocator != nullptr && m_CommandAllocatorPool != nullptr)
         m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
 }
 
@@ -88,18 +83,9 @@ void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap&
     m_CommandList->SetDescriptorHeaps(desc);
 }
 
-void Ether::Graphics::CommandContext::SetPipelineState(RhiPipelineStateDesc& psoDesc)
+void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& pipelineState)
 {
-    if (psoDesc.RequiresShaderCompilation())
-    {
-        psoDesc.CompileShaders();
-        s_PipelineStateCache[&psoDesc] = psoDesc.Compile();
-    }
-
-    if (s_PipelineStateCache.find(&psoDesc) == s_PipelineStateCache.end())
-        s_PipelineStateCache[&psoDesc] = psoDesc.Compile();
-
-    m_CommandList->SetPipelineState(*s_PipelineStateCache.at(&psoDesc));
+    m_CommandList->SetPipelineState(pipelineState);
 }
 
 void Ether::Graphics::CommandContext::SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
@@ -141,6 +127,7 @@ void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 
 void Ether::Graphics::CommandContext::Reset()
 {
+    ETH_MARKER_EVENT("Command Context - Reset");
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
     m_CommandList->Reset(*m_CommandAllocator);
 }

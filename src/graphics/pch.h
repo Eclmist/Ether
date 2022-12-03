@@ -29,6 +29,8 @@
 namespace Ether::Graphics
 {
     constexpr uint32_t MaxSwapChainBuffers  = 3;
+    constexpr uint32_t DefaultBackBufferWidth = 1920;
+    constexpr uint32_t DefaultBackBufferHeight = 1080;
     constexpr RhiFormat BackBufferFormat    = RhiFormat::R8G8B8A8Unorm;
 
     constexpr size_t _1KiB                  = 1 << 10;

@@ -79,11 +79,11 @@ namespace Ether::Graphics
     D3D12_VERTEX_BUFFER_VIEW Translate(const RhiVertexBufferViewDesc& rhiDesc);
     D3D12_INDEX_BUFFER_VIEW Translate(const RhiIndexBufferViewDesc& rhiDesc);
 
-    template<typename RhiType>
+    template <typename RhiType>
     uint32_t TranslateFlags(const RhiType& rhiType);
 }
 
-template<typename RhiType>
+template <typename RhiType>
 uint32_t Ether::Graphics::TranslateFlags(const RhiType& rhiType)
 {
     uint32_t flags = 0;

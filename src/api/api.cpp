@@ -18,7 +18,7 @@
 */
 
 #include "api.h"
-#include "engine/engine.h"
+#include "engine/enginecore.h"
 
 int Ether::Start(IApplicationBase& app)
 {
@@ -27,14 +27,14 @@ int Ether::Start(IApplicationBase& app)
     LoggingManager::Instance().Initialize();
 
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
-    Engine::Instance().Initialize();
-    Engine::Instance().LoadApplication(app);
-    ETH_ENGINEONLY(Engine::Instance().GetMainWindow().Show());
+    EngineCore::Instance().Initialize();
+    EngineCore::Instance().LoadApplication(app);
+    ETH_ENGINEONLY(EngineCore::Instance().GetMainWindow().Show());
 
-    Engine::Instance().Run();
+    EngineCore::Instance().Run();
 
     LogInfo("Shutting down Ether"); 
-    Engine::Instance().Shutdown();
+    EngineCore::Instance().Shutdown();
 
     Input::Reset();
     Time::Reset();
@@ -51,55 +51,55 @@ void Ether::Shutdown()
 
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()
 {
-    return Engine::GetCommandLineOptions();
+    return EngineCore::GetCommandLineOptions();
 }
 
 void Ether::Client::SetClientTitle(const std::string& title)
 {
-    Engine::GetEngineConfig().SetClientTitle(title);
+    EngineCore::GetEngineConfig().SetClientTitle(title);
 }
 
 std::string Ether::Client::GetClientTitle()
 {
-    return Engine::GetEngineConfig().GetClientName();
+    return EngineCore::GetEngineConfig().GetClientName();
 }
 
 void Ether::Client::SetClientSize(const ethVector2u& size)
 {
-    Engine::GetEngineConfig().SetClientSize(size);
+    EngineCore::GetEngineConfig().SetClientSize(size);
 }
 
 Ether::ethVector2u Ether::Client::GetClientSize()
 {
-    return Engine::GetEngineConfig().GetClientSize();
+    return EngineCore::GetEngineConfig().GetClientSize();
 }
 void Ether::Client::SetFullscreen(bool enabled)
 {
-    Engine::GetMainWindow().SetFullscreen(enabled);
+    EngineCore::GetMainWindow().SetFullscreen(enabled);
 }
 
 bool Ether::Client::IsFullscreen()
 {
-    return Engine::GetMainWindow().IsFullscreen();
+    return EngineCore::GetMainWindow().IsFullscreen();
 }
 
 void Ether::Toolmode::SetParentWindow(void* hwnd)
 {
-    Engine::GetMainWindow().SetParentWindowHandle(hwnd);
+    EngineCore::GetMainWindow().SetParentWindowHandle(hwnd);
 }
 
 void* Ether::Toolmode::GetWindowHandle()
 {
-    return Engine::GetMainWindow().GetWindowHandle();
+    return EngineCore::GetMainWindow().GetWindowHandle();
 }
 
 void Ether::Toolmode::ShowWindow()
 {
-    Engine::GetMainWindow().Show();
+    EngineCore::GetMainWindow().Show();
 }
 
 void Ether::Toolmode::HideWindow()
 {
-    Engine::GetMainWindow().Hide();
+    EngineCore::GetMainWindow().Hide();
 }
 

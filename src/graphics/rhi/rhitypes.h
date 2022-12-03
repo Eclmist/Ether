@@ -45,8 +45,8 @@ namespace Ether::Graphics
     class RhiShader;
 
 
-    typedef uint64_t RhiFenceValue;
-    typedef uint32_t RhiStencilValue;
+    using RhiFenceValue = uint64_t;
+    using RhiStencilValue = uint32_t;
 
     struct RhiDepthStencilValue
     {
@@ -67,8 +67,8 @@ namespace Ether::Graphics
 
     //============================= Memory ==============================//
 
-    typedef uint64_t RhiCpuAddress;
-    typedef uint64_t RhiGpuAddress;
+    using RhiCpuAddress = uint64_t;
+    using RhiGpuAddress = uint64_t;
 
     constexpr uint64_t UnknownAddress = -1;
     constexpr uint64_t NullAddress = 0;

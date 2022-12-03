@@ -65,7 +65,7 @@ void Ether::SceneGraph::Serialize(OStream& ostream)
 {
     Serializable::Serialize(ostream);
 
-    for (int i = 0; i < MaxNumEntities; ++i)
+    for (int i = 0; i < Ecs::MaxNumEntities; ++i)
         m_Nodes[i].Serialize(ostream);
 }
 
@@ -73,11 +73,11 @@ void Ether::SceneGraph::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
 
-    for (int i = 0; i < MaxNumEntities; ++i)
+    for (int i = 0; i < Ecs::MaxNumEntities; ++i)
         m_Nodes[i].Deserialize(istream);
 }
 
-void Ether::SceneGraph::SetParent(EntityID id, EntityID parent)
+void Ether::SceneGraph::SetParent(Ecs::EntityID id, Ecs::EntityID parent)
 {
     if (m_Nodes[id].m_ParentIndex != RootEntityID)
     {
@@ -92,7 +92,7 @@ void Ether::SceneGraph::SetParent(EntityID id, EntityID parent)
     m_Nodes[id].m_ParentIndex = parent;
 }
 
-void Ether::SceneGraph::Register(EntityID id, EntityID parent)
+void Ether::SceneGraph::Register(Ecs::EntityID id, Ecs::EntityID parent)
 {
     AssertEngine(!m_Nodes[id].m_IsRegistered, "EntityID is already registered to the scene graph");
     m_Nodes[id].m_IsRegistered = true;
@@ -100,13 +100,13 @@ void Ether::SceneGraph::Register(EntityID id, EntityID parent)
     m_Nodes[parent].m_ChildrenIndices.push_back(id);
 }
 
-void Ether::SceneGraph::Deregister(EntityID id)
+void Ether::SceneGraph::Deregister(Ecs::EntityID id)
 {
     AssertEngine(m_Nodes[id].m_IsRegistered, "EntityID was never registered to the scene graph");
     m_Nodes[id].m_IsRegistered = false;
     SetParent(id, RootEntityID);
 
-    for (EntityID childIdx : m_Nodes[id].m_ChildrenIndices)
+    for (Ecs::EntityID childIdx : m_Nodes[id].m_ChildrenIndices)
         m_Nodes[childIdx].m_ParentIndex = RootEntityID;
 
     m_Nodes[id].m_ChildrenIndices.clear();

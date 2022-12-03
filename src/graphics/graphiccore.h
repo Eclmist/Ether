@@ -25,29 +25,28 @@
 #include "graphics/rhi/rhimodule.h"
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhidescriptorheap.h"
-#include "graphics/rhi/rhiimguiwrapper.h"
 
 #include "graphics/config/graphicconfig.h"
+#include "graphics/command/commandmanager.h"
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessresourcemanager.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
 
-#include "graphics/commandmanager.h"
 #include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
 #include "graphics/graphicrenderer.h"
 
-
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL Core : public Singleton<Core>
+    class ETH_GRAPHIC_DLL GraphicCore : public Singleton<GraphicCore>
     {
     public:
-        Core() = default;
-        ~Core();
+        GraphicCore() = default;
+        ~GraphicCore() = default;
 
     public:
         void Initialize();
+        void Shutdown();
 
     public:
         static uint64_t inline GetFrameNumber() { return Instance().m_FrameNumber; }
@@ -63,17 +62,15 @@ namespace Ether::Graphics
         static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
         static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
         static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
-        static inline RhiImguiWrapper& GetImguiWrapper() { return *Instance().m_Imgui; }
         static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
     public:
-        static void MainGraphicsThread();
+        static void Main();
         static void FlushGpu();
 
     private:
         std::unique_ptr<RhiModule> m_RhiModule;
         std::unique_ptr<RhiDevice> m_RhiDevice;
-        std::unique_ptr<RhiImguiWrapper> m_Imgui;
 
         std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
         std::unique_ptr<CommandManager> m_CommandManager;

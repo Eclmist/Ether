@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/engine.h"
+#include "engine/enginecore.h"
 
 #if defined(ETH_PLATFORM_WIN32)
 #include "engine/platform/win32/win32window.h"
@@ -25,7 +25,7 @@
 #include "engine/platform/ps5/ps5window.h"
 #endif
 
-void Ether::Engine::Initialize()
+void Ether::EngineCore::Initialize()
 {
 #if defined(ETH_PLATFORM_WIN32)
     m_MainWindow = std::make_unique<Win32::Win32Window>();
@@ -41,43 +41,43 @@ void Ether::Engine::Initialize()
     m_IsInitialized = true;
 }
 
-void Ether::Engine::LoadApplication(IApplicationBase& app)
+void Ether::EngineCore::LoadApplication(IApplicationBase& app)
 {
     m_MainApplication = &app;
     m_MainApplication->Initialize();
     m_MainApplication->LoadContent();
 }
 
-void Ether::Engine::Run()
+void Ether::EngineCore::Run()
 {
-    m_MainEngineThread = std::thread(&Engine::MainEngineThread, this);
+    m_MainEngineThread = std::thread(&EngineCore::MainEngineThread, this);
     m_MainWindow->PlatformMessageLoop();
     m_MainEngineThread.join();
 }
 
-void Ether::Engine::Shutdown()
+void Ether::EngineCore::Shutdown()
 {
     m_MainApplication->OnShutdown();
-    Graphics::Core::Reset();
-    m_IsInitialized = false;
+    Graphics::GraphicCore::Instance().Shutdown();
 }
 
-void Ether::Engine::InitializeGraphicsLayer()
+void Ether::EngineCore::InitializeGraphicsLayer()
 {
-    Graphics::GraphicConfig& config = Graphics::Core::Instance().GetGraphicConfig();
+    Graphics::GraphicConfig& config = Graphics::GraphicCore::Instance().GetGraphicConfig();
     config.SetWindowHandle(m_MainWindow->GetWindowHandle());
     config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
     config.SetUseSourceShaders(m_CommandLineOptions.GetUseSourceShaders());
+    config.SetUseShaderDaemon(m_CommandLineOptions.GetUseShaderDaemon());
     config.SetShaderSourceDir(m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "Data/shaders/");
 
-    Graphics::Core::Instance().Initialize();
+    Graphics::GraphicCore::Instance().Initialize();
 }
 
-void Ether::Engine::MainEngineThread()
+void Ether::EngineCore::MainEngineThread()
 {
     while (true)
     {
-        ETH_MARKER_FRAME("Update");
+        ETH_MARKER_FRAME("Engine Frame");
         if (!m_MainWindow->ProcessPlatformMessages())
             break;
 
@@ -89,7 +89,7 @@ void Ether::Engine::MainEngineThread()
         }
         Input::EndFrame();
 
-        Graphics::Core::MainGraphicsThread();
+        Graphics::GraphicCore::Main();
     }
 }
 

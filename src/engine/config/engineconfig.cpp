@@ -17,12 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/engine.h"
+#include "engine/enginecore.h"
 #include "engine/config/engineconfig.h"
 
 Ether::EngineConfig::EngineConfig()
     : m_ClientTitle("Untitled Ether Application")
-    , m_ClientSize({1920, 1080})
+    , m_ClientSize({ Graphics::DefaultBackBufferWidth, Graphics::DefaultBackBufferHeight })
 {
 }
 
@@ -32,7 +32,7 @@ void Ether::EngineConfig::SetClientTitle(const std::string& title)
         return;
 
     m_ClientTitle = title;
-    Engine::GetMainWindow().SetTitle(title);
+    EngineCore::GetMainWindow().SetTitle(title);
 }
 
 void Ether::EngineConfig::SetClientSize(const ethVector2u& clientSize)
@@ -42,7 +42,7 @@ void Ether::EngineConfig::SetClientSize(const ethVector2u& clientSize)
 
     m_ClientSize = clientSize;
     //Engine::GetMainWindow().SetClientSize(clientSize);
-    Graphics::Core::GetGraphicConfig().SetResolution(clientSize);
+    Graphics::GraphicCore::GetGraphicConfig().SetResolution(clientSize);
 }
 
 void Ether::EngineConfig::SetClientPosition(const ethVector2u& clientPosition)

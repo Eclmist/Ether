@@ -21,6 +21,7 @@
 
 #include "graphics/pch.h"
 #include "graphics/context/graphiccontext.h"
+#include "graphics/schedule/framescheduler.h"
 
 namespace Ether::Graphics
 {
@@ -38,5 +39,6 @@ namespace Ether::Graphics
 
     private:
         GraphicContext m_Context;
+        FrameScheduler m_Scheduler;
     };
 }

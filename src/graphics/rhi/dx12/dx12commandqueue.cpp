@@ -19,7 +19,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12commandqueue.h"
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12device.h"
@@ -28,7 +28,7 @@
 Ether::Graphics::Dx12CommandQueue::Dx12CommandQueue(RhiCommandType type)
     : RhiCommandQueue(type)
 {
-    m_Fence = Core::GetDevice().CreateFence();
+    m_Fence = GraphicCore::GetDevice().CreateFence();
     m_FenceEventHandle = CreateEvent(nullptr, false, false, nullptr);
 }
 

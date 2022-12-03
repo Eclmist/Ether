@@ -68,9 +68,7 @@ source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${engine_files})
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
 
-set(ETHER_PROJECT "Ether")
-
-add_library(${ETHER_PROJECT} SHARED ${engine_files})
+add_library(Engine SHARED ${engine_files})
 
 if(WIN32)
     # Enable multi-threaded compilation on Windows
@@ -84,7 +82,7 @@ endif()
 # =========================================================================== #
 
 if (USE_PRECOMPILED_HEADERS)
-    target_precompile_headers(${ETHER_PROJECT} PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
+    target_precompile_headers(Engine PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
 endif()
 
 # =========================================================================== #
@@ -104,7 +102,7 @@ endif()
 #                             LINK DEPENDENCIES                               #
 # =========================================================================== #
 
-target_link_libraries(${ETHER_PROJECT}
+target_link_libraries(Engine
     Common
     Graphics
     "${CMAKE_SOURCE_DIR}/include/optick/OptickCore.lib"

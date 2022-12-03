@@ -17,8 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
-#include "graphics/commandallocatorpool.h"
+#include "graphics/graphiccore.h"
+#include "graphics/command/commandallocatorpool.h"
 #include "graphics/rhi/rhicommandallocator.h"
 #include "graphics/rhi/rhidevice.h"
 
@@ -48,7 +48,7 @@ void Ether::Graphics::CommandAllocatorPool::DiscardAllocator(RhiCommandAllocator
 
 Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::CreateNewAllocator()
 {
-    m_AllocatorPool.emplace_back(Core::GetDevice().CreateCommandAllocator({ m_Type }));
+    m_AllocatorPool.emplace_back(GraphicCore::GetDevice().CreateCommandAllocator({ m_Type }));
     return *m_AllocatorPool.back();
 }
 

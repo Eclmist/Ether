@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/resources/mesh.h"
 
 constexpr uint32_t MeshVersion = 2;
@@ -86,7 +86,7 @@ void Ether::Graphics::Mesh::CreateVertexBuffer()
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
     desc.m_Name = "Mesh::VertexBuffer";
 
-    m_VertexBufferResource = Core::GetDevice().CreateCommittedResource(desc);
+    m_VertexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
     CommandContext uploadContex(RhiCommandType::Graphic, "Upload Context - Vertex Buffer");
     uploadContex.InitializeBufferRegion(*m_VertexBufferResource, m_PackedVertices.data(), bufferSize);
     uploadContex.FinalizeAndExecute(true);
@@ -111,7 +111,7 @@ void Ether::Graphics::Mesh::CreateIndexBuffer()
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
     desc.m_Name = "Mesh::IndexBuffer";
 
-    m_IndexBufferResource = Core::GetDevice().CreateCommittedResource(desc);
+    m_IndexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
     CommandContext uploadContex(RhiCommandType::Graphic, "Upload Context - Index Buffer");
     uploadContex.InitializeBufferRegion(*m_IndexBufferResource, m_Indices.data(), bufferSize);
     uploadContex.FinalizeAndExecute(true);

@@ -17,11 +17,21 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/config/graphicconfig.h"
+
+Ether::Graphics::GraphicConfig::GraphicConfig()
+    : m_Resolution(DefaultBackBufferWidth, DefaultBackBufferHeight)
+    , m_ShaderSourceDir()
+    , m_IsValidationLayerEnabled(false)
+    , m_UseSourceShaders(false)
+    , m_WindowHandle(nullptr)
+{
+}
 
 void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution)
 {
     m_Resolution = resolution;
-    Core::GetGraphicDisplay().ResizeBuffers(resolution);
+    GraphicCore::GetGraphicDisplay().ResizeBuffers(resolution);
 }
+

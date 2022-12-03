@@ -26,7 +26,7 @@ namespace Ether::Graphics
     class ETH_GRAPHIC_DLL GraphicConfig 
     {
     public:
-        GraphicConfig() = default;
+        GraphicConfig();
         ~GraphicConfig() = default;
 
     public:
@@ -34,19 +34,25 @@ namespace Ether::Graphics
         inline std::string GetShaderSourceDir() const { return m_ShaderSourceDir; }
         inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
         inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
+        inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
         inline void* GetWindowHandle() const { return m_WindowHandle; }
+        inline ethVector4 GetClearColor() const { return m_ClearColor; }
 
         void SetResolution(const ethVector2u& resolution);
         inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourceDir = dir; }
         inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
         inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
+        inline void SetUseShaderDaemon(bool enable) { m_UseShaderDaemon = enable; }
         inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
+        inline void SetClearColor(const ethVector4& clearColor) { m_ClearColor = clearColor; }
 
     private:
+        ethVector4 m_ClearColor;
         ethVector2u m_Resolution;
         std::string m_ShaderSourceDir;
         bool m_IsValidationLayerEnabled;
         bool m_UseSourceShaders;
+        bool m_UseShaderDaemon;
         void* m_WindowHandle;
     };
 }

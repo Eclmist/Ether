@@ -19,7 +19,7 @@
 
 #ifdef ETH_PLATFORM_WIN32
 
-#include "engine/engine.h"
+#include "engine/enginecore.h"
 #include "engine/platform/win32/win32window.h"
 #include "graphics/rhi/dx12/dx12imguiwrapper.h"
 #include "resource.h"
@@ -161,10 +161,14 @@ void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
 void Ether::Win32::Win32Window::PlatformMessageLoop()
 {
     MSG msg = {};
-    while (::GetMessage(&msg, nullptr, 0, 0) != 0)
+    while (true)
     {
+        ::GetMessage(&msg, nullptr, 0, 0);
         ::TranslateMessage(&msg);
         ::DispatchMessage(&msg);
+
+        if (msg.message == WM_QUIT)
+            break;
     }
 }
 
@@ -181,7 +185,7 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
         MSG msg = m_Win32MessageQueue[backBufferIdx].front();
         m_Win32MessageQueue[backBufferIdx].pop();
 
-        Win32Window& win32window = static_cast<Win32Window&>(Engine::GetMainWindow());
+        Win32Window& win32window = static_cast<Win32Window&>(EngineCore::GetMainWindow());
         switch (msg.message)
         {
         case WM_MOUSEACTIVATE:
@@ -191,8 +195,8 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
             if (hasResized)
                 continue;
             hasResized = true;
-            if (Engine::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(msg.lParam), (uint32_t)HIWORD(msg.lParam) })
-                Engine::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
+            if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(msg.lParam), (uint32_t)HIWORD(msg.lParam) })
+                EngineCore::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
             continue;
         case WM_MOVE:
         {
@@ -203,8 +207,8 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
             win32window.ToClientRect(clientRect);
             ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
 
-            if (Engine::GetEngineConfig().GetClientPosition() != clientPos)
-                Engine::GetEngineConfig().SetClientPosition(clientPos);
+            if (EngineCore::GetEngineConfig().GetClientPosition() != clientPos)
+                EngineCore::GetEngineConfig().SetClientPosition(clientPos);
             continue;
         }
         case WM_KEYDOWN:
@@ -224,6 +228,7 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
         case WM_LBUTTONDOWN:
             Input::Instance().SetMouseButtonDown(0);
             continue;
+
         case WM_LBUTTONUP:
             Input::Instance().SetMouseButtonUp(0);
             continue;
@@ -327,13 +332,12 @@ void Ether::Win32::Win32Window::RegisterWindowClass() const
 
 LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    if (!Engine::IsInitialized())
+    if (!EngineCore::IsInitialized())
         return DefWindowProc(hWnd, msg, wParam, lParam);
 
-    Win32Window& win32window = static_cast<Win32Window&>(Engine::GetMainWindow());
-    Graphics::Dx12ImguiWrapper& imgui = static_cast<Graphics::Dx12ImguiWrapper&>(Graphics::Core::GetImguiWrapper());
+    Win32Window& win32window = static_cast<Win32Window&>(EngineCore::GetMainWindow());
 
-    if (imgui.Win32MessageHandler(hWnd, msg, wParam, lParam))
+    if (Graphics::Dx12ImguiWrapper::Win32MessageHandler(hWnd, msg, wParam, lParam))
         return true;
 
     if (msg == WM_DESTROY)
@@ -341,6 +345,7 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
 
     switch (msg)
     {
+    // Messages that should be deferred to engine thread to be processed later
     case WM_MOUSEACTIVATE:
     case WM_SIZE:
     case WM_MOVE:
@@ -358,7 +363,11 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
     case WM_QUIT:
         win32window.m_Win32MessageQueue[win32window.m_MessageQueueFrontBufferIdx].push({ hWnd, msg, wParam, lParam });
         return 0;
+    // Messages that can be handled immediately
+    //case WM_ERASEBKGND:
+    //    return 1;
     }
+
 
     return ::DefWindowProc(hWnd, msg, wParam, lParam);
 }

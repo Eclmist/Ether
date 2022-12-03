@@ -17,8 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
-#include "graphics/commandmanager.h"
+#include "graphics/graphiccore.h"
+#include "graphics/command/commandmanager.h"
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/rhicommandqueue.h"
 #include "graphics/rhi/rhidevice.h"
@@ -28,9 +28,9 @@ Ether::Graphics::CommandManager::CommandManager()
     , m_ComputeAllocatorPool(RhiCommandType::Compute)
     , m_CopyAllocatorPool(RhiCommandType::Copy)
 {
-    m_GraphicQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Graphic });
-    m_ComputeQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Compute });
-    m_CopyQueue = Core::GetDevice().CreateCommandQueue({ RhiCommandType::Copy });
+    m_GraphicQueue = GraphicCore::GetDevice().CreateCommandQueue({ RhiCommandType::Graphic });
+    m_ComputeQueue = GraphicCore::GetDevice().CreateCommandQueue({ RhiCommandType::Compute });
+    m_CopyQueue = GraphicCore::GetDevice().CreateCommandQueue({ RhiCommandType::Copy });
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::CommandManager::CreateCommandList(
@@ -40,7 +40,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::CommandManager
     desc.m_Allocator = &alloc;
     desc.m_Type = type;
     desc.m_Name = name;
-    return Core::GetDevice().CreateCommandList(desc);
+    return GraphicCore::GetDevice().CreateCommandList(desc);
 }
 
 Ether::Graphics::RhiFenceValue Ether::Graphics::CommandManager::Execute(RhiCommandList& cmdList)

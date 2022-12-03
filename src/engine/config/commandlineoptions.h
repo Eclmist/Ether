@@ -31,6 +31,7 @@ namespace Ether
 
     public:
         inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
+        inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
         inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
 
     public:
@@ -41,6 +42,7 @@ namespace Ether
 
     private:
         bool m_UseSourceShaders;
+        bool m_UseShaderDaemon;
         bool m_UseValidationLayer;
 
     private:

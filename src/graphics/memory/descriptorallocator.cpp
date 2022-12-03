@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/rhi/rhidevice.h"
 
@@ -29,7 +29,7 @@ Ether::Graphics::DescriptorAllocator::DescriptorAllocator(
     , m_MaxDescriptors(maxHeapSize)
     , m_IsShaderVisible(isShaderVisible)
 {
-    m_DescriptorHeap = Core::GetDevice().CreateDescriptorHeap({
+    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap({
         type,
         isShaderVisible ? RhiDescriptorHeapFlag::ShaderVisible : RhiDescriptorHeapFlag::None,
         maxHeapSize

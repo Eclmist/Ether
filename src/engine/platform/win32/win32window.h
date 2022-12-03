@@ -25,7 +25,7 @@
 
 namespace Ether::Win32
 {
-    typedef SMath::Rect<long> Rect;
+    using Rect = SMath::Rect<long>;
 
     class Win32Window : public PlatformWindow
     {

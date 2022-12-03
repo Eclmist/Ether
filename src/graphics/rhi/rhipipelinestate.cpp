@@ -17,13 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhishader.h"
 
 std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiPipelineStateDesc::Compile() const
 {
-    return Core::GetDevice().CreatePipelineState(*this);
+    return GraphicCore::GetDevice().CreatePipelineState(*this);
 }
 
 bool Ether::Graphics::RhiPipelineStateDesc::RequiresShaderCompilation() const

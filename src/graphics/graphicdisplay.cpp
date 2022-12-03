@@ -17,23 +17,19 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/graphicdisplay.h"
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhiswapchain.h"
 #include "graphics/rhi/rhiresourceviews.h"
 
-constexpr uint32_t DefaultFrameBufferWidth = 1920;
-constexpr uint32_t DefaultFrameBufferHeight = 1080;
-
 Ether::Graphics::GraphicDisplay::GraphicDisplay()
     : m_BufferingMode(BufferingMode::Triple)
-    , m_ScissorRect({ 0, 0, (float)DefaultFrameBufferWidth, (float)DefaultFrameBufferHeight })
-    , m_Viewport({ 0.0f, 0.0f, (float)DefaultFrameBufferWidth, (float)DefaultFrameBufferHeight, 0.0f, 1.0f })
     , m_VSyncEnabled(false)
     , m_VSyncVBlanks(1)
 {
-    CreateSwapChain(Core::GetGraphicConfig().GetWindowHandle());
+    ResizeViewport(GraphicCore::GetGraphicConfig().GetResolution());
+    CreateSwapChain(GraphicCore::GetGraphicConfig().GetWindowHandle());
     CreateResourcesFromSwapChain();
     CreateViewsFromSwapChain();
     InitializeFences();
@@ -62,7 +58,7 @@ void Ether::Graphics::GraphicDisplay::Present()
 
 void Ether::Graphics::GraphicDisplay::ResizeBuffers(const ethVector2u& size)
 {
-    Core::FlushGpu();
+    GraphicCore::FlushGpu();
     ResizeViewport(size);
 
     m_SwapChain->ResizeBuffers({ size });
@@ -87,17 +83,17 @@ void Ether::Graphics::GraphicDisplay::ResizeViewport(const ethVector2u& size)
 void Ether::Graphics::GraphicDisplay::CreateSwapChain(void* hwnd)
 {
     RhiSwapChainDesc desc = {};
-    desc.m_Resolution = { DefaultFrameBufferWidth, DefaultFrameBufferHeight };
+    desc.m_Resolution = { m_Viewport.m_Width, m_Viewport.m_Height };
     desc.m_Format = BackBufferFormat;
     desc.m_SampleDesc = { 1, 0 };
     desc.m_BufferCount = GetNumBuffers();
     desc.m_ScalingMode = RhiScalingMode::Stretch;
     desc.m_SwapEffect = RhiSwapEffect::FlipDiscard;
     desc.m_Flag = RhiSwapChainFlag::AllowTearing;
-    desc.m_CommandQueue = &Core::GetCommandManager().GetGraphicQueue();
+    desc.m_CommandQueue = &GraphicCore::GetCommandManager().GetGraphicQueue();
     desc.m_SurfaceTarget = hwnd;
 
-    m_SwapChain = Core::GetDevice().CreateSwapChain(desc);
+    m_SwapChain = GraphicCore::GetDevice().CreateSwapChain(desc);
     UpdateBackBufferIndex();
 }
 
@@ -111,8 +107,8 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 {
     m_SwapChainDescriptors.clear();
 
-    auto rtvAllocation = Core::GetRtvAllocator().Allocate(3);
-    auto srvAllocation = Core::GetSrvCbvUavAllocator().Allocate(1);
+    auto rtvAllocation = GraphicCore::GetRtvAllocator().Allocate(3);
+    auto srvAllocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {
@@ -121,7 +117,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         rtvDesc.m_Resource = m_RenderTargets[i];
         rtvDesc.m_TargetCpuAddr = dynamic_cast<DescriptorAllocation&>(*rtvAllocation).GetCpuAddress(i);
 
-        m_RenderTargetRtv[i] = Core::GetDevice().CreateRenderTargetView(rtvDesc);
+        m_RenderTargetRtv[i] = GraphicCore::GetDevice().CreateRenderTargetView(rtvDesc);
 
         RhiShaderResourceViewDesc srvDesc = {};
         srvDesc.m_Format = BackBufferFormat;
@@ -129,9 +125,9 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
         srvDesc.m_TargetCpuAddr = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuAddress();
         srvDesc.m_TargetGpuAddr = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuAddress();
-        m_RenderTargetSrv[i] = Core::GetDevice().CreateShaderResourceView(srvDesc);
+        m_RenderTargetSrv[i] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
 
-        Core::GetBindlessResourceManager().RegisterView(
+        GraphicCore::GetBindlessResourceManager().RegisterView(
             m_RenderTargetSrv[i]->GetViewID(),
             dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetDescriptorIndex(i)
         );

@@ -20,22 +20,13 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/core.h"
 
 namespace Ether::Graphics
 {
     class RhiShader
     {
     public:
-        RhiShader(RhiShaderDesc desc)
-            : m_Type(desc.m_Type)
-            , m_IsCompiled(false)
-            , m_CompiledSize(0)
-            , m_CompiledData(nullptr)
-            , m_FileName(desc.m_Filename)
-            , m_FilePath(Core::GetGraphicConfig().GetShaderSourceDir() + desc.m_Filename)
-            , m_EntryPoint(desc.m_EntryPoint) {}
-
+        RhiShader(RhiShaderDesc desc);
         virtual ~RhiShader() = default;
 
     public:

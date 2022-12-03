@@ -23,6 +23,7 @@
 #include "graphics/resources/mesh.h"
 #include "graphics/memory/uploadbufferallocator.h"
 #include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/rhi/rhishader.h"
 
 namespace Ether::Graphics
 {
@@ -40,8 +41,8 @@ namespace Ether::Graphics
     {
     public:
         void Reset();
-        void Setup();
-        void Render(GraphicContext& context);
+        void Setup(ResourceContext& resourceContext);
+        void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
 
         void SetupCamera(GraphicContext& context);
 
@@ -60,5 +61,10 @@ namespace Ether::Graphics
 
         std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
         std::unique_ptr<RhiDepthStencilView> dsv;
+        std::unique_ptr<RhiResource> m_DepthBuffer;
+
+        std::unique_ptr<RhiShader> vs, ps;
+        std::unique_ptr<RhiRootSignature> rootSignature;
+        std::unique_ptr<RhiPipelineStateDesc> psoDesc;
     };
 }

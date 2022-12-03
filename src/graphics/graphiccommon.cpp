@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/graphiccommon.h"
 
 Ether::Graphics::GraphicCommon::GraphicCommon()
@@ -109,11 +109,11 @@ void Ether::Graphics::GraphicCommon::InitializeBlendingStates()
 
 void Ether::Graphics::GraphicCommon::InitializeRootSignatures()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rootSignatureDesc = Core::GetDevice().CreateRootSignatureDesc(0, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rootSignatureDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0);
     rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
     m_EmptyRootSignature = rootSignatureDesc->Compile();
 
-    rootSignatureDesc = Core::GetDevice().CreateRootSignatureDesc(0, 3);
+    rootSignatureDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 3);
     rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
     rootSignatureDesc->SetAsSampler(0, m_PointSampler, RhiShaderVisibility::All);
     rootSignatureDesc->SetAsSampler(1, m_BilinearSampler, RhiShaderVisibility::All);

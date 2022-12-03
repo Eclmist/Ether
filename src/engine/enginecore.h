@@ -27,15 +27,15 @@
 #include "engine/platform/platformwindow.h"
 #include "engine/world/world.h"
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 
 namespace Ether
 {
-    class Engine : public Singleton<Engine>
+    class EngineCore : public Singleton<EngineCore>
     {
     public:
-        Engine() = default;
-        ~Engine() = default;
+        EngineCore() = default;
+        ~EngineCore() = default;
 
         void Initialize();
         void LoadApplication(IApplicationBase& app);

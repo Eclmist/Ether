@@ -19,7 +19,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12device.h"
 #include "graphics/rhi/dx12/dx12module.h"
 
@@ -178,7 +178,7 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
 
     const auto dx12CommandQueue = dynamic_cast<Dx12CommandQueue*>(desc.m_CommandQueue);
 
-    wrl::ComPtr<IDXGIFactory4> dxgiFactory = dynamic_cast<Dx12Module&>(Core::GetModule()).m_DxgiFactory;
+    wrl::ComPtr<IDXGIFactory4> dxgiFactory = dynamic_cast<Dx12Module&>(GraphicCore::GetModule()).m_DxgiFactory;
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
     auto creationDesc = Translate(desc);
     HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(
@@ -316,7 +316,6 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
 std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(RhiShaderDesc desc) const
 {
     std::unique_ptr<Dx12Shader> dx12Obj = std::make_unique<Dx12Shader>(desc);
-    Core::GetShaderDaemon().RegisterShader(*dx12Obj);
     return dx12Obj;
 }
 

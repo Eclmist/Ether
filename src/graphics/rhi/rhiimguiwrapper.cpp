@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
 #include "graphics/imgui/imgui.h"
 
@@ -61,26 +61,28 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         ImGui::Text("Ether Version: 0.1.0");
         ImGui::Spacing();
 
-        //if (ImGui::CollapsingHeader("Display Options"))
-        //{
-        //    ImGui::ColorEdit3("clear color", (float*)&EngineCore::GetEngineConfig().m_ClearColor); // Edit 3 floats representing a color
-        //    ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      // Edit bools storing our window open/close state
+        if (ImGui::CollapsingHeader("Display Options"))
+        {
+            static float clearColor[4];
+            ImGui::ColorEdit4("clear color", clearColor); // Edit 3 floats representing a color
+            //ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      // Edit bools storing our window open/close state
+            GraphicCore::GetGraphicConfig().SetClearColor((ethVector4&)(*clearColor));
 
-        //    static bool vSync = GraphicCore::GetGraphicDisplay().IsVsyncEnabled();
-        //    ImGui::Checkbox("VSync Enabled", &vSync);
-        //    GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
+            static bool vSync = GraphicCore::GetGraphicDisplay().IsVsyncEnabled();
+            ImGui::Checkbox("VSync Enabled", &vSync);
+            GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
 
-        //    static int numVblanks = 1;
-        //    if (vSync)
-        //    {
-        //        ImGui::SameLine(180);
-        //        ImGui::PushItemWidth(100);
-        //        ImGui::InputInt("Num V-Blanks", &numVblanks, 1, 1);
-        //        ImGui::PopItemWidth();
-        //        numVblanks = std::clamp(numVblanks, 1, 4);
-        //        GraphicCore::GetGraphicDisplay().SetVSyncVBlanks(numVblanks);
-        //    }
-        //}
+            static int numVblanks = 1;
+            if (vSync)
+            {
+                ImGui::SameLine(180);
+                ImGui::PushItemWidth(100);
+                ImGui::InputInt("Num V-Blanks", &numVblanks, 1, 1);
+                ImGui::PopItemWidth();
+                numVblanks = std::clamp(numVblanks, 1, 4);
+                GraphicCore::GetGraphicDisplay().SetVSyncVBlanks(numVblanks);
+            }
+        }
 
         //if (ImGui::CollapsingHeader("Input"))
         //{
@@ -115,7 +117,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         if (ImGui::CollapsingHeader("Performance"))
         {
             ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::Text("Frame Number: %lld", Graphics::Core::GetFrameNumber());
+            ImGui::Text("Frame Number: %lld", Graphics::GraphicCore::GetFrameNumber());
             //ImGui::PlotLines("", m_FpsHistory, HistoryBufferSize, m_FpsHistoryOffset, nullptr, 0.0f, 300.0f, ImVec2(384, 100));
         }
         ImGui::End();
@@ -134,14 +136,14 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     ImGui::Render();
 
     m_Context.PushMarker("Imgui Render");
-    m_Context.TransitionResource(Core::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-    m_Context.SetRenderTarget(Core::GetGraphicDisplay().GetBackBufferRtv());
+    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
+    m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     m_Context.SetDescriptorHeap(*m_DescriptorHeap);
-    m_Context.SetGraphicRootSignature(*Core::GetGraphicCommon().m_EmptyRootSignature);
+    m_Context.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
 
     RenderDrawData();
 
-    m_Context.TransitionResource(Core::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::Present);
+    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::Present);
     m_Context.PopMarker();
     m_Context.FinalizeAndExecute();
     m_Context.Reset();

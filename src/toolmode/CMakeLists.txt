@@ -52,7 +52,7 @@ target_precompile_headers(${ETHER_TOOLMODE} PRIVATE "pch.h")
 target_link_libraries(${ETHER_TOOLMODE}
     ws2_32.lib
     "${CMAKE_SOURCE_DIR}/include/assimp/assimp-vc143-mt.lib"
-    Ether
+    Engine
 )
 
 set_target_properties(${ETHER_TOOLMODE} PROPERTIES LINK_FLAGS "${CMAKE_SOURCE_DIR}/resource/Ether.res")

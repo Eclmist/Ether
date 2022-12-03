@@ -25,14 +25,3 @@
 #include "common/logging/loggingmanager.h"
 
 #include "engine/input/input.h"
-
-
-// Temp:
-typedef uint32_t EntityID;
-
-constexpr EntityID MaxNumEntities = 4096;
-constexpr EntityID RootEntityID = 0;
-constexpr EntityID InvalidEntityID = -1;
-
-
-

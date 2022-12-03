@@ -19,7 +19,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12shader.h"
 
 wrl::ComPtr<IDxcLibrary> Ether::Graphics::Dx12Shader::s_DxcLibrary;
@@ -42,7 +42,7 @@ void Ether::Graphics::Dx12Shader::Compile()
     // This is so that PSO won't keep trying to recompile broken shaders every frame
     m_IsCompiled = true;
 
-    std::wstring wSourceDir = ToWideString(Core::GetGraphicConfig().GetShaderSourceDir());
+    std::wstring wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourceDir());
     std::wstring wFilePath = ToWideString(m_FilePath);
     std::wstring wFileName = ToWideString(m_FileName);
     std::wstring wEntryPoint = ToWideString(m_EntryPoint);

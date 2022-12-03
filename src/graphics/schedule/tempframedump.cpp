@@ -17,13 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
-#include "graphics/rendergraph/tempframedump.h"
+#include "graphics/graphiccore.h"
+#include "graphics/schedule/tempframedump.h"
 #include "graphics/resources/material.h"
-#include "graphics/rhi/rhishader.h"
+#include "graphics/config/graphicconfig.h"
 #include <format>
 #include <algorithm>
-#include "graphics/rhi/rhiresourceviews.h"
+
+#define DRAW_IN_TOOLMODE 1
 
 Ether::ethMatrix4x4 GetTranslationMatrix(const Ether::ethVector3& translation)
 {
@@ -90,12 +91,12 @@ Ether::ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear
 constexpr Ether::Graphics::RhiFormat DepthBufferFormat = Ether::Graphics::RhiFormat::D24UnormS8Uint;
 
 
-void Ether::Graphics::TempFrameDump::Setup()
+void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
 {
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
         m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
 
-#ifdef ETH_ENGINE
+#ifdef DRAW_IN_TOOLMODE
     for (int i = 0; i < 1000; ++i)
     {
         std::string meshPath = std::format("{}\\mesh{}.ether", m_SceneRootPath, i);
@@ -114,69 +115,85 @@ void Ether::Graphics::TempFrameDump::Setup()
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::DepthWrite;
     desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, Core::GetGraphicConfig().GetResolution());
+    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, GraphicCore::GetGraphicConfig().GetResolution());
     desc.m_Name = "Depth Buffer";
 
-    static auto depthStencilResource = Core::GetDevice().CreateCommittedResource(desc);
+    m_DepthBuffer = GraphicCore::GetDevice().CreateCommittedResource(desc);
 
-    static auto alloc = Core::GetDsvAllocator().Allocate();
+    static auto alloc = GraphicCore::GetDsvAllocator().Allocate();
 
     static RhiDepthStencilViewDesc dsvDesc = {};
     dsvDesc.m_Format = DepthBufferFormat;
-    dsvDesc.m_Resource = depthStencilResource.get();
+    dsvDesc.m_Resource = m_DepthBuffer.get();
     dsvDesc.m_TargetCpuAddr = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
 
-    dsv = Core::GetDevice().CreateDepthStencilView(dsvDesc);
-#endif
-}
+    dsv = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
+    GraphicCore::GetDsvAllocator().Free(std::move(alloc));
 
-void Ether::Graphics::TempFrameDump::Render(GraphicContext& context)
-{
-#ifdef ETH_ENGINE
-    RhiDevice& gfxDevice = Core::GetDevice();
-    GraphicDisplay& gfxDisplay = Core::GetGraphicDisplay();
+    RhiDevice& gfxDevice = GraphicCore::GetDevice();
+    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    static std::unique_ptr<RhiShader> tempVs = gfxDevice.CreateShader({ "default.hlsl", "VS_Main", RhiShaderType::Vertex });
-    static std::unique_ptr<RhiShader> tempPs = gfxDevice.CreateShader({ "default.hlsl", "PS_Main", RhiShaderType::Pixel });
-    static std::unique_ptr<RhiRootSignatureDesc> rsDesc = Core::GetDevice().CreateRootSignatureDesc(2, 0);
+    vs = gfxDevice.CreateShader({ "default.hlsl", "VS_Main", RhiShaderType::Vertex });
+    ps = gfxDevice.CreateShader({ "default.hlsl", "PS_Main", RhiShaderType::Pixel });
+
+    if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
+    {
+        GraphicCore::GetShaderDaemon().RegisterShader(*vs);
+        GraphicCore::GetShaderDaemon().RegisterShader(*ps);
+    }
+
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout);
-    static std::unique_ptr<RhiRootSignature> rootSignature = rsDesc->Compile();
+    rootSignature = rsDesc->Compile();
 
-    static std::unique_ptr<RhiPipelineStateDesc> psoDesc = Core::GetDevice().CreatePipelineStateDesc();
-    psoDesc->SetVertexShader(*tempVs);
-    psoDesc->SetPixelShader(*tempPs);
+    psoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
+    psoDesc->SetVertexShader(*vs);
+    psoDesc->SetPixelShader(*ps);
     psoDesc->SetRenderTargetFormat(BackBufferFormat);
     psoDesc->SetRootSignature(*rootSignature);
     psoDesc->SetInputLayout({ m_InputElementDesc, sizeof(m_InputElementDesc) / sizeof(m_InputElementDesc[0]) });
     psoDesc->SetDepthTargetFormat(DepthBufferFormat);
-    psoDesc->SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateReadWrite);
+    psoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
 
-    context.PushMarker("Clear");
-    context.SetViewport(gfxDisplay.GetViewport());
-    context.SetScissorRect(gfxDisplay.GetScissorRect());
-    context.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
-    context.ClearColor(gfxDisplay.GetBackBufferRtv(), { (float)sin(Time::GetCurrentTime() / 100.0f) / 2.0f + 0.5f, 1, 1, 1 });
-    context.ClearDepthStencil(*dsv, 1.0);
-    context.PopMarker();
-    context.FinalizeAndExecute();
-    context.Reset();
+    resourceContext.AddPipelineState(*psoDesc);
+#endif
+}
 
-    context.PushMarker("Geometry");
-    context.SetViewport(gfxDisplay.GetViewport());
-    context.SetScissorRect(gfxDisplay.GetScissorRect());
-    context.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
-    context.SetDescriptorHeap(Core::GetSrvCbvUavAllocator().GetDescriptorHeap());
-    context.SetGraphicRootSignature(*rootSignature);
-    context.SetPipelineState(*psoDesc);
+void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
+{
+#ifdef DRAW_IN_TOOLMODE
+    ETH_MARKER_EVENT("Temp Frame Dump - Render");
+    const RhiDevice& gfxDevice = GraphicCore::GetDevice();
+    const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
-    context.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), dsv.get());
+    graphicContext.PushMarker("Clear");
+    graphicContext.SetViewport(gfxDisplay.GetViewport());
+    graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
+    graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
+    graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
+    graphicContext.ClearDepthStencil(*dsv, 1.0);
+    graphicContext.PopMarker();
+    graphicContext.FinalizeAndExecute();
+    graphicContext.Reset();
 
-    SetupCamera(context);
+    graphicContext.PushMarker("Geometry");
+    graphicContext.SetViewport(gfxDisplay.GetViewport());
+    graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
+    graphicContext.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
+    graphicContext.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    graphicContext.SetGraphicRootSignature(*rootSignature);
+    graphicContext.SetPipelineState(resourceContext.GetPipelineState(*psoDesc));
+
+    graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), dsv.get());
+
+    SetupCamera(graphicContext);
 
     for (int i = 0; i < m_Meshes.size(); ++i)
     {
+        ETH_MARKER_EVENT("Draw Meshes");
         Mesh& mesh = *m_Meshes[i];
 
         Material material;
@@ -188,28 +205,29 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& context)
         auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
         memcpy(alloc->GetCpuHandle(), &material, sizeof(Material));
 
-        context.SetRootConstantBuffer(1, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
-        context.SetVertexBuffer(mesh.GetVertexBufferView());
-        context.SetIndexBuffer(mesh.GetIndexBufferView());
-        context.DrawIndexedInstanced(mesh.GetNumIndices(), 1);
+        graphicContext.SetRootConstantBuffer(1, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
+        graphicContext.SetVertexBuffer(mesh.GetVertexBufferView());
+        graphicContext.SetIndexBuffer(mesh.GetIndexBufferView());
+        graphicContext.DrawIndexedInstanced(mesh.GetNumIndices(), 1);
     }
 
-    context.PopMarker();
-    context.FinalizeAndExecute();
-    context.Reset();
+    graphicContext.PopMarker();
+    graphicContext.FinalizeAndExecute();
+    graphicContext.Reset();
 #endif
 }
 
 void Ether::Graphics::TempFrameDump::Reset()
 {
-#ifdef ETH_ENGINE
-    GraphicDisplay& gfxDisplay = Core::GetGraphicDisplay();
+#ifdef DRAW_IN_TOOLMODE
+    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Reset();
 #endif
 }
 
 void Ether::Graphics::TempFrameDump::SetupCamera(GraphicContext& context)
 {
+    ETH_MARKER_EVENT("Setup Camera");
     const float sensitivity = 0.15f;
 
     static float m_CameraDistance = 1;
@@ -235,7 +253,7 @@ void Ether::Graphics::TempFrameDump::SetupCamera(GraphicContext& context)
     ethMatrix4x4 m_ViewMatrix = translationMatrix * rotationMatrix;
     ethMatrix4x4 m_ViewMatrixInv = m_ViewMatrix.Inversed();
 
-     float aspectRatio = (float)Core::GetGraphicConfig().GetResolution().x / (float)Core::GetGraphicConfig().GetResolution().y;
+     float aspectRatio = (float)GraphicCore::GetGraphicConfig().GetResolution().x / (float)GraphicCore::GetGraphicConfig().GetResolution().y;
     ethMatrix4x4 m_ProjectionMatrix = GetPerspectiveMatrixLH(80, aspectRatio, 0.01f, 1000.0f);
 
 
@@ -251,9 +269,9 @@ void Ether::Graphics::TempFrameDump::SetupCamera(GraphicContext& context)
     globalConstants.m_EyePosition = { m_ViewMatrixInv.m_14, m_ViewMatrixInv.m_24, m_ViewMatrixInv.m_34, 0.0 };
 
     globalConstants.m_Time = ethVector4(Time::GetTimeSinceStartup() / 20, Time::GetTimeSinceStartup(), Time::GetTimeSinceStartup() * 2, Time::GetTimeSinceStartup() * 3);
-    globalConstants.m_ScreenResolution = Core::GetGraphicConfig().GetResolution();
+    globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    auto alloc = m_FrameLocalUploadBuffer[Core::GetGraphicDisplay().GetBackBufferIndex()]->Allocate({ sizeof(GlobalConstants), 256 });
+    auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate({ sizeof(GlobalConstants), 256 });
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(GlobalConstants));
 
     context.SetRootConstantBuffer(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());

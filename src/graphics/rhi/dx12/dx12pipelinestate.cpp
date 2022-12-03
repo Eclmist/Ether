@@ -19,7 +19,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
@@ -28,9 +28,9 @@ Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
     : RhiPipelineStateDesc()
     , m_Dx12PsoDesc{}
 {
-    SetBlendState(Core::GetGraphicCommon().m_BlendDisabled);
-    SetRasterizerState(Core::GetGraphicCommon().m_RasterizerDefaultCw);
-    SetDepthStencilState(Core::GetGraphicCommon().m_DepthStateDisabled);
+    SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
+    SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefaultCw);
+    SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
     SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     SetSamplingDesc(1, 0);
     SetSampleMask(0xFFFFFFFF);

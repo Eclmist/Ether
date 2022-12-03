@@ -17,10 +17,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/rhirootsignature.h"
 
 std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::RhiRootSignatureDesc::Compile() const
 {
-    return Core::GetDevice().CreateRootSignature(*this);
+    return GraphicCore::GetDevice().CreateRootSignature(*this);
 }

@@ -35,7 +35,7 @@ namespace Ether::Graphics
         void RenderDrawData() override;
 
     public:
-        bool Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam);
+        static bool Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam);
     };
 }
 

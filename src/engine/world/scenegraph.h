@@ -20,9 +20,13 @@
 #pragma once
 
 #include "pch.h"
+#include "engine/world/ecs/ecstypes.h"
 
 namespace Ether
 {
+    constexpr Ecs::EntityID InvalidEntityID = -1;
+    constexpr Ecs::EntityID RootEntityID = 0;
+
     class SceneGraphNode : public Serializable
     {
     public:
@@ -36,8 +40,8 @@ namespace Ether
     private:
         friend class SceneGraph;
 
-        EntityID m_ParentIndex;
-        std::vector<EntityID> m_ChildrenIndices;
+        Ecs::EntityID m_ParentIndex;
+        std::vector<Ecs::EntityID> m_ChildrenIndices;
         bool m_IsRegistered;
     };
 
@@ -52,17 +56,17 @@ namespace Ether
         void Deserialize(IStream& istream) override;
 
     public:
-        inline EntityID GetParent(EntityID id) const { return m_Nodes[id].m_ParentIndex; }
-        inline EntityID GetFirstChild(EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
-        inline EntityID GetLastChild(EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
-        inline const std::vector<EntityID>& GetChildren(EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
+        inline Ecs::EntityID GetParent(Ecs::EntityID id) const { return m_Nodes[id].m_ParentIndex; }
+        inline Ecs::EntityID GetFirstChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
+        inline Ecs::EntityID GetLastChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
+        inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
 
-        void Register(EntityID id, EntityID parent = RootEntityID);
-        void Deregister(EntityID id);
-        void SetParent(EntityID id, EntityID parent);
+        void Register(Ecs::EntityID id, Ecs::EntityID parent = RootEntityID);
+        void Deregister(Ecs::EntityID id);
+        void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
 
     private:
-        SceneGraphNode m_Nodes[MaxNumEntities];
+        SceneGraphNode m_Nodes[Ecs::MaxNumEntities];
     };
 }
 

@@ -19,7 +19,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-#include "graphics/core.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12module.h"
 #include "graphics/rhi/dx12/dx12device.h"
 #include <dxgidebug.h>
@@ -28,7 +28,7 @@ Ether::Graphics::Dx12Module::Dx12Module()
 {
     LogGraphicsInfo("Initializing DirectX 12");
 
-    if (Core::GetGraphicConfig().IsValidationLayerEnabled())
+    if (GraphicCore::GetGraphicConfig().IsValidationLayerEnabled())
         InitializeDebugLayer();
 
     InitializeFactory();
@@ -37,7 +37,7 @@ Ether::Graphics::Dx12Module::Dx12Module()
 
 Ether::Graphics::Dx12Module::~Dx12Module()
 {
-    if (Core::GetGraphicConfig().IsValidationLayerEnabled())
+    if (GraphicCore::GetGraphicConfig().IsValidationLayerEnabled())
         ReportLiveObjects();
 }
 
