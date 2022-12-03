@@ -17,5 +17,16 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "meshcomponent.h"
+#include "engine/world/ecs/component/ecscomponent.h"
+
+Ether::Ecs::EcsComponent::EcsComponent(uint32_t version, uint32_t classID)
+    : Serializable(version, classID)
+{
+}
+
+Ether::Ecs::ComponentID Ether::Ecs::EcsComponent::GetNextID()
+{
+    static ComponentID componentIDCounter = 0;
+    return componentIDCounter++;
+}
 

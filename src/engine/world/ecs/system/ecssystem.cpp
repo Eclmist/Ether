@@ -17,5 +17,15 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ecssystem.h"
+#include "engine/world/ecs/system/ecssystem.h"
+#include "engine/world/ecs/component/ecsentitydatacomponent.h"
+#include "engine/world/ecs/component/ecstransformcomponent.h"
+
+Ether::Ecs::EcsSystem::EcsSystem()
+{
+    m_Signature.set(EcsIndexedComponent<EcsEntityDataComponent>::s_ComponentID);
+    m_Signature.set(EcsIndexedComponent<EcsTransformComponent>::s_ComponentID);
+}
+
+Ether::Ecs::EcsSystem::~EcsSystem() = default;
 

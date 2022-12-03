@@ -19,5 +19,5 @@
 
 #pragma once
 
-#include "component.h"
+#include "engine/world/ecs/component/ecscomponent.h"
 

@@ -20,13 +20,19 @@
 #pragma once
 
 #include "pch.h"
-#include "engine/world/ecs/ecstypes.h"
+#include "engine/world/ecs/system/ecssystem.h"
 
 namespace Ether::Ecs
 {
-    class EcsComponent
+    class EcsRenderingSystem : public EcsSystem
     {
+    public:
+        EcsRenderingSystem();
+        ~EcsRenderingSystem() override = default;
 
+    protected:
+        friend class EcsManager;
+        void Update() override;
     };
 }
 

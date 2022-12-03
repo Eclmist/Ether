@@ -19,5 +19,24 @@
 
 #pragma once
 
-#include "componentarray.h"
+#include "engine/world/ecs/component/ecscomponent.h"
+
+namespace Ether::Ecs
+{
+    class ETH_ENGINE_DLL EcsEntityDataComponent : public EcsIndexedComponent<EcsEntityDataComponent>
+    {
+    public:
+        EcsEntityDataComponent();
+        ~EcsEntityDataComponent() override = default;
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
+
+    public:
+        EntityID m_EntityID;
+        std::string m_EntityName;
+        bool m_EntityEnabled;
+    };
+}
 

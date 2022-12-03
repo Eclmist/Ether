@@ -17,4 +17,25 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ecssystemmanager.h"
+#include "engine/world/ecs/system/ecssystemmanager.h"
+
+void Ether::Ecs::EcsSystemManager::UpdateEntitySignature(EntityID entityID, EntitySignature newSignature)
+{
+    for (auto const& pair : m_Systems)
+    {
+        const auto& systemSignature = pair.second->m_Signature;
+
+        if ((newSignature & systemSignature) == systemSignature)
+            pair.second->m_Entities.insert(entityID);
+        else
+            pair.second->m_Entities.erase(entityID);
+    }
+}
+
+void Ether::Ecs::EcsSystemManager::OnEntityDestroyed(EntityID entityID)
+{
+    for (auto const& pair : m_Systems)
+    {
+        pair.second->m_Entities.erase(entityID);
+    }
+}

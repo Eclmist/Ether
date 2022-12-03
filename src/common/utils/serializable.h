@@ -33,7 +33,7 @@ namespace Ether
     class ETH_COMMON_DLL Serializable
     {
     public:
-        Serializable(uint32_t version, uint32_t classId);
+        Serializable(uint32_t version, uint32_t classID);
         virtual ~Serializable() = 0;
 
         inline std::string GetGuid() const { return m_Guid; }

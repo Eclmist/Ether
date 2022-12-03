@@ -19,3 +19,34 @@
 
 #include "engine/world/ecs/ecsmanager.h"
 
+#include "engine/world/ecs/component/ecsentitydatacomponent.h"
+#include "engine/world/ecs/component/ecstransformcomponent.h"
+#include "engine/world/ecs/component/ecsmeshcomponent.h"
+
+Ether::Ecs::EcsManager::EcsManager()
+{
+    m_ComponentManager.RegisterComponent<EcsEntityDataComponent>();
+    m_ComponentManager.RegisterComponent<EcsTransformComponent>();
+    m_ComponentManager.RegisterComponent<EcsMeshComponent>();
+
+    m_RenderingSystem = std::make_unique<EcsRenderingSystem>();
+    m_SystemManager.RegisterSystem<EcsRenderingSystem>(*m_RenderingSystem);
+}
+
+void Ether::Ecs::EcsManager::Update()
+{
+    m_RenderingSystem->Update();
+}
+
+Ether::Ecs::EntityID Ether::Ecs::EcsManager::CreateEntity()
+{
+    return m_EntityManager.CreateEntity();
+}
+
+void Ether::Ecs::EcsManager::DestroyEntity(EntityID entityID)
+{
+    m_EntityManager.DestroyEntity(entityID);
+    m_SystemManager.OnEntityDestroyed(entityID);
+    m_ComponentManager.OnEntityDestroyed(entityID);
+}
+

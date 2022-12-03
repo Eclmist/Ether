@@ -21,9 +21,10 @@
 
 #include "api/iapplicationbase.h"
 
-#include "common/logging/loggingmanager.h"
 #include "common/time/time.h"
 #include "engine/input/input.h"
+#include "engine/world/world.h"
+#include "common/logging/loggingmanager.h"
 #include "engine/config/commandlineoptions.h"
 
 namespace Ether
@@ -32,6 +33,7 @@ namespace Ether
     ETH_ENGINE_DLL void Shutdown();
 
     ETH_ENGINE_DLL CommandLineOptions& GetCommandLineOptions();
+    ETH_ENGINE_DLL World& GetActiveWorld();
 }
 
 namespace Ether::Client

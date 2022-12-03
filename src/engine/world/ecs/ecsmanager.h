@@ -21,18 +21,37 @@
 
 #include "pch.h"
 #include "engine/world/ecs/ecstypes.h"
-#include "engine/world/ecs/entitymanager.h"
+#include "engine/world/ecs/ecsentitymanager.h"
+#include "engine/world/ecs/component/ecscomponentmanager.h"
+#include "engine/world/ecs/system/ecssystemmanager.h"
+#include "engine/world/ecs/system/ecsrenderingsystem.h"
 
 namespace Ether::Ecs
 {
-    class EcsManager : public NonCopyable, public NonMovable
+    class ETH_ENGINE_DLL EcsManager : public NonCopyable, public NonMovable
     {
     public:
         EcsManager();
         ~EcsManager() = default;
 
-    private:
-        EntityManager m_EntityManager;
-    };
+        void Update();
 
+    public:
+        inline EcsEntityManager& GetEntityManager() { return m_EntityManager; }
+        inline EcsComponentManager& GetComponentManager() { return m_ComponentManager; }
+        inline EcsSystemManager& GetSystemManager() { return m_SystemManager; }
+
+    public:
+        EntityID CreateEntity();
+        void DestroyEntity(EntityID entityID);
+
+    private:
+        EcsEntityManager m_EntityManager;
+        EcsComponentManager m_ComponentManager;
+        EcsSystemManager m_SystemManager;
+
+    private:
+        std::unique_ptr<EcsRenderingSystem> m_RenderingSystem;
+    };
 }
+

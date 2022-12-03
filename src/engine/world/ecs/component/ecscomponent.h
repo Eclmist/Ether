@@ -24,14 +24,29 @@
 
 namespace Ether::Ecs
 {
-    template <typename T>
-    class ComponentArray
+    class ETH_ENGINE_DLL EcsComponent : public Serializable
     {
+    public:
+        EcsComponent(uint32_t version, uint32_t classID);
+        virtual ~EcsComponent() override = default;
 
-    private:
-        std::array<T, MaxNumEntities> m_ComponentArray;
-        std::unordered_map<EntityID, uint32_t> m_EntityToIndexMap;
-        std::unordered_map<uint32_t, EntityID> m_IndexToEntityMap;
+    protected:
+        static ComponentID GetNextID();
     };
+
+    // Use CRTP to generate a unique componentID for each component type at compile time
+    template <typename T>
+    class EcsIndexedComponent : public EcsComponent
+    {
+    public:
+        EcsIndexedComponent(uint32_t version, uint32_t classID)
+            : EcsComponent(version, classID) {}
+
+    public:
+        static const ComponentID s_ComponentID;
+    };
+
+    template <typename T>
+    const ComponentID EcsIndexedComponent<T>::s_ComponentID = EcsComponent::GetNextID();
 }
 

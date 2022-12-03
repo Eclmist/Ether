@@ -17,5 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "transformcomponent.h"
+#include "engine/world/ecs/component/ecscomponentmanager.h"
+
 

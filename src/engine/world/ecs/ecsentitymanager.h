@@ -19,3 +19,30 @@
 
 #pragma once
 
+#include "pch.h"
+#include "engine/world/ecs/ecstypes.h"
+#include <queue>
+#include <array>
+
+namespace Ether::Ecs
+{
+    class EcsEntityManager : public NonCopyable, public NonMovable
+    {
+    public:
+        EcsEntityManager();
+        ~EcsEntityManager() = default;
+
+    public:
+        EntityID CreateEntity();
+        void DestroyEntity(EntityID id);
+
+        ETH_ENGINE_DLL void SetSignature(EntityID id, EntitySignature signature);
+        ETH_ENGINE_DLL EntitySignature GetSignature(EntityID id);
+
+    private:
+        friend class EcsManager;
+
+        std::queue<EntityID> m_AvailableEntities;
+        std::array<EntitySignature, MaxNumEntities> m_EntitySignatures;
+    };
+}

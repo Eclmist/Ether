@@ -26,6 +26,11 @@ Ether::World::World()
 {
 }
 
+void Ether::World::Update()
+{
+    m_EcsManager.Update();
+}
+
 void Ether::World::Serialize(OStream& ostream)
 {
     Serializable::Serialize(ostream);
@@ -39,3 +44,12 @@ void Ether::World::Deserialize(IStream& istream)
     istream >> m_WorldName;
     m_SceneGraph.Deserialize(istream);
 }
+
+Ether::Entity& Ether::World::CreateEntity(const std::string& name)
+{
+    std::unique_ptr<Entity> entity = std::make_unique<Entity>(name);
+    Ecs::EntityID entityID = entity->GetID();
+    m_Entities[entityID] = std::move(entity);
+    return *m_Entities[entityID];
+}
+

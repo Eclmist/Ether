@@ -17,33 +17,19 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "engine/world/ecs/system/ecsrenderingsystem.h"
+#include "engine/world/ecs/component/ecsmeshcomponent.h"
 
-#include "pch.h"
-#include "engine/world/ecs/ecstypes.h"
-#include <queue>
-#include <array>
-
-namespace Ether::Ecs
+Ether::Ecs::EcsRenderingSystem::EcsRenderingSystem()
 {
-    class EntityManager : public NonCopyable, public NonMovable
-    {
-    public:
-        EntityManager();
-        ~EntityManager() = default;
-
-    public:
-        EntityID CreateEntity();
-        void DestroyEntity(EntityID id);
-
-        void SetSignature(EntityID id, EntitySignature signature);
-        EntitySignature GetSignature(EntityID id);
-
-    private:
-        friend class EcsManager;
-
-        std::queue<EntityID> m_AvailableEntities;
-        std::array<EntitySignature, MaxNumEntities> m_EntitySignatures;
-    };
-
+    m_Signature.set(EcsIndexedComponent<EcsMeshComponent>::s_ComponentID);
 }
+
+void Ether::Ecs::EcsRenderingSystem::Update()
+{
+    for (EntityID entityID : m_Entities)
+    {
+        LogInfo("Rendering System - Entity ID: %u", entityID);
+    }
+}
+

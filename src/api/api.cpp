@@ -54,6 +54,11 @@ Ether::CommandLineOptions& Ether::GetCommandLineOptions()
     return EngineCore::GetCommandLineOptions();
 }
 
+Ether::World& Ether::GetActiveWorld()
+{
+    return EngineCore::GetActiveWorld();
+}
+
 void Ether::Client::SetClientTitle(const std::string& title)
 {
     EngineCore::GetEngineConfig().SetClientTitle(title);

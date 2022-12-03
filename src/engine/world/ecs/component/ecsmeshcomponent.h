@@ -19,3 +19,21 @@
 
 #pragma once
 
+#include "engine/world/ecs/component/ecscomponent.h"
+
+namespace Ether::Ecs
+{
+    class ETH_ENGINE_DLL EcsMeshComponent : public EcsIndexedComponent<EcsMeshComponent>
+    {
+    public:
+        EcsMeshComponent();
+        ~EcsMeshComponent() override = default;
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
+
+    public:
+        // Binary mesh data?
+    };
+}

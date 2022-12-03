@@ -17,5 +17,26 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "componentmanager.h"
+#pragma once
+
+#include "engine/world/ecs/component/ecscomponent.h"
+
+namespace Ether::Ecs
+{
+    class ETH_ENGINE_DLL EcsTransformComponent : public EcsIndexedComponent<EcsTransformComponent>
+    {
+    public:
+        EcsTransformComponent();
+        ~EcsTransformComponent() override = default;
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
+
+    public:
+        ethVector3 m_Translation;
+        ethVector3 m_Rotation;
+        ethVector3 m_Scale;
+    };
+}
 

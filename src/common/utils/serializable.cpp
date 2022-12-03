@@ -21,9 +21,9 @@
 #include "common/stream/filestream.h"
 #include <format>
 
-Ether::Serializable::Serializable(uint32_t version, uint32_t classId)
+Ether::Serializable::Serializable(uint32_t version, uint32_t classID)
     : m_Version(version)
-    , m_ClassID(classId)
+    , m_ClassID(classID)
 {
     m_Guid = std::format(
         "{:X}-{:X}-{:X}-{:X}",

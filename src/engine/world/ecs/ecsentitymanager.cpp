@@ -17,15 +17,15 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/entitymanager.h"
+#include "engine/world/ecs/ecsentitymanager.h"
 
-Ether::Ecs::EntityManager::EntityManager()
+Ether::Ecs::EcsEntityManager::EcsEntityManager()
 {
     for (EntityID id = 0; id < MaxNumEntities; ++id)
         m_AvailableEntities.push(id);
 }
 
-Ether::Ecs::EntityID Ether::Ecs::EntityManager::CreateEntity()
+Ether::Ecs::EntityID Ether::Ecs::EcsEntityManager::CreateEntity()
 {
     if (m_AvailableEntities.empty())
         throw std::runtime_error("Failed to allocate new entity ID because the max number of entities has been reached");
@@ -35,18 +35,18 @@ Ether::Ecs::EntityID Ether::Ecs::EntityManager::CreateEntity()
     return nextID;
 }
 
-void Ether::Ecs::EntityManager::DestroyEntity(EntityID id)
+void Ether::Ecs::EcsEntityManager::DestroyEntity(EntityID id)
 {
     m_AvailableEntities.push(id);
     m_EntitySignatures[id].reset();
 }
 
-void Ether::Ecs::EntityManager::SetSignature(EntityID id, EntitySignature signature)
+void Ether::Ecs::EcsEntityManager::SetSignature(EntityID id, EntitySignature signature)
 {
     m_EntitySignatures[id] = signature;
 }
 
-Ether::Ecs::EntitySignature Ether::Ecs::EntityManager::GetSignature(EntityID id)
+Ether::Ecs::EntitySignature Ether::Ecs::EcsEntityManager::GetSignature(EntityID id)
 {
     return m_EntitySignatures[id];
 }

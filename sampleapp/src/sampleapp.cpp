@@ -18,6 +18,7 @@
 */
 
 #include "sampleapp.h"
+#include "engine/world/ecs/component/ecsmeshcomponent.h"
 //#include <common/stream/filestream.h>
 //#include <filesystem>
 
@@ -82,6 +83,16 @@ void SampleApp::LoadContent()
     ////IFileStream iistream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\Hdri\\narrow_moonlit_road_4k.hdr.ether");
     ////hdri->Deserialize(iistream);
     ////GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
+
+    Ether::World& world = GetActiveWorld();
+    auto& e0 = world.CreateEntity("Entity 0");
+    auto& e1 = world.CreateEntity("Entity 1");
+    auto& e2 = world.CreateEntity("Entity 2");
+    auto& e3 = world.CreateEntity("Entity 3");
+    auto& e4 = world.CreateEntity("Entity 4");
+    auto& e5 = world.CreateEntity("Entity 5");
+
+    e1.AddComponent<Ecs::EcsMeshComponent>();
 }
 
 void SampleApp::UnloadContent()

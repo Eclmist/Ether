@@ -17,5 +17,21 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "component.h"
+#include "engine/world/ecs/component/ecsmeshcomponent.h"
 
+constexpr uint32_t EcsMeshComponentVersion = 0;
+
+Ether::Ecs::EcsMeshComponent::EcsMeshComponent()
+    : EcsIndexedComponent(EcsMeshComponentVersion, StringID("Ecs::EcsMeshComponent").GetHash())
+{
+}
+
+void Ether::Ecs::EcsMeshComponent::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+}
+
+void Ether::Ecs::EcsMeshComponent::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+}

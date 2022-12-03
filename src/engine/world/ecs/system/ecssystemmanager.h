@@ -19,5 +19,34 @@
 
 #pragma once
 
-#include "ecssystem.h"
+#include "pch.h"
+#include "engine/world/ecs/system/ecssystem.h"
+#include "engine/world/ecs/ecstypes.h"
+#include <typeindex>
+
+namespace Ether::Ecs
+{
+    class EcsSystemManager : public NonCopyable, public NonMovable
+    {
+    public:
+        EcsSystemManager() = default;
+        ~EcsSystemManager() = default;
+
+    public:
+        template <typename T>
+        void RegisterSystem(EcsSystem& system);
+
+        ETH_ENGINE_DLL void UpdateEntitySignature(EntityID entityID, EntitySignature newSignature);
+        ETH_ENGINE_DLL void OnEntityDestroyed(EntityID entityID);
+
+    private:
+        std::unordered_map<std::type_index, EcsSystem*> m_Systems;
+    };
+
+    template <typename T>
+    void Ether::Ecs::EcsSystemManager::RegisterSystem(EcsSystem& system)
+    {
+        m_Systems[typeid(T)] = &system;
+    }
+}
 

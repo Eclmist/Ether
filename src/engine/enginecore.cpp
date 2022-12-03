@@ -89,6 +89,8 @@ void Ether::EngineCore::MainEngineThread()
         }
         Input::EndFrame();
 
+        m_ActiveWorld->Update();
+
         Graphics::GraphicCore::Main();
     }
 }

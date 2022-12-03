@@ -17,4 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "renderingsystem.h"
+#include "engine/world/ecs/component/ecsentitydatacomponent.h"
+
+constexpr uint32_t EcsEntityDataComponentVersion = 0;
+
+Ether::Ecs::EcsEntityDataComponent::EcsEntityDataComponent()
+    : EcsIndexedComponent(EcsEntityDataComponentVersion, StringID("Ecs::EcsEntityDataComponent").GetHash())
+    , m_EntityID(-1)
+    , m_EntityName("Entity")
+    , m_EntityEnabled(true)
+{
+}
+
+void Ether::Ecs::EcsEntityDataComponent::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+
+    ostream << m_EntityID;
+    ostream << m_EntityName;
+    ostream << m_EntityEnabled;
+}
+
+void Ether::Ecs::EcsEntityDataComponent::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+
+    istream >> m_EntityID;
+    istream >> m_EntityName;
+    istream >> m_EntityEnabled;
+}
+
