@@ -35,19 +35,22 @@ namespace Ether
 
     public:
         void Update();
-
-    public:
-        void Serialize(OStream& ostream) override;
-        void Deserialize(IStream& istream) override;
+        void Save(const std::string& path) const;
+        void Load(const std::string& path);
 
     public:
         inline std::string GetWorldName() const { return m_WorldName; }
         inline Entity& GetEntity(Ecs::EntityID entityID) const { return *m_Entities.at(entityID); }
         inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
+        inline ResourceManager& GetResourceManager() { return m_ResourceManager; }
         inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
 
     public:
         Entity& CreateEntity(const std::string& name);
+
+    private:
+        void Serialize(OStream& ostream) const override;
+        void Deserialize(IStream& istream) override;
 
     private:
         std::string m_WorldName;

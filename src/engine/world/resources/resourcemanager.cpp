@@ -26,17 +26,50 @@ Ether::ResourceManager::ResourceManager()
 {
 }
 
-void Ether::ResourceManager::Serialize(OStream& ostream)
+void Ether::ResourceManager::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
-    SerializeResource<Graphics::Mesh>(ostream, m_Mesh);
-    SerializeResource<Graphics::Material>(ostream, m_Material);
+    SerializeResource<Graphics::Mesh>(ostream, m_Meshes);
+    SerializeResource<Graphics::Material>(ostream, m_Materials);
 }
 
 void Ether::ResourceManager::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
-    DeserializeResource<Graphics::Mesh>(istream, m_Mesh);
-    DeserializeResource<Graphics::Material>(istream, m_Material);
+    DeserializeResource<Graphics::Mesh>(istream, m_Meshes);
+    DeserializeResource<Graphics::Material>(istream, m_Materials);
+
+    for (auto& pair : m_Meshes)
+        pair.second->CreateGpuResources();
+}
+
+Ether::StringID Ether::ResourceManager::RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh)
+{
+    StringID sid = mesh->GetGuid();
+    m_Meshes[sid] = std::move(mesh);
+    return sid;
+}
+
+Ether::StringID Ether::ResourceManager::RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material)
+{
+    StringID sid = material->GetGuid();
+    m_Materials[sid] = std::move(material);
+    return sid;
+}
+
+Ether::Graphics::Mesh* Ether::ResourceManager::GetMeshResource(StringID id) const
+{
+    if (m_Meshes.find(id) == m_Meshes.end())
+        return nullptr;
+
+    return m_Meshes.at(id).get();
+}
+
+Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID id) const
+{
+    if (m_Materials.find(id) == m_Materials.end())
+        return nullptr;
+
+    return m_Materials.at(id).get();
 }
 

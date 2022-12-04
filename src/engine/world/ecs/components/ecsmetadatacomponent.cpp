@@ -29,7 +29,7 @@ Ether::Ecs::EcsMetadataComponent::EcsMetadataComponent()
 {
 }
 
-void Ether::Ecs::EcsMetadataComponent::Serialize(OStream& ostream)
+void Ether::Ecs::EcsMetadataComponent::Serialize(OStream& ostream) const
 {
     EcsComponent::Serialize(ostream);
 

@@ -38,7 +38,7 @@ Ether::Serializable::~Serializable()
 {
 }
 
-void Ether::Serializable::Serialize(OStream& ostream)
+void Ether::Serializable::Serialize(OStream& ostream) const
 {
     ostream << m_Version;
     ostream << m_ClassID;

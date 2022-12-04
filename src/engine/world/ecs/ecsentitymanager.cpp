@@ -28,7 +28,7 @@ Ether::Ecs::EcsEntityManager::EcsEntityManager()
         m_AvailableEntities.push(id);
 }
 
-void Ether::Ecs::EcsEntityManager::Serialize(OStream& ostream)
+void Ether::Ecs::EcsEntityManager::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 

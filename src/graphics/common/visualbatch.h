@@ -17,32 +17,18 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/components/ecstransformcomponent.h"
+#pragma once
 
-constexpr uint32_t EcsTransformComponentVersion = 0;
+#include "graphics/pch.h"
+#include "graphics/common/visual.h"
 
-Ether::Ecs::EcsTransformComponent::EcsTransformComponent()
-    : EcsComponent(EcsTransformComponentVersion, StringID("Ecs::EcsTransformComponent").GetHash())
-    , m_Translation(0.0f, 0.0f, 0.0f)
-    , m_Rotation(0.0f, 0.0f, 0.0f)
-    , m_Scale(1.0f, 1.0f, 1.0f)
+namespace Ether::Graphics
 {
+    struct ETH_GRAPHIC_DLL VisualBatch
+    {
+        std::vector<Visual> m_Visuals;
+
+        // Other batch related data will go in here in the future
+    };
 }
 
-void Ether::Ecs::EcsTransformComponent::Serialize(OStream& ostream) const
-{
-    EcsComponent::Serialize(ostream);
-
-    ostream << m_Translation;
-    ostream << m_Rotation;
-    ostream << m_Scale;
-}
-
-void Ether::Ecs::EcsTransformComponent::Deserialize(IStream& istream)
-{
-    EcsComponent::Deserialize(istream);
-
-    istream >> m_Translation;
-    istream >> m_Rotation;
-    istream >> m_Scale;
-}

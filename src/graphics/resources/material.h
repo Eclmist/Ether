@@ -30,7 +30,7 @@ namespace Ether::Graphics
         ~Material() = default;
 
     public:
-        void Serialize(OStream& ostream) override;
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
     public:

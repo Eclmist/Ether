@@ -29,7 +29,7 @@ namespace Ether::Graphics::VertexFormats
         PositionNormalTangentTexCoord() = default;
         ~PositionNormalTangentTexCoord() = default;
 
-        void Serialize(OStream& ostream);
+        void Serialize(OStream& ostream) const;
         void Deserialize(IStream& istream);
 
         ethVector3 m_Position;

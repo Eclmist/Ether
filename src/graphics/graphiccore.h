@@ -26,6 +26,7 @@
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhidescriptorheap.h"
 
+#include "graphics/common/visualbatch.h"
 #include "graphics/config/graphicconfig.h"
 #include "graphics/command/commandmanager.h"
 #include "graphics/memory/descriptorallocator.h"
@@ -60,6 +61,7 @@ namespace Ether::Graphics
         static inline GraphicConfig& GetGraphicConfig() { return Instance().m_Config; }
         static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
         static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
+        static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
         static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
         static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
         static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }

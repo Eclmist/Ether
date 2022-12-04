@@ -47,9 +47,6 @@ namespace Ether::Graphics
         void SetupCamera(GraphicContext& context);
 
     private:
-        std::vector<std::unique_ptr<Mesh>> m_Meshes;
-        const std::string m_SceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug";
-
         RhiInputElementDesc m_InputElementDesc[5] =
         {
             { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },

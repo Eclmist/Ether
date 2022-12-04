@@ -32,11 +32,11 @@ Ether::Ecs::EcsManager::EcsManager()
     m_ComponentManager.RegisterComponent<EcsTransformComponent>();
     m_ComponentManager.RegisterComponent<EcsVisualComponent>();
 
-    m_RenderingSystem = std::make_unique<EcsRenderingSystem>(m_ComponentManager);
-    m_SystemManager.RegisterSystem<EcsRenderingSystem>(*m_RenderingSystem);
+    m_RenderingSystem = std::make_unique<EcsVisualSystem>(m_ComponentManager);
+    m_SystemManager.RegisterSystem<EcsVisualSystem>(*m_RenderingSystem);
 }
 
-void Ether::Ecs::EcsManager::Serialize(OStream& ostream)
+void Ether::Ecs::EcsManager::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
     m_EntityManager.Serialize(ostream);

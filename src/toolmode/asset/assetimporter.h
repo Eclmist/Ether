@@ -36,6 +36,5 @@ namespace Ether::Toolmode
     private:
         void ProcessScene(const aiScene* assimpScene) const;
         void ProcessMesh(aiMesh** assimpMesh, uint32_t numMeshes) const;
-
     };
 }

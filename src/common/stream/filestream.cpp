@@ -151,6 +151,11 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const float value)
     return *this;
 }
 
+void Ether::OFileStream::ClearFile()
+{
+    m_File.clear();
+}
+
 Ether::OFileStream& Ether::OFileStream::operator<<(const int value)
 {
     m_File.write(reinterpret_cast<const char*>(&value), sizeof(int));

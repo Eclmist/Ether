@@ -85,22 +85,40 @@ void SampleApp::LoadContent()
     World& world = GetActiveWorld();
 
 #if 0
-    auto& e0 = world.CreateEntity("Entity 0");
-    auto& e1 = world.CreateEntity("Entity 1");
-    auto& e2 = world.CreateEntity("Entity 2");
-    auto& e3 = world.CreateEntity("Entity 3");
-    auto& e4 = world.CreateEntity("Entity 4");
-    auto& e5 = world.CreateEntity("Entity 5");
+    std::unique_ptr<Graphics::Material> sharedMaterial = std::make_unique<Graphics::Material>();
+    sharedMaterial->SetBaseColor({ 1, 1, 1, 1 });
+    sharedMaterial->SetSpecularColor({ 1, 1, 1, 1 });
+    sharedMaterial->SetMetalness(0);
+    sharedMaterial->SetRoughness(0.5f);
 
-    e1.AddComponent<Ecs::EcsVisualComponent>();
-    e2.AddComponent<Ecs::EcsVisualComponent>();
-    e3.AddComponent<Ecs::EcsVisualComponent>();
+    for (int i = 0; i < 1000; ++i)
+    {
+        std::string meshPath = std::format("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\mesh{}.ether", i);
 
-    OFileStream oFileStream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
-    world.Serialize(oFileStream);
+        if (!Ether::PathUtils::IsValidPath(meshPath))
+            continue;
+
+        std::unique_ptr<Graphics::Mesh> mesh = std::make_unique<Graphics::Mesh>();
+
+        IFileStream ifstream(meshPath);
+        mesh->Deserialize(ifstream);
+        mesh->CreateGpuResources();
+
+        Entity& entity = world.CreateEntity(std::format("Entity {}", i));
+        entity.AddComponent<Ecs::EcsVisualComponent>();
+
+        Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
+        visual.m_MeshGuid = mesh->GetGuid();
+        visual.m_MaterialGuid = sharedMaterial->GetGuid();
+        
+        world.GetResourceManager().RegisterMeshResource(std::move(mesh));
+    }
+
+    world.GetResourceManager().RegisterMaterialResource(std::move(sharedMaterial));
+
+    world.Save("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
 #else
-    IFileStream iFileStream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
-    world.Deserialize(iFileStream);
+    world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
 #endif
 }
 

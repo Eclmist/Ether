@@ -71,6 +71,9 @@ namespace Ether
         OFileStream& operator<<(const ethVector3& v) override final;
         OFileStream& operator<<(const ethVector4& v) override final;
 
+    public:
+        void ClearFile();
+
     private:
         std::ofstream m_File;
         std::string m_Path;

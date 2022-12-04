@@ -32,12 +32,12 @@ namespace Ether::Ecs
         ~EcsVisualComponent() override = default;
 
     public:
-        void Serialize(OStream& ostream) override;
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
     public:
-        StringID m_MeshID;
-        Graphics::Material m_Material;
+        StringID m_MeshGuid;
+        StringID m_MaterialGuid;
     };
 }
 

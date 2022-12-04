@@ -17,22 +17,5 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "pch.h"
-#include "engine/world/ecs/systems/ecssystem.h"
-
-namespace Ether::Ecs
-{
-    class EcsRenderingSystem : public EcsSystem
-    {
-    public:
-        EcsRenderingSystem(const EcsComponentManager& componentMgr);
-        ~EcsRenderingSystem() override = default;
-
-    protected:
-        friend class EcsManager;
-        void Update() override;
-    };
-}
+#include "graphics/common/visualbatch.h"
 

@@ -45,7 +45,7 @@ namespace Ether::Ecs
         EcsComponentArray() = default;
         ~EcsComponentArray() = default;
 
-        void Serialize(OStream& ostream) override
+        void Serialize(OStream& ostream) const override
         {
             Serializable::Serialize(ostream);
 

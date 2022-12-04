@@ -19,7 +19,7 @@
 
 #include "graphics/common/vertexformats.h"
 
-void Ether::Graphics::VertexFormats::PositionNormalTangentTexCoord::Serialize(OStream& ostream)
+void Ether::Graphics::VertexFormats::PositionNormalTangentTexCoord::Serialize(OStream& ostream) const
 {
     ostream << m_Position;
     ostream << m_Normal;

@@ -23,10 +23,16 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL Visual
-    {
-    public:
+    struct VisualBatch;
+    class Mesh;
+    class Material;
 
+    struct ETH_GRAPHIC_DLL Visual
+    {
+        VisualBatch* m_ParentBatch;
+
+        Mesh* m_Mesh;
+        Material* m_Material;
     };
 }
 

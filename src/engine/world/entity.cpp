@@ -51,7 +51,7 @@ Ether::Entity::Entity(const std::string& name, Ecs::EntityID entityID)
     entityData.m_EntityName = name;
 }
 
-void Ether::Entity::Serialize(OStream& ostream)
+void Ether::Entity::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
     ostream << m_EntityID;

@@ -37,7 +37,7 @@ namespace Ether::Graphics
         inline uint32_t GetNumIndices() const { return m_Indices.size(); }
 
     public:
-        void Serialize(OStream& ostream) override;
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
     public:

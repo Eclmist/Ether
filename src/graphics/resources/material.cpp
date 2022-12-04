@@ -26,7 +26,7 @@ Ether::Graphics::Material::Material()
 {
 }
 
-void Ether::Graphics::Material::Serialize(OStream& ostream)
+void Ether::Graphics::Material::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
     ostream << m_BaseColor;

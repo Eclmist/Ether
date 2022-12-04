@@ -44,6 +44,11 @@ void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv
     m_CommandList->ClearDepthStencilView(desc);
 }
 
+void Ether::Graphics::GraphicContext::SetVisualBatch(VisualBatch visualBatch)
+{
+    m_VisualBatch = visualBatch;
+}
+
 void Ether::Graphics::GraphicContext::SetViewport(RhiViewportDesc viewport)
 {
     m_CommandList->SetViewport(viewport);

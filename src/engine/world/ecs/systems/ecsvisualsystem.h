@@ -17,30 +17,22 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/enginecore.h"
-#include "engine/world/entity.h"
-#include "engine/world/ecs/systems/ecsrenderingsystem.h"
-#include "engine/world/ecs/components/ecsvisualcomponent.h"
+#pragma once
 
-Ether::Ecs::EcsRenderingSystem::EcsRenderingSystem(const EcsComponentManager& componentMgr)
-    : EcsSystem(componentMgr)
+#include "pch.h"
+#include "engine/world/ecs/systems/ecssystem.h"
+
+namespace Ether::Ecs
 {
-    m_Signature.set(EcsVisualComponent::s_ComponentID);
-}
-
-void Ether::Ecs::EcsRenderingSystem::Update()
-{
-    ETH_MARKER_EVENT("Rendering System - Update");
-
-    for (EntityID entityID : m_Entities)
+    class EcsVisualSystem : public EcsSystem
     {
-        Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
-        EcsVisualComponent& visual = entity.GetComponent<EcsVisualComponent>();
+    public:
+        EcsVisualSystem(const EcsComponentManager& componentMgr);
+        ~EcsVisualSystem() override = default;
 
-        if (!visual.m_Enabled)
-            continue;
-
-        LogInfo("%s", entity.GetName().c_str());
-    }
+    protected:
+        friend class EcsManager;
+        void Update() override;
+    };
 }
 

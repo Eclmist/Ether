@@ -32,7 +32,7 @@ namespace Ether::Ecs
         virtual ~EcsToggleComponent() override = default;
 
     public:
-        void Serialize(OStream& ostream) override;
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
     public:
@@ -45,7 +45,7 @@ namespace Ether::Ecs
         , m_Enabled(true) {}
 
     template <typename T>
-    void Ether::Ecs::EcsToggleComponent<T>::Serialize(OStream& ostream)
+    void Ether::Ecs::EcsToggleComponent<T>::Serialize(OStream& ostream) const
     {
         EcsComponent<T>::Serialize(ostream);
         ostream << m_Enabled;

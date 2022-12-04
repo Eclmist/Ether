@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/common/visualbatch.h"
 #include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhitypes.h"
 
@@ -32,9 +33,13 @@ namespace Ether::Graphics
         ~GraphicContext() = default;
 
     public:
+        const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
+
+    public:
         void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
         void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
 
+        void SetVisualBatch(VisualBatch visualBatch);
         void SetViewport(RhiViewportDesc viewport);
         void SetScissorRect(RhiScissorDesc scissor);
         void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer);
@@ -45,5 +50,8 @@ namespace Ether::Graphics
 
         void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
         void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
+
+    private:
+        VisualBatch m_VisualBatch;
     };
 }

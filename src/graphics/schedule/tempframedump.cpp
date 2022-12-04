@@ -24,12 +24,6 @@
 #include <format>
 #include <algorithm>
 
-#ifdef ETH_TOOLMODE
-#define DRAW_IN_TOOLMODE 0
-#else
-#define DRAW_IN_TOOLMODE 1
-#endif
-
 Ether::ethMatrix4x4 GetTranslationMatrix(const Ether::ethVector3& translation)
 {
     return { 1.0f, 0.0f, 0.0f, translation.x,
@@ -100,20 +94,6 @@ void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
         m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
 
-#if DRAW_IN_TOOLMODE
-    for (int i = 0; i < 1000; ++i)
-    {
-        std::string meshPath = std::format("{}\\mesh{}.ether", m_SceneRootPath, i);
-
-        if (!Ether::PathUtils::IsValidPath(meshPath))
-            continue;
-
-        m_Meshes.push_back(std::make_unique<Mesh>());
-        IFileStream ifstream(meshPath);
-        m_Meshes.back()->Deserialize(ifstream);
-        m_Meshes.back()->CreateGpuResources();
-    }
-
     static RhiClearValue clearValue = { DepthBufferFormat, { 1.0, 0 } };
     static RhiCommitedResourceDesc desc = {};
     desc.m_HeapType = RhiHeapType::Default;
@@ -162,12 +142,10 @@ void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
     psoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
 
     resourceContext.AddPipelineState(*psoDesc);
-#endif
 }
 
 void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
-#if DRAW_IN_TOOLMODE
     ETH_MARKER_EVENT("Temp Frame Dump - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
@@ -195,38 +173,31 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
 
     SetupCamera(graphicContext);
 
-    for (int i = 0; i < m_Meshes.size(); ++i)
+    const VisualBatch& visualBatch = graphicContext.GetVisualBatch();
+
+    for (int i = 0; i < visualBatch.m_Visuals.size(); ++i)
     {
         ETH_MARKER_EVENT("Draw Meshes");
-        Mesh& mesh = *m_Meshes[i];
-
-        Material material;
-        material.SetBaseColor(ethVector4(1, 0, 1, 1));
-        material.SetSpecularColor(ethVector4(1, 1, 0, 1));
-        material.SetMetalness(0.5f);
-        material.SetRoughness(sin(Time::GetCurrentTime() / 100.0f));
+        Visual visual = visualBatch.m_Visuals[i];
 
         auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
-        memcpy(alloc->GetCpuHandle(), &material, sizeof(Material));
+        memcpy(alloc->GetCpuHandle(), visual.m_Material, sizeof(Material));
 
         graphicContext.SetRootConstantBuffer(1, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
-        graphicContext.SetVertexBuffer(mesh.GetVertexBufferView());
-        graphicContext.SetIndexBuffer(mesh.GetIndexBufferView());
-        graphicContext.DrawIndexedInstanced(mesh.GetNumIndices(), 1);
+        graphicContext.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
+        graphicContext.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
+        graphicContext.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
     }
 
     graphicContext.PopMarker();
     graphicContext.FinalizeAndExecute();
     graphicContext.Reset();
-#endif
 }
 
 void Ether::Graphics::TempFrameDump::Reset()
 {
-#if DRAW_IN_TOOLMODE
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Reset();
-#endif
 }
 
 void Ether::Graphics::TempFrameDump::SetupCamera(GraphicContext& context)

@@ -28,7 +28,7 @@ Ether::SceneGraphNode::SceneGraphNode()
 {
 }
 
-void Ether::SceneGraphNode::Serialize(OStream& ostream)
+void Ether::SceneGraphNode::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 
@@ -61,7 +61,7 @@ Ether::SceneGraph::SceneGraph()
     m_Nodes[RootEntityID].m_ParentIndex = InvalidEntityID;
 }
 
-void Ether::SceneGraph::Serialize(OStream& ostream)
+void Ether::SceneGraph::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 

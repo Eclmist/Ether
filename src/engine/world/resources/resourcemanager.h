@@ -31,24 +31,32 @@ namespace Ether
         ResourceManager();
         ~ResourceManager() = default;
 
-        void Serialize(OStream& ostream) override;
+    public:
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
+
+    public:
+        ETH_ENGINE_DLL StringID RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh);
+        ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
+
+        Graphics::Mesh* GetMeshResource(StringID guid) const;
+        Graphics::Material* GetMaterialResource(StringID guid) const;
 
     private:
         template <typename T>
-        void SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container);
+        void SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container) const;
         template <typename T>
         void DeserializeResource(IStream& istream, std::unordered_map<StringID, std::unique_ptr<T>>& container);
 
     private:
         friend class World;
-        std::unordered_map<StringID, std::unique_ptr<Graphics::Mesh>> m_Mesh;
-        std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Material;
+        std::unordered_map<StringID, std::unique_ptr<Graphics::Mesh>> m_Meshes;
+        std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Materials;
         //std::unordered_map<StringID, Graphics::Texture> m_Texture;
     };
 
     template <typename T>
-    void Ether::ResourceManager::SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container)
+    void Ether::ResourceManager::SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container) const
     {
         ostream << (uint32_t)container.size();
         for (auto& pair : container)
@@ -64,7 +72,7 @@ namespace Ether
         {
             std::unique_ptr<T> resource = std::make_unique<T>();
             resource->Deserialize(istream);
-            container.insert({ resource->GetGuid(), std::move(resource)});
+            container.insert({ resource->GetGuid(), std::move(resource) });
         }
     }
 }

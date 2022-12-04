@@ -28,7 +28,7 @@ Ether::Ecs::EcsComponentManager::EcsComponentManager()
 {
 }
 
-void Ether::Ecs::EcsComponentManager::Serialize(OStream& ostream)
+void Ether::Ecs::EcsComponentManager::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 

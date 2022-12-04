@@ -24,7 +24,7 @@
 #include "engine/world/ecs/ecsentitymanager.h"
 #include "engine/world/ecs/ecscomponentmanager.h"
 #include "engine/world/ecs/ecssystemmanager.h"
-#include "engine/world/ecs/systems/ecsrenderingsystem.h"
+#include "engine/world/ecs/systems/ecsvisualsystem.h"
 
 namespace Ether::Ecs
 {
@@ -35,7 +35,7 @@ namespace Ether::Ecs
         ~EcsManager() = default;
 
     public:
-        void Serialize(OStream& ostream) override;
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
     public:
@@ -56,7 +56,7 @@ namespace Ether::Ecs
         EcsSystemManager m_SystemManager;
 
     private:
-        std::unique_ptr<EcsRenderingSystem> m_RenderingSystem;
+        std::unique_ptr<EcsVisualSystem> m_RenderingSystem;
     };
 }
 

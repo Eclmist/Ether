@@ -21,7 +21,6 @@
 
 #include "pch.h"
 #include "engine/world/ecs/components/ecscomponentarray.h"
-#include <typeindex>
 
 namespace Ether::Ecs
 {
@@ -32,7 +31,7 @@ namespace Ether::Ecs
         ~EcsComponentManager() = default;
 
     public:
-        void Serialize(OStream& ostream) override;
+        void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
     public:

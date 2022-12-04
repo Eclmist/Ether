@@ -38,7 +38,7 @@ namespace Ether
 
         inline std::string GetGuid() const { return m_Guid; }
 
-        virtual void Serialize(OStream& ostream);
+        virtual void Serialize(OStream& ostream) const;
         virtual void Deserialize(IStream& istream);
 
     protected:

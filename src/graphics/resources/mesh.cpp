@@ -27,7 +27,7 @@ Ether::Graphics::Mesh::Mesh()
 {
 }
 
-void Ether::Graphics::Mesh::Serialize(OStream& ostream)
+void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 
