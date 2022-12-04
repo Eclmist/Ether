@@ -19,5 +19,26 @@
 
 #pragma once
 
-#include "engine/world/ecs/component/ecscomponent.h"
+#include "pch.h"
+#include "engine/world/ecs/ecstypes.h"
+#include "engine/world/ecs/ecscomponentmanager.h"
+#include <set>
+
+namespace Ether::Ecs
+{
+    class EcsSystem : public NonCopyable, public NonMovable
+    {
+    public:
+        EcsSystem(const EcsComponentManager& componentMgr);
+        virtual ~EcsSystem() = 0;
+
+    protected:
+        friend class EcsSystemManager;
+        virtual void Update() = 0;
+
+    protected:
+        std::set<EntityID> m_Entities;
+        EntitySignature m_Signature;
+    };
+}
 

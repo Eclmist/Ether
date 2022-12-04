@@ -19,34 +19,24 @@
 
 #pragma once
 
-#include "pch.h"
-#include "engine/world/ecs/ecstypes.h"
+#include "engine/world/ecs/components/ecscomponent.h"
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsComponent : public Serializable
+    class ETH_ENGINE_DLL EcsMetadataComponent : public EcsComponent<EcsMetadataComponent>
     {
     public:
-        EcsComponent(uint32_t version, uint32_t classID);
-        virtual ~EcsComponent() override = default;
-
-    protected:
-        static ComponentID GetNextID();
-    };
-
-    // Use CRTP to generate a unique componentID for each component type at compile time
-    template <typename T>
-    class EcsIndexedComponent : public EcsComponent
-    {
-    public:
-        EcsIndexedComponent(uint32_t version, uint32_t classID)
-            : EcsComponent(version, classID) {}
+        EcsMetadataComponent();
+        ~EcsMetadataComponent() override = default;
 
     public:
-        static const ComponentID s_ComponentID;
-    };
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
-    template <typename T>
-    const ComponentID EcsIndexedComponent<T>::s_ComponentID = EcsComponent::GetNextID();
+    public:
+        EntityID m_EntityID;
+        std::string m_EntityName;
+        bool m_EntityEnabled;
+    };
 }
 

@@ -22,18 +22,23 @@
 #include "pch.h"
 #include "engine/world/ecs/ecstypes.h"
 #include "engine/world/ecs/ecsentitymanager.h"
-#include "engine/world/ecs/component/ecscomponentmanager.h"
-#include "engine/world/ecs/system/ecssystemmanager.h"
-#include "engine/world/ecs/system/ecsrenderingsystem.h"
+#include "engine/world/ecs/ecscomponentmanager.h"
+#include "engine/world/ecs/ecssystemmanager.h"
+#include "engine/world/ecs/systems/ecsrenderingsystem.h"
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsManager : public NonCopyable, public NonMovable
+    class ETH_ENGINE_DLL EcsManager : public Serializable
     {
     public:
         EcsManager();
         ~EcsManager() = default;
 
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
+
+    public:
         void Update();
 
     public:

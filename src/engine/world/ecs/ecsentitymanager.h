@@ -23,25 +23,31 @@
 #include "engine/world/ecs/ecstypes.h"
 #include <queue>
 #include <array>
+#include <set>
 
 namespace Ether::Ecs
 {
-    class EcsEntityManager : public NonCopyable, public NonMovable
+    class ETH_ENGINE_DLL EcsEntityManager : public Serializable
     {
     public:
         EcsEntityManager();
         ~EcsEntityManager() = default;
 
     public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
+
+    public:
         EntityID CreateEntity();
         void DestroyEntity(EntityID id);
 
-        ETH_ENGINE_DLL void SetSignature(EntityID id, EntitySignature signature);
-        ETH_ENGINE_DLL EntitySignature GetSignature(EntityID id);
+        void SetSignature(EntityID id, EntitySignature signature);
+        EntitySignature GetSignature(EntityID id);
 
     private:
         friend class EcsManager;
 
+    private:
         std::queue<EntityID> m_AvailableEntities;
         std::array<EntitySignature, MaxNumEntities> m_EntitySignatures;
     };

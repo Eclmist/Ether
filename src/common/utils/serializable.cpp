@@ -42,15 +42,21 @@ void Ether::Serializable::Serialize(OStream& ostream)
 {
     ostream << m_Version;
     ostream << m_ClassID;
+    ostream << m_Guid;
 }
 
 void Ether::Serializable::Deserialize(IStream& istream)
 {
-    uint32_t version;
+    uint32_t version, classID;
     istream >> version;
+    istream >> classID;
+
     if (m_Version != version)
         throw std::runtime_error(std::format("Asset version mismatch - expected version {} but found version {}", version, m_Version));
 
-    istream >> m_ClassID;
+    if (m_ClassID != classID)
+        throw std::runtime_error(std::format("Asset type mismatch - expected type {} but found type {}", version, m_Version));
+
+    istream >> m_Guid;
 }
 

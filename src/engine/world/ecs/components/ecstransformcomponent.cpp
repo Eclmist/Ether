@@ -17,5 +17,32 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "visualcomponent.h"
+#include "engine/world/ecs/components/ecstransformcomponent.h"
 
+constexpr uint32_t EcsTransformComponentVersion = 0;
+
+Ether::Ecs::EcsTransformComponent::EcsTransformComponent()
+    : EcsComponent(EcsTransformComponentVersion, StringID("Ecs::EcsTransformComponent").GetHash())
+    , m_Translation(0.0f, 0.0f, 0.0f)
+    , m_Rotation(0.0f, 0.0f, 0.0f)
+    , m_Scale(1.0f, 1.0f, 1.0f)
+{
+}
+
+void Ether::Ecs::EcsTransformComponent::Serialize(OStream& ostream)
+{
+    EcsComponent::Serialize(ostream);
+
+    ostream << m_Translation;
+    ostream << m_Rotation;
+    ostream << m_Scale;
+}
+
+void Ether::Ecs::EcsTransformComponent::Deserialize(IStream& istream)
+{
+    EcsComponent::Deserialize(istream);
+
+    istream >> m_Translation;
+    istream >> m_Rotation;
+    istream >> m_Scale;
+}

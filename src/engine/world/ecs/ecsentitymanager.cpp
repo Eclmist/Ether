@@ -19,10 +19,54 @@
 
 #include "engine/world/ecs/ecsentitymanager.h"
 
+constexpr uint32_t EcsEntityManagerVersion = 0;
+
 Ether::Ecs::EcsEntityManager::EcsEntityManager()
+    : Serializable(EcsEntityManagerVersion, StringID("Engine::EcsEntityManager").GetHash())
 {
     for (EntityID id = 0; id < MaxNumEntities; ++id)
         m_AvailableEntities.push(id);
+}
+
+void Ether::Ecs::EcsEntityManager::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+
+    ostream << (uint32_t)m_AvailableEntities.size();
+    std::queue<EntityID> copy = m_AvailableEntities;
+
+    while (!copy.empty())
+    {
+        ostream << copy.front();
+        copy.pop();
+    }
+
+    for (int i = 0; i < MaxNumEntities; ++i)
+        ostream << m_EntitySignatures[i].to_string();
+}
+
+void Ether::Ecs::EcsEntityManager::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+
+    while (!m_AvailableEntities.empty())
+        m_AvailableEntities.pop();
+
+    uint32_t numAvailEntities;
+    istream >> numAvailEntities;
+    for (int i = 0; i < numAvailEntities; ++i)
+    {
+        EntityID entityID;
+        istream >> entityID;
+        m_AvailableEntities.push(entityID);
+    }
+
+    for (int i = 0; i < MaxNumEntities; ++i)
+    {
+        std::string bitsetString;
+        istream >> bitsetString;
+        m_EntitySignatures[i] = std::bitset<MaxNumComponents>(bitsetString);
+    }
 }
 
 Ether::Ecs::EntityID Ether::Ecs::EcsEntityManager::CreateEntity()

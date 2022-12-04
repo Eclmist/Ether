@@ -23,11 +23,13 @@ constexpr uint32_t WorldVersion = 0;
 
 Ether::World::World()
     : Serializable(WorldVersion, StringID("Engine::World").GetHash())
+    , m_WorldName("Default World")
 {
 }
 
 void Ether::World::Update()
 {
+    ETH_MARKER_EVENT("World - Update");
     m_EcsManager.Update();
 }
 
@@ -35,20 +37,42 @@ void Ether::World::Serialize(OStream& ostream)
 {
     Serializable::Serialize(ostream);
     ostream << m_WorldName;
+
     m_SceneGraph.Serialize(ostream);
+    m_ResourceManager.Serialize(ostream);
+    m_EcsManager.Serialize(ostream);
+
+    ostream << (uint32_t)m_Entities.size();
+    for (auto& pair : m_Entities)
+        pair.second->Serialize(ostream);
 }
 
 void Ether::World::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
     istream >> m_WorldName;
+
     m_SceneGraph.Deserialize(istream);
+    m_ResourceManager.Deserialize(istream);
+    m_EcsManager.Deserialize(istream);
+
+    uint32_t numEntities;
+    istream >> numEntities;
+
+    for (int i = 0; i < numEntities; ++i)
+    {
+        std::unique_ptr<Entity> entity = std::make_unique<Entity>();
+        entity->Deserialize(istream);
+        auto sigToReregister = m_EcsManager.GetEntityManager().GetSignature(entity->GetID());
+        m_EcsManager.GetSystemManager().UpdateEntitySignature(entity->GetID(), sigToReregister);
+        m_Entities.insert({ entity->GetID(), std::move(entity) });
+    }
 }
 
 Ether::Entity& Ether::World::CreateEntity(const std::string& name)
 {
-    std::unique_ptr<Entity> entity = std::make_unique<Entity>(name);
-    Ecs::EntityID entityID = entity->GetID();
+    Ecs::EntityID entityID = m_EcsManager.GetEntityManager().CreateEntity();
+    std::unique_ptr<Entity> entity = std::make_unique<Entity>(name, entityID);
     m_Entities[entityID] = std::move(entity);
     return *m_Entities[entityID];
 }

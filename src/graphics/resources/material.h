@@ -23,11 +23,15 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL Material
+    class ETH_GRAPHIC_DLL Material : public Serializable
     {
     public:
-        Material() = default;
+        Material();
         ~Material() = default;
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
     public:
         inline ethVector4 GetBaseColor() const { return m_BaseColor; }

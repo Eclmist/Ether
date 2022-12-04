@@ -17,16 +17,15 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/component/ecscomponent.h"
+#include "engine/world/ecs/systems/ecssystem.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
+#include "engine/world/ecs/components/ecstransformcomponent.h"
 
-Ether::Ecs::EcsComponent::EcsComponent(uint32_t version, uint32_t classID)
-    : Serializable(version, classID)
+Ether::Ecs::EcsSystem::EcsSystem(const EcsComponentManager& componentMgr)
 {
+    m_Signature.set(EcsMetadataComponent::s_ComponentID);
+    m_Signature.set(EcsTransformComponent::s_ComponentID);
 }
 
-Ether::Ecs::ComponentID Ether::Ecs::EcsComponent::GetNextID()
-{
-    static ComponentID componentIDCounter = 0;
-    return componentIDCounter++;
-}
+Ether::Ecs::EcsSystem::~EcsSystem() = default;
 

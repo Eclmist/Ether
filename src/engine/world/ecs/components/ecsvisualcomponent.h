@@ -19,25 +19,26 @@
 
 #pragma once
 
-#include "pch.h"
-#include "engine/world/ecs/ecstypes.h"
-#include <set>
+#include "engine/world/ecs/components/ecstogglecomponent.h"
+#include "graphics/resources/mesh.h"
+#include "graphics/resources/material.h"
 
 namespace Ether::Ecs
 {
-    class EcsSystem : public NonCopyable, public NonMovable
+    class ETH_ENGINE_DLL EcsVisualComponent : public EcsToggleComponent<EcsVisualComponent>
     {
     public:
-        EcsSystem();
-        virtual ~EcsSystem() = 0;
+        EcsVisualComponent();
+        ~EcsVisualComponent() override = default;
 
-    protected:
-        friend class EcsSystemManager;
-        virtual void Update() = 0;
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
-    protected:
-        std::set<EntityID> m_Entities;
-        EntitySignature m_Signature;
+    public:
+        StringID m_MeshID;
+        Graphics::Material m_Material;
     };
 }
+
 

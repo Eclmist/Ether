@@ -19,22 +19,40 @@
 
 #include "engine/world/ecs/ecsmanager.h"
 
-#include "engine/world/ecs/component/ecsentitydatacomponent.h"
-#include "engine/world/ecs/component/ecstransformcomponent.h"
-#include "engine/world/ecs/component/ecsmeshcomponent.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
+#include "engine/world/ecs/components/ecstransformcomponent.h"
+#include "engine/world/ecs/components/ecsvisualcomponent.h"
+
+constexpr uint32_t EcsManagerVersion = 0;
 
 Ether::Ecs::EcsManager::EcsManager()
+    : Serializable(EcsManagerVersion, StringID("Engine::EcsManager").GetHash())
 {
-    m_ComponentManager.RegisterComponent<EcsEntityDataComponent>();
+    m_ComponentManager.RegisterComponent<EcsMetadataComponent>();
     m_ComponentManager.RegisterComponent<EcsTransformComponent>();
-    m_ComponentManager.RegisterComponent<EcsMeshComponent>();
+    m_ComponentManager.RegisterComponent<EcsVisualComponent>();
 
-    m_RenderingSystem = std::make_unique<EcsRenderingSystem>();
+    m_RenderingSystem = std::make_unique<EcsRenderingSystem>(m_ComponentManager);
     m_SystemManager.RegisterSystem<EcsRenderingSystem>(*m_RenderingSystem);
+}
+
+void Ether::Ecs::EcsManager::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+    m_EntityManager.Serialize(ostream);
+    m_ComponentManager.Serialize(ostream);
+}
+
+void Ether::Ecs::EcsManager::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+    m_EntityManager.Deserialize(istream);
+    m_ComponentManager.Deserialize(istream);
 }
 
 void Ether::Ecs::EcsManager::Update()
 {
+    ETH_MARKER_EVENT("Ecs Manager - Update");
     m_RenderingSystem->Update();
 }
 

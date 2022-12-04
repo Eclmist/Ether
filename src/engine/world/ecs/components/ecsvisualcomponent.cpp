@@ -17,15 +17,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/system/ecssystem.h"
-#include "engine/world/ecs/component/ecsentitydatacomponent.h"
-#include "engine/world/ecs/component/ecstransformcomponent.h"
+#include "engine/world/ecs/components/ecsvisualcomponent.h"
 
-Ether::Ecs::EcsSystem::EcsSystem()
+constexpr uint32_t EcsVisualComponentVersion = 0;
+
+Ether::Ecs::EcsVisualComponent::EcsVisualComponent()
+    : EcsToggleComponent(EcsVisualComponentVersion, StringID("Ecs::EcsVisualComponent").GetHash())
 {
-    m_Signature.set(EcsIndexedComponent<EcsEntityDataComponent>::s_ComponentID);
-    m_Signature.set(EcsIndexedComponent<EcsTransformComponent>::s_ComponentID);
 }
 
-Ether::Ecs::EcsSystem::~EcsSystem() = default;
+void Ether::Ecs::EcsVisualComponent::Serialize(OStream& ostream)
+{
+    EcsToggleComponent::Serialize(ostream);
+    ostream << m_MeshID.GetString();
+}
+
+void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
+{
+    EcsToggleComponent::Deserialize(istream);
+
+    std::string meshID;
+    istream >> meshID;
+    m_MeshID = meshID;
+}
 

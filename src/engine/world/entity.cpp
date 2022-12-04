@@ -19,37 +19,56 @@
 
 #include "engine/enginecore.h"
 #include "engine/world/entity.h"
-#include "engine/world/ecs/component/ecsentitydatacomponent.h"
-#include "engine/world/ecs/component/ecstransformcomponent.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
+#include "engine/world/ecs/components/ecstransformcomponent.h"
 
-Ether::Entity::Entity(const std::string& name)
-    : m_EntityID(EngineCore::GetActiveWorld().GetEcsManager().CreateEntity())
+constexpr uint32_t EntityVersion = 0;
+
+Ether::Entity::Entity()
+    : Serializable(EntityVersion, StringID("Engine::Entity").GetHash())
+    , m_EntityID(-1)
     , m_EntityManager(EngineCore::GetActiveWorld().GetEcsManager().GetEntityManager())
     , m_ComponentManager(EngineCore::GetActiveWorld().GetEcsManager().GetComponentManager())
     , m_SystemsManager(EngineCore::GetActiveWorld().GetEcsManager().GetSystemManager())
     , m_SceneGraph(EngineCore::GetActiveWorld().GetSceneGraph())
 {
-    AddComponent<Ecs::EcsEntityDataComponent>();
+}
+
+Ether::Entity::Entity(const std::string& name, Ecs::EntityID entityID)
+    : Serializable(EntityVersion, StringID("Engine::Entity").GetHash())
+    , m_EntityID(entityID)
+    , m_EntityManager(EngineCore::GetActiveWorld().GetEcsManager().GetEntityManager())
+    , m_ComponentManager(EngineCore::GetActiveWorld().GetEcsManager().GetComponentManager())
+    , m_SystemsManager(EngineCore::GetActiveWorld().GetEcsManager().GetSystemManager())
+    , m_SceneGraph(EngineCore::GetActiveWorld().GetSceneGraph())
+{
+    AddComponent<Ecs::EcsMetadataComponent>();
     AddComponent<Ecs::EcsTransformComponent>();
 
-    auto entityData = GetComponent<Ecs::EcsEntityDataComponent>();
+    auto& transform = GetComponent<Ecs::EcsTransformComponent>();
+    auto& entityData = GetComponent<Ecs::EcsMetadataComponent>();
     entityData.m_EntityID = m_EntityID;
     entityData.m_EntityName = name;
-    entityData.m_EntityEnabled = true;
+}
 
-    auto transform = GetComponent<Ecs::EcsTransformComponent>();
-    transform.m_Translation = { 0, 0, 0 };
-    transform.m_Rotation = { 0, 0, 0 };
-    transform.m_Scale = { 1, 1, 1 };
+void Ether::Entity::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+    ostream << m_EntityID;
+}
+
+void Ether::Entity::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+    istream >> m_EntityID;
 }
 
 std::string Ether::Entity::GetName()
 {
-    return GetComponent<Ecs::EcsEntityDataComponent>().m_EntityName;
+    return GetComponent<Ecs::EcsMetadataComponent>().m_EntityName;
 }
 
 bool Ether::Entity::IsEnabled()
 {
-    return GetComponent<Ecs::EcsEntityDataComponent>().m_EntityEnabled;
+    return GetComponent<Ecs::EcsMetadataComponent>().m_EntityEnabled;
 }
-

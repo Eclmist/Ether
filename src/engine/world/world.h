@@ -23,6 +23,7 @@
 #include "engine/world/entity.h"
 #include "engine/world/scenegraph.h"
 #include "engine/world/ecs/ecsmanager.h"
+#include "engine/world/resources/resourcemanager.h"
 
 namespace Ether
 {
@@ -32,6 +33,7 @@ namespace Ether
         World();
         ~World() override = default;
 
+    public:
         void Update();
 
     public:
@@ -40,21 +42,21 @@ namespace Ether
 
     public:
         inline std::string GetWorldName() const { return m_WorldName; }
+        inline Entity& GetEntity(Ecs::EntityID entityID) const { return *m_Entities.at(entityID); }
+        inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
+        inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
 
     public:
         Entity& CreateEntity(const std::string& name);
 
     private:
-        friend class Entity;
-        inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
-        inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
-
-    private:
         std::string m_WorldName;
 
         SceneGraph m_SceneGraph;
-        Ecs::EcsManager m_EcsManager;
+        ResourceManager m_ResourceManager;
 
+        Ecs::EcsManager m_EcsManager;
         std::unordered_map<Ecs::EntityID, std::unique_ptr<Entity>> m_Entities;
     };
+
 }

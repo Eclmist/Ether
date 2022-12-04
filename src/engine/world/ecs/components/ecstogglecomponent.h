@@ -19,24 +19,43 @@
 
 #pragma once
 
-#include "engine/world/ecs/component/ecscomponent.h"
+#include "pch.h"
+#include "engine/world/ecs/components/ecscomponent.h"
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsEntityDataComponent : public EcsIndexedComponent<EcsEntityDataComponent>
+    template <typename T>
+    class ETH_ENGINE_DLL EcsToggleComponent : public EcsComponent<T>
     {
     public:
-        EcsEntityDataComponent();
-        ~EcsEntityDataComponent() override = default;
+        EcsToggleComponent(uint32_t version, uint32_t classID);
+        virtual ~EcsToggleComponent() override = default;
 
     public:
         void Serialize(OStream& ostream) override;
         void Deserialize(IStream& istream) override;
 
     public:
-        EntityID m_EntityID;
-        std::string m_EntityName;
-        bool m_EntityEnabled;
+        bool m_Enabled;
     };
+
+    template <typename T>
+    Ether::Ecs::EcsToggleComponent<T>::EcsToggleComponent(uint32_t version, uint32_t classID)
+        : EcsComponent<T>(version, classID)
+        , m_Enabled(true) {}
+
+    template <typename T>
+    void Ether::Ecs::EcsToggleComponent<T>::Serialize(OStream& ostream)
+    {
+        EcsComponent<T>::Serialize(ostream);
+        ostream << m_Enabled;
+    }
+
+    template <typename T>
+    void Ether::Ecs::EcsToggleComponent<T>::Deserialize(IStream& istream)
+    {
+        EcsComponent<T>::Deserialize(istream);
+        istream >> m_Enabled;
+    }
 }
 

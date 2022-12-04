@@ -17,30 +17,40 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/resources/material.h"
+#include "engine/world/ecs/ecscomponentmanager.h"
+#include <typeindex>
 
-constexpr uint32_t MaterialVersion = 0;
+constexpr uint32_t EcsComponentManagerVersion = 0;
 
-Ether::Graphics::Material::Material()
-    : Serializable(MaterialVersion, StringID("Graphics::Material").GetHash())
+Ether::Ecs::EcsComponentManager::EcsComponentManager()
+    : Serializable(EcsComponentManagerVersion, StringID("Engine::EcsComponentManager").GetHash())
+    , m_NextID(0)
 {
 }
 
-void Ether::Graphics::Material::Serialize(OStream& ostream)
+void Ether::Ecs::EcsComponentManager::Serialize(OStream& ostream)
 {
     Serializable::Serialize(ostream);
-    ostream << m_BaseColor;
-    ostream << m_SpecularColor;
-    ostream << m_Roughness;
-    ostream << m_Metalness;
+
+    ostream << (uint32_t)m_ComponentArrays.size();
+    for (auto& pair : m_ComponentArrays)
+    {
+        ostream << (uint32_t)pair.first;
+        pair.second->Serialize(ostream);
+    }
 }
 
-void Ether::Graphics::Material::Deserialize(IStream& istream)
+void Ether::Ecs::EcsComponentManager::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
-    istream >> m_BaseColor;
-    istream >> m_SpecularColor;
-    istream >> m_Roughness;
-    istream >> m_Metalness;
-}
 
+    uint32_t numArrays;
+    istream >> numArrays;
+
+    for (int i = 0; i < numArrays; ++i)
+    {
+        uint32_t componentTypeID;
+        istream >> componentTypeID;
+        m_ComponentArrays[componentTypeID]->Deserialize(istream);
+    }
+}

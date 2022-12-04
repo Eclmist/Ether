@@ -17,6 +17,26 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "transformationsystem.h"
+#include "engine/world/resources/resourcemanager.h"
 
+constexpr uint32_t ResourceManagerVersion = 0;
+
+Ether::ResourceManager::ResourceManager()
+    : Serializable(ResourceManagerVersion, StringID("Engine::ResourceManager").GetHash())
+{
+}
+
+void Ether::ResourceManager::Serialize(OStream& ostream)
+{
+    Serializable::Serialize(ostream);
+    SerializeResource<Graphics::Mesh>(ostream, m_Mesh);
+    SerializeResource<Graphics::Material>(ostream, m_Material);
+}
+
+void Ether::ResourceManager::Deserialize(IStream& istream)
+{
+    Serializable::Deserialize(istream);
+    DeserializeResource<Graphics::Mesh>(istream, m_Mesh);
+    DeserializeResource<Graphics::Material>(istream, m_Material);
+}
 

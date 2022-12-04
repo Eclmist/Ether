@@ -77,6 +77,7 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
     // Submit command lists in the correct execution order
 
     // For now, just render the frame dump
+    g_TempFrameDump->Reset();
     g_TempFrameDump->Render(context, m_ResourceContext);
     m_ImguiWrapper->Render();
 

@@ -18,34 +18,32 @@
 */
 
 #include "sampleapp.h"
-#include "engine/world/ecs/component/ecsmeshcomponent.h"
-//#include <common/stream/filestream.h>
-//#include <filesystem>
+#include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include <format>
 
 using namespace Ether;
-
-//std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Sponza\\";
-////std::string sceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Bedroom\\";
-//std::string objName = "sponza.obj.ether";
-////std::string objName = "iscv2.obj.ether";
-//std::string modelsGroupPath = sceneRootPath + objName;
 
 void SampleApp::Initialize()
 {
     LogInfo("Initializing Application: Sample App");
-
-    //Ether::Client::SetClientSize({ 1366, 768 });
-    Ether::Client::SetClientTitle("Ether Sample App");
-
-    //m_CameraDistance = 10.0f;
-    //m_CameraRotation = { -0.4, 0.785398, 0 };
-
-    //EngineCore::GetEngineConfig().ToggleDebugGui();
-
+    Client::SetClientTitle("Ether Sample App");
 }
 
 void SampleApp::LoadContent()
 {
+    //for (int i = 0; i < 1000; ++i)
+    //{
+    //    std::string meshPath = std::format("{}\\mesh{}.ether", m_SceneRootPath, i);
+
+    //    if (!Ether::PathUtils::IsValidPath(meshPath))
+    //        continue;
+
+    //    m_Meshes.push_back(std::make_unique<Mesh>());
+    //    IFileStream ifstream(meshPath);
+    //    m_Meshes.back()->Deserialize(ifstream);
+    //    m_Meshes.back()->CreateGpuResources();
+    //}
+
     //for (int i = 0; i < 400; ++i)
     //{
     //    std::string modelPath = modelsGroupPath + std::to_string(i);
@@ -84,7 +82,9 @@ void SampleApp::LoadContent()
     ////hdri->Deserialize(iistream);
     ////GraphicCore::GetGraphicRenderer().m_EnvironmentHDRI = hdri;
 
-    Ether::World& world = GetActiveWorld();
+    World& world = GetActiveWorld();
+
+#if 0
     auto& e0 = world.CreateEntity("Entity 0");
     auto& e1 = world.CreateEntity("Entity 1");
     auto& e2 = world.CreateEntity("Entity 2");
@@ -92,7 +92,16 @@ void SampleApp::LoadContent()
     auto& e4 = world.CreateEntity("Entity 4");
     auto& e5 = world.CreateEntity("Entity 5");
 
-    e1.AddComponent<Ecs::EcsMeshComponent>();
+    e1.AddComponent<Ecs::EcsVisualComponent>();
+    e2.AddComponent<Ecs::EcsVisualComponent>();
+    e3.AddComponent<Ecs::EcsVisualComponent>();
+
+    OFileStream oFileStream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+    world.Serialize(oFileStream);
+#else
+    IFileStream iFileStream("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+    world.Deserialize(iFileStream);
+#endif
 }
 
 void SampleApp::UnloadContent()

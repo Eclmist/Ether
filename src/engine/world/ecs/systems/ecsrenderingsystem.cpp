@@ -17,21 +17,30 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/component/ecsmeshcomponent.h"
+#include "engine/enginecore.h"
+#include "engine/world/entity.h"
+#include "engine/world/ecs/systems/ecsrenderingsystem.h"
+#include "engine/world/ecs/components/ecsvisualcomponent.h"
 
-constexpr uint32_t EcsMeshComponentVersion = 0;
-
-Ether::Ecs::EcsMeshComponent::EcsMeshComponent()
-    : EcsIndexedComponent(EcsMeshComponentVersion, StringID("Ecs::EcsMeshComponent").GetHash())
+Ether::Ecs::EcsRenderingSystem::EcsRenderingSystem(const EcsComponentManager& componentMgr)
+    : EcsSystem(componentMgr)
 {
+    m_Signature.set(EcsVisualComponent::s_ComponentID);
 }
 
-void Ether::Ecs::EcsMeshComponent::Serialize(OStream& ostream)
+void Ether::Ecs::EcsRenderingSystem::Update()
 {
-    Serializable::Serialize(ostream);
+    ETH_MARKER_EVENT("Rendering System - Update");
+
+    for (EntityID entityID : m_Entities)
+    {
+        Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
+        EcsVisualComponent& visual = entity.GetComponent<EcsVisualComponent>();
+
+        if (!visual.m_Enabled)
+            continue;
+
+        LogInfo("%s", entity.GetName().c_str());
+    }
 }
 
-void Ether::Ecs::EcsMeshComponent::Deserialize(IStream& istream)
-{
-    Serializable::Deserialize(istream);
-}

@@ -27,15 +27,20 @@ namespace Ether
 {
     namespace Ecs
     {
-        class EcsEntityDataComponent;
+        class EcsMetadataComponent;
         class EcsTransformComponent;
     }
 
-    class ETH_ENGINE_DLL Entity : public NonCopyable, public NonMovable
+    class ETH_ENGINE_DLL Entity : public Serializable
     {
     public:
-        Entity(const std::string& name);
+        Entity(); // For use during deserialization
+        Entity(const std::string& name, Ecs::EntityID entityID);
         ~Entity() = default;
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
     public:
         inline Ecs::EntityID GetID() const { return m_EntityID; }
@@ -78,7 +83,7 @@ namespace Ether
         // Update signature
         auto signature = m_EntityManager.GetSignature(GetID());
 
-        signature.set(T::s_ComponentID);
+        signature.set(m_ComponentManager.GetTypeID<T>());
         m_EntityManager.SetSignature(GetID(), signature);
         m_SystemsManager.UpdateEntitySignature(GetID(), signature);
     }

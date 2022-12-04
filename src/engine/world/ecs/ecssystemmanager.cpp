@@ -17,33 +17,25 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/component/ecsentitydatacomponent.h"
+#include "engine/world/ecs/ecssystemmanager.h"
 
-constexpr uint32_t EcsEntityDataComponentVersion = 0;
-
-Ether::Ecs::EcsEntityDataComponent::EcsEntityDataComponent()
-    : EcsIndexedComponent(EcsEntityDataComponentVersion, StringID("Ecs::EcsEntityDataComponent").GetHash())
-    , m_EntityID(-1)
-    , m_EntityName("Entity")
-    , m_EntityEnabled(true)
+void Ether::Ecs::EcsSystemManager::UpdateEntitySignature(EntityID entityID, EntitySignature newSignature)
 {
+    for (auto const& pair : m_Systems)
+    {
+        const auto& systemSignature = pair.second->m_Signature;
+
+        if ((newSignature & systemSignature) == systemSignature)
+            pair.second->m_Entities.insert(entityID);
+        else
+            pair.second->m_Entities.erase(entityID);
+    }
 }
 
-void Ether::Ecs::EcsEntityDataComponent::Serialize(OStream& ostream)
+void Ether::Ecs::EcsSystemManager::OnEntityDestroyed(EntityID entityID)
 {
-    Serializable::Serialize(ostream);
-
-    ostream << m_EntityID;
-    ostream << m_EntityName;
-    ostream << m_EntityEnabled;
+    for (auto const& pair : m_Systems)
+    {
+        pair.second->m_Entities.erase(entityID);
+    }
 }
-
-void Ether::Ecs::EcsEntityDataComponent::Deserialize(IStream& istream)
-{
-    Serializable::Deserialize(istream);
-
-    istream >> m_EntityID;
-    istream >> m_EntityName;
-    istream >> m_EntityEnabled;
-}
-

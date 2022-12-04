@@ -17,19 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/system/ecsrenderingsystem.h"
-#include "engine/world/ecs/component/ecsmeshcomponent.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
 
-Ether::Ecs::EcsRenderingSystem::EcsRenderingSystem()
+constexpr uint32_t EcsEntityDataComponentVersion = 0;
+
+Ether::Ecs::EcsMetadataComponent::EcsMetadataComponent()
+    : EcsComponent(EcsEntityDataComponentVersion, StringID("Ecs::EcsEntityDataComponent").GetHash())
+    , m_EntityID(-1)
+    , m_EntityName("Entity")
+    , m_EntityEnabled(true)
 {
-    m_Signature.set(EcsIndexedComponent<EcsMeshComponent>::s_ComponentID);
 }
 
-void Ether::Ecs::EcsRenderingSystem::Update()
+void Ether::Ecs::EcsMetadataComponent::Serialize(OStream& ostream)
 {
-    for (EntityID entityID : m_Entities)
-    {
-        LogInfo("Rendering System - Entity ID: %u", entityID);
-    }
+    EcsComponent::Serialize(ostream);
+
+    ostream << m_EntityID;
+    ostream << m_EntityName;
+    ostream << m_EntityEnabled;
+}
+
+void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
+{
+    EcsComponent::Deserialize(istream);
+
+    istream >> m_EntityID;
+    istream >> m_EntityName;
+    istream >> m_EntityEnabled;
 }
 

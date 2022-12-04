@@ -17,29 +17,29 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/component/ecstransformcomponent.h"
+#pragma once
 
-constexpr uint32_t EcsTransformComponentVersion = 0;
+#include "pch.h"
+#include "engine/world/ecs/ecstypes.h"
 
-Ether::Ecs::EcsTransformComponent::EcsTransformComponent()
-    : EcsIndexedComponent(EcsTransformComponentVersion, StringID("Ecs::EcsTransformComponent").GetHash())
+namespace Ether::Ecs
 {
+    template <typename T>
+    class ETH_ENGINE_DLL EcsComponent : public Serializable
+    {
+    public:
+        EcsComponent(uint32_t version, uint32_t classID);
+        virtual ~EcsComponent() override = default;
+
+    public:
+        static ComponentID s_ComponentID;
+    };
+
+    template <typename T>
+    Ether::Ecs::EcsComponent<T>::EcsComponent(uint32_t version, uint32_t classID)
+        : Serializable(version, classID) {}
+
+    template <typename T>
+    ComponentID Ether::Ecs::EcsComponent<T>::s_ComponentID = -1;
 }
 
-void Ether::Ecs::EcsTransformComponent::Serialize(OStream& ostream)
-{
-    Serializable::Serialize(ostream);
-
-    ostream << m_Translation;
-    ostream << m_Rotation;
-    ostream << m_Scale;
-}
-
-void Ether::Ecs::EcsTransformComponent::Deserialize(IStream& istream)
-{
-    Serializable::Deserialize(istream);
-
-    istream >> m_Translation;
-    istream >> m_Rotation;
-    istream >> m_Scale;
-}

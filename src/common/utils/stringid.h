@@ -35,10 +35,11 @@ namespace Ether
         StringID(const char* str);
         StringID(const std::string& str);
 
+        bool operator==(const StringID& other) const;
         bool operator!=(const StringID& other) const;
 
         inline sid_t GetHash() const { return m_Hash; }
-        inline std::string GetString();
+        inline std::string GetString() const;
 
     private:
         static sid_t Hash(const char* str);

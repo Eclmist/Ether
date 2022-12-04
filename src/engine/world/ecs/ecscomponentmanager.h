@@ -20,43 +20,56 @@
 #pragma once
 
 #include "pch.h"
-#include "engine/world/ecs/component/ecscomponentarray.h"
+#include "engine/world/ecs/components/ecscomponentarray.h"
 #include <typeindex>
 
 namespace Ether::Ecs
 {
-    class EcsComponentManager : public NonCopyable, public NonMovable
+    class EcsComponentManager : public Serializable
     {
     public:
-        EcsComponentManager() = default;
+        EcsComponentManager();
         ~EcsComponentManager() = default;
+
+    public:
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
     public:
         template <typename T>
         void RegisterComponent()
         {
-            if (m_ComponentArrays.find(typeid(T)) != m_ComponentArrays.end())
+            if (m_TypeNameToIDMap.find(typeid(T).name()) != m_TypeNameToIDMap.end())
                 throw std::logic_error("Same component type is registered more than once");
 
-            m_ComponentArrays[typeid(T)] = std::make_unique<EcsComponentArray<T>>();
+            ComponentID newID = m_NextID++;
+            m_TypeNameToIDMap[typeid(T).name()] = newID;
+            T::s_ComponentID = newID;
+            m_ComponentArrays[newID] = std::make_unique<EcsComponentArray<T>>();
+        }
+
+        template <typename T>
+        ComponentID GetTypeID()
+        {
+            return m_TypeNameToIDMap[typeid(T).name()];
         }
 
         template <typename T>
         T& GetComponent(EntityID entityID)
         {
-            return dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(typeid(T))).GetComponent(entityID);
+            return dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(GetTypeID<T>())).GetComponent(entityID);
         }
 
         template <typename T>
         void AddComponent(EntityID entityID)
         {
-            dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(typeid(T))).AddComponent(entityID);
+            dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(GetTypeID<T>())).AddComponent(entityID);
         }
 
         template <typename T>
         void RemoveComponent(EntityID entityID)
         {
-            dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(typeid(T))).RemoveComponent(entityID);
+            dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(GetTypeID<T>())).RemoveComponent(entityID);
         }
 
         void OnEntityDestroyed(EntityID entityID)
@@ -66,6 +79,9 @@ namespace Ether::Ecs
         }
 
     private:
-        std::unordered_map<std::type_index, std::unique_ptr<EcsComponentArrayBase>> m_ComponentArrays;
+        std::unordered_map<std::string, ComponentID> m_TypeNameToIDMap;
+        std::unordered_map<ComponentID, std::unique_ptr<EcsComponentArrayBase>> m_ComponentArrays;
+
+        ComponentID m_NextID;
     };
 }

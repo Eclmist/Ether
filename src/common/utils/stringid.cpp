@@ -53,7 +53,7 @@ Ether::StringID::StringID(const char* str)
     s_HashToStringMap[m_Hash] = str;
 }
 
-std::string Ether::StringID::GetString()
+std::string Ether::StringID::GetString() const
 {
     return s_HashToStringMap.find(m_Hash) == s_HashToStringMap.end()
         ? "Invalid StringID"
@@ -64,6 +64,11 @@ Ether::StringID::StringID(const std::string& str)
     : m_Hash(Hash(str.c_str()))
 {
     s_HashToStringMap[m_Hash] = str;
+}
+
+bool Ether::StringID::operator==(const StringID& other) const
+{
+    return m_Hash == other.m_Hash;
 }
 
 bool Ether::StringID::operator!=(const StringID& other) const

@@ -24,7 +24,11 @@
 #include <format>
 #include <algorithm>
 
+#ifdef ETH_TOOLMODE
+#define DRAW_IN_TOOLMODE 0
+#else
 #define DRAW_IN_TOOLMODE 1
+#endif
 
 Ether::ethMatrix4x4 GetTranslationMatrix(const Ether::ethVector3& translation)
 {
@@ -96,7 +100,7 @@ void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
         m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
 
-#ifdef DRAW_IN_TOOLMODE
+#if DRAW_IN_TOOLMODE
     for (int i = 0; i < 1000; ++i)
     {
         std::string meshPath = std::format("{}\\mesh{}.ether", m_SceneRootPath, i);
@@ -163,7 +167,7 @@ void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
 
 void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
-#ifdef DRAW_IN_TOOLMODE
+#if DRAW_IN_TOOLMODE
     ETH_MARKER_EVENT("Temp Frame Dump - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
@@ -219,7 +223,7 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
 
 void Ether::Graphics::TempFrameDump::Reset()
 {
-#ifdef DRAW_IN_TOOLMODE
+#if DRAW_IN_TOOLMODE
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Reset();
 #endif

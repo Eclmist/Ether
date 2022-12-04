@@ -25,10 +25,13 @@
 
 namespace Ether::Ecs
 {
-    class EcsComponentArrayBase
+    constexpr uint32_t ComponentArrayVersion = 0;
+
+    class EcsComponentArrayBase : public Serializable
     {
     public:
-        EcsComponentArrayBase() = default;
+        EcsComponentArrayBase() 
+            : Serializable(ComponentArrayVersion, StringID("Engine::EcsComponentArray").GetHash()) {}
         ~EcsComponentArrayBase() = default;
         
     public:
@@ -41,6 +44,52 @@ namespace Ether::Ecs
     public:
         EcsComponentArray() = default;
         ~EcsComponentArray() = default;
+
+        void Serialize(OStream& ostream) override
+        {
+            Serializable::Serialize(ostream);
+
+            for (int i = 0; i < MaxNumEntities; ++i)
+                m_ComponentArray[i].Serialize(ostream);
+
+            ostream << m_NumElements;
+            ostream << (uint32_t)m_EntityToComponentIDMap.size();
+            ostream << (uint32_t)m_ComponentIDToEntityMap.size();
+
+            for (auto& pair : m_EntityToComponentIDMap)
+                ostream << pair.first << pair.second;
+
+            for (auto& pair : m_ComponentIDToEntityMap)
+                ostream << pair.first << pair.second;
+        }
+
+        void Deserialize(IStream& istream) override
+        {
+            Serializable::Deserialize(istream);
+
+            for (int i = 0; i < MaxNumEntities; ++i)
+                m_ComponentArray[i].Deserialize(istream);
+
+            uint32_t compToIdMapSize, entityToCompMapSize;
+            istream >> m_NumElements;
+            istream >> entityToCompMapSize;
+            istream >> compToIdMapSize;
+
+            uint32_t first, second;
+            for (int i = 0; i < entityToCompMapSize; ++i)
+            {
+                istream >> first;
+                istream >> second;
+                m_EntityToComponentIDMap[first] = second;
+            }
+
+            for (int i = 0; i < compToIdMapSize; ++i)
+            {
+                istream >> first;
+                istream >> second;
+                m_ComponentIDToEntityMap[first] = second;
+            }
+        }
 
     public:
         inline T& GetComponent(EntityID entityID) { return m_ComponentArray[m_EntityToComponentIDMap[entityID]]; }

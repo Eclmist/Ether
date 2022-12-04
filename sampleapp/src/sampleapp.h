@@ -57,4 +57,7 @@ private:
 
     //std::shared_ptr<Ether::Material> m_Material;
     //std::unordered_map<std::string, std::shared_ptr<Ether::CompiledTexture>> m_Textures;
+
+    //std::vector<std::unique_ptr<Graphics::Mesh>> m_Meshes;
+    //const std::string m_SceneRootPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug";
 };

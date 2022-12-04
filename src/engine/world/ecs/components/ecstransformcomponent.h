@@ -19,34 +19,24 @@
 
 #pragma once
 
-#include "pch.h"
-#include "engine/world/ecs/system/ecssystem.h"
-#include "engine/world/ecs/ecstypes.h"
-#include <typeindex>
+#include "engine/world/ecs/components/ecscomponent.h"
 
 namespace Ether::Ecs
 {
-    class EcsSystemManager : public NonCopyable, public NonMovable
+    class ETH_ENGINE_DLL EcsTransformComponent : public EcsComponent<EcsTransformComponent>
     {
     public:
-        EcsSystemManager() = default;
-        ~EcsSystemManager() = default;
+        EcsTransformComponent();
+        ~EcsTransformComponent() override = default;
 
     public:
-        template <typename T>
-        void RegisterSystem(EcsSystem& system);
+        void Serialize(OStream& ostream) override;
+        void Deserialize(IStream& istream) override;
 
-        ETH_ENGINE_DLL void UpdateEntitySignature(EntityID entityID, EntitySignature newSignature);
-        ETH_ENGINE_DLL void OnEntityDestroyed(EntityID entityID);
-
-    private:
-        std::unordered_map<std::type_index, EcsSystem*> m_Systems;
+    public:
+        ethVector3 m_Translation;
+        ethVector3 m_Rotation;
+        ethVector3 m_Scale;
     };
-
-    template <typename T>
-    void Ether::Ecs::EcsSystemManager::RegisterSystem(EcsSystem& system)
-    {
-        m_Systems[typeid(T)] = &system;
-    }
 }
 
