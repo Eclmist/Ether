@@ -99,6 +99,9 @@ namespace SMath
         void Normalize();
         Vector Normalized() const;
 
+        template <int M>
+        Vector<T, M> Resize() const;
+
     public:
         static T Dot(const Vector& a, const Vector& b);
         static T AbsDot(const Vector& a, const Vector& b);
@@ -108,6 +111,5 @@ namespace SMath
     };
 
     #include "vector_impl.h" 
-
 }
 

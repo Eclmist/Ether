@@ -94,5 +94,5 @@ namespace SMath
 
         return res;
     }
-
 }
+

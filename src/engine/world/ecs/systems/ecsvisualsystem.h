@@ -27,7 +27,7 @@ namespace Ether::Ecs
     class EcsVisualSystem : public EcsSystem
     {
     public:
-        EcsVisualSystem(const EcsComponentManager& componentMgr);
+        EcsVisualSystem();
         ~EcsVisualSystem() override = default;
 
     protected:

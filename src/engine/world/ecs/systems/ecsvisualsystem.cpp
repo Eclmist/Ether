@@ -25,8 +25,7 @@
 #include "graphics/graphiccore.h"
 #include "graphics/common/visualbatch.h"
 
-Ether::Ecs::EcsVisualSystem::EcsVisualSystem(const EcsComponentManager& componentMgr)
-    : EcsSystem(componentMgr)
+Ether::Ecs::EcsVisualSystem::EcsVisualSystem()
 {
     m_Signature.set(EcsVisualComponent::s_ComponentID);
 }

@@ -80,20 +80,19 @@ void Ether::EngineCore::MainEngineThread()
     while (true)
     {
         ETH_MARKER_FRAME("Engine Frame");
-        if (!m_MainWindow->ProcessPlatformMessages())
-            break;
 
         Time::NewFrame();
         Input::NewFrame();
-        {
-            ETH_MARKER_EVENT("Game Application - OnUpdate");
-            m_MainApplication->OnUpdate({}); // No useful args for now
-        }
-        Input::EndFrame();
+
+        if (!m_MainWindow->ProcessPlatformMessages())
+            break;
+
+        m_MainApplication->OnUpdate({});
 
         m_ActiveWorld->Update();
-
         Graphics::GraphicCore::Main();
+
+        Input::EndFrame();
     }
 }
 

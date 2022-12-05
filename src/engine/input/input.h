@@ -79,8 +79,6 @@ namespace Ether
         double m_MouseDeltaX = 0.0;
         double m_MouseDeltaY = 0.0;
         double m_MouseWheelDelta = 0.0;
-
-        std::mutex m_FrameMutex;
     };
 }
 

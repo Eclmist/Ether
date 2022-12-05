@@ -31,28 +31,24 @@ void Ether::Input::Initialize()
 
 void Ether::Input::SetKeyDown(KeyCode key)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_KeyStates[(int)key] = true;
     m_TransientKeyDownStates[(int)key] = true;
 }
 
 void Ether::Input::SetKeyUp(KeyCode key)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_KeyStates[(int)key] = false;
     m_TransientKeyUpStates[(int)key] = true;
 }
 
 void Ether::Input::SetMouseButtonDown(int index)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseStates[index] = true;
     m_TransientMouseDownStates[index] = true;
 }
 
 void Ether::Input::SetMouseButtonUp(int index)
 {
-    std::lock_guard<std::mutex> frameLock(m_FrameMutex);
     m_MouseStates[index] = false;
     m_TransientKeyUpStates[index] = true;
 }
@@ -76,11 +72,6 @@ void Ether::Input::SetMousePosY(double posY)
 
 void Ether::Input::NewFrame_Impl()
 {
-    m_FrameMutex.lock();
-}
-
-void Ether::Input::EndFrame_Impl()
-{
     memset(m_TransientKeyDownStates, 0, sizeof(m_TransientKeyDownStates));
     memset(m_TransientKeyUpStates, 0, sizeof(m_TransientKeyUpStates));
     memset(m_TransientMouseDownStates, 0, sizeof(m_TransientMouseDownStates));
@@ -89,8 +80,10 @@ void Ether::Input::EndFrame_Impl()
     m_MouseWheelDelta = 0;
     m_MouseDeltaX = 0;
     m_MouseDeltaY = 0;
+}
 
-    m_FrameMutex.unlock();
+void Ether::Input::EndFrame_Impl()
+{
 }
 
 

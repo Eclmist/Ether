@@ -53,8 +53,8 @@ namespace Ether::Ecs
                 m_ComponentArray[i].Serialize(ostream);
 
             ostream << m_NumElements;
-            ostream << (uint32_t)m_EntityToComponentIDMap.size();
-            ostream << (uint32_t)m_ComponentIDToEntityMap.size();
+            ostream << static_cast<uint32_t>(m_EntityToComponentIDMap.size());
+            ostream << static_cast<uint32_t>(m_ComponentIDToEntityMap.size());
 
             for (auto& pair : m_EntityToComponentIDMap)
                 ostream << pair.first << pair.second;

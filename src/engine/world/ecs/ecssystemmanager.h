@@ -29,24 +29,19 @@ namespace Ether::Ecs
     class EcsSystemManager : public NonCopyable, public NonMovable
     {
     public:
-        EcsSystemManager() = default;
+        EcsSystemManager();
         ~EcsSystemManager() = default;
 
     public:
-        template <typename T>
-        void RegisterSystem(EcsSystem& system);
-
         ETH_ENGINE_DLL void UpdateEntitySignature(EntityID entityID, EntitySignature newSignature);
         ETH_ENGINE_DLL void OnEntityDestroyed(EntityID entityID);
 
     private:
-        std::unordered_map<size_t, EcsSystem*> m_Systems;
-    };
+        friend class EcsManager;
+        void Update();
 
-    template <typename T>
-    void Ether::Ecs::EcsSystemManager::RegisterSystem(EcsSystem& system)
-    {
-        m_Systems[typeid(T).hash_code()] = &system;
-    }
+    private:
+        std::vector<std::unique_ptr<EcsSystem>> m_Systems;
+    };
 }
 

@@ -19,21 +19,11 @@
 
 #include "engine/world/ecs/ecsmanager.h"
 
-#include "engine/world/ecs/components/ecsmetadatacomponent.h"
-#include "engine/world/ecs/components/ecstransformcomponent.h"
-#include "engine/world/ecs/components/ecsvisualcomponent.h"
-
 constexpr uint32_t EcsManagerVersion = 0;
 
 Ether::Ecs::EcsManager::EcsManager()
     : Serializable(EcsManagerVersion, StringID("Engine::EcsManager").GetHash())
 {
-    m_ComponentManager.RegisterComponent<EcsMetadataComponent>();
-    m_ComponentManager.RegisterComponent<EcsTransformComponent>();
-    m_ComponentManager.RegisterComponent<EcsVisualComponent>();
-
-    m_RenderingSystem = std::make_unique<EcsVisualSystem>(m_ComponentManager);
-    m_SystemManager.RegisterSystem<EcsVisualSystem>(*m_RenderingSystem);
 }
 
 void Ether::Ecs::EcsManager::Serialize(OStream& ostream) const
@@ -53,7 +43,7 @@ void Ether::Ecs::EcsManager::Deserialize(IStream& istream)
 void Ether::Ecs::EcsManager::Update()
 {
     ETH_MARKER_EVENT("Ecs Manager - Update");
-    m_RenderingSystem->Update();
+    m_SystemManager.Update();
 }
 
 Ether::Ecs::EntityID Ether::Ecs::EcsManager::CreateEntity()

@@ -34,19 +34,6 @@ namespace Ether::Ecs
         void Serialize(OStream& ostream) const override;
         void Deserialize(IStream& istream) override;
 
-    public:
-        template <typename T>
-        void RegisterComponent()
-        {
-            if (m_TypeNameToIDMap.find(typeid(T).name()) != m_TypeNameToIDMap.end())
-                throw std::logic_error("Same component type is registered more than once");
-
-            ComponentID newID = m_NextID++;
-            m_TypeNameToIDMap[typeid(T).name()] = newID;
-            T::s_ComponentID = newID;
-            m_ComponentArrays[newID] = std::make_unique<EcsComponentArray<T>>();
-        }
-
         template <typename T>
         ComponentID GetTypeID()
         {
@@ -75,6 +62,19 @@ namespace Ether::Ecs
         {
             for (auto const& pair : m_ComponentArrays)
                 pair.second->RemoveComponent(entityID);
+        }
+
+    private:
+        template <typename T>
+        void RegisterComponent()
+        {
+            if (m_TypeNameToIDMap.find(typeid(T).name()) != m_TypeNameToIDMap.end())
+                throw std::logic_error("Same component type is registered more than once");
+
+            ComponentID newID = m_NextID++;
+            m_TypeNameToIDMap[typeid(T).name()] = newID;
+            T::s_ComponentID = newID;
+            m_ComponentArrays[newID] = std::make_unique<EcsComponentArray<T>>();
         }
 
     private:

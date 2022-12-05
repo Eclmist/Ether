@@ -25,51 +25,22 @@
 
 namespace SMath
 {
+    template <typename T>
     class Transform
     {
     public:
-        Transform();
-        ~Transform() = default;
+        static Matrix<T, 4> GetTranslationMatrix(const Vector<T, 3>& translation);
+        static Matrix<T, 4> GetRotationMatrix(const Vector<T, 3>& rotation);
+        static Matrix<T, 4> GetScaleMatrix(const Vector<T, 3>& scale);
 
-    public:
-        inline Matrix4x4 GetMatrix() const { return m_Matrix; };
-        inline Matrix4x4 GetMatrixInverse() const { return m_MatrixInverse; };
+        static Matrix<T, 4> GetRotationMatrixX(T rotX);
+        static Matrix<T, 4> GetRotationMatrixY(T rotY);
+        static Matrix<T, 4> GetRotationMatrixZ(T rotZ);
 
-    public:
-        void SetTranslation(const Vector3& translation);
-        void SetRotation(const Vector3& eulerRotation);
-        void SetScale(const Vector3& scale);
-
-    public:
-        Vector3 operator()(const Vector3& v) const;
-        Normal3 operator()(const Normal3& n) const;
-        Point3 operator()(const Point3& p) const;
-        Ray operator()(const Ray& r) const;
-
-    public:
-        Transform Inversed() const;
-
-    private:
-        void UpdateMatrices();
-
-    private:
-        static Matrix4x4 GetTranslationMatrix(const Vector3& translation);
-        static Matrix4x4 GetRotationMatrix(const Vector3& rotation);
-        static Matrix4x4 GetScaleMatrix(const Vector3& scale);
-
-        static Matrix4x4 GetRotationMatrixX(double rotX);
-        static Matrix4x4 GetRotationMatrixY(double rotY);
-        static Matrix4x4 GetRotationMatrixZ(double rotZ);
-
-    private:
-        Vector3 m_TransientTransform;
-        Vector3 m_TransientRotation;
-        Vector3 m_TransientScale;
-
-        Matrix4x4 m_Matrix;
-        Matrix4x4 m_MatrixInverse;
-        Matrix4x4 m_MatrixTranspose;
-        Matrix4x4 m_MatrixInverseTranspose;
+        static Matrix<T, 4> GetPerspectiveMatrixLH(T fovy, T aspect, T znear, T zfar);
+        static Matrix<T, 4> GetPerspectiveMatrixRH(T fovy, T aspect, T znear, T zfar);
     };
+
+#include "transform_impl.h"
 }
 

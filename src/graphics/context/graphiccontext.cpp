@@ -44,6 +44,26 @@ void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv
     m_CommandList->ClearDepthStencilView(desc);
 }
 
+void Ether::Graphics::GraphicContext::SetViewMatrix(ethMatrix4x4 viewMatrix)
+{
+    m_ViewMatrix = viewMatrix;
+}
+
+void Ether::Graphics::GraphicContext::SetProjectionMatrix(ethMatrix4x4 projectionMatrix)
+{
+    m_ProjectionMatrix = projectionMatrix;
+}
+
+void Ether::Graphics::GraphicContext::SetEyeDirection(ethVector3 eyeDirection)
+{
+    m_EyeDirection = eyeDirection;
+}
+
+void Ether::Graphics::GraphicContext::SetEyePosition(ethVector3 eyePosition)
+{
+    m_EyePosition = eyePosition;
+}
+
 void Ether::Graphics::GraphicContext::SetVisualBatch(VisualBatch visualBatch)
 {
     m_VisualBatch = visualBatch;

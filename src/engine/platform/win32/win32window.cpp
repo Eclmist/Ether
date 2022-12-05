@@ -177,9 +177,6 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
     uint8_t backBufferIdx = m_MessageQueueFrontBufferIdx;
     m_MessageQueueFrontBufferIdx = 1 - m_MessageQueueFrontBufferIdx;
 
-    bool hasResized = false;
-    bool hasMoved = false;
-
     while (!m_Win32MessageQueue[backBufferIdx].empty())
     {
         MSG msg = m_Win32MessageQueue[backBufferIdx].front();
@@ -192,21 +189,14 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
             ETH_TOOLONLY(::SetFocus((HWND)win32window.m_WindowHandle));
             continue;
         case WM_SIZE:
-            if (hasResized)
-                continue;
-            hasResized = true;
-            if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ (uint32_t)LOWORD(msg.lParam), (uint32_t)HIWORD(msg.lParam) })
+            if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ LOWORD(msg.lParam), HIWORD(msg.lParam)})
                 EngineCore::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
             continue;
         case WM_MOVE:
         {
-            if (hasMoved)
-                continue;
-            hasMoved = true;
             Rect clientRect = { LOWORD(msg.lParam), HIWORD(msg.lParam), 0, 0 };
             win32window.ToClientRect(clientRect);
             ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
-
             if (EngineCore::GetEngineConfig().GetClientPosition() != clientPos)
                 EngineCore::GetEngineConfig().SetClientPosition(clientPos);
             continue;
@@ -228,7 +218,6 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
         case WM_LBUTTONDOWN:
             Input::Instance().SetMouseButtonDown(0);
             continue;
-
         case WM_LBUTTONUP:
             Input::Instance().SetMouseButtonUp(0);
             continue;

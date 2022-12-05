@@ -19,10 +19,30 @@
 
 #pragma once
 
-#include <atomic>
+#include "engine/world/ecs/components/ecstogglecomponent.h"
 
-#include "common/common.h"
-#include "common/logging/loggingmanager.h"
+namespace Ether::Ecs
+{
+    enum class ProjectionMode : uint32_t
+    {
+        Perspective,
+        Orthographic
+    };
 
-#include "engine/input/input.h"
+    class ETH_ENGINE_DLL EcsCameraComponent : public EcsToggleComponent<EcsCameraComponent>
+    {
+    public:
+        EcsCameraComponent();
+        ~EcsCameraComponent() override = default;
+
+    public:
+        void Serialize(OStream& ostream) const override;
+        void Deserialize(IStream& istream) override;
+
+    public:
+        ProjectionMode m_ProjectionMode;
+
+        float m_FieldOfView;
+    };
+}
 

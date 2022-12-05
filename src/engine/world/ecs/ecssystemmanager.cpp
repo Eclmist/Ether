@@ -19,23 +19,39 @@
 
 #include "engine/world/ecs/ecssystemmanager.h"
 
+#include "engine/world/ecs/systems/ecscamerasystem.h"
+#include "engine/world/ecs/systems/ecsvisualsystem.h"
+
+Ether::Ecs::EcsSystemManager::EcsSystemManager()
+{
+    m_Systems.emplace_back(std::make_unique<EcsCameraSystem>());
+    m_Systems.emplace_back(std::make_unique<EcsVisualSystem>());
+}
+
 void Ether::Ecs::EcsSystemManager::UpdateEntitySignature(EntityID entityID, EntitySignature newSignature)
 {
-    for (auto const& pair : m_Systems)
+    for (auto const& system : m_Systems)
     {
-        const auto& systemSignature = pair.second->m_Signature;
+        const auto& systemSignature = system->m_Signature;
 
         if ((newSignature & systemSignature) == systemSignature)
-            pair.second->m_Entities.insert(entityID);
+            system->m_Entities.insert(entityID);
         else
-            pair.second->m_Entities.erase(entityID);
+            system->m_Entities.erase(entityID);
     }
 }
 
 void Ether::Ecs::EcsSystemManager::OnEntityDestroyed(EntityID entityID)
 {
-    for (auto const& pair : m_Systems)
+    for (auto const& system : m_Systems)
     {
-        pair.second->m_Entities.erase(entityID);
+        system->m_Entities.erase(entityID);
     }
 }
+
+void Ether::Ecs::EcsSystemManager::Update()
+{
+    for (auto const& system : m_Systems)
+        system->Update();
+}
+

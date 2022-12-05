@@ -225,3 +225,13 @@ Vector<T, 3> Vector<T, N>::Cross(const Vector& a, const Vector& b)
     return { tmp2[1], tmp2[2], tmp2[0] };
 }
 
+template <typename T, int N>
+template <int M>
+Vector<T, M> Vector<T, N>::Resize() const
+{
+    Vector<T, M> data;
+    for (int i = 0; i < N && i < M; ++i)
+        data[i] = this->m_Data[i];
+    return data;
+}
+

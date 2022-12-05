@@ -21,7 +21,7 @@
 #include "engine/world/ecs/components/ecsmetadatacomponent.h"
 #include "engine/world/ecs/components/ecstransformcomponent.h"
 
-Ether::Ecs::EcsSystem::EcsSystem(const EcsComponentManager& componentMgr)
+Ether::Ecs::EcsSystem::EcsSystem()
 {
     m_Signature.set(EcsMetadataComponent::s_ComponentID);
     m_Signature.set(EcsTransformComponent::s_ComponentID);

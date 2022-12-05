@@ -24,7 +24,6 @@
 #include "engine/world/ecs/ecsentitymanager.h"
 #include "engine/world/ecs/ecscomponentmanager.h"
 #include "engine/world/ecs/ecssystemmanager.h"
-#include "engine/world/ecs/systems/ecsvisualsystem.h"
 
 namespace Ether::Ecs
 {
@@ -54,9 +53,6 @@ namespace Ether::Ecs
         EcsEntityManager m_EntityManager;
         EcsComponentManager m_ComponentManager;
         EcsSystemManager m_SystemManager;
-
-    private:
-        std::unique_ptr<EcsVisualSystem> m_RenderingSystem;
     };
 }
 

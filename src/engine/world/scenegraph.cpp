@@ -34,7 +34,7 @@ void Ether::SceneGraphNode::Serialize(OStream& ostream) const
 
     ostream << m_ParentIndex;
     ostream << m_IsRegistered;
-    ostream << (uint32_t)m_ChildrenIndices.size();
+    ostream << static_cast<uint32_t>(m_ChildrenIndices.size());
 
     for (int i = 0; i < m_ChildrenIndices.size(); ++i)
         ostream << m_ChildrenIndices[i];

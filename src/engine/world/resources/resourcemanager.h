@@ -58,7 +58,7 @@ namespace Ether
     template <typename T>
     void Ether::ResourceManager::SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container) const
     {
-        ostream << (uint32_t)container.size();
+        ostream << static_cast<uint32_t>(container.size());
         for (auto& pair : container)
             pair.second->Serialize(ostream);
     }

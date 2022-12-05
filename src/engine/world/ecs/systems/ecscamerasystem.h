@@ -19,10 +19,20 @@
 
 #pragma once
 
-#include <atomic>
+#include "pch.h"
+#include "engine/world/ecs/systems/ecssystem.h"
 
-#include "common/common.h"
-#include "common/logging/loggingmanager.h"
+namespace Ether::Ecs
+{
+    class EcsCameraSystem : public EcsSystem
+    {
+    public:
+        EcsCameraSystem();
+        ~EcsCameraSystem() override = default;
 
-#include "engine/input/input.h"
+    protected:
+        friend class EcsManager;
+        void Update() override;
+    };
+}
 

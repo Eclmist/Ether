@@ -21,7 +21,6 @@
 
 #include "pch.h"
 #include "engine/world/ecs/ecstypes.h"
-#include "engine/world/ecs/ecscomponentmanager.h"
 #include <set>
 
 namespace Ether::Ecs
@@ -29,7 +28,7 @@ namespace Ether::Ecs
     class EcsSystem : public NonCopyable, public NonMovable
     {
     public:
-        EcsSystem(const EcsComponentManager& componentMgr);
+        EcsSystem();
         virtual ~EcsSystem() = 0;
 
     protected:

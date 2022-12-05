@@ -18,7 +18,11 @@
 */
 
 #include "engine/world/ecs/ecscomponentmanager.h"
-#include <typeindex>
+
+#include "engine/world/ecs/components/ecscameracomponent.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
+#include "engine/world/ecs/components/ecstransformcomponent.h"
+#include "engine/world/ecs/components/ecsvisualcomponent.h"
 
 constexpr uint32_t EcsComponentManagerVersion = 0;
 
@@ -26,16 +30,20 @@ Ether::Ecs::EcsComponentManager::EcsComponentManager()
     : Serializable(EcsComponentManagerVersion, StringID("Engine::EcsComponentManager").GetHash())
     , m_NextID(0)
 {
+    RegisterComponent<EcsCameraComponent>();
+    RegisterComponent<EcsMetadataComponent>();
+    RegisterComponent<EcsTransformComponent>();
+    RegisterComponent<EcsVisualComponent>();
 }
 
 void Ether::Ecs::EcsComponentManager::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 
-    ostream << (uint32_t)m_ComponentArrays.size();
+    ostream << static_cast<uint32_t>(m_ComponentArrays.size());
     for (auto& pair : m_ComponentArrays)
     {
-        ostream << (uint32_t)pair.first;
+        ostream << static_cast<uint32_t>(pair.first);
         pair.second->Serialize(ostream);
     }
 }

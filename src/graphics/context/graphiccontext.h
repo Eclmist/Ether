@@ -33,12 +33,22 @@ namespace Ether::Graphics
         ~GraphicContext() = default;
 
     public:
-        const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
+        inline const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
+        inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
+
+        inline const ethMatrix4x4& GetViewMatrix() const { return m_ViewMatrix; }
+        inline const ethMatrix4x4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+        inline const ethVector3& GetEyePosition() const { return m_EyePosition; }
+        inline const ethVector3& GetEyeDirection() const { return m_EyeDirection; }
 
     public:
         void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
         void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
 
+        void SetViewMatrix(ethMatrix4x4 viewMatrix);
+        void SetProjectionMatrix(ethMatrix4x4 projectionMatrix);
+        void SetEyeDirection(ethVector3 eyeDirection);
+        void SetEyePosition(ethVector3 eyePosition);
         void SetVisualBatch(VisualBatch visualBatch);
         void SetViewport(RhiViewportDesc viewport);
         void SetScissorRect(RhiScissorDesc scissor);
@@ -53,5 +63,11 @@ namespace Ether::Graphics
 
     private:
         VisualBatch m_VisualBatch;
+        RhiViewportDesc m_Viewport;
+
+        ethMatrix4x4 m_ViewMatrix;
+        ethMatrix4x4 m_ProjectionMatrix;
+        ethVector3 m_EyeDirection;
+        ethVector3 m_EyePosition;
     };
 }

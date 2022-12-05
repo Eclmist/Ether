@@ -171,7 +171,7 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
 
     graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), dsv.get());
 
-    SetupCamera(graphicContext);
+    UploadGlobalConstants(graphicContext);
 
     const VisualBatch& visualBatch = graphicContext.GetVisualBatch();
 
@@ -200,56 +200,18 @@ void Ether::Graphics::TempFrameDump::Reset()
     m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Reset();
 }
 
-void Ether::Graphics::TempFrameDump::SetupCamera(GraphicContext& context)
+void Ether::Graphics::TempFrameDump::UploadGlobalConstants(GraphicContext& context)
 {
-    ETH_MARKER_EVENT("Setup Camera");
-    const float sensitivity = 0.15f;
-
-    static float m_CameraDistance = 1;
-    static ethVector3 m_CameraRotation = {};
-    //m_CameraDistance -= Input::GetMouseWheelDelta() * Time::GetDeltaTime();
-    //m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
-
-    //if (Input::GetMouseButton(1))
-    //{
-    //    m_CameraRotation.x -= Input::GetMouseDeltaY() * sensitivity * Time::GetDeltaTime();
-    //    m_CameraRotation.y -= Input::GetMouseDeltaX() * sensitivity * Time::GetDeltaTime();
-    //    m_CameraRotation.x = std::clamp(m_CameraRotation.x, (float) - SMath::DegToRad(90.0f), (float)SMath::DegToRad(90.0f));
-    //}
-
-    m_CameraDistance = 1.0f;
-    m_CameraRotation.x = 0.4;
-    m_CameraRotation.y += Time::GetDeltaTime() / 10000.0;
-    m_CameraRotation.z = 0;
-
-    ethMatrix4x4 rotationMatrix = GetRotationMatrixX(m_CameraRotation.x) * GetRotationMatrixY(m_CameraRotation.y);
-    ethMatrix4x4 translationMatrix = GetTranslationMatrix({ 0, -1.5, m_CameraDistance });
-
-    ethMatrix4x4 m_ViewMatrix = translationMatrix * rotationMatrix;
-    ethMatrix4x4 m_ViewMatrixInv = m_ViewMatrix.Inversed();
-
-     float aspectRatio = (float)GraphicCore::GetGraphicConfig().GetResolution().x / (float)GraphicCore::GetGraphicConfig().GetResolution().y;
-    ethMatrix4x4 m_ProjectionMatrix = GetPerspectiveMatrixLH(80, aspectRatio, 0.01f, 1000.0f);
-
-
-
     // Set up global constants
-
-
     GlobalConstants globalConstants;
-    globalConstants.m_ViewMatrix = m_ViewMatrix;
-    globalConstants.m_ProjectionMatrix = m_ProjectionMatrix;
-
-    globalConstants.m_EyeDirection = { m_ViewMatrix.m_31, m_ViewMatrix.m_32, m_ViewMatrix.m_33, 1.0 };
-    globalConstants.m_EyePosition = { m_ViewMatrixInv.m_14, m_ViewMatrixInv.m_24, m_ViewMatrixInv.m_34, 0.0 };
-
+    globalConstants.m_ViewMatrix = context.GetViewMatrix();
+    globalConstants.m_ProjectionMatrix = context.GetProjectionMatrix();
+    globalConstants.m_EyeDirection = context.GetEyeDirection().Resize<4>();
+    globalConstants.m_EyePosition = context.GetEyePosition().Resize<4>();
     globalConstants.m_Time = ethVector4(Time::GetTimeSinceStartup() / 20, Time::GetTimeSinceStartup(), Time::GetTimeSinceStartup() * 2, Time::GetTimeSinceStartup() * 3);
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate({ sizeof(GlobalConstants), 256 });
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(GlobalConstants));
-
     context.SetRootConstantBuffer(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
-
-
 }

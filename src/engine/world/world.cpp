@@ -41,7 +41,6 @@ void Ether::World::Save(const std::string& path) const
     Serialize(outFile);
 }
 
-
 void Ether::World::Load(const std::string& path)
 {
     IFileStream inFile(path);
@@ -57,7 +56,7 @@ void Ether::World::Serialize(OStream& ostream) const
     m_ResourceManager.Serialize(ostream);
     m_EcsManager.Serialize(ostream);
 
-    ostream << (uint32_t)m_Entities.size();
+    ostream << static_cast<uint32_t>(m_Entities.size());
     for (auto& pair : m_Entities)
         pair.second->Serialize(ostream);
 }

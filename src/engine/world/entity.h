@@ -54,7 +54,7 @@ namespace Ether
         T& GetComponent();
 
         template <typename T>
-        void AddComponent();
+        T& AddComponent();
 
         template <typename T>
         void RemoveComponent();
@@ -76,7 +76,7 @@ namespace Ether
     }
 
     template <typename T>
-    void Ether::Entity::AddComponent()
+    T& Ether::Entity::AddComponent()
     {
         m_ComponentManager.AddComponent<T>(GetID());
         
@@ -86,6 +86,8 @@ namespace Ether
         signature.set(m_ComponentManager.GetTypeID<T>());
         m_EntityManager.SetSignature(GetID(), signature);
         m_SystemsManager.UpdateEntitySignature(GetID(), signature);
+
+        return GetComponent<T>();
     }
 
     template <typename T>

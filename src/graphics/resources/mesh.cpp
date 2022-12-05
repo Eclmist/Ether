@@ -31,11 +31,11 @@ void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 
-    ostream << (uint32_t)m_PackedVertices.size();
+    ostream << static_cast<uint32_t>(m_PackedVertices.size());
     for (int i = 0; i < m_PackedVertices.size(); ++i)
         m_PackedVertices[i].Serialize(ostream);
 
-    ostream << (uint32_t)m_Indices.size();
+    ostream << static_cast<uint32_t>(m_Indices.size());
     for (int i = 0; i < m_Indices.size(); ++i)
         ostream << m_Indices[i];
 }

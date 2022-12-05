@@ -57,5 +57,5 @@ namespace Ether
 
     using Ray           = SMath::Ray;
     using Rect          = SMath::Rect<unsigned int>;
-    using Transform     = SMath::Transform;
+    using Transform     = SMath::Transform<float>;
 }

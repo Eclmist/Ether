@@ -43,8 +43,7 @@ namespace Ether::Graphics
         void Reset();
         void Setup(ResourceContext& resourceContext);
         void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
-
-        void SetupCamera(GraphicContext& context);
+        void UploadGlobalConstants(GraphicContext& context);
 
     private:
         RhiInputElementDesc m_InputElementDesc[5] =
