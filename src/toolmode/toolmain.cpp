@@ -41,6 +41,8 @@ void Ether::Toolmode::EtherHeadless::Initialize()
 
 void Ether::Toolmode::EtherHeadless::LoadContent()
 {
+    World& world = GetActiveWorld();
+    world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()

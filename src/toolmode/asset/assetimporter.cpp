@@ -50,10 +50,10 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath) const
 void Ether::Toolmode::AssetImporter::ProcessScene(const aiScene* assimpScene) const
 {
     if (assimpScene->HasMeshes())
-        ProcessMesh(assimpScene->mMeshes, assimpScene->mNumMeshes);
+        ProcessMeshs(assimpScene->mMeshes, assimpScene->mNumMeshes);
 }
 
-void Ether::Toolmode::AssetImporter::ProcessMesh(aiMesh** assimpMesh, uint32_t numMeshes) const
+void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const
 {
     if (numMeshes <= 0)
         return;

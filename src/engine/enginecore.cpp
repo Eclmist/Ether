@@ -57,7 +57,9 @@ void Ether::EngineCore::Run()
 
 void Ether::EngineCore::Shutdown()
 {
+    m_ActiveWorld.reset();
     m_MainApplication->OnShutdown();
+
     Graphics::GraphicCore::Instance().Shutdown();
 }
 
