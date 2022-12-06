@@ -37,6 +37,20 @@ void SampleApp::LoadContent()
     World& world = GetActiveWorld();
 
 #if 0
+    // The idea of this block is to test toolmode functionality without having the actual tool developed yet
+    // For example:
+    //      - Asset import (menu > asset > import) (Not simulated)
+    //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
+    //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
+    //      - Build resource table
+    //          this is simulated by blindly loading all .eres files and assuming them to be meshes
+    //      - Create entity (menu > new > entity)
+    //          simulated by creating entity object
+    //      - Assign mesh to entity (through components)
+    //          simulated by AddComponent<Visual> and assigning mesh guid
+    //      - Save scene
+    //          World.save();
+
     std::unique_ptr<Graphics::Material> sharedMaterial = std::make_unique<Graphics::Material>();
     sharedMaterial->SetBaseColor({ 1, 1, 1, 1 });
     sharedMaterial->SetSpecularColor({ 1, 1, 1, 1 });
