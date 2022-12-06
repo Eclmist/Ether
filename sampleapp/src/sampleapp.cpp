@@ -35,7 +35,7 @@ void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
 
-#if 1
+#if 0
     std::unique_ptr<Graphics::Material> sharedMaterial = std::make_unique<Graphics::Material>();
     sharedMaterial->SetBaseColor({ 1, 1, 1, 1 });
     sharedMaterial->SetSpecularColor({ 1, 1, 1, 1 });
@@ -67,14 +67,15 @@ void SampleApp::LoadContent()
 
     world.GetResourceManager().RegisterMaterialResource(std::move(sharedMaterial));
 
-    Entity& camera = world.CreateEntity("Main Camera");
-    camera.AddComponent<Ecs::EcsCameraComponent>();
-    m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
-
     world.Save("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
 #else
     world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+
 #endif
+
+    Entity& camera = world.CreateEntity("Main Camera");
+    camera.AddComponent<Ecs::EcsCameraComponent>();
+    m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
 }
 
 void SampleApp::UnloadContent()
