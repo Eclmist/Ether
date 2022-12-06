@@ -177,12 +177,11 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
     uint8_t backBufferIdx = m_MessageQueueFrontBufferIdx;
     m_MessageQueueFrontBufferIdx = 1 - m_MessageQueueFrontBufferIdx;
 
-    while (!m_Win32MessageQueue[backBufferIdx].empty())
+    for (auto& pair : m_Win32MessageQueue[backBufferIdx])
     {
-        MSG msg = m_Win32MessageQueue[backBufferIdx].front();
-        m_Win32MessageQueue[backBufferIdx].pop();
-
         Win32Window& win32window = static_cast<Win32Window&>(EngineCore::GetMainWindow());
+        MSG& msg = pair.second;
+
         switch (msg.message)
         {
         case WM_MOUSEACTIVATE:
@@ -239,6 +238,8 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
             continue;
         }
     }
+
+    m_Win32MessageQueue[backBufferIdx].clear();
 
     return true;
 }
@@ -350,7 +351,7 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
     case WM_RBUTTONUP:
     case WM_DESTROY:
     case WM_QUIT:
-        win32window.m_Win32MessageQueue[win32window.m_MessageQueueFrontBufferIdx].push({ hWnd, msg, wParam, lParam });
+        win32window.m_Win32MessageQueue[win32window.m_MessageQueueFrontBufferIdx][msg] = { hWnd, msg, wParam, lParam };
         return 0;
     // Messages that can be handled immediately
     //case WM_ERASEBKGND:

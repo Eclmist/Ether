@@ -50,7 +50,7 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Compile what needs compiling (which should be everything)
     // Put it into resource context (unordered_map cache)
 
-    g_TempFrameDump->Setup(m_ResourceContext);
+    g_TempFrameDump->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -65,6 +65,8 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
         m_ResourceContext.RecompilePipelineStates();
+
+    g_TempFrameDump->FrameSetup(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)

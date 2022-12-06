@@ -89,30 +89,10 @@ Ether::ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear
 constexpr Ether::Graphics::RhiFormat DepthBufferFormat = Ether::Graphics::RhiFormat::D24UnormS8Uint;
 
 
-void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
+void Ether::Graphics::TempFrameDump::Initialize(ResourceContext& resourceContext)
 {
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
         m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
-
-    static RhiClearValue clearValue = { DepthBufferFormat, { 1.0, 0 } };
-    static RhiCommitedResourceDesc desc = {};
-    desc.m_HeapType = RhiHeapType::Default;
-    desc.m_State = RhiResourceState::DepthWrite;
-    desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, GraphicCore::GetGraphicConfig().GetResolution());
-    desc.m_Name = "Depth Buffer";
-
-    m_DepthBuffer = GraphicCore::GetDevice().CreateCommittedResource(desc);
-
-    static auto alloc = GraphicCore::GetDsvAllocator().Allocate();
-
-    static RhiDepthStencilViewDesc dsvDesc = {};
-    dsvDesc.m_Format = DepthBufferFormat;
-    dsvDesc.m_Resource = m_DepthBuffer.get();
-    dsvDesc.m_TargetCpuAddr = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-
-    dsv = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
-    GraphicCore::GetDsvAllocator().Free(std::move(alloc));
 
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
@@ -144,6 +124,36 @@ void Ether::Graphics::TempFrameDump::Setup(ResourceContext& resourceContext)
     resourceContext.AddPipelineState(*psoDesc);
 }
 
+void Ether::Graphics::TempFrameDump::FrameSetup(ResourceContext& resourceContext)
+{
+    static RhiClearValue clearValue = { DepthBufferFormat, { 1.0, 0 } };
+    static RhiCommitedResourceDesc prevDesc = {};
+
+    RhiCommitedResourceDesc desc = {};
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::DepthWrite;
+    desc.m_ClearValue = &clearValue;
+    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, GraphicCore::GetGraphicConfig().GetResolution());
+    desc.m_Name = "Depth Buffer";
+
+    if (std::memcmp(&prevDesc.m_ResourceDesc, &desc.m_ResourceDesc, sizeof(RhiResourceDesc)) == 0)
+        return;
+
+    prevDesc = desc;
+
+    m_DepthBuffer = GraphicCore::GetDevice().CreateCommittedResource(desc);
+
+    auto alloc = GraphicCore::GetDsvAllocator().Allocate();
+
+    static RhiDepthStencilViewDesc dsvDesc = {};
+    dsvDesc.m_Format = DepthBufferFormat;
+    dsvDesc.m_Resource = m_DepthBuffer.get();
+    dsvDesc.m_TargetCpuAddr = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
+
+    m_Dsv = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
+    GraphicCore::GetDsvAllocator().Free(std::move(alloc));
+}
+
 void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
     ETH_MARKER_EVENT("Temp Frame Dump - Render");
@@ -156,7 +166,7 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
     graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
-    graphicContext.ClearDepthStencil(*dsv, 1.0);
+    graphicContext.ClearDepthStencil(*m_Dsv, 1.0);
     graphicContext.PopMarker();
     graphicContext.FinalizeAndExecute();
     graphicContext.Reset();
@@ -169,7 +179,7 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
     graphicContext.SetGraphicRootSignature(*rootSignature);
     graphicContext.SetPipelineState(resourceContext.GetPipelineState(*psoDesc));
 
-    graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), dsv.get());
+    graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), m_Dsv.get());
 
     UploadGlobalConstants(graphicContext);
 

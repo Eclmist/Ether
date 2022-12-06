@@ -41,7 +41,8 @@ namespace Ether::Graphics
     {
     public:
         void Reset();
-        void Setup(ResourceContext& resourceContext);
+        void Initialize(ResourceContext& resourceContext);
+        void FrameSetup(ResourceContext& resourceContext);
         void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
         void UploadGlobalConstants(GraphicContext& context);
 
@@ -56,7 +57,7 @@ namespace Ether::Graphics
         };
 
         std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-        std::unique_ptr<RhiDepthStencilView> dsv;
+        std::unique_ptr<RhiDepthStencilView> m_Dsv;
         std::unique_ptr<RhiResource> m_DepthBuffer;
 
         std::unique_ptr<RhiShader> vs, ps;

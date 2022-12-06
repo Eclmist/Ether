@@ -58,7 +58,7 @@ namespace Ether::Win32
 
     private:
         std::atomic_uint8_t m_MessageQueueFrontBufferIdx = 0;
-        std::queue<MSG> m_Win32MessageQueue[2];
+        std::map<UINT, MSG> m_Win32MessageQueue[2];
     };
 }
 
