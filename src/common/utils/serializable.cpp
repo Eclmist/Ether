@@ -27,10 +27,10 @@ Ether::Serializable::Serializable(uint32_t version, uint32_t classID)
 {
     m_Guid = std::format(
         "{:X}-{:X}-{:X}-{:X}",
-        SMath::Random::UniformInt(),
-        SMath::Random::UniformInt(),
-        SMath::Random::UniformInt(),
-        SMath::Random::UniformInt()
+        SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
+        SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
+        SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
+        SMath::Random::UniformInt(16, std::numeric_limits<int>::max())
     );
 }
 

@@ -103,9 +103,9 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
         if (indices.size() <= 0)
             continue;
 
-        OFileStream ofstream(std::format("{}\\mesh{}.ether", WorkspaceDirectory, i));
-
         Graphics::Mesh gfxMesh;
+        OFileStream ofstream(std::format("{}\\{}.eres", WorkspaceDirectory, gfxMesh.GetGuid()));
+
         gfxMesh.SetPackedVertices(std::move(packedVertices));
         gfxMesh.SetIndices(std::move(indices));
         gfxMesh.Serialize(ofstream);

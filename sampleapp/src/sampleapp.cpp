@@ -22,6 +22,7 @@
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include <format>
 #include <algorithm>
+#include <filesystem>
 
 using namespace Ether;
 
@@ -42,26 +43,25 @@ void SampleApp::LoadContent()
     sharedMaterial->SetMetalness(0);
     sharedMaterial->SetRoughness(0.5f);
 
-    for (int i = 0; i < 1000; ++i)
+    std::string path = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\";
+    for (const auto& entry : std::filesystem::directory_iterator(path))
     {
-        std::string meshPath = std::format("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\mesh{}.ether", i);
-
-        if (!Ether::PathUtils::IsValidPath(meshPath))
+        if (entry.path().extension().string() != ".eres")
             continue;
 
         std::unique_ptr<Graphics::Mesh> mesh = std::make_unique<Graphics::Mesh>();
 
-        IFileStream ifstream(meshPath);
+        IFileStream ifstream(entry.path().string());
         mesh->Deserialize(ifstream);
         mesh->CreateGpuResources();
 
-        Entity& entity = world.CreateEntity(std::format("Entity {}", i));
+        Entity& entity = world.CreateEntity("Entity");
         entity.AddComponent<Ecs::EcsVisualComponent>();
 
         Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
         visual.m_MeshGuid = mesh->GetGuid();
         visual.m_MaterialGuid = sharedMaterial->GetGuid();
-        
+
         world.GetResourceManager().RegisterMeshResource(std::move(mesh));
     }
 
