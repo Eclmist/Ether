@@ -45,9 +45,9 @@ void Ether::Ecs::EcsCameraSystem::Update()
         if (!camera.m_Enabled)
             continue;
 
-        ethMatrix4x4 rotationInv = Transform::GetRotationMatrix(-transform.m_Rotation);
+        ethMatrix4x4 rotationInv = Transform::GetRotationMatrix(transform.m_Rotation).Inversed();
         ethMatrix4x4 translationInv = Transform::GetTranslationMatrix(-transform.m_Translation);
-        ethMatrix4x4 viewMatrix = translationInv * rotationInv;
+        ethMatrix4x4 viewMatrix = rotationInv * translationInv;
         gfxContext.SetViewMatrix(viewMatrix);
 
         ethVector2u resolution = EngineCore::GetEngineConfig().GetClientSize();

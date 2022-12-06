@@ -21,6 +21,7 @@
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include <format>
+#include <algorithm>
 
 using namespace Ether;
 
@@ -92,15 +93,45 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
 
     //if (Input::GetKeyDown(Win32::KeyCode::F3))
     //    EngineCore::GetEngineConfig().ToggleDebugGui();
+    static ethVector3 cameraRotation;
+    static float moveSpeed = 0.001f;
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
+        moveSpeed = 0.002f;
+    else
+        moveSpeed = 0.001f;
+
+    if (Input::GetMouseButton(2))
+    {
+        m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
+        m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
+        m_CameraTransform->m_Rotation.x = std::clamp((double)m_CameraTransform->m_Rotation.x, -SMath::DegToRad(90), SMath::DegToRad(90));
+    }
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
 
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Q))
-        m_CameraTransform->m_Translation.y += Time::GetDeltaTime();
+    if (Input::GetKey((KeyCode)Win32::KeyCode::E))
+        m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;
 
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::E))
-        m_CameraTransform->m_Translation.y -= Time::GetDeltaTime();
+    if (Input::GetKey((KeyCode)Win32::KeyCode::Q))
+        m_CameraTransform->m_Translation.y -= Time::GetDeltaTime() * moveSpeed;
+
+
+    ethMatrix4x4 rotation = Transform::GetRotationMatrix(m_CameraTransform->m_Rotation);
+    ethVector3 forward = (rotation * ethVector4(0, 0, 1, 0)).Resize<3>().Normalized();
+    ethVector3 upVec = { 0, 1, 0 };
+    ethVector3 rightVec = ethVector3::Cross(upVec, forward);
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::W))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + forward * Time::GetDeltaTime() * moveSpeed;
+    if (Input::GetKey((KeyCode)Win32::KeyCode::A))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - rightVec * Time::GetDeltaTime() * moveSpeed;
+    if (Input::GetKey((KeyCode)Win32::KeyCode::S))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - forward * Time::GetDeltaTime() * moveSpeed;
+    if (Input::GetKey((KeyCode)Win32::KeyCode::D))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + rightVec * Time::GetDeltaTime() * moveSpeed;
+
 
     //UpdateCamera(e.m_DeltaTime);
 }

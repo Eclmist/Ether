@@ -78,8 +78,8 @@ SMath::Matrix<T, 4> SMath::Transform<T>::GetPerspectiveMatrixLH(T fovy, T aspect
     projection.m_Data2D[0][0] = f / aspect;
     projection.m_Data2D[1][1] = f;
     projection.m_Data2D[2][2] = zfar / (zfar - znear);
-    projection.m_Data2D[2][3] = 1.0;
-    projection.m_Data2D[3][2] = -znear * zfar / (zfar - znear);
+    projection.m_Data2D[3][2] = 1.0;
+    projection.m_Data2D[2][3] = -znear * zfar / (zfar - znear);
     projection.m_Data2D[3][3] = 0.0;
 
     return projection;
@@ -94,8 +94,8 @@ SMath::Matrix<T, 4> SMath::Transform<T>::GetPerspectiveMatrixRH(T fovy, T aspect
     projection.m_Data2D[0][0] = f / aspect;
     projection.m_Data2D[1][1] = f;
     projection.m_Data2D[2][2] = zfar / (znear - zfar);
-    projection.m_Data2D[2][3] = -1.0;
-    projection.m_Data2D[3][2] = znear * zfar / (znear - zfar);
+    projection.m_Data2D[3][2] = -1.0;
+    projection.m_Data2D[2][3] = znear * zfar / (znear - zfar);
     projection.m_Data2D[3][3] = 0.0;
 
     return projection;

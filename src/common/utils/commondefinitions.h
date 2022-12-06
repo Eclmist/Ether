@@ -58,6 +58,10 @@
     #define ETH_ENGINE_DLL __declspec(dllexport)
     #define ETH_GRAPHIC_DLL __declspec(dllimport)
     #define ETH_COMMON_DLL __declspec(dllimport)
+#else
+    #define ETH_ENGINE_DLL __declspec(dllimport)
+    #define ETH_GRAPHIC_DLL __declspec(dllimport)
+    #define ETH_COMMON_DLL __declspec(dllimport)
 #endif
 
 #define LogInfo(msg, ...) Ether::LoggingManager::Instance().Log(Ether::LogLevel::Info, Ether::LogType::None, msg, ##__VA_ARGS__)

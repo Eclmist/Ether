@@ -25,7 +25,7 @@
 namespace Ether::Ecs
 {
     template <typename T>
-    class ETH_ENGINE_DLL EcsComponent : public Serializable
+    class EcsComponent : public Serializable
     {
     public:
         EcsComponent(uint32_t version, uint32_t classID);

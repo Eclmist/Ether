@@ -29,10 +29,8 @@ option(USE_PRECOMPILED_HEADERS "Use precompiled headers" ON)
 
 if (CONFIGURE_AS_TOOLMODE)
     project(Ether.Toolmode)
-    add_compile_definitions(ETH_TOOLMODE)
 else ()
     project(Ether)
-    add_compile_definitions(ETH_ENGINE)
 endif()
 
 # Sets the C++ versions
@@ -69,6 +67,7 @@ source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${engine_files})
 # =========================================================================== #
 
 add_library(Engine SHARED ${engine_files})
+target_compile_definitions(Engine PRIVATE $<IF:$<BOOL:${CONFIGURE_AS_TOOLMODE}>, ETH_TOOLMODE, ETH_ENGINE>)
 
 if(WIN32)
     # Enable multi-threaded compilation on Windows

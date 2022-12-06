@@ -25,7 +25,7 @@
 namespace Ether::Ecs
 {
     template <typename T>
-    class ETH_ENGINE_DLL EcsToggleComponent : public EcsComponent<T>
+    class EcsToggleComponent : public EcsComponent<T>
     {
     public:
         EcsToggleComponent(uint32_t version, uint32_t classID);
