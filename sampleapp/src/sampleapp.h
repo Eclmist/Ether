@@ -37,8 +37,6 @@ public:
     void OnShutdown() override;
 
 private:
-    void UpdateCamera(float deltaTime);
-    void UpdateOrbitCam(float deltaTime);
     void LoadTexture(const std::string& path, const std::string& key);
 
 private:

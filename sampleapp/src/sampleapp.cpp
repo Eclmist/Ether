@@ -36,10 +36,10 @@ void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
 
-#if 0
+#if 1
     // The idea of this block is to test toolmode functionality without having the actual tool developed yet
     // For example:
-    //      - Asset import (menu > asset > import) (Not simulated)
+    //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode sln)
     //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
     //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
     //      - Build resource table
@@ -146,97 +146,7 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - forward * Time::GetDeltaTime() * moveSpeed;
     if (Input::GetKey((KeyCode)Win32::KeyCode::D))
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + rightVec * Time::GetDeltaTime() * moveSpeed;
-
-
-    //UpdateCamera(e.m_DeltaTime);
 }
-
-void SampleApp::UpdateCamera(float deltaTime)
-{
-    //m_ViewMatrix = ethMatrix4x4();
-    //m_ViewMatrixInv = ethMatrix4x4();
-    //m_ProjectionMatrix = ethMatrix4x4();
-    //UpdateOrbitCam(deltaTime);
-}
-
-// TODO: Move into a camera component
-ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
-{
-    const float range = tan(SMath::DegToRad(fovy / 2)) * znear;
-    const float left = -range * aspect;
-    const float right = range * aspect;
-    const float bottom = -range;
-    const float top = range;
-    const float Q = zfar / (zfar - znear);
-
-    ethMatrix4x4 dst(0.0f);
-    dst.m_Data2D[0][0] = (2 * znear) / (right - left);
-    dst.m_Data2D[1][1] = (2 * znear) / (top - bottom);
-    dst.m_Data2D[2][2] = Q;
-    dst.m_Data2D[2][3] = -znear * Q;
-    dst.m_Data2D[3][2] = 1;
-    return dst;
-}
-
-void SampleApp::UpdateOrbitCam(float deltaTime)
-{
-    //const float sensitivity = 0.15f;
-
-    //m_CameraDistance -= Input::GetMouseWheelDelta() * deltaTime;
-    //m_CameraDistance = std::clamp(m_CameraDistance, 0.0f, 100.0f);
-
-    //if (Input::GetMouseButton(1))
-    //{
-    //    m_CameraRotation.x -= Input::GetMouseDeltaY() * sensitivity * deltaTime;
-    //    m_CameraRotation.y -= Input::GetMouseDeltaX() * sensitivity * deltaTime;
-    //    m_CameraRotation.x = ethClamp(m_CameraRotation.x, -ethDegToRad(90.0f), ethDegToRad(90.0f));
-    //}
-
-    //ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
-    //ethMatrix4x4 translationMatrix = TransformComponent::GetTranslationMatrix({ 0, 0, m_CameraDistance });
-
-    //m_ViewMatrix = translationMatrix * rotationMatrix;
-    //m_ViewMatrixInv = m_ViewMatrix.Inversed();
-
-    //float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-    //m_ProjectionMatrix = GetPerspectiveMatrixLH(80, aspectRatio, 0.01f, 1000.0f);
-}
-
-void UpdateFlyCam(float deltaTime)
-{
-    //if (Input::GetMouseButton(2))
-    //{
-    //    m_CameraRotation.x -= Input::GetMouseDeltaY() / 500;
-    //    m_CameraRotation.y -= Input::GetMouseDeltaX() / 500;
-    //    m_CameraRotation.x = std::clamp(m_CameraRotation.x, -DEG_TO_RAD(90), DEG_TO_RAD(90));
-    //}
-
-    //ethMatrix4x4 rotationMatrix = TransformComponent::GetRotationMatrixX(m_CameraRotation.x) * TransformComponent::GetRotationMatrixY(m_CameraRotation.y);
-    //ethVector3 forwardVec = (rotationMatrix.Transposed() * {0, 0, 1}).Normalized();
-    //ethVector3 upVec = XMVector4Normalize(g_XMIdentityR1);
-    //ethVector3 rightVec = XMVector4Normalize(XMVector3Cross(upVec, forwardVec));
-
-    //if (Input::GetMouseButton(2))
-    //{
-    //    if (Input::GetKey(Win32::KeyCode::W))
-    //        m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * deltaTime * 20);
-    //    if (Input::GetKey(Win32::KeyCode::S))
-    //        m_CameraPosition = XMVectorAdd(m_CameraPosition, forwardVec * deltaTime * 20);
-    //    if (Input::GetKey(Win32::KeyCode::A))
-    //        m_CameraPosition = XMVectorAdd(m_CameraPosition, rightVec * deltaTime * 20);
-    //    if (Input::GetKey(Win32::KeyCode::D))
-    //        m_CameraPosition = XMVectorSubtract(m_CameraPosition, rightVec * deltaTime * 20);
-    //}
-
-    //m_CameraPosition = XMVectorSubtract(m_CameraPosition, forwardVec * Input::GetMouseWheelDelta() / 121.0);
-
-    //m_ViewMatrix = XMMatrixTranslationFromVector(m_CameraPosition) * rotationMatrix;
-    //m_ViewMatrixInv = XMMatrixInverse(nullptr, m_ViewMatrix);
-
-    //float aspectRatio = EngineCore::GetEngineConfig().GetClientWidth() / static_cast<float>(EngineCore::GetEngineConfig().GetClientHeight());
-    //m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(80), aspectRatio, 0.01f, 1000.0f);
-}
-
 
 void SampleApp::LoadTexture(const std::string& path, const std::string& key)
 {

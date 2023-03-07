@@ -17,25 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "toolmode/asset/textureimporter.h"
 
-#include "toolmode/pch.h"
-#include "assimp/scene.h"
-#include "graphics/common/vertexformats.h"
-
-namespace Ether::Toolmode
+void Ether::Toolmode::TextureImporter::Import(const std::string& texturePath) const
 {
-    class AssetImporter : public Singleton<AssetImporter>
-    {
-    public:
-        AssetImporter() = default;
-        ~AssetImporter() = default;
+    LogToolmodeInfo("Importing texture %s", texturePath.c_str());
 
-        void Import(const std::string& assetPath) const;
 
-    private:
-        void ProcessScene(const aiScene* assimpScene) const;
-        void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const;
-    };
 }
 

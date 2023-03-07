@@ -20,22 +20,16 @@
 #pragma once
 
 #include "toolmode/pch.h"
-#include "assimp/scene.h"
-#include "graphics/common/vertexformats.h"
 
 namespace Ether::Toolmode
 {
-    class AssetImporter : public Singleton<AssetImporter>
+    class TextureImporter : public Singleton<TextureImporter>
     {
     public:
-        AssetImporter() = default;
-        ~AssetImporter() = default;
+        TextureImporter() = default;
+        ~TextureImporter() = default;
 
-        void Import(const std::string& assetPath) const;
-
-    private:
-        void ProcessScene(const aiScene* assimpScene) const;
-        void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const;
+        void Import(const std::string& texturePath) const;
     };
 }
 
