@@ -61,7 +61,7 @@ Ether::World& Ether::GetActiveWorld()
 
 void Ether::Client::SetClientTitle(const std::string& title)
 {
-    EngineCore::GetEngineConfig().SetClientTitle(title);
+    EngineCore::GetMainWindow().SetTitle(title);
 }
 
 std::string Ether::Client::GetClientTitle()
@@ -71,7 +71,7 @@ std::string Ether::Client::GetClientTitle()
 
 void Ether::Client::SetClientSize(const ethVector2u& size)
 {
-    EngineCore::GetEngineConfig().SetClientSize(size);
+    EngineCore::GetMainWindow().SetClientSize(size);
 }
 
 Ether::ethVector2u Ether::Client::GetClientSize()
