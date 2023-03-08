@@ -20,6 +20,7 @@
 #pragma once
 
 #include "toolmode/pch.h"
+#include "engine/world/ecs/components/ecstransformcomponent.h"
 
 namespace Ether::Toolmode
 {
@@ -35,6 +36,9 @@ namespace Ether::Toolmode
         void OnUpdate(const Ether::UpdateEventArgs& e) override;
         void OnRender(const Ether::RenderEventArgs& e) override;
         void OnShutdown() override;
+
+    private:
+        Ether::Ecs::EcsTransformComponent* m_CameraTransform;
     };
 }
 

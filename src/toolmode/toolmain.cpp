@@ -20,6 +20,7 @@
 #include "toolmode/toolmain.h"
 #include "toolmode/ipc/ipcmanager.h"
 #include "engine/platform/win32/ethwin.h"
+#include "engine/world/ecs/components/ecscameracomponent.h"
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 {
@@ -43,6 +44,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
     world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+
+    Entity& camera = world.CreateEntity("Main Camera");
+    camera.AddComponent<Ecs::EcsCameraComponent>();
+    m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()
@@ -57,6 +62,45 @@ void Ether::Toolmode::EtherHeadless::OnUpdate(const Ether::UpdateEventArgs& e)
 {
     IpcManager::Instance().ProcessIncomingCommands();
     IpcManager::Instance().ProcessOutgoingCommands();
+
+    static ethVector3 cameraRotation;
+    static float moveSpeed = 0.001f;
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
+        moveSpeed = 0.002f;
+    else
+        moveSpeed = 0.001f;
+
+    if (Input::GetMouseButton(2))
+    {
+        m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
+        m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
+        m_CameraTransform->m_Rotation.x = std::clamp((double)m_CameraTransform->m_Rotation.x, -SMath::DegToRad(90), SMath::DegToRad(90));
+    }
+
+    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
+        Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::E))
+        m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::Q))
+        m_CameraTransform->m_Translation.y -= Time::GetDeltaTime() * moveSpeed;
+
+
+    ethMatrix4x4 rotation = Transform::GetRotationMatrix(m_CameraTransform->m_Rotation);
+    ethVector3 forward = (rotation * ethVector4(0, 0, 1, 0)).Resize<3>().Normalized();
+    ethVector3 upVec = { 0, 1, 0 };
+    ethVector3 rightVec = ethVector3::Cross(upVec, forward);
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::W))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + forward * Time::GetDeltaTime() * moveSpeed;
+    if (Input::GetKey((KeyCode)Win32::KeyCode::A))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - rightVec * Time::GetDeltaTime() * moveSpeed;
+    if (Input::GetKey((KeyCode)Win32::KeyCode::S))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - forward * Time::GetDeltaTime() * moveSpeed;
+    if (Input::GetKey((KeyCode)Win32::KeyCode::D))
+        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + rightVec * Time::GetDeltaTime() * moveSpeed;
 }
 
 void Ether::Toolmode::EtherHeadless::OnRender(const Ether::RenderEventArgs& e)
