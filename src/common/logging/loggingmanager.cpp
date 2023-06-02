@@ -84,15 +84,9 @@ void Ether::LoggingManager::AddLog(const LogEntry entry)
 void Ether::LoggingManager::Serialize(const LogEntry entry)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-
-#if defined (ETH_PLATFORM_WIN32)
     m_LogFileStream << entry.GetFullText().c_str() << "\n";
     m_LogFileStream.flush();
     OutputDebugStringA((entry.GetFullText() + "\n").c_str());
-
-#elif defined (ETH_PLATFORM_PS5)
-    fprintf((&_CSTD _Stdout), "%s\n", entry.GetFullText().c_str());
-#endif
 }
 
 void Ether::LoggingManager::Clear()

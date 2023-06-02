@@ -20,12 +20,7 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
 #include "graphics/imgui/imgui.h"
-
-#if defined (ETH_GRAPHICS_DX12)
 #include "graphics/rhi/dx12/dx12imguiwrapper.h"
-#elif defined (ETH_GRAPHICS_PS5)
-#include "graphics/rhi/ps5/ps5imguiwrapper.h"
-#endif
 
 Ether::Graphics::RhiImguiWrapper::RhiImguiWrapper()
     : m_Context("Imgui Context")

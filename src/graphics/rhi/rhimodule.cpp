@@ -18,12 +18,7 @@
 */
 
 #include "graphics/rhi/rhimodule.h"
-
-#if defined (ETH_GRAPHICS_DX12)
 #include "graphics/rhi/dx12/dx12module.h"
-#elif defined (ETH_GRAPHICS_PS5)
-#include "graphics/rhi/ps5/ps5module.h"
-#endif
 
 std::unique_ptr<Ether::Graphics::RhiModule> Ether::Graphics::RhiModule::InitForPlatform()
 {

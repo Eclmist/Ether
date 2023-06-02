@@ -37,7 +37,7 @@ void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
 
-#if 1
+#if 0
     // The idea of this block is to test toolmode functionality without having the actual tool developed yet
     // For example:
     //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode sln)

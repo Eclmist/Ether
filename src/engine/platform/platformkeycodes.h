@@ -20,12 +20,7 @@
 #pragma once
 
 #include "pch.h"
-
-#if defined (ETH_PLATFORM_WIN32)
 #include "engine/platform/win32/win32keycodes.h"
-#elif defined (ETH_PLATFORM_PS5)
-#include "engine/platform/ps5/ps5keycodes.h"
-#endif
 
 namespace Ether
 {

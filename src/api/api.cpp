@@ -44,9 +44,7 @@ int Ether::Start(IApplicationBase& app)
 
 void Ether::Shutdown()
 {
-#ifdef ETH_PLATFORM_WIN32
     //PostQuitMessage(0);
-#endif
 }
 
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()

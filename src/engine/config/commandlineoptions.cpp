@@ -19,12 +19,7 @@
 
 #include "engine/config/commandlineoptions.h"
 #include "engine/platform/platformlaunchargs.h"
-
-#if defined(ETH_PLATFORM_WIN32)
 #include "engine/platform/win32/win32launchargs.h"
-#elif defined(ETH_PLATFORM_PS5)
-#include "engine/platform/ps5/ps5launchargs.h"
-#endif
 
 #if defined (ETH_TOOLMODE)
 constexpr uint16_t DefaultToolmodePort = 2134;
@@ -38,12 +33,7 @@ Ether::CommandLineOptions::CommandLineOptions()
 #endif
 {
     std::unique_ptr<PlatformLaunchArgs> args;
-
-#if defined(ETH_PLATFORM_WIN32)
     args = std::make_unique<Win32::Win32LaunchArgs>();
-#elif defined(ETH_PLATFORM_PS5)
-    args = std::make_unique<PS5::PS5LaunchArgs>();
-#endif
 
     auto launchArgs = args->GetLaunchArgs();
 

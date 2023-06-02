@@ -18,20 +18,11 @@
 */
 
 #include "engine/enginecore.h"
-
-#if defined(ETH_PLATFORM_WIN32)
 #include "engine/platform/win32/win32window.h"
-#elif defined(ETH_PLATFORM_PS5)
-#include "engine/platform/ps5/ps5window.h"
-#endif
 
 void Ether::EngineCore::Initialize()
 {
-#if defined(ETH_PLATFORM_WIN32)
     m_MainWindow = std::make_unique<Win32::Win32Window>();
-#elif defined(ETH_PLATFORM_PS5)
-    m_MainWindow = std::make_unique<PS5::PS5Window>();
-#endif
 
     // Deserialize world here?
     m_ActiveWorld = std::make_unique<World>();

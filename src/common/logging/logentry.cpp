@@ -30,20 +30,12 @@ Ether::LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
 
 std::string Ether::LogEntry::GetText() const
 {
-#if defined (ETH_PLATFORM_WIN32)
     return GetTimePrefix() + " " + GetLogTypePrefix() + " " + m_Text;
-#elif defined (ETH_PLATFORM_PS5)
-    return "[Ether] " + GetLogTypePrefix() + " " + m_Text;
-#endif
 }
 
 std::string Ether::LogEntry::GetFullText() const
 {
-#if defined (ETH_PLATFORM_WIN32)
     return GetTimePrefix() + " " + GetLogTypePrefix() + " " + GetLogLevelPrefix() + " " + m_Text;
-#elif defined (ETH_PLATFORM_PS5)
-    return "[ Ether ] " + GetLogTypePrefix() + GetLogLevelPrefix() + " " + m_Text;
-#endif
 }
 
 std::string Ether::LogEntry::GetLogLevelPrefix() const
@@ -91,12 +83,7 @@ std::string Ether::LogEntry::FormatTime(const time_t t, const char* format) cons
     char formatted[80];
     tm newTime;
 
-#if defined (ETH_PLATFORM_WIN32)
     localtime_s(&newTime, &t);
-#elif defined (ETH_PLATFORM_PS5)
-    localtime_s(&t, &newTime);
-#endif
-
     strftime(formatted, 80, format, &newTime);
     return formatted;
 }

@@ -23,7 +23,6 @@
 
 namespace Ether
 {
-
     class EngineConfig
     {
     public:
