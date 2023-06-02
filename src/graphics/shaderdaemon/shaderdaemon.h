@@ -24,26 +24,26 @@
 
 namespace Ether::Graphics
 {
-    class RhiShader;
+class RhiShader;
 
-    class ShaderDaemon : public NonCopyable
-    {
-    public:
-        ShaderDaemon();
-        ~ShaderDaemon();
+class ShaderDaemon : public NonCopyable
+{
+public:
+    ShaderDaemon();
+    ~ShaderDaemon();
 
-        void RegisterShader(RhiShader& shader);
+    void RegisterShader(RhiShader& shader);
 
-    private:
-        void DaemonThreadMain();
+private:
+    void DaemonThreadMain();
 
-        void WaitForFileUnlock(const std::wstring& shaderFileName);
-        void ProcessModifiedShaders(char* notifyInfo);
+    void WaitForFileUnlock(const std::wstring& shaderFileName);
+    void ProcessModifiedShaders(char* notifyInfo);
 
-    private:
-        std::unordered_map<std::wstring, std::vector<RhiShader*>> m_RegisteredShaders;
+private:
+    std::unordered_map<std::wstring, std::vector<RhiShader*>> m_RegisteredShaders;
 
-        std::thread m_ShaderDaemonThread;
-        void* m_TerminationEvent;
-    };
-}
+    std::thread m_ShaderDaemonThread;
+    void* m_TerminationEvent;
+};
+} // namespace Ether::Graphics

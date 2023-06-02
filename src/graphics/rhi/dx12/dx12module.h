@@ -25,25 +25,24 @@
 
 namespace Ether::Graphics
 {
-    class Dx12Module : public RhiModule
-    {
-    public:
-        Dx12Module();
-        virtual ~Dx12Module() override;
+class Dx12Module : public RhiModule
+{
+public:
+    Dx12Module();
+    virtual ~Dx12Module() override;
 
-    public:
-        std::unique_ptr<RhiDevice> CreateDevice() const override;
+public:
+    std::unique_ptr<RhiDevice> CreateDevice() const override;
 
-    private:
-        void InitializeAdapter();
-        void InitializeFactory();
-        void InitializeDebugLayer();
-        void ReportLiveObjects();
+private:
+    void InitializeAdapter();
+    void InitializeFactory();
+    void InitializeDebugLayer();
+    void ReportLiveObjects();
 
-    private:
-        friend class Dx12Device;
-        wrl::ComPtr<IDXGIAdapter4> m_Adapter;
-        wrl::ComPtr<IDXGIFactory4> m_DxgiFactory;
-    };
-}
-
+private:
+    friend class Dx12Device;
+    wrl::ComPtr<IDXGIAdapter4> m_Adapter;
+    wrl::ComPtr<IDXGIFactory4> m_DxgiFactory;
+};
+} // namespace Ether::Graphics

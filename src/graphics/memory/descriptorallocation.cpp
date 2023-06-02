@@ -43,7 +43,7 @@ Ether::Graphics::DescriptorAllocation::~DescriptorAllocation() noexcept
 }
 
 Ether::Graphics::DescriptorAllocation::DescriptorAllocation(DescriptorAllocation&& move) noexcept
-    :  FreeListAllocation(move.m_Offset, move.m_Size)
+    : FreeListAllocation(move.m_Offset, move.m_Size)
     , m_BaseCpuAddress(move.m_BaseCpuAddress)
     , m_BaseGpuAddress(move.m_BaseGpuAddress)
     , m_DescriptorSize(move.m_DescriptorSize)
@@ -53,7 +53,8 @@ Ether::Graphics::DescriptorAllocation::DescriptorAllocation(DescriptorAllocation
     move.m_IsValid = false;
 }
 
-Ether::Graphics::DescriptorAllocation& Ether::Graphics::DescriptorAllocation::operator=(DescriptorAllocation&& move) noexcept
+Ether::Graphics::DescriptorAllocation& Ether::Graphics::DescriptorAllocation::operator=(
+    DescriptorAllocation&& move) noexcept
 {
     m_Parent->Free(*this);
 
@@ -87,4 +88,3 @@ Ether::Graphics::RhiGpuAddress Ether::Graphics::DescriptorAllocation::GetGpuAddr
 
     return m_BaseGpuAddress + localIndex * m_DescriptorSize;
 }
-

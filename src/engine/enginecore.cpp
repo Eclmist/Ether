@@ -61,7 +61,8 @@ void Ether::EngineCore::InitializeGraphicsLayer()
     config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
     config.SetUseSourceShaders(m_CommandLineOptions.GetUseSourceShaders());
     config.SetUseShaderDaemon(m_CommandLineOptions.GetUseShaderDaemon());
-    config.SetShaderSourceDir(m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "Data/shaders/");
+    config.SetShaderSourceDir(
+        m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "Data/shaders/");
 
     Graphics::GraphicCore::Instance().Initialize();
 }
@@ -86,4 +87,3 @@ void Ether::EngineCore::MainEngineThread()
         Input::EndFrame();
     }
 }
-

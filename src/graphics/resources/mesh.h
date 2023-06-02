@@ -24,44 +24,43 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL Mesh : public Serializable
-    {
-    public:
-        Mesh();
-        ~Mesh() override = default;
+class ETH_GRAPHIC_DLL Mesh : public Serializable
+{
+public:
+    Mesh();
+    ~Mesh() override = default;
 
-    public:
-        inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
-        inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
-        inline uint32_t GetNumVertices() const { return m_PackedVertices.size(); }
-        inline uint32_t GetNumIndices() const { return m_Indices.size(); }
+public:
+    inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
+    inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
+    inline uint32_t GetNumVertices() const { return m_PackedVertices.size(); }
+    inline uint32_t GetNumIndices() const { return m_Indices.size(); }
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexCoord>&& vertices);
-        void SetIndices(std::vector<uint32_t>&& indices);
-        void CreateGpuResources();
+public:
+    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexCoord>&& vertices);
+    void SetIndices(std::vector<uint32_t>&& indices);
+    void CreateGpuResources();
 
-    private:
-        void CreateVertexBuffer();
-        void CreateVertexBufferView();
-        void CreateIndexBufferView();
-        void CreateIndexBuffer();
-        void CreateInstanceParams();
+private:
+    void CreateVertexBuffer();
+    void CreateVertexBufferView();
+    void CreateIndexBufferView();
+    void CreateIndexBuffer();
+    void CreateInstanceParams();
 
-    private:
-        std::vector<VertexFormats::PositionNormalTangentTexCoord> m_PackedVertices;
-        std::vector<uint32_t> m_Indices;
+private:
+    std::vector<VertexFormats::PositionNormalTangentTexCoord> m_PackedVertices;
+    std::vector<uint32_t> m_Indices;
 
-        std::unique_ptr<RhiResource> m_VertexBufferResource;
-        std::unique_ptr<RhiResource> m_IndexBufferResource;
-        std::unique_ptr<RhiResource> m_InstanceParams[MaxSwapChainBuffers];
+    std::unique_ptr<RhiResource> m_VertexBufferResource;
+    std::unique_ptr<RhiResource> m_IndexBufferResource;
+    std::unique_ptr<RhiResource> m_InstanceParams[MaxSwapChainBuffers];
 
-        RhiVertexBufferViewDesc m_VertexBufferView;
-        RhiIndexBufferViewDesc m_IndexBufferView;
-    };
-}
-
+    RhiVertexBufferViewDesc m_VertexBufferView;
+    RhiIndexBufferViewDesc m_IndexBufferView;
+};
+} // namespace Ether::Graphics

@@ -25,40 +25,37 @@
 
 namespace Ether
 {
-    using sid_t = uint32_t;
-    constexpr sid_t InvalidSid = 0xFFFFFFFF;
+using sid_t = uint32_t;
+constexpr sid_t InvalidSid = 0xFFFFFFFF;
 
-    class ETH_COMMON_DLL StringID
-    {
-    public:
-        StringID();
-        StringID(const char* str);
-        StringID(const std::string& str);
+class ETH_COMMON_DLL StringID
+{
+public:
+    StringID();
+    StringID(const char* str);
+    StringID(const std::string& str);
 
-        bool operator==(const StringID& other) const;
-        bool operator!=(const StringID& other) const;
+    bool operator==(const StringID& other) const;
+    bool operator!=(const StringID& other) const;
 
-        inline sid_t GetHash() const { return m_Hash; }
-        inline std::string GetString() const;
+    inline sid_t GetHash() const { return m_Hash; }
+    inline std::string GetString() const;
 
-    private:
-        static sid_t Hash(const char* str);
+private:
+    static sid_t Hash(const char* str);
 
-    private:
-        sid_t m_Hash;
-        static std::unordered_map<sid_t, std::string> s_HashToStringMap;
-    };
+private:
+    sid_t m_Hash;
+    static std::unordered_map<sid_t, std::string> s_HashToStringMap;
+};
 
-    // Make sure the size of StringID is no larger than its internal representation.
-    static_assert(sizeof(StringID) == sizeof(sid_t), "StringID size is incorrect, it should be 32bits.");
-}
+// Make sure the size of StringID is no larger than its internal representation.
+static_assert(sizeof(StringID) == sizeof(sid_t), "StringID size is incorrect, it should be 32bits.");
+
+} // namespace Ether
 
 template <>
 struct std::hash<Ether::StringID>
 {
-    std::size_t operator()(const Ether::StringID& key) const
-    {
-        return (std::size_t)(key.GetHash());
-    }
+    std::size_t operator()(const Ether::StringID& key) const { return (std::size_t)(key.GetHash()); }
 };
-

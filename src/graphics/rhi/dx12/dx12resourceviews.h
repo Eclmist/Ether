@@ -24,54 +24,53 @@
 
 namespace Ether::Graphics
 {
-    class Dx12RenderTargetView : public RhiRenderTargetView
-    {
-    public:
-        Dx12RenderTargetView() = default;
-        ~Dx12RenderTargetView() = default;
+class Dx12RenderTargetView : public RhiRenderTargetView
+{
+public:
+    Dx12RenderTargetView() = default;
+    ~Dx12RenderTargetView() = default;
 
-    private:
-        friend class Dx12Device;
-    };
+private:
+    friend class Dx12Device;
+};
 
-    class Dx12DepthStencilView : public RhiDepthStencilView
-    {
-    public:
-        Dx12DepthStencilView() = default;
-        ~Dx12DepthStencilView() = default;
+class Dx12DepthStencilView : public RhiDepthStencilView
+{
+public:
+    Dx12DepthStencilView() = default;
+    ~Dx12DepthStencilView() = default;
 
-    private:
-        friend class Dx12Device;
-    };
+private:
+    friend class Dx12Device;
+};
 
-    class Dx12ShaderResourceView : public RhiShaderResourceView
-    {
-    public:
-        Dx12ShaderResourceView() = default;
-        ~Dx12ShaderResourceView() = default;
+class Dx12ShaderResourceView : public RhiShaderResourceView
+{
+public:
+    Dx12ShaderResourceView() = default;
+    ~Dx12ShaderResourceView() = default;
 
-    private:
-        friend class Dx12Device;
-    };
+private:
+    friend class Dx12Device;
+};
 
-    class Dx12ConstantBufferView : public RhiConstantBufferView
-    {
-    public:
-        Dx12ConstantBufferView() = default;
-        ~Dx12ConstantBufferView() = default;
+class Dx12ConstantBufferView : public RhiConstantBufferView
+{
+public:
+    Dx12ConstantBufferView() = default;
+    ~Dx12ConstantBufferView() = default;
 
-    private:
-        friend class Dx12Device;
-    };
+private:
+    friend class Dx12Device;
+};
 
-    class Dx12UnorderedAccessView : public RhiUnorderedAccessView
-    {
-    public:
-        Dx12UnorderedAccessView() = default;
-        ~Dx12UnorderedAccessView() = default;
+class Dx12UnorderedAccessView : public RhiUnorderedAccessView
+{
+public:
+    Dx12UnorderedAccessView() = default;
+    ~Dx12UnorderedAccessView() = default;
 
-    private:
-        friend class Dx12Device;
-    };
-}
-
+private:
+    friend class Dx12Device;
+};
+} // namespace Ether::Graphics

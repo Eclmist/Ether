@@ -23,32 +23,31 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL Material : public Serializable
-    {
-    public:
-        Material();
-        ~Material() = default;
+class ETH_GRAPHIC_DLL Material : public Serializable
+{
+public:
+    Material();
+    ~Material() = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        inline ethVector4 GetBaseColor() const { return m_BaseColor; }
-        inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
-        inline float GetRoughness() const { return m_Roughness; }
-        inline float GetMetalness() const { return m_Metalness; }
+public:
+    inline ethVector4 GetBaseColor() const { return m_BaseColor; }
+    inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
+    inline float GetRoughness() const { return m_Roughness; }
+    inline float GetMetalness() const { return m_Metalness; }
 
-        inline void SetBaseColor(ethVector4 color) { m_BaseColor = color; }
-        inline void SetSpecularColor(ethVector4 color) { m_SpecularColor = color; }
-        inline void SetRoughness(float roughness) { m_Roughness = roughness; }
-        inline void SetMetalness(float metalness) { m_Metalness = metalness; }
+    inline void SetBaseColor(ethVector4 color) { m_BaseColor = color; }
+    inline void SetSpecularColor(ethVector4 color) { m_SpecularColor = color; }
+    inline void SetRoughness(float roughness) { m_Roughness = roughness; }
+    inline void SetMetalness(float metalness) { m_Metalness = metalness; }
 
-    private:
-        ethVector4 m_BaseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        ethVector4 m_SpecularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        float m_Roughness = 0.5f;
-        float m_Metalness = 1.0f;
-    };
-}
-
+private:
+    ethVector4 m_BaseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    ethVector4 m_SpecularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float m_Roughness = 0.5f;
+    float m_Metalness = 1.0f;
+};
+} // namespace Ether::Graphics

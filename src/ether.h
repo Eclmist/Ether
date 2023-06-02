@@ -24,6 +24,5 @@
 
 namespace Ether
 {
-    constexpr std::string_view WorkspaceDirectory = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug";
+constexpr std::string_view WorkspaceDirectory = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug";
 }
-

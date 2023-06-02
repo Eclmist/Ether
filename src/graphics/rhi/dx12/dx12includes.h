@@ -31,13 +31,13 @@ namespace wrl = Microsoft::WRL;
 #include <d3dx12/d3dx12.h>
 
 // Pix
-#if defined (__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmicrosoft-cast"
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wmicrosoft-cast"
 #endif
 
 #include "pix/pix3.h"
 
-#if defined (__clang__)
-#pragma clang diagnostic pop
+#if defined(__clang__)
+    #pragma clang diagnostic pop
 #endif

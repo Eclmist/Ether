@@ -24,17 +24,17 @@
 
 namespace Ether::Graphics
 {
-    class UploadBufferAllocatorPage : public LinearAllocator
-    {
-    public:
-        UploadBufferAllocatorPage(size_t capacity);
-        ~UploadBufferAllocatorPage();
+class UploadBufferAllocatorPage : public LinearAllocator
+{
+public:
+    UploadBufferAllocatorPage(size_t capacity);
+    ~UploadBufferAllocatorPage();
 
-    public:
-        std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
+public:
+    std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
 
-    protected:
-        std::unique_ptr<RhiResource> m_UploadHeap;
-        void* m_BaseAddress;
-    };
-}
+protected:
+    std::unique_ptr<RhiResource> m_UploadHeap;
+    void* m_BaseAddress;
+};
+} // namespace Ether::Graphics

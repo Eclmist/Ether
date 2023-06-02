@@ -25,41 +25,45 @@
 
 namespace Ether::Graphics
 {
-    class Dx12RootSignatureDesc : public RhiRootSignatureDesc
-    {
-    public:
-        Dx12RootSignatureDesc(uint32_t numParams, uint32_t numSamplers);
-        ~Dx12RootSignatureDesc() override = default;
+class Dx12RootSignatureDesc : public RhiRootSignatureDesc
+{
+public:
+    Dx12RootSignatureDesc(uint32_t numParams, uint32_t numSamplers);
+    ~Dx12RootSignatureDesc() override = default;
 
-    public:
-        void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) override;
-        void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
-        void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
-        void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) override;
-        void SetAsDescriptorRange(uint32_t slot, uint32_t reg, uint32_t numDescriptors, RhiDescriptorType type, RhiShaderVisibility vis) override;
-        void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) override;
-        void SetFlags(RhiRootSignatureFlag flag) override;
+public:
+    void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) override;
+    void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
+    void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
+    void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) override;
+    void SetAsDescriptorRange(
+        uint32_t slot,
+        uint32_t reg,
+        uint32_t numDescriptors,
+        RhiDescriptorType type,
+        RhiShaderVisibility vis) override;
+    void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) override;
+    void SetFlags(RhiRootSignatureFlag flag) override;
 
-    protected:
-        friend class Dx12Device;
-        std::vector<D3D12_ROOT_PARAMETER> m_Dx12RootParameters;
-        std::vector<D3D12_STATIC_SAMPLER_DESC> m_Dx12StaticSamplers;
-        D3D12_DESCRIPTOR_RANGE m_Dx12DescriptorRange;
+protected:
+    friend class Dx12Device;
+    std::vector<D3D12_ROOT_PARAMETER> m_Dx12RootParameters;
+    std::vector<D3D12_STATIC_SAMPLER_DESC> m_Dx12StaticSamplers;
+    D3D12_DESCRIPTOR_RANGE m_Dx12DescriptorRange;
 
-        D3D12_ROOT_SIGNATURE_DESC m_Dx12RootSignatureDesc;
-    };
+    D3D12_ROOT_SIGNATURE_DESC m_Dx12RootSignatureDesc;
+};
 
-    class Dx12RootSignature : public RhiRootSignature
-    {
-    public:
-        Dx12RootSignature() = default;
-        ~Dx12RootSignature() override = default;
+class Dx12RootSignature : public RhiRootSignature
+{
+public:
+    Dx12RootSignature() = default;
+    ~Dx12RootSignature() override = default;
 
-    private:
-        friend class Dx12Device;
-        friend class Dx12CommandList;
-        friend class Dx12PipelineStateDesc;
-        wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
-    };
-}
-
+private:
+    friend class Dx12Device;
+    friend class Dx12CommandList;
+    friend class Dx12PipelineStateDesc;
+    wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
+};
+} // namespace Ether::Graphics

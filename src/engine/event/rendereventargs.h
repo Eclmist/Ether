@@ -24,10 +24,10 @@
 
 namespace Ether
 {
-    class GraphicContext;
+class GraphicContext;
 
-    struct RenderEventArgs : public EventArgs
-    {
-        GraphicContext* m_GraphicContext;
-    };
-}
+struct RenderEventArgs : public EventArgs
+{
+    GraphicContext* m_GraphicContext;
+};
+} // namespace Ether

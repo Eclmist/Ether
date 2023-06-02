@@ -25,20 +25,20 @@
 
 namespace Ether::Graphics
 {
-    class GraphicRenderer : public NonCopyable, public NonMovable
-    {
-    public:
-        GraphicRenderer();
-        ~GraphicRenderer() = default;
+class GraphicRenderer : public NonCopyable, public NonMovable
+{
+public:
+    GraphicRenderer();
+    ~GraphicRenderer() = default;
 
-        void WaitForPresent();
-        void Render();
-        void Present();
+    void WaitForPresent();
+    void Render();
+    void Present();
 
-        inline GraphicContext& GetGraphicContext() { return m_Context; }
+    inline GraphicContext& GetGraphicContext() { return m_Context; }
 
-    private:
-        GraphicContext m_Context;
-        FrameScheduler m_Scheduler;
-    };
-}
+private:
+    GraphicContext m_Context;
+    FrameScheduler m_Scheduler;
+};
+} // namespace Ether::Graphics

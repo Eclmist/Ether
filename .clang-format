@@ -4,6 +4,9 @@ ColumnLimit: 120
 AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortBlocksOnASingleLine: Empty
 AlignEscapedNewlines: Left
+AlignConsecutiveMacros: true
+AlignConsecutiveBitFields: true
+AlignAfterOpenBracket: AlwaysBreak
 
 UseTab: Never
 PointerAlignment: Left
@@ -21,11 +24,11 @@ PenaltyReturnTypeOnItsOwnLine: 999
 
 BreakConstructorInitializers: BeforeComma
 
-AlignAfterOpenBracket: AlwaysBreak
 BinPackArguments: false
 BinPackParameters: false
 
 IndentWidth: 4
+IndentPPDirectives: BeforeHash
 AccessModifierOffset: -4
 BreakBeforeBraces: Allman
 

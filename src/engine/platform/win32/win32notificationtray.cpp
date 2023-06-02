@@ -24,9 +24,9 @@
 #include "resource.h"
 #include <shellapi.h>
 
-#define NOTIFICATION_TRAY_ICON_MSG      (WM_USER + 0x100)
-#define NOTIFICATION_TRAY_UID           1
-#define IDM_EXIT                        100
+#define NOTIFICATION_TRAY_ICON_MSG (WM_USER + 0x100)
+#define NOTIFICATION_TRAY_UID      1
+#define IDM_EXIT                   100
 
 Ether::Win32::Win32NotificationTray::Win32NotificationTray()
 {
@@ -36,9 +36,20 @@ Ether::Win32::Win32NotificationTray::Win32NotificationTray()
     wc.lpszClassName = TEXT("Ether::NotificationTray");
     AssertWin32(RegisterClass(&wc) != 0, "Failed to register notification tray Window Class");
 
-    m_Handle = (void*)CreateWindowEx(0, TEXT("Ether::NotificationTray"),
-        NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, ::GetModuleHandle(NULL), NULL);
-    
+    m_Handle = (void*)CreateWindowEx(
+        0,
+        TEXT("Ether::NotificationTray"),
+        NULL,
+        0,
+        0,
+        0,
+        0,
+        0,
+        HWND_MESSAGE,
+        NULL,
+        ::GetModuleHandle(NULL),
+        NULL);
+
     if (!m_Handle)
     {
         LogWin32Error("Failed to create a Win32 handle for the notification tray icon");
@@ -115,4 +126,3 @@ LRESULT CALLBACK Ether::Win32::Win32NotificationTray::SysTrayWndProc(HWND hWnd, 
 }
 
 #endif // ETH_PLATFORM_WIN32
-

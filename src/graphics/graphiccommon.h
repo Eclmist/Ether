@@ -24,47 +24,46 @@
 
 namespace Ether::Graphics
 {
-    class GraphicCommon : public NonCopyable, public NonMovable
-    {
-    public:
-        GraphicCommon();
-        ~GraphicCommon() = default;
+class GraphicCommon : public NonCopyable, public NonMovable
+{
+public:
+    GraphicCommon();
+    ~GraphicCommon() = default;
 
-    public:
-        void InitializeRasterizerStates();
-        void InitializeDepthStates();
-        void InitializeBlendingStates();
-        void InitializeRootSignatures();
-        void InitializeShaders();
-        void InitializePipelineStates();
-        void InitializeSamplers();
-        void InitializeDefaultTextures();
+public:
+    void InitializeRasterizerStates();
+    void InitializeDepthStates();
+    void InitializeBlendingStates();
+    void InitializeRootSignatures();
+    void InitializeShaders();
+    void InitializePipelineStates();
+    void InitializeSamplers();
+    void InitializeDefaultTextures();
 
-    public:
-        RhiRasterizerDesc m_RasterizerDefault;
-        RhiRasterizerDesc m_RasterizerDefaultCw;
-        RhiRasterizerDesc m_RasterizerWireframe;
-        RhiRasterizerDesc m_RasterizerWireframeCw;
+public:
+    RhiRasterizerDesc m_RasterizerDefault;
+    RhiRasterizerDesc m_RasterizerDefaultCw;
+    RhiRasterizerDesc m_RasterizerWireframe;
+    RhiRasterizerDesc m_RasterizerWireframeCw;
 
-        RhiBlendDesc m_BlendDisabled;
-        RhiBlendDesc m_BlendPreMultiplied;
-        RhiBlendDesc m_BlendTraditional;
-        RhiBlendDesc m_BlendAdditive;
-        RhiBlendDesc m_BlendTraditionalAdditive;
+    RhiBlendDesc m_BlendDisabled;
+    RhiBlendDesc m_BlendPreMultiplied;
+    RhiBlendDesc m_BlendTraditional;
+    RhiBlendDesc m_BlendAdditive;
+    RhiBlendDesc m_BlendTraditionalAdditive;
 
-        RhiDepthStencilDesc m_DepthStateDisabled;
-        RhiDepthStencilDesc m_DepthStateReadWrite;
-        RhiDepthStencilDesc m_DepthStateReadOnly;
-        RhiDepthStencilDesc m_DepthStateTestEqual;
+    RhiDepthStencilDesc m_DepthStateDisabled;
+    RhiDepthStencilDesc m_DepthStateReadWrite;
+    RhiDepthStencilDesc m_DepthStateReadOnly;
+    RhiDepthStencilDesc m_DepthStateTestEqual;
 
-        RhiInputLayoutDesc m_DefaultInputLayout;
+    RhiInputLayoutDesc m_DefaultInputLayout;
 
-        RhiSamplerParameterDesc m_PointSampler;
-        RhiSamplerParameterDesc m_BilinearSampler;
-        RhiSamplerParameterDesc m_EnvMapSampler;
+    RhiSamplerParameterDesc m_PointSampler;
+    RhiSamplerParameterDesc m_BilinearSampler;
+    RhiSamplerParameterDesc m_EnvMapSampler;
 
-        std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;
-        std::unique_ptr<RhiRootSignature> m_DefaultRootSignature;
-    };
-}
-
+    std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;
+    std::unique_ptr<RhiRootSignature> m_DefaultRootSignature;
+};
+} // namespace Ether::Graphics

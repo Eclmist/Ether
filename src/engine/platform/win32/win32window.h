@@ -25,40 +25,39 @@
 
 namespace Ether::Win32
 {
-    using Rect = SMath::Rect<long>;
+using Rect = SMath::Rect<long>;
 
-    class Win32Window : public PlatformWindow
-    {
-    public:
-        Win32Window();
-        ~Win32Window();
+class Win32Window : public PlatformWindow
+{
+public:
+    Win32Window();
+    ~Win32Window();
 
-        void Show() override;
-        void Hide() override;
+    void Show() override;
+    void Hide() override;
 
-        void SetClientSize(const ethVector2u& size) override;
-        void SetClientPosition(const ethVector2u& pos) override;
-        void SetFullscreen(bool isFullscreen) override;
-        void SetTitle(const std::string& title) override;
-        void SetParentWindowHandle(void* parentHandle) override;
+    void SetClientSize(const ethVector2u& size) override;
+    void SetClientPosition(const ethVector2u& pos) override;
+    void SetFullscreen(bool isFullscreen) override;
+    void SetTitle(const std::string& title) override;
+    void SetParentWindowHandle(void* parentHandle) override;
 
-    public:
-        void PlatformMessageLoop() override;
-        bool ProcessPlatformMessages() override;
+public:
+    void PlatformMessageLoop() override;
+    bool ProcessPlatformMessages() override;
 
-    public:
-        void ToWindowRect(Rect& clientRect);
-        void ToClientRect(Rect& windowRect);
+public:
+    void ToWindowRect(Rect& clientRect);
+    void ToClientRect(Rect& windowRect);
 
-    private:
-        Rect GetCurrentWindowRect();
-        void CentralizeWindow();
-        void RegisterWindowClass() const;
-        static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+private:
+    Rect GetCurrentWindowRect();
+    void CentralizeWindow();
+    void RegisterWindowClass() const;
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-    private:
-        std::atomic_uint8_t m_MessageQueueFrontBufferIdx = 0;
-        std::map<UINT, MSG> m_Win32MessageQueue[2];
-    };
-}
-
+private:
+    std::atomic_uint8_t m_MessageQueueFrontBufferIdx = 0;
+    std::map<UINT, MSG> m_Win32MessageQueue[2];
+};
+} // namespace Ether::Win32

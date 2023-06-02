@@ -23,20 +23,19 @@
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsTransformComponent : public EcsComponent<EcsTransformComponent>
-    {
-    public:
-        EcsTransformComponent();
-        ~EcsTransformComponent() override = default;
+class ETH_ENGINE_DLL EcsTransformComponent : public EcsComponent<EcsTransformComponent>
+{
+public:
+    EcsTransformComponent();
+    ~EcsTransformComponent() override = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        ethVector3 m_Translation;
-        ethVector3 m_Rotation;
-        ethVector3 m_Scale;
-    };
-}
-
+public:
+    ethVector3 m_Translation;
+    ethVector3 m_Rotation;
+    ethVector3 m_Scale;
+};
+} // namespace Ether::Ecs

@@ -24,8 +24,7 @@
 
 namespace Ether
 {
-    constexpr uint32_t MaxNumKeycodes = 256;
+constexpr uint32_t MaxNumKeycodes = 256;
 
-    using KeyCode = uint32_t;
-}
-
+using KeyCode = uint32_t;
+} // namespace Ether

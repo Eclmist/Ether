@@ -26,48 +26,48 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL GraphicContext : public CommandContext
-    {
-    public:
-        GraphicContext(const std::string& contextName = "Unnamed Graphic Context");
-        ~GraphicContext() = default;
+class ETH_GRAPHIC_DLL GraphicContext : public CommandContext
+{
+public:
+    GraphicContext(const std::string& contextName = "Unnamed Graphic Context");
+    ~GraphicContext() = default;
 
-    public:
-        inline const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
-        inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
+public:
+    inline const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
+    inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
 
-        inline const ethMatrix4x4& GetViewMatrix() const { return m_ViewMatrix; }
-        inline const ethMatrix4x4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-        inline const ethVector3& GetEyePosition() const { return m_EyePosition; }
-        inline const ethVector3& GetEyeDirection() const { return m_EyeDirection; }
+    inline const ethMatrix4x4& GetViewMatrix() const { return m_ViewMatrix; }
+    inline const ethMatrix4x4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+    inline const ethVector3& GetEyePosition() const { return m_EyePosition; }
+    inline const ethVector3& GetEyeDirection() const { return m_EyeDirection; }
 
-    public:
-        void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
-        void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
+public:
+    void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
+    void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
 
-        void SetViewMatrix(ethMatrix4x4 viewMatrix);
-        void SetProjectionMatrix(ethMatrix4x4 projectionMatrix);
-        void SetEyeDirection(ethVector3 eyeDirection);
-        void SetEyePosition(ethVector3 eyePosition);
-        void SetVisualBatch(VisualBatch visualBatch);
-        void SetViewport(RhiViewportDesc viewport);
-        void SetScissorRect(RhiScissorDesc scissor);
-        void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer);
-        void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer);
-        void SetPrimitiveTopology(RhiPrimitiveTopology topology);
-        void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
-        void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
+    void SetViewMatrix(ethMatrix4x4 viewMatrix);
+    void SetProjectionMatrix(ethMatrix4x4 projectionMatrix);
+    void SetEyeDirection(ethVector3 eyeDirection);
+    void SetEyePosition(ethVector3 eyePosition);
+    void SetVisualBatch(VisualBatch visualBatch);
+    void SetViewport(RhiViewportDesc viewport);
+    void SetScissorRect(RhiScissorDesc scissor);
+    void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer);
+    void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer);
+    void SetPrimitiveTopology(RhiPrimitiveTopology topology);
+    void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
+    void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
 
-        void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
-        void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
+    void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
+    void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
 
-    private:
-        VisualBatch m_VisualBatch;
-        RhiViewportDesc m_Viewport;
+private:
+    VisualBatch m_VisualBatch;
+    RhiViewportDesc m_Viewport;
 
-        ethMatrix4x4 m_ViewMatrix;
-        ethMatrix4x4 m_ProjectionMatrix;
-        ethVector3 m_EyeDirection;
-        ethVector3 m_EyePosition;
-    };
-}
+    ethMatrix4x4 m_ViewMatrix;
+    ethMatrix4x4 m_ProjectionMatrix;
+    ethVector3 m_EyeDirection;
+    ethVector3 m_EyePosition;
+};
+} // namespace Ether::Graphics

@@ -23,8 +23,7 @@
 
 namespace Ether
 {
-    struct EventArgs
-    {
-    };
-}
-
+struct EventArgs
+{
+};
+} // namespace Ether

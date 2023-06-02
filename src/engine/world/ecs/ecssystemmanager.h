@@ -26,22 +26,21 @@
 
 namespace Ether::Ecs
 {
-    class EcsSystemManager : public NonCopyable, public NonMovable
-    {
-    public:
-        EcsSystemManager();
-        ~EcsSystemManager() = default;
+class EcsSystemManager : public NonCopyable, public NonMovable
+{
+public:
+    EcsSystemManager();
+    ~EcsSystemManager() = default;
 
-    public:
-        ETH_ENGINE_DLL void UpdateEntitySignature(EntityID entityID, EntitySignature newSignature);
-        ETH_ENGINE_DLL void OnEntityDestroyed(EntityID entityID);
+public:
+    ETH_ENGINE_DLL void UpdateEntitySignature(EntityID entityID, EntitySignature newSignature);
+    ETH_ENGINE_DLL void OnEntityDestroyed(EntityID entityID);
 
-    private:
-        friend class EcsManager;
-        void Update();
+private:
+    friend class EcsManager;
+    void Update();
 
-    private:
-        std::vector<std::unique_ptr<EcsSystem>> m_Systems;
-    };
-}
-
+private:
+    std::vector<std::unique_ptr<EcsSystem>> m_Systems;
+};
+} // namespace Ether::Ecs

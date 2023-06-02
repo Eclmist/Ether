@@ -23,85 +23,87 @@
 
 namespace Ether::Graphics
 {
-    class RhiResourceView : public NonCopyable, public NonMovable
+class RhiResourceView : public NonCopyable, public NonMovable
+{
+public:
+    RhiResourceView()
+        : m_CpuAddress(0)
     {
-    public:
-        RhiResourceView() : m_CpuAddress(0)
-        {
-            // Make each view unique
-            static uint32_t i = 0;
-            m_ViewID = std::to_string(i++);
-        };
-
-        virtual ~RhiResourceView() = 0;
-        inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
-        inline StringID GetViewID() const { return m_ViewID; }
-
-    protected:
-        RhiCpuAddress m_CpuAddress;
-        StringID m_ViewID;
+        // Make each view unique
+        static uint32_t i = 0;
+        m_ViewID = std::to_string(i++);
     };
 
-    inline RhiResourceView::~RhiResourceView() { }
+    virtual ~RhiResourceView() = 0;
+    inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
+    inline StringID GetViewID() const { return m_ViewID; }
 
-    class RhiShaderVisibleResourceView : public RhiResourceView
-    {
-    public:
-        RhiShaderVisibleResourceView() = default;
-        ~RhiShaderVisibleResourceView() = default;
+protected:
+    RhiCpuAddress m_CpuAddress;
+    StringID m_ViewID;
+};
 
-    public:
-        inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
-
-    protected:
-        RhiGpuAddress m_GpuAddress;
-    };
-
-    class RhiRenderTargetView : public RhiResourceView
-    {
-    public:
-        RhiRenderTargetView() = default;
-        ~RhiRenderTargetView() = default;
-
-    public:
-        inline RhiFormat GetFormat() const { return m_Format; }
-
-    protected:
-        RhiFormat m_Format;
-    };
-
-    class RhiDepthStencilView : public RhiResourceView
-    {
-    public:
-        RhiDepthStencilView() = default;
-        ~RhiDepthStencilView() = default;
-
-    public:
-        inline RhiFormat GetFormat() const { return m_Format; }
-
-    protected:
-        RhiFormat m_Format;
-    };
-
-    class RhiShaderResourceView : public RhiShaderVisibleResourceView
-    {
-    public:
-        RhiShaderResourceView() = default;
-        ~RhiShaderResourceView() = default;
-    };
-
-    class RhiConstantBufferView : public RhiShaderVisibleResourceView
-    {
-    public:
-        RhiConstantBufferView() = default;
-        ~RhiConstantBufferView() = default;
-    };
-
-    class RhiUnorderedAccessView : public RhiShaderVisibleResourceView
-    {
-    public:
-        RhiUnorderedAccessView() = default;
-        ~RhiUnorderedAccessView() = default;
-    };
+inline RhiResourceView::~RhiResourceView()
+{
 }
 
+class RhiShaderVisibleResourceView : public RhiResourceView
+{
+public:
+    RhiShaderVisibleResourceView() = default;
+    ~RhiShaderVisibleResourceView() = default;
+
+public:
+    inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
+
+protected:
+    RhiGpuAddress m_GpuAddress;
+};
+
+class RhiRenderTargetView : public RhiResourceView
+{
+public:
+    RhiRenderTargetView() = default;
+    ~RhiRenderTargetView() = default;
+
+public:
+    inline RhiFormat GetFormat() const { return m_Format; }
+
+protected:
+    RhiFormat m_Format;
+};
+
+class RhiDepthStencilView : public RhiResourceView
+{
+public:
+    RhiDepthStencilView() = default;
+    ~RhiDepthStencilView() = default;
+
+public:
+    inline RhiFormat GetFormat() const { return m_Format; }
+
+protected:
+    RhiFormat m_Format;
+};
+
+class RhiShaderResourceView : public RhiShaderVisibleResourceView
+{
+public:
+    RhiShaderResourceView() = default;
+    ~RhiShaderResourceView() = default;
+};
+
+class RhiConstantBufferView : public RhiShaderVisibleResourceView
+{
+public:
+    RhiConstantBufferView() = default;
+    ~RhiConstantBufferView() = default;
+};
+
+class RhiUnorderedAccessView : public RhiShaderVisibleResourceView
+{
+public:
+    RhiUnorderedAccessView() = default;
+    ~RhiUnorderedAccessView() = default;
+};
+} // namespace Ether::Graphics

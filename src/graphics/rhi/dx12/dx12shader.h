@@ -26,46 +26,46 @@
 
 namespace Ether::Graphics::Dxc
 {
-    class CustomIncludeHandler : public IDxcIncludeHandler
-    {
-    public:
-        HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override;
-        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
+class CustomIncludeHandler : public IDxcIncludeHandler
+{
+public:
+    HRESULT STDMETHODCALLTYPE
+    LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override;
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
 
-        ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
-        ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
+    ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
+    ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
 
-        std::unordered_set<std::wstring> m_IncludedFiles;
-    };
-}
-
+    std::unordered_set<std::wstring> m_IncludedFiles;
+};
+} // namespace Ether::Graphics::Dxc
 
 namespace Ether::Graphics
 {
-    class Dx12Shader : public RhiShader
-    {
-    public:
-        Dx12Shader(RhiShaderDesc desc);
-        ~Dx12Shader() override = default;
+class Dx12Shader : public RhiShader
+{
+public:
+    Dx12Shader(RhiShaderDesc desc);
+    ~Dx12Shader() override = default;
 
-    public:
-        void Compile() override;
+public:
+    void Compile() override;
 
-    protected:
-        void InitializeTargetProfile(RhiShaderType type);
-        void InitializeDxc();
+protected:
+    void InitializeTargetProfile(RhiShaderType type);
+    void InitializeDxc();
 
-    protected:
-        friend class Dxc::CustomIncludeHandler;
-        static wrl::ComPtr<IDxcLibrary> s_DxcLibrary;
-        static wrl::ComPtr<IDxcCompiler3> s_DxcCompiler;
-        static wrl::ComPtr<IDxcUtils> s_DxcUtils;
-        static wrl::ComPtr<IDxcIncludeHandler> s_IncludeHandler;
+protected:
+    friend class Dxc::CustomIncludeHandler;
+    static wrl::ComPtr<IDxcLibrary> s_DxcLibrary;
+    static wrl::ComPtr<IDxcCompiler3> s_DxcCompiler;
+    static wrl::ComPtr<IDxcUtils> s_DxcUtils;
+    static wrl::ComPtr<IDxcIncludeHandler> s_IncludeHandler;
 
-    protected:
-        friend class Dx12Device;
-        wrl::ComPtr<IDxcBlob> m_ShaderBlob;
-        std::string m_TargetProfile;
-    };
+protected:
+    friend class Dx12Device;
+    wrl::ComPtr<IDxcBlob> m_ShaderBlob;
+    std::string m_TargetProfile;
+};
 
-}
+} // namespace Ether::Graphics

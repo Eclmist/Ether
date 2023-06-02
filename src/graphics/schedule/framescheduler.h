@@ -27,23 +27,22 @@
 
 namespace Ether::Graphics
 {
-    class FrameScheduler : public NonCopyable, public NonMovable
-    {
-    public:
-        FrameScheduler();
-        ~FrameScheduler();
+class FrameScheduler : public NonCopyable, public NonMovable
+{
+public:
+    FrameScheduler();
+    ~FrameScheduler();
 
-    public:
-        void PrecompilePipelineStates();
-        void BuildSchedule();
-        void RenderSingleThreaded(GraphicContext& context);
-        void RenderMultiThreaded(GraphicContext& context);
+public:
+    void PrecompilePipelineStates();
+    void BuildSchedule();
+    void RenderSingleThreaded(GraphicContext& context);
+    void RenderMultiThreaded(GraphicContext& context);
 
-    private:
-        ResourceContext m_ResourceContext;
+private:
+    ResourceContext m_ResourceContext;
 
-        // TODO: Move this into some UI rendering pass
-        std::unique_ptr<RhiImguiWrapper> m_ImguiWrapper;
-    };
-}
-
+    // TODO: Move this into some UI rendering pass
+    std::unique_ptr<RhiImguiWrapper> m_ImguiWrapper;
+};
+} // namespace Ether::Graphics

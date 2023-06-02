@@ -30,5 +30,3 @@ struct GlobalConstants
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-
-

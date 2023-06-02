@@ -43,4 +43,3 @@ void Ether::Graphics::Material::Deserialize(IStream& istream)
     istream >> m_Roughness;
     istream >> m_Metalness;
 }
-

@@ -44,4 +44,3 @@ Ether::Win32::Win32LaunchArgs::Win32LaunchArgs()
 }
 
 #endif // ETH_PLATFORM_WIN32
-

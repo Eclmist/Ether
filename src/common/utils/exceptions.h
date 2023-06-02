@@ -23,7 +23,7 @@
 
 namespace Ether
 {
-    class NotImplementedException : public std::runtime_error
-    {
-    };
-}
+class NotImplementedException : public std::runtime_error
+{
+};
+} // namespace Ether

@@ -25,30 +25,29 @@
 
 namespace Ether::Graphics
 {
-    class Dx12DescriptorHeap : public RhiDescriptorHeap
-    {
-    public:
-        Dx12DescriptorHeap() = default;
-        ~Dx12DescriptorHeap() override = default;
+class Dx12DescriptorHeap : public RhiDescriptorHeap
+{
+public:
+    Dx12DescriptorHeap() = default;
+    ~Dx12DescriptorHeap() override = default;
 
-    public:
-        RhiCpuAddress GetBaseCpuAddress() const override;
-        RhiGpuAddress GetBaseGpuAddress() const override;
-        RhiCpuAddress GetNextCpuAddress() const override;
-        RhiGpuAddress GetNextGpuAddress() const override;
+public:
+    RhiCpuAddress GetBaseCpuAddress() const override;
+    RhiGpuAddress GetBaseGpuAddress() const override;
+    RhiCpuAddress GetNextCpuAddress() const override;
+    RhiGpuAddress GetNextGpuAddress() const override;
 
-        uint32_t GetHandleIncrementSize() const override;
-        void IncrementHandle() override;
+    uint32_t GetHandleIncrementSize() const override;
+    void IncrementHandle() override;
 
-    private:
-        friend class Dx12CommandList;
-        friend class Dx12Device;
-        friend class Dx12ImguiWrapper;
+private:
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    friend class Dx12ImguiWrapper;
 
-        wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
+    wrl::ComPtr<ID3D12DescriptorHeap> m_Heap;
 
-        size_t m_Offset;
-        size_t m_HandleIncrementSize;
-    };
-}
-
+    size_t m_Offset;
+    size_t m_HandleIncrementSize;
+};
+} // namespace Ether::Graphics

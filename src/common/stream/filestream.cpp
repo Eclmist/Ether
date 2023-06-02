@@ -86,7 +86,8 @@ Ether::IFileStream& Ether::IFileStream::operator>>(std::string& value)
 {
     value = "";
     char c;
-    do {
+    do
+    {
         m_File.read(reinterpret_cast<char*>(&c), sizeof(char));
         if (c == 0)
             break;
@@ -230,4 +231,3 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector4& v)
     m_File.write(reinterpret_cast<const char*>(&v.w), sizeof(float));
     return *this;
 }
-

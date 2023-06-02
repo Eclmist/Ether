@@ -17,10 +17,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12translation.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::RhiCpuAddress Ether::Graphics::Dx12DescriptorHeap::GetBaseCpuAddress() const
 {
@@ -53,4 +53,3 @@ void Ether::Graphics::Dx12DescriptorHeap::IncrementHandle()
 }
 
 #endif // ETH_GRAPHICS_DX12
-

@@ -23,17 +23,16 @@
 
 namespace Ether::Graphics
 {
-    class RhiModule : public NonCopyable, public NonMovable
-    {
-    public:
-        RhiModule() = default;
-        virtual ~RhiModule() = default;
+class RhiModule : public NonCopyable, public NonMovable
+{
+public:
+    RhiModule() = default;
+    virtual ~RhiModule() = default;
 
-    public:
-        virtual std::unique_ptr<RhiDevice> CreateDevice() const = 0;
+public:
+    virtual std::unique_ptr<RhiDevice> CreateDevice() const = 0;
 
-    public:
-        static std::unique_ptr<RhiModule> InitForPlatform();
-    };
-}
-
+public:
+    static std::unique_ptr<RhiModule> InitForPlatform();
+};
+} // namespace Ether::Graphics

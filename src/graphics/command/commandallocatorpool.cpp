@@ -27,7 +27,8 @@ Ether::Graphics::CommandAllocatorPool::CommandAllocatorPool(RhiCommandType type)
 {
 }
 
-Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::RequestAllocator(RhiFenceValue completedFenceValue)
+Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::RequestAllocator(
+    RhiFenceValue completedFenceValue)
 {
     if (m_DiscardedAllocators.empty())
         return CreateNewAllocator();
@@ -51,4 +52,3 @@ Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::Cre
     m_AllocatorPool.emplace_back(GraphicCore::GetDevice().CreateCommandAllocator({ m_Type }));
     return *m_AllocatorPool.back();
 }
-

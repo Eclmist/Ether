@@ -23,20 +23,19 @@
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsMetadataComponent : public EcsComponent<EcsMetadataComponent>
-    {
-    public:
-        EcsMetadataComponent();
-        ~EcsMetadataComponent() override = default;
+class ETH_ENGINE_DLL EcsMetadataComponent : public EcsComponent<EcsMetadataComponent>
+{
+public:
+    EcsMetadataComponent();
+    ~EcsMetadataComponent() override = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        EntityID m_EntityID;
-        std::string m_EntityName;
-        bool m_EntityEnabled;
-    };
-}
-
+public:
+    EntityID m_EntityID;
+    std::string m_EntityName;
+    bool m_EntityEnabled;
+};
+} // namespace Ether::Ecs

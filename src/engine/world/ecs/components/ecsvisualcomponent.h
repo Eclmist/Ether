@@ -25,20 +25,18 @@
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsVisualComponent : public EcsToggleComponent<EcsVisualComponent>
-    {
-    public:
-        EcsVisualComponent();
-        ~EcsVisualComponent() override = default;
+class ETH_ENGINE_DLL EcsVisualComponent : public EcsToggleComponent<EcsVisualComponent>
+{
+public:
+    EcsVisualComponent();
+    ~EcsVisualComponent() override = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        StringID m_MeshGuid;
-        StringID m_MaterialGuid;
-    };
-}
-
-
+public:
+    StringID m_MeshGuid;
+    StringID m_MaterialGuid;
+};
+} // namespace Ether::Ecs

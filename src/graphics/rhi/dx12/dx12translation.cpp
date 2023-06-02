@@ -17,18 +17,22 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12translation.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 D3D12_STATIC_BORDER_COLOR Ether::Graphics::Translate(const RhiBorderColor& rhiType)
 {
     switch (rhiType)
     {
-    case RhiBorderColor::TransparentBlack:                  return D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-    case RhiBorderColor::OpaqueBlack:                       return D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
-    case RhiBorderColor::OpaqueWhite:                       return D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
-    default:                                                return D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    case RhiBorderColor::TransparentBlack:
+        return D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    case RhiBorderColor::OpaqueBlack:
+        return D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+    case RhiBorderColor::OpaqueWhite:
+        return D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    default:
+        return D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
     }
 }
 
@@ -36,12 +40,18 @@ D3D12_BLEND_OP Ether::Graphics::Translate(const RhiBlendOperation& rhiType)
 {
     switch (rhiType)
     {
-    case RhiBlendOperation::Add:                            return D3D12_BLEND_OP_ADD;
-    case RhiBlendOperation::Subtract:                       return D3D12_BLEND_OP_SUBTRACT;
-    case RhiBlendOperation::Min:                            return D3D12_BLEND_OP_MIN;
-    case RhiBlendOperation::Max:                            return D3D12_BLEND_OP_MAX;
-    case RhiBlendOperation::RevSubtract:                    return D3D12_BLEND_OP_REV_SUBTRACT;
-    default:                                                return D3D12_BLEND_OP_ADD;
+    case RhiBlendOperation::Add:
+        return D3D12_BLEND_OP_ADD;
+    case RhiBlendOperation::Subtract:
+        return D3D12_BLEND_OP_SUBTRACT;
+    case RhiBlendOperation::Min:
+        return D3D12_BLEND_OP_MIN;
+    case RhiBlendOperation::Max:
+        return D3D12_BLEND_OP_MAX;
+    case RhiBlendOperation::RevSubtract:
+        return D3D12_BLEND_OP_REV_SUBTRACT;
+    default:
+        return D3D12_BLEND_OP_ADD;
     }
 }
 
@@ -49,24 +59,42 @@ D3D12_BLEND Ether::Graphics::Translate(const RhiBlendType& rhiType)
 {
     switch (rhiType)
     {
-    case RhiBlendType::Zero:                                return D3D12_BLEND_ZERO;
-    case RhiBlendType::One:                                 return D3D12_BLEND_ONE;
-    case RhiBlendType::SrcColor:                            return D3D12_BLEND_SRC_COLOR;
-    case RhiBlendType::InvSrcColor:                         return D3D12_BLEND_INV_SRC_COLOR;
-    case RhiBlendType::SrcAlpha:                            return D3D12_BLEND_SRC_ALPHA;
-    case RhiBlendType::InvSrcAlpha:                         return D3D12_BLEND_INV_SRC_ALPHA;
-    case RhiBlendType::DestAlpha:                           return D3D12_BLEND_DEST_ALPHA;
-    case RhiBlendType::InvDestAlpha:                        return D3D12_BLEND_INV_DEST_ALPHA;
-    case RhiBlendType::DestColor:                           return D3D12_BLEND_DEST_COLOR;
-    case RhiBlendType::InvDestColor:                        return D3D12_BLEND_INV_DEST_COLOR;
-    case RhiBlendType::SrcAlphaSat:                         return D3D12_BLEND_SRC_ALPHA_SAT;
-    case RhiBlendType::BlendFactor:                         return D3D12_BLEND_BLEND_FACTOR;
-    case RhiBlendType::InvBlendFactor:                      return D3D12_BLEND_INV_BLEND_FACTOR;
-    case RhiBlendType::Src1Color:                           return D3D12_BLEND_SRC1_COLOR;
-    case RhiBlendType::InvSrc1Color:                        return D3D12_BLEND_INV_SRC1_COLOR;
-    case RhiBlendType::Src1Alpha:                           return D3D12_BLEND_SRC1_ALPHA;
-    case RhiBlendType::InvSrc1Alpha:                        return D3D12_BLEND_INV_SRC1_ALPHA;
-    default:                                                return D3D12_BLEND_ZERO;
+    case RhiBlendType::Zero:
+        return D3D12_BLEND_ZERO;
+    case RhiBlendType::One:
+        return D3D12_BLEND_ONE;
+    case RhiBlendType::SrcColor:
+        return D3D12_BLEND_SRC_COLOR;
+    case RhiBlendType::InvSrcColor:
+        return D3D12_BLEND_INV_SRC_COLOR;
+    case RhiBlendType::SrcAlpha:
+        return D3D12_BLEND_SRC_ALPHA;
+    case RhiBlendType::InvSrcAlpha:
+        return D3D12_BLEND_INV_SRC_ALPHA;
+    case RhiBlendType::DestAlpha:
+        return D3D12_BLEND_DEST_ALPHA;
+    case RhiBlendType::InvDestAlpha:
+        return D3D12_BLEND_INV_DEST_ALPHA;
+    case RhiBlendType::DestColor:
+        return D3D12_BLEND_DEST_COLOR;
+    case RhiBlendType::InvDestColor:
+        return D3D12_BLEND_INV_DEST_COLOR;
+    case RhiBlendType::SrcAlphaSat:
+        return D3D12_BLEND_SRC_ALPHA_SAT;
+    case RhiBlendType::BlendFactor:
+        return D3D12_BLEND_BLEND_FACTOR;
+    case RhiBlendType::InvBlendFactor:
+        return D3D12_BLEND_INV_BLEND_FACTOR;
+    case RhiBlendType::Src1Color:
+        return D3D12_BLEND_SRC1_COLOR;
+    case RhiBlendType::InvSrc1Color:
+        return D3D12_BLEND_INV_SRC1_COLOR;
+    case RhiBlendType::Src1Alpha:
+        return D3D12_BLEND_SRC1_ALPHA;
+    case RhiBlendType::InvSrc1Alpha:
+        return D3D12_BLEND_INV_SRC1_ALPHA;
+    default:
+        return D3D12_BLEND_ZERO;
     }
 }
 
@@ -74,10 +102,14 @@ D3D12_COMMAND_LIST_TYPE Ether::Graphics::Translate(const RhiCommandType& rhiType
 {
     switch (rhiType)
     {
-    case RhiCommandType::Graphic:                       return D3D12_COMMAND_LIST_TYPE_DIRECT;
-    case RhiCommandType::Compute:                       return D3D12_COMMAND_LIST_TYPE_COMPUTE;
-    case RhiCommandType::Copy:                          return D3D12_COMMAND_LIST_TYPE_COPY;
-    default:                                                return D3D12_COMMAND_LIST_TYPE_DIRECT;
+    case RhiCommandType::Graphic:
+        return D3D12_COMMAND_LIST_TYPE_DIRECT;
+    case RhiCommandType::Compute:
+        return D3D12_COMMAND_LIST_TYPE_COMPUTE;
+    case RhiCommandType::Copy:
+        return D3D12_COMMAND_LIST_TYPE_COPY;
+    default:
+        return D3D12_COMMAND_LIST_TYPE_DIRECT;
     }
 }
 
@@ -85,15 +117,24 @@ D3D12_COMPARISON_FUNC Ether::Graphics::Translate(const RhiComparator& rhiType)
 {
     switch (rhiType)
     {
-    case RhiComparator::Never:                              return D3D12_COMPARISON_FUNC_NEVER;
-    case RhiComparator::Less:                               return D3D12_COMPARISON_FUNC_LESS;
-    case RhiComparator::Equal:                              return D3D12_COMPARISON_FUNC_EQUAL;
-    case RhiComparator::LessEqual:                          return D3D12_COMPARISON_FUNC_LESS_EQUAL;
-    case RhiComparator::Greater:                            return D3D12_COMPARISON_FUNC_GREATER;
-    case RhiComparator::NotEqual:                           return D3D12_COMPARISON_FUNC_NOT_EQUAL;
-    case RhiComparator::GreaterEqual:                       return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-    case RhiComparator::Always:                             return D3D12_COMPARISON_FUNC_ALWAYS;
-    default:                                                return D3D12_COMPARISON_FUNC_ALWAYS;
+    case RhiComparator::Never:
+        return D3D12_COMPARISON_FUNC_NEVER;
+    case RhiComparator::Less:
+        return D3D12_COMPARISON_FUNC_LESS;
+    case RhiComparator::Equal:
+        return D3D12_COMPARISON_FUNC_EQUAL;
+    case RhiComparator::LessEqual:
+        return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    case RhiComparator::Greater:
+        return D3D12_COMPARISON_FUNC_GREATER;
+    case RhiComparator::NotEqual:
+        return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+    case RhiComparator::GreaterEqual:
+        return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+    case RhiComparator::Always:
+        return D3D12_COMPARISON_FUNC_ALWAYS;
+    default:
+        return D3D12_COMPARISON_FUNC_ALWAYS;
     }
 }
 
@@ -101,10 +142,14 @@ D3D12_CULL_MODE Ether::Graphics::Translate(const RhiCullMode& rhiType)
 {
     switch (rhiType)
     {
-    case RhiCullMode::None:                                 return D3D12_CULL_MODE_NONE;
-    case RhiCullMode::Front:                                return D3D12_CULL_MODE_FRONT;
-    case RhiCullMode::Back:                                 return D3D12_CULL_MODE_BACK;
-    default:                                                return D3D12_CULL_MODE_NONE;
+    case RhiCullMode::None:
+        return D3D12_CULL_MODE_NONE;
+    case RhiCullMode::Front:
+        return D3D12_CULL_MODE_FRONT;
+    case RhiCullMode::Back:
+        return D3D12_CULL_MODE_BACK;
+    default:
+        return D3D12_CULL_MODE_NONE;
     }
 }
 
@@ -112,15 +157,24 @@ D3D12_STENCIL_OP Ether::Graphics::Translate(const RhiDepthStencilOperation& rhiT
 {
     switch (rhiType)
     {
-    case RhiDepthStencilOperation::Keep:                    return D3D12_STENCIL_OP_KEEP;
-    case RhiDepthStencilOperation::Zero:                    return D3D12_STENCIL_OP_ZERO;
-    case RhiDepthStencilOperation::Replace:                 return D3D12_STENCIL_OP_REPLACE;
-    case RhiDepthStencilOperation::IncrementSat:            return D3D12_STENCIL_OP_INCR_SAT;
-    case RhiDepthStencilOperation::DecrementSat:            return D3D12_STENCIL_OP_DECR_SAT;
-    case RhiDepthStencilOperation::Invert:                  return D3D12_STENCIL_OP_INVERT;
-    case RhiDepthStencilOperation::Increment:               return D3D12_STENCIL_OP_INCR;
-    case RhiDepthStencilOperation::Decrement:               return D3D12_STENCIL_OP_DECR;
-    default:                                                return D3D12_STENCIL_OP_KEEP;
+    case RhiDepthStencilOperation::Keep:
+        return D3D12_STENCIL_OP_KEEP;
+    case RhiDepthStencilOperation::Zero:
+        return D3D12_STENCIL_OP_ZERO;
+    case RhiDepthStencilOperation::Replace:
+        return D3D12_STENCIL_OP_REPLACE;
+    case RhiDepthStencilOperation::IncrementSat:
+        return D3D12_STENCIL_OP_INCR_SAT;
+    case RhiDepthStencilOperation::DecrementSat:
+        return D3D12_STENCIL_OP_DECR_SAT;
+    case RhiDepthStencilOperation::Invert:
+        return D3D12_STENCIL_OP_INVERT;
+    case RhiDepthStencilOperation::Increment:
+        return D3D12_STENCIL_OP_INCR;
+    case RhiDepthStencilOperation::Decrement:
+        return D3D12_STENCIL_OP_DECR;
+    default:
+        return D3D12_STENCIL_OP_KEEP;
     }
 }
 
@@ -128,9 +182,12 @@ D3D12_DEPTH_WRITE_MASK Ether::Graphics::Translate(const RhiDepthWriteMask& rhiTy
 {
     switch (rhiType)
     {
-    case RhiDepthWriteMask::Zero:                           return D3D12_DEPTH_WRITE_MASK_ZERO;
-    case RhiDepthWriteMask::All:                            return D3D12_DEPTH_WRITE_MASK_ALL;
-    default:                                                return D3D12_DEPTH_WRITE_MASK_ZERO;
+    case RhiDepthWriteMask::Zero:
+        return D3D12_DEPTH_WRITE_MASK_ZERO;
+    case RhiDepthWriteMask::All:
+        return D3D12_DEPTH_WRITE_MASK_ALL;
+    default:
+        return D3D12_DEPTH_WRITE_MASK_ZERO;
     }
 }
 
@@ -138,11 +195,16 @@ D3D12_DESCRIPTOR_HEAP_TYPE Ether::Graphics::Translate(const RhiDescriptorHeapTyp
 {
     switch (rhiType)
     {
-    case RhiDescriptorHeapType::SrvCbvUav:                  return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    case RhiDescriptorHeapType::Rtv:                        return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    case RhiDescriptorHeapType::Dsv:                        return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    case RhiDescriptorHeapType::Sampler:                    return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-    default:                                                return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    case RhiDescriptorHeapType::SrvCbvUav:
+        return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    case RhiDescriptorHeapType::Rtv:
+        return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    case RhiDescriptorHeapType::Dsv:
+        return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    case RhiDescriptorHeapType::Sampler:
+        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+    default:
+        return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     }
 }
 
@@ -150,11 +212,16 @@ D3D12_DESCRIPTOR_RANGE_TYPE Ether::Graphics::Translate(const RhiDescriptorType& 
 {
     switch (rhiType)
     {
-    case RhiDescriptorType::Srv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    case RhiDescriptorType::Cbv:                       return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-    case RhiDescriptorType::Uav:                       return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-    case RhiDescriptorType::Sampler:                   return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    default:                                                return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    case RhiDescriptorType::Srv:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    case RhiDescriptorType::Cbv:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    case RhiDescriptorType::Uav:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    case RhiDescriptorType::Sampler:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+    default:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     }
 }
 
@@ -162,9 +229,12 @@ D3D12_FILL_MODE Ether::Graphics::Translate(const RhiFillMode& rhiType)
 {
     switch (rhiType)
     {
-    case RhiFillMode::Solid:                                return D3D12_FILL_MODE_SOLID;
-    case RhiFillMode::Wireframe:                            return D3D12_FILL_MODE_WIREFRAME;
-    default:                                                return D3D12_FILL_MODE_SOLID;
+    case RhiFillMode::Solid:
+        return D3D12_FILL_MODE_SOLID;
+    case RhiFillMode::Wireframe:
+        return D3D12_FILL_MODE_WIREFRAME;
+    default:
+        return D3D12_FILL_MODE_SOLID;
     }
 }
 
@@ -172,18 +242,30 @@ DXGI_FORMAT Ether::Graphics::Translate(const RhiFormat& rhiType)
 {
     switch (rhiType)
     {
-    case RhiFormat::Unknown:                                return DXGI_FORMAT_UNKNOWN;
-    case RhiFormat::R8G8B8A8Unorm:                          return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case RhiFormat::R16G16B16A16Float:                      return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case RhiFormat::R32G32Float:                            return DXGI_FORMAT_R32G32_FLOAT;
-    case RhiFormat::R32G32B32Float:                         return DXGI_FORMAT_R32G32B32_FLOAT;
-    case RhiFormat::R32G32B32A32Float:                      return DXGI_FORMAT_R32G32B32A32_FLOAT;
-    case RhiFormat::D32Float:                               return DXGI_FORMAT_D32_FLOAT;
-    case RhiFormat::R32Uint:                                return DXGI_FORMAT_R32_UINT;
-    case RhiFormat::R16Uint:                                return DXGI_FORMAT_R16_UINT;
-    case RhiFormat::D24UnormS8Uint:                         return DXGI_FORMAT_D24_UNORM_S8_UINT;
-    case RhiFormat::R11G11B10Float:                         return DXGI_FORMAT_R11G11B10_FLOAT;
-    default:                                                return DXGI_FORMAT_UNKNOWN;
+    case RhiFormat::Unknown:
+        return DXGI_FORMAT_UNKNOWN;
+    case RhiFormat::R8G8B8A8Unorm:
+        return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case RhiFormat::R16G16B16A16Float:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case RhiFormat::R32G32Float:
+        return DXGI_FORMAT_R32G32_FLOAT;
+    case RhiFormat::R32G32B32Float:
+        return DXGI_FORMAT_R32G32B32_FLOAT;
+    case RhiFormat::R32G32B32A32Float:
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case RhiFormat::D32Float:
+        return DXGI_FORMAT_D32_FLOAT;
+    case RhiFormat::R32Uint:
+        return DXGI_FORMAT_R32_UINT;
+    case RhiFormat::R16Uint:
+        return DXGI_FORMAT_R16_UINT;
+    case RhiFormat::D24UnormS8Uint:
+        return DXGI_FORMAT_D24_UNORM_S8_UINT;
+    case RhiFormat::R11G11B10Float:
+        return DXGI_FORMAT_R11G11B10_FLOAT;
+    default:
+        return DXGI_FORMAT_UNKNOWN;
     }
 }
 
@@ -191,16 +273,26 @@ D3D12_FILTER Ether::Graphics::Translate(const RhiFilter& rhiType)
 {
     switch (rhiType)
     {
-    case RhiFilter::MinMagMipPoint:                         return D3D12_FILTER_MIN_MAG_MIP_POINT;
-    case RhiFilter::MinMagPointMipLinear:                   return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
-    case RhiFilter::MinPointMagLinearMipPoint:              return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
-    case RhiFilter::MinPointMagMipLinear:                   return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
-    case RhiFilter::MinLinearMagMipPoint:                   return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
-    case RhiFilter::MinLinearMagPointMipLinear:             return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-    case RhiFilter::MinMagLinearMipPoint:                   return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-    case RhiFilter::MinMagMipLinear:                        return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    case RhiFilter::Anisotropic:                            return D3D12_FILTER_ANISOTROPIC;
-    default:                                                return D3D12_FILTER_MIN_MAG_MIP_POINT;
+    case RhiFilter::MinMagMipPoint:
+        return D3D12_FILTER_MIN_MAG_MIP_POINT;
+    case RhiFilter::MinMagPointMipLinear:
+        return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+    case RhiFilter::MinPointMagLinearMipPoint:
+        return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+    case RhiFilter::MinPointMagMipLinear:
+        return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+    case RhiFilter::MinLinearMagMipPoint:
+        return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+    case RhiFilter::MinLinearMagPointMipLinear:
+        return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+    case RhiFilter::MinMagLinearMipPoint:
+        return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+    case RhiFilter::MinMagMipLinear:
+        return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    case RhiFilter::Anisotropic:
+        return D3D12_FILTER_ANISOTROPIC;
+    default:
+        return D3D12_FILTER_MIN_MAG_MIP_POINT;
     }
 }
 
@@ -208,11 +300,16 @@ D3D12_HEAP_TYPE Ether::Graphics::Translate(const RhiHeapType& rhiType)
 {
     switch (rhiType)
     {
-    case RhiHeapType::Default:                              return D3D12_HEAP_TYPE_DEFAULT;
-    case RhiHeapType::Upload:                               return D3D12_HEAP_TYPE_UPLOAD;
-    case RhiHeapType::Readback:                             return D3D12_HEAP_TYPE_READBACK;
-    case RhiHeapType::Custom:                               return D3D12_HEAP_TYPE_CUSTOM;
-    default:                                                return D3D12_HEAP_TYPE_DEFAULT;
+    case RhiHeapType::Default:
+        return D3D12_HEAP_TYPE_DEFAULT;
+    case RhiHeapType::Upload:
+        return D3D12_HEAP_TYPE_UPLOAD;
+    case RhiHeapType::Readback:
+        return D3D12_HEAP_TYPE_READBACK;
+    case RhiHeapType::Custom:
+        return D3D12_HEAP_TYPE_CUSTOM;
+    default:
+        return D3D12_HEAP_TYPE_DEFAULT;
     }
 }
 
@@ -220,9 +317,12 @@ D3D12_INPUT_CLASSIFICATION Ether::Graphics::Translate(const RhiInputClassificati
 {
     switch (rhiType)
     {
-    case RhiInputClassification::PerVertexData:             return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-    case RhiInputClassification::PerInstanceData:           return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    default:                                                return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+    case RhiInputClassification::PerVertexData:
+        return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+    case RhiInputClassification::PerInstanceData:
+        return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+    default:
+        return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
     }
 }
 
@@ -230,23 +330,40 @@ D3D12_LOGIC_OP Ether::Graphics::Translate(const RhiLogicOperation& rhiType)
 {
     switch (rhiType)
     {
-    case RhiLogicOperation::Clear:                          return D3D12_LOGIC_OP_CLEAR;
-    case RhiLogicOperation::Set:                            return D3D12_LOGIC_OP_SET;
-    case RhiLogicOperation::Copy:                           return D3D12_LOGIC_OP_COPY;
-    case RhiLogicOperation::CopyInverted:                   return D3D12_LOGIC_OP_COPY_INVERTED;
-    case RhiLogicOperation::NoOp:                           return D3D12_LOGIC_OP_NOOP;
-    case RhiLogicOperation::Invert:                         return D3D12_LOGIC_OP_INVERT;
-    case RhiLogicOperation::And:                            return D3D12_LOGIC_OP_AND;
-    case RhiLogicOperation::Nand:                           return D3D12_LOGIC_OP_NAND;
-    case RhiLogicOperation::Or:                             return D3D12_LOGIC_OP_OR;
-    case RhiLogicOperation::Nor:                            return D3D12_LOGIC_OP_NOR;
-    case RhiLogicOperation::Xor:                            return D3D12_LOGIC_OP_XOR;
-    case RhiLogicOperation::Equiv:                          return D3D12_LOGIC_OP_EQUIV;
-    case RhiLogicOperation::AndReverse:                     return D3D12_LOGIC_OP_AND_REVERSE;
-    case RhiLogicOperation::AndInverted:                    return D3D12_LOGIC_OP_AND_INVERTED;
-    case RhiLogicOperation::OrReverse:                      return D3D12_LOGIC_OP_OR_REVERSE;
-    case RhiLogicOperation::OrInverted:                     return D3D12_LOGIC_OP_OR_INVERTED;
-    default:                                                return D3D12_LOGIC_OP_CLEAR;
+    case RhiLogicOperation::Clear:
+        return D3D12_LOGIC_OP_CLEAR;
+    case RhiLogicOperation::Set:
+        return D3D12_LOGIC_OP_SET;
+    case RhiLogicOperation::Copy:
+        return D3D12_LOGIC_OP_COPY;
+    case RhiLogicOperation::CopyInverted:
+        return D3D12_LOGIC_OP_COPY_INVERTED;
+    case RhiLogicOperation::NoOp:
+        return D3D12_LOGIC_OP_NOOP;
+    case RhiLogicOperation::Invert:
+        return D3D12_LOGIC_OP_INVERT;
+    case RhiLogicOperation::And:
+        return D3D12_LOGIC_OP_AND;
+    case RhiLogicOperation::Nand:
+        return D3D12_LOGIC_OP_NAND;
+    case RhiLogicOperation::Or:
+        return D3D12_LOGIC_OP_OR;
+    case RhiLogicOperation::Nor:
+        return D3D12_LOGIC_OP_NOR;
+    case RhiLogicOperation::Xor:
+        return D3D12_LOGIC_OP_XOR;
+    case RhiLogicOperation::Equiv:
+        return D3D12_LOGIC_OP_EQUIV;
+    case RhiLogicOperation::AndReverse:
+        return D3D12_LOGIC_OP_AND_REVERSE;
+    case RhiLogicOperation::AndInverted:
+        return D3D12_LOGIC_OP_AND_INVERTED;
+    case RhiLogicOperation::OrReverse:
+        return D3D12_LOGIC_OP_OR_REVERSE;
+    case RhiLogicOperation::OrInverted:
+        return D3D12_LOGIC_OP_OR_INVERTED;
+    default:
+        return D3D12_LOGIC_OP_CLEAR;
     }
 }
 
@@ -254,13 +371,20 @@ D3D12_PRIMITIVE_TOPOLOGY Ether::Graphics::Translate(const RhiPrimitiveTopology& 
 {
     switch (rhiType)
     {
-    case RhiPrimitiveTopology::Undefined:                   return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
-    case RhiPrimitiveTopology::PointList:                   return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
-    case RhiPrimitiveTopology::LineList:                    return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-    case RhiPrimitiveTopology::LineStrip:                   return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-    case RhiPrimitiveTopology::TriangleList:                return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    case RhiPrimitiveTopology::TriangleStrip:               return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                                                return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    case RhiPrimitiveTopology::Undefined:
+        return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    case RhiPrimitiveTopology::PointList:
+        return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+    case RhiPrimitiveTopology::LineList:
+        return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+    case RhiPrimitiveTopology::LineStrip:
+        return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+    case RhiPrimitiveTopology::TriangleList:
+        return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    case RhiPrimitiveTopology::TriangleStrip:
+        return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+    default:
+        return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
     }
 }
 
@@ -268,12 +392,18 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE Ether::Graphics::Translate(const RhiPrimitiveTopol
 {
     switch (rhiType)
     {
-    case RhiPrimitiveTopologyType::Undefined:               return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
-    case RhiPrimitiveTopologyType::Point:                   return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-    case RhiPrimitiveTopologyType::Line:                    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-    case RhiPrimitiveTopologyType::Triangle:                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    case RhiPrimitiveTopologyType::Patch:                   return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
-    default:                                                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+    case RhiPrimitiveTopologyType::Undefined:
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+    case RhiPrimitiveTopologyType::Point:
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+    case RhiPrimitiveTopologyType::Line:
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+    case RhiPrimitiveTopologyType::Triangle:
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    case RhiPrimitiveTopologyType::Patch:
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+    default:
+        return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
     }
 }
 
@@ -281,12 +411,18 @@ D3D12_RESOURCE_DIMENSION Ether::Graphics::Translate(const RhiResourceDimension& 
 {
     switch (rhiType)
     {
-    case RhiResourceDimension::Unknown:                     return D3D12_RESOURCE_DIMENSION_UNKNOWN;
-    case RhiResourceDimension::Buffer:                      return D3D12_RESOURCE_DIMENSION_BUFFER;
-    case RhiResourceDimension::Texture1D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
-    case RhiResourceDimension::Texture2D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    case RhiResourceDimension::Texture3D:                   return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    default:                                                return D3D12_RESOURCE_DIMENSION_UNKNOWN;
+    case RhiResourceDimension::Unknown:
+        return D3D12_RESOURCE_DIMENSION_UNKNOWN;
+    case RhiResourceDimension::Buffer:
+        return D3D12_RESOURCE_DIMENSION_BUFFER;
+    case RhiResourceDimension::Texture1D:
+        return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
+    case RhiResourceDimension::Texture2D:
+        return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    case RhiResourceDimension::Texture3D:
+        return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    default:
+        return D3D12_RESOURCE_DIMENSION_UNKNOWN;
     }
 }
 
@@ -294,15 +430,24 @@ D3D12_RESOURCE_STATES Ether::Graphics::Translate(const RhiResourceState& rhiType
 {
     switch (rhiType)
     {
-    case RhiResourceState::Common:                          return D3D12_RESOURCE_STATE_COMMON;
-    case RhiResourceState::CopyDest:                        return D3D12_RESOURCE_STATE_COPY_DEST;
-    case RhiResourceState::CopySrc:                         return D3D12_RESOURCE_STATE_COPY_SOURCE;
-    case RhiResourceState::DepthRead:                       return D3D12_RESOURCE_STATE_DEPTH_READ;
-    case RhiResourceState::DepthWrite:                      return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-    case RhiResourceState::GenericRead:                     return D3D12_RESOURCE_STATE_GENERIC_READ;
-    case RhiResourceState::Present:                         return D3D12_RESOURCE_STATE_PRESENT;
-    case RhiResourceState::RenderTarget:                    return D3D12_RESOURCE_STATE_RENDER_TARGET;
-    default:                                                return D3D12_RESOURCE_STATE_COMMON;
+    case RhiResourceState::Common:
+        return D3D12_RESOURCE_STATE_COMMON;
+    case RhiResourceState::CopyDest:
+        return D3D12_RESOURCE_STATE_COPY_DEST;
+    case RhiResourceState::CopySrc:
+        return D3D12_RESOURCE_STATE_COPY_SOURCE;
+    case RhiResourceState::DepthRead:
+        return D3D12_RESOURCE_STATE_DEPTH_READ;
+    case RhiResourceState::DepthWrite:
+        return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+    case RhiResourceState::GenericRead:
+        return D3D12_RESOURCE_STATE_GENERIC_READ;
+    case RhiResourceState::Present:
+        return D3D12_RESOURCE_STATE_PRESENT;
+    case RhiResourceState::RenderTarget:
+        return D3D12_RESOURCE_STATE_RENDER_TARGET;
+    default:
+        return D3D12_RESOURCE_STATE_COMMON;
     }
 }
 
@@ -310,10 +455,14 @@ DXGI_SCALING Ether::Graphics::Translate(const RhiScalingMode& rhiType)
 {
     switch (rhiType)
     {
-    case RhiScalingMode::None:                              return DXGI_SCALING_NONE;
-    case RhiScalingMode::Stretch:                           return DXGI_SCALING_STRETCH;
-    case RhiScalingMode::AspectRatioStretch:                return DXGI_SCALING_ASPECT_RATIO_STRETCH;
-    default:                                                return DXGI_SCALING_NONE;
+    case RhiScalingMode::None:
+        return DXGI_SCALING_NONE;
+    case RhiScalingMode::Stretch:
+        return DXGI_SCALING_STRETCH;
+    case RhiScalingMode::AspectRatioStretch:
+        return DXGI_SCALING_ASPECT_RATIO_STRETCH;
+    default:
+        return DXGI_SCALING_NONE;
     }
 }
 
@@ -321,17 +470,28 @@ D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDims& rhiT
 {
     switch (rhiType)
     {
-    case RhiShaderResourceDims::Unknown:                    return D3D12_SRV_DIMENSION_UNKNOWN;
-    case RhiShaderResourceDims::Buffer:                     return D3D12_SRV_DIMENSION_BUFFER;
-    case RhiShaderResourceDims::Texture1D:                  return D3D12_SRV_DIMENSION_TEXTURE1D;
-    case RhiShaderResourceDims::Texture1DArray:             return D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
-    case RhiShaderResourceDims::Texture2D:                  return D3D12_SRV_DIMENSION_TEXTURE2D;
-    case RhiShaderResourceDims::Texture2DArray:             return D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    case RhiShaderResourceDims::Texture3D:                  return D3D12_SRV_DIMENSION_TEXTURE3D;
-    case RhiShaderResourceDims::TextureCube:                return D3D12_SRV_DIMENSION_TEXTURECUBE;
-    case RhiShaderResourceDims::TextureCubeArray:           return D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
-    case RhiShaderResourceDims::RTAccelerationStructure:    return D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
-    default:                                                return D3D12_SRV_DIMENSION_UNKNOWN;
+    case RhiShaderResourceDims::Unknown:
+        return D3D12_SRV_DIMENSION_UNKNOWN;
+    case RhiShaderResourceDims::Buffer:
+        return D3D12_SRV_DIMENSION_BUFFER;
+    case RhiShaderResourceDims::Texture1D:
+        return D3D12_SRV_DIMENSION_TEXTURE1D;
+    case RhiShaderResourceDims::Texture1DArray:
+        return D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
+    case RhiShaderResourceDims::Texture2D:
+        return D3D12_SRV_DIMENSION_TEXTURE2D;
+    case RhiShaderResourceDims::Texture2DArray:
+        return D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+    case RhiShaderResourceDims::Texture3D:
+        return D3D12_SRV_DIMENSION_TEXTURE3D;
+    case RhiShaderResourceDims::TextureCube:
+        return D3D12_SRV_DIMENSION_TEXTURECUBE;
+    case RhiShaderResourceDims::TextureCubeArray:
+        return D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+    case RhiShaderResourceDims::RTAccelerationStructure:
+        return D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+    default:
+        return D3D12_SRV_DIMENSION_UNKNOWN;
     }
 }
 
@@ -339,13 +499,20 @@ D3D12_SHADER_VISIBILITY Ether::Graphics::Translate(const RhiShaderVisibility& rh
 {
     switch (rhiType)
     {
-    case RhiShaderVisibility::All:                          return D3D12_SHADER_VISIBILITY_ALL;
-    case RhiShaderVisibility::Vertex:                       return D3D12_SHADER_VISIBILITY_VERTEX;
-    case RhiShaderVisibility::Hull:                         return D3D12_SHADER_VISIBILITY_HULL;
-    case RhiShaderVisibility::Domain:                       return D3D12_SHADER_VISIBILITY_DOMAIN;
-    case RhiShaderVisibility::Geometry:                     return D3D12_SHADER_VISIBILITY_GEOMETRY;
-    case RhiShaderVisibility::Pixel:                        return D3D12_SHADER_VISIBILITY_PIXEL;
-    default:                                                return D3D12_SHADER_VISIBILITY_ALL;
+    case RhiShaderVisibility::All:
+        return D3D12_SHADER_VISIBILITY_ALL;
+    case RhiShaderVisibility::Vertex:
+        return D3D12_SHADER_VISIBILITY_VERTEX;
+    case RhiShaderVisibility::Hull:
+        return D3D12_SHADER_VISIBILITY_HULL;
+    case RhiShaderVisibility::Domain:
+        return D3D12_SHADER_VISIBILITY_DOMAIN;
+    case RhiShaderVisibility::Geometry:
+        return D3D12_SHADER_VISIBILITY_GEOMETRY;
+    case RhiShaderVisibility::Pixel:
+        return D3D12_SHADER_VISIBILITY_PIXEL;
+    default:
+        return D3D12_SHADER_VISIBILITY_ALL;
     }
 }
 
@@ -353,11 +520,16 @@ DXGI_SWAP_EFFECT Ether::Graphics::Translate(const RhiSwapEffect& rhiType)
 {
     switch (rhiType)
     {
-    case RhiSwapEffect::Discard:                            return DXGI_SWAP_EFFECT_DISCARD;
-    case RhiSwapEffect::Sequential:                         return DXGI_SWAP_EFFECT_SEQUENTIAL;
-    case RhiSwapEffect::FlipDiscard:                        return DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    case RhiSwapEffect::FlipSequential:                     return DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    default:                                                return DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    case RhiSwapEffect::Discard:
+        return DXGI_SWAP_EFFECT_DISCARD;
+    case RhiSwapEffect::Sequential:
+        return DXGI_SWAP_EFFECT_SEQUENTIAL;
+    case RhiSwapEffect::FlipDiscard:
+        return DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    case RhiSwapEffect::FlipSequential:
+        return DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    default:
+        return DXGI_SWAP_EFFECT_FLIP_DISCARD;
     }
 }
 
@@ -365,12 +537,18 @@ D3D12_TEXTURE_ADDRESS_MODE Ether::Graphics::Translate(const RhiTextureAddressMod
 {
     switch (rhiType)
     {
-    case RhiTextureAddressMode::Wrap:                       return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    case RhiTextureAddressMode::Mirror:                     return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
-    case RhiTextureAddressMode::Clamp:                      return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    case RhiTextureAddressMode::Border:                     return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-    case RhiTextureAddressMode::MirrorOnce:                 return D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE;
-    default:                                                return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    case RhiTextureAddressMode::Wrap:
+        return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    case RhiTextureAddressMode::Mirror:
+        return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+    case RhiTextureAddressMode::Clamp:
+        return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    case RhiTextureAddressMode::Border:
+        return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    case RhiTextureAddressMode::MirrorOnce:
+        return D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE;
+    default:
+        return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     }
 }
 
@@ -378,9 +556,12 @@ D3D12_TEXTURE_LAYOUT Ether::Graphics::Translate(const RhiResourceLayout& rhiType
 {
     switch (rhiType)
     {
-    case RhiResourceLayout::Unknown:                        return D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    case RhiResourceLayout::RowMajor:                       return D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    default:                                                return D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    case RhiResourceLayout::Unknown:
+        return D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    case RhiResourceLayout::RowMajor:
+        return D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    default:
+        return D3D12_TEXTURE_LAYOUT_UNKNOWN;
     }
 }
 
@@ -388,9 +569,12 @@ D3D12_DESCRIPTOR_HEAP_FLAGS Ether::Graphics::Translate(const RhiDescriptorHeapFl
 {
     switch (rhiType)
     {
-    case RhiDescriptorHeapFlag::None:                       return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    case RhiDescriptorHeapFlag::ShaderVisible:              return D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    default:                                                return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    case RhiDescriptorHeapFlag::None:
+        return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    case RhiDescriptorHeapFlag::ShaderVisible:
+        return D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    default:
+        return D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     }
 }
 
@@ -398,11 +582,16 @@ D3D12_RESOURCE_FLAGS Ether::Graphics::Translate(const RhiResourceFlag& rhiType)
 {
     switch (rhiType)
     {
-    case RhiResourceFlag::None:                             return D3D12_RESOURCE_FLAG_NONE;
-    case RhiResourceFlag::AllowRenderTarget:                return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    case RhiResourceFlag::AllowDepthStencil:                return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-    case RhiResourceFlag::AllowUnorderedAccess:             return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    default:                                                return D3D12_RESOURCE_FLAG_NONE;
+    case RhiResourceFlag::None:
+        return D3D12_RESOURCE_FLAG_NONE;
+    case RhiResourceFlag::AllowRenderTarget:
+        return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    case RhiResourceFlag::AllowDepthStencil:
+        return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+    case RhiResourceFlag::AllowUnorderedAccess:
+        return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    default:
+        return D3D12_RESOURCE_FLAG_NONE;
     }
 }
 
@@ -410,17 +599,28 @@ D3D12_ROOT_SIGNATURE_FLAGS Ether::Graphics::Translate(const RhiRootSignatureFlag
 {
     switch (rhiType)
     {
-    case RhiRootSignatureFlag::None:                        return D3D12_ROOT_SIGNATURE_FLAG_NONE;
-    case RhiRootSignatureFlag::AllowIAInputLayout:          return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-    case RhiRootSignatureFlag::DenyVSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyHSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyDSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyGSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::DenyPSRootAccess:            return D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-    case RhiRootSignatureFlag::AllowStreamOutput:           return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
-    case RhiRootSignatureFlag::LocalRootSignature:          return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
-    case RhiRootSignatureFlag::DirectlyIndexed:             return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
-    default:                                                return D3D12_ROOT_SIGNATURE_FLAG_NONE;
+    case RhiRootSignatureFlag::None:
+        return D3D12_ROOT_SIGNATURE_FLAG_NONE;
+    case RhiRootSignatureFlag::AllowIAInputLayout:
+        return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    case RhiRootSignatureFlag::DenyVSRootAccess:
+        return D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyHSRootAccess:
+        return D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyDSRootAccess:
+        return D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyGSRootAccess:
+        return D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::DenyPSRootAccess:
+        return D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+    case RhiRootSignatureFlag::AllowStreamOutput:
+        return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
+    case RhiRootSignatureFlag::LocalRootSignature:
+        return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
+    case RhiRootSignatureFlag::DirectlyIndexed:
+        return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
+    default:
+        return D3D12_ROOT_SIGNATURE_FLAG_NONE;
     }
 }
 
@@ -428,8 +628,10 @@ DXGI_SWAP_CHAIN_FLAG Ether::Graphics::Translate(const RhiSwapChainFlag& rhiType)
 {
     switch (rhiType)
     {
-    case RhiSwapChainFlag::AllowTearing:                    return DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-    default:                                                return (DXGI_SWAP_CHAIN_FLAG)0;
+    case RhiSwapChainFlag::AllowTearing:
+        return DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    default:
+        return (DXGI_SWAP_CHAIN_FLAG)0;
     }
 }
 
@@ -551,7 +753,7 @@ D3D12_RESOURCE_BARRIER Ether::Graphics::Translate(const RhiResourceTransitionDes
     dx12Desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     dx12Desc.Transition.StateBefore = Translate(rhiDesc.m_FromState);
     dx12Desc.Transition.StateAfter = Translate(rhiDesc.m_ToState);
-    
+
     return dx12Desc;
 }
 
@@ -726,4 +928,3 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBuff
 }
 
 #endif // ETH_GRAPHICS_DX12
-

@@ -17,12 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12module.h"
 #include "graphics/rhi/dx12/dx12device.h"
 #include <dxgidebug.h>
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12Module::Dx12Module()
 {
@@ -62,14 +62,14 @@ void Ether::Graphics::Dx12Module::InitializeAdapter()
 {
     wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
 
-    //bool useWarp = false;
+    // bool useWarp = false;
 
-    //if (useWarp)
+    // if (useWarp)
     //{
-    //    HRESULT hr = m_DxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&m_Adapter));
-    //    if (FAILED(hr))
-    //        LogGraphicsError("Failed to enumerate Warp adapters");
-    //}
+    //     HRESULT hr = m_DxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&m_Adapter));
+    //     if (FAILED(hr))
+    //         LogGraphicsError("Failed to enumerate Warp adapters");
+    // }
 
     SIZE_T maxDedicatedVideoMemory = 0;
     for (UINT i = 0; m_DxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
@@ -98,7 +98,7 @@ void Ether::Graphics::Dx12Module::InitializeAdapter()
 
 void Ether::Graphics::Dx12Module::InitializeDebugLayer()
 {
-#if defined(_DEBUG)
+    #if defined(_DEBUG)
     LogGraphicsInfo("Graphics Debug Layer is enabled");
     wrl::ComPtr<ID3D12Debug> debugInterface;
     HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface));
@@ -106,20 +106,19 @@ void Ether::Graphics::Dx12Module::InitializeDebugLayer()
         LogGraphicsWarning("Failed to create DX12 debug interface");
     else
         debugInterface->EnableDebugLayer();
-#endif
+    #endif
 }
 
 void Ether::Graphics::Dx12Module::ReportLiveObjects()
 {
-#if defined(_DEBUG)
+    #if defined(_DEBUG)
     IDXGIDebug1* pDebug = NULL;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
     {
         pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
         pDebug->Release();
     }
-#endif
+    #endif
 }
 
 #endif // ETH_GRAPHICS_DX12
-

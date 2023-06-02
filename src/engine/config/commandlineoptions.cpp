@@ -21,14 +21,14 @@
 #include "engine/platform/platformlaunchargs.h"
 #include "engine/platform/win32/win32launchargs.h"
 
-#if defined (ETH_TOOLMODE)
+#if defined(ETH_TOOLMODE)
 constexpr uint16_t DefaultToolmodePort = 2134;
 #endif
 
 Ether::CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
     , m_UseValidationLayer(false)
-#if defined (ETH_TOOLMODE)
+#if defined(ETH_TOOLMODE)
     , m_ToolmodePort(DefaultToolmodePort)
 #endif
 {
@@ -51,9 +51,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseShaderDaemon = true;
     else if (flag == "-usevalidationlayer")
         m_UseValidationLayer = true;
-#if defined (ETH_TOOLMODE)
+#if defined(ETH_TOOLMODE)
     else if (flag == "-toolmodeport")
         m_ToolmodePort = stoi(arg);
 #endif
 }
-

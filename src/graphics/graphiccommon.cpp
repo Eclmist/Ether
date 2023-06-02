@@ -123,12 +123,10 @@ void Ether::Graphics::GraphicCommon::InitializeRootSignatures()
 
 void Ether::Graphics::GraphicCommon::InitializeShaders()
 {
-
 }
 
 void Ether::Graphics::GraphicCommon::InitializePipelineStates()
 {
-
 }
 
 void Ether::Graphics::GraphicCommon::InitializeSamplers()
@@ -152,5 +150,4 @@ void Ether::Graphics::GraphicCommon::InitializeSamplers()
 
 void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()
 {
-
 }

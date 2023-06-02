@@ -36,4 +36,3 @@ void Ether::Graphics::VertexFormats::PositionNormalTangentTexCoord::Deserialize(
     istream >> m_BiTangent;
     istream >> m_TexCoord;
 }
-

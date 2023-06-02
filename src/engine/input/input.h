@@ -24,61 +24,60 @@
 
 namespace Ether
 {
-    class ETH_ENGINE_DLL Input : public Singleton<Input>
-    {
-    public:
-        Input() = default;
-        ~Input() = default;
+class ETH_ENGINE_DLL Input : public Singleton<Input>
+{
+public:
+    Input() = default;
+    ~Input() = default;
 
-        void Initialize();
+    void Initialize();
 
-    public:
-        static bool GetKey(KeyCode key) { return Instance().m_KeyStates[key]; }
-        static bool GetKeyDown(KeyCode key) { return Instance().m_TransientKeyDownStates[key]; }
-        static bool GetKeyUp(KeyCode key) { return Instance().m_TransientKeyUpStates[key]; }
+public:
+    static bool GetKey(KeyCode key) { return Instance().m_KeyStates[key]; }
+    static bool GetKeyDown(KeyCode key) { return Instance().m_TransientKeyDownStates[key]; }
+    static bool GetKeyUp(KeyCode key) { return Instance().m_TransientKeyUpStates[key]; }
 
-        static bool GetMouseButton(int index) { return Instance().m_MouseStates[index]; }
-        static bool GetMouseButtonDown(int index) { return Instance().m_TransientMouseDownStates[index]; }
-        static bool GetMouseButtonUp(int index) { return Instance().m_TransientMouseUpStates[index]; }
+    static bool GetMouseButton(int index) { return Instance().m_MouseStates[index]; }
+    static bool GetMouseButtonDown(int index) { return Instance().m_TransientMouseDownStates[index]; }
+    static bool GetMouseButtonUp(int index) { return Instance().m_TransientMouseUpStates[index]; }
 
-        static double GetMouseWheelDelta() { return Instance().m_MouseWheelDelta; }
-        static double GetMousePosX() { return Instance().m_MousePosX; }
-        static double GetMousePosY() { return Instance().m_MousePosY; }
-        static double GetMouseDeltaX() { return Instance().m_MouseDeltaX; }
-        static double GetMouseDeltaY() { return Instance().m_MouseDeltaY; }
+    static double GetMouseWheelDelta() { return Instance().m_MouseWheelDelta; }
+    static double GetMousePosX() { return Instance().m_MousePosX; }
+    static double GetMousePosY() { return Instance().m_MousePosY; }
+    static double GetMouseDeltaX() { return Instance().m_MouseDeltaX; }
+    static double GetMouseDeltaY() { return Instance().m_MouseDeltaY; }
 
-    public:
-        static void NewFrame() { return Instance().NewFrame_Impl(); }
-        static void EndFrame() { return Instance().EndFrame_Impl(); }
+public:
+    static void NewFrame() { return Instance().NewFrame_Impl(); }
+    static void EndFrame() { return Instance().EndFrame_Impl(); }
 
-    public:
-        void SetKeyDown(KeyCode key);
-        void SetKeyUp(KeyCode key);
+public:
+    void SetKeyDown(KeyCode key);
+    void SetKeyUp(KeyCode key);
 
-        void SetMouseButtonDown(int index);
-        void SetMouseButtonUp(int index);
+    void SetMouseButtonDown(int index);
+    void SetMouseButtonUp(int index);
 
-        void SetMouseWheelDelta(double delta);
-        void SetMousePosX(double posX);
-        void SetMousePosY(double posY);
+    void SetMouseWheelDelta(double delta);
+    void SetMousePosX(double posX);
+    void SetMousePosY(double posY);
 
-    private:
-        void NewFrame_Impl();
-        void EndFrame_Impl();
+private:
+    void NewFrame_Impl();
+    void EndFrame_Impl();
 
-    private:
-        bool m_KeyStates[MaxNumKeycodes] = {};
-        bool m_TransientKeyDownStates[MaxNumKeycodes] = {};
-        bool m_TransientKeyUpStates[MaxNumKeycodes] = {};
-        bool m_MouseStates[3] = {};
-        bool m_TransientMouseDownStates[3] = {};
-        bool m_TransientMouseUpStates[3] = {};
+private:
+    bool m_KeyStates[MaxNumKeycodes] = {};
+    bool m_TransientKeyDownStates[MaxNumKeycodes] = {};
+    bool m_TransientKeyUpStates[MaxNumKeycodes] = {};
+    bool m_MouseStates[3] = {};
+    bool m_TransientMouseDownStates[3] = {};
+    bool m_TransientMouseUpStates[3] = {};
 
-        double m_MousePosX = 0.0;
-        double m_MousePosY = 0.0;
-        double m_MouseDeltaX = 0.0;
-        double m_MouseDeltaY = 0.0;
-        double m_MouseWheelDelta = 0.0;
-    };
-}
-
+    double m_MousePosX = 0.0;
+    double m_MousePosY = 0.0;
+    double m_MouseDeltaX = 0.0;
+    double m_MouseDeltaY = 0.0;
+    double m_MouseWheelDelta = 0.0;
+};
+} // namespace Ether

@@ -17,12 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
     : RhiPipelineStateDesc()
@@ -96,7 +96,10 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSam
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(RhiShader& vs)
 {
-    AssertGraphics(vs.GetType() == RhiShaderType::Vertex, "Vertex shader expected, but encountered %u", static_cast<uint32_t>(vs.GetType()));
+    AssertGraphics(
+        vs.GetType() == RhiShaderType::Vertex,
+        "Vertex shader expected, but encountered %u",
+        static_cast<uint32_t>(vs.GetType()));
     m_Dx12PsoDesc.VS.pShaderBytecode = vs.GetCompiledData();
     m_Dx12PsoDesc.VS.BytecodeLength = vs.GetCompiledSize();
     m_Shaders[vs.GetType()] = &vs;
@@ -104,7 +107,10 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(RhiShader& vs)
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(RhiShader& ps)
 {
-    AssertGraphics(ps.GetType() == RhiShaderType::Pixel, "Pixel shader expected, but encountered %u", static_cast<uint32_t>(ps.GetType()));
+    AssertGraphics(
+        ps.GetType() == RhiShaderType::Pixel,
+        "Pixel shader expected, but encountered %u",
+        static_cast<uint32_t>(ps.GetType()));
     m_Dx12PsoDesc.PS.pShaderBytecode = ps.GetCompiledData();
     m_Dx12PsoDesc.PS.BytecodeLength = ps.GetCompiledSize();
     m_Shaders[ps.GetType()] = &ps;
@@ -126,4 +132,3 @@ void Ether::Graphics::Dx12PipelineStateDesc::Reset()
 }
 
 #endif // ETH_GRAPHICS_DX12
-

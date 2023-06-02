@@ -27,32 +27,31 @@
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsManager : public Serializable
-    {
-    public:
-        EcsManager();
-        ~EcsManager() = default;
+class ETH_ENGINE_DLL EcsManager : public Serializable
+{
+public:
+    EcsManager();
+    ~EcsManager() = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        void Update();
+public:
+    void Update();
 
-    public:
-        inline EcsEntityManager& GetEntityManager() { return m_EntityManager; }
-        inline EcsComponentManager& GetComponentManager() { return m_ComponentManager; }
-        inline EcsSystemManager& GetSystemManager() { return m_SystemManager; }
+public:
+    inline EcsEntityManager& GetEntityManager() { return m_EntityManager; }
+    inline EcsComponentManager& GetComponentManager() { return m_ComponentManager; }
+    inline EcsSystemManager& GetSystemManager() { return m_SystemManager; }
 
-    public:
-        EntityID CreateEntity();
-        void DestroyEntity(EntityID entityID);
+public:
+    EntityID CreateEntity();
+    void DestroyEntity(EntityID entityID);
 
-    private:
-        EcsEntityManager m_EntityManager;
-        EcsComponentManager m_ComponentManager;
-        EcsSystemManager m_SystemManager;
-    };
-}
-
+private:
+    EcsEntityManager m_EntityManager;
+    EcsComponentManager m_ComponentManager;
+    EcsSystemManager m_SystemManager;
+};
+} // namespace Ether::Ecs

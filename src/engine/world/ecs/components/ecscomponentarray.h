@@ -25,119 +25,120 @@
 
 namespace Ether::Ecs
 {
-    constexpr uint32_t ComponentArrayVersion = 0;
+constexpr uint32_t ComponentArrayVersion = 0;
 
-    class EcsComponentArrayBase : public Serializable
+class EcsComponentArrayBase : public Serializable
+{
+public:
+    EcsComponentArrayBase()
+        : Serializable(ComponentArrayVersion, StringID("Engine::EcsComponentArray").GetHash())
     {
-    public:
-        EcsComponentArrayBase() 
-            : Serializable(ComponentArrayVersion, StringID("Engine::EcsComponentArray").GetHash()) {}
-        ~EcsComponentArrayBase() = default;
-        
-    public:
-        virtual void RemoveComponent(EntityID entityID) = 0;
-    };
+    }
+    ~EcsComponentArrayBase() = default;
 
-    template <typename T>
-    class EcsComponentArray : public EcsComponentArrayBase
+public:
+    virtual void RemoveComponent(EntityID entityID) = 0;
+};
+
+template <typename T>
+class EcsComponentArray : public EcsComponentArrayBase
+{
+public:
+    EcsComponentArray() = default;
+    ~EcsComponentArray() = default;
+
+    void Serialize(OStream& ostream) const override
     {
-    public:
-        EcsComponentArray() = default;
-        ~EcsComponentArray() = default;
+        Serializable::Serialize(ostream);
 
-        void Serialize(OStream& ostream) const override
-        {
-            Serializable::Serialize(ostream);
+        for (int i = 0; i < MaxNumEntities; ++i)
+            m_ComponentArray[i].Serialize(ostream);
 
-            for (int i = 0; i < MaxNumEntities; ++i)
-                m_ComponentArray[i].Serialize(ostream);
+        ostream << m_NumElements;
+        ostream << static_cast<uint32_t>(m_EntityToComponentIDMap.size());
+        ostream << static_cast<uint32_t>(m_ComponentIDToEntityMap.size());
 
-            ostream << m_NumElements;
-            ostream << static_cast<uint32_t>(m_EntityToComponentIDMap.size());
-            ostream << static_cast<uint32_t>(m_ComponentIDToEntityMap.size());
+        for (auto& pair : m_EntityToComponentIDMap)
+            ostream << pair.first << pair.second;
 
-            for (auto& pair : m_EntityToComponentIDMap)
-                ostream << pair.first << pair.second;
-
-            for (auto& pair : m_ComponentIDToEntityMap)
-                ostream << pair.first << pair.second;
-        }
-
-        void Deserialize(IStream& istream) override
-        {
-            Serializable::Deserialize(istream);
-
-            for (int i = 0; i < MaxNumEntities; ++i)
-                m_ComponentArray[i].Deserialize(istream);
-
-            uint32_t compToIdMapSize, entityToCompMapSize;
-            istream >> m_NumElements;
-            istream >> entityToCompMapSize;
-            istream >> compToIdMapSize;
-
-            uint32_t first, second;
-            for (int i = 0; i < entityToCompMapSize; ++i)
-            {
-                istream >> first;
-                istream >> second;
-                m_EntityToComponentIDMap[first] = second;
-            }
-
-            for (int i = 0; i < compToIdMapSize; ++i)
-            {
-                istream >> first;
-                istream >> second;
-                m_ComponentIDToEntityMap[first] = second;
-            }
-        }
-
-    public:
-        inline T& GetComponent(EntityID entityID) { return m_ComponentArray[m_EntityToComponentIDMap[entityID]]; }
-
-    public:
-        void AddComponent(EntityID entityID);
-        void RemoveComponent(EntityID entityID) override;
-
-    private:
-        std::array<T, MaxNumEntities> m_ComponentArray;
-        std::unordered_map<EntityID, uint32_t> m_EntityToComponentIDMap;
-        std::unordered_map<uint32_t, EntityID> m_ComponentIDToEntityMap;
-
-        uint32_t m_NumElements;
-    };
-
-    template <typename T>
-    void Ether::Ecs::EcsComponentArray<T>::AddComponent(EntityID entityID)
-    {
-        if (m_NumElements >= MaxNumEntities)
-            throw std::runtime_error("Component array is full");
-
-        uint32_t newIdx = m_NumElements;
-        m_EntityToComponentIDMap[entityID] = newIdx;
-        m_ComponentIDToEntityMap[newIdx] = entityID;
-        m_ComponentArray[newIdx] = {};
-
-        m_NumElements++;
+        for (auto& pair : m_ComponentIDToEntityMap)
+            ostream << pair.first << pair.second;
     }
 
-    template <typename T>
-    void Ether::Ecs::EcsComponentArray<T>::RemoveComponent(EntityID entityID)
+    void Deserialize(IStream& istream) override
     {
-        if (m_EntityToComponentIDMap.find(entityID) == m_EntityToComponentIDMap.end())
-            return;
+        Serializable::Deserialize(istream);
 
-        size_t currIdx = m_EntityToComponentIDMap[entityID];
-        size_t lastIdx = m_NumElements - 1;
-        m_ComponentArray[m_EntityToComponentIDMap[entityID]] = m_ComponentArray[lastIdx];
+        for (int i = 0; i < MaxNumEntities; ++i)
+            m_ComponentArray[i].Deserialize(istream);
 
-        EntityID lastEntityID = m_ComponentIDToEntityMap[lastIdx];
-        m_EntityToComponentIDMap[lastEntityID] = currIdx;
-        m_ComponentIDToEntityMap[currIdx] = lastEntityID;
+        uint32_t compToIdMapSize, entityToCompMapSize;
+        istream >> m_NumElements;
+        istream >> entityToCompMapSize;
+        istream >> compToIdMapSize;
 
-        m_EntityToComponentIDMap.erase(entityID);
-        m_ComponentIDToEntityMap.erase(lastIdx);
+        uint32_t first, second;
+        for (int i = 0; i < entityToCompMapSize; ++i)
+        {
+            istream >> first;
+            istream >> second;
+            m_EntityToComponentIDMap[first] = second;
+        }
 
-        m_NumElements--;
+        for (int i = 0; i < compToIdMapSize; ++i)
+        {
+            istream >> first;
+            istream >> second;
+            m_ComponentIDToEntityMap[first] = second;
+        }
     }
+
+public:
+    inline T& GetComponent(EntityID entityID) { return m_ComponentArray[m_EntityToComponentIDMap[entityID]]; }
+
+public:
+    void AddComponent(EntityID entityID);
+    void RemoveComponent(EntityID entityID) override;
+
+private:
+    std::array<T, MaxNumEntities> m_ComponentArray;
+    std::unordered_map<EntityID, uint32_t> m_EntityToComponentIDMap;
+    std::unordered_map<uint32_t, EntityID> m_ComponentIDToEntityMap;
+
+    uint32_t m_NumElements;
+};
+
+template <typename T>
+void Ether::Ecs::EcsComponentArray<T>::AddComponent(EntityID entityID)
+{
+    if (m_NumElements >= MaxNumEntities)
+        throw std::runtime_error("Component array is full");
+
+    uint32_t newIdx = m_NumElements;
+    m_EntityToComponentIDMap[entityID] = newIdx;
+    m_ComponentIDToEntityMap[newIdx] = entityID;
+    m_ComponentArray[newIdx] = {};
+
+    m_NumElements++;
 }
 
+template <typename T>
+void Ether::Ecs::EcsComponentArray<T>::RemoveComponent(EntityID entityID)
+{
+    if (m_EntityToComponentIDMap.find(entityID) == m_EntityToComponentIDMap.end())
+        return;
+
+    size_t currIdx = m_EntityToComponentIDMap[entityID];
+    size_t lastIdx = m_NumElements - 1;
+    m_ComponentArray[m_EntityToComponentIDMap[entityID]] = m_ComponentArray[lastIdx];
+
+    EntityID lastEntityID = m_ComponentIDToEntityMap[lastIdx];
+    m_EntityToComponentIDMap[lastEntityID] = currIdx;
+    m_ComponentIDToEntityMap[currIdx] = lastEntityID;
+
+    m_EntityToComponentIDMap.erase(entityID);
+    m_ComponentIDToEntityMap.erase(lastIdx);
+
+    m_NumElements--;
+}
+} // namespace Ether::Ecs

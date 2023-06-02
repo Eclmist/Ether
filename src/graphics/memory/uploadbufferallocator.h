@@ -24,27 +24,27 @@
 
 namespace Ether::Graphics
 {
-    class UploadBufferAllocator : public MemoryAllocator
-    {
-    public:
-        UploadBufferAllocator(size_t pageSize = _4KiB);
-        ~UploadBufferAllocator() = default;
+class UploadBufferAllocator : public MemoryAllocator
+{
+public:
+    UploadBufferAllocator(size_t pageSize = _4KiB);
+    ~UploadBufferAllocator() = default;
 
-    public:
-        std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
-        void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
-        bool HasSpace(SizeAlign sizeAlign) const override;
-        void Reset() override;
+public:
+    std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
+    void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
+    bool HasSpace(SizeAlign sizeAlign) const override;
+    void Reset() override;
 
-    private:
-        UploadBufferAllocatorPage* GetNextAvailablePage();
-        void AllocatePage();
+private:
+    UploadBufferAllocatorPage* GetNextAvailablePage();
+    void AllocatePage();
 
-    private:
-        std::vector<std::unique_ptr<UploadBufferAllocatorPage>> m_PagePool;
-        std::vector<UploadBufferAllocatorPage*> m_AvaliablePages;
+private:
+    std::vector<std::unique_ptr<UploadBufferAllocatorPage>> m_PagePool;
+    std::vector<UploadBufferAllocatorPage*> m_AvaliablePages;
 
-        UploadBufferAllocatorPage* m_CurrentPage;
-        const size_t m_PageSize;
-    };
-}
+    UploadBufferAllocatorPage* m_CurrentPage;
+    const size_t m_PageSize;
+};
+} // namespace Ether::Graphics

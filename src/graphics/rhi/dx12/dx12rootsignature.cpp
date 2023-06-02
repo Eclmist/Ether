@@ -17,10 +17,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(uint32_t numParams, uint32_t numSamplers)
     : RhiRootSignatureDesc(numParams, numSamplers)
@@ -35,7 +35,11 @@ Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(uint32_t numParams
     m_Dx12RootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(
+    uint32_t slot,
+    uint32_t reg,
+    uint32_t numDword,
+    RhiShaderVisibility vis)
 {
     const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
@@ -47,7 +51,10 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(uint32_t slot, uint32
     parameter.Constants.RegisterSpace = 0;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstantBufferView(
+    uint32_t slot,
+    uint32_t reg,
+    RhiShaderVisibility vis)
 {
     const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
@@ -58,7 +65,10 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstantBufferView(uint32_t sl
     parameter.Descriptor.RegisterSpace = 0;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsShaderResourceView(
+    uint32_t slot,
+    uint32_t reg,
+    RhiShaderVisibility vis)
 {
     const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
@@ -69,7 +79,11 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetAsShaderResourceView(uint32_t sl
     parameter.Descriptor.RegisterSpace = 0;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorTable(
+    uint32_t slot,
+    uint32_t reg,
+    uint32_t numRanges,
+    RhiShaderVisibility vis)
 {
     const uint32_t bindSlot = slot;
     D3D12_ROOT_PARAMETER& parameter = m_Dx12RootParameters[bindSlot];
@@ -80,7 +94,12 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorTable(uint32_t slot,
     parameter.DescriptorTable.pDescriptorRanges = &m_Dx12DescriptorRange;
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorRange(uint32_t slot, uint32_t reg, uint32_t numDescriptors, RhiDescriptorType type, RhiShaderVisibility vis)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorRange(
+    uint32_t slot,
+    uint32_t reg,
+    uint32_t numDescriptors,
+    RhiDescriptorType type,
+    RhiShaderVisibility vis)
 {
     m_Dx12DescriptorRange.RangeType = Translate(type);
     m_Dx12DescriptorRange.NumDescriptors = numDescriptors;
@@ -91,7 +110,10 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetAsDescriptorRange(uint32_t slot,
     SetAsDescriptorTable(slot, reg, 1, vis);
 }
 
-void Ether::Graphics::Dx12RootSignatureDesc::SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis)
+void Ether::Graphics::Dx12RootSignatureDesc::SetAsSampler(
+    uint32_t reg,
+    RhiSamplerParameterDesc desc,
+    RhiShaderVisibility vis)
 {
     m_Dx12StaticSamplers[reg] = Translate(desc);
     m_Dx12StaticSamplers[reg].ShaderRegister = reg;
@@ -104,4 +126,3 @@ void Ether::Graphics::Dx12RootSignatureDesc::SetFlags(RhiRootSignatureFlag flag)
 }
 
 #endif // ETH_GRAPHICS_DX12
-

@@ -39,4 +39,3 @@ void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution
 
     GraphicCore::GetGraphicDisplay().ResizeBuffers(m_Resolution);
 }
-

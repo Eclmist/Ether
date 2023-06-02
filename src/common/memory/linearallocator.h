@@ -23,37 +23,39 @@
 
 namespace Ether
 {
-    class ETH_COMMON_DLL LinearAllocation : public MemoryAllocation
+class ETH_COMMON_DLL LinearAllocation : public MemoryAllocation
+{
+public:
+    LinearAllocation() = default;
+    LinearAllocation(size_t offset, size_t size)
+        : m_Offset(offset)
+        , m_Size(size)
     {
-    public:
-        LinearAllocation() = default;
-        LinearAllocation(size_t offset, size_t size)
-            : m_Offset(offset)
-            , m_Size(size) {}
-        ~LinearAllocation() override {}
+    }
+    ~LinearAllocation() override {}
 
-        virtual size_t GetOffset() const override { return m_Offset; }
-        virtual size_t GetSize() const override { return m_Size; }
-        virtual void* GetBaseCpuHandle() const override { return nullptr; }
+    virtual size_t GetOffset() const override { return m_Offset; }
+    virtual size_t GetSize() const override { return m_Size; }
+    virtual void* GetBaseCpuHandle() const override { return nullptr; }
 
-    protected:
-        size_t m_Offset;
-        size_t m_Size;
-    };
+protected:
+    size_t m_Offset;
+    size_t m_Size;
+};
 
-    class ETH_COMMON_DLL LinearAllocator : public MemoryAllocator
-    {
-    public:
-        LinearAllocator(size_t capacity);
-        ~LinearAllocator() = default;
+class ETH_COMMON_DLL LinearAllocator : public MemoryAllocator
+{
+public:
+    LinearAllocator(size_t capacity);
+    ~LinearAllocator() = default;
 
-    public:
-        std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
-        void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
-        bool HasSpace(SizeAlign sizeAlign) const override;
-        void Reset() override;
+public:
+    std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
+    void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
+    bool HasSpace(SizeAlign sizeAlign) const override;
+    void Reset() override;
 
-    protected:
-        size_t m_Offset;
-    };
-}
+protected:
+    size_t m_Offset;
+};
+} // namespace Ether

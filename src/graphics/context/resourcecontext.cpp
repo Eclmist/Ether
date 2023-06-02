@@ -43,7 +43,8 @@ void Ether::Graphics::ResourceContext::AddPipelineState(RhiPipelineStateDesc& pi
         m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile();
 }
 
-Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc)
+Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipelineState(
+    RhiPipelineStateDesc& pipelineStateDesc)
 {
     if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
     {
@@ -59,4 +60,3 @@ void Ether::Graphics::ResourceContext::RecompilePipelineStates()
     for (auto& psoPair : m_CachedPipelineStates)
         AddPipelineState(*psoPair.first);
 }
- 

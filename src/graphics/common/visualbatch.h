@@ -24,11 +24,10 @@
 
 namespace Ether::Graphics
 {
-    struct ETH_GRAPHIC_DLL VisualBatch
-    {
-        std::vector<Visual> m_Visuals;
+struct ETH_GRAPHIC_DLL VisualBatch
+{
+    std::vector<Visual> m_Visuals;
 
-        // Other batch related data will go in here in the future
-    };
-}
-
+    // Other batch related data will go in here in the future
+};
+} // namespace Ether::Graphics

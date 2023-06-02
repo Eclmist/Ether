@@ -24,24 +24,24 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL RhiImguiWrapper : public NonCopyable, public NonMovable
-    {
-    public:
-        RhiImguiWrapper();
-        virtual ~RhiImguiWrapper();
+class ETH_GRAPHIC_DLL RhiImguiWrapper : public NonCopyable, public NonMovable
+{
+public:
+    RhiImguiWrapper();
+    virtual ~RhiImguiWrapper();
 
-    public:
-        virtual void Render();
-        virtual void RenderDrawData() = 0;
+public:
+    virtual void Render();
+    virtual void RenderDrawData() = 0;
 
-    public:
-        static std::unique_ptr<RhiImguiWrapper> InitForPlatform();
+public:
+    static std::unique_ptr<RhiImguiWrapper> InitForPlatform();
 
-    protected:
-        void SetStyle() const;
+protected:
+    void SetStyle() const;
 
-    protected:
-        GraphicContext m_Context;
-        std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
-    };
-}
+protected:
+    GraphicContext m_Context;
+    std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
+};
+} // namespace Ether::Graphics

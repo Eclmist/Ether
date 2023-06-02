@@ -46,4 +46,3 @@ void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
     istream >> m_EntityName;
     istream >> m_EntityEnabled;
 }
-

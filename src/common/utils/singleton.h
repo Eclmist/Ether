@@ -21,66 +21,64 @@
 
 namespace Ether
 {
-    /*
-        Global Singleton that forbids object creation through explicit new/delete.
-        This is mainly used by engine subsystems where it is important that object
-        lifecycle is controlled manually.
-    */
-    template <typename T>
-    class Singleton : public NonCopyable
+/*
+    Global Singleton that forbids object creation through explicit new/delete.
+    This is mainly used by engine subsystems where it is important that object
+    lifecycle is controlled manually.
+*/
+template <typename T>
+class Singleton : public NonCopyable
+{
+public:
+    static bool HasInstance() { return s_Instance != nullptr; }
+
+    static T& Instance()
     {
-    public:
-        static bool HasInstance()
-        {
-            return s_Instance != nullptr;
-        }
-
-        static T& Instance()
-        {
-            if (s_Instance != nullptr)
-                return *s_Instance;
-
-            s_IsInitializing = true;
-            s_Instance = new T();
-            s_IsInitializing = false;
+        if (s_Instance != nullptr)
             return *s_Instance;
-        };
 
-        static void Reset()
-        {
-            assert(s_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
-            s_IsDestroying = true;
-            delete(s_Instance);
-            s_Instance = nullptr;
-        };
-
-    protected:
-        Singleton()
-        {
-            assert(s_IsInitializing &&
-                "Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
-        };
-
-        ~Singleton()
-        {
-            assert(s_IsDestroying &&
-                "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
-            s_IsDestroying = false;
-        };
-
-    protected:
-        static T* s_Instance;
-        static bool s_IsInitializing;
-        static bool s_IsDestroying;
+        s_IsInitializing = true;
+        s_Instance = new T();
+        s_IsInitializing = false;
+        return *s_Instance;
     };
 
-    template <typename T>
-    T* Singleton<T>::s_Instance = nullptr;
+    static void Reset()
+    {
+        assert(s_Instance != nullptr && "Attempting to destroy a singleton before it has been instantiated");
+        s_IsDestroying = true;
+        delete (s_Instance);
+        s_Instance = nullptr;
+    };
 
-    template <typename T>
-    bool Singleton<T>::s_IsInitializing = false;
+protected:
+    Singleton()
+    {
+        assert(
+            s_IsInitializing &&
+            "Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
+    };
 
-    template <typename T>
-    bool Singleton<T>::s_IsDestroying = false;
-}
+    ~Singleton()
+    {
+        assert(
+            s_IsDestroying &&
+            "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
+        s_IsDestroying = false;
+    };
 
+protected:
+    static T* s_Instance;
+    static bool s_IsInitializing;
+    static bool s_IsDestroying;
+};
+
+template <typename T>
+T* Singleton<T>::s_Instance = nullptr;
+
+template <typename T>
+bool Singleton<T>::s_IsInitializing = false;
+
+template <typename T>
+bool Singleton<T>::s_IsDestroying = false;
+} // namespace Ether

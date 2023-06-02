@@ -24,49 +24,51 @@
 
 namespace Ether
 {
-    constexpr Ecs::EntityID InvalidEntityID = -1;
-    constexpr Ecs::EntityID RootEntityID = 0;
+constexpr Ecs::EntityID InvalidEntityID = -1;
+constexpr Ecs::EntityID RootEntityID = 0;
 
-    class SceneGraphNode : public Serializable
+class SceneGraphNode : public Serializable
+{
+public:
+    SceneGraphNode();
+    ~SceneGraphNode() override = default;
+
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
+
+private:
+    friend class SceneGraph;
+
+    Ecs::EntityID m_ParentIndex;
+    std::vector<Ecs::EntityID> m_ChildrenIndices;
+    bool m_IsRegistered;
+};
+
+class SceneGraph : public Serializable
+{
+public:
+    SceneGraph();
+    ~SceneGraph() override = default;
+
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
+
+public:
+    inline Ecs::EntityID GetParent(Ecs::EntityID id) const { return m_Nodes[id].m_ParentIndex; }
+    inline Ecs::EntityID GetFirstChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
+    inline Ecs::EntityID GetLastChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
+    inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const
     {
-    public:
-        SceneGraphNode();
-        ~SceneGraphNode() override = default;
+        return m_Nodes[id].m_ChildrenIndices;
+    }
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+    void Register(Ecs::EntityID id, Ecs::EntityID parent = RootEntityID);
+    void Deregister(Ecs::EntityID id);
+    void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
 
-    private:
-        friend class SceneGraph;
-
-        Ecs::EntityID m_ParentIndex;
-        std::vector<Ecs::EntityID> m_ChildrenIndices;
-        bool m_IsRegistered;
-    };
-
-    class SceneGraph : public Serializable
-    {
-    public:
-        SceneGraph();
-        ~SceneGraph() override = default;
-
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
-
-    public:
-        inline Ecs::EntityID GetParent(Ecs::EntityID id) const { return m_Nodes[id].m_ParentIndex; }
-        inline Ecs::EntityID GetFirstChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
-        inline Ecs::EntityID GetLastChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
-        inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
-
-        void Register(Ecs::EntityID id, Ecs::EntityID parent = RootEntityID);
-        void Deregister(Ecs::EntityID id);
-        void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
-
-    private:
-        SceneGraphNode m_Nodes[Ecs::MaxNumEntities];
-    };
-}
-
+private:
+    SceneGraphNode m_Nodes[Ecs::MaxNumEntities];
+};
+} // namespace Ether

@@ -24,26 +24,20 @@
 
 namespace Ether::Graphics
 {
-    class UploadBufferAllocation : public LinearAllocation
-    {
-    public:
-        UploadBufferAllocation(
-            size_t offset,
-            size_t size,
-            void* mappedBaseAddr,
-            RhiResource& resource
-        );
+class UploadBufferAllocation : public LinearAllocation
+{
+public:
+    UploadBufferAllocation(size_t offset, size_t size, void* mappedBaseAddr, RhiResource& resource);
 
-    public:
-        inline void* GetBaseCpuHandle() const override { return m_MappedBaseAddress; }
+public:
+    inline void* GetBaseCpuHandle() const override { return m_MappedBaseAddress; }
 
-        inline RhiGpuAddress GetBaseGpuAddress() const { return m_Resource.GetGpuAddress(); }
-        inline RhiGpuAddress GetGpuAddress() const { return GetBaseGpuAddress() + m_Offset; }
-        inline RhiResource& GetResource() { return m_Resource; }
+    inline RhiGpuAddress GetBaseGpuAddress() const { return m_Resource.GetGpuAddress(); }
+    inline RhiGpuAddress GetGpuAddress() const { return GetBaseGpuAddress() + m_Offset; }
+    inline RhiResource& GetResource() { return m_Resource; }
 
-    protected:
-        void* m_MappedBaseAddress;
-        RhiResource& m_Resource;
-    };
-}
-
+protected:
+    void* m_MappedBaseAddress;
+    RhiResource& m_Resource;
+};
+} // namespace Ether::Graphics

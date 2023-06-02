@@ -22,11 +22,10 @@
 
 namespace Ether::Win32
 {
-    class Win32LaunchArgs : public PlatformLaunchArgs
-    {
-    public:
-        Win32LaunchArgs();
-        ~Win32LaunchArgs() override = default;
-    };
-}
-
+class Win32LaunchArgs : public PlatformLaunchArgs
+{
+public:
+    Win32LaunchArgs();
+    ~Win32LaunchArgs() override = default;
+};
+} // namespace Ether::Win32

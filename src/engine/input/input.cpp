@@ -85,5 +85,3 @@ void Ether::Input::NewFrame_Impl()
 void Ether::Input::EndFrame_Impl()
 {
 }
-
-

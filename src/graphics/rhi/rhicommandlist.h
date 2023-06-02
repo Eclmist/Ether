@@ -23,48 +23,49 @@
 
 namespace Ether::Graphics
 {
-    class RhiCommandList : public NonCopyable, public NonMovable
+class RhiCommandList : public NonCopyable, public NonMovable
+{
+public:
+    RhiCommandList(RhiCommandType type)
+        : m_Type(type)
     {
-    public:
-        RhiCommandList(RhiCommandType type) : m_Type(type) {}
-        virtual ~RhiCommandList() = default;
+    }
+    virtual ~RhiCommandList() = default;
 
-    public:
-        virtual void SetMarker(const std::string& name) = 0;
-        virtual void PushMarker(const std::string& name) = 0;
-        virtual void PopMarker() = 0;
+public:
+    virtual void SetMarker(const std::string& name) = 0;
+    virtual void PushMarker(const std::string& name) = 0;
+    virtual void PopMarker() = 0;
 
-        virtual void SetViewport(RhiViewportDesc viewport) = 0;
-        virtual void SetScissorRect(RhiScissorDesc scissor) = 0;
-        virtual void SetStencilRef(RhiStencilValue val) = 0;
-        virtual void SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
-        virtual void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
-        virtual void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
-        virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
-        virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
-        virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
-        virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
+    virtual void SetViewport(RhiViewportDesc viewport) = 0;
+    virtual void SetScissorRect(RhiScissorDesc scissor) = 0;
+    virtual void SetStencilRef(RhiStencilValue val) = 0;
+    virtual void SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) = 0;
+    virtual void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) = 0;
+    virtual void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
+    virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
+    virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
+    virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
+    virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
 
-        virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
 
+    virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
+    virtual void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) = 0;
 
-        virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
-        virtual void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) = 0;
+    virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
+    virtual void CopyBufferRegion(RhiCopyBufferRegionDesc desc) = 0;
+    virtual void CopyTextureRegion(RhiCopyTextureRegionDesc desc) = 0;
+    virtual void DrawInstanced(RhiDrawInstancedDesc desc) = 0;
+    virtual void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) = 0;
 
-        virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
-        virtual void CopyBufferRegion(RhiCopyBufferRegionDesc desc) = 0;
-        virtual void CopyTextureRegion(RhiCopyTextureRegionDesc desc) = 0;
-        virtual void DrawInstanced(RhiDrawInstancedDesc desc) = 0;
-        virtual void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) = 0;
+    virtual void Reset(const RhiCommandAllocator& commandAllocator) = 0;
+    virtual void Close() = 0;
 
-        virtual void Reset(const RhiCommandAllocator& commandAllocator) = 0;
-        virtual void Close() = 0;
+public:
+    RhiCommandType GetType() const { return m_Type; }
 
-    public:
-        RhiCommandType GetType() const { return m_Type; }
-
-    protected:
-        RhiCommandType m_Type;
-    };
-}
-
+protected:
+    RhiCommandType m_Type;
+};
+} // namespace Ether::Graphics

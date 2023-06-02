@@ -27,41 +27,40 @@
 
 namespace Ether::Graphics
 {
-    struct GlobalConstants
-    {
-        ethMatrix4x4 m_ViewMatrix;
-        ethMatrix4x4 m_ProjectionMatrix;
-        ethVector4 m_EyePosition;
-        ethVector4 m_EyeDirection;
-        ethVector4 m_Time;
-        ethVector2u m_ScreenResolution;
+struct GlobalConstants
+{
+    ethMatrix4x4 m_ViewMatrix;
+    ethMatrix4x4 m_ProjectionMatrix;
+    ethVector4 m_EyePosition;
+    ethVector4 m_EyeDirection;
+    ethVector4 m_Time;
+    ethVector2u m_ScreenResolution;
+};
+
+class TempFrameDump
+{
+public:
+    void Reset();
+    void Initialize(ResourceContext& resourceContext);
+    void FrameSetup(ResourceContext& resourceContext);
+    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
+    void UploadGlobalConstants(GraphicContext& context);
+
+private:
+    RhiInputElementDesc m_InputElementDesc[5] = {
+        { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "BITANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
     };
 
-    class TempFrameDump
-    {
-    public:
-        void Reset();
-        void Initialize(ResourceContext& resourceContext);
-        void FrameSetup(ResourceContext& resourceContext);
-        void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
-        void UploadGlobalConstants(GraphicContext& context);
+    std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
+    std::unique_ptr<RhiDepthStencilView> m_Dsv;
+    std::unique_ptr<RhiResource> m_DepthBuffer;
 
-    private:
-        RhiInputElementDesc m_InputElementDesc[5] =
-        {
-            { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-            { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-            { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-            { "BITANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-            { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        };
-
-        std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-        std::unique_ptr<RhiDepthStencilView> m_Dsv;
-        std::unique_ptr<RhiResource> m_DepthBuffer;
-
-        std::unique_ptr<RhiShader> vs, ps;
-        std::unique_ptr<RhiRootSignature> rootSignature;
-        std::unique_ptr<RhiPipelineStateDesc> psoDesc;
-    };
-}
+    std::unique_ptr<RhiShader> vs, ps;
+    std::unique_ptr<RhiRootSignature> rootSignature;
+    std::unique_ptr<RhiPipelineStateDesc> psoDesc;
+};
+} // namespace Ether::Graphics

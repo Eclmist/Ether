@@ -91,6 +91,4 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
 
 void Ether::Graphics::FrameScheduler::RenderMultiThreaded(GraphicContext& context)
 {
-
 }
-

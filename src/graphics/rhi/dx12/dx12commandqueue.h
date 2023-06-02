@@ -25,20 +25,19 @@
 
 namespace Ether::Graphics
 {
-    class Dx12CommandQueue : public RhiCommandQueue
-    {
-    public:
-        Dx12CommandQueue(RhiCommandType type = RhiCommandType::Graphic);
-        ~Dx12CommandQueue() = default;
+class Dx12CommandQueue : public RhiCommandQueue
+{
+public:
+    Dx12CommandQueue(RhiCommandType type = RhiCommandType::Graphic);
+    ~Dx12CommandQueue() = default;
 
-    public:
-        void StallForFence(RhiFenceValue fenceValue) override;
-        void Flush() override;
-        RhiFenceValue Execute(RhiCommandList& cmdList) override;
+public:
+    void StallForFence(RhiFenceValue fenceValue) override;
+    void Flush() override;
+    RhiFenceValue Execute(RhiCommandList& cmdList) override;
 
-    private:
-        friend class Dx12Device;
-        wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-    };
-}
-
+private:
+    friend class Dx12Device;
+    wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
+};
+} // namespace Ether::Graphics

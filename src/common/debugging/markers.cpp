@@ -18,4 +18,3 @@
 */
 
 #include "common/debugging/markers.h"
-

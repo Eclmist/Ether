@@ -24,27 +24,26 @@
 
 namespace Ether
 {
-    class OStream;
-    class IStream;
+class OStream;
+class IStream;
 
-    /*
-        Derive from this class to make other classes serializable
-    */
-    class ETH_COMMON_DLL Serializable
-    {
-    public:
-        Serializable(uint32_t version, uint32_t classID);
-        virtual ~Serializable() = 0;
+/*
+    Derive from this class to make other classes serializable
+*/
+class ETH_COMMON_DLL Serializable
+{
+public:
+    Serializable(uint32_t version, uint32_t classID);
+    virtual ~Serializable() = 0;
 
-        inline std::string GetGuid() const { return m_Guid; }
+    inline std::string GetGuid() const { return m_Guid; }
 
-        virtual void Serialize(OStream& ostream) const;
-        virtual void Deserialize(IStream& istream);
+    virtual void Serialize(OStream& ostream) const;
+    virtual void Deserialize(IStream& istream);
 
-    protected:
-        std::string m_Guid;
-        uint32_t m_Version;
-        uint32_t m_ClassID;
-    };
-}
-
+protected:
+    std::string m_Guid;
+    uint32_t m_Version;
+    uint32_t m_ClassID;
+};
+} // namespace Ether

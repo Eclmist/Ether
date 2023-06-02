@@ -25,16 +25,15 @@
 
 namespace Ether::Win32
 {
-    class Win32NotificationTray : public PlatformNotificationTray
-    {
-    public:
-        Win32NotificationTray();
-        ~Win32NotificationTray() override;
+class Win32NotificationTray : public PlatformNotificationTray
+{
+public:
+    Win32NotificationTray();
+    ~Win32NotificationTray() override;
 
-    private:
-        void AddTrayIcon();
-        void RemoveTrayIcon();
-        static LRESULT CALLBACK SysTrayWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    };
-}
-
+private:
+    void AddTrayIcon();
+    void RemoveTrayIcon();
+    static LRESULT CALLBACK SysTrayWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+};
+} // namespace Ether::Win32

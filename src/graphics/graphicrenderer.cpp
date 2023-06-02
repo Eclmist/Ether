@@ -50,4 +50,3 @@ void Ether::Graphics::GraphicRenderer::Present()
     gfxDisplay.SetCurrentBackBufferFence(m_Context.GetCommandQueue().GetFinalFenceValue());
     gfxDisplay.Present();
 }
-

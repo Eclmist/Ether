@@ -24,47 +24,45 @@
 
 namespace Ether::Graphics
 {
-    class DescriptorAllocator;
+class DescriptorAllocator;
 
-    class DescriptorAllocation : public FreeListAllocation
-    {
-    public:
-        DescriptorAllocation(
-            RhiCpuAddress allocBaseCpuHandle,
-            RhiGpuAddress allocBaseGpuHandle,
-            size_t numDescriptors,
-            size_t descriptorSize,
-            size_t indexInAllocator,
-            DescriptorAllocator* parentAllocator
-        );
+class DescriptorAllocation : public FreeListAllocation
+{
+public:
+    DescriptorAllocation(
+        RhiCpuAddress allocBaseCpuHandle,
+        RhiGpuAddress allocBaseGpuHandle,
+        size_t numDescriptors,
+        size_t descriptorSize,
+        size_t indexInAllocator,
+        DescriptorAllocator* parentAllocator);
 
-        ~DescriptorAllocation() noexcept;
+    ~DescriptorAllocation() noexcept;
 
-        DescriptorAllocation(const DescriptorAllocation& copy) = delete;
-        DescriptorAllocation& operator=(const DescriptorAllocation& copy) = delete;
-        DescriptorAllocation(DescriptorAllocation&& move) noexcept;
-        DescriptorAllocation& operator=(DescriptorAllocation&& move) noexcept;
+    DescriptorAllocation(const DescriptorAllocation& copy) = delete;
+    DescriptorAllocation& operator=(const DescriptorAllocation& copy) = delete;
+    DescriptorAllocation(DescriptorAllocation&& move) noexcept;
+    DescriptorAllocation& operator=(DescriptorAllocation&& move) noexcept;
 
-    public:
-        size_t GetOffset() const override { return m_Offset * m_DescriptorSize; }
-        size_t GetSize() const override { return m_Size; }
+public:
+    size_t GetOffset() const override { return m_Offset * m_DescriptorSize; }
+    size_t GetSize() const override { return m_Size; }
 
-    public:
-        inline size_t GetNumDescriptors() const { return m_Size; }
+public:
+    inline size_t GetNumDescriptors() const { return m_Size; }
 
-    public:
-        size_t GetDescriptorIndex(size_t localIndex = 0) const;
-        RhiCpuAddress GetCpuAddress(size_t localIndex = 0) const;
-        RhiGpuAddress GetGpuAddress(size_t localIndex = 0) const;
+public:
+    size_t GetDescriptorIndex(size_t localIndex = 0) const;
+    RhiCpuAddress GetCpuAddress(size_t localIndex = 0) const;
+    RhiGpuAddress GetGpuAddress(size_t localIndex = 0) const;
 
-    private:
-        RhiCpuAddress m_BaseCpuAddress;
-        RhiGpuAddress m_BaseGpuAddress;
+private:
+    RhiCpuAddress m_BaseCpuAddress;
+    RhiGpuAddress m_BaseGpuAddress;
 
-        size_t m_DescriptorSize;
+    size_t m_DescriptorSize;
 
-        DescriptorAllocator* m_Parent;
-        bool m_IsValid;
-    };
-}
-
+    DescriptorAllocator* m_Parent;
+    bool m_IsValid;
+};
+} // namespace Ether::Graphics

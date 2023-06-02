@@ -17,13 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12commandqueue.h"
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12device.h"
 #include "graphics/rhi/dx12/dx12fence.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12CommandQueue::Dx12CommandQueue(RhiCommandType type)
     : RhiCommandQueue(type)
@@ -69,4 +69,3 @@ Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12CommandQueue::Execute(RhiCom
 }
 
 #endif // ETH_GRAPHICS_DX12
-

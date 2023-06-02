@@ -26,46 +26,36 @@
 
 Ether::ethMatrix4x4 GetTranslationMatrix(const Ether::ethVector3& translation)
 {
-    return { 1.0f, 0.0f, 0.0f, translation.x,
-             0.0f, 1.0f, 0.0f, translation.y,
-             0.0f, 0.0f, 1.0f, translation.z,
-             0.0f, 0.0f, 0.0f, 1.0f };
+    return { 1.0f, 0.0f, 0.0f, translation.x, 0.0f, 1.0f, 0.0f, translation.y,
+             0.0f, 0.0f, 1.0f, translation.z, 0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 Ether::ethMatrix4x4 GetScaleMatrix(const Ether::ethVector3& scale)
 {
-    return { scale.x, 0.0f, 0.0f, 0.0f,
-             0.0f, scale.y, 0.0f, 0.0f,
-             0.0f, 0.0f, scale.z, 0.0f,
-             0.0f, 0.0f, 0.0f, 1.0f };
+    return { scale.x, 0.0f, 0.0f, 0.0f, 0.0f, scale.y, 0.0f, 0.0f, 0.0f, 0.0f, scale.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 }
 Ether::ethMatrix4x4 GetRotationMatrixX(float rotX)
 {
-    return { 1.0f, 0.0f, 0.0f, 0.0f,
-             0.0f, cos(rotX), -sin(rotX), 0.0f,
-             0.0f, sin(rotX), cos(rotX), 0.0f,
-             0.0f, 0.0f, 0.0f, 1.0f };
+    return { 1.0f, 0.0f,      0.0f,      0.0f, 0.0f, cos(rotX), -sin(rotX), 0.0f,
+             0.0f, sin(rotX), cos(rotX), 0.0f, 0.0f, 0.0f,      0.0f,       1.0f };
 }
 
 Ether::ethMatrix4x4 GetRotationMatrixY(float rotY)
 {
-    return { cos(rotY), 0.0f, sin(rotY), 0.0f,
-             0.0f, 1.0f, 0.0f, 0.0f,
-             -sin(rotY), 0.0f, cos(rotY), 0.0f,
-             0.0f, 0.0f, 0.0f, 1.0f };
+    return { cos(rotY),  0.0f, sin(rotY), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+             -sin(rotY), 0.0f, cos(rotY), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 Ether::ethMatrix4x4 GetRotationMatrixZ(float rotZ)
 {
-    return { cos(rotZ), -sin(rotZ), 0.0f, 0.0f,
-             sin(rotZ), cos(rotZ), 0.0f, 0.0f,
-             0.0f, 0.0f, 1.0f, 0.0f,
-             0.0f, 0.0f, 0.0f, 1.0f };
+    return { cos(rotZ), -sin(rotZ), 0.0f, 0.0f, sin(rotZ), cos(rotZ), 0.0f, 0.0f,
+             0.0f,      0.0f,       1.0f, 0.0f, 0.0f,      0.0f,      0.0f, 1.0f };
 }
 
 Ether::ethMatrix4x4 GetRotationMatrix(const Ether::ethVector3& eulerRotation)
 {
-    return GetRotationMatrixZ(eulerRotation.z) * GetRotationMatrixY(eulerRotation.y) * GetRotationMatrixX(eulerRotation.x);
+    return GetRotationMatrixZ(eulerRotation.z) * GetRotationMatrixY(eulerRotation.y) *
+           GetRotationMatrixX(eulerRotation.x);
 }
 
 Ether::ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear, float zfar)
@@ -87,7 +77,6 @@ Ether::ethMatrix4x4 GetPerspectiveMatrixLH(float fovy, float aspect, float znear
 }
 
 constexpr Ether::Graphics::RhiFormat DepthBufferFormat = Ether::Graphics::RhiFormat::D24UnormS8Uint;
-
 
 void Ether::Graphics::TempFrameDump::Initialize(ResourceContext& resourceContext)
 {
@@ -133,7 +122,9 @@ void Ether::Graphics::TempFrameDump::FrameSetup(ResourceContext& resourceContext
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::DepthWrite;
     desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, GraphicCore::GetGraphicConfig().GetResolution());
+    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(
+        DepthBufferFormat,
+        GraphicCore::GetGraphicConfig().GetResolution());
     desc.m_Name = "Depth Buffer";
 
     if (std::memcmp(&prevDesc.m_ResourceDesc, &desc.m_ResourceDesc, sizeof(RhiResourceDesc)) == 0)
@@ -218,10 +209,15 @@ void Ether::Graphics::TempFrameDump::UploadGlobalConstants(GraphicContext& conte
     globalConstants.m_ProjectionMatrix = context.GetProjectionMatrix();
     globalConstants.m_EyeDirection = context.GetEyeDirection().Resize<4>();
     globalConstants.m_EyePosition = context.GetEyePosition().Resize<4>();
-    globalConstants.m_Time = ethVector4(Time::GetTimeSinceStartup() / 20, Time::GetTimeSinceStartup(), Time::GetTimeSinceStartup() * 2, Time::GetTimeSinceStartup() * 3);
+    globalConstants.m_Time = ethVector4(
+        Time::GetTimeSinceStartup() / 20,
+        Time::GetTimeSinceStartup(),
+        Time::GetTimeSinceStartup() * 2,
+        Time::GetTimeSinceStartup() * 3);
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate({ sizeof(GlobalConstants), 256 });
+    auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate(
+        { sizeof(GlobalConstants), 256 });
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(GlobalConstants));
     context.SetRootConstantBuffer(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
 }

@@ -24,15 +24,14 @@
 
 namespace Ether::Ecs
 {
-    class EcsVisualSystem : public EcsSystem
-    {
-    public:
-        EcsVisualSystem();
-        ~EcsVisualSystem() override = default;
+class EcsVisualSystem : public EcsSystem
+{
+public:
+    EcsVisualSystem();
+    ~EcsVisualSystem() override = default;
 
-    protected:
-        friend class EcsManager;
-        void Update() override;
-    };
-}
-
+protected:
+    friend class EcsManager;
+    void Update() override;
+};
+} // namespace Ether::Ecs

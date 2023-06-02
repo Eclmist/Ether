@@ -25,21 +25,21 @@
 
 namespace Ether::Graphics
 {
-    class Dx12Resource : public RhiResource
-    {
-    public:
-        Dx12Resource(const std::string& name);
+class Dx12Resource : public RhiResource
+{
+public:
+    Dx12Resource(const std::string& name);
 
-    public:
-        RhiGpuAddress GetGpuAddress() const override;
-        void Map(void** mappedAddr) const override;
-        void Unmap() const override;
+public:
+    RhiGpuAddress GetGpuAddress() const override;
+    void Map(void** mappedAddr) const override;
+    void Unmap() const override;
 
-    private:
-        friend class Dx12CommandList;
-        friend class Dx12Device;
-        friend class Dx12SwapChain;
+private:
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    friend class Dx12SwapChain;
 
-        wrl::ComPtr<ID3D12Resource> m_Resource;
-    };
-}
+    wrl::ComPtr<ID3D12Resource> m_Resource;
+};
+} // namespace Ether::Graphics

@@ -24,23 +24,21 @@
 
 namespace Ether::Graphics
 {
-    class ResourceContext
-    {
-    public:
-        ResourceContext() = default;
-        ~ResourceContext() = default;
+class ResourceContext
+{
+public:
+    ResourceContext() = default;
+    ~ResourceContext() = default;
 
-    public:
-        void AddPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
-        RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
+public:
+    void AddPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
+    RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
 
-    private:
-        friend class FrameScheduler;
-        void RecompilePipelineStates();
+private:
+    friend class FrameScheduler;
+    void RecompilePipelineStates();
 
-    private:
-        std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
-    };
-}
-
-
+private:
+    std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
+};
+} // namespace Ether::Graphics

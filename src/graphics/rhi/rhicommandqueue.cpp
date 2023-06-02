@@ -26,4 +26,3 @@ bool Ether::Graphics::RhiCommandQueue::IsFenceComplete(RhiFenceValue fenceValue)
 
     return fenceValue <= m_LastKnownFenceValue;
 }
-

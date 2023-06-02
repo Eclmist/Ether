@@ -25,35 +25,34 @@
 
 namespace Ether
 {
-    class PlatformWindow : public NonCopyable, public NonMovable
-    {
-    public:
-        PlatformWindow();
-        virtual ~PlatformWindow() = default;
+class PlatformWindow : public NonCopyable, public NonMovable
+{
+public:
+    PlatformWindow();
+    virtual ~PlatformWindow() = default;
 
-        virtual void Show() = 0;
-        virtual void Hide() = 0;
+    virtual void Show() = 0;
+    virtual void Hide() = 0;
 
-        virtual void SetClientSize(const ethVector2u& size) = 0;
-        virtual void SetClientPosition(const ethVector2u& pos) = 0;
-        virtual void SetFullscreen(bool isFullscreen) = 0;
-        virtual void SetParentWindowHandle(void* parentHandle) = 0;
-        virtual void SetTitle(const std::string& title) = 0;
+    virtual void SetClientSize(const ethVector2u& size) = 0;
+    virtual void SetClientPosition(const ethVector2u& pos) = 0;
+    virtual void SetFullscreen(bool isFullscreen) = 0;
+    virtual void SetParentWindowHandle(void* parentHandle) = 0;
+    virtual void SetTitle(const std::string& title) = 0;
 
-        inline bool IsFullscreen() const { return m_IsFullscreen; }
+    inline bool IsFullscreen() const { return m_IsFullscreen; }
 
-        inline void* GetWindowHandle() const { return m_WindowHandle; }
-        inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
+    inline void* GetWindowHandle() const { return m_WindowHandle; }
+    inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
 
-    public:
-        virtual void PlatformMessageLoop() = 0;
-        virtual bool ProcessPlatformMessages() = 0;
+public:
+    virtual void PlatformMessageLoop() = 0;
+    virtual bool ProcessPlatformMessages() = 0;
 
-    protected:
-        bool m_IsFullscreen;
+protected:
+    bool m_IsFullscreen;
 
-        void* m_WindowHandle;
-        void* m_ParentWindowHandle;
-    };
-}
-
+    void* m_WindowHandle;
+    void* m_ParentWindowHandle;
+};
+} // namespace Ether

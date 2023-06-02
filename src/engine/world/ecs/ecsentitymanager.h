@@ -27,28 +27,28 @@
 
 namespace Ether::Ecs
 {
-    class ETH_ENGINE_DLL EcsEntityManager : public Serializable
-    {
-    public:
-        EcsEntityManager();
-        ~EcsEntityManager() = default;
+class ETH_ENGINE_DLL EcsEntityManager : public Serializable
+{
+public:
+    EcsEntityManager();
+    ~EcsEntityManager() = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        EntityID CreateEntity();
-        void DestroyEntity(EntityID id);
+public:
+    EntityID CreateEntity();
+    void DestroyEntity(EntityID id);
 
-        void SetSignature(EntityID id, EntitySignature signature);
-        EntitySignature GetSignature(EntityID id);
+    void SetSignature(EntityID id, EntitySignature signature);
+    EntitySignature GetSignature(EntityID id);
 
-    private:
-        friend class EcsManager;
+private:
+    friend class EcsManager;
 
-    private:
-        std::queue<EntityID> m_AvailableEntities;
-        std::array<EntitySignature, MaxNumEntities> m_EntitySignatures;
-    };
-}
+private:
+    std::queue<EntityID> m_AvailableEntities;
+    std::array<EntitySignature, MaxNumEntities> m_EntitySignatures;
+};
+} // namespace Ether::Ecs

@@ -58,28 +58,37 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
     ETH_MARKER_EVENT("Shader Daemon");
 
     std::wstring shaderDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourceDir());
-    HANDLE hDir = CreateFileW(shaderDir.c_str(),  FILE_LIST_DIRECTORY,
-        FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 
-        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL
-    );
+    HANDLE hDir = CreateFileW(
+        shaderDir.c_str(),
+        FILE_LIST_DIRECTORY,
+        FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+        NULL);
 
     char notifyInfo[1024];
     DWORD bytesReturned;
     OVERLAPPED ovl = {};
     ovl.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-    ReadDirectoryChangesW(hDir,
-        notifyInfo, sizeof(notifyInfo), TRUE,
+    ReadDirectoryChangesW(
+        hDir,
+        notifyInfo,
+        sizeof(notifyInfo),
+        TRUE,
         FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
-        NULL, &ovl, NULL);
+        NULL,
+        &ovl,
+        NULL);
 
     HANDLE waitEvents[] = { ovl.hEvent, m_TerminationEvent };
 
-    while (true) 
+    while (true)
     {
         DWORD result = WaitForMultipleObjects(2, waitEvents, FALSE, INFINITE);
 
-        if (result == WAIT_OBJECT_0 + 1) 
+        if (result == WAIT_OBJECT_0 + 1)
             break;
 
         if (result != WAIT_OBJECT_0)
@@ -89,10 +98,15 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
         ProcessModifiedShaders(notifyInfo);
         ResetEvent(ovl.hEvent);
 
-        ReadDirectoryChangesW(hDir,
-            notifyInfo, sizeof(notifyInfo), TRUE,
+        ReadDirectoryChangesW(
+            hDir,
+            notifyInfo,
+            sizeof(notifyInfo),
+            TRUE,
             FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE,
-            NULL, &ovl, NULL);
+            NULL,
+            &ovl,
+            NULL);
     }
 
 #endif
@@ -108,9 +122,12 @@ void Ether::Graphics::ShaderDaemon::WaitForFileUnlock(const std::wstring& shader
     // https://stackoverflow.com/questions/1746781/waiting-until-a-file-is-available-for-reading-with-win32
     int delay = 64;
     HANDLE handle;
-    while ((handle = CreateFileW(fullPathToFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE)
+    while (
+        (handle = CreateFileW(fullPathToFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) ==
+        INVALID_HANDLE_VALUE)
     {
-        if (GetLastError() == ERROR_SHARING_VIOLATION) {
+        if (GetLastError() == ERROR_SHARING_VIOLATION)
+        {
             Sleep(delay);
             if (delay <= 1024) // max delay approximately 1 second
                 delay *= 2;
@@ -129,7 +146,8 @@ void Ether::Graphics::ShaderDaemon::ProcessModifiedShaders(char* notifyInfo)
     FILE_NOTIFY_INFORMATION* info;
     DWORD offset = 0;
 
-    do {
+    do
+    {
         info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&notifyInfo[offset]);
         std::wstring shaderFileName(info->FileName, info->FileNameLength / sizeof(WCHAR));
         if (m_RegisteredShaders.find(shaderFileName) != m_RegisteredShaders.end() &&
@@ -146,4 +164,3 @@ void Ether::Graphics::ShaderDaemon::ProcessModifiedShaders(char* notifyInfo)
 
 #endif
 }
-

@@ -72,4 +72,3 @@ Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID 
 
     return m_Materials.at(id).get();
 }
-

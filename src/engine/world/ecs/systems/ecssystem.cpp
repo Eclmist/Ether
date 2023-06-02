@@ -28,4 +28,3 @@ Ether::Ecs::EcsSystem::EcsSystem()
 }
 
 Ether::Ecs::EcsSystem::~EcsSystem() = default;
-

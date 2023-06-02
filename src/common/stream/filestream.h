@@ -24,59 +24,58 @@
 
 namespace Ether
 {
-    class ETH_COMMON_DLL IFileStream : public IStream
-    {
-    public:
-        IFileStream(const std::string& path);
-        ~IFileStream();
+class ETH_COMMON_DLL IFileStream : public IStream
+{
+public:
+    IFileStream(const std::string& path);
+    ~IFileStream();
 
-        std::string GetPath() override final;
+    std::string GetPath() override final;
 
-        IFileStream& operator>>(float& v) override final;
-        IFileStream& operator>>(int& v) override final;
-        IFileStream& operator>>(long& v) override final;
-        IFileStream& operator>>(char& v) override final;
-        IFileStream& operator>>(unsigned int& v) override final;
-        IFileStream& operator>>(unsigned long& v) override final;
-        IFileStream& operator>>(unsigned char& v) override final;
-        IFileStream& operator>>(std::string& v) override final;
-        IFileStream& operator>>(bool& v) override final;
-        IFileStream& operator>>(ethVector2& v) override final;
-        IFileStream& operator>>(ethVector3& v) override final;
-        IFileStream& operator>>(ethVector4& v) override final;
+    IFileStream& operator>>(float& v) override final;
+    IFileStream& operator>>(int& v) override final;
+    IFileStream& operator>>(long& v) override final;
+    IFileStream& operator>>(char& v) override final;
+    IFileStream& operator>>(unsigned int& v) override final;
+    IFileStream& operator>>(unsigned long& v) override final;
+    IFileStream& operator>>(unsigned char& v) override final;
+    IFileStream& operator>>(std::string& v) override final;
+    IFileStream& operator>>(bool& v) override final;
+    IFileStream& operator>>(ethVector2& v) override final;
+    IFileStream& operator>>(ethVector3& v) override final;
+    IFileStream& operator>>(ethVector4& v) override final;
 
-    private:
-        std::ifstream m_File;
-        std::string m_Path;
-    };
+private:
+    std::ifstream m_File;
+    std::string m_Path;
+};
 
-    class ETH_COMMON_DLL OFileStream : public OStream
-    {
-    public:
-        OFileStream(const std::string& path);
-        ~OFileStream();
+class ETH_COMMON_DLL OFileStream : public OStream
+{
+public:
+    OFileStream(const std::string& path);
+    ~OFileStream();
 
-        std::string GetPath() override final;
+    std::string GetPath() override final;
 
-        OFileStream& operator<<(const float v) override final;
-        OFileStream& operator<<(const int v) override final;
-        OFileStream& operator<<(const long v) override final;
-        OFileStream& operator<<(const char v) override final;
-        OFileStream& operator<<(const unsigned int v) override final;
-        OFileStream& operator<<(const unsigned long v) override final;
-        OFileStream& operator<<(const unsigned char v) override final;
-        OFileStream& operator<<(const std::string& v) override final;
-        OFileStream& operator<<(const bool v) override final;
-        OFileStream& operator<<(const ethVector2& v) override final;
-        OFileStream& operator<<(const ethVector3& v) override final;
-        OFileStream& operator<<(const ethVector4& v) override final;
+    OFileStream& operator<<(const float v) override final;
+    OFileStream& operator<<(const int v) override final;
+    OFileStream& operator<<(const long v) override final;
+    OFileStream& operator<<(const char v) override final;
+    OFileStream& operator<<(const unsigned int v) override final;
+    OFileStream& operator<<(const unsigned long v) override final;
+    OFileStream& operator<<(const unsigned char v) override final;
+    OFileStream& operator<<(const std::string& v) override final;
+    OFileStream& operator<<(const bool v) override final;
+    OFileStream& operator<<(const ethVector2& v) override final;
+    OFileStream& operator<<(const ethVector3& v) override final;
+    OFileStream& operator<<(const ethVector4& v) override final;
 
-    public:
-        void ClearFile();
+public:
+    void ClearFile();
 
-    private:
-        std::ofstream m_File;
-        std::string m_Path;
-    };
-}
-
+private:
+    std::ofstream m_File;
+    std::string m_Path;
+};
+} // namespace Ether

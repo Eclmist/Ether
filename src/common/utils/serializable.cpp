@@ -30,8 +30,7 @@ Ether::Serializable::Serializable(uint32_t version, uint32_t classID)
         SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
         SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
         SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
-        SMath::Random::UniformInt(16, std::numeric_limits<int>::max())
-    );
+        SMath::Random::UniformInt(16, std::numeric_limits<int>::max()));
 }
 
 Ether::Serializable::~Serializable()
@@ -52,11 +51,12 @@ void Ether::Serializable::Deserialize(IStream& istream)
     istream >> classID;
 
     if (m_Version != version)
-        throw std::runtime_error(std::format("Asset version mismatch - expected version {} but found version {}", version, m_Version));
+        throw std::runtime_error(
+            std::format("Asset version mismatch - expected version {} but found version {}", version, m_Version));
 
     if (m_ClassID != classID)
-        throw std::runtime_error(std::format("Asset type mismatch - expected type {} but found type {}", version, m_Version));
+        throw std::runtime_error(
+            std::format("Asset type mismatch - expected type {} but found type {}", version, m_Version));
 
     istream >> m_Guid;
 }
-

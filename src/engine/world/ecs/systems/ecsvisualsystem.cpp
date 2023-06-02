@@ -62,4 +62,3 @@ void Ether::Ecs::EcsVisualSystem::Update()
 
     Graphics::GraphicCore::GetGraphicRenderer().GetGraphicContext().SetVisualBatch(visualBatch);
 }
-

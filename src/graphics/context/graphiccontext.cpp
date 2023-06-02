@@ -99,7 +99,9 @@ void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSigna
     m_CommandList->SetGraphicRootSignature(rootSignature);
 }
 
-void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv /*= nullptr*/)
+void Ether::Graphics::GraphicContext::SetRenderTarget(
+    const RhiRenderTargetView& rtv,
+    const RhiDepthStencilView* dsv /*= nullptr*/)
 {
     RhiSetRenderTargetsDesc desc = {};
     desc.m_NumRtv = 1;
@@ -131,4 +133,3 @@ void Ether::Graphics::GraphicContext::DrawInstanced(uint32_t numVertices, uint32
 
     m_CommandList->DrawInstanced(desc);
 }
-

@@ -29,31 +29,30 @@
 
 namespace Ether
 {
-    ETH_ENGINE_DLL int Start(IApplicationBase& app);
-    ETH_ENGINE_DLL void Shutdown();
+ETH_ENGINE_DLL int Start(IApplicationBase& app);
+ETH_ENGINE_DLL void Shutdown();
 
-    ETH_ENGINE_DLL CommandLineOptions& GetCommandLineOptions();
-    ETH_ENGINE_DLL World& GetActiveWorld();
-}
+ETH_ENGINE_DLL CommandLineOptions& GetCommandLineOptions();
+ETH_ENGINE_DLL World& GetActiveWorld();
+} // namespace Ether
 
 namespace Ether::Client
 {
-    ETH_ENGINE_DLL void SetClientTitle(const std::string& title);
-    ETH_ENGINE_DLL std::string GetClientTitle();
+ETH_ENGINE_DLL void SetClientTitle(const std::string& title);
+ETH_ENGINE_DLL std::string GetClientTitle();
 
-    ETH_ENGINE_DLL void SetClientSize(const ethVector2u& size);
-    ETH_ENGINE_DLL ethVector2u GetClientSize();
+ETH_ENGINE_DLL void SetClientSize(const ethVector2u& size);
+ETH_ENGINE_DLL ethVector2u GetClientSize();
 
-    ETH_ENGINE_DLL void SetFullscreen(bool enabled);
-    ETH_ENGINE_DLL bool IsFullscreen();
-}
+ETH_ENGINE_DLL void SetFullscreen(bool enabled);
+ETH_ENGINE_DLL bool IsFullscreen();
+} // namespace Ether::Client
 
 namespace Ether::Toolmode
 {
-    ETH_ENGINE_DLL void SetParentWindow(void* hwnd);
-    ETH_ENGINE_DLL void* GetWindowHandle();
+ETH_ENGINE_DLL void SetParentWindow(void* hwnd);
+ETH_ENGINE_DLL void* GetWindowHandle();
 
-    ETH_ENGINE_DLL void ShowWindow();
-    ETH_ENGINE_DLL void HideWindow();
-}
-
+ETH_ENGINE_DLL void ShowWindow();
+ETH_ENGINE_DLL void HideWindow();
+} // namespace Ether::Toolmode

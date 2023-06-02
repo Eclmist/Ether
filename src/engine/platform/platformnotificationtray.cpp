@@ -23,4 +23,3 @@ Ether::PlatformNotificationTray::PlatformNotificationTray()
     : m_Handle(nullptr)
 {
 }
-

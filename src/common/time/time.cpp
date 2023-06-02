@@ -32,4 +32,3 @@ void Ether::Time::NewFrame_Impl()
     m_PreviousTime = m_CurrentTime;
     m_CurrentTime = Clock::now();
 }
-

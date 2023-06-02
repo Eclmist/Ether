@@ -25,4 +25,3 @@
 #include "common/logging/loggingmanager.h"
 
 #include "engine/input/input.h"
-

@@ -23,38 +23,37 @@
 
 namespace Ether::Graphics
 {
-    class RhiShader
-    {
-    public:
-        RhiShader(RhiShaderDesc desc);
-        virtual ~RhiShader() = default;
+class RhiShader
+{
+public:
+    RhiShader(RhiShaderDesc desc);
+    virtual ~RhiShader() = default;
 
-    public:
-        inline RhiShaderType GetType() const { return m_Type; }
+public:
+    inline RhiShaderType GetType() const { return m_Type; }
 
-        inline bool IsCompiled() const { return m_IsCompiled; }
-        inline size_t GetCompiledSize() const { return m_CompiledSize; }
-        inline void* GetCompiledData() const { return m_CompiledData; }
+    inline bool IsCompiled() const { return m_IsCompiled; }
+    inline size_t GetCompiledSize() const { return m_CompiledSize; }
+    inline void* GetCompiledData() const { return m_CompiledData; }
 
-        inline std::string GetFileName() const { return m_FileName; }
-        inline std::string GetFilePath() const { return m_FilePath; }
-        inline std::string GetEntryPoint() const { return m_EntryPoint; }
+    inline std::string GetFileName() const { return m_FileName; }
+    inline std::string GetFilePath() const { return m_FilePath; }
+    inline std::string GetEntryPoint() const { return m_EntryPoint; }
 
-    public:
-        virtual void Compile() = 0;
+public:
+    virtual void Compile() = 0;
 
-    protected:
-        friend class ShaderDaemon;
+protected:
+    friend class ShaderDaemon;
 
-        RhiShaderType m_Type;
+    RhiShaderType m_Type;
 
-        std::atomic_bool m_IsCompiled;
-        size_t m_CompiledSize;
-        void* m_CompiledData;
+    std::atomic_bool m_IsCompiled;
+    size_t m_CompiledSize;
+    void* m_CompiledData;
 
-        std::string m_FileName = "";
-        std::string m_FilePath = "";
-        std::string m_EntryPoint = "";
-    };
-}
-
+    std::string m_FileName = "";
+    std::string m_FilePath = "";
+    std::string m_EntryPoint = "";
+};
+} // namespace Ether::Graphics

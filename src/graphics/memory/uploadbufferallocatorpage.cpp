@@ -45,6 +45,9 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::UploadBufferAllocatorP
     if (baseAlloc == nullptr)
         return nullptr;
 
-    return std::make_unique<UploadBufferAllocation>(baseAlloc->GetOffset(), baseAlloc->GetSize(), m_BaseAddress, *m_UploadHeap);
+    return std::make_unique<UploadBufferAllocation>(
+        baseAlloc->GetOffset(),
+        baseAlloc->GetSize(),
+        m_BaseAddress,
+        *m_UploadHeap);
 }
-

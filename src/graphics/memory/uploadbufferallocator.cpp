@@ -39,7 +39,7 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::UploadBufferAllocator:
 
 void Ether::Graphics::UploadBufferAllocator::Free(std::unique_ptr<MemoryAllocation>&& alloc)
 {
-    // Page is implemented as a linear allocator which does not support freeing. 
+    // Page is implemented as a linear allocator which does not support freeing.
     // UploadBufferAllocation& alloc = dynamic_cast<UploadBufferAllocation&>(*alloc);
     // alloc->GetAllocator()->Free(alloc);
 }
@@ -79,4 +79,3 @@ void Ether::Graphics::UploadBufferAllocator::AllocatePage()
     m_PagePool.emplace_back(std::make_unique<UploadBufferAllocatorPage>(m_PageSize));
     m_AvaliablePages.push_back(m_PagePool.back().get());
 }
-

@@ -23,8 +23,8 @@
 
 namespace Ether::PathUtils
 {
-    ETH_COMMON_DLL bool IsValidPath(const std::string& path);
-    ETH_COMMON_DLL std::string GetFileExtension(const std::string& path);
-    ETH_COMMON_DLL std::string GetFileName(const std::string& path);
-    ETH_COMMON_DLL std::string GetFolderPath(const std::string& path);
-}
+ETH_COMMON_DLL bool IsValidPath(const std::string& path);
+ETH_COMMON_DLL std::string GetFileExtension(const std::string& path);
+ETH_COMMON_DLL std::string GetFileName(const std::string& path);
+ETH_COMMON_DLL std::string GetFolderPath(const std::string& path);
+} // namespace Ether::PathUtils

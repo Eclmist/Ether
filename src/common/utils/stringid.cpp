@@ -27,7 +27,8 @@ constexpr unsigned int crc32_bitwise(const char* data, std::size_t length)
 {
     constexpr unsigned int Polynomial = 0xEDB88320;
     unsigned int crc = 0;
-    while (length--) {
+    while (length--)
+    {
         crc ^= *data++;
 
         crc = (crc >> 1) ^ (-int(crc & 1) & Polynomial);
@@ -55,9 +56,8 @@ Ether::StringID::StringID(const char* str)
 
 std::string Ether::StringID::GetString() const
 {
-    return s_HashToStringMap.find(m_Hash) == s_HashToStringMap.end()
-        ? "Invalid StringID"
-        : s_HashToStringMap.at(m_Hash);
+    return s_HashToStringMap.find(m_Hash) == s_HashToStringMap.end() ? "Invalid StringID"
+                                                                     : s_HashToStringMap.at(m_Hash);
 }
 
 Ether::StringID::StringID(const std::string& str)
@@ -80,4 +80,3 @@ Ether::sid_t Ether::StringID::Hash(const char* str)
 {
     return crc32_bitwise(str, std::char_traits<char>::length(str));
 }
-

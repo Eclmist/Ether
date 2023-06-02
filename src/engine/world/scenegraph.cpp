@@ -85,8 +85,7 @@ void Ether::SceneGraph::SetParent(Ecs::EntityID id, Ecs::EntityID parent)
 
         oldParent.m_ChildrenIndices.erase(
             std::remove(oldParent.m_ChildrenIndices.begin(), oldParent.m_ChildrenIndices.end(), id),
-            oldParent.m_ChildrenIndices.end()
-        );
+            oldParent.m_ChildrenIndices.end());
     }
 
     m_Nodes[id].m_ParentIndex = parent;

@@ -25,4 +25,3 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
     SampleApp sample;
     return Ether::Start(sample);
 }
-

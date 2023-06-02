@@ -18,4 +18,3 @@
 */
 
 #include "graphics/common/visual.h"
-

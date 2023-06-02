@@ -17,8 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12commandallocator.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
@@ -28,6 +26,8 @@
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
+#ifdef ETH_GRAPHICS_DX12
+
 void Ether::Graphics::Dx12CommandList::SetMarker(const std::string& name)
 {
     PIXSetMarker(PIX_COLOR_INDEX(0), name.c_str());
@@ -36,7 +36,6 @@ void Ether::Graphics::Dx12CommandList::SetMarker(const std::string& name)
 void Ether::Graphics::Dx12CommandList::PushMarker(const std::string& name)
 {
     PIXBeginEvent(m_CommandList.Get(), PIX_COLOR_INDEX(0), name.c_str());
-
 }
 
 void Ether::Graphics::Dx12CommandList::PopMarker()
@@ -89,13 +88,8 @@ void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc 
     if (desc.m_DsvHandle != nullptr)
         dsvHandle = { desc.m_DsvHandle->GetCpuAddress() };
 
-    m_CommandList->OMSetRenderTargets
-    (
-        desc.m_NumRtv,
-        rtvHandles,
-        false,
-        desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle
-    );
+    m_CommandList
+        ->OMSetRenderTargets(desc.m_NumRtv, rtvHandles, false, desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle);
 }
 
 void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc)
@@ -121,63 +115,63 @@ void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& 
     m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
 }
 
-//RhiResult Dx12CommandList::SetRootConstant(const RhiSetRootConstantDesc& desc)
+// RhiResult Dx12CommandList::SetRootConstant(const RhiSetRootConstantDesc& desc)
 //{
-//    m_CommandList->SetGraphicsRoot32BitConstant
-//    (
-//        desc.m_RootParameterIndex,
-//        desc.m_SrcData,
-//        desc.m_DestOffset
-//    );
+//     m_CommandList->SetGraphicsRoot32BitConstant
+//     (
+//         desc.m_RootParameterIndex,
+//         desc.m_SrcData,
+//         desc.m_DestOffset
+//     );
 //
-//    return RhiResult::Success;
-//}
+//     return RhiResult::Success;
+// }
 //
-//RhiResult Dx12CommandList::SetRootConstants(const RhiSetRootConstantsDesc& desc)
+// RhiResult Dx12CommandList::SetRootConstants(const RhiSetRootConstantsDesc& desc)
 //{
-//    m_CommandList->SetGraphicsRoot32BitConstants
-//    (
-//        desc.m_RootParameterIndex,
-//        desc.m_NumConstants,
-//        desc.m_Data,
-//        desc.m_DestOffset
-//    );
+//     m_CommandList->SetGraphicsRoot32BitConstants
+//     (
+//         desc.m_RootParameterIndex,
+//         desc.m_NumConstants,
+//         desc.m_Data,
+//         desc.m_DestOffset
+//     );
 //
-//    return RhiResult::Success;
-//}
+//     return RhiResult::Success;
+// }
 //
-//RhiResult Dx12CommandList::SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc)
+// RhiResult Dx12CommandList::SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc)
 //{
-//    m_CommandList->SetGraphicsRootDescriptorTable
-//    (
-//        desc.m_RootParameterIndex,
-//        Translate(desc.m_BaseSrvHandle)
-//    );
+//     m_CommandList->SetGraphicsRootDescriptorTable
+//     (
+//         desc.m_RootParameterIndex,
+//         Translate(desc.m_BaseSrvHandle)
+//     );
 //
-//    return RhiResult::Success;
-//}
+//     return RhiResult::Success;
+// }
 //
-//RhiResult Dx12CommandList::SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc)
+// RhiResult Dx12CommandList::SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc)
 //{
-//    m_CommandList->SetGraphicsRootShaderResourceView
-//    (
-//        desc.m_RootParameterIndex,
-//        desc.m_Resource->GetGpuHandle().m_Ptr
-//    );
+//     m_CommandList->SetGraphicsRootShaderResourceView
+//     (
+//         desc.m_RootParameterIndex,
+//         desc.m_Resource->GetGpuHandle().m_Ptr
+//     );
 //
-//    return RhiResult::Success;
-//}
+//     return RhiResult::Success;
+// }
 //
-//RhiResult Dx12CommandList::SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc)
+// RhiResult Dx12CommandList::SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc)
 //{
-//    m_CommandList->SetGraphicsRootConstantBufferView
-//    (
-//        desc.m_RootParameterIndex,
-//        desc.m_Resource->GetGpuHandle().m_Ptr
-//    );
+//     m_CommandList->SetGraphicsRootConstantBufferView
+//     (
+//         desc.m_RootParameterIndex,
+//         desc.m_Resource->GetGpuHandle().m_Ptr
+//     );
 //
-//    return RhiResult::Success;
-//}
+//     return RhiResult::Success;
+// }
 
 void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
 {
@@ -186,26 +180,18 @@ void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bi
 
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(RhiClearRenderTargetViewDesc desc)
 {
-    m_CommandList->ClearRenderTargetView
-    (
-        { desc.m_RtvHandle->GetCpuAddress() },
-        desc.m_ClearColor.m_Data,
-        0,
-        nullptr
-    );
+    m_CommandList->ClearRenderTargetView({ desc.m_RtvHandle->GetCpuAddress() }, desc.m_ClearColor.m_Data, 0, nullptr);
 }
 
 void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(RhiClearDepthStencilViewDesc desc)
 {
-    m_CommandList->ClearDepthStencilView
-    (
+    m_CommandList->ClearDepthStencilView(
         { desc.m_DsvHandle->GetCpuAddress() },
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
         desc.m_ClearDepth,
         desc.m_ClearStencil,
         0,
-        nullptr
-    );
+        nullptr);
 }
 
 void Ether::Graphics::Dx12CommandList::CopyBufferRegion(RhiCopyBufferRegionDesc desc)
@@ -213,14 +199,12 @@ void Ether::Graphics::Dx12CommandList::CopyBufferRegion(RhiCopyBufferRegionDesc 
     const auto dx12SrcResource = (Dx12Resource*)desc.m_Source;
     const auto dx12DstResource = (Dx12Resource*)desc.m_Destination;
 
-    m_CommandList->CopyBufferRegion
-    (
+    m_CommandList->CopyBufferRegion(
         dx12DstResource->m_Resource.Get(),
         desc.m_DestinationOffset,
         dx12SrcResource->m_Resource.Get(),
         desc.m_SourceOffset,
-        desc.m_Size
-    );
+        desc.m_Size);
 }
 
 void Ether::Graphics::Dx12CommandList::CopyTextureRegion(RhiCopyTextureRegionDesc desc)
@@ -234,16 +218,14 @@ void Ether::Graphics::Dx12CommandList::CopyTextureRegion(RhiCopyTextureRegionDes
     textureData.SlicePitch = desc.m_Height * textureData.RowPitch;
 
     // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
-    UpdateSubresources
-    (
+    UpdateSubresources(
         m_CommandList.Get(),
         d3dDestResource->m_Resource.Get(),
         d3dIntermediateResource->m_Resource.Get(),
         desc.m_IntermediateResourceOffset, // offset
-        0, // subresource idx
-        1, // subresource count
-        &textureData
-    );
+        0,                                 // subresource idx
+        1,                                 // subresource count
+        &textureData);
 }
 
 void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
@@ -257,25 +239,17 @@ void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionD
 
 void Ether::Graphics::Dx12CommandList::DrawInstanced(RhiDrawInstancedDesc desc)
 {
-    m_CommandList->DrawInstanced
-    (
-        desc.m_VertexCount,
-        desc.m_InstanceCount,
-        desc.m_FirstVertex,
-        desc.m_FirstInstance
-    );
+    m_CommandList->DrawInstanced(desc.m_VertexCount, desc.m_InstanceCount, desc.m_FirstVertex, desc.m_FirstInstance);
 }
 
 void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc)
 {
-    m_CommandList->DrawIndexedInstanced
-    (
+    m_CommandList->DrawIndexedInstanced(
         desc.m_IndexCount,
         desc.m_InstanceCount,
         desc.m_FirstIndex,
         desc.m_VertexOffset,
-        desc.m_FirstInstance
-    );
+        desc.m_FirstInstance);
 }
 
 void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandAllocator)
@@ -294,4 +268,3 @@ void Ether::Graphics::Dx12CommandList::Close()
 }
 
 #endif // ETH_GRAPHICS_DX12
-

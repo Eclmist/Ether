@@ -27,32 +27,32 @@
 
 namespace Ether
 {
-    class ETH_COMMON_DLL LoggingManager : public Singleton<LoggingManager>
-    {
-    public:
-        LoggingManager() = default;
-        ~LoggingManager();
+class ETH_COMMON_DLL LoggingManager : public Singleton<LoggingManager>
+{
+public:
+    LoggingManager() = default;
+    ~LoggingManager();
 
-        void Initialize();
+    void Initialize();
 
-    public:
-        void Log(LogLevel level, LogType type, const char* fmt, ...);
+public:
+    void Log(LogLevel level, LogType type, const char* fmt, ...);
 
-    private:
-        void AddLog(const LogEntry entry);
-        void Serialize(const LogEntry entry);
-        void Clear();
+private:
+    void AddLog(const LogEntry entry);
+    void Serialize(const LogEntry entry);
+    void Clear();
 
-        inline const std::deque<LogEntry>& GetEntries() const { return m_LogEntries; }
+    inline const std::deque<LogEntry>& GetEntries() const { return m_LogEntries; }
 
-    private:
-        const std::string GetOutputDirectory() const;
-        const std::string GetTimestampedFileName() const;
-    private:
-        std::deque<LogEntry> m_LogEntries;
-        std::ofstream m_LogFileStream;
-        std::mutex m_Mutex;
-    };
+private:
+    const std::string GetOutputDirectory() const;
+    const std::string GetTimestampedFileName() const;
 
-}
+private:
+    std::deque<LogEntry> m_LogEntries;
+    std::ofstream m_LogFileStream;
+    std::mutex m_Mutex;
+};
 
+} // namespace Ether

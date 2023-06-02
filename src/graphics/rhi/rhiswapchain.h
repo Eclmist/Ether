@@ -23,18 +23,17 @@
 
 namespace Ether::Graphics
 {
-    class RhiSwapChain : public NonCopyable, public NonMovable
-    {
-    public:
-        RhiSwapChain() = default;
-        virtual ~RhiSwapChain() = default;
+class RhiSwapChain : public NonCopyable, public NonMovable
+{
+public:
+    RhiSwapChain() = default;
+    virtual ~RhiSwapChain() = default;
 
-    public:
-        virtual uint32_t GetCurrentBackBufferIndex() const = 0;
-        virtual RhiResource& GetBuffer(uint8_t index) const = 0;
-        virtual void ResizeBuffers(const ethVector2u& size) = 0;
-        virtual void ResetBuffers() = 0;
-        virtual void Present(uint8_t numVblanks) = 0;
-    };
-}
-
+public:
+    virtual uint32_t GetCurrentBackBufferIndex() const = 0;
+    virtual RhiResource& GetBuffer(uint8_t index) const = 0;
+    virtual void ResizeBuffers(const ethVector2u& size) = 0;
+    virtual void ResetBuffers() = 0;
+    virtual void Present(uint8_t numVblanks) = 0;
+};
+} // namespace Ether::Graphics

@@ -24,15 +24,14 @@
 
 namespace Ether::Ecs
 {
-    class EcsCameraSystem : public EcsSystem
-    {
-    public:
-        EcsCameraSystem();
-        ~EcsCameraSystem() override = default;
+class EcsCameraSystem : public EcsSystem
+{
+public:
+    EcsCameraSystem();
+    ~EcsCameraSystem() override = default;
 
-    protected:
-        friend class EcsManager;
-        void Update() override;
-    };
-}
-
+protected:
+    friend class EcsManager;
+    void Update() override;
+};
+} // namespace Ether::Ecs

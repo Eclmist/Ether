@@ -25,23 +25,22 @@
 
 namespace Ether::Graphics
 {
-    class Dx12SwapChain : public RhiSwapChain
-    {
-    public:
-        Dx12SwapChain();
-        ~Dx12SwapChain() override = default;
+class Dx12SwapChain : public RhiSwapChain
+{
+public:
+    Dx12SwapChain();
+    ~Dx12SwapChain() override = default;
 
-    public:
-        uint32_t GetCurrentBackBufferIndex() const override;
-        RhiResource& GetBuffer(uint8_t index) const override;
-        void ResizeBuffers(const ethVector2u& size) override;
-        void ResetBuffers() override;
-        void Present(uint8_t numVblanks) override;
+public:
+    uint32_t GetCurrentBackBufferIndex() const override;
+    RhiResource& GetBuffer(uint8_t index) const override;
+    void ResizeBuffers(const ethVector2u& size) override;
+    void ResetBuffers() override;
+    void Present(uint8_t numVblanks) override;
 
-    private:
-        friend class Dx12Device;
-        wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
-        std::unique_ptr<RhiResource> m_BufferResources[MaxSwapChainBuffers];
-    };
-}
-
+private:
+    friend class Dx12Device;
+    wrl::ComPtr<IDXGISwapChain4> m_SwapChain;
+    std::unique_ptr<RhiResource> m_BufferResources[MaxSwapChainBuffers];
+};
+} // namespace Ether::Graphics

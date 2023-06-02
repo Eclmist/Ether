@@ -23,19 +23,21 @@
 
 namespace Ether::Graphics
 {
-    class RhiCommandAllocator
+class RhiCommandAllocator
+{
+public:
+    RhiCommandAllocator(RhiCommandType type)
+        : m_Type(type)
     {
-    public:
-        RhiCommandAllocator(RhiCommandType type) : m_Type(type) {}
-        virtual ~RhiCommandAllocator() = default;
+    }
+    virtual ~RhiCommandAllocator() = default;
 
-        inline RhiCommandType GetType() const { return m_Type; }
+    inline RhiCommandType GetType() const { return m_Type; }
 
-    public:
-        virtual void Reset() const = 0;
+public:
+    virtual void Reset() const = 0;
 
-    private:
-        const RhiCommandType m_Type;
-    };
-}
-
+private:
+    const RhiCommandType m_Type;
+};
+} // namespace Ether::Graphics

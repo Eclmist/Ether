@@ -24,17 +24,17 @@
 
 namespace Ether
 {
-    class IApplicationBase
-    {
-    public:
-        virtual void Initialize() = 0;
-        virtual void LoadContent() = 0;
-        virtual void UnloadContent() = 0;
-        virtual void Shutdown() = 0;
+class IApplicationBase
+{
+public:
+    virtual void Initialize() = 0;
+    virtual void LoadContent() = 0;
+    virtual void UnloadContent() = 0;
+    virtual void Shutdown() = 0;
 
-    public:
-        virtual void OnUpdate(const UpdateEventArgs& e) = 0;
-        virtual void OnRender(const RenderEventArgs& e) = 0;
-        virtual void OnShutdown() = 0;
-    };
-}
+public:
+    virtual void OnUpdate(const UpdateEventArgs& e) = 0;
+    virtual void OnRender(const RenderEventArgs& e) = 0;
+    virtual void OnShutdown() = 0;
+};
+} // namespace Ether

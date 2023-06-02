@@ -72,7 +72,8 @@ void Ether::Ecs::EcsEntityManager::Deserialize(IStream& istream)
 Ether::Ecs::EntityID Ether::Ecs::EcsEntityManager::CreateEntity()
 {
     if (m_AvailableEntities.empty())
-        throw std::runtime_error("Failed to allocate new entity ID because the max number of entities has been reached");
+        throw std::runtime_error(
+            "Failed to allocate new entity ID because the max number of entities has been reached");
 
     EntityID nextID = m_AvailableEntities.front();
     m_AvailableEntities.pop();
@@ -94,4 +95,3 @@ Ether::Ecs::EntitySignature Ether::Ecs::EcsEntityManager::GetSignature(EntityID 
 {
     return m_EntitySignatures[id];
 }
-

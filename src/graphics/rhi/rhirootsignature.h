@@ -23,37 +23,43 @@
 
 namespace Ether::Graphics
 {
-    class RhiRootSignatureDesc
+class RhiRootSignatureDesc
+{
+public:
+    RhiRootSignatureDesc(uint32_t numParams, uint32_t numSamplers)
+        : m_NumParameters(numParams)
+        , m_NumSamplers(numSamplers)
     {
-    public:
-        RhiRootSignatureDesc(uint32_t numParams, uint32_t numSamplers)
-            : m_NumParameters(numParams)
-            , m_NumSamplers(numSamplers) {}
+    }
 
-        virtual ~RhiRootSignatureDesc() {}
+    virtual ~RhiRootSignatureDesc() {}
 
-    public:
-        virtual void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) = 0;
-        virtual void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
-        virtual void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
-        virtual void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) = 0;
-        virtual void SetAsDescriptorRange(uint32_t slot, uint32_t reg, uint32_t numDescriptors, RhiDescriptorType type, RhiShaderVisibility vis) = 0;
-        virtual void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) = 0;
-        virtual void SetFlags(RhiRootSignatureFlag flag) = 0;
+public:
+    virtual void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) = 0;
+    virtual void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
+    virtual void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
+    virtual void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) = 0;
+    virtual void SetAsDescriptorRange(
+        uint32_t slot,
+        uint32_t reg,
+        uint32_t numDescriptors,
+        RhiDescriptorType type,
+        RhiShaderVisibility vis) = 0;
+    virtual void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) = 0;
+    virtual void SetFlags(RhiRootSignatureFlag flag) = 0;
 
-    public:
-        std::unique_ptr<RhiRootSignature> Compile() const;
+public:
+    std::unique_ptr<RhiRootSignature> Compile() const;
 
-    protected:
-        uint32_t m_NumParameters;
-        uint32_t m_NumSamplers;
-    };
+protected:
+    uint32_t m_NumParameters;
+    uint32_t m_NumSamplers;
+};
 
-    class RhiRootSignature
-    {
-    public:
-        RhiRootSignature() = default;
-        virtual ~RhiRootSignature() {}
-    };
-}
-
+class RhiRootSignature
+{
+public:
+    RhiRootSignature() = default;
+    virtual ~RhiRootSignature() {}
+};
+} // namespace Ether::Graphics

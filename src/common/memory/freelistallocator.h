@@ -24,61 +24,65 @@
 
 namespace Ether
 {
-    /**
-     * An alignment aware free-list allocator implementation.
-     * Inspired by DiligentGraphics
-     * http://diligentgraphics.com/diligent-engine/architecture/d3d12/variable-size-memory-allocations-manager/
-     */
-    class ETH_COMMON_DLL FreeListAllocation : public MemoryAllocation
+/**
+ * An alignment aware free-list allocator implementation.
+ * Inspired by DiligentGraphics
+ * http://diligentgraphics.com/diligent-engine/architecture/d3d12/variable-size-memory-allocations-manager/
+ */
+class ETH_COMMON_DLL FreeListAllocation : public MemoryAllocation
+{
+public:
+    FreeListAllocation() = default;
+    FreeListAllocation(size_t offset, size_t size)
+        : m_Offset(offset)
+        , m_Size(size)
     {
-    public:
-        FreeListAllocation() = default;
-        FreeListAllocation(size_t offset, size_t size)
-            : m_Offset(offset)
-            , m_Size(size) {}
-        ~FreeListAllocation() override {}
+    }
+    ~FreeListAllocation() override {}
 
-        virtual size_t GetOffset() const override { return m_Offset; }
-        virtual size_t GetSize() const override { return m_Size; }
-        virtual void* GetBaseCpuHandle() const override { return nullptr; }
+    virtual size_t GetOffset() const override { return m_Offset; }
+    virtual size_t GetSize() const override { return m_Size; }
+    virtual void* GetBaseCpuHandle() const override { return nullptr; }
 
-    protected:
-        size_t m_Offset;
-        size_t m_Size;
-    };
+protected:
+    size_t m_Offset;
+    size_t m_Size;
+};
 
-    class ETH_COMMON_DLL FreeListAllocator : public MemoryAllocator
+class ETH_COMMON_DLL FreeListAllocator : public MemoryAllocator
+{
+public:
+    FreeListAllocator(size_t capacity);
+    ~FreeListAllocator() = default;
+
+public:
+    std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
+    void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
+    bool HasSpace(SizeAlign sizeAlign) const override;
+    void Reset() override;
+
+protected:
+    struct FreeBlockInfo;
+    using OffsetToBlockMap = std::map<size_t, FreeBlockInfo>;
+    using SizeToOffsetMap = std::multimap<size_t, OffsetToBlockMap::iterator>;
+
+    struct FreeBlockInfo
     {
-    public:
-        FreeListAllocator(size_t capacity);
-        ~FreeListAllocator() = default;
-
-    public:
-        std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) override;
-        void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
-        bool HasSpace(SizeAlign sizeAlign) const override;
-        void Reset() override;
-
-    protected:
-        struct FreeBlockInfo;
-        using OffsetToBlockMap = std::map<size_t, FreeBlockInfo>;
-        using SizeToOffsetMap = std::multimap<size_t, OffsetToBlockMap::iterator>;
-
-        struct FreeBlockInfo
+        FreeBlockInfo(size_t size)
+            : m_Size(size)
         {
-            FreeBlockInfo(size_t size) : m_Size(size) {}
-            size_t m_Size;
-            SizeToOffsetMap::iterator m_SizeToOffsetIter;
-        };
-
-        FreeBlockInfo* FindFreeBlock(SizeAlign sizeAlign) const;
-        void AddBlock(size_t offset, size_t size);
-        void FreeBlock(size_t offset, size_t size);
-        void MergeBlock(OffsetToBlockMap::iterator existingBlock, FreeListAllocation newBlock);
-
-
-    protected:
-        OffsetToBlockMap m_OffsetToBlockMap;
-        SizeToOffsetMap m_SizeToOffsetMap;
+        }
+        size_t m_Size;
+        SizeToOffsetMap::iterator m_SizeToOffsetIter;
     };
-}
+
+    FreeBlockInfo* FindFreeBlock(SizeAlign sizeAlign) const;
+    void AddBlock(size_t offset, size_t size);
+    void FreeBlock(size_t offset, size_t size);
+    void MergeBlock(OffsetToBlockMap::iterator existingBlock, FreeListAllocation newBlock);
+
+protected:
+    OffsetToBlockMap m_OffsetToBlockMap;
+    SizeToOffsetMap m_SizeToOffsetMap;
+};
+} // namespace Ether

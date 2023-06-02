@@ -23,20 +23,19 @@
 
 namespace Ether::Graphics::VertexFormats
 {
-    class ETH_GRAPHIC_DLL PositionNormalTangentTexCoord
-    {
-    public:
-        PositionNormalTangentTexCoord() = default;
-        ~PositionNormalTangentTexCoord() = default;
+class ETH_GRAPHIC_DLL PositionNormalTangentTexCoord
+{
+public:
+    PositionNormalTangentTexCoord() = default;
+    ~PositionNormalTangentTexCoord() = default;
 
-        void Serialize(OStream& ostream) const;
-        void Deserialize(IStream& istream);
+    void Serialize(OStream& ostream) const;
+    void Deserialize(IStream& istream);
 
-        ethVector3 m_Position;
-        ethVector3 m_Normal;
-        ethVector3 m_Tangent;
-        ethVector3 m_BiTangent;
-        ethVector2 m_TexCoord;
-    };
-}
-
+    ethVector3 m_Position;
+    ethVector3 m_Normal;
+    ethVector3 m_Tangent;
+    ethVector3 m_BiTangent;
+    ethVector2 m_TexCoord;
+};
+} // namespace Ether::Graphics::VertexFormats

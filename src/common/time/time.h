@@ -25,39 +25,38 @@
 
 namespace Ether
 {
-    class ETH_COMMON_DLL Time : public Singleton<Time>
-    {
-    public:
-        Time() = default;
-        ~Time() = default;
+class ETH_COMMON_DLL Time : public Singleton<Time>
+{
+public:
+    Time() = default;
+    ~Time() = default;
 
-        void Initialize();
+    void Initialize();
 
-    public:
-        static inline void NewFrame() { Instance().NewFrame_Impl(); }
+public:
+    static inline void NewFrame() { Instance().NewFrame_Impl(); }
 
-        static inline double GetStartupTime() { return Instance().m_StartupTime.time_since_epoch().count(); }
-        static inline double GetCurrentTime() { return Instance().m_CurrentTime.time_since_epoch().count(); }
-        static inline double GetTimeSinceStartup() { return GetCurrentTime() - GetStartupTime(); }
-        static inline double GetDeltaTime() { return GetCurrentTime() - GetPreviousTime(); }
+    static inline double GetStartupTime() { return Instance().m_StartupTime.time_since_epoch().count(); }
+    static inline double GetCurrentTime() { return Instance().m_CurrentTime.time_since_epoch().count(); }
+    static inline double GetTimeSinceStartup() { return GetCurrentTime() - GetStartupTime(); }
+    static inline double GetDeltaTime() { return GetCurrentTime() - GetPreviousTime(); }
 
-    private:
-        static inline double GetPreviousTime() { return Instance().m_PreviousTime.time_since_epoch().count(); }
+private:
+    static inline double GetPreviousTime() { return Instance().m_PreviousTime.time_since_epoch().count(); }
 
-    private:
-        // Only ever use high resolution clock
-        using Clock = std::chrono::system_clock;
-        using Duration = std::chrono::duration<double, std::milli>;
-        using TimePoint = std::chrono::time_point<Clock, Duration>;
+private:
+    // Only ever use high resolution clock
+    using Clock = std::chrono::system_clock;
+    using Duration = std::chrono::duration<double, std::milli>;
+    using TimePoint = std::chrono::time_point<Clock, Duration>;
 
-    private:
-        void NewFrame_Impl();
+private:
+    void NewFrame_Impl();
 
-    private:
-        TimePoint m_StartupTime;
-        TimePoint m_PreviousTime;
-        TimePoint m_CurrentTime;
-    };
+private:
+    TimePoint m_StartupTime;
+    TimePoint m_PreviousTime;
+    TimePoint m_CurrentTime;
+};
 
-}
-
+} // namespace Ether

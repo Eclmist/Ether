@@ -68,4 +68,3 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     return float4(IN.Normal + 0.5, 1.0f);
 }
-

@@ -27,39 +27,39 @@
 
 namespace Ether
 {
-    class ETH_ENGINE_DLL World : public Serializable
-    {
-    public:
-        World();
-        ~World() override = default;
+class ETH_ENGINE_DLL World : public Serializable
+{
+public:
+    World();
+    ~World() override = default;
 
-    public:
-        void Update();
-        void Save(const std::string& path) const;
-        void Load(const std::string& path);
+public:
+    void Update();
+    void Save(const std::string& path) const;
+    void Load(const std::string& path);
 
-    public:
-        inline std::string GetWorldName() const { return m_WorldName; }
-        inline Entity& GetEntity(Ecs::EntityID entityID) const { return *m_Entities.at(entityID); }
-        inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
-        inline ResourceManager& GetResourceManager() { return m_ResourceManager; }
-        inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
+public:
+    inline std::string GetWorldName() const { return m_WorldName; }
+    inline Entity& GetEntity(Ecs::EntityID entityID) const { return *m_Entities.at(entityID); }
+    inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
+    inline ResourceManager& GetResourceManager() { return m_ResourceManager; }
+    inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
 
-    public:
-        Entity& CreateEntity(const std::string& name);
+public:
+    Entity& CreateEntity(const std::string& name);
 
-    private:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+private:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    private:
-        std::string m_WorldName;
+private:
+    std::string m_WorldName;
 
-        SceneGraph m_SceneGraph;
-        ResourceManager m_ResourceManager;
+    SceneGraph m_SceneGraph;
+    ResourceManager m_ResourceManager;
 
-        Ecs::EcsManager m_EcsManager;
-        std::unordered_map<Ecs::EntityID, std::unique_ptr<Entity>> m_Entities;
-    };
+    Ecs::EcsManager m_EcsManager;
+    std::unordered_map<Ecs::EntityID, std::unique_ptr<Entity>> m_Entities;
+};
 
-}
+} // namespace Ether

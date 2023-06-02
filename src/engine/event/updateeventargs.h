@@ -24,7 +24,7 @@
 
 namespace Ether
 {
-    struct UpdateEventArgs : public EventArgs
-    {
-    };
-}
+struct UpdateEventArgs : public EventArgs
+{
+};
+} // namespace Ether

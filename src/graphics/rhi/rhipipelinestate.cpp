@@ -49,7 +49,7 @@ void Ether::Graphics::RhiPipelineStateDesc::CompileShaders()
             {
                 LogGraphicsError(err.what());
             }
-            
+
             switch (shader.first)
             {
             case RhiShaderType::Vertex:
@@ -65,4 +65,3 @@ void Ether::Graphics::RhiPipelineStateDesc::CompileShaders()
         }
     }
 }
-

@@ -51,5 +51,3 @@ void Ether::EngineConfig::SetClientPosition(const ethVector2u& clientPosition)
 
     m_ClientPosition = clientPosition;
 }
-
-

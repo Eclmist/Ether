@@ -27,37 +27,33 @@
 
 namespace Ether::Graphics
 {
-    class DescriptorAllocator : public FreeListAllocator
-    {
-    public:
-        DescriptorAllocator(
-            RhiDescriptorHeapType type,
-            bool isShaderVisible = false,
-            size_t maxHeapSize = _4MiB
-        );
+class DescriptorAllocator : public FreeListAllocator
+{
+public:
+    DescriptorAllocator(RhiDescriptorHeapType type, bool isShaderVisible = false, size_t maxHeapSize = _4MiB);
 
-        ~DescriptorAllocator() = default;
+    ~DescriptorAllocator() = default;
 
-    public:
-        std::unique_ptr<MemoryAllocation> Allocate(SizeAlign = {1, 1}) override;
-        void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
+public:
+    std::unique_ptr<MemoryAllocation> Allocate(SizeAlign = { 1, 1 }) override;
+    void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
 
-    public:
-        inline RhiDescriptorHeap& GetDescriptorHeap() const { return *m_DescriptorHeap; }
-        inline size_t GetMaxNumDescriptors() const { return m_MaxDescriptors; }
-        inline bool IsShaderVisible() const { return m_IsShaderVisible; }
+public:
+    inline RhiDescriptorHeap& GetDescriptorHeap() const { return *m_DescriptorHeap; }
+    inline size_t GetMaxNumDescriptors() const { return m_MaxDescriptors; }
+    inline bool IsShaderVisible() const { return m_IsShaderVisible; }
 
-    private:
-        friend class DescriptorAllocation;
-        void Free(const DescriptorAllocation& allocation);
-        void ReclaimStaleAllocations(size_t numIndices);
+private:
+    friend class DescriptorAllocation;
+    void Free(const DescriptorAllocation& allocation);
+    void ReclaimStaleAllocations(size_t numIndices);
 
-    private:
-        size_t m_MaxDescriptors;
-        bool m_IsShaderVisible;
+private:
+    size_t m_MaxDescriptors;
+    bool m_IsShaderVisible;
 
-        RhiDescriptorHeapType m_HeapType;
-        std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
-        std::queue<FreeListAllocation> m_StaleAllocations;
-    };
-}
+    RhiDescriptorHeapType m_HeapType;
+    std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
+    std::queue<FreeListAllocation> m_StaleAllocations;
+};
+} // namespace Ether::Graphics

@@ -50,10 +50,8 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         ImGui::Begin(
             "Debug Menu",
             nullptr,
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoCollapse);
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoCollapse);
 
         ImGui::Text("Ether Version: 0.1.0");
         ImGui::Spacing();
@@ -61,9 +59,9 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         if (ImGui::CollapsingHeader("Display Options"))
         {
             static float clearColor[4];
-            ImGui::ColorEdit4("clear color", clearColor); 
+            ImGui::ColorEdit4("clear color", clearColor);
             // Edit 3 floats representing a color
-            // ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      
+            // ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);
             // Edit bools storing our window open/close state
             GraphicCore::GetGraphicConfig().SetClearColor((ethVector4&)(*clearColor));
 

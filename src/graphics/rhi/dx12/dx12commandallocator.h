@@ -25,18 +25,18 @@
 
 namespace Ether::Graphics
 {
-    class Dx12CommandAllocator : public RhiCommandAllocator
-    {
-    public:
-        Dx12CommandAllocator(RhiCommandType type);
-        ~Dx12CommandAllocator() override = default;
+class Dx12CommandAllocator : public RhiCommandAllocator
+{
+public:
+    Dx12CommandAllocator(RhiCommandType type);
+    ~Dx12CommandAllocator() override = default;
 
-    public:
-        void Reset() const override;
+public:
+    void Reset() const override;
 
-    private:
-        friend class Dx12Device;
-        friend class Dx12CommandList;
-        wrl::ComPtr<ID3D12CommandAllocator> m_Allocator;
-    };
-}
+private:
+    friend class Dx12Device;
+    friend class Dx12CommandList;
+    wrl::ComPtr<ID3D12CommandAllocator> m_Allocator;
+};
+} // namespace Ether::Graphics

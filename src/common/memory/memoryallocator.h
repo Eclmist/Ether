@@ -23,42 +23,48 @@
 
 namespace Ether
 {
-    struct ETH_COMMON_DLL SizeAlign
+struct ETH_COMMON_DLL SizeAlign
+{
+    SizeAlign(size_t size, size_t align = 1)
+        : m_Size(size)
+        , m_Alignment(align)
     {
-        SizeAlign(size_t size, size_t align = 1)
-            : m_Size(size)
-            , m_Alignment(align) {}
+    }
 
-        size_t m_Size;
-        size_t m_Alignment;
-    };
+    size_t m_Size;
+    size_t m_Alignment;
+};
 
-    class ETH_COMMON_DLL MemoryAllocation
+class ETH_COMMON_DLL MemoryAllocation
+{
+public:
+    MemoryAllocation() = default;
+    virtual ~MemoryAllocation() = default;
+
+public:
+    virtual size_t GetOffset() const = 0;
+    virtual size_t GetSize() const = 0;
+    virtual void* GetBaseCpuHandle() const = 0;
+    virtual void* GetCpuHandle() const { return (uint8_t*)GetBaseCpuHandle() + GetOffset(); }
+};
+
+class ETH_COMMON_DLL MemoryAllocator : public NonCopyable, public NonMovable
+{
+public:
+    MemoryAllocator(size_t capacity)
+        : m_Capacity(capacity)
     {
-    public:
-        MemoryAllocation() = default;
-        virtual ~MemoryAllocation() = default;
+    }
 
-    public:
-        virtual size_t GetOffset() const = 0;
-        virtual size_t GetSize() const = 0;
-        virtual void* GetBaseCpuHandle() const = 0;
-        virtual void* GetCpuHandle() const { return (uint8_t*)GetBaseCpuHandle() + GetOffset(); }
-    };
+    virtual ~MemoryAllocator() = default;
 
-    class ETH_COMMON_DLL MemoryAllocator : public NonCopyable, public NonMovable
-    {
-    public:
-        MemoryAllocator(size_t capacity) : m_Capacity(capacity) {}
-        virtual ~MemoryAllocator() = default;
+public:
+    virtual std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) = 0;
+    virtual void Free(std::unique_ptr<MemoryAllocation>&& alloc) = 0;
+    virtual bool HasSpace(SizeAlign sizeAlign) const = 0;
+    virtual void Reset() = 0;
 
-    public:
-        virtual std::unique_ptr<MemoryAllocation> Allocate(SizeAlign sizeAlign) = 0;
-        virtual void Free(std::unique_ptr<MemoryAllocation>&& alloc) = 0;
-        virtual bool HasSpace(SizeAlign sizeAlign) const = 0;
-        virtual void Reset() = 0;
-
-    protected:
-        size_t m_Capacity;
-    };
-}
+protected:
+    size_t m_Capacity;
+};
+} // namespace Ether

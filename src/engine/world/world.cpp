@@ -35,7 +35,7 @@ void Ether::World::Update()
 
 void Ether::World::Save(const std::string& path) const
 {
-    // TODO: Get target directory 
+    // TODO: Get target directory
     OFileStream outFile(path);
     outFile.ClearFile();
     Serialize(outFile);
@@ -90,4 +90,3 @@ Ether::Entity& Ether::World::CreateEntity(const std::string& name)
     m_Entities[entityID] = std::move(entity);
     return *m_Entities[entityID];
 }
-

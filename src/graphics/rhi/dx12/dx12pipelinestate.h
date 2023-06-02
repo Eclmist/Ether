@@ -26,47 +26,49 @@
 
 namespace Ether::Graphics
 {
-    class Dx12PipelineStateDesc : public RhiPipelineStateDesc
+class Dx12PipelineStateDesc : public RhiPipelineStateDesc
+{
+public:
+    Dx12PipelineStateDesc();
+    ~Dx12PipelineStateDesc() override = default;
+
+public:
+    void SetBlendState(RhiBlendDesc desc) override;
+    void SetRasterizerState(RhiRasterizerDesc desc) override;
+    void SetInputLayout(RhiInputLayoutDesc desc) override;
+    void SetPrimitiveTopology(RhiPrimitiveTopologyType type) override;
+    void SetDepthStencilState(RhiDepthStencilDesc desc) override;
+    void SetDepthTargetFormat(RhiFormat dsvFormat) override;
+    void SetRenderTargetFormat(RhiFormat rtvFormat) override;
+    void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) override;
+    void SetRootSignature(const RhiRootSignature& rootSignature) override;
+    void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
+    void SetVertexShader(RhiShader& vs) override;
+    void SetPixelShader(RhiShader& ps) override;
+    void SetNodeMask(uint32_t mask) override;
+    void SetSampleMask(uint32_t mask) override;
+
+public:
+    void Reset() override;
+
+protected:
+    friend class Dx12Device;
+    std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputElements;
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_Dx12PsoDesc;
+};
+
+class Dx12PipelineState : public RhiPipelineState
+{
+public:
+    Dx12PipelineState(const RhiPipelineStateDesc& desc)
+        : RhiPipelineState(desc)
     {
-    public:
-        Dx12PipelineStateDesc();
-        ~Dx12PipelineStateDesc() override = default;
+    }
+    ~Dx12PipelineState() override = default;
 
-    public:
-        void SetBlendState(RhiBlendDesc desc) override;
-        void SetRasterizerState(RhiRasterizerDesc desc) override;
-        void SetInputLayout(RhiInputLayoutDesc desc) override;
-        void SetPrimitiveTopology(RhiPrimitiveTopologyType type) override;
-        void SetDepthStencilState(RhiDepthStencilDesc desc) override;
-        void SetDepthTargetFormat(RhiFormat dsvFormat) override;
-        void SetRenderTargetFormat(RhiFormat rtvFormat) override;
-        void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) override;
-        void SetRootSignature(const RhiRootSignature& rootSignature) override;
-        void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
-        void SetVertexShader(RhiShader& vs) override;
-        void SetPixelShader(RhiShader& ps) override;
-        void SetNodeMask(uint32_t mask) override;
-        void SetSampleMask(uint32_t mask) override;
-
-    public:
-        void Reset() override;
-
-    protected:
-        friend class Dx12Device;
-        std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputElements;
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC m_Dx12PsoDesc;
-    };
-
-    class Dx12PipelineState : public RhiPipelineState
-    {
-    public:
-        Dx12PipelineState(const RhiPipelineStateDesc& desc) : RhiPipelineState(desc) {}
-        ~Dx12PipelineState() override = default;
-
-    private:
-        friend class Dx12Device;
-        friend class Dx12CommandList;
-        wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
-    };
-}
-
+private:
+    friend class Dx12Device;
+    friend class Dx12CommandList;
+    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
+};
+} // namespace Ether::Graphics

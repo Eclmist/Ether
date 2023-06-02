@@ -17,11 +17,11 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12swapchain.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12translation.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12SwapChain::Dx12SwapChain()
 {
@@ -61,8 +61,7 @@ void Ether::Graphics::Dx12SwapChain::ResizeBuffers(const ethVector2u& size)
         size.x,
         size.y,
         swapChainDesc.BufferDesc.Format,
-        swapChainDesc.Flags
-    );
+        swapChainDesc.Flags);
 
     if (FAILED(hr))
         LogGraphicsError("Failed to resize swapchain buffers");
@@ -76,14 +75,10 @@ void Ether::Graphics::Dx12SwapChain::ResetBuffers()
 
 void Ether::Graphics::Dx12SwapChain::Present(uint8_t numVblanks)
 {
-    HRESULT hr = m_SwapChain->Present(
-        numVblanks,
-        numVblanks > 0 ? 0 : DXGI_PRESENT_ALLOW_TEARING
-    );
+    HRESULT hr = m_SwapChain->Present(numVblanks, numVblanks > 0 ? 0 : DXGI_PRESENT_ALLOW_TEARING);
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to present swapchain buffers");
 }
 
 #endif // ETH_GRAPHICS_DX12
-

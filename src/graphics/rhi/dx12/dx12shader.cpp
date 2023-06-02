@@ -17,10 +17,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12shader.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 wrl::ComPtr<IDxcLibrary> Ether::Graphics::Dx12Shader::s_DxcLibrary;
 wrl::ComPtr<IDxcCompiler3> Ether::Graphics::Dx12Shader::s_DxcCompiler;
@@ -55,7 +55,7 @@ void Ether::Graphics::Dx12Shader::Compile()
     arguments.push_back(L"-I");
     arguments.push_back(wSourceDir.c_str());
 
-    // Specify file name using line directive for better error output 
+    // Specify file name using line directive for better error output
     // -E for the entry point (eg. PSMain)
     arguments.push_back(L"-E");
     arguments.push_back(wEntryPoint.c_str());
@@ -64,16 +64,16 @@ void Ether::Graphics::Dx12Shader::Compile()
     arguments.push_back(L"-T");
     arguments.push_back(wProfile.c_str());
 
-    //Strip reflection data and pdbs
-    //ETH_TOOLONLY(arguments.push_back(L"-Qstrip_debug"));
-    //ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
+    // Strip reflection data and pdbs
+    // ETH_TOOLONLY(arguments.push_back(L"-Qstrip_debug"));
+    // ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
 
     // Disable optimization for renderdoc pixel debugging
     ETH_TOOLONLY(arguments.push_back(L"-Od"));
 
     ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
-    ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG)); //-Zi
-    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR); //-Zp
+    ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG));               //-Zi
+    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);             //-Zp
 
     ETH_TOOLONLY(arguments.push_back(L"-D"));
     ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
@@ -92,7 +92,12 @@ void Ether::Graphics::Dx12Shader::Compile()
     sourceBuffer.Encoding = 0;
 
     wrl::ComPtr<IDxcResult> result;
-    hr = s_DxcCompiler->Compile(&sourceBuffer, arguments.data(), arguments.size(), s_IncludeHandler.Get(), IID_PPV_ARGS(result.GetAddressOf()));
+    hr = s_DxcCompiler->Compile(
+        &sourceBuffer,
+        arguments.data(),
+        arguments.size(),
+        s_IncludeHandler.Get(),
+        IID_PPV_ARGS(result.GetAddressOf()));
 
     if (SUCCEEDED(hr))
         result->GetStatus(&hr);
@@ -151,7 +156,9 @@ void Ether::Graphics::Dx12Shader::InitializeDxc()
         LogGraphicsError("Failed to initialize DXC compiler");
 }
 
-HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource)
+HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource(
+    _In_ LPCWSTR pFilename,
+    _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource)
 {
     wrl::ComPtr<IDxcBlobEncoding> pEncoding;
     std::wstring path = pFilename;
@@ -176,10 +183,11 @@ HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource
     return hr;
 }
 
-HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject)
+HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::QueryInterface(
+    REFIID riid,
+    _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject)
 {
     return Graphics::Dx12Shader::s_IncludeHandler->QueryInterface(riid, ppvObject);
 }
 
 #endif // ETH_GRAPHICS_DX12
-

@@ -25,4 +25,3 @@ Ether::PlatformWindow::PlatformWindow()
     , m_ParentWindowHandle(nullptr)
 {
 }
-

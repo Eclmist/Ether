@@ -31,39 +31,38 @@
 
 namespace Ether
 {
-    class EngineCore : public Singleton<EngineCore>
-    {
-    public:
-        EngineCore() = default;
-        ~EngineCore() = default;
+class EngineCore : public Singleton<EngineCore>
+{
+public:
+    EngineCore() = default;
+    ~EngineCore() = default;
 
-        void Initialize();
-        void LoadApplication(IApplicationBase& app);
-        void Run();
-        void Shutdown();
+    void Initialize();
+    void LoadApplication(IApplicationBase& app);
+    void Run();
+    void Shutdown();
 
-    public:
-        static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
-        static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
-        static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
-        static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
+public:
+    static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
+    static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
+    static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
+    static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
 
-        static bool IsInitialized() { return Instance().m_IsInitialized; }
+    static bool IsInitialized() { return Instance().m_IsInitialized; }
 
-    private:
-        void InitializeGraphicsLayer();
-        void MainEngineThread();
+private:
+    void InitializeGraphicsLayer();
+    void MainEngineThread();
 
-    private:
-        bool m_IsInitialized = false;
-        std::thread m_MainEngineThread;
+private:
+    bool m_IsInitialized = false;
+    std::thread m_MainEngineThread;
 
-        std::unique_ptr<PlatformWindow> m_MainWindow;
-        std::unique_ptr<World> m_ActiveWorld;
+    std::unique_ptr<PlatformWindow> m_MainWindow;
+    std::unique_ptr<World> m_ActiveWorld;
 
-        IApplicationBase* m_MainApplication = nullptr;
-        EngineConfig m_EngineConfig;
-        CommandLineOptions m_CommandLineOptions;
-    };
-}
-
+    IApplicationBase* m_MainApplication = nullptr;
+    EngineConfig m_EngineConfig;
+    CommandLineOptions m_CommandLineOptions;
+};
+} // namespace Ether

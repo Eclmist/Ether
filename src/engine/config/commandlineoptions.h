@@ -23,30 +23,29 @@
 
 namespace Ether
 {
-    class ETH_ENGINE_DLL CommandLineOptions
-    {
-    public:
-        CommandLineOptions();
-        ~CommandLineOptions() = default;
+class ETH_ENGINE_DLL CommandLineOptions
+{
+public:
+    CommandLineOptions();
+    ~CommandLineOptions() = default;
 
-    public:
-        inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
-        inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
-        inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
+public:
+    inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
+    inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
+    inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
 
-    public:
-        ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
+public:
+    ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
 
-    private:
-        void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
+private:
+    void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
 
-    private:
-        bool m_UseSourceShaders;
-        bool m_UseShaderDaemon;
-        bool m_UseValidationLayer;
+private:
+    bool m_UseSourceShaders;
+    bool m_UseShaderDaemon;
+    bool m_UseValidationLayer;
 
-    private:
-        ETH_TOOLONLY(uint16_t m_ToolmodePort);
-    };
-}
-
+private:
+    ETH_TOOLONLY(uint16_t m_ToolmodePort);
+};
+} // namespace Ether

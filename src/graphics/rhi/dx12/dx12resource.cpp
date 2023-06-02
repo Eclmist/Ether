@@ -17,13 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include <locale>
 #include <codecvt>
 #include <string>
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12Resource::Dx12Resource(const std::string& name)
     : RhiResource(name)
@@ -52,4 +52,3 @@ void Ether::Graphics::Dx12Resource::Unmap() const
 }
 
 #endif // ETH_GRAPHICS_DX12
-

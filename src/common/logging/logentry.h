@@ -23,42 +23,41 @@
 
 namespace Ether
 {
-    enum class LogLevel
-    {
-        Info,
-        Warning,
-        Error,
-        Fatal
-    };
+enum class LogLevel
+{
+    Info,
+    Warning,
+    Error,
+    Fatal
+};
 
-    enum class LogType
-    {
-        Engine,
-        Graphics,
-        Win32,
-        Toolmode,
-        None,
-    };
+enum class LogType
+{
+    Engine,
+    Graphics,
+    Win32,
+    Toolmode,
+    None,
+};
 
-    class LogEntry
-    {
-    public:
-        LogEntry(const std::string& text, LogLevel level, LogType type);
+class LogEntry
+{
+public:
+    LogEntry(const std::string& text, LogLevel level, LogType type);
 
-        std::string GetText() const;
-        std::string GetFullText() const;
-        std::string GetLogLevelPrefix() const;
-        std::string GetLogTypePrefix() const;
-        std::string GetTimePrefix() const;
+    std::string GetText() const;
+    std::string GetFullText() const;
+    std::string GetLogLevelPrefix() const;
+    std::string GetLogTypePrefix() const;
+    std::string GetTimePrefix() const;
 
-    private:
-        std::string FormatTime(const time_t t, const char* format) const;
+private:
+    std::string FormatTime(const time_t t, const char* format) const;
 
-    public:
-        const std::string m_Text;
-        const LogLevel m_Level;
-        const LogType m_Type;
-        const uint64_t m_Time;
-    };
-}
-
+public:
+    const std::string m_Text;
+    const LogLevel m_Level;
+    const LogType m_Type;
+    const uint64_t m_Time;
+};
+} // namespace Ether

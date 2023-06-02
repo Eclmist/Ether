@@ -26,46 +26,50 @@
 
 namespace Ether::Graphics
 {
-    class RhiCommandQueue;
-    class RhiCommandAllocator;
-    class CommandAllocatorPool;
+class RhiCommandQueue;
+class RhiCommandAllocator;
+class CommandAllocatorPool;
 
-    class ETH_GRAPHIC_DLL CommandContext : public NonCopyable, public NonMovable
-    {
-    public:
-        CommandContext(RhiCommandType type, const std::string& contextName = "Unnamed Command Context");
-        ~CommandContext();
+class ETH_GRAPHIC_DLL CommandContext : public NonCopyable, public NonMovable
+{
+public:
+    CommandContext(RhiCommandType type, const std::string& contextName = "Unnamed Command Context");
+    ~CommandContext();
 
-        inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
-        inline RhiCommandQueue& GetCommandQueue() const { return *m_CommandQueue; }
+    inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
+    inline RhiCommandQueue& GetCommandQueue() const { return *m_CommandQueue; }
 
-    public:
-        void SetMarker(const std::string& name);
-        void PushMarker(const std::string& name);
-        void PopMarker();
+public:
+    void SetMarker(const std::string& name);
+    void PushMarker(const std::string& name);
+    void PopMarker();
 
-        void TransitionResource(RhiResource& resource, RhiResourceState newState);
-        void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
-        void SetPipelineState(const RhiPipelineState& pipelineState);
+    void TransitionResource(RhiResource& resource, RhiResourceState newState);
+    void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
+    void SetPipelineState(const RhiPipelineState& pipelineState);
 
-        void SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr);
+    void SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr);
 
-        void CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
-        void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
+    void CopyBufferRegion(
+        RhiResource& src,
+        RhiResource& dest,
+        size_t size,
+        size_t srcOffset = 0,
+        size_t destOffset = 0);
+    void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
 
-        void FinalizeAndExecute(bool waitForCompletion = false);
-        void Reset();
+    void FinalizeAndExecute(bool waitForCompletion = false);
+    void Reset();
 
-    protected:
-        std::string m_Name;
-        RhiCommandType m_Type;
+protected:
+    std::string m_Name;
+    RhiCommandType m_Type;
 
-        RhiCommandQueue* m_CommandQueue;
-        RhiCommandAllocator* m_CommandAllocator;
-        CommandAllocatorPool* m_CommandAllocatorPool;
+    RhiCommandQueue* m_CommandQueue;
+    RhiCommandAllocator* m_CommandAllocator;
+    CommandAllocatorPool* m_CommandAllocatorPool;
 
-        std::unique_ptr<RhiCommandList> m_CommandList;
-        std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
-    };
-}
-
+    std::unique_ptr<RhiCommandList> m_CommandList;
+    std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
+};
+} // namespace Ether::Graphics

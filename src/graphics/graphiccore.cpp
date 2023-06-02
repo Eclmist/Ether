@@ -72,4 +72,3 @@ void Ether::Graphics::GraphicCore::Main()
 
     s_Instance->m_FrameNumber++;
 }
-

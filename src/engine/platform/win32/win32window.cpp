@@ -58,14 +58,12 @@ Ether::Win32::Win32Window::Win32Window()
         nullptr,
         nullptr,
         ::GetModuleHandle(nullptr),
-        this
-    );
+        this);
     AssertWin32(m_WindowHandle != nullptr, "Failed to create a Win32 handle");
 
 #if defined(ETH_ENGINE)
     CentralizeWindow();
 #endif
-
 }
 
 Ether::Win32::Win32Window::~Win32Window()
@@ -120,14 +118,13 @@ void Ether::Win32::Win32Window::SetFullscreen(bool isFullscreen)
         return;
 
     m_IsFullscreen = isFullscreen;
-    static Rect previousRect = { 0,0,0,0 };
+    static Rect previousRect = { 0, 0, 0, 0 };
 
     auto style = isFullscreen ? WS_POPUP : ETH_WINDOW_STYLE;
     auto showFlag = isFullscreen ? SW_MAXIMIZE : SW_NORMAL;
     auto posFlag = SWP_FRAMECHANGED | SWP_NOACTIVATE;
-    Rect newRect = isFullscreen 
-        ? Rect(0, 0, GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN)) 
-        : previousRect;
+    Rect newRect = isFullscreen ? Rect(0, 0, GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN))
+                                : previousRect;
 
     previousRect = GetCurrentWindowRect();
 
@@ -188,7 +185,7 @@ bool Ether::Win32::Win32Window::ProcessPlatformMessages()
             ETH_TOOLONLY(::SetFocus((HWND)win32window.m_WindowHandle));
             continue;
         case WM_SIZE:
-            if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ LOWORD(msg.lParam), HIWORD(msg.lParam)})
+            if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ LOWORD(msg.lParam), HIWORD(msg.lParam) })
                 EngineCore::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
             continue;
         case WM_MOVE:
@@ -249,12 +246,10 @@ void Ether::Win32::Win32Window::ToWindowRect(Rect& clientRect)
     RECT windowRect = { clientRect.x, clientRect.y, clientRect.x + clientRect.w, clientRect.y + clientRect.h };
     ::AdjustWindowRect(&windowRect, m_IsFullscreen ? ETH_WINDOW_STYLE_FULLSCREEN : ETH_WINDOW_STYLE, false);
 
-    clientRect = {
-        windowRect.left,
-        windowRect.top,
-        windowRect.right - windowRect.left,
-        windowRect.bottom - windowRect.top
-    };
+    clientRect = { windowRect.left,
+                   windowRect.top,
+                   windowRect.right - windowRect.left,
+                   windowRect.bottom - windowRect.top };
 }
 
 void Ether::Win32::Win32Window::ToClientRect(Rect& windowRect)
@@ -272,17 +267,15 @@ void Ether::Win32::Win32Window::ToClientRect(Rect& windowRect)
 Ether::Win32::Rect Ether::Win32::Win32Window::GetCurrentWindowRect()
 {
     if (m_WindowHandle == nullptr)
-        return { 0,0,0,0 };
+        return { 0, 0, 0, 0 };
 
     RECT currentWindowRect;
     ::GetWindowRect((HWND)m_WindowHandle, &currentWindowRect);
 
-    return {
-        currentWindowRect.left,
-        currentWindowRect.top,
-        currentWindowRect.right - currentWindowRect.left,
-        currentWindowRect.bottom - currentWindowRect.top
-    };
+    return { currentWindowRect.left,
+             currentWindowRect.top,
+             currentWindowRect.right - currentWindowRect.left,
+             currentWindowRect.bottom - currentWindowRect.top };
 }
 
 void Ether::Win32::Win32Window::CentralizeWindow()
@@ -353,14 +346,12 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
     case WM_QUIT:
         win32window.m_Win32MessageQueue[win32window.m_MessageQueueFrontBufferIdx][msg] = { hWnd, msg, wParam, lParam };
         return 0;
-    // Messages that can be handled immediately
-    //case WM_ERASEBKGND:
-    //    return 1;
+        // Messages that can be handled immediately
+        // case WM_ERASEBKGND:
+        //    return 1;
     }
-
 
     return ::DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 #endif // ETH_PLATFORM_WIN32
-

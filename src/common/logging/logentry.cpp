@@ -87,4 +87,3 @@ std::string Ether::LogEntry::FormatTime(const time_t t, const char* format) cons
     strftime(formatted, 80, format, &newTime);
     return formatted;
 }
-

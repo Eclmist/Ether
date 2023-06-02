@@ -33,7 +33,7 @@ int Ether::Start(IApplicationBase& app)
 
     EngineCore::Instance().Run();
 
-    LogInfo("Shutting down Ether"); 
+    LogInfo("Shutting down Ether");
     EngineCore::Instance().Shutdown();
 
     Input::Reset();
@@ -44,7 +44,7 @@ int Ether::Start(IApplicationBase& app)
 
 void Ether::Shutdown()
 {
-    //PostQuitMessage(0);
+    // PostQuitMessage(0);
 }
 
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()
@@ -105,4 +105,3 @@ void Ether::Toolmode::HideWindow()
 {
     EngineCore::GetMainWindow().Hide();
 }
-

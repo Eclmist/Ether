@@ -24,38 +24,39 @@
 
 namespace Ether::Ecs
 {
-    template <typename T>
-    class EcsToggleComponent : public EcsComponent<T>
-    {
-    public:
-        EcsToggleComponent(uint32_t version, uint32_t classID);
-        virtual ~EcsToggleComponent() override = default;
+template <typename T>
+class EcsToggleComponent : public EcsComponent<T>
+{
+public:
+    EcsToggleComponent(uint32_t version, uint32_t classID);
+    virtual ~EcsToggleComponent() override = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        bool m_Enabled;
-    };
+public:
+    bool m_Enabled;
+};
 
-    template <typename T>
-    Ether::Ecs::EcsToggleComponent<T>::EcsToggleComponent(uint32_t version, uint32_t classID)
-        : EcsComponent<T>(version, classID)
-        , m_Enabled(true) {}
-
-    template <typename T>
-    void Ether::Ecs::EcsToggleComponent<T>::Serialize(OStream& ostream) const
-    {
-        EcsComponent<T>::Serialize(ostream);
-        ostream << m_Enabled;
-    }
-
-    template <typename T>
-    void Ether::Ecs::EcsToggleComponent<T>::Deserialize(IStream& istream)
-    {
-        EcsComponent<T>::Deserialize(istream);
-        istream >> m_Enabled;
-    }
+template <typename T>
+Ether::Ecs::EcsToggleComponent<T>::EcsToggleComponent(uint32_t version, uint32_t classID)
+    : EcsComponent<T>(version, classID)
+    , m_Enabled(true)
+{
 }
 
+template <typename T>
+void Ether::Ecs::EcsToggleComponent<T>::Serialize(OStream& ostream) const
+{
+    EcsComponent<T>::Serialize(ostream);
+    ostream << m_Enabled;
+}
+
+template <typename T>
+void Ether::Ecs::EcsToggleComponent<T>::Deserialize(IStream& istream)
+{
+    EcsComponent<T>::Deserialize(istream);
+    istream >> m_Enabled;
+}
+} // namespace Ether::Ecs

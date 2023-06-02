@@ -23,21 +23,20 @@
 
 namespace Ether::Graphics
 {
-    class RhiDescriptorHeap : public NonCopyable, public NonMovable
-    {
-    public:
-        RhiDescriptorHeap() = default;
-        virtual ~RhiDescriptorHeap() = default;
+class RhiDescriptorHeap : public NonCopyable, public NonMovable
+{
+public:
+    RhiDescriptorHeap() = default;
+    virtual ~RhiDescriptorHeap() = default;
 
-    public:
-        virtual RhiCpuAddress GetBaseCpuAddress() const = 0;
-        virtual RhiGpuAddress GetBaseGpuAddress() const = 0;
+public:
+    virtual RhiCpuAddress GetBaseCpuAddress() const = 0;
+    virtual RhiGpuAddress GetBaseGpuAddress() const = 0;
 
-        virtual RhiCpuAddress GetNextCpuAddress() const = 0;
-        virtual RhiGpuAddress GetNextGpuAddress() const = 0;
+    virtual RhiCpuAddress GetNextCpuAddress() const = 0;
+    virtual RhiGpuAddress GetNextGpuAddress() const = 0;
 
-        virtual uint32_t GetHandleIncrementSize() const = 0;
-        virtual void IncrementHandle() = 0;
-    };
-}
-
+    virtual uint32_t GetHandleIncrementSize() const = 0;
+    virtual void IncrementHandle() = 0;
+};
+} // namespace Ether::Graphics

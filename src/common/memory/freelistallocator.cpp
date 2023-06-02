@@ -129,7 +129,7 @@ void Ether::FreeListAllocator::MergeBlock(OffsetToBlockMap::iterator blockIter, 
 {
     assert(
         (newBlock.GetOffset() + newBlock.GetSize() == blockIter->first ||
-        blockIter->first + blockIter->second.m_Size == newBlock.GetOffset()) &&
+         blockIter->first + blockIter->second.m_Size == newBlock.GetOffset()) &&
         "FreeListAllocator - Misaligned blocks cannot be merged");
 
     size_t newSize = newBlock.GetSize() + blockIter->second.m_Size;
@@ -139,4 +139,3 @@ void Ether::FreeListAllocator::MergeBlock(OffsetToBlockMap::iterator blockIter, 
     m_OffsetToBlockMap.erase(blockIter);
     AddBlock(newOffset, newSize);
 }
-

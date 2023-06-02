@@ -23,25 +23,24 @@
 
 namespace Ether
 {
-    class EngineConfig
-    {
-    public:
-        EngineConfig();
-        ~EngineConfig() = default;
+class EngineConfig
+{
+public:
+    EngineConfig();
+    ~EngineConfig() = default;
 
-    public:
-        inline std::string GetClientName() const { return m_ClientTitle; }
-        inline ethVector2u GetClientSize() const { return m_ClientSize; }
-        inline ethVector2u GetClientPosition() const { return m_ClientPosition; }
+public:
+    inline std::string GetClientName() const { return m_ClientTitle; }
+    inline ethVector2u GetClientSize() const { return m_ClientSize; }
+    inline ethVector2u GetClientPosition() const { return m_ClientPosition; }
 
-        void SetClientTitle(const std::string& title);
-        void SetClientSize(const ethVector2u& clientSize);
-        void SetClientPosition(const ethVector2u& clientPosition);
+    void SetClientTitle(const std::string& title);
+    void SetClientSize(const ethVector2u& clientSize);
+    void SetClientPosition(const ethVector2u& clientPosition);
 
-    private:
-        std::string m_ClientTitle;
-        ethVector2u m_ClientSize;
-        ethVector2u m_ClientPosition;
-    };
-}
-
+private:
+    std::string m_ClientTitle;
+    ethVector2u m_ClientSize;
+    ethVector2u m_ClientPosition;
+};
+} // namespace Ether

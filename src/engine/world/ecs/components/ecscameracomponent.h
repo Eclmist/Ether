@@ -23,26 +23,25 @@
 
 namespace Ether::Ecs
 {
-    enum class ProjectionMode : uint32_t
-    {
-        Perspective,
-        Orthographic
-    };
+enum class ProjectionMode : uint32_t
+{
+    Perspective,
+    Orthographic
+};
 
-    class ETH_ENGINE_DLL EcsCameraComponent : public EcsToggleComponent<EcsCameraComponent>
-    {
-    public:
-        EcsCameraComponent();
-        ~EcsCameraComponent() override = default;
+class ETH_ENGINE_DLL EcsCameraComponent : public EcsToggleComponent<EcsCameraComponent>
+{
+public:
+    EcsCameraComponent();
+    ~EcsCameraComponent() override = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        ProjectionMode m_ProjectionMode;
+public:
+    ProjectionMode m_ProjectionMode;
 
-        float m_FieldOfView;
-    };
-}
-
+    float m_FieldOfView;
+};
+} // namespace Ether::Ecs

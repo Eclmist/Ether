@@ -24,46 +24,48 @@
 
 namespace Ether::Graphics
 {
-    class RhiPipelineStateDesc
+class RhiPipelineStateDesc
+{
+public:
+    RhiPipelineStateDesc() = default;
+    virtual ~RhiPipelineStateDesc() {}
+
+public:
+    virtual void SetBlendState(RhiBlendDesc desc) = 0;
+    virtual void SetRasterizerState(RhiRasterizerDesc desc) = 0;
+    virtual void SetInputLayout(RhiInputLayoutDesc desc) = 0;
+    virtual void SetPrimitiveTopology(RhiPrimitiveTopologyType type) = 0;
+    virtual void SetDepthStencilState(RhiDepthStencilDesc desc) = 0;
+    virtual void SetDepthTargetFormat(RhiFormat dsvFormat) = 0;
+    virtual void SetRenderTargetFormat(RhiFormat rtvFormat) = 0;
+    virtual void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) = 0;
+    virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
+    virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
+    virtual void SetVertexShader(RhiShader& vs) = 0;
+    virtual void SetPixelShader(RhiShader& ps) = 0;
+    virtual void SetNodeMask(uint32_t mask) = 0;
+    virtual void SetSampleMask(uint32_t mask) = 0;
+    virtual void Reset() = 0;
+
+public:
+    std::unique_ptr<RhiPipelineState> Compile() const;
+    bool RequiresShaderCompilation() const;
+    void CompileShaders();
+
+protected:
+    std::unordered_map<RhiShaderType, RhiShader*> m_Shaders;
+};
+
+class RhiPipelineState
+{
+public:
+    RhiPipelineState(const RhiPipelineStateDesc& desc)
+        : m_CreationDesc(desc)
     {
-    public:
-        RhiPipelineStateDesc() = default;
-        virtual ~RhiPipelineStateDesc() {}
+    }
+    virtual ~RhiPipelineState() = default;
 
-    public:
-        virtual void SetBlendState(RhiBlendDesc desc) = 0;
-        virtual void SetRasterizerState(RhiRasterizerDesc desc) = 0;
-        virtual void SetInputLayout(RhiInputLayoutDesc desc) = 0;
-        virtual void SetPrimitiveTopology(RhiPrimitiveTopologyType type) = 0;
-        virtual void SetDepthStencilState(RhiDepthStencilDesc desc) = 0;
-        virtual void SetDepthTargetFormat(RhiFormat dsvFormat) = 0;
-        virtual void SetRenderTargetFormat(RhiFormat rtvFormat) = 0;
-        virtual void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) = 0;
-        virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
-        virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
-        virtual void SetVertexShader(RhiShader& vs) = 0;
-        virtual void SetPixelShader(RhiShader& ps) = 0;
-        virtual void SetNodeMask(uint32_t mask) = 0;
-        virtual void SetSampleMask(uint32_t mask) = 0;
-        virtual void Reset() = 0;
-
-    public:
-        std::unique_ptr<RhiPipelineState> Compile() const;
-        bool RequiresShaderCompilation() const;
-        void CompileShaders();
-
-    protected:
-        std::unordered_map<RhiShaderType, RhiShader*> m_Shaders;
-    };
-
-    class RhiPipelineState
-    {
-    public:
-        RhiPipelineState(const RhiPipelineStateDesc& desc) : m_CreationDesc(desc) {}
-        virtual ~RhiPipelineState() = default;
-
-    protected:
-        const RhiPipelineStateDesc& m_CreationDesc;
-    };
-}
-
+protected:
+    const RhiPipelineStateDesc& m_CreationDesc;
+};
+} // namespace Ether::Graphics

@@ -57,4 +57,3 @@ void Ether::Ecs::EcsManager::DestroyEntity(EntityID entityID)
     m_SystemManager.OnEntityDestroyed(entityID);
     m_ComponentManager.OnEntityDestroyed(entityID);
 }
-

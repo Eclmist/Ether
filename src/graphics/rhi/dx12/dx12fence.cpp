@@ -17,9 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12fence.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12Fence::GetCompletedValue()
 {
@@ -34,4 +34,3 @@ void Ether::Graphics::Dx12Fence::SetEventOnCompletion(RhiFenceValue value, void*
 }
 
 #endif // ETH_GRAPHICS_DX12
-

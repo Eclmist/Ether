@@ -27,4 +27,3 @@ void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
     uv.x = v.x;
     uv.y = 1.0 - v.y;
 }
-

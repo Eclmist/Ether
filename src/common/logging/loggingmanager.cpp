@@ -25,8 +25,8 @@
 #include <filesystem>
 
 #ifdef ETH_PLATFORM_WIN32
-#define _AMD64_ // So we don't have to include <windows.h> here
-#include <debugapi.h> // For OutputDebugStringA
+    #define _AMD64_       // So we don't have to include <windows.h> here
+    #include <debugapi.h> // For OutputDebugStringA
 #endif
 
 constexpr uint32_t MaxLogEntries = 512;
@@ -40,7 +40,7 @@ Ether::LoggingManager::~LoggingManager()
 
 void Ether::LoggingManager::Initialize()
 {
-#if defined (ETH_PLATFORM_WIN32)
+#if defined(ETH_PLATFORM_WIN32)
     std::filesystem::create_directory(OutputFilePath);
     m_LogFileStream.open(GetOutputDirectory() + "/" + GetTimestampedFileName(), std::ios_base::app);
 
@@ -63,7 +63,8 @@ void Ether::LoggingManager::Log(LogLevel level, LogType type, const char* fmt, .
     std::stringstream ss(formattedText);
     std::string individualLine;
 
-    while (std::getline(ss, individualLine, '\n')) {
+    while (std::getline(ss, individualLine, '\n'))
+    {
         LogEntry entry(individualLine, level, type);
 
         AddLog(entry);
@@ -72,7 +73,7 @@ void Ether::LoggingManager::Log(LogLevel level, LogType type, const char* fmt, .
 }
 
 void Ether::LoggingManager::AddLog(const LogEntry entry)
- {
+{
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     if (m_LogEntries.size() > MaxLogEntries)
@@ -104,4 +105,3 @@ const std::string Ether::LoggingManager::GetTimestampedFileName() const
 {
     return std::to_string(Time::GetStartupTime()) + std::string(OutputFileSuffix);
 }
-

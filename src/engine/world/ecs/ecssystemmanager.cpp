@@ -54,4 +54,3 @@ void Ether::Ecs::EcsSystemManager::Update()
     for (auto const& system : m_Systems)
         system->Update();
 }
-

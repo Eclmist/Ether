@@ -23,17 +23,17 @@
 
 namespace Ether
 {
-    /*
-        Derive from this class to make your classes non movable
-    */
+/*
+    Derive from this class to make your classes non movable
+*/
 
-    class NonMovable
-    {
-    public:
-        NonMovable() = default;
-        ~NonMovable() = default;
+class NonMovable
+{
+public:
+    NonMovable() = default;
+    ~NonMovable() = default;
 
-        NonMovable(NonMovable&&) = delete;
-        NonMovable& operator=(NonMovable&&) = delete;
-    };
-}
+    NonMovable(NonMovable&&) = delete;
+    NonMovable& operator=(NonMovable&&) = delete;
+};
+} // namespace Ether

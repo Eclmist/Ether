@@ -23,354 +23,351 @@
 
 namespace Ether::Graphics
 {
-    class RhiCommandAllocator;
-    class RhiCommandList;
-    class RhiCommandQueue;
-    class RhiDescriptorHeap;
-    class RhiDevice;
-    class RhiFence;
-    class RhiModule;
-    class RhiRenderTargetView;
-    class RhiDepthStencilView;
-    class RhiConstantBufferView;
-    class RhiShaderResourceView;
-    class RhiUnorderedAccessView;
-    class RhiResource;
-    class RhiRootParameter;
-    class RhiRootSignature;
-    class RhiRootSignatureDesc;
-    class RhiPipelineState;
-    class RhiPipelineStateDesc;
-    class RhiSwapChain;
-    class RhiShader;
+class RhiCommandAllocator;
+class RhiCommandList;
+class RhiCommandQueue;
+class RhiDescriptorHeap;
+class RhiDevice;
+class RhiFence;
+class RhiModule;
+class RhiRenderTargetView;
+class RhiDepthStencilView;
+class RhiConstantBufferView;
+class RhiShaderResourceView;
+class RhiUnorderedAccessView;
+class RhiResource;
+class RhiRootParameter;
+class RhiRootSignature;
+class RhiRootSignatureDesc;
+class RhiPipelineState;
+class RhiPipelineStateDesc;
+class RhiSwapChain;
+class RhiShader;
 
+using RhiFenceValue = uint64_t;
+using RhiStencilValue = uint32_t;
 
-    using RhiFenceValue = uint64_t;
-    using RhiStencilValue = uint32_t;
+struct RhiDepthStencilValue
+{
+    float m_Depth;
+    uint8_t m_Stencil;
+};
 
-    struct RhiDepthStencilValue
+struct RhiClearValue
+{
+    RhiFormat m_Format;
+
+    union
     {
-        float m_Depth;
-        uint8_t m_Stencil;
+        float m_Color[4];
+        RhiDepthStencilValue m_DepthStencil;
     };
+};
 
-    struct RhiClearValue
-    {
-        RhiFormat m_Format;
+//============================= Memory ==============================//
 
-        union
-        {
-            float m_Color[4];
-            RhiDepthStencilValue m_DepthStencil;
-        };
-    };
+using RhiCpuAddress = uint64_t;
+using RhiGpuAddress = uint64_t;
 
-    //============================= Memory ==============================//
+constexpr uint64_t UnknownAddress = -1;
+constexpr uint64_t NullAddress = 0;
 
-    using RhiCpuAddress = uint64_t;
-    using RhiGpuAddress = uint64_t;
+//========================= Creation Descs ==========================//
 
-    constexpr uint64_t UnknownAddress = -1;
-    constexpr uint64_t NullAddress = 0;
+struct RhiBlendDesc
+{
+    bool m_BlendingEnabled;
+    bool m_LogicOpEnabled;
+    RhiBlendType m_SrcBlend;
+    RhiBlendType m_DestBlend;
+    RhiBlendOperation m_BlendOp;
+    RhiBlendType m_SrcBlendAlpha;
+    RhiBlendType m_DestBlendAlpha;
+    RhiBlendOperation m_BlendOpAlpha;
+    RhiLogicOperation m_LogicOp;
+    RhiRenderTargetWriteMask m_WriteMask;
+};
 
-    //========================= Creation Descs ==========================//
+struct RhiCommandAllocatorDesc
+{
+    RhiCommandType m_Type;
+};
 
-    struct RhiBlendDesc
-    {
-        bool m_BlendingEnabled;
-        bool m_LogicOpEnabled;
-        RhiBlendType m_SrcBlend;
-        RhiBlendType m_DestBlend;
-        RhiBlendOperation m_BlendOp;
-        RhiBlendType m_SrcBlendAlpha;
-        RhiBlendType m_DestBlendAlpha;
-        RhiBlendOperation m_BlendOpAlpha;
-        RhiLogicOperation m_LogicOp;
-        RhiRenderTargetWriteMask m_WriteMask;
-    };
+struct RhiCommandListDesc
+{
+    std::string m_Name;
+    RhiCommandType m_Type;
+    RhiCommandAllocator* m_Allocator;
+};
 
-    struct RhiCommandAllocatorDesc
-    {
-        RhiCommandType m_Type;
-    };
+struct RhiCommandQueueDesc
+{
+    RhiCommandType m_Type;
+};
 
-    struct RhiCommandListDesc
-    {
-        std::string m_Name;
-        RhiCommandType m_Type;
-        RhiCommandAllocator* m_Allocator;
-    };
+struct RhiDepthStencilOperationDesc
+{
+    RhiDepthStencilOperation m_StencilFailOp;
+    RhiDepthStencilOperation m_StencilDepthFailOp;
+    RhiDepthStencilOperation m_StencilPassOp;
+    RhiComparator m_StencilFunc;
+};
 
-    struct RhiCommandQueueDesc
-    {
-        RhiCommandType m_Type;
-    };
+struct RhiDepthStencilDesc
+{
+    bool m_DepthEnabled;
+    RhiDepthWriteMask m_DepthWriteMask;
+    RhiComparator m_DepthComparator;
+    bool m_StencilEnabled;
+    uint8_t m_StencilReadMask;
+    uint8_t m_StencilWriteMask;
+    RhiDepthStencilOperationDesc m_FrontFace;
+    RhiDepthStencilOperationDesc m_BackFace;
+};
 
-    struct RhiDepthStencilOperationDesc
-    {
-        RhiDepthStencilOperation m_StencilFailOp;
-        RhiDepthStencilOperation m_StencilDepthFailOp;
-        RhiDepthStencilOperation m_StencilPassOp;
-        RhiComparator m_StencilFunc;
-    };
+struct RhiDescriptorHeapDesc
+{
+    RhiDescriptorHeapType m_Type;
+    RhiDescriptorHeapFlag m_Flags;
+    size_t m_NumDescriptors;
+};
 
-    struct RhiDepthStencilDesc
-    {
-        bool m_DepthEnabled;
-        RhiDepthWriteMask m_DepthWriteMask;
-        RhiComparator m_DepthComparator;
-        bool m_StencilEnabled;
-        uint8_t m_StencilReadMask;
-        uint8_t m_StencilWriteMask;
-        RhiDepthStencilOperationDesc m_FrontFace;
-        RhiDepthStencilOperationDesc m_BackFace;
-    };
+struct RhiInputElementDesc
+{
+    const char* m_SemanticName;
+    uint32_t m_SemanticIndex;
+    RhiFormat m_Format;
+    uint32_t m_InputSlot;
+    uint32_t m_AlignedByteOffset;
+    RhiInputClassification m_InputSlotClass;
+    uint32_t m_InstanceDataStepRate;
+};
 
-    struct RhiDescriptorHeapDesc
-    {
-        RhiDescriptorHeapType m_Type;
-        RhiDescriptorHeapFlag m_Flags;
-        size_t m_NumDescriptors;
-    };
+struct RhiInputLayoutDesc
+{
+    RhiInputElementDesc* m_InputElementDescs;
+    uint32_t m_NumElements;
+};
 
-    struct RhiInputElementDesc
-    {
-        const char* m_SemanticName;
-        uint32_t m_SemanticIndex;
-        RhiFormat m_Format;
-        uint32_t m_InputSlot;
-        uint32_t m_AlignedByteOffset;
-        RhiInputClassification m_InputSlotClass;
-        uint32_t m_InstanceDataStepRate;
-    };
+struct RhiRasterizerDesc
+{
+    RhiFillMode m_FillMode;
+    RhiCullMode m_CullMode;
+    bool m_FrontCounterClockwise;
+    uint32_t m_DepthBias;
+    float m_DepthBiasClamp;
+    float m_SlopeScaledDepthBias;
+    bool m_DepthClipEnable;
+    bool m_MultisampleEnable;
+    bool m_AntialiasedLineEnable;
+    uint32_t m_ForcedSampleCount;
+};
 
-    struct RhiInputLayoutDesc
-    {
-        RhiInputElementDesc* m_InputElementDescs;
-        uint32_t m_NumElements;
-    };
+struct RhiSampleDesc
+{
+    uint32_t m_NumMsaaSamples;
+    uint32_t m_MsaaQuality;
+};
 
-    struct RhiRasterizerDesc
-    {
-        RhiFillMode m_FillMode;
-        RhiCullMode m_CullMode;
-        bool m_FrontCounterClockwise;
-        uint32_t m_DepthBias;
-        float m_DepthBiasClamp;
-        float m_SlopeScaledDepthBias;
-        bool m_DepthClipEnable;
-        bool m_MultisampleEnable;
-        bool m_AntialiasedLineEnable;
-        uint32_t m_ForcedSampleCount;
-    };
+struct RhiSamplerParameterDesc
+{
+    RhiFilter m_Filter;
+    RhiTextureAddressMode m_AddressU;
+    RhiTextureAddressMode m_AddressV;
+    RhiTextureAddressMode m_AddressW;
+    RhiComparator m_ComparisonFunc;
+    RhiBorderColor m_BorderColor;
 
-    struct RhiSampleDesc
-    {
-        uint32_t m_NumMsaaSamples;
-        uint32_t m_MsaaQuality;
-    };
+    uint32_t m_MaxAnisotropy;
 
-    struct RhiSamplerParameterDesc
-    {
-        RhiFilter m_Filter;
-        RhiTextureAddressMode m_AddressU;
-        RhiTextureAddressMode m_AddressV;
-        RhiTextureAddressMode m_AddressW;
-        RhiComparator m_ComparisonFunc;
-        RhiBorderColor m_BorderColor;
+    float m_MipLodBias;
+    float m_MinLod;
+    float m_MaxLod;
+};
 
-        uint32_t m_MaxAnisotropy;
+struct RhiShaderDesc
+{
+    std::string m_Filename;
+    std::string m_EntryPoint;
 
-        float m_MipLodBias;
-        float m_MinLod;
-        float m_MaxLod;
-    };
+    RhiShaderType m_Type;
+};
 
-    struct RhiShaderDesc
-    {
-        std::string m_Filename;
-        std::string m_EntryPoint;
+struct RhiSwapChainDesc
+{
+    ethVector2 m_Resolution;
+    RhiFormat m_Format;
+    RhiSampleDesc m_SampleDesc;
+    uint32_t m_BufferCount;
+    RhiScalingMode m_ScalingMode;
+    RhiSwapEffect m_SwapEffect;
+    RhiSwapChainFlag m_Flag;
+    void* m_SurfaceTarget;
 
-        RhiShaderType m_Type;
-    };
+    RhiCommandQueue* m_CommandQueue; // For d3d12 only
+};
 
-    struct RhiSwapChainDesc
-    {
-        ethVector2 m_Resolution;
-        RhiFormat m_Format;
-        RhiSampleDesc m_SampleDesc;
-        uint32_t m_BufferCount;
-        RhiScalingMode m_ScalingMode;
-        RhiSwapEffect m_SwapEffect;
-        RhiSwapChainFlag m_Flag;
-        void* m_SurfaceTarget;
+struct RhiScissorDesc
+{
+    float m_X, m_Y;
+    float m_Width, m_Height;
+};
 
-        RhiCommandQueue* m_CommandQueue; // For d3d12 only
-    };
+struct RhiViewportDesc
+{
+    float m_X, m_Y;
+    float m_Width, m_Height;
+    float m_MinDepth, m_MaxDepth;
+};
 
-    struct RhiScissorDesc
-    {
-        float m_X, m_Y;
-        float m_Width, m_Height;
-    };
+//========================= Resource Descs ==========================//
 
-    struct RhiViewportDesc
-    {
-        float m_X, m_Y;
-        float m_Width, m_Height;
-        float m_MinDepth, m_MaxDepth;
-    };
+struct RhiResourceViewDesc
+{
+    RhiResource* m_Resource;
+    RhiCpuAddress m_TargetCpuAddr;
+};
 
-    //========================= Resource Descs ==========================//
+struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
+{
+    RhiFormat m_Format;
+};
 
-    struct RhiResourceViewDesc
-    {
-        RhiResource* m_Resource;
-        RhiCpuAddress m_TargetCpuAddr;
-    };
+struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
+{
+    RhiFormat m_Format;
+};
 
-    struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
-    {
-        RhiFormat m_Format;
-    };
+struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
+{
+    RhiGpuAddress m_TargetGpuAddr;
+    RhiFormat m_Format;
+    RhiShaderResourceDims m_Dimensions;
+};
 
-    struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
-    {
-        RhiFormat m_Format;
-    };
+struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
+{
+    RhiGpuAddress m_TargetGpuAddr;
+    size_t m_BufferSize;
+};
 
-    struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
-    {
-        RhiGpuAddress m_TargetGpuAddr;
-        RhiFormat m_Format;
-        RhiShaderResourceDims m_Dimensions;
-    };
+struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
+{
+    RhiGpuAddress m_TargetGpuAddr;
+};
 
-    struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
-    {
-        RhiGpuAddress m_TargetGpuAddr;
-        size_t m_BufferSize;
-    };
+struct RhiIndexBufferViewDesc
+{
+    RhiFormat m_Format;
+    size_t m_BufferSize;
+    RhiGpuAddress m_TargetGpuAddr;
+};
 
-    struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
-    {
-        RhiGpuAddress m_TargetGpuAddr;
-    };
+struct RhiVertexBufferViewDesc
+{
+    size_t m_BufferSize;
+    size_t m_Stride;
+    RhiGpuAddress m_TargetGpuAddr;
+};
 
-    struct RhiIndexBufferViewDesc
-    {
-        RhiFormat m_Format;
-        size_t m_BufferSize;
-        RhiGpuAddress m_TargetGpuAddr;
+struct RhiResourceDesc
+{
+    uint64_t m_Alignment;
+    uint64_t m_Width;
+    uint64_t m_Height;
+    uint16_t m_DepthOrArraySize;
+    uint16_t m_MipLevels;
 
-    };
+    RhiFormat m_Format;
+    RhiResourceDimension m_Dimension;
+    RhiResourceLayout m_Layout;
+    RhiResourceFlag m_Flag;
+    RhiSampleDesc m_SampleDesc;
+};
 
-    struct RhiVertexBufferViewDesc
-    {
-        size_t m_BufferSize;
-        size_t m_Stride;
-        RhiGpuAddress m_TargetGpuAddr;
-    };
+struct RhiCommitedResourceDesc
+{
+    std::string m_Name;
+    RhiHeapType m_HeapType;
+    RhiResourceState m_State;
+    RhiResourceDesc m_ResourceDesc;
+    RhiClearValue* m_ClearValue;
+};
 
-    struct RhiResourceDesc
-    {
-        uint64_t m_Alignment;
-        uint64_t m_Width;
-        uint64_t m_Height;
-        uint16_t m_DepthOrArraySize;
-        uint16_t m_MipLevels;
+//======================= Command List Descs ========================//
 
-        RhiFormat m_Format;
-        RhiResourceDimension m_Dimension;
-        RhiResourceLayout m_Layout;
-        RhiResourceFlag m_Flag;
-        RhiSampleDesc m_SampleDesc;
-    };
+struct RhiCopyBufferRegionDesc
+{
+    RhiResource* m_Source;
+    RhiResource* m_Destination;
 
-    struct RhiCommitedResourceDesc
-    {
-        std::string m_Name;
-        RhiHeapType m_HeapType;
-        RhiResourceState m_State;
-        RhiResourceDesc m_ResourceDesc;
-        RhiClearValue* m_ClearValue;
-    };
+    size_t m_SourceOffset;
+    size_t m_DestinationOffset;
+    size_t m_Size;
+};
 
-    //======================= Command List Descs ========================//
+struct RhiCopyTextureRegionDesc
+{
+    RhiResource* m_IntermediateResource;
+    uint32_t m_IntermediateResourceOffset;
 
-    struct RhiCopyBufferRegionDesc
-    {
-        RhiResource* m_Source;
-        RhiResource* m_Destination;
+    RhiResource* m_Destination;
 
-        size_t m_SourceOffset;
-        size_t m_DestinationOffset;
-        size_t m_Size;
-    };
+    uint32_t m_Width;
+    uint32_t m_Height;
+    uint32_t m_Depth;
 
-    struct RhiCopyTextureRegionDesc
-    {
-        RhiResource* m_IntermediateResource;
-        uint32_t m_IntermediateResourceOffset;
+    size_t m_BytesPerPixel;
+    void* m_Data;
+};
 
-        RhiResource* m_Destination;
+struct RhiClearRenderTargetViewDesc
+{
+    ethVector4 m_ClearColor;
+    RhiRenderTargetView* m_RtvHandle;
+};
 
-        uint32_t m_Width;
-        uint32_t m_Height;
-        uint32_t m_Depth;
+struct RhiClearDepthStencilViewDesc
+{
+    float m_ClearDepth;
+    float m_ClearStencil;
+    RhiDepthStencilView* m_DsvHandle;
+};
 
-        size_t m_BytesPerPixel;
-        void* m_Data;
-    };
+struct RhiDrawInstancedDesc
+{
+    uint32_t m_VertexCount;
+    uint32_t m_InstanceCount;
+    uint32_t m_FirstVertex;
+    uint32_t m_FirstInstance;
+};
 
-    struct RhiClearRenderTargetViewDesc
-    {
-        ethVector4 m_ClearColor;
-        RhiRenderTargetView* m_RtvHandle;
-    };
+struct RhiDrawIndexedInstancedDesc
+{
+    uint32_t m_IndexCount;
+    uint32_t m_InstanceCount;
+    uint32_t m_FirstIndex;
+    uint32_t m_VertexOffset;
+    uint32_t m_FirstInstance;
+};
 
-    struct RhiClearDepthStencilViewDesc
-    {
-        float m_ClearDepth;
-        float m_ClearStencil;
-        RhiDepthStencilView* m_DsvHandle;
-    };
+struct RhiResourceTransitionDesc
+{
+    RhiResource* m_Resource;
+    RhiResourceState m_FromState;
+    RhiResourceState m_ToState;
+};
 
-    struct RhiDrawInstancedDesc
-    {
-        uint32_t m_VertexCount;
-        uint32_t m_InstanceCount;
-        uint32_t m_FirstVertex;
-        uint32_t m_FirstInstance;
-    };
+struct RhiSetDescriptorHeapsDesc
+{
+    uint32_t m_NumHeaps;
+    const RhiDescriptorHeap** m_Heaps;
+};
 
-    struct RhiDrawIndexedInstancedDesc
-    {
-        uint32_t m_IndexCount;
-        uint32_t m_InstanceCount;
-        uint32_t m_FirstIndex;
-        uint32_t m_VertexOffset;
-        uint32_t m_FirstInstance;
-    };
-
-    struct RhiResourceTransitionDesc
-    {
-        RhiResource* m_Resource;
-        RhiResourceState m_FromState;
-        RhiResourceState m_ToState;
-    };
-
-    struct RhiSetDescriptorHeapsDesc
-    {
-        uint32_t m_NumHeaps;
-        const RhiDescriptorHeap** m_Heaps;
-    };
-
-    struct RhiSetRenderTargetsDesc
-    {
-        uint32_t m_NumRtv;
-        const RhiRenderTargetView* m_RtvHandles[8];
-        const RhiDepthStencilView* m_DsvHandle;
-    };
-}
-
+struct RhiSetRenderTargetsDesc
+{
+    uint32_t m_NumRtv;
+    const RhiRenderTargetView* m_RtvHandles[8];
+    const RhiDepthStencilView* m_DsvHandle;
+};
+} // namespace Ether::Graphics

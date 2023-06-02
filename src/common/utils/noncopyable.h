@@ -23,18 +23,17 @@
 
 namespace Ether
 {
-    /*
-        Derive from this class to make your classes non copyable
-    */
+/*
+    Derive from this class to make your classes non copyable
+*/
 
-    class NonCopyable
-    {
-    public:
-        NonCopyable() = default;
-        ~NonCopyable() = default;
+class NonCopyable
+{
+public:
+    NonCopyable() = default;
+    ~NonCopyable() = default;
 
-        NonCopyable(const NonCopyable&) = delete;
-        const NonCopyable& operator=(const NonCopyable&) = delete;
-    };
-}
-
+    NonCopyable(const NonCopyable&) = delete;
+    const NonCopyable& operator=(const NonCopyable&) = delete;
+};
+} // namespace Ether

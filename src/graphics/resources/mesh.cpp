@@ -129,4 +129,3 @@ void Ether::Graphics::Mesh::CreateIndexBufferView()
 void Ether::Graphics::Mesh::CreateInstanceParams()
 {
 }
-

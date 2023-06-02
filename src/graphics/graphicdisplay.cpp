@@ -51,7 +51,7 @@ void Ether::Graphics::GraphicDisplay::Present()
     ETH_MARKER_EVENT("Display - Present");
     m_SwapChain->Present(m_VSyncEnabled ? m_VSyncVBlanks : 0);
 
-    // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model, 
+    // When using the DXGI_SWAP_EFFECT_FLIP_DISCARD flip model,
     // the order of back buffer indices are not guaranteed to be sequential
     UpdateBackBufferIndex();
 }
@@ -129,8 +129,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 
         GraphicCore::GetBindlessResourceManager().RegisterView(
             m_RenderTargetSrv[i]->GetViewID(),
-            dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetDescriptorIndex(i)
-        );
+            dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetDescriptorIndex(i));
     }
 
     m_SwapChainDescriptors.emplace_back(std::move(rtvAllocation));
@@ -142,4 +141,3 @@ void Ether::Graphics::GraphicDisplay::UpdateBackBufferIndex()
     ETH_MARKER_EVENT("SwapChain - Get Current Back Buffer Index");
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
-

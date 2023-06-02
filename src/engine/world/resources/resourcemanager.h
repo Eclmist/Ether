@@ -25,54 +25,58 @@
 
 namespace Ether
 {
-    class ResourceManager : public Serializable
-    {
-    public:
-        ResourceManager();
-        ~ResourceManager() = default;
+class ResourceManager : public Serializable
+{
+public:
+    ResourceManager();
+    ~ResourceManager() = default;
 
-    public:
-        void Serialize(OStream& ostream) const override;
-        void Deserialize(IStream& istream) override;
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
-    public:
-        ETH_ENGINE_DLL StringID RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh);
-        ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
+public:
+    ETH_ENGINE_DLL StringID RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh);
+    ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
 
-        Graphics::Mesh* GetMeshResource(StringID guid) const;
-        Graphics::Material* GetMaterialResource(StringID guid) const;
+    Graphics::Mesh* GetMeshResource(StringID guid) const;
+    Graphics::Material* GetMaterialResource(StringID guid) const;
 
-    private:
-        template <typename T>
-        void SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container) const;
-        template <typename T>
-        void DeserializeResource(IStream& istream, std::unordered_map<StringID, std::unique_ptr<T>>& container);
-
-    private:
-        friend class World;
-        std::unordered_map<StringID, std::unique_ptr<Graphics::Mesh>> m_Meshes;
-        std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Materials;
-        //std::unordered_map<StringID, Graphics::Texture> m_Texture;
-    };
-
+private:
     template <typename T>
-    void Ether::ResourceManager::SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container) const
-    {
-        ostream << static_cast<uint32_t>(container.size());
-        for (auto& pair : container)
-            pair.second->Serialize(ostream);
-    }
-
+    void SerializeResource(OStream& ostream, const std::unordered_map<StringID, std::unique_ptr<T>>& container) const;
     template <typename T>
-    void Ether::ResourceManager::DeserializeResource(IStream& istream, std::unordered_map<StringID, std::unique_ptr<T>>& container)
+    void DeserializeResource(IStream& istream, std::unordered_map<StringID, std::unique_ptr<T>>& container);
+
+private:
+    friend class World;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::Mesh>> m_Meshes;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Materials;
+    // std::unordered_map<StringID, Graphics::Texture> m_Texture;
+};
+
+template <typename T>
+void Ether::ResourceManager::SerializeResource(
+    OStream& ostream,
+    const std::unordered_map<StringID, std::unique_ptr<T>>& container) const
+{
+    ostream << static_cast<uint32_t>(container.size());
+    for (auto& pair : container)
+        pair.second->Serialize(ostream);
+}
+
+template <typename T>
+void Ether::ResourceManager::DeserializeResource(
+    IStream& istream,
+    std::unordered_map<StringID, std::unique_ptr<T>>& container)
+{
+    uint32_t numResources;
+    istream >> numResources;
+    for (int i = 0; i < numResources; ++i)
     {
-        uint32_t numResources;
-        istream >> numResources;
-        for (int i = 0; i < numResources; ++i)
-        {
-            std::unique_ptr<T> resource = std::make_unique<T>();
-            resource->Deserialize(istream);
-            container.insert({ resource->GetGuid(), std::move(resource) });
-        }
+        std::unique_ptr<T> resource = std::make_unique<T>();
+        resource->Deserialize(istream);
+        container.insert({ resource->GetGuid(), std::move(resource) });
     }
 }
+} // namespace Ether

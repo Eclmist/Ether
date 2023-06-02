@@ -24,22 +24,23 @@
 
 namespace Ether::Ecs
 {
-    template <typename T>
-    class EcsComponent : public Serializable
-    {
-    public:
-        EcsComponent(uint32_t version, uint32_t classID);
-        virtual ~EcsComponent() override = default;
+template <typename T>
+class EcsComponent : public Serializable
+{
+public:
+    EcsComponent(uint32_t version, uint32_t classID);
+    virtual ~EcsComponent() override = default;
 
-    public:
-        static ComponentID s_ComponentID;
-    };
+public:
+    static ComponentID s_ComponentID;
+};
 
-    template <typename T>
-    Ether::Ecs::EcsComponent<T>::EcsComponent(uint32_t version, uint32_t classID)
-        : Serializable(version, classID) {}
-
-    template <typename T>
-    ComponentID Ether::Ecs::EcsComponent<T>::s_ComponentID = -1;
+template <typename T>
+Ether::Ecs::EcsComponent<T>::EcsComponent(uint32_t version, uint32_t classID)
+    : Serializable(version, classID)
+{
 }
 
+template <typename T>
+ComponentID Ether::Ecs::EcsComponent<T>::s_ComponentID = -1;
+} // namespace Ether::Ecs

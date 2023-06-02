@@ -17,9 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef ETH_GRAPHICS_DX12
-
 #include "graphics/rhi/dx12/dx12commandallocator.h"
+
+#ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12CommandAllocator::Dx12CommandAllocator(RhiCommandType type)
     : RhiCommandAllocator(type)
@@ -34,4 +34,3 @@ void Ether::Graphics::Dx12CommandAllocator::Reset() const
 }
 
 #endif // ETH_GRAPHICS_DX12
-

@@ -24,18 +24,17 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL Dx12ImguiWrapper : public RhiImguiWrapper
-    {
-    public:
-        Dx12ImguiWrapper();
-        virtual ~Dx12ImguiWrapper() override;
+class ETH_GRAPHIC_DLL Dx12ImguiWrapper : public RhiImguiWrapper
+{
+public:
+    Dx12ImguiWrapper();
+    virtual ~Dx12ImguiWrapper() override;
 
-    public:
-        void Render() override;
-        void RenderDrawData() override;
+public:
+    void Render() override;
+    void RenderDrawData() override;
 
-    public:
-        static bool Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam);
-    };
-}
-
+public:
+    static bool Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam);
+};
+} // namespace Ether::Graphics

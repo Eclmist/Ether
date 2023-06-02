@@ -39,54 +39,56 @@
 
 namespace Ether::Graphics
 {
-    class ETH_GRAPHIC_DLL GraphicCore : public Singleton<GraphicCore>
+class ETH_GRAPHIC_DLL GraphicCore : public Singleton<GraphicCore>
+{
+public:
+    GraphicCore() = default;
+    ~GraphicCore() = default;
+
+public:
+    void Initialize();
+    void Shutdown();
+
+public:
+    static uint64_t inline GetFrameNumber() { return Instance().m_FrameNumber; }
+
+public:
+    static inline BindlessResourceManager& GetBindlessResourceManager()
     {
-    public:
-        GraphicCore() = default;
-        ~GraphicCore() = default;
+        return *Instance().m_BindlessResourceManager;
+    }
+    static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
+    static inline DescriptorAllocator& GetRtvAllocator() { return *Instance().m_RtvAllocator; }
+    static inline DescriptorAllocator& GetDsvAllocator() { return *Instance().m_DsvAllocator; }
+    static inline DescriptorAllocator& GetSrvCbvUavAllocator() { return *Instance().m_SrvCbvUavAllocator; }
+    static inline GraphicConfig& GetGraphicConfig() { return Instance().m_Config; }
+    static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
+    static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
+    static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
+    static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
+    static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
+    static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
-    public:
-        void Initialize();
-        void Shutdown();
+public:
+    static void Main();
+    static void FlushGpu();
 
-    public:
-        static uint64_t inline GetFrameNumber() { return Instance().m_FrameNumber; }
+private:
+    std::unique_ptr<RhiModule> m_RhiModule;
+    std::unique_ptr<RhiDevice> m_RhiDevice;
 
-    public:
-        static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
-        static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
-        static inline DescriptorAllocator& GetRtvAllocator() { return *Instance().m_RtvAllocator; }
-        static inline DescriptorAllocator& GetDsvAllocator() { return *Instance().m_DsvAllocator; }
-        static inline DescriptorAllocator& GetSrvCbvUavAllocator() { return *Instance().m_SrvCbvUavAllocator; }
-        static inline GraphicConfig& GetGraphicConfig() { return Instance().m_Config; }
-        static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
-        static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
-        static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
-        static inline RhiDevice& GetDevice() { return *Instance().m_RhiDevice; }
-        static inline RhiModule& GetModule() { return *Instance().m_RhiModule; }
-        static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
+    std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
+    std::unique_ptr<CommandManager> m_CommandManager;
+    std::unique_ptr<DescriptorAllocator> m_RtvAllocator;
+    std::unique_ptr<DescriptorAllocator> m_DsvAllocator;
+    std::unique_ptr<DescriptorAllocator> m_SrvCbvUavAllocator;
+    std::unique_ptr<GraphicCommon> m_GraphicCommon;
+    std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
+    std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
+    std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
-    public:
-        static void Main();
-        static void FlushGpu();
-
-    private:
-        std::unique_ptr<RhiModule> m_RhiModule;
-        std::unique_ptr<RhiDevice> m_RhiDevice;
-
-        std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
-        std::unique_ptr<CommandManager> m_CommandManager;
-        std::unique_ptr<DescriptorAllocator> m_RtvAllocator;
-        std::unique_ptr<DescriptorAllocator> m_DsvAllocator;
-        std::unique_ptr<DescriptorAllocator> m_SrvCbvUavAllocator;
-        std::unique_ptr<GraphicCommon> m_GraphicCommon;
-        std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
-        std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
-        std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
-
-    private:
-        GraphicConfig m_Config;
-        uint64_t m_FrameNumber;
-    };
-}
-
+private:
+    GraphicConfig m_Config;
+    uint64_t m_FrameNumber;
+};
+} // namespace Ether::Graphics

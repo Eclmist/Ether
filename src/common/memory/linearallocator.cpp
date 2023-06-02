@@ -54,4 +54,3 @@ void Ether::LinearAllocator::Reset()
 {
     m_Offset = 0;
 }
-

@@ -44,4 +44,3 @@ void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
     m_MeshGuid = meshGuid;
     m_MaterialGuid = materialGuid;
 }
-

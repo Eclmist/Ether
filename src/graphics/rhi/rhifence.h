@@ -23,14 +23,14 @@
 
 namespace Ether::Graphics
 {
-    class RhiFence : public NonCopyable, public NonMovable
-    {
-    public:
-        RhiFence() = default;
-        virtual ~RhiFence() = default;
+class RhiFence : public NonCopyable, public NonMovable
+{
+public:
+    RhiFence() = default;
+    virtual ~RhiFence() = default;
 
-    public:
-        virtual RhiFenceValue GetCompletedValue() = 0;
-        virtual void SetEventOnCompletion(RhiFenceValue value, void* eventHandle) = 0;
-    };
-}
+public:
+    virtual RhiFenceValue GetCompletedValue() = 0;
+    virtual void SetEventOnCompletion(RhiFenceValue value, void* eventHandle) = 0;
+};
+} // namespace Ether::Graphics

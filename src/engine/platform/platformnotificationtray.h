@@ -23,14 +23,13 @@
 
 namespace Ether
 {
-    class PlatformNotificationTray : public NonCopyable
-    {
-    public:
-        PlatformNotificationTray();
-        virtual ~PlatformNotificationTray() = default;
+class PlatformNotificationTray : public NonCopyable
+{
+public:
+    PlatformNotificationTray();
+    virtual ~PlatformNotificationTray() = default;
 
-    protected:
-        void* m_Handle;
-    };
-}
-
+protected:
+    void* m_Handle;
+};
+} // namespace Ether
