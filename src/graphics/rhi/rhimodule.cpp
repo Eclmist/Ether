@@ -28,4 +28,3 @@ std::unique_ptr<Ether::Graphics::RhiModule> Ether::Graphics::RhiModule::InitForP
     static_assert(false, "Not yet implemented");
 #endif
 }
-

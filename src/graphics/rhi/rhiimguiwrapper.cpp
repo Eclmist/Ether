@@ -42,12 +42,14 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     ETH_MARKER_EVENT("Debug Menu Gui Component - Draw");
 
     static bool showImGuiDemo = false;
-    //GraphicContext& gfxContext = GraphicCore::GetGraphicRenderer().GetGraphicContext();
+    // GraphicContext& gfxContext = GraphicCore::GetGraphicRenderer().GetGraphicContext();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
     {
-        ImGui::Begin("Debug Menu", nullptr,
+        ImGui::Begin(
+            "Debug Menu",
+            nullptr,
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_AlwaysAutoResize |
@@ -59,8 +61,10 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         if (ImGui::CollapsingHeader("Display Options"))
         {
             static float clearColor[4];
-            ImGui::ColorEdit4("clear color", clearColor); // Edit 3 floats representing a color
-            //ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      // Edit bools storing our window open/close state
+            ImGui::ColorEdit4("clear color", clearColor); 
+            // Edit 3 floats representing a color
+            // ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);      
+            // Edit bools storing our window open/close state
             GraphicCore::GetGraphicConfig().SetClearColor((ethVector4&)(*clearColor));
 
             static bool vSync = GraphicCore::GetGraphicDisplay().IsVsyncEnabled();
@@ -79,46 +83,51 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             }
         }
 
-        //if (ImGui::CollapsingHeader("Input"))
+        // if (ImGui::CollapsingHeader("Input"))
         //{
-        //    ImGui::Text("Mouse Position: (%f, %f)", Input::GetMousePosX(), Input::GetMousePosY());
-        //    ImGui::Text("Mouse Delta: (%f, %f)", Input::GetMouseDeltaX(), Input::GetMouseDeltaY());
-        //}
+        //     ImGui::Text("Mouse Position: (%f, %f)", Input::GetMousePosX(), Input::GetMousePosY());
+        //     ImGui::Text("Mouse Delta: (%f, %f)", Input::GetMouseDeltaX(), Input::GetMouseDeltaY());
+        // }
 
-        //if (ImGui::CollapsingHeader("Scene"))
+        // if (ImGui::CollapsingHeader("Scene"))
         //{
-        //    for (int i = 0; i < ETH_ECS_MAX_ENTITIES; ++i)
-        //    {
-        //        Entity* entity = EngineCore::GetEcsManager().GetEntity(i);
-        //        if (entity != nullptr)
-        //            ImGui::BulletText(entity->GetName().c_str());
-        //    }
+        //     for (int i = 0; i < ETH_ECS_MAX_ENTITIES; ++i)
+        //     {
+        //         Entity* entity = EngineCore::GetEcsManager().GetEntity(i);
+        //         if (entity != nullptr)
+        //             ImGui::BulletText(entity->GetName().c_str());
+        //     }
 
         //    if (ImGui::Button("Add entity"))
         //    {
         //        Entity* newEntity = EngineCore::GetEcsManager().CreateEntity("New Entity");
-        //        newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50), (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
-        //        newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(), (float)rand() });
-        //        newEntity->AddComponent<MeshComponent>();
+        //        newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50),
+        //        (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
+        //        newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(),
+        //        (float)rand() }); newEntity->AddComponent<MeshComponent>();
         //        newEntity->AddComponent<VisualComponent>();
         //    }
         //}
 
         if (ImGui::CollapsingHeader("ImGui"))
         {
-            ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo);      // Edit bools storing our window open/close state
+            ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo); // Edit bools storing our window open/close state
         }
 
         if (ImGui::CollapsingHeader("Performance"))
         {
-            ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text(
+                "Frame Time: %.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
             ImGui::Text("Frame Number: %lld", Graphics::GraphicCore::GetFrameNumber());
-            //ImGui::PlotLines("", m_FpsHistory, HistoryBufferSize, m_FpsHistoryOffset, nullptr, 0.0f, 300.0f, ImVec2(384, 100));
+            // ImGui::PlotLines("", m_FpsHistory, HistoryBufferSize, m_FpsHistoryOffset, nullptr, 0.0f, 300.0f,
+            // ImVec2(384, 100));
         }
         ImGui::End();
 
-        //gfxContext->SetClearColor(clearColor);
-        //gfxContext->SetRenderWireframe(renderWireframe);
+        // gfxContext->SetClearColor(clearColor);
+        // gfxContext->SetRenderWireframe(renderWireframe);
     }
     ImGui::PopStyleVar();
 
@@ -126,7 +135,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     {
         ImGui::ShowDemoWindow(&showImGuiDemo);
     }
-
 
     ImGui::Render();
 
@@ -213,4 +221,3 @@ void Ether::Graphics::RhiImguiWrapper::SetStyle() const
     style->Colors[ImGuiCol_TabHovered] = style->Colors[ImGuiCol_ButtonActive];
     style->Colors[ImGuiCol_TabActive] = style->Colors[ImGuiCol_ButtonHovered];
 }
-

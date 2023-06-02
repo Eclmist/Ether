@@ -24,8 +24,10 @@
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
-file(GLOB_RECURSE sample_app src/*)
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${sample_app})
+file(GLOB_RECURSE sample_app "${CMAKE_SOURCE_DIR}/sampleapp/src/*")
+
+set(all_files ${sample_app})
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${all_files})
 
 # =========================================================================== #
 #                          SET COMPILATION TARGETS                            #

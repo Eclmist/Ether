@@ -31,7 +31,9 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
 file(GLOB_RECURSE common_files "*")
-source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${common_files})
+set(all_files ${common_files})
+
+source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${all_files})
 
 # =========================================================================== #
 #                          SET COMPILATION TARGETS                            #
