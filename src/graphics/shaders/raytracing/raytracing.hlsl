@@ -17,28 +17,31 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "common/globalconstants.hlsl"
 
-#include "graphics/pch.h"
-#include "graphics/context/graphiccontext.h"
-#include "graphics/context/resourcecontext.h"
-#include "graphics/rhi/rhishader.h"
+RaytracingAccelerationStructure g_RaytracingTlas : register(t0);
+RWTexture2D<float4> g_Output : register(u0);
 
-namespace Ether::Graphics
+[shader("raygeneration")]
+void RayGeneration()
 {
-class RaytracedGBufferPass
-{
-public:
-    void Reset();
-    void Initialize(ResourceContext& resourceContext);
-    void FrameSetup(ResourceContext& resourceContext);
-    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
+    uint3 launchIndex = DispatchRaysIndex();
+    g_Output[launchIndex.xy] = float4(0.6, 0.6, 0.2, 1);
+}
 
-private:
-    std::unique_ptr<RhiAccelerationStructure> m_TopLevelAccelerationStructure;
-    std::unique_ptr<RhiResource> m_RaytracingShaderTable;
-    std::unique_ptr<RhiShader> m_LibraryShaderBlob;
-    std::unique_ptr<RhiLibraryShader> m_LibraryShader;
-    uint32_t m_NumShaderTableEntries = 0;
+struct Payload
+{
+    bool hit;
 };
-} // namespace Ether::Graphics
+
+[shader("miss")]
+void Miss(inout Payload payload)
+{ 
+    payload.hit = false;
+}
+
+[shader("closesthit")]
+void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    payload.hit = true;
+}

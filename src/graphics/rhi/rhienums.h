@@ -304,7 +304,8 @@ enum class RhiShaderType
 {
     Vertex,
     Pixel,
-    Compute
+    Compute,
+    Library,
 };
 
 enum class RhiShaderVisibility

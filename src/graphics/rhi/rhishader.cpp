@@ -20,7 +20,7 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhishader.h"
 
-Ether::Graphics::RhiShader::RhiShader(RhiShaderDesc desc)
+Ether::Graphics::RhiShader::RhiShader(const RhiShaderDesc& desc)
     : m_Type(desc.m_Type)
     , m_IsCompiled(false)
     , m_CompiledSize(0)
@@ -28,5 +28,14 @@ Ether::Graphics::RhiShader::RhiShader(RhiShaderDesc desc)
     , m_FileName(desc.m_Filename)
     , m_FilePath(GraphicCore::GetGraphicConfig().GetShaderSourceDir() + desc.m_Filename)
     , m_EntryPoint(desc.m_EntryPoint)
+{
+}
+
+Ether::Graphics::RhiLibraryShader::RhiLibraryShader(const RhiLibraryShaderDesc& desc)
+    : m_BaseShader(desc.m_Shader)
+{
+}
+
+Ether::Graphics::RhiLibraryShader::~RhiLibraryShader()
 {
 }

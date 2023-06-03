@@ -22,6 +22,18 @@
 
 void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resourceContext)
 {
+    const RhiDevice& gfxDevice = GraphicCore::GetDevice();
+
+    const wchar_t* entryPoints[4] = { L"RayGeneration", L"Miss", L"ClosestHit", L"HitGroup" };
+    m_LibraryShaderBlob = gfxDevice.CreateShader({ "raytracing\\raytracing.hlsl", "", RhiShaderType::Library });
+
+    RhiLibraryShaderDesc libShaderDesc = { m_LibraryShaderBlob.get(),
+                                           entryPoints,
+                                           sizeof(entryPoints) / sizeof(entryPoints[0]) };
+    m_LibraryShader = gfxDevice.CreateLibraryShader(libShaderDesc);
+
+    if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
+        GraphicCore::GetShaderDaemon().RegisterShader(*m_LibraryShaderBlob);
 }
 
 void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resourceContext)

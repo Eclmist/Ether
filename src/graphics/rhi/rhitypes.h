@@ -193,6 +193,13 @@ struct RhiShaderDesc
     RhiShaderType m_Type;
 };
 
+struct RhiLibraryShaderDesc
+{
+    RhiShader* m_Shader;
+    const wchar_t** m_EntryPoints;
+    uint32_t m_NumEntryPoints;
+};
+
 struct RhiSwapChainDesc
 {
     ethVector2 m_Resolution;

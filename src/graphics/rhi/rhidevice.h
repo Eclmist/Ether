@@ -23,6 +23,7 @@
 #include "graphics/rhi/rhiaccelerationstructure.h"
 #include "graphics/rhi/rhirootsignature.h"
 #include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhishader.h"
 
 namespace Ether::Graphics
 {
@@ -40,8 +41,9 @@ public:
     virtual std::unique_ptr<RhiFence> CreateFence() const = 0;
     virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(RhiSwapChainDesc desc) const = 0;
     virtual std::unique_ptr<RhiShader> CreateShader(RhiShaderDesc desc) const = 0;
-    virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
+    virtual std::unique_ptr<RhiLibraryShader> CreateLibraryShader(RhiLibraryShaderDesc desc) const = 0;
     virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const = 0;
+    virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
 
     virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(RhiRenderTargetViewDesc desc) const = 0;
     virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(RhiDepthStencilViewDesc desc) const = 0;

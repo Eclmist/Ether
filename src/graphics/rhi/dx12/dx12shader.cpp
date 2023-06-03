@@ -19,6 +19,7 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12shader.h"
+#include "common/utils/stringutils.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
@@ -134,7 +135,11 @@ void Ether::Graphics::Dx12Shader::InitializeTargetProfile(RhiShaderType type)
     case RhiShaderType::Compute:
         m_TargetProfile = "cs_6_6";
         break;
+    case RhiShaderType::Library:
+        m_TargetProfile = "lib_6_6";
+        break;
     default:
+        LogGraphicsError("Invalid shader type: %u", type);
         break;
     }
 }
@@ -188,6 +193,33 @@ HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::QueryInter
     _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject)
 {
     return Graphics::Dx12Shader::s_IncludeHandler->QueryInterface(riid, ppvObject);
+}
+
+Ether::Graphics::Dx12LibraryShader::Dx12LibraryShader(const RhiLibraryShaderDesc& desc)
+    : RhiLibraryShader(desc)
+{
+    m_StateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
+    m_StateSubobject.pDesc = &m_DxilLibraryDesc;
+
+    m_DxilLibraryDesc = {};
+    m_ExportDesc.resize(desc.m_NumEntryPoints);
+    m_ExportName.resize(desc.m_NumEntryPoints);
+
+    if (!m_BaseShader->IsCompiled())
+        m_BaseShader->Compile();
+
+    m_DxilLibraryDesc.DXILLibrary.pShaderBytecode = m_BaseShader->GetCompiledData();
+    m_DxilLibraryDesc.DXILLibrary.BytecodeLength = m_BaseShader->GetCompiledSize();
+    m_DxilLibraryDesc.NumExports = desc.m_NumEntryPoints;
+    m_DxilLibraryDesc.pExports = m_ExportDesc.data();
+
+    for (uint32_t i = 0; i < desc.m_NumEntryPoints; i++)
+    {
+        m_ExportName[i] = desc.m_EntryPoints[i];
+        m_ExportDesc[i].Name = desc.m_EntryPoints[i];
+        m_ExportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
+        m_ExportDesc[i].ExportToRename = nullptr;
+    }
 }
 
 #endif // ETH_GRAPHICS_DX12

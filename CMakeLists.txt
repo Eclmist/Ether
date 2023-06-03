@@ -84,6 +84,9 @@ if (USE_PRECOMPILED_HEADERS)
     target_precompile_headers(Engine PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
 endif()
 
+# Move cmake_pch.cxx to "src" filter
+source_group("src" FILES "${CMAKE_BINARY_DIR}/CMakeFiles/Engine.dir/src/cmake_pch.cxx")
+
 # =========================================================================== #
 #                              ADD SUBPROJECTS                                #
 # =========================================================================== #

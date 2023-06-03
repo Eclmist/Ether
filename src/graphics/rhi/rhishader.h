@@ -26,7 +26,7 @@ namespace Ether::Graphics
 class RhiShader
 {
 public:
-    RhiShader(RhiShaderDesc desc);
+    RhiShader(const RhiShaderDesc& desc);
     virtual ~RhiShader() = default;
 
 public:
@@ -56,4 +56,15 @@ protected:
     std::string m_FilePath = "";
     std::string m_EntryPoint = "";
 };
+
+class RhiLibraryShader
+{
+public:
+    RhiLibraryShader(const RhiLibraryShaderDesc& desc);
+    virtual ~RhiLibraryShader() = 0;
+
+protected:
+    RhiShader* m_BaseShader;
+};
+
 } // namespace Ether::Graphics
