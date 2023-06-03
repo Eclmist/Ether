@@ -56,7 +56,7 @@ void Ether::EngineCore::Shutdown()
 
 void Ether::EngineCore::InitializeGraphicsLayer()
 {
-    Graphics::GraphicConfig& config = Graphics::GraphicCore::Instance().GetGraphicConfig();
+    Graphics::GraphicConfig& config = Graphics::GraphicCore::GetGraphicConfig();
     config.SetWindowHandle(m_MainWindow->GetWindowHandle());
     config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
     config.SetUseSourceShaders(m_CommandLineOptions.GetUseSourceShaders());

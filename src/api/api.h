@@ -26,6 +26,7 @@
 #include "engine/world/world.h"
 #include "common/logging/loggingmanager.h"
 #include "engine/config/commandlineoptions.h"
+#include "graphics/config/graphicconfig.h"
 
 namespace Ether
 {
@@ -35,6 +36,11 @@ ETH_ENGINE_DLL void Shutdown();
 ETH_ENGINE_DLL CommandLineOptions& GetCommandLineOptions();
 ETH_ENGINE_DLL World& GetActiveWorld();
 } // namespace Ether
+
+namespace Ether::Graphics
+{
+ETH_ENGINE_DLL GraphicConfig& GetGraphicConfig();
+}
 
 namespace Ether::Client
 {

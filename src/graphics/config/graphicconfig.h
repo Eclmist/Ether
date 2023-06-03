@@ -46,6 +46,10 @@ public:
     inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
     inline void SetClearColor(const ethVector4& clearColor) { m_ClearColor = clearColor; }
 
+public:
+    // Temporary debugging flags to be removed
+    bool m_RaytracingDebugMode;
+
 private:
     ethVector4 m_ClearColor;
     ethVector2u m_Resolution;

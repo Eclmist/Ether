@@ -20,22 +20,18 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/context/graphiccontext.h"
-#include "graphics/context/resourcecontext.h"
 
 namespace Ether::Graphics
 {
-class RaytracedGBufferPass
+class RhiRaytracingShaderTable : public NonCopyable, public NonMovable
 {
 public:
-    void Reset();
-    void Initialize(ResourceContext& resourceContext);
-    void FrameSetup(ResourceContext& resourceContext);
-    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
+    RhiRaytracingShaderTable() = default;
+    virtual ~RhiRaytracingShaderTable() = default;
 
-private:
-    std::unique_ptr<RhiAccelerationStructure> m_TopLevelAccelerationStructure;
-    std::unique_ptr<RhiResource> m_RaytracingShaderTable;
-    uint32_t m_NumShaderTableEntries = 0;
+protected:
+    std::unique_ptr<RhiResource> m_Buffer;
+    uint32_t m_ShaderTableEntrySize;
+
 };
 } // namespace Ether::Graphics

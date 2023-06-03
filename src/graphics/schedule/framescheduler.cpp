@@ -55,6 +55,7 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Put it into resource context (unordered_map cache)
 
     g_TempRaytracingPass->Initialize(m_ResourceContext);
+    g_TempFrameDump->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -71,6 +72,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
         m_ResourceContext.RecompilePipelineStates();
 
     g_TempRaytracingPass->FrameSetup(m_ResourceContext);
+    g_TempFrameDump->FrameSetup(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
@@ -83,8 +85,17 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
     // Submit command lists in the correct execution order
 
     // For now, just render the frame dump
-    g_TempRaytracingPass->Reset();
-    g_TempRaytracingPass->Render(context, m_ResourceContext);
+    if (GraphicCore::GetGraphicConfig().m_RaytracingDebugMode)
+    {
+        g_TempRaytracingPass->Reset();
+        g_TempRaytracingPass->Render(context, m_ResourceContext);
+    }
+    else
+    {
+        g_TempFrameDump->Reset();
+        g_TempFrameDump->Render(context, m_ResourceContext);
+    }
+
     m_ImguiWrapper->Render();
 
     // The following can be moved into its own render pass

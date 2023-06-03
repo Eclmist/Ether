@@ -91,6 +91,7 @@ void SampleApp::LoadContent()
     Entity& camera = world.CreateEntity("Main Camera");
     camera.AddComponent<Ecs::EcsCameraComponent>();
     m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
+
 }
 
 void SampleApp::UnloadContent()
@@ -129,6 +130,10 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
+
+    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
+    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
+        graphicConfig.m_RaytracingDebugMode = !graphicConfig.m_RaytracingDebugMode;
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::E))
         m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;

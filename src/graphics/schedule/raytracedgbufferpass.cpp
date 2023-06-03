@@ -30,17 +30,33 @@ void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resource
 
 void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
+    ETH_MARKER_EVENT("Raytraced GBuffer Pass - Render");
+    const RhiDevice& gfxDevice = GraphicCore::GetDevice();
+    const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    const GraphicConfig& config = GraphicCore::GetGraphicConfig();
+
     RhiTopLevelAccelerationStructureDesc desc = {};
     desc.m_VisualBatch = (void*)(&graphicContext.GetVisualBatch());
     m_TopLevelAccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
 
     CommandContext tlasBuildContext(RhiCommandType::Graphic, "TLAS Build Context - Build GBuffer TLAS");
+    tlasBuildContext.PushMarker("Build TLAS");
     tlasBuildContext.TransitionResource(
         *m_TopLevelAccelerationStructure->m_ScratchBuffer,
         RhiResourceState::UnorderedAccess);
     tlasBuildContext.BuildBottomLevelAccelerationStructure(*m_TopLevelAccelerationStructure);
     tlasBuildContext.FinalizeAndExecute(true);
     tlasBuildContext.Reset();
+
+    graphicContext.PushMarker("Clear");
+    graphicContext.SetViewport(gfxDisplay.GetViewport());
+    graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
+    graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
+    graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
+    // graphicContext.ClearDepthStencil(*m_Dsv, 1.0);
+    graphicContext.PopMarker();
+    graphicContext.FinalizeAndExecute();
+    graphicContext.Reset();
 }
 
 void Ether::Graphics::RaytracedGBufferPass::Reset()

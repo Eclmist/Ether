@@ -57,6 +57,11 @@ Ether::World& Ether::GetActiveWorld()
     return EngineCore::GetActiveWorld();
 }
 
+Ether::Graphics::GraphicConfig& Ether::Graphics::GetGraphicConfig()
+{
+    return GraphicCore::GetGraphicConfig();
+}
+
 void Ether::Client::SetClientTitle(const std::string& title)
 {
     EngineCore::GetMainWindow().SetTitle(title);
@@ -105,3 +110,4 @@ void Ether::Toolmode::HideWindow()
 {
     EngineCore::GetMainWindow().Hide();
 }
+

@@ -139,6 +139,7 @@ void Ether::Graphics::Mesh::CreateAccelerationStructure()
 
     m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
     CommandContext blasBuildContext(RhiCommandType::Graphic, "BLAS Build Context - Build Mesh BLAS");
+    blasBuildContext.PushMarker("Build BLAS");
     blasBuildContext.TransitionResource(*m_AccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
     blasBuildContext.BuildBottomLevelAccelerationStructure(*m_AccelerationStructure);
     blasBuildContext.FinalizeAndExecute(true);
