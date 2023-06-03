@@ -20,22 +20,21 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhiaccelerationstructure.h"
+#include "graphics/rhi/dx12/dx12includes.h"
 
-namespace Ether::Graphics::VertexFormats
+namespace Ether::Graphics
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
+class Dx12AccelerationStructure : public RhiAccelerationStructure
 {
 public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+    Dx12AccelerationStructure() = default;
+    ~Dx12AccelerationStructure() override = default;
 
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
-
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
+protected:
+    friend class Dx12CommandList;
+    friend class Dx12Device;
+    D3D12_RAYTRACING_GEOMETRY_DESC m_GeometryDesc;
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS m_Inputs;
 };
-} // namespace Ether::Graphics::VertexFormats
+} // namespace Ether::Graphics

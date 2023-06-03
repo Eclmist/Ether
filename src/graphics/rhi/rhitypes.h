@@ -220,12 +220,13 @@ struct RhiViewportDesc
     float m_MinDepth, m_MaxDepth;
 };
 
+
 //========================= Resource Descs ==========================//
 
 struct RhiResourceViewDesc
 {
     RhiResource* m_Resource;
-    RhiCpuAddress m_TargetCpuAddr;
+    RhiCpuAddress m_TargetCpuAddress;
 };
 
 struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
@@ -240,34 +241,34 @@ struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 
 struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
-    RhiGpuAddress m_TargetGpuAddr;
+    RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
     RhiShaderResourceDims m_Dimensions;
 };
 
 struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
 {
-    RhiGpuAddress m_TargetGpuAddr;
+    RhiGpuAddress m_TargetGpuAddress;
     size_t m_BufferSize;
 };
 
 struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
 {
-    RhiGpuAddress m_TargetGpuAddr;
+    RhiGpuAddress m_TargetGpuAddress;
 };
 
 struct RhiIndexBufferViewDesc
 {
     RhiFormat m_Format;
     size_t m_BufferSize;
-    RhiGpuAddress m_TargetGpuAddr;
+    RhiGpuAddress m_TargetGpuAddress;
 };
 
 struct RhiVertexBufferViewDesc
 {
     size_t m_BufferSize;
     size_t m_Stride;
-    RhiGpuAddress m_TargetGpuAddr;
+    RhiGpuAddress m_TargetGpuAddress;
 };
 
 struct RhiResourceDesc
@@ -370,4 +371,16 @@ struct RhiSetRenderTargetsDesc
     const RhiRenderTargetView* m_RtvHandles[8];
     const RhiDepthStencilView* m_DsvHandle;
 };
+
+//======================= Raytracing Descs ========================//
+
+struct RhiBottomLevelAccelerationStructureDesc
+{
+    void** m_Meshes;
+    uint32_t m_NumMeshes;
+
+    bool m_IsOpaque;
+    bool m_IsStatic;
+};
+
 } // namespace Ether::Graphics

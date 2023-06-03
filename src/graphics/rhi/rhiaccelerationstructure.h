@@ -21,21 +21,19 @@
 
 #include "graphics/pch.h"
 
-namespace Ether::Graphics::VertexFormats
+namespace Ether::Graphics
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
+class RhiAccelerationStructure
 {
 public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+    RhiAccelerationStructure() = default;
+    virtual ~RhiAccelerationStructure() = default;
 
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
+public:
+    std::unique_ptr<RhiResource> m_ScratchBuffer;
+    std::unique_ptr<RhiResource> m_DataBuffer;
 
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
+    // Only for TLAS
+    std::unique_ptr<RhiResource> m_InstanceDescBuffer;
 };
-} // namespace Ether::Graphics::VertexFormats
+} // namespace Ether::Graphics

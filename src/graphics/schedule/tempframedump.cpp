@@ -139,7 +139,7 @@ void Ether::Graphics::TempFrameDump::FrameSetup(ResourceContext& resourceContext
     static RhiDepthStencilViewDesc dsvDesc = {};
     dsvDesc.m_Format = DepthBufferFormat;
     dsvDesc.m_Resource = m_DepthBuffer.get();
-    dsvDesc.m_TargetCpuAddr = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
+    dsvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
 
     m_Dsv = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
     GraphicCore::GetDsvAllocator().Free(std::move(alloc));

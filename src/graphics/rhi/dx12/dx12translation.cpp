@@ -446,6 +446,10 @@ D3D12_RESOURCE_STATES Ether::Graphics::Translate(const RhiResourceState& rhiType
         return D3D12_RESOURCE_STATE_PRESENT;
     case RhiResourceState::RenderTarget:
         return D3D12_RESOURCE_STATE_RENDER_TARGET;
+    case RhiResourceState::UnorderedAccess:
+        return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+    case RhiResourceState::AccelerationStructure:
+        return D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
     default:
         return D3D12_RESOURCE_STATE_COMMON;
     }
@@ -740,7 +744,7 @@ D3D12_INDEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiIndexBufferViewDesc&
     D3D12_INDEX_BUFFER_VIEW dx12Desc = {};
     dx12Desc.Format = Translate(rhiDesc.m_Format);
     dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
-    dx12Desc.BufferLocation = rhiDesc.m_TargetGpuAddr;
+    dx12Desc.BufferLocation = rhiDesc.m_TargetGpuAddress;
 
     return dx12Desc;
 }
@@ -797,7 +801,7 @@ D3D12_VERTEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiVertexBufferViewDes
     D3D12_VERTEX_BUFFER_VIEW dx12Desc = {};
     dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
     dx12Desc.StrideInBytes = rhiDesc.m_Stride;
-    dx12Desc.BufferLocation = rhiDesc.m_TargetGpuAddr;
+    dx12Desc.BufferLocation = rhiDesc.m_TargetGpuAddress;
     return dx12Desc;
 }
 

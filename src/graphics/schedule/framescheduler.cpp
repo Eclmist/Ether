@@ -23,7 +23,9 @@
 
 // TEMP ============================================
 #include "graphics/schedule/tempframedump.h"
+#include "graphics/schedule/raytracedgbufferpass.h"
 Ether::Graphics::TempFrameDump* g_TempFrameDump;
+Ether::Graphics::RaytracedGBufferPass* g_TempRaytracingPass;
 // =================================================
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
@@ -32,6 +34,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
     // For now, just setup the temp frame dump here
     g_TempFrameDump = new TempFrameDump();
+    g_TempRaytracingPass = new RaytracedGBufferPass();
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -40,6 +43,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
     delete g_TempFrameDump;
+    delete g_TempRaytracingPass;
 }
 
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
@@ -50,7 +54,7 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Compile what needs compiling (which should be everything)
     // Put it into resource context (unordered_map cache)
 
-    g_TempFrameDump->Initialize(m_ResourceContext);
+    g_TempRaytracingPass->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -66,7 +70,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
         m_ResourceContext.RecompilePipelineStates();
 
-    g_TempFrameDump->FrameSetup(m_ResourceContext);
+    g_TempRaytracingPass->FrameSetup(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
@@ -79,8 +83,8 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
     // Submit command lists in the correct execution order
 
     // For now, just render the frame dump
-    g_TempFrameDump->Reset();
-    g_TempFrameDump->Render(context, m_ResourceContext);
+    g_TempRaytracingPass->Reset();
+    g_TempRaytracingPass->Render(context, m_ResourceContext);
     m_ImguiWrapper->Render();
 
     // The following can be moved into its own render pass

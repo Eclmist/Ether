@@ -21,6 +21,7 @@
 
 #include "graphics/pch.h"
 #include "graphics/common/vertexformats.h"
+#include "graphics/rhi/rhiaccelerationstructure.h"
 
 namespace Ether::Graphics
 {
@@ -41,7 +42,7 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
-    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexCoord>&& vertices);
+    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices);
     void SetIndices(std::vector<uint32_t>&& indices);
     void CreateGpuResources();
 
@@ -50,15 +51,16 @@ private:
     void CreateVertexBufferView();
     void CreateIndexBufferView();
     void CreateIndexBuffer();
-    void CreateInstanceParams();
+    void CreateAccelerationStructure();
 
 private:
-    std::vector<VertexFormats::PositionNormalTangentTexCoord> m_PackedVertices;
+    std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord> m_PackedVertices;
     std::vector<uint32_t> m_Indices;
 
     std::unique_ptr<RhiResource> m_VertexBufferResource;
     std::unique_ptr<RhiResource> m_IndexBufferResource;
     std::unique_ptr<RhiResource> m_InstanceParams[MaxSwapChainBuffers];
+    std::unique_ptr<RhiAccelerationStructure> m_AccelerationStructure;
 
     RhiVertexBufferViewDesc m_VertexBufferView;
     RhiIndexBufferViewDesc m_IndexBufferView;

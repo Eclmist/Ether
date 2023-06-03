@@ -59,7 +59,8 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
         istream >> m_Indices[i];
 }
 
-void Ether::Graphics::Mesh::SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexCoord>&& vertices)
+void Ether::Graphics::Mesh::SetPackedVertices(
+    std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices)
 {
     m_PackedVertices = std::move(vertices);
 }
@@ -75,6 +76,7 @@ void Ether::Graphics::Mesh::CreateGpuResources()
     CreateVertexBufferView();
     CreateIndexBuffer();
     CreateIndexBufferView();
+    CreateAccelerationStructure();
 }
 
 void Ether::Graphics::Mesh::CreateVertexBuffer()
@@ -98,7 +100,7 @@ void Ether::Graphics::Mesh::CreateVertexBufferView()
     m_VertexBufferView = {};
     m_VertexBufferView.m_BufferSize = m_PackedVertices.size() * sizeof(m_PackedVertices[0]);
     m_VertexBufferView.m_Stride = sizeof(m_PackedVertices[0]);
-    m_VertexBufferView.m_TargetGpuAddr = m_VertexBufferResource->GetGpuAddress();
+    m_VertexBufferView.m_TargetGpuAddress = m_VertexBufferResource->GetGpuAddress();
 }
 
 void Ether::Graphics::Mesh::CreateIndexBuffer()
@@ -123,9 +125,22 @@ void Ether::Graphics::Mesh::CreateIndexBufferView()
     m_IndexBufferView = {};
     m_IndexBufferView.m_BufferSize = m_Indices.size() * sizeof(m_Indices[0]);
     m_IndexBufferView.m_Format = RhiFormat::R32Uint;
-    m_IndexBufferView.m_TargetGpuAddr = m_IndexBufferResource->GetGpuAddress();
+    m_IndexBufferView.m_TargetGpuAddress = m_IndexBufferResource->GetGpuAddress();
 }
 
-void Ether::Graphics::Mesh::CreateInstanceParams()
+void Ether::Graphics::Mesh::CreateAccelerationStructure()
 {
+    RhiBottomLevelAccelerationStructureDesc desc = {};
+    Mesh* meshes[] = { this };
+    desc.m_Meshes = (void**)meshes;
+    desc.m_NumMeshes = 1;
+    desc.m_IsOpaque = true;
+    desc.m_IsStatic = true;
+
+    m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
+    CommandContext blasBuildContext(RhiCommandType::Graphic, "BLAS Build Context - Build Mesh BLAS");
+    blasBuildContext.TransitionResource(*m_AccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
+    blasBuildContext.BuildBottomLevelAccelerationStructure(*m_AccelerationStructure);
+    blasBuildContext.FinalizeAndExecute(true);
+    blasBuildContext.Reset();
 }

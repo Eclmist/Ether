@@ -148,3 +148,13 @@ void Ether::Graphics::CommandContext::Reset()
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
     m_CommandList->Reset(*m_CommandAllocator);
 }
+
+void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavResource)
+{
+    m_CommandList->InsertUavBarrier(uavResource);
+}

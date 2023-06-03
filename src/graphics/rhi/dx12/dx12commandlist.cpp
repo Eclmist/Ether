@@ -17,6 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "graphics/rhi/dx12/dx12accelerationstructure.h"
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12commandallocator.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
@@ -267,4 +268,29 @@ void Ether::Graphics::Dx12CommandList::Close()
         LogGraphicsError("Failed to close Dx12 Command List");
 }
 
+void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccelerationStructure& as)
+{
+    const Dx12AccelerationStructure* dx12Obj = dynamic_cast<const Dx12AccelerationStructure*>(&as);
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
+    asDesc.Inputs = dx12Obj->m_Inputs;
+    asDesc.DestAccelerationStructureData = dx12Obj->m_DataBuffer->GetGpuAddress();
+    asDesc.ScratchAccelerationStructureData = dx12Obj->m_ScratchBuffer->GetGpuAddress();
+
+    if (dx12Obj->m_InstanceDescBuffer != nullptr)
+        asDesc.Inputs.InstanceDescs = dx12Obj->m_InstanceDescBuffer->GetGpuAddress();
+
+    m_CommandList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
+    InsertUavBarrier(*as.m_DataBuffer);
+}
+
+void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavResource)
+{
+    D3D12_RESOURCE_BARRIER uavBarrier = {};
+    uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+    uavBarrier.UAV.pResource = (dynamic_cast<const Dx12Resource*>(&uavResource))->m_Resource.Get();
+    m_CommandList->ResourceBarrier(1, &uavBarrier);
+}
+
 #endif // ETH_GRAPHICS_DX12
+

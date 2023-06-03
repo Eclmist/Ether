@@ -65,6 +65,9 @@ public:
     void DrawInstanced(RhiDrawInstancedDesc desc) override;
     void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
 
+    void InsertUavBarrier(const RhiResource& uavResource) override;
+    void BuildAccelerationStructure(const RhiAccelerationStructure& as) override;
+
     void Reset(const RhiCommandAllocator& commandAllocator) override;
     void Close() override;
 
@@ -73,6 +76,6 @@ private:
     friend class Dx12CommandQueue;
     friend class Dx12ImguiWrapper;
 
-    wrl::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+    wrl::ComPtr<ID3D12GraphicsCommandList4> m_CommandList;
 };
 } // namespace Ether::Graphics

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhiaccelerationstructure.h"
 
 namespace Ether::Graphics
 {
@@ -58,6 +59,9 @@ public:
     virtual void CopyTextureRegion(RhiCopyTextureRegionDesc desc) = 0;
     virtual void DrawInstanced(RhiDrawInstancedDesc desc) = 0;
     virtual void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) = 0;
+
+    virtual void InsertUavBarrier(const RhiResource& uavResource) = 0;
+    virtual void BuildAccelerationStructure(const RhiAccelerationStructure& as) = 0;
 
     virtual void Reset(const RhiCommandAllocator& commandAllocator) = 0;
     virtual void Close() = 0;

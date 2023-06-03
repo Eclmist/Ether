@@ -18,9 +18,11 @@
 */
 
 #include "graphics/graphiccore.h"
+
 #include "graphics/rhi/dx12/dx12device.h"
 #include "graphics/rhi/dx12/dx12module.h"
 
+#include "graphics/rhi/dx12/dx12accelerationstructure.h"
 #include "graphics/rhi/dx12/dx12commandallocator.h"
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12commandqueue.h"
@@ -32,8 +34,9 @@
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12swapchain.h"
 #include "graphics/rhi/dx12/dx12shader.h"
-
 #include "graphics/rhi/dx12/dx12translation.h"
+
+#include "graphics/resources/mesh.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
@@ -198,7 +201,7 @@ std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Devic
 {
     std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
 
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_Format = desc.m_Format;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
@@ -213,7 +216,7 @@ std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Devic
 {
     std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
 
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_Format = desc.m_Format;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
@@ -228,7 +231,7 @@ std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Dev
 {
     std::unique_ptr<Dx12ShaderResourceView> dx12Obj = std::make_unique<Dx12ShaderResourceView>();
 
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
@@ -241,7 +244,7 @@ std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Dev
     RhiConstantBufferViewDesc desc) const
 {
     std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddr;
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
 
     auto creationDesc = Translate(desc);
     m_Device->CreateConstantBufferView(&creationDesc, { dx12Obj->m_CpuAddress });
@@ -299,6 +302,58 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
 std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(RhiShaderDesc desc) const
 {
     std::unique_ptr<Dx12Shader> dx12Obj = std::make_unique<Dx12Shader>(desc);
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
+    RhiBottomLevelAccelerationStructureDesc desc) const
+{
+    std::unique_ptr<Dx12AccelerationStructure> dx12Obj = std::make_unique<Dx12AccelerationStructure>();
+
+    AssertGraphics(
+        desc.m_NumMeshes == 1,
+        "Only single mesh BLAS is supported for now. NumMeshes: %u",
+        desc.m_NumMeshes);
+
+    Mesh* mesh = (reinterpret_cast<Mesh**>(desc.m_Meshes))[0];
+
+    dx12Obj->m_GeometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+    dx12Obj->m_GeometryDesc.Triangles.VertexBuffer.StartAddress = mesh->GetVertexBufferView().m_TargetGpuAddress;
+    dx12Obj->m_GeometryDesc.Triangles.VertexBuffer.StrideInBytes = mesh->GetVertexBufferView().m_Stride;
+    dx12Obj->m_GeometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+    dx12Obj->m_GeometryDesc.Triangles.VertexCount = mesh->GetNumVertices();
+    dx12Obj->m_GeometryDesc.Flags = desc.m_IsOpaque ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE
+                                                    : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+    inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+    inputs.NumDescs = 1;
+    inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+    inputs.pGeometryDescs = &dx12Obj->m_GeometryDesc;
+    if (desc.m_IsStatic)
+        inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+    else
+        inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_BUILD;
+    dx12Obj->m_Inputs = inputs;
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
+    m_Device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+
+    RhiCommitedResourceDesc scratchBufferDesc = {};
+    scratchBufferDesc.m_Name = "BLAS::ScratchBuffer";
+    scratchBufferDesc.m_HeapType = RhiHeapType::Default;
+    scratchBufferDesc.m_State = RhiResourceState::Common;
+    scratchBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ScratchDataSizeInBytes);
+    scratchBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+    scratchBufferDesc.m_ClearValue = nullptr;
+    dx12Obj->m_ScratchBuffer = CreateCommittedResource(scratchBufferDesc);
+
+    RhiCommitedResourceDesc dataBufferDesc = scratchBufferDesc;
+    scratchBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ResultDataMaxSizeInBytes);
+    scratchBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+    scratchBufferDesc.m_State = RhiResourceState::AccelerationStructure;
+    dx12Obj->m_DataBuffer = CreateCommittedResource(scratchBufferDesc);
+
     return dx12Obj;
 }
 

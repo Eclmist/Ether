@@ -17,25 +17,20 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "graphics/schedule/raytracedgbufferpass.h"
 
-#include "graphics/pch.h"
-
-namespace Ether::Graphics::VertexFormats
+void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resourceContext)
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
+}
+
+void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resourceContext)
 {
-public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+}
 
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
+void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
+{
+}
 
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
-};
-} // namespace Ether::Graphics::VertexFormats
+void Ether::Graphics::RaytracedGBufferPass::Reset()
+{
+}

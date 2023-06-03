@@ -20,22 +20,19 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/context/graphiccontext.h"
+#include "graphics/context/resourcecontext.h"
 
-namespace Ether::Graphics::VertexFormats
+namespace Ether::Graphics
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
+class RaytracedGBufferPass
 {
 public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+    void Reset();
+    void Initialize(ResourceContext& resourceContext);
+    void FrameSetup(ResourceContext& resourceContext);
+    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
 
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
-
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
+private:
 };
-} // namespace Ether::Graphics::VertexFormats
+} // namespace Ether::Graphics

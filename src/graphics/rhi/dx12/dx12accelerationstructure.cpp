@@ -17,25 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "graphics/rhi/dx12/dx12accelerationstructure.h"
 
-#include "graphics/pch.h"
+#ifdef ETH_GRAPHICS_DX12
 
-namespace Ether::Graphics::VertexFormats
-{
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
-{
-public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
-
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
-
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
-};
-} // namespace Ether::Graphics::VertexFormats
+#endif // ETH_GRAPHICS_DX12

@@ -115,7 +115,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         RhiRenderTargetViewDesc rtvDesc = {};
         rtvDesc.m_Format = BackBufferFormat;
         rtvDesc.m_Resource = m_RenderTargets[i];
-        rtvDesc.m_TargetCpuAddr = dynamic_cast<DescriptorAllocation&>(*rtvAllocation).GetCpuAddress(i);
+        rtvDesc.m_TargetCpuAddress = dynamic_cast<DescriptorAllocation&>(*rtvAllocation).GetCpuAddress(i);
 
         m_RenderTargetRtv[i] = GraphicCore::GetDevice().CreateRenderTargetView(rtvDesc);
 
@@ -123,8 +123,8 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         srvDesc.m_Format = BackBufferFormat;
         srvDesc.m_Resource = m_RenderTargets[i];
         srvDesc.m_Dimensions = RhiShaderResourceDims::Texture2D;
-        srvDesc.m_TargetCpuAddr = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuAddress();
-        srvDesc.m_TargetGpuAddr = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuAddress();
+        srvDesc.m_TargetCpuAddress = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuAddress();
+        srvDesc.m_TargetGpuAddress = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuAddress();
         m_RenderTargetSrv[i] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
 
         GraphicCore::GetBindlessResourceManager().RegisterView(

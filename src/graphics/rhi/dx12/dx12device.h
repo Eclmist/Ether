@@ -52,11 +52,12 @@ public:
     std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const override;
 
     std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const override;
+    std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiBottomLevelAccelerationStructureDesc desc) const override;
 
 protected:
     friend class Dx12Module;
     friend class Dx12ImguiWrapper;
 
-    wrl::ComPtr<ID3D12Device3> m_Device;
+    wrl::ComPtr<ID3D12Device5> m_Device;
 };
 } // namespace Ether::Graphics

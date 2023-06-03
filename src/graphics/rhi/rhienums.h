@@ -260,6 +260,8 @@ enum class RhiResourceState
     GenericRead,
     Present,
     RenderTarget,
+    UnorderedAccess,
+    AccelerationStructure,
 };
 
 enum class RhiRootSignatureFlag : uint64_t
@@ -336,4 +338,5 @@ enum class RhiTextureAddressMode
     Border,
     MirrorOnce,
 };
+
 } // namespace Ether::Graphics

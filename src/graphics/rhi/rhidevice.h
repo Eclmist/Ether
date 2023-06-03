@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhiaccelerationstructure.h"
 #include "graphics/rhi/rhirootsignature.h"
 #include "graphics/rhi/rhipipelinestate.h"
 
@@ -40,17 +41,16 @@ public:
     virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(RhiSwapChainDesc desc) const = 0;
     virtual std::unique_ptr<RhiShader> CreateShader(RhiShaderDesc desc) const = 0;
     virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
-    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers)
-        const = 0;
+    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const = 0;
 
     virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(RhiRenderTargetViewDesc desc) const = 0;
     virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(RhiDepthStencilViewDesc desc) const = 0;
     virtual std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(RhiShaderResourceViewDesc desc) const = 0;
     virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(RhiConstantBufferViewDesc desc) const = 0;
-    virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(
-        RhiUnorderedAccessViewDesc desc) const = 0;
+    virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const = 0;
 
     virtual std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const = 0;
+    virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiBottomLevelAccelerationStructureDesc desc) const = 0;
 
 protected:
     friend class RhiRootSignatureDesc;
