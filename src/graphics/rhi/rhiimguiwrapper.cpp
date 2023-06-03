@@ -118,7 +118,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 "Frame Time: %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
-            ImGui::Text("Frame Number: %lld", Graphics::GraphicCore::GetFrameNumber());
+            ImGui::Text("Frame Number: %lld", Graphics::GraphicCore::GetGraphicRenderer().GetFrameNumber());
             // ImGui::PlotLines("", m_FpsHistory, HistoryBufferSize, m_FpsHistoryOffset, nullptr, 0.0f, 300.0f,
             // ImVec2(384, 100));
         }

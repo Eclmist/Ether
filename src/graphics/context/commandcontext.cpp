@@ -132,6 +132,21 @@ void Ether::Graphics::CommandContext::InitializeBufferRegion(
     TransitionResource(dest, RhiResourceState::GenericRead);
 }
 
+void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavResource)
+{
+    m_CommandList->InsertUavBarrier(uavResource);
+}
+
+void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
     ETH_MARKER_EVENT("Command Context - Finalize and Execute");
@@ -147,14 +162,4 @@ void Ether::Graphics::CommandContext::Reset()
     ETH_MARKER_EVENT("Command Context - Reset");
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
     m_CommandList->Reset(*m_CommandAllocator);
-}
-
-void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
-{
-    m_CommandList->BuildAccelerationStructure(accelStructure);
-}
-
-void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavResource)
-{
-    m_CommandList->InsertUavBarrier(uavResource);
 }

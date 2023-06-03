@@ -383,4 +383,9 @@ struct RhiBottomLevelAccelerationStructureDesc
     bool m_IsStatic;
 };
 
+struct RhiTopLevelAccelerationStructureDesc
+{
+    void* m_VisualBatch;
+};
+
 } // namespace Ether::Graphics

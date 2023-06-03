@@ -35,5 +35,8 @@ public:
 
     // Only for TLAS
     std::unique_ptr<RhiResource> m_InstanceDescBuffer;
+
+protected:
+    uint64_t m_Size;
 };
 } // namespace Ether::Graphics

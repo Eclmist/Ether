@@ -34,5 +34,6 @@ public:
     void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
 
 private:
+    std::shared_ptr<RhiAccelerationStructure> m_TopLevelAccelerationStructure;
 };
 } // namespace Ether::Graphics

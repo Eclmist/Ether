@@ -52,6 +52,7 @@ public:
     std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const override;
 
     std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const override;
+    std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiTopLevelAccelerationStructureDesc desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiBottomLevelAccelerationStructureDesc desc) const override;
 
 protected:

@@ -18,6 +18,8 @@
 */
 
 #include "graphics/context/graphiccontext.h"
+#include "graphics/graphiccore.h"
+
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhiresourceviews.h"

@@ -18,6 +18,7 @@
 */
 
 #include "graphics/schedule/raytracedgbufferpass.h"
+#include "graphics/graphiccore.h"
 
 void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resourceContext)
 {
@@ -29,6 +30,17 @@ void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resource
 
 void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
+    RhiTopLevelAccelerationStructureDesc desc = {};
+    desc.m_VisualBatch = (void*)(&graphicContext.GetVisualBatch());
+    m_TopLevelAccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
+
+    CommandContext tlasBuildContext(RhiCommandType::Graphic, "TLAS Build Context - Build GBuffer TLAS");
+    tlasBuildContext.TransitionResource(
+        *m_TopLevelAccelerationStructure->m_ScratchBuffer,
+        RhiResourceState::UnorderedAccess);
+    tlasBuildContext.BuildBottomLevelAccelerationStructure(*m_TopLevelAccelerationStructure);
+    tlasBuildContext.FinalizeAndExecute(true);
+    tlasBuildContext.Reset();
 }
 
 void Ether::Graphics::RaytracedGBufferPass::Reset()

@@ -50,6 +50,7 @@ public:
     virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const = 0;
 
     virtual std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const = 0;
+    virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiTopLevelAccelerationStructureDesc desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiBottomLevelAccelerationStructureDesc desc) const = 0;
 
 protected:

@@ -50,7 +50,6 @@ public:
     void Shutdown();
 
 public:
-    static uint64_t inline GetFrameNumber() { return Instance().m_FrameNumber; }
 
 public:
     static inline BindlessResourceManager& GetBindlessResourceManager()

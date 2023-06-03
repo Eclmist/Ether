@@ -54,8 +54,8 @@ public:
     void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
 
     void InsertUavBarrier(const RhiResource& uavResource);
-    void BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure);
     void BuildTopLevelAccelerationStructure(RhiAccelerationStructure& accelStructure);
+    void BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure);
 
     void FinalizeAndExecute(bool waitForCompletion = false);
     void Reset();

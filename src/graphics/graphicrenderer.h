@@ -31,13 +31,19 @@ public:
     GraphicRenderer();
     ~GraphicRenderer() = default;
 
+public:
+    inline uint64_t GetFrameNumber() const { return m_FrameNumber; }
+    inline GraphicContext& GetGraphicContext() { return m_Context; }
+
+public:
+
     void WaitForPresent();
     void Render();
     void Present();
 
-    inline GraphicContext& GetGraphicContext() { return m_Context; }
-
 private:
+    uint64_t m_FrameNumber;
+
     GraphicContext m_Context;
     FrameScheduler m_Scheduler;
 };

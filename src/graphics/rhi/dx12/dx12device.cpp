@@ -306,6 +306,61 @@ std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateS
 }
 
 std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
+    RhiTopLevelAccelerationStructureDesc desc) const
+{
+    std::unique_ptr<Dx12AccelerationStructure> dx12Obj = std::make_unique<Dx12AccelerationStructure>();
+    VisualBatch* visualBatch = reinterpret_cast<VisualBatch*>(desc.m_VisualBatch);
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+    inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+    inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
+    inputs.NumDescs = 1;
+    inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
+    m_Device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+    dx12Obj->m_Size = info.ResultDataMaxSizeInBytes;
+
+    RhiCommitedResourceDesc scratchBufferDesc = {};
+    scratchBufferDesc.m_Name = "TLAS::ScratchBuffer";
+    scratchBufferDesc.m_HeapType = RhiHeapType::Default;
+    scratchBufferDesc.m_State = RhiResourceState::Common;
+    scratchBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ScratchDataSizeInBytes);
+    scratchBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+    scratchBufferDesc.m_ClearValue = nullptr;
+    dx12Obj->m_ScratchBuffer = CreateCommittedResource(scratchBufferDesc);
+
+    RhiCommitedResourceDesc dataBufferDesc = scratchBufferDesc;
+    scratchBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ResultDataMaxSizeInBytes);
+    scratchBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+    scratchBufferDesc.m_State = RhiResourceState::AccelerationStructure;
+    dx12Obj->m_DataBuffer = CreateCommittedResource(scratchBufferDesc);
+
+    RhiCommitedResourceDesc instanceBufferDesc = scratchBufferDesc;
+    instanceBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(
+        sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * visualBatch->m_Visuals.size());
+    instanceBufferDesc.m_State = RhiResourceState::GenericRead;
+    instanceBufferDesc.m_HeapType = RhiHeapType::Upload;
+    dx12Obj->m_InstanceDescBuffer = CreateCommittedResource(instanceBufferDesc);
+
+    D3D12_RAYTRACING_INSTANCE_DESC* instanceDesc;
+    dx12Obj->m_InstanceDescBuffer->Map(reinterpret_cast<void**>(&instanceDesc));
+    for (uint64_t i = 0; i < visualBatch->m_Visuals.size(); ++i, ++instanceDesc)
+    {
+        instanceDesc->InstanceID = i;
+        instanceDesc->InstanceContributionToHitGroupIndex = 0;
+        instanceDesc->Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+        instanceDesc->InstanceMask = 0xFF;
+        instanceDesc->AccelerationStructure = visualBatch->m_Visuals[i]
+                                                  .m_Mesh->GetAccelerationStructure()
+                                                  .m_DataBuffer->GetGpuAddress();
+    }
+    dx12Obj->m_InstanceDescBuffer->Unmap();
+
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
     RhiBottomLevelAccelerationStructureDesc desc) const
 {
     std::unique_ptr<Dx12AccelerationStructure> dx12Obj = std::make_unique<Dx12AccelerationStructure>();
@@ -338,6 +393,7 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
     m_Device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &info);
+    dx12Obj->m_Size = info.ResultDataMaxSizeInBytes;
 
     RhiCommitedResourceDesc scratchBufferDesc = {};
     scratchBufferDesc.m_Name = "BLAS::ScratchBuffer";
@@ -349,10 +405,10 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     dx12Obj->m_ScratchBuffer = CreateCommittedResource(scratchBufferDesc);
 
     RhiCommitedResourceDesc dataBufferDesc = scratchBufferDesc;
-    scratchBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ResultDataMaxSizeInBytes);
-    scratchBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
-    scratchBufferDesc.m_State = RhiResourceState::AccelerationStructure;
-    dx12Obj->m_DataBuffer = CreateCommittedResource(scratchBufferDesc);
+    dataBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ResultDataMaxSizeInBytes);
+    dataBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+    dataBufferDesc.m_State = RhiResourceState::AccelerationStructure;
+    dx12Obj->m_DataBuffer = CreateCommittedResource(dataBufferDesc);
 
     return dx12Obj;
 }

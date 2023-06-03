@@ -34,6 +34,7 @@ public:
 public:
     inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
     inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
+    inline RhiAccelerationStructure& GetAccelerationStructure() const { return *m_AccelerationStructure; }
     inline uint32_t GetNumVertices() const { return m_PackedVertices.size(); }
     inline uint32_t GetNumIndices() const { return m_Indices.size(); }
 
