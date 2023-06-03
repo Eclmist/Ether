@@ -67,18 +67,4 @@ protected:
     wrl::ComPtr<IDxcBlob> m_ShaderBlob;
     std::string m_TargetProfile;
 };
-
-class Dx12LibraryShader : public RhiLibraryShader
-{
-public:
-    Dx12LibraryShader(const RhiLibraryShaderDesc& desc);
-    ~Dx12LibraryShader() = default;
-
-protected:
-    D3D12_DXIL_LIBRARY_DESC m_DxilLibraryDesc;
-    D3D12_STATE_SUBOBJECT m_StateSubobject;
-    std::vector<D3D12_EXPORT_DESC> m_ExportDesc;
-    std::vector<std::wstring> m_ExportName;
-};
-
 } // namespace Ether::Graphics

@@ -58,8 +58,11 @@ void Ether::Graphics::Dx12Shader::Compile()
 
     // Specify file name using line directive for better error output
     // -E for the entry point (eg. PSMain)
-    arguments.push_back(L"-E");
-    arguments.push_back(wEntryPoint.c_str());
+    if (m_Type != RhiShaderType::Library)
+    {
+        arguments.push_back(L"-E");
+        arguments.push_back(wEntryPoint.c_str());
+    }
 
     //-T for the target profile (eg. ps_6_2)
     arguments.push_back(L"-T");
@@ -193,33 +196,6 @@ HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::QueryInter
     _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject)
 {
     return Graphics::Dx12Shader::s_IncludeHandler->QueryInterface(riid, ppvObject);
-}
-
-Ether::Graphics::Dx12LibraryShader::Dx12LibraryShader(const RhiLibraryShaderDesc& desc)
-    : RhiLibraryShader(desc)
-{
-    m_StateSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
-    m_StateSubobject.pDesc = &m_DxilLibraryDesc;
-
-    m_DxilLibraryDesc = {};
-    m_ExportDesc.resize(desc.m_NumEntryPoints);
-    m_ExportName.resize(desc.m_NumEntryPoints);
-
-    if (!m_BaseShader->IsCompiled())
-        m_BaseShader->Compile();
-
-    m_DxilLibraryDesc.DXILLibrary.pShaderBytecode = m_BaseShader->GetCompiledData();
-    m_DxilLibraryDesc.DXILLibrary.BytecodeLength = m_BaseShader->GetCompiledSize();
-    m_DxilLibraryDesc.NumExports = desc.m_NumEntryPoints;
-    m_DxilLibraryDesc.pExports = m_ExportDesc.data();
-
-    for (uint32_t i = 0; i < desc.m_NumEntryPoints; i++)
-    {
-        m_ExportName[i] = desc.m_EntryPoints[i];
-        m_ExportDesc[i].Name = desc.m_EntryPoints[i];
-        m_ExportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
-        m_ExportDesc[i].ExportToRename = nullptr;
-    }
 }
 
 #endif // ETH_GRAPHICS_DX12

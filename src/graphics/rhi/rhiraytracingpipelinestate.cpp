@@ -17,29 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphics/pch.h"
-#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 
-namespace Ether::Graphics
+Ether::Graphics::RhiRaytracingPipelineState::~RhiRaytracingPipelineState()
 {
-class ResourceContext
-{
-public:
-    ResourceContext() = default;
-    ~ResourceContext() = default;
-
-public:
-    void AddPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
-    RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
-
-private:
-    friend class FrameScheduler;
-    void RecompilePipelineStates();
-
-private:
-    std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
-};
-} // namespace Ether::Graphics
+}

@@ -34,26 +34,26 @@ public:
     virtual ~RhiDevice() = default;
 
 public:
-    virtual std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(RhiCommandAllocatorDesc desc) const = 0;
-    virtual std::unique_ptr<RhiCommandList> CreateCommandList(RhiCommandListDesc desc) const = 0;
-    virtual std::unique_ptr<RhiCommandQueue> CreateCommandQueue(RhiCommandQueueDesc desc) const = 0;
-    virtual std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(RhiDescriptorHeapDesc desc) const = 0;
+    virtual std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandAllocatorDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiCommandList> CreateCommandList(const RhiCommandListDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandQueueDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc) const = 0;
     virtual std::unique_ptr<RhiFence> CreateFence() const = 0;
-    virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(RhiSwapChainDesc desc) const = 0;
-    virtual std::unique_ptr<RhiShader> CreateShader(RhiShaderDesc desc) const = 0;
-    virtual std::unique_ptr<RhiLibraryShader> CreateLibraryShader(RhiLibraryShaderDesc desc) const = 0;
-    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const = 0;
+    virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal = false) const = 0;
     virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
+    virtual std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const = 0;
 
-    virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(RhiRenderTargetViewDesc desc) const = 0;
-    virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(RhiDepthStencilViewDesc desc) const = 0;
-    virtual std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(RhiShaderResourceViewDesc desc) const = 0;
-    virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(RhiConstantBufferViewDesc desc) const = 0;
-    virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(RhiUnorderedAccessViewDesc desc) const = 0;
+    virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(const RhiShaderResourceViewDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const = 0;
 
-    virtual std::unique_ptr<RhiResource> CreateCommittedResource(RhiCommitedResourceDesc desc) const = 0;
-    virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiTopLevelAccelerationStructureDesc desc) const = 0;
-    virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(RhiBottomLevelAccelerationStructureDesc desc) const = 0;
+    virtual std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const = 0;
 
 protected:
     friend class RhiRootSignatureDesc;

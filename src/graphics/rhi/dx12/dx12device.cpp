@@ -29,6 +29,7 @@
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12fence.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
+#include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12resourceviews.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
@@ -41,7 +42,7 @@
 #ifdef ETH_GRAPHICS_DX12
 
 std::unique_ptr<Ether::Graphics::RhiCommandAllocator> Ether::Graphics::Dx12Device::CreateCommandAllocator(
-    RhiCommandAllocatorDesc desc) const
+    const RhiCommandAllocatorDesc& desc) const
 {
     std::unique_ptr<Dx12CommandAllocator> dx12View = std::make_unique<Dx12CommandAllocator>(desc.m_Type);
 
@@ -54,7 +55,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandAllocator> Ether::Graphics::Dx12Devic
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::CreateCommandList(
-    RhiCommandListDesc desc) const
+    const RhiCommandListDesc& desc) const
 {
     std::unique_ptr<Dx12CommandList> dx12Obj = std::make_unique<Dx12CommandList>(desc.m_Type);
     Dx12CommandAllocator* allocator = dynamic_cast<Dx12CommandAllocator*>(desc.m_Allocator);
@@ -74,7 +75,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::Cr
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::CreateCommandQueue(
-    RhiCommandQueueDesc desc) const
+    const RhiCommandQueueDesc& desc) const
 {
     std::unique_ptr<Dx12CommandQueue> dx12Obj = std::make_unique<Dx12CommandQueue>(desc.m_Type);
 
@@ -88,7 +89,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::C
 }
 
 std::unique_ptr<Ether::Graphics::RhiDescriptorHeap> Ether::Graphics::Dx12Device::CreateDescriptorHeap(
-    RhiDescriptorHeapDesc desc) const
+    const RhiDescriptorHeapDesc& desc) const
 {
     std::unique_ptr<Dx12DescriptorHeap> dx12Obj = std::make_unique<Dx12DescriptorHeap>();
 
@@ -113,7 +114,8 @@ std::unique_ptr<Ether::Graphics::RhiFence> Ether::Graphics::Dx12Device::CreateFe
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::CreateSwapChain(RhiSwapChainDesc desc) const
+std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::CreateSwapChain(
+    const RhiSwapChainDesc& desc) const
 {
     std::unique_ptr<Dx12SwapChain> dx12Obj = std::make_unique<Dx12SwapChain>();
 
@@ -141,7 +143,7 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
 }
 
 std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Device::CreateRenderTargetView(
-    RhiRenderTargetViewDesc desc) const
+    const RhiRenderTargetViewDesc& desc) const
 {
     std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
 
@@ -156,7 +158,7 @@ std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Devic
 }
 
 std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Device::CreateDepthStencilView(
-    RhiDepthStencilViewDesc desc) const
+    const RhiDepthStencilViewDesc& desc) const
 {
     std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
 
@@ -171,7 +173,7 @@ std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Devic
 }
 
 std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Device::CreateShaderResourceView(
-    RhiShaderResourceViewDesc desc) const
+    const RhiShaderResourceViewDesc& desc) const
 {
     std::unique_ptr<Dx12ShaderResourceView> dx12Obj = std::make_unique<Dx12ShaderResourceView>();
 
@@ -185,7 +187,7 @@ std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Dev
 }
 
 std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Device::CreateConstantBufferView(
-    RhiConstantBufferViewDesc desc) const
+    const RhiConstantBufferViewDesc& desc) const
 {
     std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
     dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
@@ -197,7 +199,7 @@ std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Dev
 }
 
 std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12Device::CreateUnorderedAccessView(
-    RhiUnorderedAccessViewDesc desc) const
+    const RhiUnorderedAccessViewDesc& desc) const
 {
     throw std::runtime_error("Not yet implemented");
     // std::unique_ptr<Ether::Graphics::Dx12UnorderedAccessView> dx12View =
@@ -217,7 +219,7 @@ std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12De
 }
 
 std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateCommittedResource(
-    RhiCommitedResourceDesc desc) const
+    const RhiCommitedResourceDesc& desc) const
 {
     std::unique_ptr<Dx12Resource> dx12Obj = std::make_unique<Dx12Resource>(desc.m_Name);
 
@@ -243,23 +245,18 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(RhiShaderDesc desc) const
+std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(const RhiShaderDesc& desc) const
 {
     std::unique_ptr<Dx12Shader> dx12Obj = std::make_unique<Dx12Shader>(desc);
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiLibraryShader> Ether::Graphics::Dx12Device::CreateLibraryShader(RhiLibraryShaderDesc desc) const
-{
-    std::unique_ptr<Dx12LibraryShader> dx12Obj = std::make_unique<Dx12LibraryShader>(desc);
-    return dx12Obj;
-}
-
 std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Device::CreateRootSignatureDesc(
     uint32_t numParams,
-    uint32_t numSamplers) const
+    uint32_t numSamplers,
+    bool isLocal) const
 {
-    return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers);
+    return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers, isLocal);
 }
 
 std::unique_ptr<Ether::Graphics::RhiPipelineStateDesc> Ether::Graphics::Dx12Device::CreatePipelineStateDesc() const
@@ -311,8 +308,40 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
     return dx12Obj;
 }
 
+std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx12Device::CreateRaytracingPipelineState(
+    const RhiRaytracingPipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12RaytracingPipelineState> dx12Obj = std::make_unique<Dx12RaytracingPipelineState>();
+
+    const wchar_t* raygenExportName[] = { desc.m_RayGenShaderName };
+    const wchar_t* hitMissExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName };
+    const wchar_t* allExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName, desc.m_RayGenShaderName };
+
+    dx12Obj->PushLibrary(desc.m_LibraryShaderDesc);
+    dx12Obj->PushHitProgram(desc.m_HitGroupName, nullptr, desc.m_ClosestHitShaderName);
+    dx12Obj->PushLocalRootSignature(dynamic_cast<Dx12RootSignature*>(desc.m_RayGenRootSignature));
+    dx12Obj->PushExportAssociation(raygenExportName, sizeof(raygenExportName) / sizeof(raygenExportName[0]));
+    dx12Obj->PushLocalRootSignature(dynamic_cast<Dx12RootSignature*>(desc.m_HitMissRootSignature));
+    dx12Obj->PushExportAssociation(hitMissExportName, sizeof(hitMissExportName) / sizeof(hitMissExportName[0]));
+    dx12Obj->PushShaderConfig(desc.m_MaxAttributeSize, desc.m_MaxPayloadSize);
+    dx12Obj->PushExportAssociation(allExportName, sizeof(allExportName) / sizeof(allExportName[0]));
+    dx12Obj->PushPipelineConfig(desc.m_MaxRecursionDepth);
+    dx12Obj->PushGlobalRootSignature(dynamic_cast<Dx12RootSignature*>(desc.m_GlobalRootSignature));
+
+    D3D12_STATE_OBJECT_DESC stateObjDesc = {};
+    stateObjDesc.NumSubobjects = dx12Obj->m_NumSubObjects;
+    stateObjDesc.pSubobjects = dx12Obj->m_SubObjects;
+    stateObjDesc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
+
+    HRESULT hr = m_Device->CreateStateObject(&stateObjDesc, IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Raytracing Pipeline State");
+
+    return dx12Obj;
+}
+
 std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
-    RhiTopLevelAccelerationStructureDesc desc) const
+    const RhiTopLevelAccelerationStructureDesc& desc) const
 {
     std::unique_ptr<Dx12AccelerationStructure> dx12Obj = std::make_unique<Dx12AccelerationStructure>();
     VisualBatch* visualBatch = reinterpret_cast<VisualBatch*>(desc.m_VisualBatch);
@@ -367,7 +396,7 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
 }
 
 std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
-    RhiBottomLevelAccelerationStructureDesc desc) const
+    const RhiBottomLevelAccelerationStructureDesc& desc) const
 {
     std::unique_ptr<Dx12AccelerationStructure> dx12Obj = std::make_unique<Dx12AccelerationStructure>();
 

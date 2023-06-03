@@ -20,26 +20,13 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/rhi/rhipipelinestate.h"
-#include "graphics/rhi/rhiraytracingpipelinestate.h"
 
 namespace Ether::Graphics
 {
-class ResourceContext
+class RhiRaytracingPipelineState
 {
 public:
-    ResourceContext() = default;
-    ~ResourceContext() = default;
-
-public:
-    void AddPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
-    RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
-
-private:
-    friend class FrameScheduler;
-    void RecompilePipelineStates();
-
-private:
-    std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
+    RhiRaytracingPipelineState() = default;
+    virtual ~RhiRaytracingPipelineState() = 0;
 };
 } // namespace Ether::Graphics

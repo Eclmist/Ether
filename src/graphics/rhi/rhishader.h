@@ -57,14 +57,4 @@ protected:
     std::string m_EntryPoint = "";
 };
 
-class RhiLibraryShader
-{
-public:
-    RhiLibraryShader(const RhiLibraryShaderDesc& desc);
-    virtual ~RhiLibraryShader() = 0;
-
-protected:
-    RhiShader* m_BaseShader;
-};
-
 } // namespace Ether::Graphics

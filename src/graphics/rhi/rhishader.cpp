@@ -30,12 +30,3 @@ Ether::Graphics::RhiShader::RhiShader(const RhiShaderDesc& desc)
     , m_EntryPoint(desc.m_EntryPoint)
 {
 }
-
-Ether::Graphics::RhiLibraryShader::RhiLibraryShader(const RhiLibraryShaderDesc& desc)
-    : m_BaseShader(desc.m_Shader)
-{
-}
-
-Ether::Graphics::RhiLibraryShader::~RhiLibraryShader()
-{
-}

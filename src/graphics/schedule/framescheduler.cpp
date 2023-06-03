@@ -42,8 +42,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
-    delete g_TempFrameDump;
-    delete g_TempRaytracingPass;
+    //delete g_TempFrameDump;
+    //delete g_TempRaytracingPass;
 }
 
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
