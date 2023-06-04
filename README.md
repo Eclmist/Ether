@@ -44,3 +44,10 @@ $ cmake --build ./build/
 ```
 
 This will generate projects in the `/build/` folder, and will build the Ether binaries into `/bin/`.
+
+## Screenshots
+<p align="center">
+  <img src="https://raw.githubusercontent.com/eclmist/ether/master/docs/editor.png" width=700>
+  <img src="https://raw.githubusercontent.com/eclmist/ether/master/docs/brdf.png" width=700>
+</p>
+
