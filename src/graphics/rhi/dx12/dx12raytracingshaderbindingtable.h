@@ -20,20 +20,21 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhiraytracingshaderbindingtable.h"
 
 namespace Ether::Graphics
 {
-class RhiRaytracingShaderTable
+class Dx12RaytracingShaderBindingTable : public RhiRaytracingShaderBindingTable
 {
 public:
-    RhiRaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries);
-    virtual ~RhiRaytracingShaderTable() = default;
+    Dx12RaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries);
+    ~Dx12RaytracingShaderBindingTable() override = default;
 
 public:
-    inline uint32_t GetTableSize() const { return m_ShaderTableSize; }
+    RhiGpuAddress GetGpuAddress() const override;
 
 protected:
-    uint32_t m_ShaderTableEntrySize;
-    uint32_t m_ShaderTableSize;
+    friend class Dx12Device;
+    std::unique_ptr<RhiResource> m_Buffer;
 };
 } // namespace Ether::Graphics

@@ -24,11 +24,11 @@
 
 #include "toolmode/ipc/command/asset/importassetcommand.h"
 
-//#include "toolmode/ipc/command/ecs/gettoplevelentitiescommand.h"
-//#include "toolmode/ipc/command/ecs/getcomponentscommand.h"
-//#include "toolmode/ipc/command/ecs/setcomponentcommand.h"
+// #include "toolmode/ipc/command/ecs/gettoplevelentitiescommand.h"
+// #include "toolmode/ipc/command/ecs/getcomponentscommand.h"
+// #include "toolmode/ipc/command/ecs/setcomponentcommand.h"
 //
-//#include "toolmode/ipc/command/state/viewport/setdrawmodecommand.h"
+// #include "toolmode/ipc/command/state/viewport/setdrawmodecommand.h"
 
 #define REGISTER_COMMAND(id, T) RegisterCommand(id, [](const CommandData* data) { return std::make_unique<T>(data); })
 
@@ -41,16 +41,17 @@ Ether::Toolmode::CommandFactory::CommandFactory()
     REGISTER_COMMAND("importasset", ImportAssetCommand);
 
     //// ECS
-    //REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
-    //REGISTER_COMMAND("getcomponents", GetComponentsCommand);
-    //REGISTER_COMMAND("setcomponent", SetComponentCommand);
+    // REGISTER_COMMAND("gettoplevelentities", GetTopLevelEntitiesCommand);
+    // REGISTER_COMMAND("getcomponents", GetComponentsCommand);
+    // REGISTER_COMMAND("setcomponent", SetComponentCommand);
 
     //// State
-    //REGISTER_COMMAND("setdrawmode", SetDrawModeCommand);
+    // REGISTER_COMMAND("setdrawmode", SetDrawModeCommand);
 }
 
 std::unique_ptr<Ether::Toolmode::Command> Ether::Toolmode::CommandFactory::CreateCommand(
-    const std::string& commandID, const CommandData* data) const
+    const std::string& commandID,
+    const CommandData* data) const
 {
     if (m_FactoryMap.find(commandID) == m_FactoryMap.end())
         return nullptr;
@@ -58,15 +59,12 @@ std::unique_ptr<Ether::Toolmode::Command> Ether::Toolmode::CommandFactory::Creat
     return (m_FactoryMap.find(commandID)->second)(data);
 }
 
-void Ether::Toolmode::CommandFactory::RegisterCommand(
-    const std::string& commandID, FactoryFunction factoryFunction)
+void Ether::Toolmode::CommandFactory::RegisterCommand(const std::string& commandID, FactoryFunction factoryFunction)
 {
-    if (m_FactoryMap.find(commandID) != m_FactoryMap.end())
-    {
-        LogToolmodeError("The command %s has already been registered", commandID);
-        return;
-    }
+    AssertToolmode(
+        m_FactoryMap.find(commandID) == m_FactoryMap.end(),
+        "The command %s has already been registered",
+        commandID);
 
     m_FactoryMap[commandID] = factoryFunction;
 }
-

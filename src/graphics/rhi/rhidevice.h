@@ -53,7 +53,7 @@ public:
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const = 0;
     virtual std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiRaytracingShaderTable> CreateRaytracingShaderTable(const RhiRaytracingShaderTableDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiRaytracingShaderBindingTable> CreateRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTableDesc& desc) const = 0;
 
     virtual std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const = 0;
 

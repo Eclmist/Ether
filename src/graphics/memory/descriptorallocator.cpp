@@ -86,8 +86,8 @@ void Ether::Graphics::DescriptorAllocator::ReclaimStaleAllocations(size_t numInd
 
     if (numIndices > 0)
     {
-        LogGraphicsError("Descriptor heap is full - no stale indices to reclaim");
-        LogGraphicsError("Descriptor allocation failed - heap is already full");
+        LogGraphicsFatal("Descriptor heap is full - no stale indices to reclaim");
+        LogGraphicsFatal("Descriptor allocation failed - heap is already full");
         throw std::bad_alloc();
     }
 }

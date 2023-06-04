@@ -17,10 +17,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/rhi/rhiraytracingshadertable.h"
+#pragma once
 
-Ether::Graphics::RhiRaytracingShaderTable::RhiRaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries)
+#include "graphics/pch.h"
+
+namespace Ether::Graphics
 {
-    m_ShaderTableEntrySize = maxEntrySize;
-    m_ShaderTableSize = maxEntrySize * numEntries;
-}
+class RhiRaytracingShaderBindingTable
+{
+public:
+    RhiRaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries);
+    virtual ~RhiRaytracingShaderBindingTable() = default;
+
+public:
+    inline uint32_t GetTableSize() const { return m_ShaderTableSize; }
+    inline uint32_t GetTableEntrySize() const { return m_ShaderTableEntrySize; }
+
+public:
+    virtual RhiGpuAddress GetGpuAddress() const = 0;
+
+protected:
+    uint32_t m_ShaderTableEntrySize;
+    uint32_t m_ShaderTableSize;
+};
+} // namespace Ether::Graphics

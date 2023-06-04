@@ -47,7 +47,7 @@ void Ether::Graphics::Dx12CommandQueue::Flush()
     HRESULT hr = m_CommandQueue->Signal(dx12Fence->m_Fence.Get(), ++m_FinalFenceValue);
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to signal command queue with fence");
+        LogGraphicsFatal("Failed to signal command queue with fence");
 
     StallForFence(m_FinalFenceValue);
 }
@@ -63,7 +63,7 @@ Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12CommandQueue::Execute(RhiCom
     HRESULT hr = m_CommandQueue->Signal(dx12Fence->m_Fence.Get(), ++m_FinalFenceValue);
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to signal command queue with fence");
+        LogGraphicsFatal("Failed to signal command queue with fence");
 
     return m_FinalFenceValue;
 }

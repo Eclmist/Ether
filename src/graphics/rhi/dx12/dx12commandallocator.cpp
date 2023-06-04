@@ -30,7 +30,7 @@ void Ether::Graphics::Dx12CommandAllocator::Reset() const
 {
     HRESULT hr = m_Allocator->Reset();
     if (FAILED(hr))
-        LogGraphicsError("Failed to reset command allocator");
+        LogGraphicsFatal("Failed to reset command allocator");
 }
 
 #endif // ETH_GRAPHICS_DX12

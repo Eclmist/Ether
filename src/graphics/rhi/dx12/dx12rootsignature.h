@@ -32,13 +32,38 @@ public:
     ~Dx12RootSignatureDesc() override = default;
 
 public:
-    void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) override;
-    void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
-    void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
-    void SetAsUnorderedAccessView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) override;
-    void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) override;
-    void SetDescriptorTableRange(uint32_t slot, uint32_t rangeIndex, uint32_t numDescriptors, RhiDescriptorType type) override;
-    void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) override;
+    void SetAsConstant(
+        uint32_t rootParameterIndex,
+        uint32_t shaderRegister,
+        uint32_t numDword,
+        RhiShaderVisibility shaderVisibility) override;
+    void SetAsConstantBufferView(
+        uint32_t rootParameterIndex,
+        uint32_t shaderRegister,
+        RhiShaderVisibility shaderVisibility) override;
+    void SetAsShaderResourceView(
+        uint32_t rootParameterIndex,
+        uint32_t shaderRegister,
+        RhiShaderVisibility shaderVisibility) override;
+    void SetAsUnorderedAccessView(
+        uint32_t rootParameterIndex,
+        uint32_t shaderRegister,
+        RhiShaderVisibility shaderVisibility) override;
+    void SetAsDescriptorTable(
+        uint32_t rootParameterIndex,
+        uint32_t numRanges,
+        RhiShaderVisibility shaderVisibility) override;
+    void SetDescriptorTableRange(
+        uint32_t rootParamterIndex,
+        RhiDescriptorType rangeType,
+        uint32_t numDescriptors = 1,
+        uint32_t rangeIndex = 0,
+        uint32_t baseShaderRegister = 0) override;
+    void SetAsSampler(
+        uint32_t shaderRegister,
+        RhiSamplerParameterDesc samplerDesc,
+        RhiShaderVisibility shaderVisibility) override;
+
     void SetFlags(RhiRootSignatureFlag flag) override;
 
 protected:
@@ -63,4 +88,5 @@ private:
     friend class Dx12RaytracingPipelineState;
     wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
 };
+
 } // namespace Ether::Graphics

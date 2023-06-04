@@ -26,7 +26,7 @@ RWTexture2D<float4> g_Output : register(u0);
 void RayGeneration()
 {
     uint3 launchIndex = DispatchRaysIndex();
-    g_Output[launchIndex.xy] = float4(0.6, 0.6, 0.2, 1);
+    g_Output[launchIndex.xy] = float4(5.6, 0.6, 0.2, 1);
 }
 
 struct Payload

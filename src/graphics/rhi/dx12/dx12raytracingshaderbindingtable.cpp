@@ -17,13 +17,18 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/rhi/dx12/dx12raytracingshadertable.h"
+#include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
-Ether::Graphics::Dx12RaytracingShaderTable::Dx12RaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries)
-    : RhiRaytracingShaderTable(maxEntrySize, numEntries)
+Ether::Graphics::Dx12RaytracingShaderBindingTable::Dx12RaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries)
+    : RhiRaytracingShaderBindingTable(maxEntrySize, numEntries)
 {
+}
+
+Ether::Graphics::RhiGpuAddress Ether::Graphics::Dx12RaytracingShaderBindingTable::GetGpuAddress() const
+{
+    return m_Buffer->GetGpuAddress();
 }
 
 #endif // ETH_GRAPHICS_DX12

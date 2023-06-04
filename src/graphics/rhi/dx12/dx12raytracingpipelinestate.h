@@ -42,6 +42,8 @@ public:
 
 private:
     friend class Dx12Device;
+    friend class Dx12CommandList;
+
     D3D12_STATE_SUBOBJECT m_SubObjects[32];
     uint32_t m_NumSubObjects;
 

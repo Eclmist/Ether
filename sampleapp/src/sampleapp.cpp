@@ -85,7 +85,6 @@ void SampleApp::LoadContent()
     world.Save("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
 #else
     world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
-
 #endif
 
     Entity& camera = world.CreateEntity("Main Camera");

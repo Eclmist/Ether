@@ -42,7 +42,7 @@ class RhiRootSignatureDesc;
 class RhiPipelineState;
 class RhiPipelineStateDesc;
 class RhiRaytracingPipelineState;
-class RhiRaytracingShaderTable;
+class RhiRaytracingShaderBindingTable;
 class RhiSwapChain;
 class RhiShader;
 
@@ -252,7 +252,7 @@ struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
     RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
-    RhiShaderResourceDims m_Dimensions;
+    RhiShaderResourceDimensions m_Dimensions;
 };
 
 struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
@@ -264,6 +264,8 @@ struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
 struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
 {
     RhiGpuAddress m_TargetGpuAddress;
+    RhiFormat m_Format;
+    RhiUnorderedAccessDimension m_Dimensions;
 };
 
 struct RhiIndexBufferViewDesc
@@ -416,7 +418,7 @@ struct RhiRaytracingPipelineStateDesc
     RhiRootSignature* m_GlobalRootSignature;
 };
 
-struct RhiRaytracingShaderTableDesc
+struct RhiRaytracingShaderBindingTableDesc
 {
     const wchar_t* m_HitGroupName;
     const wchar_t* m_RayGenShaderName;
@@ -424,6 +426,18 @@ struct RhiRaytracingShaderTableDesc
 
     uint32_t m_MaxRootSignatureSize;
     RhiRaytracingPipelineState* m_RaytracingPipelineState;
+    
+    RhiGpuAddress m_RayGenRootTableAddress1;
+    RhiGpuAddress m_RayGenRootTableAddress2;
+};
+
+struct RhiDispatchRaysDesc
+{
+    uint32_t m_DispatchWidth;
+    uint32_t m_DispatchHeight;
+    uint32_t m_DispatchDepth;
+
+    RhiRaytracingShaderBindingTable* m_ShaderBindingTable;
 };
 
 } // namespace Ether::Graphics

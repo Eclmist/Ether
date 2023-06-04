@@ -142,6 +142,9 @@ void Ether::Graphics::Mesh::CreateAccelerationStructure()
     blasBuildContext.PushMarker("Build BLAS");
     blasBuildContext.TransitionResource(*m_AccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
     blasBuildContext.BuildBottomLevelAccelerationStructure(*m_AccelerationStructure);
+    blasBuildContext.PopMarker();
     blasBuildContext.FinalizeAndExecute(true);
     blasBuildContext.Reset();
+
+    m_AccelerationStructure->m_ScratchBuffer.reset();
 }

@@ -153,8 +153,6 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
     graphicContext.PushMarker("Clear");
-    graphicContext.SetViewport(gfxDisplay.GetViewport());
-    graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
     graphicContext.ClearDepthStencil(*m_Dsv, 1.0);

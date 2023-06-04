@@ -40,10 +40,7 @@ void Ether::Graphics::Dx12Resource::Map(void** mappedAddr) const
     HRESULT hr = m_Resource->Map(0, nullptr, mappedAddr);
 
     if (FAILED(hr))
-    {
-        LogGraphicsError("Failed to map GPU resource (%s)", m_Resource->GetGPUVirtualAddress());
-        throw std::runtime_error("Failed to map GPU resource");
-    }
+        LogGraphicsFatal("Failed to map GPU resource (%s)", m_Resource->GetGPUVirtualAddress());
 }
 
 void Ether::Graphics::Dx12Resource::Unmap() const

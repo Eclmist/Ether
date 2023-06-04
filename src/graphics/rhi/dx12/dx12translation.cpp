@@ -470,32 +470,51 @@ DXGI_SCALING Ether::Graphics::Translate(const RhiScalingMode& rhiType)
     }
 }
 
-D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDims& rhiType)
+D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDimensions& rhiType)
 {
     switch (rhiType)
     {
-    case RhiShaderResourceDims::Unknown:
+    case RhiShaderResourceDimensions::Unknown:
         return D3D12_SRV_DIMENSION_UNKNOWN;
-    case RhiShaderResourceDims::Buffer:
+    case RhiShaderResourceDimensions::Buffer:
         return D3D12_SRV_DIMENSION_BUFFER;
-    case RhiShaderResourceDims::Texture1D:
+    case RhiShaderResourceDimensions::Texture1D:
         return D3D12_SRV_DIMENSION_TEXTURE1D;
-    case RhiShaderResourceDims::Texture1DArray:
+    case RhiShaderResourceDimensions::Texture1DArray:
         return D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
-    case RhiShaderResourceDims::Texture2D:
+    case RhiShaderResourceDimensions::Texture2D:
         return D3D12_SRV_DIMENSION_TEXTURE2D;
-    case RhiShaderResourceDims::Texture2DArray:
+    case RhiShaderResourceDimensions::Texture2DArray:
         return D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    case RhiShaderResourceDims::Texture3D:
+    case RhiShaderResourceDimensions::Texture3D:
         return D3D12_SRV_DIMENSION_TEXTURE3D;
-    case RhiShaderResourceDims::TextureCube:
+    case RhiShaderResourceDimensions::TextureCube:
         return D3D12_SRV_DIMENSION_TEXTURECUBE;
-    case RhiShaderResourceDims::TextureCubeArray:
+    case RhiShaderResourceDimensions::TextureCubeArray:
         return D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
-    case RhiShaderResourceDims::RTAccelerationStructure:
+    case RhiShaderResourceDimensions::RTAccelerationStructure:
         return D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
     default:
         return D3D12_SRV_DIMENSION_UNKNOWN;
+    }
+}
+
+D3D12_UAV_DIMENSION Ether::Graphics::Translate(const RhiUnorderedAccessDimension& rhiType)
+{
+    switch (rhiType)
+    {
+    case RhiUnorderedAccessDimension::Unknown:
+        return D3D12_UAV_DIMENSION_UNKNOWN;
+    case RhiUnorderedAccessDimension::Buffer:
+        return D3D12_UAV_DIMENSION_BUFFER;
+    case RhiUnorderedAccessDimension::Texture1D:
+        return D3D12_UAV_DIMENSION_TEXTURE1D;
+    case RhiUnorderedAccessDimension::Texture2D:
+        return D3D12_UAV_DIMENSION_TEXTURE2D;
+    case RhiUnorderedAccessDimension::Texture3D:
+        return D3D12_UAV_DIMENSION_TEXTURE3D;
+    default:
+        return D3D12_UAV_DIMENSION_UNKNOWN;
     }
 }
 
@@ -903,17 +922,20 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResour
 
     switch (rhiDesc.m_Dimensions)
     {
-    case RhiShaderResourceDims::Texture2D:
+    case RhiShaderResourceDimensions::Texture2D:
         dx12Desc.Texture2D.MipLevels = 1;
         dx12Desc.Texture2D.MostDetailedMip = 0;
         dx12Desc.Texture2D.PlaneSlice = 0;
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
-    case RhiShaderResourceDims::TextureCube:
+    case RhiShaderResourceDimensions::TextureCube:
         dx12Desc.Texture2D.MipLevels = 1;
         dx12Desc.Texture2D.MostDetailedMip = 0;
         dx12Desc.Texture2D.PlaneSlice = 0;
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
+        break;
+    case RhiShaderResourceDimensions::RTAccelerationStructure:
+        dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_TargetGpuAddress;
         break;
     default:
         LogGraphicsFatal("Not yet supported");
@@ -921,6 +943,15 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResour
 
     return dx12Desc;
 }
+
+D3D12_UNORDERED_ACCESS_VIEW_DESC Ether::Graphics::Translate(const RhiUnorderedAccessViewDesc& rhiDesc)
+{
+    D3D12_UNORDERED_ACCESS_VIEW_DESC dx12Desc = {};
+    dx12Desc.Format = Translate(rhiDesc.m_Format);
+    dx12Desc.ViewDimension = Translate(rhiDesc.m_Dimensions);
+    return dx12Desc;
+}
+
 
 D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBufferViewDesc& rhiDesc)
 {

@@ -26,6 +26,8 @@
 #include "graphics/rhi/dx12/dx12resourceviews.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
+#include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
+#include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
@@ -105,78 +107,33 @@ void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsD
     m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps);
 }
 
+void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
+{
+    m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootConstantBufferView(bindSlot, resourceAddr);
+}
+
 void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
 {
     const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
     m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
+void Ether::Graphics::Dx12CommandList::SetComputeRootDescriptorTable(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress baseAddress)
 {
-    m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
+    m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, { baseAddress });
 }
 
-// RhiResult Dx12CommandList::SetRootConstant(const RhiSetRootConstantDesc& desc)
-//{
-//     m_CommandList->SetGraphicsRoot32BitConstant
-//     (
-//         desc.m_RootParameterIndex,
-//         desc.m_SrcData,
-//         desc.m_DestOffset
-//     );
-//
-//     return RhiResult::Success;
-// }
-//
-// RhiResult Dx12CommandList::SetRootConstants(const RhiSetRootConstantsDesc& desc)
-//{
-//     m_CommandList->SetGraphicsRoot32BitConstants
-//     (
-//         desc.m_RootParameterIndex,
-//         desc.m_NumConstants,
-//         desc.m_Data,
-//         desc.m_DestOffset
-//     );
-//
-//     return RhiResult::Success;
-// }
-//
-// RhiResult Dx12CommandList::SetRootDescriptorTable(const RhiSetRootDescriptorTableDesc& desc)
-//{
-//     m_CommandList->SetGraphicsRootDescriptorTable
-//     (
-//         desc.m_RootParameterIndex,
-//         Translate(desc.m_BaseSrvHandle)
-//     );
-//
-//     return RhiResult::Success;
-// }
-//
-// RhiResult Dx12CommandList::SetRootShaderResource(const RhiSetRootShaderResourceDesc& desc)
-//{
-//     m_CommandList->SetGraphicsRootShaderResourceView
-//     (
-//         desc.m_RootParameterIndex,
-//         desc.m_Resource->GetGpuHandle().m_Ptr
-//     );
-//
-//     return RhiResult::Success;
-// }
-//
-// RhiResult Dx12CommandList::SetRootConstantBuffer(const RhiSetRootConstantBufferDesc& desc)
-//{
-//     m_CommandList->SetGraphicsRootConstantBufferView
-//     (
-//         desc.m_RootParameterIndex,
-//         desc.m_Resource->GetGpuHandle().m_Ptr
-//     );
-//
-//     return RhiResult::Success;
-// }
-
-void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
+void Ether::Graphics::Dx12CommandList::SetComputeRootSignature(const RhiRootSignature& rootSignature)
 {
-    m_CommandList->SetGraphicsRootConstantBufferView(bindSlot, resourceAddr);
+    const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
+    m_CommandList->SetComputeRootSignature(dx12Resource.m_RootSignature.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(RhiClearRenderTargetViewDesc desc)
@@ -193,6 +150,14 @@ void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(RhiClearDepthStenci
         desc.m_ClearStencil,
         0,
         nullptr);
+}
+
+void Ether::Graphics::Dx12CommandList::CopyResource(const RhiResource& src, RhiResource& dest)
+{
+    const auto dx12SrcResource = (Dx12Resource*)&src;
+    const auto dx12DstResource = (Dx12Resource*)&dest;
+
+    m_CommandList->CopyResource(dx12DstResource->m_Resource.Get(), dx12SrcResource->m_Resource.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::CopyBufferRegion(RhiCopyBufferRegionDesc desc)
@@ -253,19 +218,47 @@ void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstan
         desc.m_FirstInstance);
 }
 
+void Ether::Graphics::Dx12CommandList::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso)
+{
+    const Dx12RaytracingPipelineState* dx12RtPso = dynamic_cast<const Dx12RaytracingPipelineState*>(&pso);
+    m_CommandList->SetPipelineState1(dx12RtPso->m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::DispatchRays(const RhiDispatchRaysDesc& desc)
+{
+    uint32_t entrySize = desc.m_ShaderBindingTable->GetTableEntrySize();
+
+    D3D12_DISPATCH_RAYS_DESC dx12Desc = {};
+    dx12Desc.Width = desc.m_DispatchWidth;
+    dx12Desc.Height = desc.m_DispatchHeight;
+    dx12Desc.Depth = desc.m_DispatchDepth;
+    dx12Desc.RayGenerationShaderRecord.StartAddress = desc.m_ShaderBindingTable->GetGpuAddress();
+    dx12Desc.RayGenerationShaderRecord.SizeInBytes = entrySize;
+
+    dx12Desc.MissShaderTable.StartAddress = desc.m_ShaderBindingTable->GetGpuAddress() + entrySize;
+    dx12Desc.MissShaderTable.SizeInBytes = entrySize;
+    dx12Desc.MissShaderTable.StrideInBytes = entrySize;
+
+    dx12Desc.HitGroupTable.StartAddress = desc.m_ShaderBindingTable->GetGpuAddress() + entrySize * 2;
+    dx12Desc.HitGroupTable.SizeInBytes = entrySize;
+    dx12Desc.HitGroupTable.StrideInBytes = entrySize;
+
+    m_CommandList->DispatchRays(&dx12Desc);
+}
+
 void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandAllocator)
 {
     const auto allocator = dynamic_cast<const Dx12CommandAllocator&>(commandAllocator);
     HRESULT hr = m_CommandList->Reset(allocator.m_Allocator.Get(), nullptr);
     if (FAILED(hr))
-        LogGraphicsError("Failed to reset Dx12 Command List");
+        LogGraphicsFatal("Failed to reset DirectX12 Command List");
 }
 
 void Ether::Graphics::Dx12CommandList::Close()
 {
     HRESULT hr = m_CommandList->Close();
     if (FAILED(hr))
-        LogGraphicsError("Failed to close Dx12 Command List");
+        LogGraphicsFatal("Failed to close DirectX12 Command List");
 }
 
 void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccelerationStructure& as)
@@ -293,4 +286,3 @@ void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavRe
 }
 
 #endif // ETH_GRAPHICS_DX12
-

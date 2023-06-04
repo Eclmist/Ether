@@ -23,7 +23,7 @@
 #include "graphics/context/graphiccontext.h"
 #include "graphics/context/resourcecontext.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
-#include "graphics/rhi/rhiraytracingshadertable.h"
+#include "graphics/rhi/rhiraytracingshaderbindingtable.h"
 
 namespace Ether::Graphics
 {
@@ -37,9 +37,10 @@ public:
 
 protected: 
     void InitializeShaders();
-    void InitializeShaderTable();
+    void InitializeShaderBindingTable();
     void InitializeRootSignatures();
     void InitializePipelineStates();
+    void InitializeAccelerationStructure(const VisualBatch* visualBatch);
 
 protected:
     std::unique_ptr<RhiShader> m_LibraryShader;
@@ -48,6 +49,11 @@ protected:
     std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
     std::unique_ptr<RhiAccelerationStructure> m_TopLevelAccelerationStructure;
     std::unique_ptr<RhiRaytracingPipelineState> m_RaytracingPipelineState;
-    std::unique_ptr<RhiRaytracingShaderTable> m_RaytracingShaderTable;
+    std::unique_ptr<RhiRaytracingShaderBindingTable> m_RaytracingShaderBindingTable;
+
+private:
+    std::unique_ptr<RhiResource> m_OutputTexture;
+    std::unique_ptr<RhiUnorderedAccessView> m_OutputTextureUav;
+    std::unique_ptr<RhiShaderResourceView> m_TlasSrv;
 };
 } // namespace Ether::Graphics

@@ -35,7 +35,7 @@
 #include "graphics/rhi/dx12/dx12swapchain.h"
 #include "graphics/rhi/dx12/dx12shader.h"
 #include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
-#include "graphics/rhi/dx12/dx12raytracingshadertable.h"
+#include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
 #include "graphics/resources/mesh.h"
@@ -50,7 +50,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandAllocator> Ether::Graphics::Dx12Devic
     HRESULT hr = m_Device->CreateCommandAllocator(Translate(desc.m_Type), IID_PPV_ARGS(&dx12View->m_Allocator));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Command Allocator");
+        LogGraphicsFatal("Failed to create DirectX12 Command Allocator");
 
     return dx12View;
 }
@@ -69,7 +69,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::Cr
         IID_PPV_ARGS(&dx12Obj->m_CommandList));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Command List");
+        LogGraphicsFatal("Failed to create DirectX12 Command List");
 
     dx12Obj->m_CommandList->SetName(ToWideString(desc.m_Name).c_str());
     return dx12Obj;
@@ -84,7 +84,7 @@ std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::C
     HRESULT hr = m_Device->CreateCommandQueue(&creationDesc, IID_PPV_ARGS(&dx12Obj->m_CommandQueue));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Command Queue");
+        LogGraphicsFatal("Failed to create DirectX12 Command Queue");
 
     return dx12Obj;
 }
@@ -98,7 +98,7 @@ std::unique_ptr<Ether::Graphics::RhiDescriptorHeap> Ether::Graphics::Dx12Device:
     HRESULT hr = m_Device->CreateDescriptorHeap(&creationDesc, IID_PPV_ARGS(&dx12Obj->m_Heap));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Descriptor Heap");
+        LogGraphicsFatal("Failed to create DirectX12 Descriptor Heap");
 
     dx12Obj->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
     return dx12Obj;
@@ -110,7 +110,7 @@ std::unique_ptr<Ether::Graphics::RhiFence> Ether::Graphics::Dx12Device::CreateFe
     HRESULT hr = m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&dx12Obj->m_Fence));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Fence");
+        LogGraphicsFatal("Failed to create DirectX12 Fence");
 
     return dx12Obj;
 }
@@ -133,7 +133,7 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
         nullptr,
         &swapChain1);
     if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DX12 SwapChain");
+        LogGraphicsFatal("Failed to create DirectX12 SwapChain");
 
     hr = dxgiFactory->MakeWindowAssociation((HWND)desc.m_SurfaceTarget, DXGI_MWA_NO_ALT_ENTER);
     if (FAILED(hr))
@@ -182,7 +182,11 @@ std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Dev
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
-    m_Device->CreateShaderResourceView(d3dResource->m_Resource.Get(), &creationDesc, { dx12Obj->m_CpuAddress });
+
+    if (desc.m_Dimensions == RhiShaderResourceDimensions::RTAccelerationStructure)
+        m_Device->CreateShaderResourceView(nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
+    else
+        m_Device->CreateShaderResourceView(d3dResource->m_Resource.Get(), &creationDesc, { dx12Obj->m_CpuAddress });
 
     return dx12Obj;
 }
@@ -202,21 +206,16 @@ std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Dev
 std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12Device::CreateUnorderedAccessView(
     const RhiUnorderedAccessViewDesc& desc) const
 {
-    throw std::runtime_error("Not yet implemented");
-    // std::unique_ptr<Ether::Graphics::Dx12UnorderedAccessView> dx12View =
-    // std::make_unique<Ether::Graphics::Dx12UnorderedAccessView>();
+    std::unique_ptr<Dx12UnorderedAccessView> dx12Obj = std::make_unique<Dx12UnorderedAccessView>();
 
-    // dx12View->m_CpuHandle = desc.m_TargetCpuHandle;
-    // const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
+    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
-    // auto creationDesc = Translate(desc);
-    // m_Device->CreateUnorderedAccessView(
-    //     d3dResource->m_Resource.Get(),
-    //     &creationDesc,
-    //     Translate(dx12View->m_CpuHandle)
-    //);
+    auto creationDesc = Translate(desc);
+    m_Device
+        ->CreateUnorderedAccessView(d3dResource->m_Resource.Get(), nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
 
-    // return dx12View;
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(const RhiShaderDesc& desc) const
@@ -252,7 +251,7 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
         errBlob.GetAddressOf());
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to serialize root signature");
+        LogGraphicsFatal("Failed to serialize root signature");
 
     hr = m_Device->CreateRootSignature(
         1,
@@ -261,7 +260,7 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
         IID_PPV_ARGS(&dx12Obj->m_RootSignature));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Root Signature");
+        LogGraphicsFatal("Failed to create DirectX12 Root Signature");
 
     return dx12Obj;
 }
@@ -277,7 +276,7 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
         IID_PPV_ARGS(&dx12Obj->m_PipelineState));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Pipeline State Object");
+        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
 
     return dx12Obj;
 }
@@ -417,19 +416,21 @@ std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx
 
     HRESULT hr = m_Device->CreateStateObject(&stateObjDesc, IID_PPV_ARGS(&dx12Obj->m_PipelineState));
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Raytracing Pipeline State");
+        LogGraphicsFatal("Failed to create DirectX12 Raytracing Pipeline State");
 
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiRaytracingShaderTable> Ether::Graphics::Dx12Device::CreateRaytracingShaderTable(
-    const RhiRaytracingShaderTableDesc& desc) const
+std::unique_ptr<Ether::Graphics::RhiRaytracingShaderBindingTable> Ether::Graphics::Dx12Device::
+    CreateRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTableDesc& desc) const
 {
     uint32_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
     entrySize += desc.m_MaxRootSignatureSize;
     entrySize = AlignUp(entrySize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
 
-    std::unique_ptr<Dx12RaytracingShaderTable> dx12Obj = std::make_unique<Dx12RaytracingShaderTable>(entrySize, 3);
+    std::unique_ptr<Dx12RaytracingShaderBindingTable> dx12Obj = std::make_unique<Dx12RaytracingShaderBindingTable>(
+        entrySize,
+        3);
 
     RhiCommitedResourceDesc bufferDesc = {};
     bufferDesc.m_Name = "RaytracingShaderTable::ShaderTable";
@@ -449,6 +450,13 @@ std::unique_ptr<Ether::Graphics::RhiRaytracingShaderTable> Ether::Graphics::Dx12
         mappedAddr,
         stateObjectProperties->GetShaderIdentifier(desc.m_RayGenShaderName),
         D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    constexpr uint8_t rootTableSize = 8;
+    uint64_t* raygenDescriptorTable1 = (uint64_t*)(mappedAddr + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    uint64_t* raygenDescriptorTable2 = (uint64_t*)(mappedAddr + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES + rootTableSize);
+
+    *raygenDescriptorTable1 = desc.m_RayGenRootTableAddress1;
+    *raygenDescriptorTable2 = desc.m_RayGenRootTableAddress2;
 
     memcpy(
         mappedAddr + 1 * entrySize,
@@ -485,9 +493,10 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         IID_PPV_ARGS(&dx12Obj->m_Resource));
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name.c_str());
+        LogGraphicsFatal("Failed to create DirectX12 commited resource (%s)", desc.m_Name.c_str());
 
     dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
+    dx12Obj->SetState(desc.m_State);
     return dx12Obj;
 }
 

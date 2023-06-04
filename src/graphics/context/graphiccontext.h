@@ -55,11 +55,14 @@ public:
     void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer);
     void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer);
     void SetPrimitiveTopology(RhiPrimitiveTopology topology);
-    void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
     void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
+
+    void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
 
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
     void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
+
+    void DispatchRays(const RhiDispatchRaysDesc& desc);
 
 private:
     VisualBatch m_VisualBatch;

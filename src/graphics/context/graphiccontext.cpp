@@ -96,11 +96,6 @@ void Ether::Graphics::GraphicContext::SetPrimitiveTopology(RhiPrimitiveTopology 
     m_CommandList->SetPrimitiveTopology(topology);
 }
 
-void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
-{
-    m_CommandList->SetGraphicRootSignature(rootSignature);
-}
-
 void Ether::Graphics::GraphicContext::SetRenderTarget(
     const RhiRenderTargetView& rtv,
     const RhiDepthStencilView* dsv /*= nullptr*/)
@@ -111,6 +106,11 @@ void Ether::Graphics::GraphicContext::SetRenderTarget(
     desc.m_DsvHandle = dsv;
 
     m_CommandList->SetRenderTargets(desc);
+}
+
+void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+{
+    m_CommandList->SetGraphicRootSignature(rootSignature);
 }
 
 void Ether::Graphics::GraphicContext::DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances)
@@ -135,3 +135,9 @@ void Ether::Graphics::GraphicContext::DrawInstanced(uint32_t numVertices, uint32
 
     m_CommandList->DrawInstanced(desc);
 }
+
+void Ether::Graphics::GraphicContext::DispatchRays(const RhiDispatchRaysDesc& desc)
+{
+    m_CommandList->DispatchRays(desc);
+}
+

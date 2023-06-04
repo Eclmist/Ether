@@ -52,7 +52,7 @@ void Ether::Graphics::Dx12SwapChain::ResizeBuffers(const ethVector2u& size)
     HRESULT hr = m_SwapChain->GetDesc(&swapChainDesc);
     if (FAILED(hr))
     {
-        LogGraphicsError("Failed to retrieve current swapchain info");
+        LogGraphicsError("Failed to retrieve current swapchain info for resizing");
         return;
     }
 

@@ -47,23 +47,30 @@ public:
     void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
     void SetRenderTargets(RhiSetRenderTargetsDesc desc) override;
     void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
-    void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
     void SetPipelineState(const RhiPipelineState& pso) override;
 
     // RhiResult SetRootConstant(RhiSetRootConstantDesc desc) override;
     // RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) override;
-    // RhiResult SetRootDescriptorTable(RhiSetRootDescriptorTableDesc desc) override;
     // RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) override;
     void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) override;
+    void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
+
+    void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) override;
+    void SetComputeRootSignature(const RhiRootSignature& rootSignature) override;
 
     void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
     void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
 
     void TransitionResource(RhiResourceTransitionDesc desc) override;
+    void CopyResource(const RhiResource& src, RhiResource& dest) override;
     void CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
     void CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
     void DrawInstanced(RhiDrawInstancedDesc desc) override;
     void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
+
+    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso) override;
+    void DispatchRays(const RhiDispatchRaysDesc& desc) override;
+
 
     void InsertUavBarrier(const RhiResource& uavResource) override;
     void BuildAccelerationStructure(const RhiAccelerationStructure& as) override;

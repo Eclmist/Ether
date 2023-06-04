@@ -142,7 +142,7 @@ void Ether::Graphics::Dx12Shader::InitializeTargetProfile(RhiShaderType type)
         m_TargetProfile = "lib_6_6";
         break;
     default:
-        LogGraphicsError("Invalid shader type: %u", type);
+        LogGraphicsFatal("Invalid shader type: %u", type);
         break;
     }
 }
@@ -161,7 +161,7 @@ void Ether::Graphics::Dx12Shader::InitializeDxc()
         hr |= s_DxcUtils->CreateDefaultIncludeHandler(s_IncludeHandler.GetAddressOf());
 
     if (FAILED(hr))
-        LogGraphicsError("Failed to initialize DXC compiler");
+        LogGraphicsFatal("Failed to initialize DXC compiler");
 }
 
 HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource(

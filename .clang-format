@@ -28,7 +28,6 @@ BinPackArguments: false
 BinPackParameters: false
 
 IndentWidth: 4
-IndentPPDirectives: BeforeHash
 AccessModifierOffset: -4
 BreakBeforeBraces: Allman
 

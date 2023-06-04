@@ -35,13 +35,38 @@ public:
     virtual ~RhiRootSignatureDesc() {}
 
 public:
-    virtual void SetAsConstant(uint32_t slot, uint32_t reg, uint32_t numDword, RhiShaderVisibility vis) = 0;
-    virtual void SetAsConstantBufferView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
-    virtual void SetAsShaderResourceView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
-    virtual void SetAsUnorderedAccessView(uint32_t slot, uint32_t reg, RhiShaderVisibility vis) = 0;
-    virtual void SetAsDescriptorTable(uint32_t slot, uint32_t reg, uint32_t numRanges, RhiShaderVisibility vis) = 0;
-    virtual void SetDescriptorTableRange(uint32_t slot, uint32_t rangeIndex, uint32_t numDescriptors, RhiDescriptorType type) = 0;
-    virtual void SetAsSampler(uint32_t reg, RhiSamplerParameterDesc desc, RhiShaderVisibility vis) = 0;
+    virtual void SetAsConstant(
+        uint32_t rootParamterIndex,
+        uint32_t shaderRegister,
+        uint32_t numDword,
+        RhiShaderVisibility visibility) = 0;
+    virtual void SetAsConstantBufferView(
+        uint32_t rootParamterIndex,
+        uint32_t shaderRegister,
+        RhiShaderVisibility visibility) = 0;
+    virtual void SetAsShaderResourceView(
+        uint32_t rootParamterIndex,
+        uint32_t shaderRegister,
+        RhiShaderVisibility visibility) = 0;
+    virtual void SetAsUnorderedAccessView(
+        uint32_t rootParamterIndex,
+        uint32_t shaderRegister,
+        RhiShaderVisibility visibility) = 0;
+    virtual void SetAsDescriptorTable(
+        uint32_t rootParamterIndex,
+        uint32_t numRanges,
+        RhiShaderVisibility visibility) = 0;
+    virtual void SetDescriptorTableRange(
+        uint32_t rootParamterIndex,
+        RhiDescriptorType rangeType,
+        uint32_t numDescriptors = 1,
+        uint32_t rangeIndex = 0,
+        uint32_t baseShaderRegister = 0) = 0;
+    virtual void SetAsSampler(
+        uint32_t shaderRegister,
+        RhiSamplerParameterDesc samplerDesc,
+        RhiShaderVisibility visibility) = 0;
+
     virtual void SetFlags(RhiRootSignatureFlag flag) = 0;
 
 public:
@@ -58,4 +83,5 @@ public:
     RhiRootSignature() = default;
     virtual ~RhiRootSignature() {}
 };
+
 } // namespace Ether::Graphics

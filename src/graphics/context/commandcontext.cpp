@@ -91,9 +91,14 @@ void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& p
     m_CommandList->SetPipelineState(pipelineState);
 }
 
-void Ether::Graphics::CommandContext::SetRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
+void Ether::Graphics::CommandContext::SetRootConstantBuffer(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr)
 {
-    m_CommandList->SetGraphicsRootConstantBuffer(bindSlot, resourceAddr);
+    m_CommandList->SetGraphicsRootConstantBuffer(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
+{
+    m_CommandList->CopyResource(src, dest);
 }
 
 void Ether::Graphics::CommandContext::CopyBufferRegion(
@@ -145,6 +150,16 @@ void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(RhiA
 void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState)
+{
+    m_CommandList->SetRaytracingPipelineState(pipelineState);
+}
+
+void Ether::Graphics::CommandContext::SetComputeRootSignature(const RhiRootSignature& rootSignature)
+{
+    m_CommandList->SetComputeRootSignature(rootSignature);
 }
 
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)

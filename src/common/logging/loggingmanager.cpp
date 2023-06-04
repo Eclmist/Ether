@@ -25,8 +25,8 @@
 #include <filesystem>
 
 #ifdef ETH_PLATFORM_WIN32
-    #define _AMD64_       // So we don't have to include <windows.h> here
-    #include <debugapi.h> // For OutputDebugStringA
+#define _AMD64_       // So we don't have to include <windows.h> here
+#include <debugapi.h> // For OutputDebugStringA
 #endif
 
 constexpr uint32_t MaxLogEntries = 512;

@@ -46,7 +46,20 @@ std::unique_ptr<Ether::Graphics::RhiDevice> Ether::Graphics::Dx12Module::CreateD
     std::unique_ptr<Dx12Device> dx12Device = std::make_unique<Dx12Device>();
     HRESULT hr = D3D12CreateDevice(m_Adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&dx12Device->m_Device));
     if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DX12 Device");
+        LogGraphicsFatal("Failed to create DirectX12 Device");
+
+    D3D12_FEATURE_DATA_D3D12_OPTIONS5 features5;
+    hr = dx12Device->m_Device->CheckFeatureSupport(
+        D3D12_FEATURE_D3D12_OPTIONS5,
+        &features5,
+        sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5));
+
+    if (FAILED(hr) || features5.RaytracingTier == D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
+    {
+        LogGraphicsFatal(
+            "Raytracing is not supported on this device. Make sure your GPU supports DXR (such as Nvidia's Volta or "
+            "Turing RTX) and you're on the latest drivers. The DXR fallback layer is not supported.");
+    }
 
     return dx12Device;
 }
@@ -81,8 +94,8 @@ void Ether::Graphics::Dx12Module::InitializeAdapter()
         if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0)
             continue;
 
-        // Check if the DX12 device can be created
-        if (FAILED(D3D12CreateDevice(dxgiAdapter1.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
+        // Check if the DirectX12 device can be created
+        if (FAILED(D3D12CreateDevice(dxgiAdapter1.Get(), D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), nullptr)))
             continue;
 
         // Check if this device has the largest vram so far. Use vram as a indicator of perf for now
@@ -92,33 +105,33 @@ void Ether::Graphics::Dx12Module::InitializeAdapter()
         maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
         HRESULT hr = dxgiAdapter1.As(&m_Adapter);
         if (FAILED(hr))
-            LogGraphicsFatal("Failed to create DX12 Adapter");
+            LogGraphicsFatal("Failed to create DirectX12 Adapter");
     }
 }
 
 void Ether::Graphics::Dx12Module::InitializeDebugLayer()
 {
-    #if defined(_DEBUG)
+#if defined(_DEBUG)
     LogGraphicsInfo("Graphics Debug Layer is enabled");
     wrl::ComPtr<ID3D12Debug> debugInterface;
     HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface));
     if (FAILED(hr))
-        LogGraphicsWarning("Failed to create DX12 debug interface");
+        LogGraphicsWarning("Failed to create DirectX12 debug interface");
     else
         debugInterface->EnableDebugLayer();
-    #endif
+#endif
 }
 
 void Ether::Graphics::Dx12Module::ReportLiveObjects()
 {
-    #if defined(_DEBUG)
+#if defined(_DEBUG)
     IDXGIDebug1* pDebug = NULL;
     if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
     {
         pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
         pDebug->Release();
     }
-    #endif
+#endif
 }
 
 #endif // ETH_GRAPHICS_DX12

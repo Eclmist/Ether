@@ -69,7 +69,7 @@ private:
     void RegisterComponent()
     {
         if (m_TypeNameToIDMap.find(typeid(T).name()) != m_TypeNameToIDMap.end())
-            throw std::logic_error("Same component type is registered more than once");
+            LogEngineError("Same component type is registered more than once");
 
         ComponentID newID = m_NextID++;
         m_TypeNameToIDMap[typeid(T).name()] = newID;

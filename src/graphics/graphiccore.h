@@ -50,12 +50,7 @@ public:
     void Shutdown();
 
 public:
-
-public:
-    static inline BindlessResourceManager& GetBindlessResourceManager()
-    {
-        return *Instance().m_BindlessResourceManager;
-    }
+    static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
     static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
     static inline DescriptorAllocator& GetRtvAllocator() { return *Instance().m_RtvAllocator; }
     static inline DescriptorAllocator& GetDsvAllocator() { return *Instance().m_DsvAllocator; }
@@ -88,6 +83,5 @@ private:
 
 private:
     GraphicConfig m_Config;
-    uint64_t m_FrameNumber;
 };
 } // namespace Ether::Graphics

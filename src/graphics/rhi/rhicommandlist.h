@@ -46,19 +46,26 @@ public:
     virtual void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) = 0;
     virtual void SetRenderTargets(RhiSetRenderTargetsDesc desc) = 0;
     virtual void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) = 0;
-    virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
     virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
 
     virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
+
+    virtual void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) = 0;
+    virtual void SetComputeRootSignature(const RhiRootSignature& rootSignature) = 0;
 
     virtual void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) = 0;
     virtual void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) = 0;
 
     virtual void TransitionResource(RhiResourceTransitionDesc desc) = 0;
+    virtual void CopyResource(const RhiResource& src, RhiResource& dest) = 0;
     virtual void CopyBufferRegion(RhiCopyBufferRegionDesc desc) = 0;
     virtual void CopyTextureRegion(RhiCopyTextureRegionDesc desc) = 0;
     virtual void DrawInstanced(RhiDrawInstancedDesc desc) = 0;
     virtual void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) = 0;
+
+    virtual void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso) = 0;
+    virtual void DispatchRays(const RhiDispatchRaysDesc& desc) = 0;
 
     virtual void InsertUavBarrier(const RhiResource& uavResource) = 0;
     virtual void BuildAccelerationStructure(const RhiAccelerationStructure& as) = 0;

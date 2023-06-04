@@ -286,7 +286,7 @@ enum class RhiScalingMode
     AspectRatioStretch,
 };
 
-enum class RhiShaderResourceDims
+enum class RhiShaderResourceDimensions
 {
     Unknown,
     Buffer,
@@ -298,6 +298,15 @@ enum class RhiShaderResourceDims
     TextureCube,
     TextureCubeArray,
     RTAccelerationStructure,
+};
+
+enum class RhiUnorderedAccessDimension
+{
+    Unknown,
+    Buffer,
+    Texture1D,
+    Texture2D,
+    Texture3D,
 };
 
 enum class RhiShaderType

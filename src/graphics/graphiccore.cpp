@@ -69,6 +69,4 @@ void Ether::Graphics::GraphicCore::Main()
     s_Instance->m_GraphicRenderer->WaitForPresent();
     s_Instance->m_GraphicRenderer->Render();
     s_Instance->m_GraphicRenderer->Present();
-
-    s_Instance->m_FrameNumber++;
 }
