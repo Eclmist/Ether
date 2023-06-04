@@ -29,12 +29,13 @@
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12fence.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
-#include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12resourceviews.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12swapchain.h"
 #include "graphics/rhi/dx12/dx12shader.h"
+#include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
+#include "graphics/rhi/dx12/dx12raytracingshadertable.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
 #include "graphics/resources/mesh.h"
@@ -218,33 +219,6 @@ std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12De
     // return dx12View;
 }
 
-std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateCommittedResource(
-    const RhiCommitedResourceDesc& desc) const
-{
-    std::unique_ptr<Dx12Resource> dx12Obj = std::make_unique<Dx12Resource>(desc.m_Name);
-
-    auto creationDesc = Translate(desc.m_ResourceDesc);
-    auto heapDesc = CD3DX12_HEAP_PROPERTIES(Translate(desc.m_HeapType));
-
-    D3D12_CLEAR_VALUE clearValue;
-    if (desc.m_ClearValue != nullptr)
-        clearValue = Translate(*desc.m_ClearValue);
-
-    HRESULT hr = m_Device->CreateCommittedResource(
-        &heapDesc,
-        D3D12_HEAP_FLAG_NONE,
-        &creationDesc,
-        Translate(desc.m_State),
-        desc.m_ClearValue == nullptr ? nullptr : &clearValue,
-        IID_PPV_ARGS(&dx12Obj->m_Resource));
-
-    if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name.c_str());
-
-    dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
-    return dx12Obj;
-}
-
 std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateShader(const RhiShaderDesc& desc) const
 {
     std::unique_ptr<Dx12Shader> dx12Obj = std::make_unique<Dx12Shader>(desc);
@@ -304,38 +278,6 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
 
     if (FAILED(hr))
         LogGraphicsError("Failed to create DX12 Pipeline State Object");
-
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx12Device::CreateRaytracingPipelineState(
-    const RhiRaytracingPipelineStateDesc& desc) const
-{
-    std::unique_ptr<Dx12RaytracingPipelineState> dx12Obj = std::make_unique<Dx12RaytracingPipelineState>();
-
-    const wchar_t* raygenExportName[] = { desc.m_RayGenShaderName };
-    const wchar_t* hitMissExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName };
-    const wchar_t* allExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName, desc.m_RayGenShaderName };
-
-    dx12Obj->PushLibrary(desc.m_LibraryShaderDesc);
-    dx12Obj->PushHitProgram(desc.m_HitGroupName, nullptr, desc.m_ClosestHitShaderName);
-    dx12Obj->PushLocalRootSignature(dynamic_cast<Dx12RootSignature*>(desc.m_RayGenRootSignature));
-    dx12Obj->PushExportAssociation(raygenExportName, sizeof(raygenExportName) / sizeof(raygenExportName[0]));
-    dx12Obj->PushLocalRootSignature(dynamic_cast<Dx12RootSignature*>(desc.m_HitMissRootSignature));
-    dx12Obj->PushExportAssociation(hitMissExportName, sizeof(hitMissExportName) / sizeof(hitMissExportName[0]));
-    dx12Obj->PushShaderConfig(desc.m_MaxAttributeSize, desc.m_MaxPayloadSize);
-    dx12Obj->PushExportAssociation(allExportName, sizeof(allExportName) / sizeof(allExportName[0]));
-    dx12Obj->PushPipelineConfig(desc.m_MaxRecursionDepth);
-    dx12Obj->PushGlobalRootSignature(dynamic_cast<Dx12RootSignature*>(desc.m_GlobalRootSignature));
-
-    D3D12_STATE_OBJECT_DESC stateObjDesc = {};
-    stateObjDesc.NumSubobjects = dx12Obj->m_NumSubObjects;
-    stateObjDesc.pSubobjects = dx12Obj->m_SubObjects;
-    stateObjDesc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
-
-    HRESULT hr = m_Device->CreateStateObject(&stateObjDesc, IID_PPV_ARGS(&dx12Obj->m_PipelineState));
-    if (FAILED(hr))
-        LogGraphicsError("Failed to create DX12 Raytracing Pipeline State");
 
     return dx12Obj;
 }
@@ -445,6 +387,107 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     dataBufferDesc.m_State = RhiResourceState::AccelerationStructure;
     dx12Obj->m_DataBuffer = CreateCommittedResource(dataBufferDesc);
 
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx12Device::CreateRaytracingPipelineState(
+    const RhiRaytracingPipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12RaytracingPipelineState> dx12Obj = std::make_unique<Dx12RaytracingPipelineState>();
+
+    const wchar_t* raygenExportName[] = { desc.m_RayGenShaderName };
+    const wchar_t* hitMissExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName };
+    const wchar_t* allExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName, desc.m_RayGenShaderName };
+
+    dx12Obj->PushLibrary(desc.m_LibraryShaderDesc);
+    dx12Obj->PushHitProgram(desc.m_HitGroupName, nullptr, desc.m_ClosestHitShaderName);
+    dx12Obj->PushLocalRootSignature(desc.m_RayGenRootSignature);
+    dx12Obj->PushExportAssociation(raygenExportName, sizeof(raygenExportName) / sizeof(raygenExportName[0]));
+    dx12Obj->PushLocalRootSignature(desc.m_HitMissRootSignature);
+    dx12Obj->PushExportAssociation(hitMissExportName, sizeof(hitMissExportName) / sizeof(hitMissExportName[0]));
+    dx12Obj->PushShaderConfig(desc.m_MaxAttributeSize, desc.m_MaxPayloadSize);
+    dx12Obj->PushExportAssociation(allExportName, sizeof(allExportName) / sizeof(allExportName[0]));
+    dx12Obj->PushPipelineConfig(desc.m_MaxRecursionDepth);
+    dx12Obj->PushGlobalRootSignature(desc.m_GlobalRootSignature);
+
+    D3D12_STATE_OBJECT_DESC stateObjDesc = {};
+    stateObjDesc.NumSubobjects = dx12Obj->m_NumSubObjects;
+    stateObjDesc.pSubobjects = dx12Obj->m_SubObjects;
+    stateObjDesc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
+
+    HRESULT hr = m_Device->CreateStateObject(&stateObjDesc, IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 Raytracing Pipeline State");
+
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiRaytracingShaderTable> Ether::Graphics::Dx12Device::CreateRaytracingShaderTable(
+    const RhiRaytracingShaderTableDesc& desc) const
+{
+    uint32_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+    entrySize += desc.m_MaxRootSignatureSize;
+    entrySize = AlignUp(entrySize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+
+    std::unique_ptr<Dx12RaytracingShaderTable> dx12Obj = std::make_unique<Dx12RaytracingShaderTable>(entrySize, 3);
+
+    RhiCommitedResourceDesc bufferDesc = {};
+    bufferDesc.m_Name = "RaytracingShaderTable::ShaderTable";
+    bufferDesc.m_HeapType = RhiHeapType::Upload;
+    bufferDesc.m_State = RhiResourceState::GenericRead;
+    bufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(dx12Obj->GetTableSize());
+    dx12Obj->m_Buffer = CreateCommittedResource(bufferDesc);
+
+    uint8_t* mappedAddr;
+    dx12Obj->m_Buffer->Map((void**)&mappedAddr);
+
+    wrl::ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
+    dynamic_cast<Dx12RaytracingPipelineState*>(desc.m_RaytracingPipelineState)
+        ->m_PipelineState->QueryInterface(IID_PPV_ARGS(&stateObjectProperties));
+
+    memcpy(
+        mappedAddr,
+        stateObjectProperties->GetShaderIdentifier(desc.m_RayGenShaderName),
+        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    memcpy(
+        mappedAddr + 1 * entrySize,
+        stateObjectProperties->GetShaderIdentifier(desc.m_MissShaderName),
+        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    memcpy(
+        mappedAddr + 2 * entrySize,
+        stateObjectProperties->GetShaderIdentifier(desc.m_HitGroupName),
+        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    dx12Obj->m_Buffer->Unmap();
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateCommittedResource(
+    const RhiCommitedResourceDesc& desc) const
+{
+    std::unique_ptr<Dx12Resource> dx12Obj = std::make_unique<Dx12Resource>(desc.m_Name);
+
+    auto creationDesc = Translate(desc.m_ResourceDesc);
+    auto heapDesc = CD3DX12_HEAP_PROPERTIES(Translate(desc.m_HeapType));
+
+    D3D12_CLEAR_VALUE clearValue;
+    if (desc.m_ClearValue != nullptr)
+        clearValue = Translate(*desc.m_ClearValue);
+
+    HRESULT hr = m_Device->CreateCommittedResource(
+        &heapDesc,
+        D3D12_HEAP_FLAG_NONE,
+        &creationDesc,
+        Translate(desc.m_State),
+        desc.m_ClearValue == nullptr ? nullptr : &clearValue,
+        IID_PPV_ARGS(&dx12Obj->m_Resource));
+
+    if (FAILED(hr))
+        LogGraphicsError("Failed to create DX12 commited resource (%s)", desc.m_Name.c_str());
+
+    dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
     return dx12Obj;
 }
 

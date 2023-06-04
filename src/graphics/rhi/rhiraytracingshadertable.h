@@ -23,15 +23,17 @@
 
 namespace Ether::Graphics
 {
-class RhiRaytracingShaderTable : public NonCopyable, public NonMovable
+class RhiRaytracingShaderTable
 {
 public:
-    RhiRaytracingShaderTable() = default;
+    RhiRaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries);
     virtual ~RhiRaytracingShaderTable() = default;
 
-protected:
-    std::unique_ptr<RhiResource> m_Buffer;
-    uint32_t m_ShaderTableEntrySize;
+public:
+    inline uint32_t GetTableSize() const { return m_ShaderTableSize; }
 
+protected:
+    uint32_t m_ShaderTableEntrySize;
+    uint32_t m_ShaderTableSize;
 };
 } // namespace Ether::Graphics

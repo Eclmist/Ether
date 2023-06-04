@@ -17,10 +17,21 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
+#include "graphics/pch.h"
 #include "graphics/rhi/rhiraytracingshadertable.h"
 
-Ether::Graphics::RhiRaytracingShaderTable::RhiRaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries)
+namespace Ether::Graphics
 {
-    m_ShaderTableEntrySize = maxEntrySize;
-    m_ShaderTableSize = maxEntrySize * numEntries;
-}
+class Dx12RaytracingShaderTable : public RhiRaytracingShaderTable
+{
+public:
+    Dx12RaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries);
+    ~Dx12RaytracingShaderTable() override = default;
+
+protected:
+    friend class Dx12Device;
+    std::unique_ptr<RhiResource> m_Buffer;
+};
+} // namespace Ether::Graphics

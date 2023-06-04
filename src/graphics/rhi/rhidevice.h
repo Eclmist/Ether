@@ -43,7 +43,6 @@ public:
     virtual std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const = 0;
     virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal = false) const = 0;
     virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
-    virtual std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const = 0;
 
     virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const = 0;
     virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const = 0;
@@ -51,9 +50,12 @@ public:
     virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const = 0;
     virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const = 0;
 
-    virtual std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiRaytracingShaderTable> CreateRaytracingShaderTable(const RhiRaytracingShaderTableDesc& desc) const = 0;
+
+    virtual std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const = 0;
 
 protected:
     friend class RhiRootSignatureDesc;

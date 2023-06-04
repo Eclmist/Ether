@@ -42,9 +42,9 @@ class RhiRootSignatureDesc;
 class RhiPipelineState;
 class RhiPipelineStateDesc;
 class RhiRaytracingPipelineState;
+class RhiRaytracingShaderTable;
 class RhiSwapChain;
 class RhiShader;
-class RhiLibraryShader;
 
 using RhiFenceValue = uint64_t;
 using RhiStencilValue = uint32_t;
@@ -399,13 +399,14 @@ struct RhiTopLevelAccelerationStructureDesc
 
 struct RhiRaytracingPipelineStateDesc
 {
+    const wchar_t* m_HitGroupName;
     const wchar_t* m_RayGenShaderName;
     const wchar_t* m_MissShaderName;
     const wchar_t* m_ClosestHitShaderName;
-    const wchar_t* m_HitGroupName;
 
-    uint32_t m_MaxAttributeSize;
     uint32_t m_MaxPayloadSize;
+    uint32_t m_MaxAttributeSize;
+    uint32_t m_MaxRootSignatureSize;
     uint32_t m_MaxRecursionDepth;
 
     RhiLibraryShaderDesc m_LibraryShaderDesc;
@@ -413,6 +414,16 @@ struct RhiRaytracingPipelineStateDesc
     RhiRootSignature* m_RayGenRootSignature;
     RhiRootSignature* m_HitMissRootSignature;
     RhiRootSignature* m_GlobalRootSignature;
+};
+
+struct RhiRaytracingShaderTableDesc
+{
+    const wchar_t* m_HitGroupName;
+    const wchar_t* m_RayGenShaderName;
+    const wchar_t* m_MissShaderName;
+
+    uint32_t m_MaxRootSignatureSize;
+    RhiRaytracingPipelineState* m_RaytracingPipelineState;
 };
 
 } // namespace Ether::Graphics

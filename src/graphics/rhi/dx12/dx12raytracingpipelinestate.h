@@ -22,7 +22,6 @@
 #include "graphics/pch.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12includes.h"
-#include "graphics/rhi/dx12/dx12rootsignature.h"
 
 namespace Ether::Graphics
 {
@@ -35,8 +34,8 @@ public:
 public:
     void PushLibrary(const RhiLibraryShaderDesc& desc);
     void PushHitProgram(const wchar_t* name, const wchar_t* anyHitExport, const wchar_t* closestHitExport);
-    void PushLocalRootSignature(Dx12RootSignature* rootSignature);
-    void PushGlobalRootSignature(Dx12RootSignature* rootSignature);
+    void PushLocalRootSignature(RhiRootSignature* rootSignature);
+    void PushGlobalRootSignature(RhiRootSignature* rootSignature);
     void PushShaderConfig(uint32_t maxAttributeSize, uint32_t maxPayloadSize);
     void PushPipelineConfig(uint32_t maxRecursionDepth);
     void PushExportAssociation(const wchar_t** exportNames, uint32_t numExports);

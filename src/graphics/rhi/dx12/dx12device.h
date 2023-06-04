@@ -43,7 +43,6 @@ public:
     std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const override;
     std::unique_ptr<RhiRootSignature> CreateRootSignature(const RhiRootSignatureDesc& desc) const override;
     std::unique_ptr<RhiPipelineState> CreatePipelineState(const RhiPipelineStateDesc& desc) const override;
-    std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const override;
 
     std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const override;
     std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const override;
@@ -51,9 +50,12 @@ public:
     std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const override;
     std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const override;
 
-    std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const override;
+    std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const override;
+    std::unique_ptr<RhiRaytracingShaderTable> CreateRaytracingShaderTable(const RhiRaytracingShaderTableDesc& desc) const override;
+
+    std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const override;
 
 protected:
     friend class Dx12Module;

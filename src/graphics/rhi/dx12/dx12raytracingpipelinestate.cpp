@@ -19,6 +19,7 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
+#include "graphics/rhi/dx12/dx12rootsignature.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
@@ -57,16 +58,22 @@ void Ether::Graphics::Dx12RaytracingPipelineState::PushHitProgram(
     m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP, &m_HitGroupDesc };
 }
 
-void Ether::Graphics::Dx12RaytracingPipelineState::PushLocalRootSignature(Dx12RootSignature* rootSignature)
+void Ether::Graphics::Dx12RaytracingPipelineState::PushLocalRootSignature(RhiRootSignature* rootSignature)
 {
-    m_LocalRootSignatures[m_NumLocalRootSignature] = { rootSignature->m_RootSignature.Get() };
+    m_LocalRootSignatures[m_NumLocalRootSignature] = {
+        dynamic_cast<Dx12RootSignature*>(rootSignature)->m_RootSignature.Get()
+    };
+
     m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE,
                                         &m_LocalRootSignatures[m_NumLocalRootSignature++] };
 }
 
-void Ether::Graphics::Dx12RaytracingPipelineState::PushGlobalRootSignature(Dx12RootSignature* rootSignature)
+void Ether::Graphics::Dx12RaytracingPipelineState::PushGlobalRootSignature(RhiRootSignature* rootSignature)
 {
-    m_GlobalRootSignatures[m_NumGlobalRootSignature] = { rootSignature->m_RootSignature.Get() };
+    m_GlobalRootSignatures[m_NumGlobalRootSignature] = {
+        dynamic_cast<Dx12RootSignature*>(rootSignature)->m_RootSignature.Get()
+    };
+
     m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE,
                                         &m_GlobalRootSignatures[m_NumGlobalRootSignature++] };
 }

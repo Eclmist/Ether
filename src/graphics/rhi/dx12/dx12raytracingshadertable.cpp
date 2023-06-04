@@ -17,10 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/rhi/rhiraytracingshadertable.h"
+#include "graphics/rhi/dx12/dx12raytracingshadertable.h"
 
-Ether::Graphics::RhiRaytracingShaderTable::RhiRaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries)
+#ifdef ETH_GRAPHICS_DX12
+
+Ether::Graphics::Dx12RaytracingShaderTable::Dx12RaytracingShaderTable(uint32_t maxEntrySize, uint32_t numEntries)
+    : RhiRaytracingShaderTable(maxEntrySize, numEntries)
 {
-    m_ShaderTableEntrySize = maxEntrySize;
-    m_ShaderTableSize = maxEntrySize * numEntries;
 }
+
+#endif // ETH_GRAPHICS_DX12

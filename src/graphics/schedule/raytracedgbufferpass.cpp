@@ -33,6 +33,7 @@ void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resource
     InitializeShaders();
     InitializeRootSignatures();
     InitializePipelineStates();
+    InitializeShaderTable();
 }
 
 void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resourceContext)
@@ -82,10 +83,6 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeShaders()
     // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_LibraryShader->Compile();
 
-    RhiLibraryShaderDesc libShaderDesc = { m_LibraryShader.get(),
-                                           EntryPoints,
-                                           sizeof(EntryPoints) / sizeof(EntryPoints[0]) };
-
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
         GraphicCore::GetShaderDaemon().RegisterShader(*m_LibraryShader);
 }
@@ -111,7 +108,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
-    RhiRaytracingPipelineStateDesc desc;
+    RhiRaytracingPipelineStateDesc desc = {};
     desc.m_RayGenShaderName = kRayGenShader;
     desc.m_MissShaderName = kMissShader;
     desc.m_ClosestHitShaderName = kClosestHitShader;
@@ -125,4 +122,18 @@ void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
     desc.m_GlobalRootSignature = m_GlobalRootSignature.get();
         
     m_RaytracingPipelineState = gfxDevice.CreateRaytracingPipelineState(desc);
+}
+
+void Ether::Graphics::RaytracedGBufferPass::InitializeShaderTable()
+{
+    const RhiDevice& gfxDevice = GraphicCore::GetDevice();
+
+    RhiRaytracingShaderTableDesc desc = {};
+    desc.m_MaxRootSignatureSize = 8; // Ray-gen's descriptor table
+    desc.m_RaytracingPipelineState = m_RaytracingPipelineState.get();
+    desc.m_HitGroupName = kHitGroup;
+    desc.m_MissShaderName = kMissShader;
+    desc.m_RayGenShaderName = kRayGenShader;
+
+    m_RaytracingShaderTable = gfxDevice.CreateRaytracingShaderTable(desc);
 }
