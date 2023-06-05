@@ -38,6 +38,7 @@ public:
 public:
     ETH_ENGINE_DLL StringID RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh);
     ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
+    ETH_ENGINE_DLL void CreateGpuResources() const;
 
     Graphics::Mesh* GetMeshResource(StringID guid) const;
     Graphics::Material* GetMaterialResource(StringID guid) const;

@@ -21,10 +21,12 @@
 
 #include "graphics/pch.h"
 #include "graphics/common/vertexformats.h"
+#include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhiaccelerationstructure.h"
 
 namespace Ether::Graphics
 {
+
 class ETH_GRAPHIC_DLL Mesh : public Serializable
 {
 public:
@@ -45,14 +47,19 @@ public:
 public:
     void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices);
     void SetIndices(std::vector<uint32_t>&& indices);
-    void CreateGpuResources();
+    void CreateGpuResources(CommandContext& ctx);
+
+public:
+    static constexpr RhiFormat s_VertexBufferPositionFormat = RhiFormat::R32G32B32Float;
+    static constexpr RhiFormat s_IndexBufferFormat = RhiFormat::R32Uint;
 
 private:
-    void CreateVertexBuffer();
+    void CreateVertexBuffer(CommandContext& ctx);
+    void CreateIndexBuffer(CommandContext& ctx);
+    void CreateAccelerationStructure(CommandContext& ctx);
+
     void CreateVertexBufferView();
     void CreateIndexBufferView();
-    void CreateIndexBuffer();
-    void CreateAccelerationStructure();
 
 private:
     std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord> m_PackedVertices;

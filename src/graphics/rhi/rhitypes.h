@@ -253,6 +253,7 @@ struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
     RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
     RhiShaderResourceDimensions m_Dimensions;
+    RhiGpuAddress m_RaytracingAccelerationStructureAddress;
 };
 
 struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
@@ -427,8 +428,7 @@ struct RhiRaytracingShaderBindingTableDesc
     uint32_t m_MaxRootSignatureSize;
     RhiRaytracingPipelineState* m_RaytracingPipelineState;
     
-    RhiGpuAddress m_RayGenRootTableAddress1;
-    RhiGpuAddress m_RayGenRootTableAddress2;
+    RhiGpuAddress m_RayGenRootTableAddress;
 };
 
 struct RhiDispatchRaysDesc

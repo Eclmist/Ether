@@ -35,8 +35,6 @@ Ether::Graphics::DescriptorAllocator::DescriptorAllocator(
 
 std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::Allocate(SizeAlign sizeAlign)
 {
-    AssertGraphics(sizeAlign.m_Alignment == 1, "Descriptors have no reason to be aligned");
-
     std::unique_ptr<MemoryAllocation> baseAlloc = FreeListAllocator::Allocate(sizeAlign);
 
     if (baseAlloc == nullptr)
@@ -47,6 +45,7 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::A
 
     size_t descriptorIdx = baseAlloc->GetOffset();
     size_t descriptorSize = m_DescriptorHeap->GetHandleIncrementSize();
+
     RhiCpuAddress allocBaseCpuHandle = m_DescriptorHeap->GetBaseCpuAddress() + descriptorIdx * descriptorSize;
     RhiGpuAddress allocBaseGpuHandle = m_IsShaderVisible
                                            ? m_DescriptorHeap->GetBaseGpuAddress() + descriptorIdx * descriptorSize
@@ -63,7 +62,6 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::A
 
 void Ether::Graphics::DescriptorAllocator::Free(std::unique_ptr<Ether::MemoryAllocation>&& alloc)
 {
-    // DescriptorAllocation is self freeing
     alloc.reset();
 }
 

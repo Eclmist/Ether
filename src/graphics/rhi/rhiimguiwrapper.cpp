@@ -136,7 +136,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     ImGui::Render();
 
-    m_Context.PushMarker("Imgui Render");
+    m_Context.Reset();
     m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
     m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     m_Context.SetDescriptorHeap(*m_DescriptorHeap);
@@ -144,10 +144,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     RenderDrawData();
 
-    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::Present);
-    m_Context.PopMarker();
     m_Context.FinalizeAndExecute();
-    m_Context.Reset();
 }
 
 std::unique_ptr<Ether::Graphics::RhiImguiWrapper> Ether::Graphics::RhiImguiWrapper::InitForPlatform()

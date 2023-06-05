@@ -18,6 +18,7 @@
 */
 
 #include "engine/world/resources/resourcemanager.h"
+#include "graphics/context/commandcontext.h"
 
 constexpr uint32_t ResourceManagerVersion = 0;
 
@@ -38,9 +39,7 @@ void Ether::ResourceManager::Deserialize(IStream& istream)
     Serializable::Deserialize(istream);
     DeserializeResource<Graphics::Mesh>(istream, m_Meshes);
     DeserializeResource<Graphics::Material>(istream, m_Materials);
-
-    for (auto& pair : m_Meshes)
-        pair.second->CreateGpuResources();
+    CreateGpuResources();
 }
 
 Ether::StringID Ether::ResourceManager::RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh)
@@ -71,4 +70,19 @@ Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID 
         return nullptr;
 
     return m_Materials.at(id).get();
+}
+
+void Ether::ResourceManager::CreateGpuResources() const 
+{
+    Graphics::CommandContext ctx(Graphics::RhiCommandType::Graphic, "CommandContext - Mesh Loading");
+
+    ctx.Reset();
+    for (auto& pair : m_Meshes)
+    {
+        std::string meshName = "Uploading mesh (" + pair.second->GetGuid() + ")";
+        ctx.PushMarker(meshName);
+        pair.second->CreateGpuResources(ctx);
+        ctx.PopMarker();
+    }
+    ctx.FinalizeAndExecute(true);
 }

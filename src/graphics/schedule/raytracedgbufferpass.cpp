@@ -55,15 +55,14 @@ void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resource
 
     m_OutputTexture = GraphicCore::GetDevice().CreateCommittedResource(outputTextureDesc);
 
-    auto uavAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
     RhiUnorderedAccessViewDesc uavDesc = {};
     uavDesc.m_Format = RhiFormat::R8G8B8A8Unorm;
     uavDesc.m_Resource = m_OutputTexture.get();
-    uavDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*uavAlloc)).GetCpuAddress();
+    uavDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(1);
+    uavDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(1);
     uavDesc.m_Dimensions = RhiUnorderedAccessDimension::Texture2D;
 
     m_OutputTextureUav = GraphicCore::GetDevice().CreateUnorderedAccessView(uavDesc);
-    GraphicCore::GetSrvCbvUavAllocator().Free(std::move(uavAlloc));
 }
 
 void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
@@ -73,45 +72,50 @@ void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContex
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
-    // TEMP: Recreate TLAS and SRV every frame because visual batch might have changed
-    InitializeAccelerationStructure(&graphicContext.GetVisualBatch());
+    if (graphicContext.GetVisualBatch().m_Visuals.empty())
+        return;
 
-    // TEMP: Recreate shader table every frame because descriptors may have been reallocated and thus address changed
-    // For many passes, descriptor heap that is bound should have a known layout (except for bindless)
-    // In those cases, even if the descriptors are re-allocated, the heap address/table address should remain the same.
-    //
-    // TODO: For this pass, need to allocate descriptors manually such that shader table can remain the same
-    //       However, we may lose global descriptors that are in Graphics::GraphicCore
-    //       Maybe some mechanism to copy all the descriptors to a new heap made specifically for this pass needs to be
-    //       done? Something like a dynamic descriptor heaps?
-    InitializeShaderBindingTable();
+    static bool isTlasInitialized = false;
+
+    if (!isTlasInitialized)
+    {
+        // TEMP: Recreate TLAS and SRV every frame because visual batch might have changed
+        InitializeAccelerationStructure(&graphicContext.GetVisualBatch(), graphicContext);
+
+        // TEMP: Recreate shader table every frame because descriptors may have been reallocated and thus address
+        // changed For many passes, descriptor heap that is bound should have a known layout (except for bindless) In
+        // those cases, even if the descriptors are re-allocated, the heap address/table address should remain the same.
+        //
+        // TODO: For this pass, need to allocate descriptors manually such that shader table can remain the same
+        //       However, we may lose global descriptors that are in Graphics::GraphicCore
+        //       Maybe some mechanism to copy all the descriptors to a new heap made specifically for this pass needs to
+        //       be done? Something like a dynamic descriptor heaps?
+        InitializeShaderBindingTable();
+
+        isTlasInitialized = true;
+    }
 
     graphicContext.PushMarker("Clear");
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
     graphicContext.PopMarker();
-    graphicContext.FinalizeAndExecute();
-    graphicContext.Reset();
 
     graphicContext.PushMarker("Raytrace");
     graphicContext.TransitionResource(*m_OutputTexture, RhiResourceState::UnorderedAccess);
     graphicContext.SetComputeRootSignature(*m_GlobalRootSignature);
+    graphicContext.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     graphicContext.SetRaytracingPipelineState(*m_RaytracingPipelineState);
     graphicContext.DispatchRays({ GraphicCore::GetGraphicConfig().GetResolution().x,
                                   GraphicCore::GetGraphicConfig().GetResolution().y,
                                   1,
                                   m_RaytracingShaderBindingTable.get() });
     graphicContext.PopMarker();
-    graphicContext.FinalizeAndExecute();
-    graphicContext.Reset();
 
     graphicContext.PushMarker("Copy to render target");
     graphicContext.TransitionResource(*m_OutputTexture, RhiResourceState::CopySrc);
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::CopyDest);
     graphicContext.CopyResource(*m_OutputTexture, gfxDisplay.GetBackBuffer());
     graphicContext.PopMarker();
-    graphicContext.FinalizeAndExecute();
-    graphicContext.Reset();
 }
 
 void Ether::Graphics::RaytracedGBufferPass::Reset()
@@ -122,23 +126,22 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
-    m_LibraryShader = gfxDevice.CreateShader({ "raytracing\\raytracing.hlsl", "", RhiShaderType::Library });
+    m_Shader = gfxDevice.CreateShader({ "raytracing\\raytracing.hlsl", "", RhiShaderType::Library });
     // Manually compile shader since raytracing PSO caching has not been implemented yet
-    m_LibraryShader->Compile();
+    m_Shader->Compile();
 
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
-        GraphicCore::GetShaderDaemon().RegisterShader(*m_LibraryShader);
+        GraphicCore::GetShaderDaemon().RegisterShader(*m_Shader);
 }
 
 void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0, true);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
-    rsDesc->SetAsDescriptorTable(0, 1, RhiShaderVisibility::All);
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
+    rsDesc->SetAsDescriptorTable(0, 2, RhiShaderVisibility::All);
 
-    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv);
+    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 1, 0);
+    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav, 1, 1);
 
     m_RayGenRootSignature = rsDesc->Compile();
 
@@ -147,6 +150,8 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
 
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, false);
     m_GlobalRootSignature = rsDesc->Compile();
+
+    m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(2); 
 }
 
 void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
@@ -160,8 +165,8 @@ void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
     desc.m_HitGroupName = kHitGroup;
     desc.m_MaxAttributeSize = sizeof(float) * 2; // From builtin attributes
     desc.m_MaxPayloadSize = sizeof(float) * 1;   // From payload struct in shader
-    desc.m_MaxRecursionDepth = 1;
-    desc.m_LibraryShaderDesc = { m_LibraryShader.get(), EntryPoints, sizeof(EntryPoints) / sizeof(EntryPoints[0]) };
+    desc.m_MaxRecursionDepth = 0;
+    desc.m_LibraryShaderDesc = { m_Shader.get(), EntryPoints, sizeof(EntryPoints) / sizeof(EntryPoints[0]) };
     desc.m_RayGenRootSignature = m_RayGenRootSignature.get();
     desc.m_HitMissRootSignature = m_HitMissRootSignature.get();
     desc.m_GlobalRootSignature = m_GlobalRootSignature.get();
@@ -174,40 +179,32 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeShaderBindingTable()
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
     RhiRaytracingShaderBindingTableDesc desc = {};
-    desc.m_MaxRootSignatureSize = 8 + 8; // Raygen's descriptor table1 (8), Raygen's descriptor table2 (8)
+    desc.m_MaxRootSignatureSize = 8; // Raygen's descriptor table1 (8)
     desc.m_RaytracingPipelineState = m_RaytracingPipelineState.get();
     desc.m_HitGroupName = kHitGroup;
     desc.m_MissShaderName = kMissShader;
     desc.m_RayGenShaderName = kRayGenShader;
-    desc.m_RayGenRootTableAddress1 = m_OutputTextureUav->GetGpuAddress();
-    desc.m_RayGenRootTableAddress2 = m_TlasSrv->GetGpuAddress();
-
+    desc.m_RayGenRootTableAddress = m_TlasSrv->GetGpuAddress();
     m_RaytracingShaderBindingTable = gfxDevice.CreateRaytracingShaderBindingTable(desc);
 }
 
-void Ether::Graphics::RaytracedGBufferPass::InitializeAccelerationStructure(const VisualBatch* visualBatch)
+void Ether::Graphics::RaytracedGBufferPass::InitializeAccelerationStructure(
+    const VisualBatch* visualBatch,
+    GraphicContext& context)
 {
     RhiTopLevelAccelerationStructureDesc desc = {};
     desc.m_VisualBatch = (void*)visualBatch;
     m_TopLevelAccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
 
-    CommandContext tlasBuildContext(RhiCommandType::Graphic, "TLAS Build Context - Build GBuffer TLAS");
-    tlasBuildContext.PushMarker("Build TLAS");
-    tlasBuildContext.TransitionResource(
-        *m_TopLevelAccelerationStructure->m_ScratchBuffer,
-        RhiResourceState::UnorderedAccess);
-    tlasBuildContext.BuildTopLevelAccelerationStructure(*m_TopLevelAccelerationStructure);
-    tlasBuildContext.PopMarker();
-    tlasBuildContext.FinalizeAndExecute(true);
-    tlasBuildContext.Reset();
+    context.PushMarker("Build GBuffer TLAS");
+    context.TransitionResource(*m_TopLevelAccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
+    context.BuildTopLevelAccelerationStructure(*m_TopLevelAccelerationStructure);
+    context.PopMarker();
 
-    m_TopLevelAccelerationStructure->m_ScratchBuffer.reset();
-
-    auto srvAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
     RhiShaderResourceViewDesc srvDesc = {};
     srvDesc.m_Dimensions = RhiShaderResourceDimensions::RTAccelerationStructure;
-    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*srvAlloc)).GetCpuAddress();
-
+    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(0);
+    srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(0);
+    srvDesc.m_RaytracingAccelerationStructureAddress = m_TopLevelAccelerationStructure->m_DataBuffer->GetGpuAddress();
     m_TlasSrv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
-    GraphicCore::GetSrvCbvUavAllocator().Free(std::move(srvAlloc));
 }

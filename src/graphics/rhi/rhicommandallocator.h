@@ -29,6 +29,8 @@ public:
     RhiCommandAllocator(RhiCommandType type)
         : m_Type(type)
     {
+        static uint32_t index = 0;
+        m_DebugIndex = index++;
     }
     virtual ~RhiCommandAllocator() = default;
 
@@ -36,6 +38,8 @@ public:
 
 public:
     virtual void Reset() const = 0;
+
+    uint32_t m_DebugIndex;
 
 private:
     const RhiCommandType m_Type;

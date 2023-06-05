@@ -59,6 +59,7 @@ void SampleApp::LoadContent()
     sharedMaterial->SetRoughness(0.5f);
 
     std::string path = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\";
+
     for (const auto& entry : std::filesystem::directory_iterator(path))
     {
         if (entry.path().extension().string() != ".eres")
@@ -68,7 +69,6 @@ void SampleApp::LoadContent()
 
         IFileStream ifstream(entry.path().string());
         mesh->Deserialize(ifstream);
-        mesh->CreateGpuResources();
 
         Entity& entity = world.CreateEntity("Entity");
         entity.AddComponent<Ecs::EcsVisualComponent>();
@@ -81,6 +81,7 @@ void SampleApp::LoadContent()
     }
 
     world.GetResourceManager().RegisterMaterialResource(std::move(sharedMaterial));
+    world.GetResourceManager().CreateGpuResources();
 
     world.Save("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
 #else

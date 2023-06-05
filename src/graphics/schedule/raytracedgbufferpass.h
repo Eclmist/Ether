@@ -40,10 +40,10 @@ protected:
     void InitializeShaderBindingTable();
     void InitializeRootSignatures();
     void InitializePipelineStates();
-    void InitializeAccelerationStructure(const VisualBatch* visualBatch);
+    void InitializeAccelerationStructure(const VisualBatch* visualBatch, GraphicContext& context);
 
 protected:
-    std::unique_ptr<RhiShader> m_LibraryShader;
+    std::unique_ptr<RhiShader> m_Shader;
     std::unique_ptr<RhiRootSignature> m_RayGenRootSignature;
     std::unique_ptr<RhiRootSignature> m_HitMissRootSignature;
     std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
@@ -55,5 +55,7 @@ private:
     std::unique_ptr<RhiResource> m_OutputTexture;
     std::unique_ptr<RhiUnorderedAccessView> m_OutputTextureUav;
     std::unique_ptr<RhiShaderResourceView> m_TlasSrv;
+
+    std::unique_ptr<MemoryAllocation> m_RootTableDescriptorAlloc;
 };
 } // namespace Ether::Graphics

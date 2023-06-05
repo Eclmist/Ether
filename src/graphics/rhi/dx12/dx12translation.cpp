@@ -935,7 +935,7 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResour
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
     case RhiShaderResourceDimensions::RTAccelerationStructure:
-        dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_TargetGpuAddress;
+        dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_RaytracingAccelerationStructureAddress;
         break;
     default:
         LogGraphicsFatal("Not yet supported");
@@ -951,7 +951,6 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC Ether::Graphics::Translate(const RhiUnorderedAc
     dx12Desc.ViewDimension = Translate(rhiDesc.m_Dimensions);
     return dx12Desc;
 }
-
 
 D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBufferViewDesc& rhiDesc)
 {

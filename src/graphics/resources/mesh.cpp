@@ -24,6 +24,8 @@ constexpr uint32_t MeshVersion = 2;
 
 Ether::Graphics::Mesh::Mesh()
     : Serializable(MeshVersion, StringID("Graphics::Mesh").GetHash())
+    , m_IndexBufferView({})
+    , m_VertexBufferView({})
 {
 }
 
@@ -70,29 +72,62 @@ void Ether::Graphics::Mesh::SetIndices(std::vector<uint32_t>&& indices)
     m_Indices = indices;
 }
 
-void Ether::Graphics::Mesh::CreateGpuResources()
+void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
 {
-    CreateVertexBuffer();
-    CreateVertexBufferView();
-    CreateIndexBuffer();
-    CreateIndexBufferView();
-    CreateAccelerationStructure();
+    CreateVertexBuffer(ctx);
+    CreateIndexBuffer(ctx);
+    CreateAccelerationStructure(ctx);
 }
 
-void Ether::Graphics::Mesh::CreateVertexBuffer()
+void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)
 {
     size_t bufferSize = m_PackedVertices.size() * sizeof(m_PackedVertices[0]);
     RhiCommitedResourceDesc desc = {};
+    desc.m_Name = "Mesh::VertexBuffer";
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::Common;
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
-    desc.m_Name = "Mesh::VertexBuffer";
 
     m_VertexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
-    CommandContext uploadContex(RhiCommandType::Graphic, "Upload Context - Vertex Buffer");
-    uploadContex.InitializeBufferRegion(*m_VertexBufferResource, m_PackedVertices.data(), bufferSize);
-    uploadContex.FinalizeAndExecute(true);
-    uploadContex.Reset();
+    ctx.PushMarker("Vertex Buffer Upload");
+    ctx.InitializeBufferRegion(*m_VertexBufferResource, m_PackedVertices.data(), bufferSize);
+    ctx.PopMarker();
+
+    CreateVertexBufferView();
+}
+
+void Ether::Graphics::Mesh::CreateIndexBuffer(CommandContext& ctx)
+{
+    size_t bufferSize = m_Indices.size() * sizeof(m_Indices[0]);
+
+    RhiCommitedResourceDesc desc = {};
+    desc.m_Name = "Mesh::IndexBuffer";
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::Common;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
+
+    m_IndexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
+    ctx.PushMarker("Index Buffer Upload");
+    ctx.InitializeBufferRegion(*m_IndexBufferResource, m_Indices.data(), bufferSize);
+    ctx.PopMarker();
+
+    CreateIndexBufferView();
+}
+
+void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx)
+{
+    RhiBottomLevelAccelerationStructureDesc desc = {};
+    Mesh* meshes[] = { this };
+    desc.m_Meshes = (void**)meshes;
+    desc.m_NumMeshes = 1;
+    desc.m_IsOpaque = true;
+    desc.m_IsStatic = true;
+
+    m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
+    ctx.PushMarker("Build BLAS");
+    ctx.TransitionResource(*m_AccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
+    ctx.BuildBottomLevelAccelerationStructure(*m_AccelerationStructure);
+    ctx.PopMarker();
 }
 
 void Ether::Graphics::Mesh::CreateVertexBufferView()
@@ -103,48 +138,10 @@ void Ether::Graphics::Mesh::CreateVertexBufferView()
     m_VertexBufferView.m_TargetGpuAddress = m_VertexBufferResource->GetGpuAddress();
 }
 
-void Ether::Graphics::Mesh::CreateIndexBuffer()
-{
-    size_t bufferSize = m_Indices.size() * sizeof(m_Indices[0]);
-
-    RhiCommitedResourceDesc desc = {};
-    desc.m_HeapType = RhiHeapType::Default;
-    desc.m_State = RhiResourceState::Common;
-    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
-    desc.m_Name = "Mesh::IndexBuffer";
-
-    m_IndexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
-    CommandContext uploadContex(RhiCommandType::Graphic, "Upload Context - Index Buffer");
-    uploadContex.InitializeBufferRegion(*m_IndexBufferResource, m_Indices.data(), bufferSize);
-    uploadContex.FinalizeAndExecute(true);
-    uploadContex.Reset();
-}
-
 void Ether::Graphics::Mesh::CreateIndexBufferView()
 {
     m_IndexBufferView = {};
     m_IndexBufferView.m_BufferSize = m_Indices.size() * sizeof(m_Indices[0]);
-    m_IndexBufferView.m_Format = RhiFormat::R32Uint;
+    m_IndexBufferView.m_Format = s_IndexBufferFormat;
     m_IndexBufferView.m_TargetGpuAddress = m_IndexBufferResource->GetGpuAddress();
-}
-
-void Ether::Graphics::Mesh::CreateAccelerationStructure()
-{
-    RhiBottomLevelAccelerationStructureDesc desc = {};
-    Mesh* meshes[] = { this };
-    desc.m_Meshes = (void**)meshes;
-    desc.m_NumMeshes = 1;
-    desc.m_IsOpaque = true;
-    desc.m_IsStatic = true;
-
-    m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
-    CommandContext blasBuildContext(RhiCommandType::Graphic, "BLAS Build Context - Build Mesh BLAS");
-    blasBuildContext.PushMarker("Build BLAS");
-    blasBuildContext.TransitionResource(*m_AccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
-    blasBuildContext.BuildBottomLevelAccelerationStructure(*m_AccelerationStructure);
-    blasBuildContext.PopMarker();
-    blasBuildContext.FinalizeAndExecute(true);
-    blasBuildContext.Reset();
-
-    m_AccelerationStructure->m_ScratchBuffer.reset();
 }

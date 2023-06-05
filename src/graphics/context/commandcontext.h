@@ -40,6 +40,8 @@ public:
     inline RhiCommandQueue& GetCommandQueue() const { return *m_CommandQueue; }
 
 public:
+    void Reset();
+
     void SetMarker(const std::string& name);
     void PushMarker(const std::string& name);
     void PopMarker();
@@ -61,7 +63,6 @@ public:
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
 
     void FinalizeAndExecute(bool waitForCompletion = false);
-    void Reset();
 
 protected:
     std::string m_Name;

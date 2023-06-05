@@ -157,10 +157,8 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
     graphicContext.ClearDepthStencil(*m_Dsv, 1.0);
     graphicContext.PopMarker();
-    graphicContext.FinalizeAndExecute();
-    graphicContext.Reset();
 
-    graphicContext.PushMarker("Geometry");
+    graphicContext.PushMarker("Draw GBuffer Geometry");
     graphicContext.SetViewport(gfxDisplay.GetViewport());
     graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
     graphicContext.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
@@ -189,8 +187,6 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
     }
 
     graphicContext.PopMarker();
-    graphicContext.FinalizeAndExecute();
-    graphicContext.Reset();
 }
 
 void Ether::Graphics::TempFrameDump::Reset()

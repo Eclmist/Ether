@@ -80,9 +80,13 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
     ETH_MARKER_EVENT("Frame Scheduler - Render Single Threaded");
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-
     // Call some function to build command lists in all the passes
     // Submit command lists in the correct execution order
+
+    context.Reset();
+
+    g_TempFrameDump->Reset();
+    g_TempFrameDump->Render(context, m_ResourceContext);
 
     // For now, just render the frame dump
     if (GraphicCore::GetGraphicConfig().m_RaytracingDebugMode)
@@ -90,18 +94,15 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
         g_TempRaytracingPass->Reset();
         g_TempRaytracingPass->Render(context, m_ResourceContext);
     }
-    else
-    {
-        g_TempFrameDump->Reset();
-        g_TempFrameDump->Render(context, m_ResourceContext);
-    }
+
+    context.FinalizeAndExecute();
 
     m_ImguiWrapper->Render();
 
     // The following can be moved into its own render pass
+    context.Reset();
     context.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::Present);
     context.FinalizeAndExecute();
-    context.Reset();
 }
 
 void Ether::Graphics::FrameScheduler::RenderMultiThreaded(GraphicContext& context)

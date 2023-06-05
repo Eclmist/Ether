@@ -23,7 +23,8 @@
 #include "graphics/rhi/rhishader.h"
 
 Ether::Graphics::GraphicRenderer::GraphicRenderer()
-    : m_Context("GraphicRenderer::GraphicContext")
+    : m_Context("GraphicRenderer - Main Graphics Context")
+    , m_FrameNumber(0)
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
     m_Scheduler.PrecompilePipelineStates();

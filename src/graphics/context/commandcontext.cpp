@@ -36,7 +36,30 @@ Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::
         type,
         *m_CommandAllocator,
         m_Name + "::CommandList");
+
+    //LogInfo(
+    //    "Created command list %s (%u), with dummy allocator %u",
+    //    m_Name.c_str(),
+    //    m_CommandList->m_DebugIndex,
+    //    m_CommandAllocator->m_DebugIndex);
+
+    m_CommandList->Close();
+    m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
+
     m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_32MiB);
+}
+
+void Ether::Graphics::CommandContext::Reset()
+{
+    ETH_MARKER_EVENT("Command Context - Reset");
+    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
+    m_CommandList->Reset(*m_CommandAllocator);
+    //LogInfo(
+    //    "Reset (Start recording into) command list %s (%u), with allocator %u",
+    //    m_Name.c_str(),
+    //    m_CommandList->m_DebugIndex,
+    //    m_CommandAllocator->m_DebugIndex);
+    PushMarker(m_Name);
 }
 
 Ether::Graphics::CommandContext::~CommandContext()
@@ -165,16 +188,11 @@ void Ether::Graphics::CommandContext::SetComputeRootSignature(const RhiRootSigna
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
     ETH_MARKER_EVENT("Command Context - Finalize and Execute");
+    PopMarker();
     m_CommandQueue->Execute(*m_CommandList);
     m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
+    m_CommandAllocator = nullptr;
 
     if (waitForCompletion)
         m_CommandQueue->Flush();
-}
-
-void Ether::Graphics::CommandContext::Reset()
-{
-    ETH_MARKER_EVENT("Command Context - Reset");
-    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
-    m_CommandList->Reset(*m_CommandAllocator);
 }

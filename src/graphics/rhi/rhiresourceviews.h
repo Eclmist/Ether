@@ -28,6 +28,7 @@ class RhiResourceView : public NonCopyable, public NonMovable
 public:
     RhiResourceView()
         : m_CpuAddress(0)
+        , m_GpuAddress(0)
     {
         // Make each view unique
         static uint32_t i = 0;
@@ -36,10 +37,12 @@ public:
 
     virtual ~RhiResourceView() = 0;
     inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
+    inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
     inline StringID GetViewID() const { return m_ViewID; }
 
 protected:
     RhiCpuAddress m_CpuAddress;
+    RhiGpuAddress m_GpuAddress;
     StringID m_ViewID;
 };
 
@@ -52,12 +55,6 @@ class RhiShaderVisibleResourceView : public RhiResourceView
 public:
     RhiShaderVisibleResourceView() = default;
     ~RhiShaderVisibleResourceView() = default;
-
-public:
-    inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
-
-protected:
-    RhiGpuAddress m_GpuAddress;
 };
 
 class RhiRenderTargetView : public RhiResourceView

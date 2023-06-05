@@ -43,7 +43,7 @@ Ether::CommandLineOptions::CommandLineOptions()
 
 void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, const std::string& arg)
 {
-    LogEngineInfo("Command Line Args: %s %s", flag.c_str(), arg.c_str());
+    bool isValid = true;
 
     if (flag == "-sourceshaders")
         m_UseSourceShaders = true;
@@ -55,4 +55,13 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
     else if (flag == "-toolmodeport")
         m_ToolmodePort = stoi(arg);
 #endif
+    else
+    {
+        LogWarning("Invalid command line argument found: %s", flag.c_str());
+        isValid = false;
+    }
+
+    if (isValid)
+        LogEngineInfo("Registered Command Line Argument: %s %s", flag.c_str(), arg.c_str());
+
 }
