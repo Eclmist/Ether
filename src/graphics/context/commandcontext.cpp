@@ -169,6 +169,42 @@ void Ether::Graphics::CommandContext::SetComputeRootSignature(const RhiRootSigna
     m_CommandList->SetComputeRootSignature(rootSignature);
 }
 
+void Ether::Graphics::CommandContext::SetComputeRootConstant(
+    uint32_t rootParameterIndex,
+    uint32_t data,
+    uint32_t destOffset)
+{
+    m_CommandList->SetComputeRootConstant(rootParameterIndex, data, destOffset);
+}
+
+void Ether::Graphics::CommandContext::SetComputeRootConstantBufferView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetComputeRootConstantBufferView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::CommandContext::SetComputeRootShaderResourceView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetComputeRootShaderResourceView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::CommandContext::SetComputeRootUnorderedAccessView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetComputeRootUnorderedAccessView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress baseAddress)
+{
+    m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, baseAddress);
+}
+
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
     ETH_MARKER_EVENT("Command Context - Finalize and Execute");
@@ -180,3 +216,4 @@ void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
     if (waitForCompletion)
         m_CommandQueue->Flush();
 }
+

@@ -180,7 +180,7 @@ void Ether::Graphics::TempFrameDump::Render(GraphicContext& graphicContext, Reso
         auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
         memcpy(alloc->GetCpuHandle(), visual.m_Material, sizeof(Material));
 
-        graphicContext.SetGraphicsRootConstantBuffer(1, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
+        graphicContext.SetGraphicsRootConstantBufferView(1, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
         graphicContext.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
         graphicContext.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
         graphicContext.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
@@ -213,5 +213,5 @@ void Ether::Graphics::TempFrameDump::UploadGlobalConstants(GraphicContext& conte
     auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate(
         { sizeof(GlobalConstants), 256 });
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(GlobalConstants));
-    context.SetGraphicsRootConstantBuffer(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
+    context.SetGraphicsRootConstantBufferView(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
 }

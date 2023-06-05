@@ -26,6 +26,12 @@
 
 Ether::Graphics::GraphicContext::GraphicContext(const std::string& contextName)
     : CommandContext(RhiCommandType::Graphic, contextName)
+    , m_ViewMatrix()
+    , m_ProjectionMatrix()
+    , m_EyeDirection()
+    , m_EyePosition()
+    , m_Viewport()
+    , m_VisualBatch()
 {
 }
 
@@ -94,11 +100,41 @@ void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSigna
     m_CommandList->SetGraphicRootSignature(rootSignature);
 }
 
-void Ether::Graphics::GraphicContext::SetGraphicsRootConstantBuffer(
+void Ether::Graphics::GraphicContext::SetGraphicsRootConstant(
+    uint32_t rootParameterIndex,
+    uint32_t data,
+    uint32_t destOffset)
+{
+    m_CommandList->SetGraphicsRootConstant(rootParameterIndex, data, destOffset);
+}
+
+void Ether::Graphics::GraphicContext::SetGraphicsRootConstantBufferView(
     uint32_t rootParameterIndex,
     RhiGpuAddress resourceAddr)
 {
-    m_CommandList->SetGraphicsRootConstantBuffer(rootParameterIndex, resourceAddr);
+    m_CommandList->SetGraphicsRootConstantBufferView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::GraphicContext::SetGraphicsRootShaderResourceView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootShaderResourceView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::GraphicContext::SetGraphicsRootUnorderedAccessView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+
+{
+    m_CommandList->SetGraphicsRootUnorderedAccessView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::GraphicContext::SetGraphicsRootDescriptorTable(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress baseAddress)
+{
+    m_CommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, baseAddress);
 }
 
 void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const ethVector4& color)
@@ -145,3 +181,4 @@ void Ether::Graphics::GraphicContext::DispatchRays(const RhiDispatchRaysDesc& de
 {
     m_CommandList->DispatchRays(desc);
 }
+

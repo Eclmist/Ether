@@ -33,13 +33,13 @@ public:
     ~GraphicContext() = default;
 
 public:
-    inline const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
-    inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
-
     inline const ethMatrix4x4& GetViewMatrix() const { return m_ViewMatrix; }
     inline const ethMatrix4x4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
     inline const ethVector3& GetEyePosition() const { return m_EyePosition; }
     inline const ethVector3& GetEyeDirection() const { return m_EyeDirection; }
+
+    inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
+    inline const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
 
 public:
     // Common
@@ -57,7 +57,11 @@ public:
 
     // Shader Data
     void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
-    void SetGraphicsRootConstantBuffer(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetGraphicsRootConstant(uint32_t rootParameterIndex, uint32_t data, uint32_t destOffset);
+    void SetGraphicsRootConstantBufferView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetGraphicsRootShaderResourceView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetGraphicsRootUnorderedAccessView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetGraphicsRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress);
 
     // Dispatches
     void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
@@ -67,12 +71,12 @@ public:
     void DispatchRays(const RhiDispatchRaysDesc& desc);
 
 private:
-    VisualBatch m_VisualBatch;
-    RhiViewportDesc m_Viewport;
-
     ethMatrix4x4 m_ViewMatrix;
     ethMatrix4x4 m_ProjectionMatrix;
     ethVector3 m_EyeDirection;
     ethVector3 m_EyePosition;
+
+    RhiViewportDesc m_Viewport;
+    VisualBatch m_VisualBatch;
 };
 } // namespace Ether::Graphics

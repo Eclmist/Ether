@@ -133,15 +133,75 @@ void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSign
     m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstant(
+    uint32_t rootParameterIndex,
+    uint32_t data,
+    uint32_t destOffset)
 {
-    m_CommandList->SetGraphicsRootConstantBufferView(bindSlot, resourceAddr);
+    m_CommandList->SetGraphicsRoot32BitConstant(rootParameterIndex, data, destOffset);
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBufferView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootConstantBufferView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootShaderResourceView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootShaderResourceView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootUnorderedAccessView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootUnorderedAccessView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::Dx12CommandList::SetGraphicsRootDescriptorTable(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress baseAddress)
+{
+    m_CommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, { baseAddress });
 }
 
 void Ether::Graphics::Dx12CommandList::SetComputeRootSignature(const RhiRootSignature& rootSignature)
 {
     const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
     m_CommandList->SetComputeRootSignature(dx12Resource.m_RootSignature.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetComputeRootConstant(
+    uint32_t rootParameterIndex,
+    uint32_t data,
+    uint32_t destOffset)
+{
+    m_CommandList->SetComputeRoot32BitConstant(rootParameterIndex, data, destOffset);
+}
+
+void Ether::Graphics::Dx12CommandList::SetComputeRootConstantBufferView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetComputeRootConstantBufferView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::Dx12CommandList::SetComputeRootShaderResourceView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetComputeRootShaderResourceView(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::Dx12CommandList::SetComputeRootUnorderedAccessView(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetComputeRootUnorderedAccessView(rootParameterIndex, resourceAddr);
 }
 
 void Ether::Graphics::Dx12CommandList::SetComputeRootDescriptorTable(

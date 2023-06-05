@@ -51,7 +51,14 @@ public:
     // Common
     void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
     void SetPipelineState(const RhiPipelineState& pipelineState);
+
+    // Shader Data
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
+    void SetComputeRootConstant(uint32_t rootParameterIndex, uint32_t data, uint32_t destOffset);
+    void SetComputeRootConstantBufferView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetComputeRootShaderResourceView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetComputeRootUnorderedAccessView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
+    void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress);
 
     // Raytracing
     void BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);

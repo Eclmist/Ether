@@ -57,10 +57,18 @@ public:
 
     // Graphics Shader Data
     virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
-    virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetGraphicsRootConstant(uint32_t rootParameterIndex, uint32_t data, uint32_t destOffset) = 0;
+    virtual void SetGraphicsRootConstantBufferView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetGraphicsRootShaderResourceView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetGraphicsRootUnorderedAccessView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetGraphicsRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) = 0;
 
     // Compute Shader Data
     virtual void SetComputeRootSignature(const RhiRootSignature& rootSignature) = 0;
+    virtual void SetComputeRootConstant(uint32_t rootParameterIndex, uint32_t data, uint32_t destOffset) = 0;
+    virtual void SetComputeRootConstantBufferView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetComputeRootShaderResourceView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr) = 0;
+    virtual void SetComputeRootUnorderedAccessView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr) = 0;
     virtual void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) = 0;
 
     // Raytracing
