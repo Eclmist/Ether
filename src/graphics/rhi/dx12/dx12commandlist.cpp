@@ -31,6 +31,21 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
+void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandAllocator)
+{
+    const auto allocator = dynamic_cast<const Dx12CommandAllocator&>(commandAllocator);
+    HRESULT hr = m_CommandList->Reset(allocator.m_Allocator.Get(), nullptr);
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to reset DirectX12 Command List");
+}
+
+void Ether::Graphics::Dx12CommandList::Close()
+{
+    HRESULT hr = m_CommandList->Close();
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to close DirectX12 Command List");
+}
+
 void Ether::Graphics::Dx12CommandList::SetMarker(const std::string& name)
 {
     PIXSetMarker(PIX_COLOR_INDEX(0), name.c_str());
@@ -46,56 +61,7 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
     PIXEndEvent(m_CommandList.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::SetViewport(RhiViewportDesc viewport)
-{
-    D3D12_VIEWPORT dx12Viewport = Translate(viewport);
-    m_CommandList->RSSetViewports(1, &dx12Viewport);
-}
-
-void Ether::Graphics::Dx12CommandList::SetScissorRect(RhiScissorDesc scissor)
-{
-    D3D12_RECT dx12Scissor = Translate(scissor);
-    m_CommandList->RSSetScissorRects(1, &dx12Scissor);
-}
-
-void Ether::Graphics::Dx12CommandList::SetStencilRef(RhiStencilValue val)
-{
-    m_CommandList->OMSetStencilRef(val);
-}
-
-void Ether::Graphics::Dx12CommandList::SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology)
-{
-    m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));
-}
-
-void Ether::Graphics::Dx12CommandList::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
-{
-    D3D12_VERTEX_BUFFER_VIEW dx12View = Translate(vertexBuffer);
-    m_CommandList->IASetVertexBuffers(0, 1, &dx12View);
-}
-
-void Ether::Graphics::Dx12CommandList::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
-{
-    D3D12_INDEX_BUFFER_VIEW dx12View = Translate(indexBuffer);
-    m_CommandList->IASetIndexBuffer(&dx12View);
-}
-
-void Ether::Graphics::Dx12CommandList::SetRenderTargets(RhiSetRenderTargetsDesc desc)
-{
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
-    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
-
-    for (int i = 0; i < desc.m_NumRtv; ++i)
-        rtvHandles[i] = { desc.m_RtvHandles[i]->GetCpuAddress() };
-
-    if (desc.m_DsvHandle != nullptr)
-        dsvHandle = { desc.m_DsvHandle->GetCpuAddress() };
-
-    m_CommandList
-        ->OMSetRenderTargets(desc.m_NumRtv, rtvHandles, false, desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle);
-}
-
-void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc)
+void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc)
 {
     // Only one heap of each type ([SRV/CBV/UAV] & [Sampler]) can be bound for each command list
     AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
@@ -110,6 +76,55 @@ void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(RhiSetDescriptorHeapsD
 void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
 {
     m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetViewport(const RhiViewportDesc& viewport)
+{
+    D3D12_VIEWPORT dx12Viewport = Translate(viewport);
+    m_CommandList->RSSetViewports(1, &dx12Viewport);
+}
+
+void Ether::Graphics::Dx12CommandList::SetScissorRect(const RhiScissorDesc& scissor)
+{
+    D3D12_RECT dx12Scissor = Translate(scissor);
+    m_CommandList->RSSetScissorRects(1, &dx12Scissor);
+}
+
+void Ether::Graphics::Dx12CommandList::SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer)
+{
+    D3D12_VERTEX_BUFFER_VIEW dx12View = Translate(vertexBuffer);
+    m_CommandList->IASetVertexBuffers(0, 1, &dx12View);
+}
+
+void Ether::Graphics::Dx12CommandList::SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer)
+{
+    D3D12_INDEX_BUFFER_VIEW dx12View = Translate(indexBuffer);
+    m_CommandList->IASetIndexBuffer(&dx12View);
+}
+
+void Ether::Graphics::Dx12CommandList::SetPrimitiveTopology(const RhiPrimitiveTopology& primitiveTopology)
+{
+    m_CommandList->IASetPrimitiveTopology(Translate(primitiveTopology));
+}
+
+void Ether::Graphics::Dx12CommandList::SetStencilRef(const RhiStencilValue& val)
+{
+    m_CommandList->OMSetStencilRef(val);
+}
+
+void Ether::Graphics::Dx12CommandList::SetRenderTargets(const RhiSetRenderTargetsDesc& desc)
+{
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
+
+    for (int i = 0; i < desc.m_NumRtv; ++i)
+        rtvHandles[i] = { desc.m_RtvHandles[i]->GetCpuAddress() };
+
+    if (desc.m_DsvHandle != nullptr)
+        dsvHandle = { desc.m_DsvHandle->GetCpuAddress() };
+
+    m_CommandList
+        ->OMSetRenderTargets(desc.m_NumRtv, rtvHandles, false, desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle);
 }
 
 void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
@@ -136,20 +151,43 @@ void Ether::Graphics::Dx12CommandList::SetComputeRootSignature(const RhiRootSign
     m_CommandList->SetComputeRootSignature(dx12Resource.m_RootSignature.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(RhiClearRenderTargetViewDesc desc)
+void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccelerationStructure& as)
 {
-    m_CommandList->ClearRenderTargetView({ desc.m_RtvHandle->GetCpuAddress() }, desc.m_ClearColor.m_Data, 0, nullptr);
+    const Dx12AccelerationStructure* dx12Obj = dynamic_cast<const Dx12AccelerationStructure*>(&as);
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
+    asDesc.Inputs = dx12Obj->m_Inputs;
+    asDesc.DestAccelerationStructureData = dx12Obj->m_DataBuffer->GetGpuAddress();
+    asDesc.ScratchAccelerationStructureData = dx12Obj->m_ScratchBuffer->GetGpuAddress();
+
+    if (dx12Obj->m_InstanceDescBuffer != nullptr)
+        asDesc.Inputs.InstanceDescs = dx12Obj->m_InstanceDescBuffer->GetGpuAddress();
+
+    m_CommandList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
+    InsertUavBarrier(*as.m_DataBuffer);
 }
 
-void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(RhiClearDepthStencilViewDesc desc)
+void Ether::Graphics::Dx12CommandList::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso)
 {
-    m_CommandList->ClearDepthStencilView(
-        { desc.m_DsvHandle->GetCpuAddress() },
-        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-        desc.m_ClearDepth,
-        desc.m_ClearStencil,
-        0,
-        nullptr);
+    const Dx12RaytracingPipelineState* dx12RtPso = dynamic_cast<const Dx12RaytracingPipelineState*>(&pso);
+    m_CommandList->SetPipelineState1(dx12RtPso->m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavResource)
+{
+    D3D12_RESOURCE_BARRIER uavBarrier = {};
+    uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+    uavBarrier.UAV.pResource = (dynamic_cast<const Dx12Resource*>(&uavResource))->m_Resource.Get();
+    m_CommandList->ResourceBarrier(1, &uavBarrier);
+}
+
+void Ether::Graphics::Dx12CommandList::TransitionResource(const RhiResourceTransitionDesc& desc)
+{
+    D3D12_RESOURCE_BARRIER barrier = Translate(desc);
+    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
+    barrier.Transition.pResource = dx12Resource->m_Resource.Get();
+    m_CommandList->ResourceBarrier(1, &barrier);
+    desc.m_Resource->SetState(desc.m_ToState);
 }
 
 void Ether::Graphics::Dx12CommandList::CopyResource(const RhiResource& src, RhiResource& dest)
@@ -160,7 +198,7 @@ void Ether::Graphics::Dx12CommandList::CopyResource(const RhiResource& src, RhiR
     m_CommandList->CopyResource(dx12DstResource->m_Resource.Get(), dx12SrcResource->m_Resource.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::CopyBufferRegion(RhiCopyBufferRegionDesc desc)
+void Ether::Graphics::Dx12CommandList::CopyBufferRegion(const RhiCopyBufferRegionDesc& desc)
 {
     const auto dx12SrcResource = (Dx12Resource*)desc.m_Source;
     const auto dx12DstResource = (Dx12Resource*)desc.m_Destination;
@@ -173,7 +211,7 @@ void Ether::Graphics::Dx12CommandList::CopyBufferRegion(RhiCopyBufferRegionDesc 
         desc.m_Size);
 }
 
-void Ether::Graphics::Dx12CommandList::CopyTextureRegion(RhiCopyTextureRegionDesc desc)
+void Ether::Graphics::Dx12CommandList::CopyTextureRegion(const RhiCopyTextureRegionDesc& desc)
 {
     const auto d3dIntermediateResource = (Dx12Resource*)desc.m_IntermediateResource;
     const auto d3dDestResource = (Dx12Resource*)desc.m_Destination;
@@ -194,21 +232,28 @@ void Ether::Graphics::Dx12CommandList::CopyTextureRegion(RhiCopyTextureRegionDes
         &textureData);
 }
 
-void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResourceTransitionDesc desc)
+void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc)
 {
-    D3D12_RESOURCE_BARRIER barrier = Translate(desc);
-    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
-    barrier.Transition.pResource = dx12Resource->m_Resource.Get();
-    m_CommandList->ResourceBarrier(1, &barrier);
-    desc.m_Resource->SetState(desc.m_ToState);
+    m_CommandList->ClearRenderTargetView({ desc.m_RtvHandle->GetCpuAddress() }, desc.m_ClearColor.m_Data, 0, nullptr);
 }
 
-void Ether::Graphics::Dx12CommandList::DrawInstanced(RhiDrawInstancedDesc desc)
+void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc)
+{
+    m_CommandList->ClearDepthStencilView(
+        { desc.m_DsvHandle->GetCpuAddress() },
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+        desc.m_ClearDepth,
+        desc.m_ClearStencil,
+        0,
+        nullptr);
+}
+
+void Ether::Graphics::Dx12CommandList::DrawInstanced(const RhiDrawInstancedDesc& desc)
 {
     m_CommandList->DrawInstanced(desc.m_VertexCount, desc.m_InstanceCount, desc.m_FirstVertex, desc.m_FirstInstance);
 }
 
-void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc)
+void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc)
 {
     m_CommandList->DrawIndexedInstanced(
         desc.m_IndexCount,
@@ -216,12 +261,6 @@ void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(RhiDrawIndexedInstan
         desc.m_FirstIndex,
         desc.m_VertexOffset,
         desc.m_FirstInstance);
-}
-
-void Ether::Graphics::Dx12CommandList::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso)
-{
-    const Dx12RaytracingPipelineState* dx12RtPso = dynamic_cast<const Dx12RaytracingPipelineState*>(&pso);
-    m_CommandList->SetPipelineState1(dx12RtPso->m_PipelineState.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::DispatchRays(const RhiDispatchRaysDesc& desc)
@@ -244,45 +283,6 @@ void Ether::Graphics::Dx12CommandList::DispatchRays(const RhiDispatchRaysDesc& d
     dx12Desc.HitGroupTable.StrideInBytes = entrySize;
 
     m_CommandList->DispatchRays(&dx12Desc);
-}
-
-void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandAllocator)
-{
-    const auto allocator = dynamic_cast<const Dx12CommandAllocator&>(commandAllocator);
-    HRESULT hr = m_CommandList->Reset(allocator.m_Allocator.Get(), nullptr);
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to reset DirectX12 Command List");
-}
-
-void Ether::Graphics::Dx12CommandList::Close()
-{
-    HRESULT hr = m_CommandList->Close();
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to close DirectX12 Command List");
-}
-
-void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccelerationStructure& as)
-{
-    const Dx12AccelerationStructure* dx12Obj = dynamic_cast<const Dx12AccelerationStructure*>(&as);
-
-    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC asDesc = {};
-    asDesc.Inputs = dx12Obj->m_Inputs;
-    asDesc.DestAccelerationStructureData = dx12Obj->m_DataBuffer->GetGpuAddress();
-    asDesc.ScratchAccelerationStructureData = dx12Obj->m_ScratchBuffer->GetGpuAddress();
-
-    if (dx12Obj->m_InstanceDescBuffer != nullptr)
-        asDesc.Inputs.InstanceDescs = dx12Obj->m_InstanceDescBuffer->GetGpuAddress();
-
-    m_CommandList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
-    InsertUavBarrier(*as.m_DataBuffer);
-}
-
-void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavResource)
-{
-    D3D12_RESOURCE_BARRIER uavBarrier = {};
-    uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-    uavBarrier.UAV.pResource = (dynamic_cast<const Dx12Resource*>(&uavResource))->m_Resource.Get();
-    m_CommandList->ResourceBarrier(1, &uavBarrier);
 }
 
 #endif // ETH_GRAPHICS_DX12

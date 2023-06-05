@@ -20,9 +20,6 @@
 #include "common/globalconstants.hlsl"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-ByteAddressBuffer g_Indices                         : register(t1);
-StructuredBuffer<Vertex> g_Vertices                 : register(t2);
-
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RWTexture2D<float4> g_Output                        : register(u0);
 

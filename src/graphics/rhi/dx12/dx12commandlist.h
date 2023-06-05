@@ -35,48 +35,50 @@ public:
     ~Dx12CommandList() override = default;
 
 public:
+    void Reset(const RhiCommandAllocator& commandAllocator) override;
+    void Close() override;
+
+    // Markers
     void SetMarker(const std::string& name) override;
     void PushMarker(const std::string& name) override;
     void PopMarker() override;
 
-    void SetViewport(RhiViewportDesc viewport) override;
-    void SetScissorRect(RhiScissorDesc scissor) override;
-    void SetStencilRef(RhiStencilValue val) override;
-    void SetPrimitiveTopology(RhiPrimitiveTopology primitiveTopology) override;
-    void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer) override;
-    void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer) override;
-    void SetRenderTargets(RhiSetRenderTargetsDesc desc) override;
-    void SetDescriptorHeaps(RhiSetDescriptorHeapsDesc desc) override;
+    // Common
+    void SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) override;
     void SetPipelineState(const RhiPipelineState& pso) override;
 
-    // RhiResult SetRootConstant(RhiSetRootConstantDesc desc) override;
-    // RhiResult SetRootConstants(RhiSetRootConstantsDesc desc) override;
-    // RhiResult SetRootShaderResource(RhiSetRootShaderResourceDesc desc) override;
+    // Graphics
+    void SetViewport(const RhiViewportDesc& viewport) override;
+    void SetScissorRect(const RhiScissorDesc& scissor) override;
+    void SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer) override;
+    void SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) override;
+    void SetPrimitiveTopology(const RhiPrimitiveTopology& primitiveTopology) override;
+    void SetStencilRef(const RhiStencilValue& val) override;
+    void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) override;
     void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) override;
     void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
 
+    // Compute
     void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) override;
     void SetComputeRootSignature(const RhiRootSignature& rootSignature) override;
 
-    void ClearRenderTargetView(RhiClearRenderTargetViewDesc desc) override;
-    void ClearDepthStencilView(RhiClearDepthStencilViewDesc desc) override;
-
-    void TransitionResource(RhiResourceTransitionDesc desc) override;
-    void CopyResource(const RhiResource& src, RhiResource& dest) override;
-    void CopyBufferRegion(RhiCopyBufferRegionDesc desc) override;
-    void CopyTextureRegion(RhiCopyTextureRegionDesc desc) override;
-    void DrawInstanced(RhiDrawInstancedDesc desc) override;
-    void DrawIndexedInstanced(RhiDrawIndexedInstancedDesc desc) override;
-
-    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso) override;
-    void DispatchRays(const RhiDispatchRaysDesc& desc) override;
-
-
-    void InsertUavBarrier(const RhiResource& uavResource) override;
+    // Raytracing
     void BuildAccelerationStructure(const RhiAccelerationStructure& as) override;
+    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso) override;
 
-    void Reset(const RhiCommandAllocator& commandAllocator) override;
-    void Close() override;
+    // Barriers
+    void InsertUavBarrier(const RhiResource& uavResource) override;
+    void TransitionResource(const RhiResourceTransitionDesc& desc) override;
+    void CopyResource(const RhiResource& src, RhiResource& dest) override;
+    void CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) override;
+    void CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) override;
+
+    // Dispatches
+    void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) override;
+    void ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) override;
+    void DrawInstanced(const RhiDrawInstancedDesc& desc) override;
+    void DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) override;
+    void DispatchRays(const RhiDispatchRaysDesc& desc) override;
 
 private:
     friend class Dx12Device;

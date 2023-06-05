@@ -13,6 +13,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
     GNU General Public License for more details.
 
+
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
@@ -157,7 +158,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
     rsDesc->SetAsDescriptorTable(0, 3, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 3, 0);
+    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 1, 0);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav, 1, 1);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Cbv, 1, 2);
 
