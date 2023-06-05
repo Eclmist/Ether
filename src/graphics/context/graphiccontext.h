@@ -42,26 +42,28 @@ public:
     inline const ethVector3& GetEyeDirection() const { return m_EyeDirection; }
 
 public:
-    void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
-    void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
-
+    // Common
     void SetViewMatrix(ethMatrix4x4 viewMatrix);
     void SetProjectionMatrix(ethMatrix4x4 projectionMatrix);
     void SetEyeDirection(ethVector3 eyeDirection);
     void SetEyePosition(ethVector3 eyePosition);
-    void SetVisualBatch(VisualBatch visualBatch);
-    void SetViewport(RhiViewportDesc viewport);
-    void SetScissorRect(RhiScissorDesc scissor);
-    void SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer);
-    void SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer);
-    void SetPrimitiveTopology(RhiPrimitiveTopology topology);
+    void SetVisualBatch(const VisualBatch& visualBatch);
+    void SetViewport(const RhiViewportDesc& viewport);
+    void SetScissorRect(const RhiScissorDesc& scissor);
+    void SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer);
+    void SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer);
+    void SetPrimitiveTopology(const RhiPrimitiveTopology& topology);
     void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
 
+    // Shader Data
     void SetGraphicRootSignature(const RhiRootSignature& rootSignature);
+    void SetGraphicsRootConstantBuffer(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
 
+    // Dispatches
+    void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
+    void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
     void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
-
     void DispatchRays(const RhiDispatchRaysDesc& desc);
 
 private:

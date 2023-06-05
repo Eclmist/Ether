@@ -29,23 +29,6 @@ Ether::Graphics::GraphicContext::GraphicContext(const std::string& contextName)
 {
 }
 
-void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const ethVector4& color)
-{
-    RhiClearRenderTargetViewDesc desc = {};
-    desc.m_ClearColor = color;
-    desc.m_RtvHandle = &rtv;
-    m_CommandList->ClearRenderTargetView(desc);
-}
-
-void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil)
-{
-    RhiClearDepthStencilViewDesc desc = {};
-    desc.m_ClearDepth = depth;
-    desc.m_ClearStencil = stencil;
-    desc.m_DsvHandle = &dsv;
-    m_CommandList->ClearDepthStencilView(desc);
-}
-
 void Ether::Graphics::GraphicContext::SetViewMatrix(ethMatrix4x4 viewMatrix)
 {
     m_ViewMatrix = viewMatrix;
@@ -66,39 +49,37 @@ void Ether::Graphics::GraphicContext::SetEyePosition(ethVector3 eyePosition)
     m_EyePosition = eyePosition;
 }
 
-void Ether::Graphics::GraphicContext::SetVisualBatch(VisualBatch visualBatch)
+void Ether::Graphics::GraphicContext::SetVisualBatch(const VisualBatch& visualBatch)
 {
     m_VisualBatch = visualBatch;
 }
 
-void Ether::Graphics::GraphicContext::SetViewport(RhiViewportDesc viewport)
+void Ether::Graphics::GraphicContext::SetViewport(const RhiViewportDesc& viewport)
 {
     m_CommandList->SetViewport(viewport);
 }
 
-void Ether::Graphics::GraphicContext::SetScissorRect(RhiScissorDesc scissor)
+void Ether::Graphics::GraphicContext::SetScissorRect(const RhiScissorDesc& scissor)
 {
     m_CommandList->SetScissorRect(scissor);
 }
 
-void Ether::Graphics::GraphicContext::SetVertexBuffer(RhiVertexBufferViewDesc vertexBuffer)
+void Ether::Graphics::GraphicContext::SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer)
 {
     m_CommandList->SetVertexBuffer(vertexBuffer);
 }
 
-void Ether::Graphics::GraphicContext::SetIndexBuffer(RhiIndexBufferViewDesc indexBuffer)
+void Ether::Graphics::GraphicContext::SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer)
 {
     m_CommandList->SetIndexBuffer(indexBuffer);
 }
 
-void Ether::Graphics::GraphicContext::SetPrimitiveTopology(RhiPrimitiveTopology topology)
+void Ether::Graphics::GraphicContext::SetPrimitiveTopology(const RhiPrimitiveTopology& topology)
 {
     m_CommandList->SetPrimitiveTopology(topology);
 }
 
-void Ether::Graphics::GraphicContext::SetRenderTarget(
-    const RhiRenderTargetView& rtv,
-    const RhiDepthStencilView* dsv /*= nullptr*/)
+void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv)
 {
     RhiSetRenderTargetsDesc desc = {};
     desc.m_NumRtv = 1;
@@ -111,6 +92,30 @@ void Ether::Graphics::GraphicContext::SetRenderTarget(
 void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
 {
     m_CommandList->SetGraphicRootSignature(rootSignature);
+}
+
+void Ether::Graphics::GraphicContext::SetGraphicsRootConstantBuffer(
+    uint32_t rootParameterIndex,
+    RhiGpuAddress resourceAddr)
+{
+    m_CommandList->SetGraphicsRootConstantBuffer(rootParameterIndex, resourceAddr);
+}
+
+void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const ethVector4& color)
+{
+    RhiClearRenderTargetViewDesc desc = {};
+    desc.m_ClearColor = color;
+    desc.m_RtvHandle = &rtv;
+    m_CommandList->ClearRenderTargetView(desc);
+}
+
+void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil)
+{
+    RhiClearDepthStencilViewDesc desc = {};
+    desc.m_ClearDepth = depth;
+    desc.m_ClearStencil = stencil;
+    desc.m_DsvHandle = &dsv;
+    m_CommandList->ClearDepthStencilView(desc);
 }
 
 void Ether::Graphics::GraphicContext::DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances)
@@ -140,4 +145,3 @@ void Ether::Graphics::GraphicContext::DispatchRays(const RhiDispatchRaysDesc& de
 {
     m_CommandList->DispatchRays(desc);
 }
-

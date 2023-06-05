@@ -41,28 +41,31 @@ public:
 
 public:
     void Reset();
+    void FinalizeAndExecute(bool waitForCompletion = false);
 
+    // Markers
     void SetMarker(const std::string& name);
     void PushMarker(const std::string& name);
     void PopMarker();
 
-    void TransitionResource(RhiResource& resource, RhiResourceState newState);
+    // Common
     void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
     void SetPipelineState(const RhiPipelineState& pipelineState);
-
-    void SetRootConstantBuffer(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
-
-    void CopyResource(RhiResource& src, RhiResource& dest);
-    void CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
-    void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
-
-    void InsertUavBarrier(const RhiResource& uavResource);
-    void BuildTopLevelAccelerationStructure(RhiAccelerationStructure& accelStructure);
-    void BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure);
-    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState);
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
 
-    void FinalizeAndExecute(bool waitForCompletion = false);
+    // Raytracing
+    void BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
+    void BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
+    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState);
+
+    // Barriers
+    void InsertUavBarrier(const RhiResource& uavResource);
+    void TransitionResource(RhiResource& resource, RhiResourceState newState);
+
+    // Dispatches
+    void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
+    void CopyResource(RhiResource& src, RhiResource& dest);
+    void CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
 
 protected:
     std::string m_Name;

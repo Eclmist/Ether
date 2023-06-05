@@ -127,15 +127,21 @@ void Ether::Graphics::Dx12CommandList::SetRenderTargets(const RhiSetRenderTarget
         ->OMSetRenderTargets(desc.m_NumRtv, rtvHandles, false, desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle);
 }
 
+void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+{
+    const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
+    m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
+}
+
 void Ether::Graphics::Dx12CommandList::SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr)
 {
     m_CommandList->SetGraphicsRootConstantBufferView(bindSlot, resourceAddr);
 }
 
-void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
+void Ether::Graphics::Dx12CommandList::SetComputeRootSignature(const RhiRootSignature& rootSignature)
 {
     const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
-    m_CommandList->SetGraphicsRootSignature(dx12Resource.m_RootSignature.Get());
+    m_CommandList->SetComputeRootSignature(dx12Resource.m_RootSignature.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::SetComputeRootDescriptorTable(
@@ -143,12 +149,6 @@ void Ether::Graphics::Dx12CommandList::SetComputeRootDescriptorTable(
     RhiGpuAddress baseAddress)
 {
     m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, { baseAddress });
-}
-
-void Ether::Graphics::Dx12CommandList::SetComputeRootSignature(const RhiRootSignature& rootSignature)
-{
-    const Dx12RootSignature& dx12Resource = dynamic_cast<const Dx12RootSignature&>(rootSignature);
-    m_CommandList->SetComputeRootSignature(dx12Resource.m_RootSignature.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccelerationStructure& as)

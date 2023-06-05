@@ -103,11 +103,6 @@ void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& p
     m_CommandList->SetPipelineState(pipelineState);
 }
 
-void Ether::Graphics::CommandContext::SetRootConstantBuffer(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr)
-{
-    m_CommandList->SetGraphicsRootConstantBuffer(rootParameterIndex, resourceAddr);
-}
-
 void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
 {
     m_CommandList->CopyResource(src, dest);
@@ -154,12 +149,12 @@ void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavRes
     m_CommandList->InsertUavBarrier(uavResource);
 }
 
-void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
+void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);
 }
 
-void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(RhiAccelerationStructure& accelStructure)
+void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);
 }

@@ -55,12 +55,14 @@ public:
     void SetPrimitiveTopology(const RhiPrimitiveTopology& primitiveTopology) override;
     void SetStencilRef(const RhiStencilValue& val) override;
     void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) override;
-    void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) override;
-    void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
 
-    // Compute
-    void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) override;
+    // Graphics Shader Data
+    void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;
+    void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) override;
+
+    // Compute Shader Data
     void SetComputeRootSignature(const RhiRootSignature& rootSignature) override;
+    void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) override;
 
     // Raytracing
     void BuildAccelerationStructure(const RhiAccelerationStructure& as) override;

@@ -54,12 +54,14 @@ public:
     virtual void SetPrimitiveTopology(const RhiPrimitiveTopology& primitiveTopology) = 0;
     virtual void SetStencilRef(const RhiStencilValue& val) = 0;
     virtual void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) = 0;
-    virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
-    virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
 
-    // Compute
-    virtual void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) = 0;
+    // Graphics Shader Data
+    virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;
+    virtual void SetGraphicsRootConstantBuffer(uint32_t bindSlot, RhiGpuAddress resourceAddr) = 0;
+
+    // Compute Shader Data
     virtual void SetComputeRootSignature(const RhiRootSignature& rootSignature) = 0;
+    virtual void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress) = 0;
 
     // Raytracing
     virtual void BuildAccelerationStructure(const RhiAccelerationStructure& as) = 0;
