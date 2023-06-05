@@ -58,7 +58,7 @@ void RayGeneration()
     ray.TMax = 100000;
 
     Payload payload;
-    TraceRay(g_RaytracingTlas, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
     float3 col = linearToSrgb(payload.color);
     g_Output[launchIndex.xy] = float4(col, 1);
 }
