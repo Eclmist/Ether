@@ -18,7 +18,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/schedule/raytracedgbufferpass.h"
+#include "graphics/schedule/TempRaytracingFrameDump.h"
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
@@ -31,7 +31,7 @@ static const wchar_t* kClosestHitShader = L"ClosestHit";
 static const wchar_t* kHitGroup = L"HitGroup";
 static const wchar_t* EntryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
 
-void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resourceContext)
+void Ether::Graphics::TempRaytracingFrameDump::Initialize(ResourceContext& resourceContext)
 {
     InitializeShaders();
     InitializeRootSignatures();
@@ -52,7 +52,7 @@ void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resource
     m_ConstantBufferView = GraphicCore::GetDevice().CreateConstantBufferView(cbvDesc);
 }
 
-void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resourceContext)
+void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& resourceContext)
 {
     static RhiCommitedResourceDesc prevDesc = {};
 
@@ -82,7 +82,7 @@ void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resource
 
 }
 
-void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
+void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
     ETH_MARKER_EVENT("Raytraced GBuffer Pass - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
@@ -137,11 +137,11 @@ void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContex
     graphicContext.PopMarker();
 }
 
-void Ether::Graphics::RaytracedGBufferPass::Reset()
+void Ether::Graphics::TempRaytracingFrameDump::Reset()
 {
 }
 
-void Ether::Graphics::RaytracedGBufferPass::InitializeShaders()
+void Ether::Graphics::TempRaytracingFrameDump::InitializeShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
@@ -153,7 +153,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeShaders()
         GraphicCore::GetShaderDaemon().RegisterShader(*m_Shader);
 }
 
-void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
+void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
@@ -173,7 +173,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
     m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(3); 
 }
 
-void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
+void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
@@ -193,7 +193,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
     m_RaytracingPipelineState = gfxDevice.CreateRaytracingPipelineState(desc);
 }
 
-void Ether::Graphics::RaytracedGBufferPass::InitializeShaderBindingTable()
+void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
@@ -207,7 +207,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeShaderBindingTable()
     m_RaytracingShaderBindingTable = gfxDevice.CreateRaytracingShaderBindingTable(desc);
 }
 
-void Ether::Graphics::RaytracedGBufferPass::InitializeAccelerationStructure(
+void Ether::Graphics::TempRaytracingFrameDump::InitializeAccelerationStructure(
     const VisualBatch* visualBatch,
     GraphicContext& context)
 {
@@ -228,7 +228,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeAccelerationStructure(
     m_TlasSrv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
 }
 
-void Ether::Graphics::RaytracedGBufferPass::UploadGlobalConstants(GraphicContext& context)
+void Ether::Graphics::TempRaytracingFrameDump::UploadGlobalConstants(GraphicContext& context)
 {
     // Set up global constants
     GlobalConstants* globalConstants;

@@ -27,7 +27,7 @@
 
 namespace Ether::Graphics
 {
-class RaytracedGBufferPass
+class TempRaytracingFrameDump
 {
 public:
     void Reset();

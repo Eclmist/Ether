@@ -23,9 +23,9 @@
 
 // TEMP ============================================
 #include "graphics/schedule/tempframedump.h"
-#include "graphics/schedule/raytracedgbufferpass.h"
+#include "graphics/schedule/TempRaytracingFrameDump.h"
 Ether::Graphics::TempFrameDump* g_TempFrameDump;
-Ether::Graphics::RaytracedGBufferPass* g_TempRaytracingPass;
+Ether::Graphics::TempRaytracingFrameDump* g_TempRaytracingPass;
 // =================================================
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
@@ -34,7 +34,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
     // For now, just setup the temp frame dump here
     g_TempFrameDump = new TempFrameDump();
-    g_TempRaytracingPass = new RaytracedGBufferPass();
+    g_TempRaytracingPass = new TempRaytracingFrameDump();
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -42,8 +42,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
-    //delete g_TempFrameDump;
-    //delete g_TempRaytracingPass;
+    delete g_TempFrameDump;
+    delete g_TempRaytracingPass;
 }
 
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
