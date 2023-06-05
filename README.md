@@ -5,7 +5,7 @@
   Ether
   <br>
 </h1>
-<h4 align="center">A simple and lightweight DX12 renderer.</h4>
+<h4 align="center">A realtime DirectX12 rendering engine</h4>
 
 <p align="center">
   <a href="https://github.com/Eclmist/Ether/actions">
