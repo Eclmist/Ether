@@ -215,8 +215,8 @@ std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12De
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
-    m_Device->CreateUnorderedAccessView(d3dResource->m_Resource.Get(), nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
-
+    m_Device
+        ->CreateUnorderedAccessView(d3dResource->m_Resource.Get(), nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
 
     return dx12Obj;
 }
@@ -332,6 +332,8 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
         instanceDesc->InstanceContributionToHitGroupIndex = 0;
         instanceDesc->Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
         instanceDesc->InstanceMask = 0xFF;
+        ethMatrix4x4 I; // Identity matrix
+        memcpy(instanceDesc->Transform, &I, sizeof(instanceDesc->Transform));
         instanceDesc->AccelerationStructure = visualBatch->m_Visuals[i]
                                                   .m_Mesh->GetAccelerationStructure()
                                                   .m_DataBuffer->GetGpuAddress();

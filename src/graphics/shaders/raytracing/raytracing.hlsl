@@ -19,8 +19,15 @@
 
 #include "common/globalconstants.hlsl"
 
+ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas : register(t0);
 RWTexture2D<float4> g_Output : register(u0);
+
+
+struct Payload
+{
+    float3 color;
+};
 
 float3 linearToSrgb(float3 c)
 {
@@ -36,23 +43,44 @@ float3 linearToSrgb(float3 c)
 void RayGeneration()
 {
     uint3 launchIndex = DispatchRaysIndex();
-    float3 col = linearToSrgb(float3(0.4, 0.6, 0.2));
+    uint3 launchDim = DispatchRaysDimensions();
+
+    float2 crd = float2(launchIndex.xy);
+    float2 dims = launchDim.xy;
+
+    float2 d = ((crd / dims) * 2.f - 1.f);
+    float aspectRatio = dims.x / dims.y;
+    RayDesc ray;
+
+    ray.Origin = g_GlobalConstants.m_EyePosition.xyz;
+    ray.Direction = mul(transpose(g_GlobalConstants.m_ViewMatrix), normalize(float3(d.x * aspectRatio, -d.y, 1.2)));
+    ray.TMin = 0;
+    ray.TMax = 100000;
+
+    Payload payload;
+    TraceRay(g_RaytracingTlas, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
+    float3 col = linearToSrgb(payload.color);
     g_Output[launchIndex.xy] = float4(col, 1);
 }
-
-struct Payload
-{
-    bool hit;
-};
 
 [shader("miss")]
 void Miss(inout Payload payload)
 { 
-    payload.hit = false;
+    payload.color = float3(1,0,1);
 }
 
 [shader("closesthit")]
 void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    payload.hit = true;
+    float3 barycentrics = float3(
+        1.0 - attribs.barycentrics.x - attribs.barycentrics.y,
+        attribs.barycentrics.x,
+        attribs.barycentrics.y
+    );
+
+    const float3 R = float3(1, 0, 0);
+    const float3 G = float3(0, 1, 0);
+    const float3 B = float3(0, 0, 1);
+
+    payload.color = R * barycentrics.x + G * barycentrics.y + B * barycentrics.z;
 }

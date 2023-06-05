@@ -35,6 +35,12 @@ struct GlobalConstants
     ethVector4 m_EyeDirection;
     ethVector4 m_Time;
     ethVector2u m_ScreenResolution;
+
+    ethVector4 m_Padding0;
+    ethVector4 m_Padding1;
+    ethVector4 m_Padding2;
+    ethVector4 m_Padding3;
+    ethVector2 m_Padding4;
 };
 
 class TempFrameDump

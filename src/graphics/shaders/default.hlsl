@@ -43,6 +43,7 @@ struct VS_OUTPUT
     float2 TexCoord     : TEXCOORD0;
 };
 
+ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
 ConstantBuffer<Material> m_InstanceParams : register(b1);
 
 VS_OUTPUT VS_Main(VS_INPUT IN)

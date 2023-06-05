@@ -28,5 +28,3 @@ struct GlobalConstants
 
     uint2 m_ScreenResolution;
 };
-
-ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);

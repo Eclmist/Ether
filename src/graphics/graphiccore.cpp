@@ -37,6 +37,8 @@ void Ether::Graphics::GraphicCore::Initialize()
     m_GraphicCommon = std::make_unique<GraphicCommon>();
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     m_GraphicRenderer = std::make_unique<GraphicRenderer>();
+
+    m_GraphicDisplay->Present();
 }
 
 void Ether::Graphics::GraphicCore::Shutdown()

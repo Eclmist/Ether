@@ -22,6 +22,7 @@
 #include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/rhiresourceviews.h"
+#include "tempframedump.h"
 
 static const wchar_t* kRayGenShader = L"RayGeneration";
 static const wchar_t* kMissShader = L"Miss";
@@ -34,6 +35,20 @@ void Ether::Graphics::RaytracedGBufferPass::Initialize(ResourceContext& resource
     InitializeShaders();
     InitializeRootSignatures();
     InitializePipelineStates();
+
+    RhiCommitedResourceDesc globalConstantsCbvResource = {};
+    globalConstantsCbvResource.m_Name = "RaytracedGBuffer::GlobalConstants";
+    globalConstantsCbvResource.m_HeapType = RhiHeapType::Upload;
+    globalConstantsCbvResource.m_State = RhiResourceState::Common;
+    globalConstantsCbvResource.m_ResourceDesc = RhiCreateBufferResourceDesc(sizeof(GlobalConstants));
+    m_ConstantBuffer = GraphicCore::GetDevice().CreateCommittedResource(globalConstantsCbvResource);
+
+    RhiConstantBufferViewDesc cbvDesc = {};
+    cbvDesc.m_Resource = m_ConstantBuffer.get();
+    cbvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(2);
+    cbvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(2);
+    cbvDesc.m_BufferSize = sizeof(GlobalConstants);
+    m_ConstantBufferView = GraphicCore::GetDevice().CreateConstantBufferView(cbvDesc);
 }
 
 void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resourceContext)
@@ -63,6 +78,7 @@ void Ether::Graphics::RaytracedGBufferPass::FrameSetup(ResourceContext& resource
     uavDesc.m_Dimensions = RhiUnorderedAccessDimension::Texture2D;
 
     m_OutputTextureUav = GraphicCore::GetDevice().CreateUnorderedAccessView(uavDesc);
+
 }
 
 void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
@@ -94,6 +110,8 @@ void Ether::Graphics::RaytracedGBufferPass::Render(GraphicContext& graphicContex
 
         isTlasInitialized = true;
     }
+
+    UploadGlobalConstants(graphicContext);
 
     graphicContext.PushMarker("Clear");
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -138,10 +156,10 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
-    rsDesc->SetAsDescriptorTable(0, 2, RhiShaderVisibility::All);
-
+    rsDesc->SetAsDescriptorTable(0, 3, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 1, 0);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav, 1, 1);
+    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Cbv, 1, 2);
 
     m_RayGenRootSignature = rsDesc->Compile();
 
@@ -151,7 +169,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, false);
     m_GlobalRootSignature = rsDesc->Compile();
 
-    m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(2); 
+    m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(3); 
 }
 
 void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
@@ -164,8 +182,8 @@ void Ether::Graphics::RaytracedGBufferPass::InitializePipelineStates()
     desc.m_ClosestHitShaderName = kClosestHitShader;
     desc.m_HitGroupName = kHitGroup;
     desc.m_MaxAttributeSize = sizeof(float) * 2; // From builtin attributes
-    desc.m_MaxPayloadSize = sizeof(float) * 1;   // From payload struct in shader
-    desc.m_MaxRecursionDepth = 0;
+    desc.m_MaxPayloadSize = sizeof(ethVector3);   // From payload struct in shader
+    desc.m_MaxRecursionDepth = 1;
     desc.m_LibraryShaderDesc = { m_Shader.get(), EntryPoints, sizeof(EntryPoints) / sizeof(EntryPoints[0]) };
     desc.m_RayGenRootSignature = m_RayGenRootSignature.get();
     desc.m_HitMissRootSignature = m_HitMissRootSignature.get();
@@ -207,4 +225,23 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeAccelerationStructure(
     srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(0);
     srvDesc.m_RaytracingAccelerationStructureAddress = m_TopLevelAccelerationStructure->m_DataBuffer->GetGpuAddress();
     m_TlasSrv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
+}
+
+void Ether::Graphics::RaytracedGBufferPass::UploadGlobalConstants(GraphicContext& context)
+{
+    // Set up global constants
+    GlobalConstants* globalConstants;
+    m_ConstantBuffer->Map((void**)&globalConstants);
+    globalConstants->m_ViewMatrix = context.GetViewMatrix();
+    globalConstants->m_ProjectionMatrix = context.GetProjectionMatrix();
+    globalConstants->m_EyeDirection = context.GetEyeDirection().Resize<4>();
+    globalConstants->m_EyePosition = context.GetEyePosition().Resize<4>();
+    globalConstants->m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
+    globalConstants->m_Time = ethVector4(
+        Time::GetTimeSinceStartup() / 20,
+        Time::GetTimeSinceStartup(),
+        Time::GetTimeSinceStartup() * 2,
+        Time::GetTimeSinceStartup() * 3);
+    
+    m_ConstantBuffer->Unmap();
 }
