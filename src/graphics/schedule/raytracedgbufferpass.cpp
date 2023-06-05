@@ -157,7 +157,7 @@ void Ether::Graphics::RaytracedGBufferPass::InitializeRootSignatures()
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
     rsDesc->SetAsDescriptorTable(0, 3, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 1, 0);
+    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 3, 0);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav, 1, 1);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Cbv, 1, 2);
 

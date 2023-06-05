@@ -27,12 +27,9 @@ namespace Ether::Graphics
 class RhiCommandList : public NonCopyable, public NonMovable
 {
 public:
-    uint32_t m_DebugIndex;
     RhiCommandList(RhiCommandType type)
         : m_Type(type)
     {
-        static uint32_t i = 0;
-        m_DebugIndex = i++;
     }
     virtual ~RhiCommandList() = default;
 

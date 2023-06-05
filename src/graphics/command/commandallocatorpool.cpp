@@ -38,20 +38,17 @@ Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::Req
 
     RhiCommandAllocator& allocator = m_DiscardedAllocators.front().first;
     m_DiscardedAllocators.pop();
-    //LogInfo("Requested allocator %u", allocator.m_DebugIndex);
     allocator.Reset();
     return allocator;
 }
 
 void Ether::Graphics::CommandAllocatorPool::DiscardAllocator(RhiCommandAllocator& allocator, RhiFenceValue fenceValue)
 {
-    //LogInfo("================== Discarded allocator %u", allocator.m_DebugIndex);
     m_DiscardedAllocators.emplace(allocator, fenceValue);
 }
 
 Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::CreateNewAllocator()
 {
     m_AllocatorPool.emplace_back(GraphicCore::GetDevice().CreateCommandAllocator({ m_Type }));
-    //LogInfo("Requested allocator %u (new)", m_AllocatorPool.back()->m_DebugIndex);
     return *m_AllocatorPool.back();
 }

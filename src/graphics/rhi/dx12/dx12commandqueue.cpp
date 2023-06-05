@@ -62,8 +62,6 @@ Ether::Graphics::RhiFenceValue Ether::Graphics::Dx12CommandQueue::Execute(RhiCom
 
     HRESULT hr = m_CommandQueue->Signal(dx12Fence->m_Fence.Get(), ++m_FinalFenceValue);
 
-    // LogInfo("Closed and executed command list %u", dx12CmdList->m_DebugIndex);
-
     if (FAILED(hr))
         LogGraphicsFatal("Failed to signal command queue with fence");
 
