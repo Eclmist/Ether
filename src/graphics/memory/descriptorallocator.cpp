@@ -23,14 +23,12 @@
 
 Ether::Graphics::DescriptorAllocator::DescriptorAllocator(
     RhiDescriptorHeapType type,
-    bool isShaderVisible,
     size_t maxHeapSize)
     : FreeListAllocator(maxHeapSize)
     , m_MaxDescriptors(maxHeapSize)
-    , m_IsShaderVisible(isShaderVisible)
 {
-    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(
-        { type, isShaderVisible ? RhiDescriptorHeapFlag::ShaderVisible : RhiDescriptorHeapFlag::None, maxHeapSize });
+    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(type, maxHeapSize);
+    m_IsShaderVisible = type == RhiDescriptorHeapType::SrvCbvUav;
 }
 
 std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::Allocate(SizeAlign sizeAlign)

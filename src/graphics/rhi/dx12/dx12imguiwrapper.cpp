@@ -31,8 +31,7 @@
 
 Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
 {
-    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(
-        { RhiDescriptorHeapType::SrvCbvUav, RhiDescriptorHeapFlag::ShaderVisible, 1024 });
+    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(RhiDescriptorHeapType::SrvCbvUav, 1024);
 
     ImGui_ImplWin32_Init(GraphicCore::GetGraphicConfig().GetWindowHandle());
     ImGui_ImplDX12_Init(
@@ -59,7 +58,9 @@ void Ether::Graphics::Dx12ImguiWrapper::Render()
 
 void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData()
 {
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), ((Dx12CommandList&)m_Context.GetCommandList()).m_CommandList.Get());
+    ImGui_ImplDX12_RenderDrawData(
+        ImGui::GetDrawData(),
+        ((Dx12CommandList&)m_Context.GetCommandList()).m_CommandList.Get());
 }
 
 bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam)

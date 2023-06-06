@@ -58,7 +58,7 @@ void SampleApp::LoadContent()
     sharedMaterial->SetMetalness(0);
     sharedMaterial->SetRoughness(0.5f);
 
-    std::string path = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\";
+    const std::string path = "..\\..\\..\\content\\";
 
     for (const auto& entry : std::filesystem::directory_iterator(path))
     {
@@ -83,9 +83,9 @@ void SampleApp::LoadContent()
     world.GetResourceManager().RegisterMaterialResource(std::move(sharedMaterial));
     world.GetResourceManager().CreateGpuResources();
 
-    world.Save("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+    world.Save("..\\..\\..\\content\\TestScene.ether");
 #else
-    world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+    world.Load("..\\..\\..\\content\\TestScene.ether");
 #endif
 
     Entity& camera = world.CreateEntity("Main Camera");

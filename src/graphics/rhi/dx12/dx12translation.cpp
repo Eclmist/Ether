@@ -688,17 +688,6 @@ D3D12_CLEAR_VALUE Ether::Graphics::Translate(const RhiClearValue& rhiDesc)
     return dx12Desc;
 }
 
-D3D12_COMMAND_QUEUE_DESC Ether::Graphics::Translate(const RhiCommandQueueDesc& rhiDesc)
-{
-    D3D12_COMMAND_QUEUE_DESC dx12Desc = {};
-    dx12Desc.Type = Translate(rhiDesc.m_Type);
-    dx12Desc.NodeMask = 0;
-    dx12Desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-    dx12Desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-
-    return dx12Desc;
-}
-
 D3D12_DEPTH_STENCIL_DESC Ether::Graphics::Translate(const RhiDepthStencilDesc& rhiDesc)
 {
     D3D12_DEPTH_STENCIL_DESC dx12Desc = {};
@@ -730,16 +719,6 @@ D3D12_DEPTH_STENCILOP_DESC Ether::Graphics::Translate(const RhiDepthStencilOpera
     dx12Desc.StencilDepthFailOp = Translate(rhiDesc.m_StencilDepthFailOp);
     dx12Desc.StencilPassOp = Translate(rhiDesc.m_StencilPassOp);
     dx12Desc.StencilFunc = Translate(rhiDesc.m_StencilFunc);
-
-    return dx12Desc;
-}
-
-D3D12_DESCRIPTOR_HEAP_DESC Ether::Graphics::Translate(const RhiDescriptorHeapDesc& rhiDesc)
-{
-    D3D12_DESCRIPTOR_HEAP_DESC dx12Desc = {};
-    dx12Desc.Flags = (D3D12_DESCRIPTOR_HEAP_FLAGS)TranslateFlags(rhiDesc.m_Flags);
-    dx12Desc.Type = Translate(rhiDesc.m_Type);
-    dx12Desc.NumDescriptors = rhiDesc.m_NumDescriptors;
 
     return dx12Desc;
 }

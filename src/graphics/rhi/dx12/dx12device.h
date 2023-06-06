@@ -32,10 +32,10 @@ public:
     ~Dx12Device() override = default;
 
 public:
-    std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandType& desc) const override;
+    std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandType& type) const override;
     std::unique_ptr<RhiCommandList> CreateCommandList(const char* name, const RhiCommandType& type) const override;
-    std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandQueueDesc& desc) const override;
-    std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc) const override;
+    std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandType& type) const override;
+    std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapType& type, uint32_t numDescriptors) const override;
     std::unique_ptr<RhiFence> CreateFence() const override;
     std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const override;
     std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const override;

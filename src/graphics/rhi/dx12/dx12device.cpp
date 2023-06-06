@@ -81,12 +81,17 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::Cr
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::CreateCommandQueue(
-    const RhiCommandQueueDesc& desc) const
+    const RhiCommandType& type) const
 {
-    std::unique_ptr<Dx12CommandQueue> dx12Obj = std::make_unique<Dx12CommandQueue>(desc.m_Type);
+    std::unique_ptr<Dx12CommandQueue> dx12Obj = std::make_unique<Dx12CommandQueue>(type);
 
-    auto creationDesc = Translate(desc);
-    HRESULT hr = m_Device->CreateCommandQueue(&creationDesc, IID_PPV_ARGS(&dx12Obj->m_CommandQueue));
+    D3D12_COMMAND_QUEUE_DESC dx12Desc = {};
+    dx12Desc.Type = Translate(type);
+    dx12Desc.NodeMask = 0;
+    dx12Desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    dx12Desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+
+    HRESULT hr = m_Device->CreateCommandQueue(&dx12Desc, IID_PPV_ARGS(&dx12Obj->m_CommandQueue));
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to create DirectX12 Command Queue");
@@ -95,17 +100,22 @@ std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::C
 }
 
 std::unique_ptr<Ether::Graphics::RhiDescriptorHeap> Ether::Graphics::Dx12Device::CreateDescriptorHeap(
-    const RhiDescriptorHeapDesc& desc) const
+    const RhiDescriptorHeapType& type,
+    uint32_t numDescriptors) const
 {
     std::unique_ptr<Dx12DescriptorHeap> dx12Obj = std::make_unique<Dx12DescriptorHeap>();
 
-    auto creationDesc = Translate(desc);
-    HRESULT hr = m_Device->CreateDescriptorHeap(&creationDesc, IID_PPV_ARGS(&dx12Obj->m_Heap));
+    D3D12_DESCRIPTOR_HEAP_DESC dx12Desc = {};
+    dx12Desc.Flags = type == RhiDescriptorHeapType::SrvCbvUav ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+                                                              : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    dx12Desc.Type = Translate(type);
+    dx12Desc.NumDescriptors = numDescriptors;
+    HRESULT hr = m_Device->CreateDescriptorHeap(&dx12Desc, IID_PPV_ARGS(&dx12Obj->m_Heap));
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to create DirectX12 Descriptor Heap");
 
-    dx12Obj->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(desc.m_Type));
+    dx12Obj->m_HandleIncrementSize = m_Device->GetDescriptorHandleIncrementSize(Translate(type));
     return dx12Obj;
 }
 

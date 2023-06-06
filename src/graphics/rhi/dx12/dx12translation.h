@@ -58,11 +58,9 @@ DXGI_SWAP_CHAIN_FLAG Translate(const RhiSwapChainFlag& rhiType);
 
 D3D12_BLEND_DESC Translate(const RhiBlendDesc& rhiDesc);
 D3D12_CLEAR_VALUE Translate(const RhiClearValue& rhiDesc);
-D3D12_COMMAND_QUEUE_DESC Translate(const RhiCommandQueueDesc& rhiDesc);
 D3D12_DEPTH_STENCIL_DESC Translate(const RhiDepthStencilDesc& rhiDesc);
 D3D12_DEPTH_STENCIL_VALUE Translate(const RhiDepthStencilValue& rhiDesc);
 D3D12_DEPTH_STENCILOP_DESC Translate(const RhiDepthStencilOperationDesc& rhiDesc);
-D3D12_DESCRIPTOR_HEAP_DESC Translate(const RhiDescriptorHeapDesc& rhiDesc);
 D3D12_INPUT_ELEMENT_DESC Translate(const RhiInputElementDesc& rhiDesc);
 D3D12_RASTERIZER_DESC Translate(const RhiRasterizerDesc& rhiDesc);
 D3D12_RECT Translate(const RhiScissorDesc& rhiDesc);

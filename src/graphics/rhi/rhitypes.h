@@ -90,11 +90,6 @@ struct RhiBlendDesc
     RhiRenderTargetWriteMask m_WriteMask;
 };
 
-struct RhiCommandQueueDesc
-{
-    RhiCommandType m_Type;
-};
-
 struct RhiDepthStencilOperationDesc
 {
     RhiDepthStencilOperation m_StencilFailOp;
@@ -113,13 +108,6 @@ struct RhiDepthStencilDesc
     uint8_t m_StencilWriteMask;
     RhiDepthStencilOperationDesc m_FrontFace;
     RhiDepthStencilOperationDesc m_BackFace;
-};
-
-struct RhiDescriptorHeapDesc
-{
-    RhiDescriptorHeapType m_Type;
-    RhiDescriptorHeapFlag m_Flags;
-    size_t m_NumDescriptors;
 };
 
 struct RhiInputElementDesc

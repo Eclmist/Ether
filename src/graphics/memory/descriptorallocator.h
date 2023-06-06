@@ -30,7 +30,7 @@ namespace Ether::Graphics
 class DescriptorAllocator : public FreeListAllocator
 {
 public:
-    DescriptorAllocator(RhiDescriptorHeapType type, bool isShaderVisible = false, size_t maxHeapSize = _4MiB);
+    DescriptorAllocator(RhiDescriptorHeapType type, size_t maxHeapSize = _4MiB);
 
     ~DescriptorAllocator() = default;
 

@@ -85,14 +85,16 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
 
     context.Reset();
 
-    g_TempFrameDump->Reset();
-    g_TempFrameDump->Render(context, m_ResourceContext);
-
     // For now, just render the frame dump
     if (GraphicCore::GetGraphicConfig().m_RaytracingDebugMode)
     {
         g_TempRaytracingPass->Reset();
         g_TempRaytracingPass->Render(context, m_ResourceContext);
+    }
+    else
+    {
+        g_TempFrameDump->Reset();
+        g_TempFrameDump->Render(context, m_ResourceContext);
     }
 
     context.FinalizeAndExecute();
