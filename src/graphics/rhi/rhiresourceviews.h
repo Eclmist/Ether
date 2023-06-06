@@ -29,21 +29,26 @@ public:
     RhiResourceView()
         : m_CpuAddress(0)
         , m_GpuAddress(0)
+        , m_ResourceID(-1)
     {
         // Make each view unique
-        static uint32_t i = 0;
-        m_ViewID = std::to_string(i++);
+        static uint64_t i = 0;
+        m_ViewID = i++;
     };
 
     virtual ~RhiResourceView() = 0;
+
+public:
+    inline uint64_t GetViewID() const { return m_ViewID; }
+    inline uint64_t GetResourceID() const { return m_ViewID; }
     inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
     inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
-    inline StringID GetViewID() const { return m_ViewID; }
 
 protected:
     RhiCpuAddress m_CpuAddress;
     RhiGpuAddress m_GpuAddress;
-    StringID m_ViewID;
+    uint64_t m_ViewID;
+    uint64_t m_ResourceID;
 };
 
 inline RhiResourceView::~RhiResourceView()

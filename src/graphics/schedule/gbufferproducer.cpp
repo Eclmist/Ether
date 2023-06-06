@@ -34,71 +34,16 @@ extern RhiGpuAddress g_GlobalConstantsCbv;
 
 void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& resourceContext)
 {
-    for (int i = 0; i < MaxSwapChainBuffers; ++i)
-        m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
-
-    RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-
-    m_VertexShader = gfxDevice.CreateShader({ "default.hlsl", "VS_Main", RhiShaderType::Vertex });
-    m_PixelShader = gfxDevice.CreateShader({ "default.hlsl", "PS_Main", RhiShaderType::Pixel });
-
-    if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
-    {
-        GraphicCore::GetShaderDaemon().RegisterShader(*m_VertexShader);
-        GraphicCore::GetShaderDaemon().RegisterShader(*m_PixelShader);
-    }
-
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout);
-    m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
-
-    m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
-    m_PsoDesc->SetVertexShader(*m_VertexShader);
-    m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormat(BackBufferFormat);
-    m_PsoDesc->SetRootSignature(*m_RootSignature);
-    m_PsoDesc->SetInputLayout(
-        VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc,
-        VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
-    m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
-    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
-
-    resourceContext.RegisterPipelineState("GBufferProducer Pipeline State", * m_PsoDesc);
+    CreateUploadBufferAllocators();
+    CreateShaders();
+    CreateRootSignature();
+    CreatePipelineState(resourceContext);
 }
 
 void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& resourceContext)
 {
-    static RhiClearValue clearValue = { DepthBufferFormat, { 1.0, 0 } };
-    static RhiCommitedResourceDesc prevDesc = {};
-
-    RhiCommitedResourceDesc desc = {};
-    desc.m_HeapType = RhiHeapType::Default;
-    desc.m_State = RhiResourceState::DepthWrite;
-    desc.m_ClearValue = &clearValue;
-    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(
-        DepthBufferFormat,
-        GraphicCore::GetGraphicConfig().GetResolution());
-    desc.m_Name = "Depth Buffer";
-
-    if (std::memcmp(&prevDesc.m_ResourceDesc, &desc.m_ResourceDesc, sizeof(RhiResourceDesc)) == 0)
-        return;
-
-    prevDesc = desc;
-
-    m_DepthBuffer = GraphicCore::GetDevice().CreateCommittedResource(desc);
-
-    auto alloc = GraphicCore::GetDsvAllocator().Allocate();
-
-    static RhiDepthStencilViewDesc dsvDesc = {};
-    dsvDesc.m_Format = DepthBufferFormat;
-    dsvDesc.m_Resource = m_DepthBuffer.get();
-    dsvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-
-    m_Dsv = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
-    GraphicCore::GetDsvAllocator().Free(std::move(alloc));
+    m_DepthBuffer = resourceContext.CreateDepthStencilResource("GBuffer - Depth Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::D24UnormS8Uint);
+    m_DepthStencilView = resourceContext.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
 }
 
 void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
@@ -111,7 +56,7 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, Re
     graphicContext.PushMarker("Clear");
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
-    graphicContext.ClearDepthStencil(*m_Dsv, 1.0);
+    graphicContext.ClearDepthStencil(*m_DepthStencilView, 1.0);
     graphicContext.PopMarker();
 
     graphicContext.PushMarker("Draw GBuffer Geometry");
@@ -125,7 +70,7 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, Re
     graphicContext.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
     graphicContext.SetComputeRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
 
-    graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), m_Dsv.get());
+    graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), m_DepthStencilView);
 
     const VisualBatch& visualBatch = graphicContext.GetVisualBatch();
 
@@ -137,9 +82,7 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, Re
         auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
         memcpy(alloc->GetCpuHandle(), visual.m_Material, sizeof(Material));
 
-        graphicContext.SetGraphicsRootConstantBufferView(
-            1,
-            dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
+        graphicContext.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         graphicContext.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
         graphicContext.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
         graphicContext.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
@@ -154,3 +97,45 @@ void Ether::Graphics::GBufferProducer::Reset()
     m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Reset();
 }
 
+void Ether::Graphics::GBufferProducer::CreateUploadBufferAllocators()
+{
+    for (int i = 0; i < MaxSwapChainBuffers; ++i)
+        m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
+}
+
+void Ether::Graphics::GBufferProducer::CreateShaders()
+{
+    RhiDevice& gfxDevice = GraphicCore::GetDevice();
+    m_VertexShader = gfxDevice.CreateShader({ "default.hlsl", "VS_Main", RhiShaderType::Vertex });
+    m_PixelShader = gfxDevice.CreateShader({ "default.hlsl", "PS_Main", RhiShaderType::Pixel });
+
+    if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
+    {
+        GraphicCore::GetShaderDaemon().RegisterShader(*m_VertexShader);
+        GraphicCore::GetShaderDaemon().RegisterShader(*m_PixelShader);
+    }
+}
+
+void Ether::Graphics::GBufferProducer::CreateRootSignature()
+{
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
+    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
+    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
+    rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout);
+    m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
+}
+
+void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& resourceContext)
+{
+    m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
+    m_PsoDesc->SetVertexShader(*m_VertexShader);
+    m_PsoDesc->SetPixelShader(*m_PixelShader);
+    m_PsoDesc->SetRenderTargetFormat(BackBufferFormat);
+    m_PsoDesc->SetRootSignature(*m_RootSignature);
+    m_PsoDesc->SetInputLayout(
+        VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc,
+        VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
+    m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
+    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
+    resourceContext.RegisterPipelineState("GBufferProducer Pipeline State", *m_PsoDesc);
+}

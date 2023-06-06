@@ -42,7 +42,7 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE Translate(const RhiPrimitiveTopologyType& rhiType)
 D3D12_RESOURCE_DIMENSION Translate(const RhiResourceDimension& rhiType);
 D3D12_RESOURCE_STATES Translate(const RhiResourceState& rhiType);
 D3D12_SHADER_VISIBILITY Translate(const RhiShaderVisibility& rhiType);
-D3D12_SRV_DIMENSION Translate(const RhiShaderResourceDimensions& rhiType);
+D3D12_SRV_DIMENSION Translate(const RhiShaderResourceDimension& rhiType);
 D3D12_UAV_DIMENSION Translate(const RhiUnorderedAccessDimension& rhiType);
 D3D12_STATIC_BORDER_COLOR Translate(const RhiBorderColor& rhiType);
 D3D12_STENCIL_OP Translate(const RhiDepthStencilOperation& rhiType);

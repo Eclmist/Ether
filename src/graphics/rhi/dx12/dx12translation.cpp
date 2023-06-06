@@ -470,29 +470,29 @@ DXGI_SCALING Ether::Graphics::Translate(const RhiScalingMode& rhiType)
     }
 }
 
-D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDimensions& rhiType)
+D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDimension& rhiType)
 {
     switch (rhiType)
     {
-    case RhiShaderResourceDimensions::Unknown:
+    case RhiShaderResourceDimension::Unknown:
         return D3D12_SRV_DIMENSION_UNKNOWN;
-    case RhiShaderResourceDimensions::Buffer:
+    case RhiShaderResourceDimension::Buffer:
         return D3D12_SRV_DIMENSION_BUFFER;
-    case RhiShaderResourceDimensions::Texture1D:
+    case RhiShaderResourceDimension::Texture1D:
         return D3D12_SRV_DIMENSION_TEXTURE1D;
-    case RhiShaderResourceDimensions::Texture1DArray:
+    case RhiShaderResourceDimension::Texture1DArray:
         return D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
-    case RhiShaderResourceDimensions::Texture2D:
+    case RhiShaderResourceDimension::Texture2D:
         return D3D12_SRV_DIMENSION_TEXTURE2D;
-    case RhiShaderResourceDimensions::Texture2DArray:
+    case RhiShaderResourceDimension::Texture2DArray:
         return D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    case RhiShaderResourceDimensions::Texture3D:
+    case RhiShaderResourceDimension::Texture3D:
         return D3D12_SRV_DIMENSION_TEXTURE3D;
-    case RhiShaderResourceDimensions::TextureCube:
+    case RhiShaderResourceDimension::TextureCube:
         return D3D12_SRV_DIMENSION_TEXTURECUBE;
-    case RhiShaderResourceDimensions::TextureCubeArray:
+    case RhiShaderResourceDimension::TextureCubeArray:
         return D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
-    case RhiShaderResourceDimensions::RTAccelerationStructure:
+    case RhiShaderResourceDimension::RTAccelerationStructure:
         return D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
     default:
         return D3D12_SRV_DIMENSION_UNKNOWN;
@@ -889,19 +889,19 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResour
 
     switch (rhiDesc.m_Dimensions)
     {
-    case RhiShaderResourceDimensions::Texture2D:
+    case RhiShaderResourceDimension::Texture2D:
         dx12Desc.Texture2D.MipLevels = 1;
         dx12Desc.Texture2D.MostDetailedMip = 0;
         dx12Desc.Texture2D.PlaneSlice = 0;
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
-    case RhiShaderResourceDimensions::TextureCube:
+    case RhiShaderResourceDimension::TextureCube:
         dx12Desc.Texture2D.MipLevels = 1;
         dx12Desc.Texture2D.MostDetailedMip = 0;
         dx12Desc.Texture2D.PlaneSlice = 0;
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
-    case RhiShaderResourceDimensions::RTAccelerationStructure:
+    case RhiShaderResourceDimension::RTAccelerationStructure:
         dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_RaytracingAccelerationStructureAddress;
         break;
     default:

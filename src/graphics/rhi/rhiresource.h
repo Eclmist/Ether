@@ -27,8 +27,11 @@ class RhiResource : public NonCopyable, public NonMovable
 {
 public:
     RhiResource(const std::string& name)
-        : m_ResourceID(name)
+        : m_Name(name)
     {
+        // Make each view unique
+        static uint64_t i = 0;
+        m_ResourceID = i++;
     }
     virtual ~RhiResource() = default;
 
@@ -38,12 +41,14 @@ public:
     virtual void Unmap() const = 0;
 
 public:
+    inline uint64_t GetResourceID() const { return m_ResourceID; }
     inline RhiResourceState GetCurrentState() const { return m_CurrentState; }
     inline void SetState(RhiResourceState state) { m_CurrentState = state; }
 
 protected:
     RhiResourceState m_CurrentState = RhiResourceState::Common;
-    StringID m_ResourceID;
+    std::string m_Name;
+    uint64_t m_ResourceID;
 };
 
 static RhiResourceDesc RhiCreateBaseResourceDesc()

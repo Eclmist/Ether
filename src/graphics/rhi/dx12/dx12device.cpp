@@ -165,6 +165,7 @@ std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Devic
 
     dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_Format = desc.m_Format;
+    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
@@ -180,6 +181,7 @@ std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Devic
 
     dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_Format = desc.m_Format;
+    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
@@ -195,11 +197,12 @@ std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Dev
 
     dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_GpuAddress = desc.m_TargetGpuAddress;
+    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);
 
-    if (desc.m_Dimensions == RhiShaderResourceDimensions::RTAccelerationStructure)
+    if (desc.m_Dimensions == RhiShaderResourceDimension::RTAccelerationStructure)
         m_Device->CreateShaderResourceView(nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
     else
         m_Device->CreateShaderResourceView(d3dResource->m_Resource.Get(), &creationDesc, { dx12Obj->m_CpuAddress });
@@ -213,6 +216,7 @@ std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Dev
     std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
     dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_GpuAddress = desc.m_TargetGpuAddress;
+    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
 
     auto creationDesc = Translate(desc);
     m_Device->CreateConstantBufferView(&creationDesc, { dx12Obj->m_CpuAddress });
@@ -227,6 +231,7 @@ std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12De
 
     dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
     dx12Obj->m_GpuAddress = desc.m_TargetGpuAddress;
+    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
     const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
 
     auto creationDesc = Translate(desc);

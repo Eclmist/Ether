@@ -35,9 +35,20 @@ public:
     void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
 
 private:
+    void CreateUploadBufferAllocators();
+    void CreateShaders();
+    void CreateRootSignature();
+    void CreatePipelineState(ResourceContext& resourceContext);
+
+private:
     std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-    std::unique_ptr<RhiDepthStencilView> m_Dsv;
-    std::unique_ptr<RhiResource> m_DepthBuffer;
+    RhiDepthStencilView* m_DepthStencilView;
+    RhiResource* m_DepthBuffer;
+
+    std::unique_ptr<RhiResource> m_GBufferTexture0; // [Position.x, Position.y, Position.z, Unused]
+    std::unique_ptr<RhiResource> m_GBufferTexture1; // [Normal.x,   Normal.y,   Normal.z,   Unused]
+    std::unique_ptr<RhiResource> m_GBufferTexture2; // [Albedo.x,   Albedo.y,   Albedo.z,   Unused]
+    std::unique_ptr<RhiResource> m_GBufferTexture3; // [Roughness,  Metalness,  Unused,     Unused]
 
     std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
     std::unique_ptr<RhiRootSignature> m_RootSignature;

@@ -286,7 +286,7 @@ enum class RhiScalingMode
     AspectRatioStretch,
 };
 
-enum class RhiShaderResourceDimensions
+enum class RhiShaderResourceDimension
 {
     Unknown,
     Buffer,

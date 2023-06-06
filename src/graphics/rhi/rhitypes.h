@@ -30,6 +30,7 @@ class RhiDescriptorHeap;
 class RhiDevice;
 class RhiFence;
 class RhiModule;
+class RhiResourceView;
 class RhiRenderTargetView;
 class RhiDepthStencilView;
 class RhiConstantBufferView;
@@ -222,7 +223,7 @@ struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
 {
     RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
-    RhiShaderResourceDimensions m_Dimensions;
+    RhiShaderResourceDimension m_Dimensions;
     RhiGpuAddress m_RaytracingAccelerationStructureAddress;
 };
 

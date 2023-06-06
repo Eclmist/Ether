@@ -218,10 +218,11 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeAccelerationStructure(
     context.PopMarker();
 
     RhiShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Dimensions = RhiShaderResourceDimensions::RTAccelerationStructure;
+    srvDesc.m_Dimensions = RhiShaderResourceDimension::RTAccelerationStructure;
     srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(0);
     srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(0);
     srvDesc.m_RaytracingAccelerationStructureAddress = m_TopLevelAccelerationStructure->m_DataBuffer->GetGpuAddress();
+    srvDesc.m_Resource = m_TopLevelAccelerationStructure->m_DataBuffer.get();
     m_TlasSrv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
 }
 

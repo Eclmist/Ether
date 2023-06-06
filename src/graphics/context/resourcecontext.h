@@ -22,6 +22,7 @@
 #include "graphics/pch.h"
 #include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
+#include "graphics/memory/descriptorallocation.h"
 
 namespace Ether::Graphics
 {
@@ -35,11 +36,33 @@ public:
     void RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc);
     RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
 
+    RhiResource* CreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
+    RhiResource* CreateDepthStencilResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+    RhiResource* CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+
+    RhiRenderTargetView* CreateRenderTargetView(const char* viewName, const RhiResource* resource, RhiFormat format);
+    RhiDepthStencilView* CreateDepthStencilView(const char* viewName, const RhiResource* resource, RhiFormat format);
+    RhiConstantBufferView* CreateConstantBufferView(const char* viewName, const RhiResource* resource, uint32_t size);
+    RhiShaderResourceView* CreateShaderResourceView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiShaderResourceDimension dimension);
+    RhiUnorderedAccessView* CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
+
+private:
+    bool ShouldRecreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
+    bool ShouldRecreateView(const char* viewName);
+    void InvalidateViews(const char* resourceName);
+
 private:
     friend class FrameScheduler;
     void RecompilePipelineStates();
 
 private:
     std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
+
+
+    std::unordered_map<StringID, RhiCommitedResourceDesc> m_ResourceDescriptionTable;
+
+    std::unordered_map<StringID, std::unique_ptr<RhiResource>> m_ResourceTable;
+    std::unordered_map<StringID, std::unique_ptr<RhiResourceView>> m_DescriptorTable;
+    std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_DescriptorAllocations;
 };
 } // namespace Ether::Graphics
