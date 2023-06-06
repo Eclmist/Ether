@@ -52,7 +52,7 @@ public:
     virtual void SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) = 0;
     virtual void SetPrimitiveTopology(const RhiPrimitiveTopology& primitiveTopology) = 0;
     virtual void SetStencilRef(const RhiStencilValue& val) = 0;
-    virtual void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) = 0;
+    virtual void SetRenderTargets(const RhiRenderTargetView* rtvs, uint32_t numRtvs, const RhiDepthStencilView* dsv) = 0;
 
     // Graphics Shader Data
     virtual void SetGraphicRootSignature(const RhiRootSignature& rootSignature) = 0;

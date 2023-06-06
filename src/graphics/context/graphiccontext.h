@@ -54,6 +54,7 @@ public:
     void SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer);
     void SetPrimitiveTopology(const RhiPrimitiveTopology& topology);
     void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
+    void SetRenderTargets(const RhiRenderTargetView* rtvs, uint32_t numRtvs, const RhiDepthStencilView* dsv = nullptr);
 
     // Shader Data
     void SetGraphicRootSignature(const RhiRootSignature& rootSignature);

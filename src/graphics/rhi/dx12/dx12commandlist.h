@@ -51,7 +51,7 @@ public:
     void SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer) override;
     void SetPrimitiveTopology(const RhiPrimitiveTopology& primitiveTopology) override;
     void SetStencilRef(const RhiStencilValue& val) override;
-    void SetRenderTargets(const RhiSetRenderTargetsDesc& desc) override;
+    void SetRenderTargets(const RhiRenderTargetView* rtvs, uint32_t numRtvs, const RhiDepthStencilView* dsv) override;
 
     // Graphics Shader Data
     void SetGraphicRootSignature(const RhiRootSignature& rootSignature) override;

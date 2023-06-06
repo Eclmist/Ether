@@ -27,3 +27,4 @@ Ether::Graphics::RhiCommandList::RhiCommandList(RhiCommandType type)
     m_CommandQueue = &GraphicCore::GetCommandManager().GetQueue(type);
     m_CommandAllocatorPool = &GraphicCore::GetCommandManager().GetAllocatorPool(type);
 }
+

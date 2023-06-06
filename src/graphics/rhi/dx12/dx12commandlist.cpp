@@ -124,19 +124,21 @@ void Ether::Graphics::Dx12CommandList::SetStencilRef(const RhiStencilValue& val)
     m_CommandList->OMSetStencilRef(val);
 }
 
-void Ether::Graphics::Dx12CommandList::SetRenderTargets(const RhiSetRenderTargetsDesc& desc)
+void Ether::Graphics::Dx12CommandList::SetRenderTargets(
+    const RhiRenderTargetView* rtvs,
+    uint32_t numRtvs,
+    const RhiDepthStencilView* dsv)
 {
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
 
-    for (int i = 0; i < desc.m_NumRtv; ++i)
-        rtvHandles[i] = { desc.m_RtvHandles[i]->GetCpuAddress() };
+    for (int i = 0; i < numRtvs; ++i)
+        rtvHandles[i] = { rtvs[i].GetCpuAddress() };
 
-    if (desc.m_DsvHandle != nullptr)
-        dsvHandle = { desc.m_DsvHandle->GetCpuAddress() };
+    if (dsv != nullptr)
+        dsvHandle = { dsv->GetCpuAddress() };
 
-    m_CommandList
-        ->OMSetRenderTargets(desc.m_NumRtv, rtvHandles, false, desc.m_DsvHandle == nullptr ? nullptr : &dsvHandle);
+    m_CommandList->OMSetRenderTargets(numRtvs, rtvHandles, false, dsv == nullptr ? nullptr : &dsvHandle);
 }
 
 void Ether::Graphics::Dx12CommandList::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
