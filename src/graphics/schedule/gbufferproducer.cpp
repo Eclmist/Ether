@@ -42,8 +42,15 @@ void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& resourceConte
 
 void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& resourceContext)
 {
-    m_DepthBuffer = resourceContext.CreateDepthStencilResource("GBuffer - Depth Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::D24UnormS8Uint);
-    m_DepthStencilView = resourceContext.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
+    m_DepthBuffer = resourceContext.CreateDepthStencilResource("GBuffer - Depth Texture", GraphicCore::GetGraphicConfig().GetResolution(), DepthBufferFormat);
+    m_AlbedoTexture = resourceContext.CreateTexture2DResource("GBuffer - Albedo Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::R8G8B8A8Unorm);
+    m_PositionTexture = resourceContext.CreateTexture2DResource("GBuffer - Position Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::R32G32B32A32Float);
+    m_NormalTexture = resourceContext.CreateTexture2DResource("GBuffer - Normal Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::R32G32B32A32Float);
+
+    m_DepthDsv = resourceContext.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
+    m_AlbedoRtv = resourceContext.CreateRenderTargetView("GBuffer - Albedo RTV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm);
+    m_PositionRtv = resourceContext.CreateRenderTargetView("GBuffer - Position RTV", m_PositionTexture, RhiFormat::R32G32B32A32Float);
+    m_NormalRtv = resourceContext.CreateRenderTargetView("GBuffer - Normal RTV", m_NormalTexture, RhiFormat::R32G32B32A32Float);
 }
 
 void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
@@ -55,8 +62,11 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, Re
 
     graphicContext.PushMarker("Clear");
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
+    graphicContext.TransitionResource(*m_AlbedoTexture, RhiResourceState::RenderTarget);
+    graphicContext.TransitionResource(*m_PositionTexture, RhiResourceState::RenderTarget);
+    graphicContext.TransitionResource(*m_NormalTexture, RhiResourceState::RenderTarget);
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
-    graphicContext.ClearDepthStencil(*m_DepthStencilView, 1.0);
+    graphicContext.ClearDepthStencil(m_DepthDsv, 1.0);
     graphicContext.PopMarker();
 
     graphicContext.PushMarker("Draw GBuffer Geometry");
@@ -70,7 +80,8 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, Re
     graphicContext.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
     graphicContext.SetComputeRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
 
-    graphicContext.SetRenderTarget(gfxDisplay.GetBackBufferRtv(), m_DepthStencilView);
+    RhiRenderTargetView rtvs[] = { m_AlbedoRtv, m_PositionRtv, m_NormalRtv, gfxDisplay.GetBackBufferRtv() };
+    graphicContext.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &m_DepthDsv);
 
     const VisualBatch& visualBatch = graphicContext.GetVisualBatch();
 
@@ -106,8 +117,8 @@ void Ether::Graphics::GBufferProducer::CreateUploadBufferAllocators()
 void Ether::Graphics::GBufferProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_VertexShader = gfxDevice.CreateShader({ "default.hlsl", "VS_Main", RhiShaderType::Vertex });
-    m_PixelShader = gfxDevice.CreateShader({ "default.hlsl", "PS_Main", RhiShaderType::Pixel });
+    m_VertexShader = gfxDevice.CreateShader({ "gbuffer.hlsl", "VS_Main", RhiShaderType::Vertex });
+    m_PixelShader = gfxDevice.CreateShader({ "gbuffer.hlsl", "PS_Main", RhiShaderType::Pixel });
 
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
     {
@@ -130,7 +141,9 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& reso
     m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormat(BackBufferFormat);
+
+    RhiFormat formats[] = { RhiFormat::R8G8B8A8Unorm, RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R8G8B8A8Unorm };
+    m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(
         VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc,

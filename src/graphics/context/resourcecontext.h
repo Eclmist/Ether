@@ -40,11 +40,11 @@ public:
     RhiResource* CreateDepthStencilResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
     RhiResource* CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
 
-    RhiRenderTargetView* CreateRenderTargetView(const char* viewName, const RhiResource* resource, RhiFormat format);
-    RhiDepthStencilView* CreateDepthStencilView(const char* viewName, const RhiResource* resource, RhiFormat format);
-    RhiConstantBufferView* CreateConstantBufferView(const char* viewName, const RhiResource* resource, uint32_t size);
-    RhiShaderResourceView* CreateShaderResourceView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiShaderResourceDimension dimension);
-    RhiUnorderedAccessView* CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
+    RhiRenderTargetView& CreateRenderTargetView(const char* viewName, const RhiResource* resource, RhiFormat format);
+    RhiDepthStencilView& CreateDepthStencilView(const char* viewName, const RhiResource* resource, RhiFormat format);
+    RhiConstantBufferView& CreateConstantBufferView(const char* viewName, const RhiResource* resource, uint32_t size);
+    RhiShaderResourceView& CreateShaderResourceView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiShaderResourceDimension dimension);
+    RhiUnorderedAccessView& CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
 
 private:
     bool ShouldRecreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);

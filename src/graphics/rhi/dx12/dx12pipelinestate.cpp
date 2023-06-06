@@ -73,10 +73,10 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetDepthTargetFormat(RhiFormat dsvF
 
 void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormat(RhiFormat rtvFormat)
 {
-    return SetRenderTargetFormats(1, &rtvFormat);
+    return SetRenderTargetFormats(&rtvFormat, 1);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats)
+void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv)
 {
     m_Dx12PsoDesc.NumRenderTargets = numRtv;
     for (int i = 0; i < numRtv; ++i)

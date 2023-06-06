@@ -42,13 +42,16 @@ private:
 
 private:
     std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-    RhiDepthStencilView* m_DepthStencilView;
-    RhiResource* m_DepthBuffer;
 
-    std::unique_ptr<RhiResource> m_GBufferTexture0; // [Position.x, Position.y, Position.z, Unused]
-    std::unique_ptr<RhiResource> m_GBufferTexture1; // [Normal.x,   Normal.y,   Normal.z,   Unused]
-    std::unique_ptr<RhiResource> m_GBufferTexture2; // [Albedo.x,   Albedo.y,   Albedo.z,   Unused]
-    std::unique_ptr<RhiResource> m_GBufferTexture3; // [Roughness,  Metalness,  Unused,     Unused]
+    RhiResource* m_DepthBuffer;
+    RhiResource* m_AlbedoTexture;   // [Albedo.x,   Albedo.y,   Albedo.z,   Roughness]
+    RhiResource* m_PositionTexture; // [Position.x, Position.y, Position.z, ZDepth]
+    RhiResource* m_NormalTexture;   // [Normal.x,   Normal.y,   Normal.z,   Metalness]
+
+    RhiDepthStencilView m_DepthDsv;
+    RhiRenderTargetView m_AlbedoRtv;
+    RhiRenderTargetView m_PositionRtv;
+    RhiRenderTargetView m_NormalRtv;
 
     std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
     std::unique_ptr<RhiRootSignature> m_RootSignature;

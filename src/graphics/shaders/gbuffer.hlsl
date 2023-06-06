@@ -41,10 +41,19 @@ struct VS_OUTPUT
     float4 Position     : SV_POSITION;
     float3 Normal       : NORMAL;
     float2 TexCoord     : TEXCOORD0;
+    float4 PositionWS   : TEXCOORD1;
+};
+
+struct PS_OUTPUT
+{
+    float4 Albedo       : SV_TARGET0;
+    float4 Position     : SV_TARGET1;
+    float4 Normal       : SV_TARGET2;
+    float4 DebugOutput  : SV_TARGET3;
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-ConstantBuffer<Material> m_InstanceParams : register(b1);
+ConstantBuffer<Material> g_InstanceParams : register(b1);
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
@@ -56,7 +65,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     float4x4 mvp = mul(g_GlobalConstants.m_ProjectionMatrix, g_GlobalConstants.m_ViewMatrix);
 
     o.Position = mul(mvp, float4(pos, 1.0f));
-    //o.PositionWS = mul(m_InstanceParams.m_ModelMatrix, float4(pos, 1.0f)).xyz;
+    o.PositionWS = /* mul(m_ModelMatrix, */ float4(pos, 1.0f); //).xyz;
     //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0f)).xyz;
 
     o.TexCoord = IN.Tangent.xy;
@@ -65,7 +74,12 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     return o;
 }
 
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
+PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    return float4(IN.Normal, 1.0f);
+    PS_OUTPUT o;
+    o.Albedo = g_InstanceParams.m_BaseColor;
+    o.Position = IN.PositionWS;
+    o.Normal = IN.Normal.xyzz;
+    o.DebugOutput = o.Position / 10;
+    return o;
 }

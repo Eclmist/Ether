@@ -66,10 +66,10 @@ Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateResource(
     if (!ShouldRecreateResource(resourceName, desc))
         return m_ResourceTable.at(resourceName).get();
 
+    InvalidateViews(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
-    InvalidateViews(resourceName);
     return m_ResourceTable.at(resourceName).get();
 }
 
@@ -78,22 +78,21 @@ Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateDepthStenc
     const ethVector2u resolution,
     RhiFormat format)
 {
+    static RhiClearValue clearVal = { format, { 1, 0 } };
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = resourceName;
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::DepthWrite;
-    desc.m_ClearValue = nullptr;
-    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(
-        DepthBufferFormat,
-        GraphicCore::GetGraphicConfig().GetResolution());
+    desc.m_ClearValue = &clearVal;
+    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, resolution);
 
     if (!ShouldRecreateResource(resourceName, desc))
         return m_ResourceTable.at(resourceName).get();
 
+    InvalidateViews(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
-    InvalidateViews(resourceName);
     return m_ResourceTable.at(resourceName).get();
 }
 
@@ -112,20 +111,20 @@ Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateTexture2DR
     if (!ShouldRecreateResource(resourceName, desc))
         return m_ResourceTable.at(resourceName).get();
 
+    InvalidateViews(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
-    InvalidateViews(resourceName);
     return m_ResourceTable.at(resourceName).get();
 }
 
-Ether::Graphics::RhiRenderTargetView* Ether::Graphics::ResourceContext::CreateRenderTargetView(
+Ether::Graphics::RhiRenderTargetView& Ether::Graphics::ResourceContext::CreateRenderTargetView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format)
 {
     if (!ShouldRecreateView(viewName))
-        return (RhiRenderTargetView*)m_DescriptorTable.at(viewName).get();
+        return (RhiRenderTargetView&)(*m_DescriptorTable.at(viewName));
 
     auto alloc = GraphicCore::GetRtvAllocator().Allocate();
 
@@ -137,16 +136,16 @@ Ether::Graphics::RhiRenderTargetView* Ether::Graphics::ResourceContext::CreateRe
     m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateRenderTargetView(rtvDesc);
     m_DescriptorAllocations[viewName] = std::move(alloc);
 
-    return (RhiRenderTargetView*)m_DescriptorTable.at(viewName).get();
+    return (RhiRenderTargetView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiDepthStencilView* Ether::Graphics::ResourceContext::CreateDepthStencilView(
+Ether::Graphics::RhiDepthStencilView& Ether::Graphics::ResourceContext::CreateDepthStencilView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format)
 {
     if (!ShouldRecreateView(viewName))
-        return (RhiDepthStencilView*)m_DescriptorTable.at(viewName).get();
+        return (RhiDepthStencilView&)(*m_DescriptorTable.at(viewName));
 
     auto alloc = GraphicCore::GetDsvAllocator().Allocate();
 
@@ -158,16 +157,16 @@ Ether::Graphics::RhiDepthStencilView* Ether::Graphics::ResourceContext::CreateDe
     m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
     m_DescriptorAllocations[viewName] = std::move(alloc);
 
-    return (RhiDepthStencilView*)m_DescriptorTable.at(viewName).get();
+    return (RhiDepthStencilView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiConstantBufferView* Ether::Graphics::ResourceContext::CreateConstantBufferView(
+Ether::Graphics::RhiConstantBufferView& Ether::Graphics::ResourceContext::CreateConstantBufferView(
     const char* viewName,
     const RhiResource* resource,
     uint32_t size)
 {
     if (!ShouldRecreateView(viewName))
-        return (RhiConstantBufferView*)m_DescriptorTable.at(viewName).get();
+        return (RhiConstantBufferView&)(*m_DescriptorTable.at(viewName));
 
     auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
 
@@ -180,17 +179,17 @@ Ether::Graphics::RhiConstantBufferView* Ether::Graphics::ResourceContext::Create
     m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateConstantBufferView(cbvDesc);
     m_DescriptorAllocations[viewName] = std::move(alloc);
 
-    return (RhiConstantBufferView*)m_DescriptorTable.at(viewName).get();
+    return (RhiConstantBufferView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiShaderResourceView* Ether::Graphics::ResourceContext::CreateShaderResourceView(
+Ether::Graphics::RhiShaderResourceView& Ether::Graphics::ResourceContext::CreateShaderResourceView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format,
     RhiShaderResourceDimension dimension)
 {
     if (!ShouldRecreateView(viewName))
-        return (RhiShaderResourceView*)m_DescriptorTable.at(viewName).get();
+        return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
 
     auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
 
@@ -204,17 +203,17 @@ Ether::Graphics::RhiShaderResourceView* Ether::Graphics::ResourceContext::Create
     m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
     m_DescriptorAllocations[viewName] = std::move(alloc);
 
-    return (RhiShaderResourceView*)m_DescriptorTable.at(viewName).get();
+    return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiUnorderedAccessView* Ether::Graphics::ResourceContext::CreateUnorderedAccessView(
+Ether::Graphics::RhiUnorderedAccessView& Ether::Graphics::ResourceContext::CreateUnorderedAccessView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format,
     RhiUnorderedAccessDimension dimension)
 {
     if (!ShouldRecreateView(viewName))
-        return (RhiUnorderedAccessView*)m_DescriptorTable.at(viewName).get();
+        return (RhiUnorderedAccessView&)(*m_DescriptorTable.at(viewName));
 
     auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
 
@@ -229,7 +228,7 @@ Ether::Graphics::RhiUnorderedAccessView* Ether::Graphics::ResourceContext::Creat
     m_DescriptorAllocations.erase(viewName);
     m_DescriptorAllocations[viewName] = std::move(alloc);
 
-    return (RhiUnorderedAccessView*)m_DescriptorTable.at(viewName).get();
+    return (RhiUnorderedAccessView&)(*m_DescriptorTable.at(viewName));
 }
 
 bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
@@ -245,7 +244,12 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
         "If the resource never existed, there should not be any cached pipeline state with the same resourceName");
 
     // If the resource exist, but it's description has changed
-    if (std::memcmp(&m_ResourceDescriptionTable.at(resourceName), &desc, sizeof(RhiCommitedResourceDesc)) == 0)
+    RhiCommitedResourceDesc& a = m_ResourceDescriptionTable.at(resourceName);
+
+    if (std::memcmp(
+            &m_ResourceDescriptionTable.at(resourceName).m_ResourceDesc,
+            &desc.m_ResourceDesc,
+            sizeof(RhiResourceDesc)) != 0)
         return true;
 
     return false;
@@ -258,16 +262,19 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateView(const char* viewName)
 
 void Ether::Graphics::ResourceContext::InvalidateViews(const char* resourceName)
 {
+    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+        return;
+
     const uint64_t resourceID = m_ResourceTable.at(resourceName)->GetResourceID();
     for (auto iter = m_DescriptorTable.begin(); iter != m_DescriptorTable.end();)
     {
         if (iter->second->GetResourceID() == resourceID)
         {
-            iter = m_DescriptorTable.erase(iter);
-        
             auto allocIter = m_DescriptorAllocations.find(iter->first);
             if (allocIter != m_DescriptorAllocations.end())
                 m_DescriptorAllocations.erase(allocIter);
+
+            iter = m_DescriptorTable.erase(iter);
         }
         else
             ++iter;

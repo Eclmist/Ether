@@ -38,7 +38,7 @@ public:
     virtual void SetDepthStencilState(const RhiDepthStencilDesc& desc) = 0;
     virtual void SetDepthTargetFormat(RhiFormat dsvFormat) = 0;
     virtual void SetRenderTargetFormat(RhiFormat rtvFormat) = 0;
-    virtual void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) = 0;
+    virtual void SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv) = 0;
     virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
     virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
     virtual void SetVertexShader(const RhiShader& vs) = 0;

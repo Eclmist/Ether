@@ -40,7 +40,7 @@ public:
     void SetDepthStencilState(const RhiDepthStencilDesc& desc) override;
     void SetDepthTargetFormat(RhiFormat dsvFormat) override;
     void SetRenderTargetFormat(RhiFormat rtvFormat) override;
-    void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) override;
+    void SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv) override;
     void SetRootSignature(const RhiRootSignature& rootSignature) override;
     void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
     void SetVertexShader(const RhiShader& vs) override;

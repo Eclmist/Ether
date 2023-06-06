@@ -23,7 +23,7 @@
 
 namespace Ether::Graphics
 {
-class RhiResourceView : public NonCopyable, public NonMovable
+class RhiResourceView
 {
 public:
     RhiResourceView()
@@ -40,7 +40,7 @@ public:
 
 public:
     inline uint64_t GetViewID() const { return m_ViewID; }
-    inline uint64_t GetResourceID() const { return m_ViewID; }
+    inline uint64_t GetResourceID() const { return m_ResourceID; }
     inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
     inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
 
