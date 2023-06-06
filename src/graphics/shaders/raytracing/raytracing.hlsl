@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/globalconstants.hlsl"
+#include "common/globalconstants.h"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
@@ -57,7 +57,7 @@ void RayGeneration()
     ray.TMax = 100000;
 
     Payload payload;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0 /* ray index*/, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
     float3 col = linearToSrgb(payload.color);
     g_Output[launchIndex.xy] = float4(col, 1);
 }

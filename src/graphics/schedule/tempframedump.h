@@ -24,25 +24,10 @@
 #include "graphics/memory/uploadbufferallocator.h"
 #include "graphics/rhi/rhiresourceviews.h"
 #include "graphics/rhi/rhishader.h"
+#include "graphics/shaders/common/globalconstants.h"
 
 namespace Ether::Graphics
 {
-struct GlobalConstants
-{
-    ethMatrix4x4 m_ViewMatrix;
-    ethMatrix4x4 m_ProjectionMatrix;
-    ethVector4 m_EyePosition;
-    ethVector4 m_EyeDirection;
-    ethVector4 m_Time;
-    ethVector2u m_ScreenResolution;
-
-    ethVector4 m_Padding0;
-    ethVector4 m_Padding1;
-    ethVector4 m_Padding2;
-    ethVector4 m_Padding3;
-    ethVector2 m_Padding4;
-};
-
 class TempFrameDump
 {
 public:

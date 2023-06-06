@@ -17,14 +17,44 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
+#ifdef __HLSL__
+typedef float4x4 ethMatrix4x4;
+typedef float3x3 ethMatrix3x3;
+
+typedef float4 ethVector4;
+typedef float3 ethVector3;
+typedef float2 ethVector2;
+
+typedef uint4 ethVector4u;
+typedef uint3 ethVector3u;
+typedef uint2 ethVector2u;
+#endif
+
+#ifdef __cplusplus
+namespace Ether::Graphics::Shader
+{
+#endif
+
 struct GlobalConstants
 {
-    float4x4 m_ViewMatrix;
-    float4x4 m_ProjectionMatrix;
+    ethMatrix4x4 m_ViewMatrix;
+    ethMatrix4x4 m_ProjectionMatrix;
 
-    float4 m_EyePosition;
-    float4 m_EyeDirection;
-    float4 m_Time;
+    ethVector4 m_EyePosition;
+    ethVector4 m_EyeDirection;
+    ethVector4 m_Time;
 
-    uint2 m_ScreenResolution;
+    ethVector2u m_ScreenResolution;
+
+    ethVector4 m_Padding0;
+    ethVector4 m_Padding1;
+    ethVector4 m_Padding2;
+    ethVector4 m_Padding3;
+    ethVector2 m_Padding4;
 };
+
+#ifdef __cplusplus
+}
+#endif

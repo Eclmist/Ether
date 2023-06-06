@@ -41,14 +41,14 @@ void Ether::Graphics::TempRaytracingFrameDump::Initialize(ResourceContext& resou
     globalConstantsCbvResource.m_Name = "RaytracedGBuffer::GlobalConstants";
     globalConstantsCbvResource.m_HeapType = RhiHeapType::Upload;
     globalConstantsCbvResource.m_State = RhiResourceState::Common;
-    globalConstantsCbvResource.m_ResourceDesc = RhiCreateBufferResourceDesc(sizeof(GlobalConstants));
+    globalConstantsCbvResource.m_ResourceDesc = RhiCreateBufferResourceDesc(sizeof(Shader::GlobalConstants));
     m_ConstantBuffer = GraphicCore::GetDevice().CreateCommittedResource(globalConstantsCbvResource);
 
     RhiConstantBufferViewDesc cbvDesc = {};
     cbvDesc.m_Resource = m_ConstantBuffer.get();
     cbvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(2);
     cbvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(2);
-    cbvDesc.m_BufferSize = sizeof(GlobalConstants);
+    cbvDesc.m_BufferSize = sizeof(Shader::GlobalConstants);
     m_ConstantBufferView = GraphicCore::GetDevice().CreateConstantBufferView(cbvDesc);
 }
 
@@ -230,7 +230,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeAccelerationStructure(
 void Ether::Graphics::TempRaytracingFrameDump::UploadGlobalConstants(GraphicContext& context)
 {
     // Set up global constants
-    GlobalConstants* globalConstants;
+    Shader::GlobalConstants* globalConstants;
     m_ConstantBuffer->Map((void**)&globalConstants);
     globalConstants->m_ViewMatrix = context.GetViewMatrix();
     globalConstants->m_ProjectionMatrix = context.GetProjectionMatrix();

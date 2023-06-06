@@ -198,7 +198,7 @@ void Ether::Graphics::TempFrameDump::Reset()
 void Ether::Graphics::TempFrameDump::UploadGlobalConstants(GraphicContext& context)
 {
     // Set up global constants
-    GlobalConstants globalConstants;
+    Shader::GlobalConstants globalConstants;
     globalConstants.m_ViewMatrix = context.GetViewMatrix();
     globalConstants.m_ProjectionMatrix = context.GetProjectionMatrix();
     globalConstants.m_EyeDirection = context.GetEyeDirection().Resize<4>();
@@ -211,7 +211,7 @@ void Ether::Graphics::TempFrameDump::UploadGlobalConstants(GraphicContext& conte
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate(
-        { sizeof(GlobalConstants), 256 });
-    memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(GlobalConstants));
+        { sizeof(Shader::GlobalConstants), 256 });
+    memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(Shader::GlobalConstants));
     context.SetGraphicsRootConstantBufferView(0, dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress());
 }

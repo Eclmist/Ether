@@ -56,6 +56,9 @@ void Ether::Graphics::Dx12Shader::Compile()
     arguments.push_back(L"-I");
     arguments.push_back(wSourceDir.c_str());
 
+    arguments.push_back(L"-D");
+    arguments.push_back(L"__HLSL__");
+
     // Specify file name using line directive for better error output
     // -E for the entry point (eg. PSMain)
     if (m_Type != RhiShaderType::Library)
