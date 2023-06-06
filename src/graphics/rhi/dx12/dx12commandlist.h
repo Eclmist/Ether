@@ -41,7 +41,7 @@ public:
     void PopMarker() override;
 
     // Common
-    void SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) override;
+    void SetDescriptorHeaps(const RhiDescriptorHeap& descriptorHeap) override;
     void SetPipelineState(const RhiPipelineState& pso) override;
 
     // Graphics
@@ -83,8 +83,8 @@ public:
     // Dispatches
     void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) override;
     void ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) override;
-    void DrawInstanced(const RhiDrawInstancedDesc& desc) override;
-    void DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) override;
+    void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) override;
+    void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) override;
     void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiRaytracingShaderBindingTable& bindTable) override;
 
 private:

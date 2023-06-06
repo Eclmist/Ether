@@ -157,25 +157,13 @@ void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv
     m_CommandList->ClearDepthStencilView(desc);
 }
 
-void Ether::Graphics::GraphicContext::DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances)
-{
-    RhiDrawIndexedInstancedDesc desc = {};
-    desc.m_IndexCount = numIndices;
-    desc.m_InstanceCount = numInstances;
-    desc.m_FirstIndex = 0;
-    desc.m_FirstInstance = 0;
-    desc.m_VertexOffset = 0;
-
-    m_CommandList->DrawIndexedInstanced(desc);
-}
-
 void Ether::Graphics::GraphicContext::DrawInstanced(uint32_t numVertices, uint32_t numInstances)
 {
-    RhiDrawInstancedDesc desc = {};
-    desc.m_VertexCount = numVertices;
-    desc.m_InstanceCount = numInstances;
-    desc.m_FirstVertex = 0;
-    desc.m_FirstInstance = 0;
-
-    m_CommandList->DrawInstanced(desc);
+    m_CommandList->DrawInstanced(numVertices, numInstances, 0, 0);
 }
+
+void Ether::Graphics::GraphicContext::DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances)
+{
+    m_CommandList->DrawIndexedInstanced(numIndices, numInstances, 0, 0, 0);
+}
+

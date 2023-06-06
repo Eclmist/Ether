@@ -42,7 +42,7 @@ public:
     virtual void PopMarker() = 0;
 
     // Common
-    virtual void SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc) = 0;
+    virtual void SetDescriptorHeaps(const RhiDescriptorHeap& descriptorHeap) = 0;
     virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
 
     // Graphics
@@ -84,8 +84,8 @@ public:
     // Dispatches
     virtual void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) = 0;
     virtual void ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
-    virtual void DrawInstanced(const RhiDrawInstancedDesc& desc) = 0;
-    virtual void DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) = 0;
+    virtual void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) = 0;
+    virtual void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) = 0;
     virtual void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiRaytracingShaderBindingTable& bindTable) = 0;
 
 public:

@@ -323,36 +323,6 @@ struct RhiClearDepthStencilViewDesc
     RhiDepthStencilView* m_DsvHandle;
 };
 
-struct RhiDrawInstancedDesc
-{
-    uint32_t m_VertexCount;
-    uint32_t m_InstanceCount;
-    uint32_t m_FirstVertex;
-    uint32_t m_FirstInstance;
-};
-
-struct RhiDrawIndexedInstancedDesc
-{
-    uint32_t m_IndexCount;
-    uint32_t m_InstanceCount;
-    uint32_t m_FirstIndex;
-    uint32_t m_VertexOffset;
-    uint32_t m_FirstInstance;
-};
-
-struct RhiSetDescriptorHeapsDesc
-{
-    uint32_t m_NumHeaps;
-    const RhiDescriptorHeap** m_Heaps;
-};
-
-struct RhiSetRenderTargetsDesc
-{
-    uint32_t m_NumRtv;
-    const RhiRenderTargetView* m_RtvHandles[8];
-    const RhiDepthStencilView* m_DsvHandle;
-};
-
 //======================= Raytracing Descs ========================//
 
 struct RhiBottomLevelAccelerationStructureDesc

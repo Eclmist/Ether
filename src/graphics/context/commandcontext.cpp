@@ -81,13 +81,7 @@ void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, 
 void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
 {
     ETH_MARKER_EVENT("Command Context - Set Descriptor Heap");
-
-    const RhiDescriptorHeap* heaps[1] = { &descriptorHeap };
-
-    RhiSetDescriptorHeapsDesc desc;
-    desc.m_NumHeaps = 1;
-    desc.m_Heaps = heaps;
-    m_CommandList->SetDescriptorHeaps(desc);
+    m_CommandList->SetDescriptorHeaps(descriptorHeap);
 }
 
 void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& pipelineState)

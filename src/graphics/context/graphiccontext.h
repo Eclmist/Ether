@@ -67,8 +67,8 @@ public:
     // Dispatches
     void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
     void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
-    void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
     void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
+    void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
 
 private:
     ethMatrix4x4 m_ViewMatrix;

@@ -41,7 +41,7 @@ Ether::Graphics::Dx12CommandList::Dx12CommandList(RhiCommandType type)
 void Ether::Graphics::Dx12CommandList::Reset()
 {
     if (m_CommandAllocator != nullptr)
-        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator); 
+        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator);
 
     m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator();
 
@@ -73,16 +73,15 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
     PIXEndEvent(m_CommandList.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiSetDescriptorHeapsDesc& desc)
+void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiDescriptorHeap& descriptorHeap)
 {
     // Only one heap of each type ([SRV/CBV/UAV] & [Sampler]) can be bound for each command list
-    AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
-    ID3D12DescriptorHeap* heaps[2];
+    // Don't support sampler heaps for now
+    // AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
+    ID3D12DescriptorHeap* heap;
+    heap = dynamic_cast<const Dx12DescriptorHeap*>(&descriptorHeap)->m_Heap.Get();
 
-    for (int i = 0; i < desc.m_NumHeaps; ++i)
-        heaps[i] = dynamic_cast<const Dx12DescriptorHeap*>(desc.m_Heaps[i])->m_Heap.Get();
-
-    m_CommandList->SetDescriptorHeaps(desc.m_NumHeaps, heaps);
+    m_CommandList->SetDescriptorHeaps(1, &heap);
 }
 
 void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
@@ -328,19 +327,23 @@ void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(const RhiClearDepth
         nullptr);
 }
 
-void Ether::Graphics::Dx12CommandList::DrawInstanced(const RhiDrawInstancedDesc& desc)
+void Ether::Graphics::Dx12CommandList::DrawInstanced(
+    uint32_t numVert,
+    uint32_t numInst,
+    uint32_t firstVert,
+    uint32_t firstInst)
 {
-    m_CommandList->DrawInstanced(desc.m_VertexCount, desc.m_InstanceCount, desc.m_FirstVertex, desc.m_FirstInstance);
+    m_CommandList->DrawInstanced(numVert, numInst, firstVert, firstInst);
 }
 
-void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc)
+void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(
+    uint32_t numIndices,
+    uint32_t numInst,
+    uint32_t firstIdx,
+    uint32_t stride,
+    uint32_t firstInst)
 {
-    m_CommandList->DrawIndexedInstanced(
-        desc.m_IndexCount,
-        desc.m_InstanceCount,
-        desc.m_FirstIndex,
-        desc.m_VertexOffset,
-        desc.m_FirstInstance);
+    m_CommandList->DrawIndexedInstanced(numIndices, numInst, firstIdx, stride, firstInst);
 }
 
 void Ether::Graphics::Dx12CommandList::DispatchRays(
