@@ -33,18 +33,18 @@ public:
     ~Dx12PipelineStateDesc() override = default;
 
 public:
-    void SetBlendState(RhiBlendDesc desc) override;
-    void SetRasterizerState(RhiRasterizerDesc desc) override;
-    void SetInputLayout(RhiInputLayoutDesc desc) override;
-    void SetPrimitiveTopology(RhiPrimitiveTopologyType type) override;
-    void SetDepthStencilState(RhiDepthStencilDesc desc) override;
+    void SetBlendState(const RhiBlendDesc& desc) override;
+    void SetRasterizerState(const RhiRasterizerDesc& desc) override;
+    void SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements) override;
+    void SetPrimitiveTopology(const RhiPrimitiveTopologyType& type) override;
+    void SetDepthStencilState(const RhiDepthStencilDesc& desc) override;
     void SetDepthTargetFormat(RhiFormat dsvFormat) override;
     void SetRenderTargetFormat(RhiFormat rtvFormat) override;
     void SetRenderTargetFormats(uint32_t numRtv, const RhiFormat* rtvFormats) override;
     void SetRootSignature(const RhiRootSignature& rootSignature) override;
     void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
-    void SetVertexShader(RhiShader& vs) override;
-    void SetPixelShader(RhiShader& ps) override;
+    void SetVertexShader(const RhiShader& vs) override;
+    void SetPixelShader(const RhiShader& ps) override;
     void SetNodeMask(uint32_t mask) override;
     void SetSampleMask(uint32_t mask) override;
 

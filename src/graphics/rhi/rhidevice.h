@@ -60,7 +60,7 @@ public:
 protected:
     friend class RhiRootSignatureDesc;
     friend class RhiPipelineStateDesc;
-    virtual std::unique_ptr<RhiPipelineState> CreatePipelineState(const RhiPipelineStateDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiRootSignature> CreateRootSignature(const RhiRootSignatureDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiPipelineState> CreatePipelineState(const char* name, const RhiPipelineStateDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiRootSignature> CreateRootSignature(const char* name, const RhiRootSignatureDesc& desc) const = 0;
 };
 } // namespace Ether::Graphics

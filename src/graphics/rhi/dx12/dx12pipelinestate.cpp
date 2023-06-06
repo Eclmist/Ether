@@ -37,31 +37,31 @@ Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
     SetNodeMask(0);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetBlendState(RhiBlendDesc desc)
+void Ether::Graphics::Dx12PipelineStateDesc::SetBlendState(const RhiBlendDesc& desc)
 {
     m_Dx12PsoDesc.BlendState = Translate(desc);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRasterizerState(RhiRasterizerDesc desc)
+void Ether::Graphics::Dx12PipelineStateDesc::SetRasterizerState(const RhiRasterizerDesc& desc)
 {
     m_Dx12PsoDesc.RasterizerState = Translate(desc);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetInputLayout(RhiInputLayoutDesc desc)
+void Ether::Graphics::Dx12PipelineStateDesc::SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements)
 {
-    for (int i = 0; i < desc.m_NumElements; ++i)
-        m_InputElements.push_back(Translate(desc.m_InputElementDescs[i]));
+    for (int i = 0; i < numElements; ++i)
+        m_InputElements.push_back(Translate(descs[i]));
 
-    m_Dx12PsoDesc.InputLayout.NumElements = desc.m_NumElements;
+    m_Dx12PsoDesc.InputLayout.NumElements = numElements;
     m_Dx12PsoDesc.InputLayout.pInputElementDescs = m_InputElements.data();
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetPrimitiveTopology(RhiPrimitiveTopologyType type)
+void Ether::Graphics::Dx12PipelineStateDesc::SetPrimitiveTopology(const RhiPrimitiveTopologyType& type)
 {
     m_Dx12PsoDesc.PrimitiveTopologyType = Translate(type);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetDepthStencilState(RhiDepthStencilDesc desc)
+void Ether::Graphics::Dx12PipelineStateDesc::SetDepthStencilState(const RhiDepthStencilDesc& desc)
 {
     m_Dx12PsoDesc.DepthStencilState = Translate(desc);
 }
@@ -94,7 +94,7 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSam
     m_Dx12PsoDesc.SampleDesc.Quality = msaaQuality;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(RhiShader& vs)
+void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(const RhiShader& vs)
 {
     AssertGraphics(
         vs.GetType() == RhiShaderType::Vertex,
@@ -105,7 +105,7 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(RhiShader& vs)
     m_Shaders[vs.GetType()] = &vs;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(RhiShader& ps)
+void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(const RhiShader& ps)
 {
     AssertGraphics(
         ps.GetType() == RhiShaderType::Pixel,

@@ -19,11 +19,12 @@
 */
 
 #include "graphics/schedule/TempRaytracingFrameDump.h"
+
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/rhiresourceviews.h"
-#include "tempframedump.h"
+#include "graphics/shaders/common/globalconstants.h"
 
 static const wchar_t* kRayGenShader = L"RayGeneration";
 static const wchar_t* kMissShader = L"Miss";
@@ -111,8 +112,6 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& graphicCon
         isTlasInitialized = true;
     }
 
-    UploadGlobalConstants(graphicContext);
-
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     graphicContext.PushMarker("Clear");
@@ -156,18 +155,17 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
-    rsDesc->SetAsDescriptorTable(0, 3, RhiShaderVisibility::All);
+    rsDesc->SetAsDescriptorTable(0, 2, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 1, 0);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav, 1, 1);
-    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Cbv, 1, 2);
-
-    m_RayGenRootSignature = rsDesc->Compile();
+    m_RayGenRootSignature = rsDesc->Compile("Ray Generation Root Signature (Local)");
 
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, true);
-    m_HitMissRootSignature = rsDesc->Compile();
+    m_HitMissRootSignature = rsDesc->Compile("Empty Root Signature (Local)");
 
-    rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, false);
-    m_GlobalRootSignature = rsDesc->Compile();
+    rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, false);
+    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
+    m_GlobalRootSignature = rsDesc->Compile("Empty Root Signature (Global)");
 
     m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(3);
 }
@@ -227,21 +225,3 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeAccelerationStructure(
     m_TlasSrv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
 }
 
-void Ether::Graphics::TempRaytracingFrameDump::UploadGlobalConstants(GraphicContext& context)
-{
-    // Set up global constants
-    Shader::GlobalConstants* globalConstants;
-    m_ConstantBuffer->Map((void**)&globalConstants);
-    globalConstants->m_ViewMatrix = context.GetViewMatrix();
-    globalConstants->m_ProjectionMatrix = context.GetProjectionMatrix();
-    globalConstants->m_EyeDirection = context.GetEyeDirection().Resize<4>();
-    globalConstants->m_EyePosition = context.GetEyePosition().Resize<4>();
-    globalConstants->m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
-    globalConstants->m_Time = ethVector4(
-        Time::GetTimeSinceStartup() / 20,
-        Time::GetTimeSinceStartup(),
-        Time::GetTimeSinceStartup() * 2,
-        Time::GetTimeSinceStartup() * 3);
-
-    m_ConstantBuffer->Unmap();
-}

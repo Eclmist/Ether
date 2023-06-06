@@ -21,9 +21,10 @@
 #include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhishader.h"
 
-std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiPipelineStateDesc::Compile() const
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiPipelineStateDesc::Compile(
+    const char* name) const
 {
-    return GraphicCore::GetDevice().CreatePipelineState(*this);
+    return GraphicCore::GetDevice().CreatePipelineState(name, *this);
 }
 
 bool Ether::Graphics::RhiPipelineStateDesc::RequiresShaderCompilation() const
@@ -43,7 +44,7 @@ void Ether::Graphics::RhiPipelineStateDesc::CompileShaders()
         {
             try
             {
-                shader.second->Compile();
+                const_cast<RhiShader*>(shader.second)->Compile();
             }
             catch (std::runtime_error err)
             {

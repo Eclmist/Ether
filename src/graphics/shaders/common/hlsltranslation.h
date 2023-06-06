@@ -19,29 +19,24 @@
 
 #pragma once
 
-#include "graphics/pch.h"
+#ifdef __cplusplus
+#define ETH_BEGIN_SHADER_NAMESPACE namespace Ether::Graphics::Shader {
+#define ETH_END_SHADER_NAMESPACE }
+#else
+#define ETH_BEGIN_SHADER_NAMESPACE
+#define ETH_END_SHADER_NAMESPACE
+#endif
 
-namespace Ether::Graphics::VertexFormats
-{
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
-{
-public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+#ifdef __HLSL__
+typedef float4x4 ethMatrix4x4;
+typedef float3x3 ethMatrix3x3;
 
-public:
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
+typedef float4 ethVector4;
+typedef float3 ethVector3;
+typedef float2 ethVector2;
 
-public:
-    static RhiInputElementDesc s_InputElementDesc[5];
-    static uint32_t s_NumElements;
+typedef uint4 ethVector4u;
+typedef uint3 ethVector3u;
+typedef uint2 ethVector2u;
+#endif
 
-public:
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
-};
-} // namespace Ether::Graphics::VertexFormats

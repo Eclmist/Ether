@@ -19,29 +19,15 @@
 
 #pragma once
 
-#include "graphics/pch.h"
+#include "hlsltranslation.h"
 
-namespace Ether::Graphics::VertexFormats
+ETH_BEGIN_SHADER_NAMESPACE
+
+struct RaytracingConstantBuffer
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
-{
-public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
-
-public:
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
-
-public:
-    static RhiInputElementDesc s_InputElementDesc[5];
-    static uint32_t s_NumElements;
-
-public:
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
+    ethVector4 m_Padding0;
+    ethVector4 m_Padding1;
+    ethVector4 m_Padding2;
 };
-} // namespace Ether::Graphics::VertexFormats
+
+ETH_END_SHADER_NAMESPACE

@@ -70,7 +70,7 @@ public:
     virtual void SetFlags(RhiRootSignatureFlag flag) = 0;
 
 public:
-    std::unique_ptr<RhiRootSignature> Compile() const;
+    std::unique_ptr<RhiRootSignature> Compile(const char* name) const;
 
 protected:
     uint32_t m_NumParameters;

@@ -32,7 +32,7 @@ public:
     ~ResourceContext() = default;
 
 public:
-    void AddPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
+    void RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc);
     RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
 
 private:

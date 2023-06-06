@@ -19,7 +19,7 @@
 
 #include "graphics/context/resourcecontext.h"
 
-void Ether::Graphics::ResourceContext::AddPipelineState(RhiPipelineStateDesc& pipelineStateDesc)
+void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc)
 {
     // This caching doesn't actually work since it just cheats by using the address as a key
     // A mechanism for hashing the pipeline state data (maybe inherit serializable and create a stringstream?)
@@ -35,12 +35,12 @@ void Ether::Graphics::ResourceContext::AddPipelineState(RhiPipelineStateDesc& pi
     if (pipelineStateDesc.RequiresShaderCompilation())
     {
         pipelineStateDesc.CompileShaders();
-        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile();
+        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
         return;
     }
 
     if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
-        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile();
+        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
 }
 
 Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipelineState(
@@ -48,8 +48,8 @@ Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipeline
 {
     if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
     {
-        LogGraphicsWarning("A pipeline state desc was not cached at compile time. This will affect performance");
-        AddPipelineState(pipelineStateDesc);
+        LogGraphicsError("A pipeline state desc was registered before use");
+        RegisterPipelineState("Unknown Pipeline State", pipelineStateDesc);
     }
 
     return *m_CachedPipelineStates.at(&pipelineStateDesc);
@@ -58,5 +58,5 @@ Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipeline
 void Ether::Graphics::ResourceContext::RecompilePipelineStates()
 {
     for (auto& psoPair : m_CachedPipelineStates)
-        AddPipelineState(*psoPair.first);
+        RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
 }

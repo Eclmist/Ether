@@ -21,10 +21,14 @@
 #include "graphics/graphicdisplay.h"
 #include "graphics/schedule/framescheduler.h"
 
+#include "graphics/schedule/gbufferproducer.h"
+#include "graphics/schedule/globalconstantsproducer.h"
+
+Ether::Graphics::GBufferProducer* g_GBufferProducer;
+Ether::Graphics::GlobalConstantsProducer* g_GlobalConstantsProducer;
+
 // TEMP ============================================
-#include "graphics/schedule/tempframedump.h"
 #include "graphics/schedule/TempRaytracingFrameDump.h"
-Ether::Graphics::TempFrameDump* g_TempFrameDump;
 Ether::Graphics::TempRaytracingFrameDump* g_TempRaytracingPass;
 // =================================================
 
@@ -33,7 +37,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     // This should be where render passes should be scheduled.
 
     // For now, just setup the temp frame dump here
-    g_TempFrameDump = new TempFrameDump();
+    g_GBufferProducer = new GBufferProducer();
+    g_GlobalConstantsProducer = new GlobalConstantsProducer();
     g_TempRaytracingPass = new TempRaytracingFrameDump();
 
     // Also for now, add imgui here
@@ -42,7 +47,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
-    delete g_TempFrameDump;
+    delete g_GBufferProducer;
+    delete g_GlobalConstantsProducer;
     delete g_TempRaytracingPass;
 }
 
@@ -55,7 +61,8 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Put it into resource context (unordered_map cache)
 
     g_TempRaytracingPass->Initialize(m_ResourceContext);
-    g_TempFrameDump->Initialize(m_ResourceContext);
+    g_GBufferProducer->Initialize(m_ResourceContext);
+    g_GlobalConstantsProducer->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -72,7 +79,8 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
         m_ResourceContext.RecompilePipelineStates();
 
     g_TempRaytracingPass->FrameSetup(m_ResourceContext);
-    g_TempFrameDump->FrameSetup(m_ResourceContext);
+    g_GBufferProducer->FrameSetup(m_ResourceContext);
+    g_GlobalConstantsProducer->FrameSetup(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
@@ -85,16 +93,17 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
 
     context.Reset();
 
+    g_GlobalConstantsProducer->Reset();
+    g_GlobalConstantsProducer->Render(context, m_ResourceContext);
+
+    g_GBufferProducer->Reset();
+    g_GBufferProducer->Render(context, m_ResourceContext);
+
     // For now, just render the frame dump
     if (GraphicCore::GetGraphicConfig().m_RaytracingDebugMode)
     {
         g_TempRaytracingPass->Reset();
         g_TempRaytracingPass->Render(context, m_ResourceContext);
-    }
-    else
-    {
-        g_TempFrameDump->Reset();
-        g_TempFrameDump->Render(context, m_ResourceContext);
     }
 
     context.FinalizeAndExecute();

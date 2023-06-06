@@ -22,7 +22,10 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal)
+Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(
+    uint32_t numParams,
+    uint32_t numSamplers,
+    bool isLocal)
     : RhiRootSignatureDesc(numParams, numSamplers)
 {
     m_Dx12RootParameters.resize(numParams);

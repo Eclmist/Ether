@@ -20,28 +20,27 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/context/resourcecontext.h"
+#include "graphics/context/graphiccontext.h"
 
-namespace Ether::Graphics::VertexFormats
+namespace Ether::Graphics
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
+class GBufferProducer
 {
 public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+    void Reset();
+    void Initialize(ResourceContext& resourceContext);
+    void FrameSetup(ResourceContext& resourceContext);
+    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
 
-public:
-    void Serialize(OStream& ostream) const;
-    void Deserialize(IStream& istream);
+private:
+    std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
+    std::unique_ptr<RhiDepthStencilView> m_Dsv;
+    std::unique_ptr<RhiResource> m_DepthBuffer;
 
-public:
-    static RhiInputElementDesc s_InputElementDesc[5];
-    static uint32_t s_NumElements;
-
-public:
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
-    ethVector2 m_TexCoord;
+    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
+    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
 };
-} // namespace Ether::Graphics::VertexFormats
+} // namespace Ether::Graphics

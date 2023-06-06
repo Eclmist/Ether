@@ -57,13 +57,10 @@ public:
     RhiDepthStencilDesc m_DepthStateReadOnly;
     RhiDepthStencilDesc m_DepthStateTestEqual;
 
-    RhiInputLayoutDesc m_DefaultInputLayout;
-
     RhiSamplerParameterDesc m_PointSampler;
     RhiSamplerParameterDesc m_BilinearSampler;
     RhiSamplerParameterDesc m_EnvMapSampler;
 
     std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;
-    std::unique_ptr<RhiRootSignature> m_DefaultRootSignature;
 };
 } // namespace Ether::Graphics

@@ -121,12 +121,6 @@ struct RhiInputElementDesc
     uint32_t m_InstanceDataStepRate;
 };
 
-struct RhiInputLayoutDesc
-{
-    RhiInputElementDesc* m_InputElementDescs;
-    uint32_t m_NumElements;
-};
-
 struct RhiRasterizerDesc
 {
     RhiFillMode m_FillMode;

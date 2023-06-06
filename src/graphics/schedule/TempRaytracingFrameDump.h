@@ -42,8 +42,6 @@ protected:
     void InitializePipelineStates();
     void InitializeAccelerationStructure(const VisualBatch* visualBatch, GraphicContext& context);
 
-    void UploadGlobalConstants(GraphicContext& context);
-
 protected:
     std::unique_ptr<RhiShader> m_Shader;
     std::unique_ptr<RhiRootSignature> m_RayGenRootSignature;

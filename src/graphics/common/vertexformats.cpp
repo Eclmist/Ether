@@ -19,6 +19,17 @@
 
 #include "graphics/common/vertexformats.h"
 
+Ether::Graphics::RhiInputElementDesc
+    Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc[5] = {
+        { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "BITANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+    };
+
+uint32_t Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements = 5;
+
 void Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::Serialize(OStream& ostream) const
 {
     ostream << m_Position;
@@ -36,3 +47,4 @@ void Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::Des
     istream >> m_BiTangent;
     istream >> m_TexCoord;
 }
+

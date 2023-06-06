@@ -255,50 +255,6 @@ std::unique_ptr<Ether::Graphics::RhiPipelineStateDesc> Ether::Graphics::Dx12Devi
     return std::make_unique<Dx12PipelineStateDesc>();
 }
 
-std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::CreateRootSignature(
-    const RhiRootSignatureDesc& desc) const
-{
-    std::unique_ptr<Dx12RootSignature> dx12Obj = std::make_unique<Dx12RootSignature>();
-    wrl::ComPtr<ID3DBlob> rsBlob, errBlob;
-    const Dx12RootSignatureDesc& dx12Desc = dynamic_cast<const Dx12RootSignatureDesc&>(desc);
-
-    HRESULT hr = D3D12SerializeRootSignature(
-        &dx12Desc.m_Dx12RootSignatureDesc,
-        D3D_ROOT_SIGNATURE_VERSION_1,
-        rsBlob.GetAddressOf(),
-        errBlob.GetAddressOf());
-
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to serialize root signature");
-
-    hr = m_Device->CreateRootSignature(
-        1,
-        rsBlob->GetBufferPointer(),
-        rsBlob->GetBufferSize(),
-        IID_PPV_ARGS(&dx12Obj->m_RootSignature));
-
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 Root Signature");
-
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreatePipelineState(
-    const RhiPipelineStateDesc& desc) const
-{
-    std::unique_ptr<Dx12PipelineState> dx12Obj = std::make_unique<Dx12PipelineState>(desc);
-    const Dx12PipelineStateDesc& dx12Desc = dynamic_cast<const Dx12PipelineStateDesc&>(desc);
-
-    HRESULT hr = m_Device->CreateGraphicsPipelineState(
-        &dx12Desc.m_Dx12PsoDesc,
-        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
-
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
-
-    return dx12Obj;
-}
-
 std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
     const RhiTopLevelAccelerationStructureDesc& desc) const
 {
@@ -519,6 +475,55 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
 
     dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
     dx12Obj->SetState(desc.m_State);
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::CreateRootSignature(
+    const char* name,
+    const RhiRootSignatureDesc& desc) const
+{
+    std::unique_ptr<Dx12RootSignature> dx12Obj = std::make_unique<Dx12RootSignature>();
+    wrl::ComPtr<ID3DBlob> rsBlob, errBlob;
+    const Dx12RootSignatureDesc& dx12Desc = dynamic_cast<const Dx12RootSignatureDesc&>(desc);
+
+    HRESULT hr = D3D12SerializeRootSignature(
+        &dx12Desc.m_Dx12RootSignatureDesc,
+        D3D_ROOT_SIGNATURE_VERSION_1,
+        rsBlob.GetAddressOf(),
+        errBlob.GetAddressOf());
+
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to serialize root signature");
+
+    hr = m_Device->CreateRootSignature(
+        1,
+        rsBlob->GetBufferPointer(),
+        rsBlob->GetBufferSize(),
+        IID_PPV_ARGS(&dx12Obj->m_RootSignature));
+
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to create DirectX12 Root Signature");
+
+    dx12Obj->m_RootSignature->SetName(ToWideString(name).c_str());
+
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreatePipelineState(
+    const char* name,
+    const RhiPipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12PipelineState> dx12Obj = std::make_unique<Dx12PipelineState>(desc);
+    const Dx12PipelineStateDesc& dx12Desc = dynamic_cast<const Dx12PipelineStateDesc&>(desc);
+
+    HRESULT hr = m_Device->CreateGraphicsPipelineState(
+        &dx12Desc.m_Dx12PsoDesc,
+        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
+
+    dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
     return dx12Obj;
 }
 

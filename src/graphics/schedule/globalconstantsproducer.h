@@ -20,38 +20,23 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/resources/mesh.h"
 #include "graphics/memory/uploadbufferallocator.h"
 #include "graphics/rhi/rhiresourceviews.h"
 #include "graphics/rhi/rhishader.h"
-#include "graphics/shaders/common/globalconstants.h"
+#include "graphics/context/graphiccontext.h"
+#include "graphics/context/resourcecontext.h"
 
 namespace Ether::Graphics
 {
-class TempFrameDump
+class GlobalConstantsProducer
 {
 public:
     void Reset();
     void Initialize(ResourceContext& resourceContext);
     void FrameSetup(ResourceContext& resourceContext);
     void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
-    void UploadGlobalConstants(GraphicContext& context);
 
 private:
-    RhiInputElementDesc m_InputElementDesc[5] = {
-        { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "BITANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-    };
-
     std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-    std::unique_ptr<RhiDepthStencilView> m_Dsv;
-    std::unique_ptr<RhiResource> m_DepthBuffer;
-
-    std::unique_ptr<RhiShader> vs, ps;
-    std::unique_ptr<RhiRootSignature> rootSignature;
-    std::unique_ptr<RhiPipelineStateDesc> psoDesc;
 };
 } // namespace Ether::Graphics

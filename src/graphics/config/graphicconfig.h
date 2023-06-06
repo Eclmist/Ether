@@ -48,7 +48,7 @@ public:
 
 public:
     // Temporary debugging flags to be removed
-    bool m_RaytracingDebugMode = true;
+    bool m_RaytracingDebugMode;
 
 private:
     ethVector4 m_ClearColor;

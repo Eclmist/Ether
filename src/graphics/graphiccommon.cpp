@@ -111,14 +111,7 @@ void Ether::Graphics::GraphicCommon::InitializeRootSignatures()
 {
     std::unique_ptr<RhiRootSignatureDesc> rootSignatureDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0);
     rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
-    m_EmptyRootSignature = rootSignatureDesc->Compile();
-
-    rootSignatureDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 3);
-    rootSignatureDesc->SetFlags(RhiRootSignatureFlag::None);
-    rootSignatureDesc->SetAsSampler(0, m_PointSampler, RhiShaderVisibility::All);
-    rootSignatureDesc->SetAsSampler(1, m_BilinearSampler, RhiShaderVisibility::All);
-    rootSignatureDesc->SetAsSampler(2, m_EnvMapSampler, RhiShaderVisibility::All);
-    m_DefaultRootSignature = rootSignatureDesc->Compile();
+    m_EmptyRootSignature = rootSignatureDesc->Compile("Empty Root Signature");
 }
 
 void Ether::Graphics::GraphicCommon::InitializeShaders()

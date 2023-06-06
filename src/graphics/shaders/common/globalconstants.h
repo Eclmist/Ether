@@ -19,23 +19,9 @@
 
 #pragma once
 
-#ifdef __HLSL__
-typedef float4x4 ethMatrix4x4;
-typedef float3x3 ethMatrix3x3;
+#include "hlsltranslation.h"
 
-typedef float4 ethVector4;
-typedef float3 ethVector3;
-typedef float2 ethVector2;
-
-typedef uint4 ethVector4u;
-typedef uint3 ethVector3u;
-typedef uint2 ethVector2u;
-#endif
-
-#ifdef __cplusplus
-namespace Ether::Graphics::Shader
-{
-#endif
+ETH_BEGIN_SHADER_NAMESPACE
 
 struct GlobalConstants
 {
@@ -55,6 +41,4 @@ struct GlobalConstants
     ethVector2 m_Padding4;
 };
 
-#ifdef __cplusplus
-}
-#endif
+ETH_END_SHADER_NAMESPACE
