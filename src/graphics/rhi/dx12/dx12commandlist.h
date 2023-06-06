@@ -77,12 +77,11 @@ public:
     void InsertUavBarrier(const RhiResource& uavResource) override;
     void TransitionResource(RhiResource& resource, RhiResourceState newState) override;
     void CopyResource(const RhiResource& src, RhiResource& dest) override;
-    void CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) override;
-    void CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) override;
+    void CopyBufferRegion(const RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset, uint32_t destOffset) override;
 
     // Dispatches
-    void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) override;
-    void ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) override;
+    void ClearRenderTargetView(const RhiRenderTargetView& rtv, const ethVector4& clearColor) override;
+    void ClearDepthStencilView(const RhiDepthStencilView& dsv, float depth, float stencil) override;
     void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) override;
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) override;
     void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiRaytracingShaderBindingTable& bindTable) override;

@@ -283,46 +283,6 @@ struct RhiCommitedResourceDesc
     RhiClearValue* m_ClearValue;
 };
 
-//======================= Command List Descs ========================//
-
-struct RhiCopyBufferRegionDesc
-{
-    RhiResource* m_Source;
-    RhiResource* m_Destination;
-
-    size_t m_SourceOffset;
-    size_t m_DestinationOffset;
-    size_t m_Size;
-};
-
-struct RhiCopyTextureRegionDesc
-{
-    RhiResource* m_IntermediateResource;
-    uint32_t m_IntermediateResourceOffset;
-
-    RhiResource* m_Destination;
-
-    uint32_t m_Width;
-    uint32_t m_Height;
-    uint32_t m_Depth;
-
-    size_t m_BytesPerPixel;
-    void* m_Data;
-};
-
-struct RhiClearRenderTargetViewDesc
-{
-    ethVector4 m_ClearColor;
-    RhiRenderTargetView* m_RtvHandle;
-};
-
-struct RhiClearDepthStencilViewDesc
-{
-    float m_ClearDepth;
-    float m_ClearStencil;
-    RhiDepthStencilView* m_DsvHandle;
-};
-
 //======================= Raytracing Descs ========================//
 
 struct RhiBottomLevelAccelerationStructureDesc

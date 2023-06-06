@@ -101,15 +101,8 @@ void Ether::Graphics::CommandContext::CopyBufferRegion(
     size_t srcOffset,
     size_t destOffset)
 {
-    RhiCopyBufferRegionDesc desc = {};
-    desc.m_Source = &src;
-    desc.m_SourceOffset = srcOffset;
-    desc.m_Destination = &dest;
-    desc.m_DestinationOffset = destOffset;
-    desc.m_Size = size;
-
     TransitionResource(dest, RhiResourceState::CopyDest);
-    m_CommandList->CopyBufferRegion(desc);
+    m_CommandList->CopyBufferRegion(src, dest, size, srcOffset, destOffset);
 }
 
 void Ether::Graphics::CommandContext::InitializeBufferRegion(

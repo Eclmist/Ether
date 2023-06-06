@@ -142,19 +142,12 @@ void Ether::Graphics::GraphicContext::SetGraphicsRootDescriptorTable(
 
 void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const ethVector4& color)
 {
-    RhiClearRenderTargetViewDesc desc = {};
-    desc.m_ClearColor = color;
-    desc.m_RtvHandle = &rtv;
-    m_CommandList->ClearRenderTargetView(desc);
+    m_CommandList->ClearRenderTargetView(rtv, color);
 }
 
 void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil)
 {
-    RhiClearDepthStencilViewDesc desc = {};
-    desc.m_ClearDepth = depth;
-    desc.m_ClearStencil = stencil;
-    desc.m_DsvHandle = &dsv;
-    m_CommandList->ClearDepthStencilView(desc);
+    m_CommandList->ClearDepthStencilView(dsv, depth, stencil);
 }
 
 void Ether::Graphics::GraphicContext::DrawInstanced(uint32_t numVertices, uint32_t numInstances)

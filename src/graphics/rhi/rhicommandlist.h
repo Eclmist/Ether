@@ -78,12 +78,11 @@ public:
     virtual void InsertUavBarrier(const RhiResource& uavResource) = 0;
     virtual void TransitionResource(RhiResource& resource, RhiResourceState newState) = 0;
     virtual void CopyResource(const RhiResource& src, RhiResource& dest) = 0;
-    virtual void CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
-    virtual void CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
+    virtual void CopyBufferRegion(const RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset, uint32_t destOffset) = 0;
 
     // Dispatches
-    virtual void ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc) = 0;
-    virtual void ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
+    virtual void ClearRenderTargetView(const RhiRenderTargetView& rtv, const ethVector4& clearColor) = 0;
+    virtual void ClearDepthStencilView(const RhiDepthStencilView& dsv, float depth, float stencil) = 0;
     virtual void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) = 0;
     virtual void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) = 0;
     virtual void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiRaytracingShaderBindingTable& bindTable) = 0;

@@ -277,52 +277,34 @@ void Ether::Graphics::Dx12CommandList::CopyResource(const RhiResource& src, RhiR
     m_CommandList->CopyResource(dx12DstResource->m_Resource.Get(), dx12SrcResource->m_Resource.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::CopyBufferRegion(const RhiCopyBufferRegionDesc& desc)
+void Ether::Graphics::Dx12CommandList::CopyBufferRegion(
+    const RhiResource& src,
+    RhiResource& dest,
+    uint32_t size,
+    uint32_t srcOff,
+    uint32_t destOff)
 {
-    const auto dx12SrcResource = (Dx12Resource*)desc.m_Source;
-    const auto dx12DstResource = (Dx12Resource*)desc.m_Destination;
+    const auto dx12SrcResource = (Dx12Resource*)&src;
+    const auto dx12DstResource = (Dx12Resource*)&dest;
 
-    m_CommandList->CopyBufferRegion(
-        dx12DstResource->m_Resource.Get(),
-        desc.m_DestinationOffset,
-        dx12SrcResource->m_Resource.Get(),
-        desc.m_SourceOffset,
-        desc.m_Size);
+    m_CommandList
+        ->CopyBufferRegion(dx12DstResource->m_Resource.Get(), destOff, dx12SrcResource->m_Resource.Get(), srcOff, size);
 }
 
-void Ether::Graphics::Dx12CommandList::CopyTextureRegion(const RhiCopyTextureRegionDesc& desc)
+void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(
+    const RhiRenderTargetView& rtv,
+    const ethVector4& clearColor)
 {
-    const auto d3dIntermediateResource = (Dx12Resource*)desc.m_IntermediateResource;
-    const auto d3dDestResource = (Dx12Resource*)desc.m_Destination;
-
-    D3D12_SUBRESOURCE_DATA textureData = {};
-    textureData.pData = desc.m_Data;
-    textureData.RowPitch = desc.m_Width * desc.m_BytesPerPixel;
-    textureData.SlicePitch = desc.m_Height * textureData.RowPitch;
-
-    // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
-    UpdateSubresources(
-        m_CommandList.Get(),
-        d3dDestResource->m_Resource.Get(),
-        d3dIntermediateResource->m_Resource.Get(),
-        desc.m_IntermediateResourceOffset, // offset
-        0,                                 // subresource idx
-        1,                                 // subresource count
-        &textureData);
+    m_CommandList->ClearRenderTargetView({ rtv.GetCpuAddress() }, clearColor.m_Data, 0, nullptr);
 }
 
-void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(const RhiClearRenderTargetViewDesc& desc)
-{
-    m_CommandList->ClearRenderTargetView({ desc.m_RtvHandle->GetCpuAddress() }, desc.m_ClearColor.m_Data, 0, nullptr);
-}
-
-void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc)
+void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(const RhiDepthStencilView& dsv, float depth, float stencil)
 {
     m_CommandList->ClearDepthStencilView(
-        { desc.m_DsvHandle->GetCpuAddress() },
+        { dsv.GetCpuAddress() },
         D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-        desc.m_ClearDepth,
-        desc.m_ClearStencil,
+        depth,
+        stencil,
         0,
         nullptr);
 }
