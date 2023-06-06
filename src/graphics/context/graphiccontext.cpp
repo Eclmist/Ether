@@ -179,9 +179,3 @@ void Ether::Graphics::GraphicContext::DrawInstanced(uint32_t numVertices, uint32
 
     m_CommandList->DrawInstanced(desc);
 }
-
-void Ether::Graphics::GraphicContext::DispatchRays(const RhiDispatchRaysDesc& desc)
-{
-    m_CommandList->DispatchRays(desc);
-}
-

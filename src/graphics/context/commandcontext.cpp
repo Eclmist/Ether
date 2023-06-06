@@ -141,7 +141,8 @@ void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavRes
     m_CommandList->InsertUavBarrier(uavResource);
 }
 
-void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
+void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(
+    const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);
 }
@@ -149,6 +150,11 @@ void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(cons
 void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTable& bindTable)
+{
+    m_RaytracingShaderBindingTable = const_cast<RhiRaytracingShaderBindingTable*>(&bindTable);
 }
 
 void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState)
@@ -197,3 +203,7 @@ void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
     m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, baseAddress);
 }
 
+void Ether::Graphics::CommandContext::DispatchRays(uint32_t x, uint32_t y, uint32_t z)
+{
+    m_CommandList->DispatchRays(x, y, z, *m_RaytracingShaderBindingTable);
+}

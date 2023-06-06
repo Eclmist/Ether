@@ -79,7 +79,6 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& resou
     uavDesc.m_Dimensions = RhiUnorderedAccessDimension::Texture2D;
 
     m_OutputTextureUav = GraphicCore::GetDevice().CreateUnorderedAccessView(uavDesc);
-
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
@@ -114,6 +113,8 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& graphicCon
 
     UploadGlobalConstants(graphicContext);
 
+    const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
+
     graphicContext.PushMarker("Clear");
     graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
@@ -123,11 +124,9 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& graphicCon
     graphicContext.TransitionResource(*m_OutputTexture, RhiResourceState::UnorderedAccess);
     graphicContext.SetComputeRootSignature(*m_GlobalRootSignature);
     graphicContext.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    graphicContext.SetRaytracingShaderBindingTable(*m_RaytracingShaderBindingTable);
     graphicContext.SetRaytracingPipelineState(*m_RaytracingPipelineState);
-    graphicContext.DispatchRays({ GraphicCore::GetGraphicConfig().GetResolution().x,
-                                  GraphicCore::GetGraphicConfig().GetResolution().y,
-                                  1,
-                                  m_RaytracingShaderBindingTable.get() });
+    graphicContext.DispatchRays(resolution.x, resolution.y, 1);
     graphicContext.PopMarker();
 
     graphicContext.PushMarker("Copy to render target");
@@ -170,7 +169,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, false);
     m_GlobalRootSignature = rsDesc->Compile();
 
-    m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(3); 
+    m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(3);
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
@@ -183,7 +182,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
     desc.m_ClosestHitShaderName = kClosestHitShader;
     desc.m_HitGroupName = kHitGroup;
     desc.m_MaxAttributeSize = sizeof(float) * 2; // From builtin attributes
-    desc.m_MaxPayloadSize = sizeof(ethVector3);   // From payload struct in shader
+    desc.m_MaxPayloadSize = sizeof(ethVector3);  // From payload struct in shader
     desc.m_MaxRecursionDepth = 1;
     desc.m_LibraryShaderDesc = { m_Shader.get(), EntryPoints, sizeof(EntryPoints) / sizeof(EntryPoints[0]) };
     desc.m_RayGenRootSignature = m_RayGenRootSignature.get();
@@ -243,6 +242,6 @@ void Ether::Graphics::TempRaytracingFrameDump::UploadGlobalConstants(GraphicCont
         Time::GetTimeSinceStartup(),
         Time::GetTimeSinceStartup() * 2,
         Time::GetTimeSinceStartup() * 3);
-    
+
     m_ConstantBuffer->Unmap();
 }

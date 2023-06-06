@@ -400,13 +400,4 @@ struct RhiRaytracingShaderBindingTableDesc
     RhiGpuAddress m_RayGenRootTableAddress;
 };
 
-struct RhiDispatchRaysDesc
-{
-    uint32_t m_DispatchWidth;
-    uint32_t m_DispatchHeight;
-    uint32_t m_DispatchDepth;
-
-    RhiRaytracingShaderBindingTable* m_ShaderBindingTable;
-};
-
 } // namespace Ether::Graphics

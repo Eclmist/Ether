@@ -86,7 +86,7 @@ public:
     virtual void ClearDepthStencilView(const RhiClearDepthStencilViewDesc& desc) = 0;
     virtual void DrawInstanced(const RhiDrawInstancedDesc& desc) = 0;
     virtual void DrawIndexedInstanced(const RhiDrawIndexedInstancedDesc& desc) = 0;
-    virtual void DispatchRays(const RhiDispatchRaysDesc& desc) = 0;
+    virtual void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiRaytracingShaderBindingTable& bindTable) = 0;
 
 public:
     RhiCommandType GetType() const { return m_Type; }

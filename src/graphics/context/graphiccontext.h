@@ -69,7 +69,6 @@ public:
     void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
     void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
-    void DispatchRays(const RhiDispatchRaysDesc& desc);
 
 private:
     ethMatrix4x4 m_ViewMatrix;
