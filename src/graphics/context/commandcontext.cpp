@@ -23,22 +23,14 @@
 #include "graphics/rhi/rhicommandqueue.h"
 #include "graphics/rhi/rhiresource.h"
 
-Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::string& contextName)
+Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiCommandType type)
     : m_Name(contextName)
     , m_Type(type)
 {
     ETH_MARKER_EVENT("Command Context - Constructor");
 
-    m_CommandQueue = &GraphicCore::GetCommandManager().GetQueue(type);
-    m_CommandAllocatorPool = &GraphicCore::GetCommandManager().GetAllocatorPool(type);
-    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
-    m_CommandList = GraphicCore::GetCommandManager().CreateCommandList(
-        type,
-        *m_CommandAllocator,
-        m_Name + "::CommandList");
-
+    m_CommandList = GraphicCore::GetCommandManager().CreateCommandList(contextName, type);
     m_CommandList->Close();
-    m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
 
     m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_32MiB);
 }
@@ -46,15 +38,19 @@ Ether::Graphics::CommandContext::CommandContext(RhiCommandType type, const std::
 void Ether::Graphics::CommandContext::Reset()
 {
     ETH_MARKER_EVENT("Command Context - Reset");
-    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator(m_CommandQueue->GetCurrentFenceValue());
-    m_CommandList->Reset(*m_CommandAllocator);
+    m_CommandList->Reset();
     PushMarker(m_Name);
 }
 
-Ether::Graphics::CommandContext::~CommandContext()
+void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
-    if (m_CommandAllocator != nullptr && m_CommandAllocatorPool != nullptr)
-        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
+    ETH_MARKER_EVENT("Command Context - Finalize and Execute");
+    PopMarker();
+
+    GraphicCore::GetCommandManager().GetQueue(m_Type).Execute(*m_CommandList);
+
+    if (waitForCompletion)
+        GraphicCore::GetCommandManager().GetQueue(m_Type).Flush();
 }
 
 void Ether::Graphics::CommandContext::SetMarker(const std::string& name)
@@ -79,11 +75,7 @@ void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, 
     if (resource.GetCurrentState() == newState)
         return;
 
-    RhiResourceTransitionDesc transitionDesc = {};
-    transitionDesc.m_Resource = &resource;
-    transitionDesc.m_FromState = resource.GetCurrentState();
-    transitionDesc.m_ToState = newState;
-    m_CommandList->TransitionResource(transitionDesc);
+    m_CommandList->TransitionResource(resource, newState);
 }
 
 void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
@@ -203,17 +195,5 @@ void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
     RhiGpuAddress baseAddress)
 {
     m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, baseAddress);
-}
-
-void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
-{
-    ETH_MARKER_EVENT("Command Context - Finalize and Execute");
-    PopMarker();
-    m_CommandQueue->Execute(*m_CommandList);
-    m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator, m_CommandQueue->GetFinalFenceValue());
-    m_CommandAllocator = nullptr;
-
-    if (waitForCompletion)
-        m_CommandQueue->Flush();
 }
 

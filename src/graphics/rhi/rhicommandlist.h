@@ -24,17 +24,16 @@
 
 namespace Ether::Graphics
 {
+class CommandAllocatorPool;
+
 class RhiCommandList : public NonCopyable, public NonMovable
 {
 public:
-    RhiCommandList(RhiCommandType type)
-        : m_Type(type)
-    {
-    }
+    RhiCommandList(RhiCommandType type);
     virtual ~RhiCommandList() = default;
 
 public:
-    virtual void Reset(const RhiCommandAllocator& commandAllocator) = 0;
+    virtual void Reset() = 0;
     virtual void Close() = 0;
 
     // Markers
@@ -77,7 +76,7 @@ public:
 
     // Barriers
     virtual void InsertUavBarrier(const RhiResource& uavResource) = 0;
-    virtual void TransitionResource(const RhiResourceTransitionDesc& desc) = 0;
+    virtual void TransitionResource(RhiResource& resource, RhiResourceState newState) = 0;
     virtual void CopyResource(const RhiResource& src, RhiResource& dest) = 0;
     virtual void CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) = 0;
     virtual void CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) = 0;
@@ -94,5 +93,8 @@ public:
 
 protected:
     RhiCommandType m_Type;
+    RhiCommandQueue* m_CommandQueue;
+    CommandAllocatorPool* m_CommandAllocatorPool;
+    RhiCommandAllocator* m_CommandAllocator;
 };
 } // namespace Ether::Graphics

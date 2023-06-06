@@ -31,10 +31,7 @@ public:
     CommandManager();
     ~CommandManager() = default;
 
-    std::unique_ptr<RhiCommandList> CreateCommandList(
-        RhiCommandType type,
-        RhiCommandAllocator& alloc,
-        const std::string& name);
+    std::unique_ptr<RhiCommandList> CreateCommandList(const char* name, RhiCommandType type);
 
 public:
     RhiFenceValue Execute(RhiCommandList& cmdList);

@@ -29,11 +29,23 @@
 #include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 
+#include "graphics/graphiccore.h"
+
 #ifdef ETH_GRAPHICS_DX12
 
-void Ether::Graphics::Dx12CommandList::Reset(const RhiCommandAllocator& commandAllocator)
+Ether::Graphics::Dx12CommandList::Dx12CommandList(RhiCommandType type)
+    : RhiCommandList(type)
 {
-    const auto allocator = dynamic_cast<const Dx12CommandAllocator&>(commandAllocator);
+}
+
+void Ether::Graphics::Dx12CommandList::Reset()
+{
+    if (m_CommandAllocator != nullptr)
+        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator); 
+
+    m_CommandAllocator = &m_CommandAllocatorPool->RequestAllocator();
+
+    const auto allocator = dynamic_cast<const Dx12CommandAllocator&>(*m_CommandAllocator);
     HRESULT hr = m_CommandList->Reset(allocator.m_Allocator.Get(), nullptr);
     if (FAILED(hr))
         LogGraphicsFatal("Failed to reset DirectX12 Command List");
@@ -241,13 +253,19 @@ void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavRe
     m_CommandList->ResourceBarrier(1, &uavBarrier);
 }
 
-void Ether::Graphics::Dx12CommandList::TransitionResource(const RhiResourceTransitionDesc& desc)
+void Ether::Graphics::Dx12CommandList::TransitionResource(RhiResource& resource, RhiResourceState newState)
 {
-    D3D12_RESOURCE_BARRIER barrier = Translate(desc);
-    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
-    barrier.Transition.pResource = dx12Resource->m_Resource.Get();
-    m_CommandList->ResourceBarrier(1, &barrier);
-    desc.m_Resource->SetState(desc.m_ToState);
+    D3D12_RESOURCE_BARRIER dx12Desc = {};
+    dx12Desc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    dx12Desc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+    dx12Desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    dx12Desc.Transition.StateBefore = Translate(resource.GetCurrentState());
+    dx12Desc.Transition.StateAfter = Translate(newState);
+
+    Dx12Resource* dx12Resource = dynamic_cast<Dx12Resource*>(&resource);
+    dx12Desc.Transition.pResource = dx12Resource->m_Resource.Get();
+    m_CommandList->ResourceBarrier(1, &dx12Desc);
+    resource.SetState(newState);
 }
 
 void Ether::Graphics::Dx12CommandList::CopyResource(const RhiResource& src, RhiResource& dest)

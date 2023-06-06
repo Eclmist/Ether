@@ -24,8 +24,8 @@
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhiresourceviews.h"
 
-Ether::Graphics::GraphicContext::GraphicContext(const std::string& contextName)
-    : CommandContext(RhiCommandType::Graphic, contextName)
+Ether::Graphics::GraphicContext::GraphicContext(const char* contextName)
+    : CommandContext(contextName, RhiCommandType::Graphic)
     , m_ViewMatrix()
     , m_ProjectionMatrix()
     , m_EyeDirection()

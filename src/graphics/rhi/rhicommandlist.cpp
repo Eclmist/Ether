@@ -17,30 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "graphics/rhi/rhicommandlist.h"
+#include "graphics/graphiccore.h"
 
-#include "graphics/pch.h"
-#include "graphics/rhi/rhicommandallocator.h"
-#include <queue>
-
-namespace Ether::Graphics
+Ether::Graphics::RhiCommandList::RhiCommandList(RhiCommandType type)
+    : m_Type(type)
+    , m_CommandAllocator(nullptr)
 {
-class CommandAllocatorPool : public NonCopyable, public NonMovable
-{
-public:
-    CommandAllocatorPool(RhiCommandType type);
-    ~CommandAllocatorPool() = default;
-
-    RhiCommandAllocator& RequestAllocator();
-    void DiscardAllocator(RhiCommandAllocator& allocator);
-
-private:
-    RhiCommandAllocator& CreateNewAllocator();
-
-private:
-    const RhiCommandType m_Type;
-
-    std::vector<std::unique_ptr<RhiCommandAllocator>> m_AllocatorPool;
-    std::queue<std::pair<RhiCommandAllocator&, RhiFenceValue>> m_DiscardedAllocators;
-};
-} // namespace Ether::Graphics
+    m_CommandQueue = &GraphicCore::GetCommandManager().GetQueue(type);
+    m_CommandAllocatorPool = &GraphicCore::GetCommandManager().GetAllocatorPool(type);
+}

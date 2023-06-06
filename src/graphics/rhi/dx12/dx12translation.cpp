@@ -768,18 +768,6 @@ D3D12_INDEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiIndexBufferViewDesc&
     return dx12Desc;
 }
 
-D3D12_RESOURCE_BARRIER Ether::Graphics::Translate(const RhiResourceTransitionDesc& rhiDesc)
-{
-    D3D12_RESOURCE_BARRIER dx12Desc = {};
-    dx12Desc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    dx12Desc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    dx12Desc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    dx12Desc.Transition.StateBefore = Translate(rhiDesc.m_FromState);
-    dx12Desc.Transition.StateAfter = Translate(rhiDesc.m_ToState);
-
-    return dx12Desc;
-}
-
 D3D12_RESOURCE_DESC Ether::Graphics::Translate(const RhiResourceDesc& rhiDesc)
 {
     D3D12_RESOURCE_DESC dx12Desc = {};

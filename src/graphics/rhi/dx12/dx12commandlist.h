@@ -28,14 +28,11 @@ namespace Ether::Graphics
 class Dx12CommandList : public RhiCommandList
 {
 public:
-    Dx12CommandList(RhiCommandType type)
-        : RhiCommandList(type)
-    {
-    }
+    Dx12CommandList(RhiCommandType type);
     ~Dx12CommandList() override = default;
 
 public:
-    void Reset(const RhiCommandAllocator& commandAllocator) override;
+    void Reset() override;
     void Close() override;
 
     // Markers
@@ -78,7 +75,7 @@ public:
 
     // Barriers
     void InsertUavBarrier(const RhiResource& uavResource) override;
-    void TransitionResource(const RhiResourceTransitionDesc& desc) override;
+    void TransitionResource(RhiResource& resource, RhiResourceState newState) override;
     void CopyResource(const RhiResource& src, RhiResource& dest) override;
     void CopyBufferRegion(const RhiCopyBufferRegionDesc& desc) override;
     void CopyTextureRegion(const RhiCopyTextureRegionDesc& desc) override;

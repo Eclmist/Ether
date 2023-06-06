@@ -34,8 +34,8 @@ public:
     virtual ~RhiDevice() = default;
 
 public:
-    virtual std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandAllocatorDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiCommandList> CreateCommandList(const RhiCommandListDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandType& type) const = 0;
+    virtual std::unique_ptr<RhiCommandList> CreateCommandList(const char* name, const RhiCommandType& type) const = 0;
     virtual std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandQueueDesc& desc) const = 0;
     virtual std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapDesc& desc) const = 0;
     virtual std::unique_ptr<RhiFence> CreateFence() const = 0;

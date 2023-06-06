@@ -34,7 +34,7 @@ void Ether::Graphics::GraphicRenderer::WaitForPresent()
 {
     ETH_MARKER_EVENT("Renderer - Wait for Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    m_Context.GetCommandQueue().StallForFence(gfxDisplay.GetBackBufferFence());
+    GraphicCore::GetCommandManager().GetGraphicQueue().StallForFence(gfxDisplay.GetBackBufferFence());
 
     m_FrameNumber++;
 }
@@ -50,6 +50,6 @@ void Ether::Graphics::GraphicRenderer::Present()
 {
     ETH_MARKER_EVENT("Renderer - Present");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    gfxDisplay.SetCurrentBackBufferFence(m_Context.GetCommandQueue().GetFinalFenceValue());
+    gfxDisplay.SetCurrentBackBufferFence(GraphicCore::GetCommandManager().GetGraphicQueue().GetFinalFenceValue());
     gfxDisplay.Present();
 }

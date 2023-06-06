@@ -74,7 +74,7 @@ Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID 
 
 void Ether::ResourceManager::CreateGpuResources() const 
 {
-    Graphics::CommandContext ctx(Graphics::RhiCommandType::Graphic, "CommandContext - Mesh Loading");
+    Graphics::CommandContext ctx("CommandContext - Mesh Loading");
 
     ctx.Reset();
     for (auto& pair : m_Meshes)

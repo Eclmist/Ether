@@ -33,11 +33,11 @@ class CommandAllocatorPool;
 class ETH_GRAPHIC_DLL CommandContext : public NonCopyable, public NonMovable
 {
 public:
-    CommandContext(RhiCommandType type, const std::string& contextName = "Unnamed Command Context");
-    ~CommandContext();
+    CommandContext(const char* contextName, RhiCommandType type = RhiCommandType::Graphic);
+    ~CommandContext() = default;
 
+public:
     inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
-    inline RhiCommandQueue& GetCommandQueue() const { return *m_CommandQueue; }
 
 public:
     void Reset();
@@ -75,12 +75,8 @@ public:
     void CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
 
 protected:
-    std::string m_Name;
+    const char* m_Name;
     RhiCommandType m_Type;
-
-    RhiCommandQueue* m_CommandQueue;
-    RhiCommandAllocator* m_CommandAllocator;
-    CommandAllocatorPool* m_CommandAllocatorPool;
 
     std::unique_ptr<RhiCommandList> m_CommandList;
     std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;

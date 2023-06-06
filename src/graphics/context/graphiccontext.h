@@ -29,7 +29,7 @@ namespace Ether::Graphics
 class ETH_GRAPHIC_DLL GraphicContext : public CommandContext
 {
 public:
-    GraphicContext(const std::string& contextName = "Unnamed Graphic Context");
+    GraphicContext(const char* contextName);
     ~GraphicContext() = default;
 
 public:

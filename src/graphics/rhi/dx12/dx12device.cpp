@@ -43,11 +43,11 @@
 #ifdef ETH_GRAPHICS_DX12
 
 std::unique_ptr<Ether::Graphics::RhiCommandAllocator> Ether::Graphics::Dx12Device::CreateCommandAllocator(
-    const RhiCommandAllocatorDesc& desc) const
+    const RhiCommandType& type) const
 {
-    std::unique_ptr<Dx12CommandAllocator> dx12View = std::make_unique<Dx12CommandAllocator>(desc.m_Type);
+    std::unique_ptr<Dx12CommandAllocator> dx12View = std::make_unique<Dx12CommandAllocator>(type);
 
-    HRESULT hr = m_Device->CreateCommandAllocator(Translate(desc.m_Type), IID_PPV_ARGS(&dx12View->m_Allocator));
+    HRESULT hr = m_Device->CreateCommandAllocator(Translate(type), IID_PPV_ARGS(&dx12View->m_Allocator));
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to create DirectX12 Command Allocator");
@@ -56,14 +56,17 @@ std::unique_ptr<Ether::Graphics::RhiCommandAllocator> Ether::Graphics::Dx12Devic
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::CreateCommandList(
-    const RhiCommandListDesc& desc) const
+    const char* name,
+    const RhiCommandType& type) const
 {
-    std::unique_ptr<Dx12CommandList> dx12Obj = std::make_unique<Dx12CommandList>(desc.m_Type);
-    Dx12CommandAllocator* allocator = dynamic_cast<Dx12CommandAllocator*>(desc.m_Allocator);
+    std::unique_ptr<Dx12CommandList> dx12Obj = std::make_unique<Dx12CommandList>(type);
+
+    Dx12CommandAllocator* allocator = dynamic_cast<Dx12CommandAllocator*>(
+        &GraphicCore::GetCommandManager().GetAllocatorPool(type).RequestAllocator());
 
     HRESULT hr = m_Device->CreateCommandList(
         1,
-        Translate(desc.m_Type),
+        Translate(type),
         allocator->m_Allocator.Get(),
         nullptr,
         IID_PPV_ARGS(&dx12Obj->m_CommandList));
@@ -71,7 +74,9 @@ std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::Dx12Device::Cr
     if (FAILED(hr))
         LogGraphicsFatal("Failed to create DirectX12 Command List");
 
-    dx12Obj->m_CommandList->SetName(ToWideString(desc.m_Name).c_str());
+    GraphicCore::GetCommandManager().GetAllocatorPool(type).DiscardAllocator(*allocator);
+
+    dx12Obj->m_CommandList->SetName(ToWideString(name).c_str());
     return dx12Obj;
 }
 

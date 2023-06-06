@@ -66,7 +66,6 @@ D3D12_DESCRIPTOR_HEAP_DESC Translate(const RhiDescriptorHeapDesc& rhiDesc);
 D3D12_INPUT_ELEMENT_DESC Translate(const RhiInputElementDesc& rhiDesc);
 D3D12_RASTERIZER_DESC Translate(const RhiRasterizerDesc& rhiDesc);
 D3D12_RECT Translate(const RhiScissorDesc& rhiDesc);
-D3D12_RESOURCE_BARRIER Translate(const RhiResourceTransitionDesc& rhiDesc);
 D3D12_RESOURCE_DESC Translate(const RhiResourceDesc& rhiDesc);
 D3D12_STATIC_SAMPLER_DESC Translate(const RhiSamplerParameterDesc& rhiDesc);
 D3D12_VIEWPORT Translate(const RhiViewportDesc& rhiDesc);

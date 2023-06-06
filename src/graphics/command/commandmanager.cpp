@@ -34,13 +34,10 @@ Ether::Graphics::CommandManager::CommandManager()
 }
 
 std::unique_ptr<Ether::Graphics::RhiCommandList> Ether::Graphics::CommandManager::CreateCommandList(
-    RhiCommandType type, RhiCommandAllocator& alloc, const std::string& name)
+    const char* name,
+    RhiCommandType type)
 {
-    RhiCommandListDesc desc;
-    desc.m_Allocator = &alloc;
-    desc.m_Type = type;
-    desc.m_Name = name;
-    return GraphicCore::GetDevice().CreateCommandList(desc);
+    return GraphicCore::GetDevice().CreateCommandList(name, type);
 }
 
 Ether::Graphics::RhiFenceValue Ether::Graphics::CommandManager::Execute(RhiCommandList& cmdList)

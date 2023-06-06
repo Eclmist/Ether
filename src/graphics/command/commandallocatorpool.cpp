@@ -27,13 +27,14 @@ Ether::Graphics::CommandAllocatorPool::CommandAllocatorPool(RhiCommandType type)
 {
 }
 
-Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::RequestAllocator(
-    RhiFenceValue completedFenceValue)
+Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::RequestAllocator()
 {
+    RhiFenceValue currentFenceValue = GraphicCore::GetCommandManager().GetQueue(m_Type).GetCurrentFenceValue();
+
     if (m_DiscardedAllocators.empty())
         return CreateNewAllocator();
 
-    if (m_DiscardedAllocators.front().second > completedFenceValue)
+    if (m_DiscardedAllocators.front().second > currentFenceValue)
         return CreateNewAllocator();
 
     RhiCommandAllocator& allocator = m_DiscardedAllocators.front().first;
@@ -42,9 +43,10 @@ Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::Req
     return allocator;
 }
 
-void Ether::Graphics::CommandAllocatorPool::DiscardAllocator(RhiCommandAllocator& allocator, RhiFenceValue fenceValue)
+void Ether::Graphics::CommandAllocatorPool::DiscardAllocator(RhiCommandAllocator& allocator)
 {
-    m_DiscardedAllocators.emplace(allocator, fenceValue);
+    RhiFenceValue finalFenceValue = GraphicCore::GetCommandManager().GetQueue(m_Type).GetFinalFenceValue();
+    m_DiscardedAllocators.emplace(allocator, finalFenceValue);
 }
 
 Ether::Graphics::RhiCommandAllocator& Ether::Graphics::CommandAllocatorPool::CreateNewAllocator()

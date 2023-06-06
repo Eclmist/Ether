@@ -90,18 +90,6 @@ struct RhiBlendDesc
     RhiRenderTargetWriteMask m_WriteMask;
 };
 
-struct RhiCommandAllocatorDesc
-{
-    RhiCommandType m_Type;
-};
-
-struct RhiCommandListDesc
-{
-    std::string m_Name;
-    RhiCommandType m_Type;
-    RhiCommandAllocator* m_Allocator;
-};
-
 struct RhiCommandQueueDesc
 {
     RhiCommandType m_Type;
@@ -362,13 +350,6 @@ struct RhiDrawIndexedInstancedDesc
     uint32_t m_FirstIndex;
     uint32_t m_VertexOffset;
     uint32_t m_FirstInstance;
-};
-
-struct RhiResourceTransitionDesc
-{
-    RhiResource* m_Resource;
-    RhiResourceState m_FromState;
-    RhiResourceState m_ToState;
 };
 
 struct RhiSetDescriptorHeapsDesc

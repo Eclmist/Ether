@@ -26,9 +26,9 @@
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhidescriptorheap.h"
 
+#include "graphics/command/commandmanager.h"
 #include "graphics/common/visualbatch.h"
 #include "graphics/config/graphicconfig.h"
-#include "graphics/command/commandmanager.h"
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessresourcemanager.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
