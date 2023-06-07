@@ -23,18 +23,18 @@
 
 namespace Ether::Graphics
 {
-class RhiRaytracingShaderBindingTable
+class RhiRaytracingShaderBindingTable : public RhiResource
 {
 public:
-    RhiRaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries);
-    virtual ~RhiRaytracingShaderBindingTable() = default;
+    RhiRaytracingShaderBindingTable(const char* name, uint32_t maxEntrySize, uint32_t numEntries);
+    virtual ~RhiRaytracingShaderBindingTable() = 0;
 
-public:
+    void Map(void** mappedAddr) const override{}
+    void Unmap() const override {}
+
+ public:
     inline uint32_t GetTableSize() const { return m_ShaderTableSize; }
     inline uint32_t GetTableEntrySize() const { return m_ShaderTableEntrySize; }
-
-public:
-    virtual RhiGpuAddress GetGpuAddress() const = 0;
 
 protected:
     uint32_t m_ShaderTableEntrySize;

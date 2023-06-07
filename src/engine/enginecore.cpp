@@ -48,8 +48,11 @@ void Ether::EngineCore::Run()
 
 void Ether::EngineCore::Shutdown()
 {
-    m_ActiveWorld.reset();
     m_MainApplication->OnShutdown();
+
+    // Release GPU mesh resources before shutting down graphics layer
+    Graphics::GraphicCore::FlushGpu();
+    m_ActiveWorld.reset();
 
     Graphics::GraphicCore::Instance().Shutdown();
 }

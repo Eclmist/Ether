@@ -84,7 +84,7 @@ public:
     void ClearDepthStencilView(const RhiDepthStencilView& dsv, float depth, float stencil) override;
     void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) override;
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) override;
-    void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiRaytracingShaderBindingTable& bindTable) override;
+    void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiResource* bindTable) override;
 
 private:
     friend class Dx12Device;

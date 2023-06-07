@@ -21,6 +21,10 @@
 
 #include "graphics/rhi/rhienums.h"
 
+#define ETH_COMPARATOR_GUARD_CLAUS(name) \
+    if (name != other.name)              \
+        return false;
+
 namespace Ether::Graphics
 {
 class RhiCommandAllocator;
@@ -54,6 +58,8 @@ struct RhiDepthStencilValue
 {
     float m_Depth;
     uint8_t m_Stencil;
+
+    auto operator<=>(const RhiDepthStencilValue&) const = default;
 };
 
 struct RhiClearValue
@@ -65,6 +71,13 @@ struct RhiClearValue
         float m_Color[4];
         RhiDepthStencilValue m_DepthStencil;
     };
+
+    bool operator==(const RhiClearValue& other) const
+    {
+        ETH_COMPARATOR_GUARD_CLAUS(m_Format)
+        ETH_COMPARATOR_GUARD_CLAUS(m_DepthStencil);
+        return true;
+    }
 };
 
 //============================= Memory ==============================//
@@ -89,6 +102,8 @@ struct RhiBlendDesc
     RhiBlendOperation m_BlendOpAlpha;
     RhiLogicOperation m_LogicOp;
     RhiRenderTargetWriteMask m_WriteMask;
+
+    auto operator<=>(const RhiBlendDesc&) const = default;
 };
 
 struct RhiDepthStencilOperationDesc
@@ -97,6 +112,8 @@ struct RhiDepthStencilOperationDesc
     RhiDepthStencilOperation m_StencilDepthFailOp;
     RhiDepthStencilOperation m_StencilPassOp;
     RhiComparator m_StencilFunc;
+
+    auto operator<=>(const RhiDepthStencilOperationDesc&) const = default;
 };
 
 struct RhiDepthStencilDesc
@@ -109,6 +126,9 @@ struct RhiDepthStencilDesc
     uint8_t m_StencilWriteMask;
     RhiDepthStencilOperationDesc m_FrontFace;
     RhiDepthStencilOperationDesc m_BackFace;
+
+    auto operator<=>(const RhiDepthStencilDesc&) const = default;
+
 };
 
 struct RhiInputElementDesc
@@ -120,6 +140,20 @@ struct RhiInputElementDesc
     uint32_t m_AlignedByteOffset;
     RhiInputClassification m_InputSlotClass;
     uint32_t m_InstanceDataStepRate;
+
+    bool operator==(const RhiInputElementDesc& other) const
+    {
+        if (strcmp(m_SemanticName, other.m_SemanticName) != 0)
+            return false;
+
+        ETH_COMPARATOR_GUARD_CLAUS(m_SemanticIndex);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Format)
+        ETH_COMPARATOR_GUARD_CLAUS(m_InputSlot);
+        ETH_COMPARATOR_GUARD_CLAUS(m_AlignedByteOffset);
+        ETH_COMPARATOR_GUARD_CLAUS(m_InputSlotClass);
+        ETH_COMPARATOR_GUARD_CLAUS(m_InstanceDataStepRate);
+        return true;
+    }
 };
 
 struct RhiRasterizerDesc
@@ -131,15 +165,20 @@ struct RhiRasterizerDesc
     float m_DepthBiasClamp;
     float m_SlopeScaledDepthBias;
     bool m_DepthClipEnable;
+
     bool m_MultisampleEnable;
     bool m_AntialiasedLineEnable;
     uint32_t m_ForcedSampleCount;
+
+    auto operator<=>(const RhiRasterizerDesc&) const = default;
 };
 
 struct RhiSampleDesc
 {
     uint32_t m_NumMsaaSamples;
     uint32_t m_MsaaQuality;
+
+    auto operator<=>(const RhiSampleDesc&) const = default;
 };
 
 struct RhiSamplerParameterDesc
@@ -156,14 +195,27 @@ struct RhiSamplerParameterDesc
     float m_MipLodBias;
     float m_MinLod;
     float m_MaxLod;
+
+    auto operator<=>(const RhiSamplerParameterDesc&) const = default;
 };
 
 struct RhiShaderDesc
 {
-    std::string m_Filename;
-    std::string m_EntryPoint;
+    const char* m_Filename;
+    const char* m_EntryPoint;
 
     RhiShaderType m_Type;
+
+    bool operator==(const RhiShaderDesc& other) const
+    {
+        if (strcmp(m_Filename, other.m_Filename) != 0)
+            return false;
+        if (strcmp(m_EntryPoint, other.m_EntryPoint) != 0)
+            return false;
+
+        ETH_COMPARATOR_GUARD_CLAUS(m_Type);
+        return true;
+    }
 };
 
 struct RhiLibraryShaderDesc
@@ -171,26 +223,36 @@ struct RhiLibraryShaderDesc
     RhiShader* m_Shader;
     const wchar_t** m_EntryPoints;
     uint32_t m_NumEntryPoints;
+
+    bool operator==(const RhiLibraryShaderDesc& other) const
+    {
+        ETH_COMPARATOR_GUARD_CLAUS(m_NumEntryPoints);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Shader);
+
+        for (uint32_t i = 0; i < m_NumEntryPoints; ++i)
+            if (wcscmp(m_EntryPoints[i], other.m_EntryPoints[i]) != 0)
+                return false;
+
+        return true;
+    }
 };
 
 struct RhiSwapChainDesc
 {
-    ethVector2 m_Resolution;
-    RhiFormat m_Format;
-    RhiSampleDesc m_SampleDesc;
-    uint32_t m_BufferCount;
-    RhiScalingMode m_ScalingMode;
-    RhiSwapEffect m_SwapEffect;
-    RhiSwapChainFlag m_Flag;
     void* m_SurfaceTarget;
 
-    RhiCommandQueue* m_CommandQueue; // For d3d12 only
+    ethVector2 m_Resolution;
+    RhiFormat m_Format;
+    uint32_t m_NumBuffers;
+    RhiSampleDesc m_SampleDesc;
 };
 
 struct RhiScissorDesc
 {
     float m_X, m_Y;
     float m_Width, m_Height;
+
+    auto operator<=>(const RhiScissorDesc&) const = default;
 };
 
 struct RhiViewportDesc
@@ -198,8 +260,9 @@ struct RhiViewportDesc
     float m_X, m_Y;
     float m_Width, m_Height;
     float m_MinDepth, m_MaxDepth;
-};
 
+    auto operator<=>(const RhiViewportDesc&) const = default;
+};
 
 //========================= Resource Descs ==========================//
 
@@ -207,16 +270,20 @@ struct RhiResourceViewDesc
 {
     RhiResource* m_Resource;
     RhiCpuAddress m_TargetCpuAddress;
+
+    auto operator<=>(const RhiResourceViewDesc&) const = default;
 };
 
 struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
 {
     RhiFormat m_Format;
+    auto operator<=>(const RhiRenderTargetViewDesc&) const = default;
 };
 
 struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
 {
     RhiFormat m_Format;
+    auto operator<=>(const RhiDepthStencilViewDesc&) const = default;
 };
 
 struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
@@ -224,13 +291,14 @@ struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
     RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
     RhiShaderResourceDimension m_Dimensions;
-    RhiGpuAddress m_RaytracingAccelerationStructureAddress;
+    auto operator<=>(const RhiShaderResourceViewDesc&) const = default;
 };
 
 struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
 {
     RhiGpuAddress m_TargetGpuAddress;
     size_t m_BufferSize;
+    auto operator<=>(const RhiConstantBufferViewDesc&) const = default;
 };
 
 struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
@@ -238,6 +306,7 @@ struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
     RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
     RhiUnorderedAccessDimension m_Dimensions;
+    auto operator<=>(const RhiUnorderedAccessViewDesc&) const = default;
 };
 
 struct RhiIndexBufferViewDesc
@@ -245,6 +314,7 @@ struct RhiIndexBufferViewDesc
     RhiFormat m_Format;
     size_t m_BufferSize;
     RhiGpuAddress m_TargetGpuAddress;
+    auto operator<=>(const RhiIndexBufferViewDesc&) const = default;
 };
 
 struct RhiVertexBufferViewDesc
@@ -252,6 +322,7 @@ struct RhiVertexBufferViewDesc
     size_t m_BufferSize;
     size_t m_Stride;
     RhiGpuAddress m_TargetGpuAddress;
+    auto operator<=>(const RhiVertexBufferViewDesc&) const = default;
 };
 
 struct RhiResourceDesc
@@ -267,15 +338,43 @@ struct RhiResourceDesc
     RhiResourceLayout m_Layout;
     RhiResourceFlag m_Flag;
     RhiSampleDesc m_SampleDesc;
+
+    bool operator==(const RhiResourceDesc& other) const
+    {
+        ETH_COMPARATOR_GUARD_CLAUS(m_Alignment);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Width);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Height);
+        ETH_COMPARATOR_GUARD_CLAUS(m_DepthOrArraySize);
+        ETH_COMPARATOR_GUARD_CLAUS(m_MipLevels);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Format);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Dimension);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Layout);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Flag);
+        ETH_COMPARATOR_GUARD_CLAUS(m_SampleDesc);
+        return true;
+    }
 };
 
 struct RhiCommitedResourceDesc
 {
-    std::string m_Name;
+    const char* m_Name;
     RhiHeapType m_HeapType;
     RhiResourceState m_State;
     RhiResourceDesc m_ResourceDesc;
     RhiClearValue* m_ClearValue;
+
+    bool operator==(const RhiCommitedResourceDesc& other) const
+    {
+        if (strcmp(m_Name, other.m_Name) != 0)
+            return false;
+        if (m_ClearValue != other.m_ClearValue)
+            return false;
+
+        ETH_COMPARATOR_GUARD_CLAUS(m_HeapType);
+        ETH_COMPARATOR_GUARD_CLAUS(m_State);
+        ETH_COMPARATOR_GUARD_CLAUS(m_ResourceDesc);
+        return true;
+    }
 };
 
 //======================= Raytracing Descs ========================//
@@ -311,6 +410,28 @@ struct RhiRaytracingPipelineStateDesc
     RhiRootSignature* m_RayGenRootSignature;
     RhiRootSignature* m_HitMissRootSignature;
     RhiRootSignature* m_GlobalRootSignature;
+
+    bool operator==(const RhiRaytracingPipelineStateDesc& other) const
+    {
+        if (wcscmp(m_HitGroupName, other.m_HitGroupName) != 0)
+            return false;
+        if (wcscmp(m_RayGenShaderName, other.m_RayGenShaderName) != 0)
+            return false;
+        if (wcscmp(m_MissShaderName, other.m_MissShaderName) != 0)
+            return false;
+        if (wcscmp(m_ClosestHitShaderName, other.m_ClosestHitShaderName) != 0)
+            return false;
+
+        ETH_COMPARATOR_GUARD_CLAUS(m_MaxPayloadSize);
+        ETH_COMPARATOR_GUARD_CLAUS(m_MaxAttributeSize);
+        ETH_COMPARATOR_GUARD_CLAUS(m_MaxRootSignatureSize);
+        ETH_COMPARATOR_GUARD_CLAUS(m_MaxRecursionDepth);
+        ETH_COMPARATOR_GUARD_CLAUS(m_LibraryShaderDesc);
+        ETH_COMPARATOR_GUARD_CLAUS(m_RayGenRootSignature);
+        ETH_COMPARATOR_GUARD_CLAUS(m_HitMissRootSignature);
+        ETH_COMPARATOR_GUARD_CLAUS(m_GlobalRootSignature);
+        return true;
+    }
 };
 
 struct RhiRaytracingShaderBindingTableDesc
@@ -323,6 +444,21 @@ struct RhiRaytracingShaderBindingTableDesc
     RhiRaytracingPipelineState* m_RaytracingPipelineState;
     
     RhiGpuAddress m_RayGenRootTableAddress;
+
+    bool operator==(const RhiRaytracingShaderBindingTableDesc& other) const
+    {
+        if (wcscmp(m_HitGroupName, other.m_HitGroupName) != 0)
+            return false;
+        if (wcscmp(m_RayGenShaderName, other.m_RayGenShaderName) != 0)
+            return false;
+        if (wcscmp(m_MissShaderName, other.m_MissShaderName) != 0)
+            return false;
+
+        ETH_COMPARATOR_GUARD_CLAUS(m_MaxRootSignatureSize);
+        ETH_COMPARATOR_GUARD_CLAUS(m_RaytracingPipelineState);
+        ETH_COMPARATOR_GUARD_CLAUS(m_RayGenRootTableAddress);
+        return true;
+    }
 };
 
 } // namespace Ether::Graphics

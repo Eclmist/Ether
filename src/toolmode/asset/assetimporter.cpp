@@ -62,7 +62,7 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
     {
         const aiMesh* mesh = assimpMesh[i];
 
-        std::vector<Graphics::VertexFormats::PositionNormalTangentTexCoord> packedVertices;
+        std::vector<Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord> packedVertices;
         packedVertices.resize(mesh->mNumVertices);
 
         for (int j = 0; j < mesh->mNumVertices; ++j)

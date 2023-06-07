@@ -20,6 +20,10 @@
 #include "common/globalconstants.h"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
+Texture2D<float4> g_GBufferAlbedo                   : register(t1);
+Texture2D<float4> g_GBufferPosition                 : register(t2);
+Texture2D<float4> g_GBufferNormal                   : register(t3);
+
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RWTexture2D<float4> g_Output                        : register(u0);
 

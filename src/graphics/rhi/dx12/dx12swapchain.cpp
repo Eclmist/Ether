@@ -41,6 +41,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::Dx12SwapChain::GetBuffer(uint8_t 
         return *m_BufferResources[index];
 
     m_SwapChain->GetBuffer(index, IID_PPV_ARGS(&dx12Resource->m_Resource));
+    dx12Resource->m_Resource->SetName((L"Swapchain Buffer " + std::to_wstring(index)).c_str());
     return *m_BufferResources[index];
 }
 
@@ -70,7 +71,7 @@ void Ether::Graphics::Dx12SwapChain::ResizeBuffers(const ethVector2u& size)
 void Ether::Graphics::Dx12SwapChain::ResetBuffers()
 {
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
-        m_BufferResources[i] = std::make_unique<Dx12Resource>("Swapchain RenderTarget" + std::to_string(i));
+        m_BufferResources[i] = std::make_unique<Dx12Resource>(("Swapchain RenderTarget" + std::to_string(i)).c_str());
 }
 
 void Ether::Graphics::Dx12SwapChain::Present(uint8_t numVblanks)

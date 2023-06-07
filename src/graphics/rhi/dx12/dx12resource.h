@@ -28,7 +28,7 @@ namespace Ether::Graphics
 class Dx12Resource : public RhiResource
 {
 public:
-    Dx12Resource(const std::string& name);
+    Dx12Resource(const char* name);
 
 public:
     RhiGpuAddress GetGpuAddress() const override;

@@ -32,7 +32,7 @@ void Ether::Graphics::GraphicCore::Initialize()
     m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
     m_RtvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv, _4KiB);
     m_DsvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv, _4KiB);
-    m_SrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, _64KiB);
+    m_SrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, _64KiB, true);
     m_CommandManager = std::make_unique<CommandManager>();
     m_GraphicCommon = std::make_unique<GraphicCommon>();
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();

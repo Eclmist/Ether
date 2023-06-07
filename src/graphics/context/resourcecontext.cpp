@@ -23,6 +23,11 @@
 #include "graphics/rhi/rhiresource.h"
 #include "graphics/rhi/rhiresourceviews.h"
 
+Ether::Graphics::ResourceContext::ResourceContext()
+{
+    m_StagingSrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, _64KiB, false);
+}
+
 void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc)
 {
     // This caching doesn't actually work since it just cheats by using the address as a key
@@ -59,21 +64,21 @@ Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipeline
     return *m_CachedPipelineStates.at(&pipelineStateDesc);
 }
 
-Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateResource(
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateResource(
     const char* resourceName,
     const RhiCommitedResourceDesc& desc)
 {
     if (!ShouldRecreateResource(resourceName, desc))
-        return m_ResourceTable.at(resourceName).get();
+        return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
-    return m_ResourceTable.at(resourceName).get();
+    return *m_ResourceTable.at(resourceName);
 }
 
-Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateDepthStencilResource(
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateDepthStencilResource(
     const char* resourceName,
     const ethVector2u resolution,
     RhiFormat format)
@@ -87,16 +92,16 @@ Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateDepthStenc
     desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, resolution);
 
     if (!ShouldRecreateResource(resourceName, desc))
-        return m_ResourceTable.at(resourceName).get();
+        return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
-    return m_ResourceTable.at(resourceName).get();
+    return *m_ResourceTable.at(resourceName);
 }
 
-Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateTexture2DResource(
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DResource(
     const char* resourceName,
     const ethVector2u resolution,
     RhiFormat format)
@@ -109,16 +114,77 @@ Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::CreateTexture2DR
     desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, resolution);
 
     if (!ShouldRecreateResource(resourceName, desc))
-        return m_ResourceTable.at(resourceName).get();
+        return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
-    return m_ResourceTable.at(resourceName).get();
+    return *m_ResourceTable.at(resourceName);
 }
 
-Ether::Graphics::RhiRenderTargetView& Ether::Graphics::ResourceContext::CreateRenderTargetView(
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DUavResource(
+    const char* resourceName,
+    const ethVector2u resolution,
+    RhiFormat format)
+{
+    RhiCommitedResourceDesc desc = {};
+    desc.m_Name = resourceName;
+    desc.m_HeapType = RhiHeapType::Default;
+    desc.m_State = RhiResourceState::Common;
+    desc.m_ClearValue = nullptr;
+    desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, resolution);
+    desc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+
+    if (!ShouldRecreateResource(resourceName, desc))
+        return *m_ResourceTable.at(resourceName);
+
+    InvalidateViews(resourceName);
+    m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
+    m_ResourceDescriptionTable[resourceName] = desc;
+
+    return *m_ResourceTable.at(resourceName);
+}
+
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateAccelerationStructure(
+    const char* resourceName,
+    const RhiTopLevelAccelerationStructureDesc& desc)
+{
+    if (!ShouldRecreateResource(resourceName, desc))
+        return *m_ResourceTable.at(resourceName);
+
+    InvalidateViews(resourceName);
+
+    std::unique_ptr<RhiAccelerationStructure> as = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
+
+    CommandContext ctx("CommandContext - Build TLAS");
+    ctx.Reset();
+    ctx.TransitionResource(*as->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
+    ctx.BuildTopLevelAccelerationStructure(*as);
+    ctx.FinalizeAndExecute(true);
+
+    m_ResourceTable[resourceName] = std::move(as->m_DataBuffer);
+    m_RaytracingResourceDescriptionTable[resourceName] = desc;
+
+    return *m_ResourceTable.at(resourceName);
+}
+
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateRaytracingShaderBindingTable(
+    const char* resourceName,
+    const RhiRaytracingShaderBindingTableDesc& desc)
+{
+    if (!ShouldRecreateResource(resourceName, desc))
+        return *m_ResourceTable.at(resourceName);
+
+    InvalidateViews(resourceName);
+
+    m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateRaytracingShaderBindingTable(resourceName, desc);
+    m_RaytracingShaderBindingsTable[resourceName] = desc;
+
+    return *m_ResourceTable.at(resourceName);
+}
+
+Ether::Graphics::RhiRenderTargetView Ether::Graphics::ResourceContext::CreateRenderTargetView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format)
@@ -139,7 +205,7 @@ Ether::Graphics::RhiRenderTargetView& Ether::Graphics::ResourceContext::CreateRe
     return (RhiRenderTargetView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiDepthStencilView& Ether::Graphics::ResourceContext::CreateDepthStencilView(
+Ether::Graphics::RhiDepthStencilView Ether::Graphics::ResourceContext::CreateDepthStencilView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format)
@@ -160,7 +226,7 @@ Ether::Graphics::RhiDepthStencilView& Ether::Graphics::ResourceContext::CreateDe
     return (RhiDepthStencilView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiConstantBufferView& Ether::Graphics::ResourceContext::CreateConstantBufferView(
+Ether::Graphics::RhiConstantBufferView Ether::Graphics::ResourceContext::CreateConstantBufferView(
     const char* viewName,
     const RhiResource* resource,
     uint32_t size)
@@ -168,7 +234,7 @@ Ether::Graphics::RhiConstantBufferView& Ether::Graphics::ResourceContext::Create
     if (!ShouldRecreateView(viewName))
         return (RhiConstantBufferView&)(*m_DescriptorTable.at(viewName));
 
-    auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
 
     RhiConstantBufferViewDesc cbvDesc = {};
     cbvDesc.m_Resource = const_cast<RhiResource*>(resource);
@@ -182,7 +248,7 @@ Ether::Graphics::RhiConstantBufferView& Ether::Graphics::ResourceContext::Create
     return (RhiConstantBufferView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiShaderResourceView& Ether::Graphics::ResourceContext::CreateShaderResourceView(
+Ether::Graphics::RhiShaderResourceView Ether::Graphics::ResourceContext::CreateShaderResourceView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format,
@@ -191,7 +257,7 @@ Ether::Graphics::RhiShaderResourceView& Ether::Graphics::ResourceContext::Create
     if (!ShouldRecreateView(viewName))
         return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
 
-    auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
 
     RhiShaderResourceViewDesc srvDesc = {};
     srvDesc.m_Resource = const_cast<RhiResource*>(resource);
@@ -206,7 +272,7 @@ Ether::Graphics::RhiShaderResourceView& Ether::Graphics::ResourceContext::Create
     return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
 }
 
-Ether::Graphics::RhiUnorderedAccessView& Ether::Graphics::ResourceContext::CreateUnorderedAccessView(
+Ether::Graphics::RhiUnorderedAccessView Ether::Graphics::ResourceContext::CreateUnorderedAccessView(
     const char* viewName,
     const RhiResource* resource,
     RhiFormat format,
@@ -215,7 +281,7 @@ Ether::Graphics::RhiUnorderedAccessView& Ether::Graphics::ResourceContext::Creat
     if (!ShouldRecreateView(viewName))
         return (RhiUnorderedAccessView&)(*m_DescriptorTable.at(viewName));
 
-    auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
 
     RhiUnorderedAccessViewDesc uavDesc = {};
     uavDesc.m_Resource = const_cast<RhiResource*>(resource);
@@ -231,6 +297,27 @@ Ether::Graphics::RhiUnorderedAccessView& Ether::Graphics::ResourceContext::Creat
     return (RhiUnorderedAccessView&)(*m_DescriptorTable.at(viewName));
 }
 
+Ether::Graphics::RhiShaderResourceView Ether::Graphics::ResourceContext::CreateAccelerationStructureView(
+    const char* viewName,
+    const RhiResource* asDataBufferResource)
+{
+    if (!ShouldRecreateView(viewName))
+        return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
+
+    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
+
+    RhiShaderResourceViewDesc srvDesc = {};
+    srvDesc.m_Resource = const_cast<RhiResource*>(asDataBufferResource);
+    srvDesc.m_Dimensions = RhiShaderResourceDimension::RTAccelerationStructure;
+    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
+    srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*alloc)).GetGpuAddress();
+
+    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
+    m_DescriptorAllocations[viewName] = std::move(alloc);
+
+    return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
+}
+
 bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     const char* resourceName,
     const RhiCommitedResourceDesc& desc)
@@ -241,15 +328,51 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
 
     AssertGraphics(
         m_ResourceDescriptionTable.find(resourceName) != m_ResourceDescriptionTable.end(),
-        "If the resource never existed, there should not be any cached pipeline state with the same resourceName");
+        "If the resource never existed, there should not be any cached desc with the same resourceName");
 
     // If the resource exist, but it's description has changed
-    RhiCommitedResourceDesc& a = m_ResourceDescriptionTable.at(resourceName);
-
     if (std::memcmp(
             &m_ResourceDescriptionTable.at(resourceName).m_ResourceDesc,
             &desc.m_ResourceDesc,
             sizeof(RhiResourceDesc)) != 0)
+        return true;
+
+    return false;
+}
+
+bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
+    const char* resourceName,
+    const RhiTopLevelAccelerationStructureDesc& desc)
+{
+    // If the resource don't exist in the resource table at all
+    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+        return true;
+
+    AssertGraphics(
+        m_RaytracingResourceDescriptionTable.find(resourceName) != m_RaytracingResourceDescriptionTable.end(),
+        "If the resource never existed, there should not be any cached desc with the same resourceName");
+
+    VisualBatch* vbOld = (VisualBatch*)m_RaytracingResourceDescriptionTable.at(resourceName).m_VisualBatch;
+    VisualBatch* vbNew = (VisualBatch*)desc.m_VisualBatch;
+
+    if (*vbOld != *vbNew)
+        return true;
+
+    return false;
+}
+
+bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
+    const char* resourceName,
+    const RhiRaytracingShaderBindingTableDesc& desc)
+{
+    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+        return true;
+
+    AssertGraphics(
+        m_RaytracingShaderBindingsTable.find(resourceName) != m_RaytracingShaderBindingsTable.end(),
+        "If the resource never existed, there should not be any cached desc with the same resourceName");
+
+    if (m_RaytracingShaderBindingsTable.at(resourceName) != desc)
         return true;
 
     return false;
@@ -286,3 +409,4 @@ void Ether::Graphics::ResourceContext::RecompilePipelineStates()
     for (auto& psoPair : m_CachedPipelineStates)
         RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
 }
+

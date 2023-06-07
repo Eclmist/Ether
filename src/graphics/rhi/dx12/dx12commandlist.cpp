@@ -332,24 +332,24 @@ void Ether::Graphics::Dx12CommandList::DispatchRays(
     uint32_t x,
     uint32_t y,
     uint32_t z,
-    const RhiRaytracingShaderBindingTable& bindTable)
+    const RhiResource* bindTable)
 {
-    uint32_t entrySize = bindTable.GetTableEntrySize();
+    const Dx12RaytracingShaderBindingTable* sbt = dynamic_cast<const Dx12RaytracingShaderBindingTable*>(bindTable);
 
     D3D12_DISPATCH_RAYS_DESC dx12Desc = {};
     dx12Desc.Width = x;
     dx12Desc.Height = y;
     dx12Desc.Depth = z;
-    dx12Desc.RayGenerationShaderRecord.StartAddress = bindTable.GetGpuAddress();
-    dx12Desc.RayGenerationShaderRecord.SizeInBytes = entrySize;
+    dx12Desc.RayGenerationShaderRecord.StartAddress = bindTable->GetGpuAddress();
+    dx12Desc.RayGenerationShaderRecord.SizeInBytes = sbt->GetTableEntrySize();
 
-    dx12Desc.MissShaderTable.StartAddress = bindTable.GetGpuAddress() + entrySize;
-    dx12Desc.MissShaderTable.SizeInBytes = entrySize;
-    dx12Desc.MissShaderTable.StrideInBytes = entrySize;
+    dx12Desc.MissShaderTable.StartAddress = bindTable->GetGpuAddress() + sbt->GetTableEntrySize();
+    dx12Desc.MissShaderTable.SizeInBytes = sbt->GetTableEntrySize();
+    dx12Desc.MissShaderTable.StrideInBytes = sbt->GetTableEntrySize();
 
-    dx12Desc.HitGroupTable.StartAddress = bindTable.GetGpuAddress() + entrySize * 2;
-    dx12Desc.HitGroupTable.SizeInBytes = entrySize;
-    dx12Desc.HitGroupTable.StrideInBytes = entrySize;
+    dx12Desc.HitGroupTable.StartAddress = bindTable->GetGpuAddress() + sbt->GetTableEntrySize() * 2;
+    dx12Desc.HitGroupTable.SizeInBytes = sbt->GetTableEntrySize();
+    dx12Desc.HitGroupTable.StrideInBytes = sbt->GetTableEntrySize();
 
     m_CommandList->DispatchRays(&dx12Desc);
 }

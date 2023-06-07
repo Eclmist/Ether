@@ -30,15 +30,15 @@ class GBufferProducer
 {
 public:
     void Reset();
-    void Initialize(ResourceContext& resourceContext);
-    void FrameSetup(ResourceContext& resourceContext);
-    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
+    void Initialize(ResourceContext& rc);
+    void FrameSetup(ResourceContext& rc);
+    void Render(GraphicContext& ctx, ResourceContext& rc);
 
 private:
     void CreateUploadBufferAllocators();
     void CreateShaders();
     void CreateRootSignature();
-    void CreatePipelineState(ResourceContext& resourceContext);
+    void CreatePipelineState(ResourceContext& rc);
 
 private:
     std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];

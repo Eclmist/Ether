@@ -20,34 +20,44 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhitypes.h"
 #include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
+#include "graphics/rhi/rhiaccelerationstructure.h"
 #include "graphics/memory/descriptorallocation.h"
+#include "graphics/context/graphiccontext.h"
 
 namespace Ether::Graphics
 {
 class ResourceContext
 {
 public:
-    ResourceContext() = default;
+    ResourceContext();
     ~ResourceContext() = default;
 
 public:
     void RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc);
     RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
 
-    RhiResource* CreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
-    RhiResource* CreateDepthStencilResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
-    RhiResource* CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+    RhiResource& CreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
+    RhiResource& CreateDepthStencilResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+    RhiResource& CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+    RhiResource& CreateTexture2DUavResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+    RhiResource& CreateAccelerationStructure(const char* resourceName, const RhiTopLevelAccelerationStructureDesc& desc);
+    RhiResource& CreateRaytracingShaderBindingTable(const char* resourceName, const RhiRaytracingShaderBindingTableDesc& desc);
 
-    RhiRenderTargetView& CreateRenderTargetView(const char* viewName, const RhiResource* resource, RhiFormat format);
-    RhiDepthStencilView& CreateDepthStencilView(const char* viewName, const RhiResource* resource, RhiFormat format);
-    RhiConstantBufferView& CreateConstantBufferView(const char* viewName, const RhiResource* resource, uint32_t size);
-    RhiShaderResourceView& CreateShaderResourceView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiShaderResourceDimension dimension);
-    RhiUnorderedAccessView& CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
+    RhiRenderTargetView CreateRenderTargetView(const char* viewName, const RhiResource* resource, RhiFormat format);
+    RhiDepthStencilView CreateDepthStencilView(const char* viewName, const RhiResource* resource, RhiFormat format);
+    RhiConstantBufferView CreateConstantBufferView(const char* viewName, const RhiResource* resource, uint32_t size);
+    RhiShaderResourceView CreateShaderResourceView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiShaderResourceDimension dimension);
+    RhiUnorderedAccessView CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
+    RhiShaderResourceView CreateAccelerationStructureView(const char* viewName, const RhiResource* asDataBufferResource);
 
 private:
     bool ShouldRecreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
+    bool ShouldRecreateResource(const char* resourceName, const RhiRaytracingShaderBindingTableDesc& desc);
+    bool ShouldRecreateResource(const char* resourceName, const RhiTopLevelAccelerationStructureDesc& desc);
+
     bool ShouldRecreateView(const char* viewName);
     void InvalidateViews(const char* resourceName);
 
@@ -56,10 +66,13 @@ private:
     void RecompilePipelineStates();
 
 private:
+    std::unique_ptr<DescriptorAllocator> m_StagingSrvCbvUavAllocator;
+
     std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
 
-
     std::unordered_map<StringID, RhiCommitedResourceDesc> m_ResourceDescriptionTable;
+    std::unordered_map<StringID, RhiRaytracingShaderBindingTableDesc> m_RaytracingShaderBindingsTable;
+    std::unordered_map<StringID, RhiTopLevelAccelerationStructureDesc> m_RaytracingResourceDescriptionTable;
 
     std::unordered_map<StringID, std::unique_ptr<RhiResource>> m_ResourceTable;
     std::unordered_map<StringID, std::unique_ptr<RhiResourceView>> m_DescriptorTable;

@@ -32,107 +32,62 @@ static const wchar_t* kClosestHitShader = L"ClosestHit";
 static const wchar_t* kHitGroup = L"HitGroup";
 static const wchar_t* EntryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
 
-void Ether::Graphics::TempRaytracingFrameDump::Initialize(ResourceContext& resourceContext)
+void Ether::Graphics::TempRaytracingFrameDump::Initialize(ResourceContext& rc)
 {
     InitializeShaders();
     InitializeRootSignatures();
     InitializePipelineStates();
-
-    RhiCommitedResourceDesc globalConstantsCbvResource = {};
-    globalConstantsCbvResource.m_Name = "RaytracedGBuffer::GlobalConstants";
-    globalConstantsCbvResource.m_HeapType = RhiHeapType::Upload;
-    globalConstantsCbvResource.m_State = RhiResourceState::Common;
-    globalConstantsCbvResource.m_ResourceDesc = RhiCreateBufferResourceDesc(sizeof(Shader::GlobalConstants));
-    m_ConstantBuffer = GraphicCore::GetDevice().CreateCommittedResource(globalConstantsCbvResource);
-
-    RhiConstantBufferViewDesc cbvDesc = {};
-    cbvDesc.m_Resource = m_ConstantBuffer.get();
-    cbvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(2);
-    cbvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(2);
-    cbvDesc.m_BufferSize = sizeof(Shader::GlobalConstants);
-    m_ConstantBufferView = GraphicCore::GetDevice().CreateConstantBufferView(cbvDesc);
 }
 
-void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& resourceContext)
+void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
 {
-    static RhiCommitedResourceDesc prevDesc = {};
+    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    RhiCommitedResourceDesc outputTextureDesc = {};
-    outputTextureDesc.m_Name = "RaytracedGBuffer::OutputTexture";
-    outputTextureDesc.m_HeapType = RhiHeapType::Default;
-    outputTextureDesc.m_State = RhiResourceState::CopySrc;
-    outputTextureDesc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(
-        RhiFormat::R8G8B8A8Unorm,
-        GraphicCore::GetGraphicConfig().GetResolution());
-    outputTextureDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
-
-    if (std::memcmp(&prevDesc.m_ResourceDesc, &outputTextureDesc.m_ResourceDesc, sizeof(RhiResourceDesc)) == 0)
-        return;
-    prevDesc = outputTextureDesc;
-
-    m_OutputTexture = GraphicCore::GetDevice().CreateCommittedResource(outputTextureDesc);
-
-    RhiUnorderedAccessViewDesc uavDesc = {};
-    uavDesc.m_Format = RhiFormat::R8G8B8A8Unorm;
-    uavDesc.m_Resource = m_OutputTexture.get();
-    uavDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(1);
-    uavDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(1);
-    uavDesc.m_Dimensions = RhiUnorderedAccessDimension::Texture2D;
-
-    m_OutputTextureUav = GraphicCore::GetDevice().CreateUnorderedAccessView(uavDesc);
+    m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, BackBufferFormat);
+    m_OutputTextureUav = rc.CreateUnorderedAccessView(
+        "Raytrace - Output UAV",
+        m_OutputTexture,
+        BackBufferFormat,
+        RhiUnorderedAccessDimension::Texture2D);
 }
 
-void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
+void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("Raytraced GBuffer Pass - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
-    if (graphicContext.GetVisualBatch().m_Visuals.empty())
+    if (ctx.GetVisualBatch().m_Visuals.empty())
         return;
 
-    static bool isTlasInitialized = false;
+    m_TopLevelAccelerationStructure = &rc.CreateAccelerationStructure(
+        "Raytracing TLAS",
+        { (void*)&ctx.GetVisualBatch() });
+    m_TlasSrv = rc.CreateAccelerationStructureView("Raytracing TLAS SRV", m_TopLevelAccelerationStructure);
 
-    if (!isTlasInitialized)
-    {
-        // TEMP: Recreate TLAS and SRV every frame because visual batch might have changed
-        InitializeAccelerationStructure(&graphicContext.GetVisualBatch(), graphicContext);
+    InitializeShaderBindingTable(rc);
 
-        // TEMP: Recreate shader table every frame because descriptors may have been reallocated and thus address
-        // changed For many passes, descriptor heap that is bound should have a known layout (except for bindless) In
-        // those cases, even if the descriptors are re-allocated, the heap address/table address should remain the same.
-        //
-        // TODO: For this pass, need to allocate descriptors manually such that shader table can remain the same
-        //       However, we may lose global descriptors that are in Graphics::GraphicCore
-        //       Maybe some mechanism to copy all the descriptors to a new heap made specifically for this pass needs to
-        //       be done? Something like a dynamic descriptor heaps?
-        InitializeShaderBindingTable();
-
-        isTlasInitialized = true;
-    }
+    ctx.PushMarker("Clear");
+    ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
+    ctx.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
+    ctx.PopMarker();
 
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    ctx.PushMarker("Raytrace");
+    ctx.TransitionResource(*m_OutputTexture, RhiResourceState::UnorderedAccess);
+    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
+    ctx.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()]);
+    ctx.SetRaytracingPipelineState(*m_RaytracingPipelineState);
+    ctx.DispatchRays(resolution.x, resolution.y, 1);
+    ctx.PopMarker();
 
-    graphicContext.PushMarker("Clear");
-    graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
-    graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
-    graphicContext.PopMarker();
-
-    graphicContext.PushMarker("Raytrace");
-    graphicContext.TransitionResource(*m_OutputTexture, RhiResourceState::UnorderedAccess);
-    graphicContext.SetComputeRootSignature(*m_GlobalRootSignature);
-    graphicContext.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-    graphicContext.SetRaytracingShaderBindingTable(*m_RaytracingShaderBindingTable);
-    graphicContext.SetRaytracingPipelineState(*m_RaytracingPipelineState);
-    graphicContext.DispatchRays(resolution.x, resolution.y, 1);
-    graphicContext.PopMarker();
-
-    graphicContext.PushMarker("Copy to render target");
-    graphicContext.TransitionResource(*m_OutputTexture, RhiResourceState::CopySrc);
-    graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::CopyDest);
-    graphicContext.CopyResource(*m_OutputTexture, gfxDisplay.GetBackBuffer());
-    graphicContext.PopMarker();
+    ctx.PushMarker("Copy to render target");
+    ctx.TransitionResource(*m_OutputTexture, RhiResourceState::CopySrc);
+    ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::CopyDest);
+    ctx.CopyResource(*m_OutputTexture, gfxDisplay.GetBackBuffer());
+    ctx.PopMarker();
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::Reset()
@@ -166,8 +121,6 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, false);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     m_GlobalRootSignature = rsDesc->Compile("Empty Root Signature (Global)");
-
-    m_RootTableDescriptorAlloc = GraphicCore::GetSrvCbvUavAllocator().Allocate(3);
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
@@ -190,9 +143,12 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
     m_RaytracingPipelineState = gfxDevice.CreateRaytracingPipelineState(desc);
 }
 
-void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable()
+void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable(ResourceContext& rc)
 {
-    const RhiDevice& gfxDevice = GraphicCore::GetDevice();
+    const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+
+    const RhiResourceView* raygenDescriptors[] = { &m_TlasSrv, &m_OutputTextureUav };
+    m_RootTableDescriptorAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(raygenDescriptors, 2));
 
     RhiRaytracingShaderBindingTableDesc desc = {};
     desc.m_MaxRootSignatureSize = 8; // Raygen's descriptor table1 (8)
@@ -200,29 +156,9 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable()
     desc.m_HitGroupName = kHitGroup;
     desc.m_MissShaderName = kMissShader;
     desc.m_RayGenShaderName = kRayGenShader;
-    desc.m_RayGenRootTableAddress = m_TlasSrv->GetGpuAddress();
-    m_RaytracingShaderBindingTable = gfxDevice.CreateRaytracingShaderBindingTable(desc);
+    desc.m_RayGenRootTableAddress = ((DescriptorAllocation&)*m_RootTableDescriptorAlloc).GetGpuAddress();
+
+    m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()] = &rc.CreateRaytracingShaderBindingTable(
+        ("Raytracing Shader Bindings Table" + std::to_string(gfxDisplay.GetBackBufferIndex())).c_str(),
+        desc);
 }
-
-void Ether::Graphics::TempRaytracingFrameDump::InitializeAccelerationStructure(
-    const VisualBatch* visualBatch,
-    GraphicContext& context)
-{
-    RhiTopLevelAccelerationStructureDesc desc = {};
-    desc.m_VisualBatch = (void*)visualBatch;
-    m_TopLevelAccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
-
-    context.PushMarker("Build GBuffer TLAS");
-    context.TransitionResource(*m_TopLevelAccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
-    context.BuildTopLevelAccelerationStructure(*m_TopLevelAccelerationStructure);
-    context.PopMarker();
-
-    RhiShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Dimensions = RhiShaderResourceDimension::RTAccelerationStructure;
-    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetCpuAddress(0);
-    srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*m_RootTableDescriptorAlloc)).GetGpuAddress(0);
-    srvDesc.m_RaytracingAccelerationStructureAddress = m_TopLevelAccelerationStructure->m_DataBuffer->GetGpuAddress();
-    srvDesc.m_Resource = m_TopLevelAccelerationStructure->m_DataBuffer.get();
-    m_TlasSrv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
-}
-

@@ -63,7 +63,7 @@ public:
     // Raytracing
     void BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
     void BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
-    void SetRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTable& pipelineState);
+    void SetRaytracingShaderBindingTable(const RhiResource* bindTable);
     void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState);
 
     // Barriers
@@ -83,6 +83,7 @@ protected:
     std::unique_ptr<RhiCommandList> m_CommandList;
     std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
 
-    RhiRaytracingShaderBindingTable* m_RaytracingShaderBindingTable;
+    // Raytracing
+    const RhiResource* m_RaytracingBindTable;
 };
 } // namespace Ether::Graphics

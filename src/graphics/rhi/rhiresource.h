@@ -26,7 +26,7 @@ namespace Ether::Graphics
 class RhiResource : public NonCopyable, public NonMovable
 {
 public:
-    RhiResource(const std::string& name)
+    RhiResource(const char* name)
         : m_Name(name)
     {
         // Make each view unique

@@ -20,15 +20,18 @@
 #include "graphics/graphiccore.h"
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/rhi/rhidevice.h"
+#include "graphics/rhi/rhiresourceviews.h"
 
 Ether::Graphics::DescriptorAllocator::DescriptorAllocator(
     RhiDescriptorHeapType type,
-    size_t maxHeapSize)
+    size_t maxHeapSize,
+    bool isShaderVisible)
     : FreeListAllocator(maxHeapSize)
+    , m_HeapType(type)
     , m_MaxDescriptors(maxHeapSize)
 {
-    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(type, maxHeapSize);
-    m_IsShaderVisible = type == RhiDescriptorHeapType::SrvCbvUav;
+    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(type, maxHeapSize, isShaderVisible);
+    m_IsShaderVisible = isShaderVisible;
 }
 
 std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::Allocate(SizeAlign sizeAlign)
@@ -86,4 +89,22 @@ void Ether::Graphics::DescriptorAllocator::ReclaimStaleAllocations(size_t numInd
         LogGraphicsFatal("Descriptor allocation failed - heap is already full");
         throw std::bad_alloc();
     }
+}
+
+std::unique_ptr<Ether::MemoryAllocation> Ether::Graphics::DescriptorAllocator::Commit(
+    const RhiResourceView* descriptors[],
+    uint32_t numDescriptors)
+{
+    std::unique_ptr<MemoryAllocation> newAlloc = Allocate({ numDescriptors, 1 });
+
+    for (uint32_t i = 0; i < numDescriptors; ++i)
+    {
+        GraphicCore::GetDevice().CopyDescriptors(
+            1,
+            descriptors[i]->GetCpuAddress(),
+            ((DescriptorAllocation&)*newAlloc).GetCpuAddress(i),
+            m_HeapType);
+    }
+
+    return newAlloc;
 }

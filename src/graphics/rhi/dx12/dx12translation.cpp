@@ -455,21 +455,6 @@ D3D12_RESOURCE_STATES Ether::Graphics::Translate(const RhiResourceState& rhiType
     }
 }
 
-DXGI_SCALING Ether::Graphics::Translate(const RhiScalingMode& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiScalingMode::None:
-        return DXGI_SCALING_NONE;
-    case RhiScalingMode::Stretch:
-        return DXGI_SCALING_STRETCH;
-    case RhiScalingMode::AspectRatioStretch:
-        return DXGI_SCALING_ASPECT_RATIO_STRETCH;
-    default:
-        return DXGI_SCALING_NONE;
-    }
-}
-
 D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDimension& rhiType)
 {
     switch (rhiType)
@@ -536,23 +521,6 @@ D3D12_SHADER_VISIBILITY Ether::Graphics::Translate(const RhiShaderVisibility& rh
         return D3D12_SHADER_VISIBILITY_PIXEL;
     default:
         return D3D12_SHADER_VISIBILITY_ALL;
-    }
-}
-
-DXGI_SWAP_EFFECT Ether::Graphics::Translate(const RhiSwapEffect& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiSwapEffect::Discard:
-        return DXGI_SWAP_EFFECT_DISCARD;
-    case RhiSwapEffect::Sequential:
-        return DXGI_SWAP_EFFECT_SEQUENTIAL;
-    case RhiSwapEffect::FlipDiscard:
-        return DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    case RhiSwapEffect::FlipSequential:
-        return DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    default:
-        return DXGI_SWAP_EFFECT_FLIP_DISCARD;
     }
 }
 
@@ -644,17 +612,6 @@ D3D12_ROOT_SIGNATURE_FLAGS Ether::Graphics::Translate(const RhiRootSignatureFlag
         return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
     default:
         return D3D12_ROOT_SIGNATURE_FLAG_NONE;
-    }
-}
-
-DXGI_SWAP_CHAIN_FLAG Ether::Graphics::Translate(const RhiSwapChainFlag& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiSwapChainFlag::AllowTearing:
-        return DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-    default:
-        return (DXGI_SWAP_CHAIN_FLAG)0;
     }
 }
 
@@ -791,24 +748,6 @@ D3D12_VERTEX_BUFFER_VIEW Ether::Graphics::Translate(const RhiVertexBufferViewDes
     return dx12Desc;
 }
 
-DXGI_SWAP_CHAIN_DESC1 Ether::Graphics::Translate(const RhiSwapChainDesc& rhiDesc)
-{
-    DXGI_SWAP_CHAIN_DESC1 dx12Desc = {};
-    dx12Desc.Width = rhiDesc.m_Resolution.x;
-    dx12Desc.Height = rhiDesc.m_Resolution.y;
-    dx12Desc.Format = Translate(rhiDesc.m_Format);
-    dx12Desc.Stereo = false;
-    dx12Desc.SampleDesc = Translate(rhiDesc.m_SampleDesc);
-    dx12Desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    dx12Desc.BufferCount = rhiDesc.m_BufferCount;
-    dx12Desc.Scaling = Translate(rhiDesc.m_ScalingMode);
-    dx12Desc.SwapEffect = Translate(rhiDesc.m_SwapEffect);
-    dx12Desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    dx12Desc.Flags = (UINT)TranslateFlags(rhiDesc.m_Flag);
-
-    return dx12Desc;
-}
-
 DXGI_SAMPLE_DESC Ether::Graphics::Translate(const RhiSampleDesc& rhiDesc)
 {
     DXGI_SAMPLE_DESC d3dDesc = {};
@@ -902,7 +841,7 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResour
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
     case RhiShaderResourceDimension::RTAccelerationStructure:
-        dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_RaytracingAccelerationStructureAddress;
+        dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_Resource->GetGpuAddress();
         break;
     default:
         LogGraphicsFatal("Not yet supported");

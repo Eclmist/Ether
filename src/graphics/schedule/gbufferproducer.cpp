@@ -21,7 +21,6 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/config/graphicconfig.h"
-
 #include "graphics/resources/mesh.h"
 #include "graphics/resources/material.h"
 
@@ -32,58 +31,60 @@ namespace Ether::Graphics::RhiLinkSpace
 extern RhiGpuAddress g_GlobalConstantsCbv;
 }
 
-void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& resourceContext)
+void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
 {
     CreateUploadBufferAllocators();
     CreateShaders();
     CreateRootSignature();
-    CreatePipelineState(resourceContext);
+    CreatePipelineState(rc);
 }
 
-void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& resourceContext)
+void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& rc)
 {
-    m_DepthBuffer = resourceContext.CreateDepthStencilResource("GBuffer - Depth Texture", GraphicCore::GetGraphicConfig().GetResolution(), DepthBufferFormat);
-    m_AlbedoTexture = resourceContext.CreateTexture2DResource("GBuffer - Albedo Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::R8G8B8A8Unorm);
-    m_PositionTexture = resourceContext.CreateTexture2DResource("GBuffer - Position Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::R32G32B32A32Float);
-    m_NormalTexture = resourceContext.CreateTexture2DResource("GBuffer - Normal Texture", GraphicCore::GetGraphicConfig().GetResolution(), RhiFormat::R32G32B32A32Float);
+    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    m_DepthDsv = resourceContext.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
-    m_AlbedoRtv = resourceContext.CreateRenderTargetView("GBuffer - Albedo RTV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm);
-    m_PositionRtv = resourceContext.CreateRenderTargetView("GBuffer - Position RTV", m_PositionTexture, RhiFormat::R32G32B32A32Float);
-    m_NormalRtv = resourceContext.CreateRenderTargetView("GBuffer - Normal RTV", m_NormalTexture, RhiFormat::R32G32B32A32Float);
+    m_DepthBuffer = &rc.CreateDepthStencilResource("GBuffer - Depth Texture", resolution, DepthBufferFormat);
+    m_AlbedoTexture = &rc.CreateTexture2DResource("GBuffer - Albedo Texture", resolution, RhiFormat::R8G8B8A8Unorm);
+    m_PositionTexture = &rc.CreateTexture2DResource("GBuffer - Position Texture", resolution, RhiFormat::R32G32B32A32Float);
+    m_NormalTexture = &rc.CreateTexture2DResource("GBuffer - Normal Texture", resolution, RhiFormat::R32G32B32A32Float);
+
+    m_DepthDsv = rc.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
+    m_AlbedoRtv = rc.CreateRenderTargetView("GBuffer - Albedo RTV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm);
+    m_PositionRtv = rc.CreateRenderTargetView("GBuffer - Position RTV", m_PositionTexture, RhiFormat::R32G32B32A32Float);
+    m_NormalRtv = rc.CreateRenderTargetView("GBuffer - Normal RTV", m_NormalTexture, RhiFormat::R32G32B32A32Float);
 }
 
-void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
+void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("Temp Frame Dump - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
-    graphicContext.PushMarker("Clear");
-    graphicContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
-    graphicContext.TransitionResource(*m_AlbedoTexture, RhiResourceState::RenderTarget);
-    graphicContext.TransitionResource(*m_PositionTexture, RhiResourceState::RenderTarget);
-    graphicContext.TransitionResource(*m_NormalTexture, RhiResourceState::RenderTarget);
-    graphicContext.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
-    graphicContext.ClearDepthStencil(m_DepthDsv, 1.0);
-    graphicContext.PopMarker();
+    ctx.PushMarker("Clear");
+    ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*m_AlbedoTexture, RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*m_PositionTexture, RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*m_NormalTexture, RhiResourceState::RenderTarget);
+    ctx.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
+    ctx.ClearDepthStencil(m_DepthDsv, 1.0);
+    ctx.PopMarker();
 
-    graphicContext.PushMarker("Draw GBuffer Geometry");
-    graphicContext.SetViewport(gfxDisplay.GetViewport());
-    graphicContext.SetScissorRect(gfxDisplay.GetScissorRect());
-    graphicContext.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
-    graphicContext.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-    graphicContext.SetGraphicRootSignature(*m_RootSignature);
-    graphicContext.SetComputeRootSignature(*m_RootSignature);
-    graphicContext.SetPipelineState(resourceContext.GetPipelineState(*m_PsoDesc));
-    graphicContext.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
-    graphicContext.SetComputeRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
+    ctx.PushMarker("Draw GBuffer Geometry");
+    ctx.SetViewport(gfxDisplay.GetViewport());
+    ctx.SetScissorRect(gfxDisplay.GetScissorRect());
+    ctx.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
+    ctx.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    ctx.SetGraphicRootSignature(*m_RootSignature);
+    ctx.SetComputeRootSignature(*m_RootSignature);
+    ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
+    ctx.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
+    ctx.SetComputeRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
 
     RhiRenderTargetView rtvs[] = { m_AlbedoRtv, m_PositionRtv, m_NormalRtv, gfxDisplay.GetBackBufferRtv() };
-    graphicContext.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &m_DepthDsv);
+    ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &m_DepthDsv);
 
-    const VisualBatch& visualBatch = graphicContext.GetVisualBatch();
+    const VisualBatch& visualBatch = ctx.GetVisualBatch();
 
     for (int i = 0; i < visualBatch.m_Visuals.size(); ++i)
     {
@@ -93,18 +94,18 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& graphicContext, Re
         auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
         memcpy(alloc->GetCpuHandle(), visual.m_Material, sizeof(Material));
 
-        graphicContext.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        graphicContext.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
-        graphicContext.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
-        graphicContext.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
+        ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
+        ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
+        ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
     }
 
-    graphicContext.PopMarker();
+    ctx.PopMarker();
 }
 
 void Ether::Graphics::GBufferProducer::Reset()
 {
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Reset();
 }
 
@@ -136,7 +137,7 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
     m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
 }
 
-void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& resourceContext)
+void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
 {
     m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
@@ -150,5 +151,5 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& reso
         VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
-    resourceContext.RegisterPipelineState("GBufferProducer Pipeline State", *m_PsoDesc);
+    rc.RegisterPipelineState("GBufferProducer Pipeline State", *m_PsoDesc);
 }

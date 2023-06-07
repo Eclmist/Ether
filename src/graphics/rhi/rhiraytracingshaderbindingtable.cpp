@@ -19,8 +19,17 @@
 
 #include "graphics/rhi/rhiraytracingshaderbindingtable.h"
 
-Ether::Graphics::RhiRaytracingShaderBindingTable::RhiRaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries)
+Ether::Graphics::RhiRaytracingShaderBindingTable::RhiRaytracingShaderBindingTable(
+    const char* name,
+    uint32_t maxEntrySize,
+    uint32_t numEntries)
+    : RhiResource(name)
 {
     m_ShaderTableEntrySize = maxEntrySize;
     m_ShaderTableSize = maxEntrySize * numEntries;
 }
+
+Ether::Graphics::RhiRaytracingShaderBindingTable::~RhiRaytracingShaderBindingTable()
+{
+}
+

@@ -86,11 +86,7 @@ void Ether::Graphics::GraphicDisplay::CreateSwapChain(void* hwnd)
     desc.m_Resolution = { m_Viewport.m_Width, m_Viewport.m_Height };
     desc.m_Format = BackBufferFormat;
     desc.m_SampleDesc = { 1, 0 };
-    desc.m_BufferCount = GetNumBuffers();
-    desc.m_ScalingMode = RhiScalingMode::Stretch;
-    desc.m_SwapEffect = RhiSwapEffect::FlipDiscard;
-    desc.m_Flag = RhiSwapChainFlag::AllowTearing;
-    desc.m_CommandQueue = &GraphicCore::GetCommandManager().GetGraphicQueue();
+    desc.m_NumBuffers = GetNumBuffers();
     desc.m_SurfaceTarget = hwnd;
 
     m_SwapChain = GraphicCore::GetDevice().CreateSwapChain(desc);

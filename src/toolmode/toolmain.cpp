@@ -43,7 +43,7 @@ void Ether::Toolmode::EtherHeadless::Initialize()
 void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
-    world.Load("D:\\Graphics_Projects\\Atelier\\Workspaces\\Debug\\TestScene.ether");
+    world.Load("..\\..\\..\\content\\TestScene.ether");
 
     Entity& camera = world.CreateEntity("Main Camera");
     camera.AddComponent<Ecs::EcsCameraComponent>();

@@ -21,8 +21,11 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-Ether::Graphics::Dx12RaytracingShaderBindingTable::Dx12RaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries)
-    : RhiRaytracingShaderBindingTable(maxEntrySize, numEntries)
+Ether::Graphics::Dx12RaytracingShaderBindingTable::Dx12RaytracingShaderBindingTable(
+    const char* name,
+    uint32_t maxEntrySize,
+    uint32_t numEntries)
+    : RhiRaytracingShaderBindingTable(name, maxEntrySize, numEntries)
 {
 }
 

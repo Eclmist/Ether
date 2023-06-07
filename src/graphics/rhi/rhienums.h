@@ -279,13 +279,6 @@ enum class RhiRootSignatureFlag : uint64_t
 };
 ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 
-enum class RhiScalingMode
-{
-    None,
-    Stretch,
-    AspectRatioStretch,
-};
-
 enum class RhiShaderResourceDimension
 {
     Unknown,
@@ -325,19 +318,6 @@ enum class RhiShaderVisibility
     Domain,
     Geometry,
     Pixel,
-};
-
-enum class RhiSwapEffect
-{
-    Discard,
-    Sequential,
-    FlipDiscard,
-    FlipSequential,
-};
-
-enum class RhiSwapChainFlag
-{
-    AllowTearing,
 };
 
 enum class RhiTextureAddressMode

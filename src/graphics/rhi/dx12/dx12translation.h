@@ -49,12 +49,9 @@ D3D12_STENCIL_OP Translate(const RhiDepthStencilOperation& rhiType);
 D3D12_TEXTURE_ADDRESS_MODE Translate(const RhiTextureAddressMode& rhiType);
 D3D12_TEXTURE_LAYOUT Translate(const RhiResourceLayout& rhiType);
 DXGI_FORMAT Translate(const RhiFormat& rhiType);
-DXGI_SCALING Translate(const RhiScalingMode& rhiType);
-DXGI_SWAP_EFFECT Translate(const RhiSwapEffect& rhiType);
 D3D12_DESCRIPTOR_HEAP_FLAGS Translate(const RhiDescriptorHeapFlag& rhiType);
 D3D12_ROOT_SIGNATURE_FLAGS Translate(const RhiRootSignatureFlag& rhiType);
 D3D12_RESOURCE_FLAGS Translate(const RhiResourceFlag& rhiType);
-DXGI_SWAP_CHAIN_FLAG Translate(const RhiSwapChainFlag& rhiType);
 
 D3D12_BLEND_DESC Translate(const RhiBlendDesc& rhiDesc);
 D3D12_CLEAR_VALUE Translate(const RhiClearValue& rhiDesc);
@@ -67,7 +64,6 @@ D3D12_RECT Translate(const RhiScissorDesc& rhiDesc);
 D3D12_RESOURCE_DESC Translate(const RhiResourceDesc& rhiDesc);
 D3D12_STATIC_SAMPLER_DESC Translate(const RhiSamplerParameterDesc& rhiDesc);
 D3D12_VIEWPORT Translate(const RhiViewportDesc& rhiDesc);
-DXGI_SWAP_CHAIN_DESC1 Translate(const RhiSwapChainDesc& rhiDesc);
 DXGI_SAMPLE_DESC Translate(const RhiSampleDesc& rhiDesc);
 
 D3D12_RENDER_TARGET_VIEW_DESC Translate(const RhiRenderTargetViewDesc& rhiDesc);

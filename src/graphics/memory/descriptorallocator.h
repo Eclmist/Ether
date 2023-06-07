@@ -30,13 +30,16 @@ namespace Ether::Graphics
 class DescriptorAllocator : public FreeListAllocator
 {
 public:
-    DescriptorAllocator(RhiDescriptorHeapType type, size_t maxHeapSize = _4MiB);
+    DescriptorAllocator(RhiDescriptorHeapType type, size_t maxHeapSize = _4MiB, bool isShaderVisible = false);
 
     ~DescriptorAllocator() = default;
 
 public:
     std::unique_ptr<MemoryAllocation> Allocate(SizeAlign = { 1, 1 }) override;
     void Free(std::unique_ptr<MemoryAllocation>&& alloc) override;
+
+public:
+    std::unique_ptr<MemoryAllocation> Commit(const RhiResourceView* descriptors[], uint32_t numDescriptors);
 
 public:
     inline RhiDescriptorHeap& GetDescriptorHeap() const { return *m_DescriptorHeap; }

@@ -27,10 +27,10 @@ namespace Ether::Graphics
 class Dx12RaytracingShaderBindingTable : public RhiRaytracingShaderBindingTable
 {
 public:
-    Dx12RaytracingShaderBindingTable(uint32_t maxEntrySize, uint32_t numEntries);
+    Dx12RaytracingShaderBindingTable(const char* name, uint32_t maxEntrySize, uint32_t numEntries);
     ~Dx12RaytracingShaderBindingTable() override = default;
 
-public:
+ public:
     RhiGpuAddress GetGpuAddress() const override;
 
 protected:

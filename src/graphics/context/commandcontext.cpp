@@ -26,6 +26,7 @@
 Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiCommandType type)
     : m_Name(contextName)
     , m_Type(type)
+    , m_RaytracingBindTable(nullptr)
 {
     ETH_MARKER_EVENT("Command Context - Constructor");
 
@@ -39,6 +40,7 @@ void Ether::Graphics::CommandContext::Reset()
 {
     ETH_MARKER_EVENT("Command Context - Reset");
     m_CommandList->Reset();
+    m_RaytracingBindTable = nullptr;
     PushMarker(m_Name);
 }
 
@@ -139,9 +141,9 @@ void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const R
     m_CommandList->BuildAccelerationStructure(accelStructure);
 }
 
-void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTable& bindTable)
+void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiResource* bindTable)
 {
-    m_RaytracingShaderBindingTable = const_cast<RhiRaytracingShaderBindingTable*>(&bindTable);
+    m_RaytracingBindTable = bindTable;
 }
 
 void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState)
@@ -192,5 +194,9 @@ void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
 
 void Ether::Graphics::CommandContext::DispatchRays(uint32_t x, uint32_t y, uint32_t z)
 {
-    m_CommandList->DispatchRays(x, y, z, *m_RaytracingShaderBindingTable);
+    AssertGraphics(
+        m_RaytracingBindTable != nullptr,
+        "CommandContext::DispatchRays cannot be called without first binding shader table with "
+        "CommandContext::SetRaytracingShaderBindingTable");
+    m_CommandList->DispatchRays(x, y, z, m_RaytracingBindTable);
 }

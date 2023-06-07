@@ -35,7 +35,7 @@ public:
     std::unique_ptr<RhiCommandAllocator> CreateCommandAllocator(const RhiCommandType& type) const override;
     std::unique_ptr<RhiCommandList> CreateCommandList(const char* name, const RhiCommandType& type) const override;
     std::unique_ptr<RhiCommandQueue> CreateCommandQueue(const RhiCommandType& type) const override;
-    std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapType& type, uint32_t numDescriptors) const override;
+    std::unique_ptr<RhiDescriptorHeap> CreateDescriptorHeap(const RhiDescriptorHeapType& type, uint32_t numDescriptors, bool isShaderVisible) const override;
     std::unique_ptr<RhiFence> CreateFence() const override;
     std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const override;
     std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const override;
@@ -48,12 +48,15 @@ public:
     std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const override;
     std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const override;
 
+    std::unique_ptr<RhiResource> CreateRaytracingShaderBindingTable(const char* name, const RhiRaytracingShaderBindingTableDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const override;
     std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const override;
-    std::unique_ptr<RhiRaytracingShaderBindingTable> CreateRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTableDesc& desc) const override;
 
     std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const override;
+
+public:
+    void CopyDescriptors(uint32_t numDescriptors, RhiCpuAddress srcAddr, RhiCpuAddress destAddr, RhiDescriptorHeapType type) const override;
 
 protected:
     std::unique_ptr<RhiRootSignature> CreateRootSignature(const char* name, const RhiRootSignatureDesc& desc) const override;

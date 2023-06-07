@@ -101,13 +101,13 @@ std::unique_ptr<Ether::Graphics::RhiCommandQueue> Ether::Graphics::Dx12Device::C
 
 std::unique_ptr<Ether::Graphics::RhiDescriptorHeap> Ether::Graphics::Dx12Device::CreateDescriptorHeap(
     const RhiDescriptorHeapType& type,
-    uint32_t numDescriptors) const
+    uint32_t numDescriptors,
+    bool isShaderVisible) const
 {
     std::unique_ptr<Dx12DescriptorHeap> dx12Obj = std::make_unique<Dx12DescriptorHeap>();
 
     D3D12_DESCRIPTOR_HEAP_DESC dx12Desc = {};
-    dx12Desc.Flags = type == RhiDescriptorHeapType::SrvCbvUav ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-                                                              : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    dx12Desc.Flags = isShaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     dx12Desc.Type = Translate(type);
     dx12Desc.NumDescriptors = numDescriptors;
     HRESULT hr = m_Device->CreateDescriptorHeap(&dx12Desc, IID_PPV_ARGS(&dx12Obj->m_Heap));
@@ -135,15 +135,29 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
 {
     std::unique_ptr<Dx12SwapChain> dx12Obj = std::make_unique<Dx12SwapChain>();
 
-    const auto dx12CommandQueue = dynamic_cast<Dx12CommandQueue*>(desc.m_CommandQueue);
+    const Dx12CommandQueue* cmdQueue = dynamic_cast<Dx12CommandQueue*>(
+        &GraphicCore::GetCommandManager().GetGraphicQueue());
 
     wrl::ComPtr<IDXGIFactory4> dxgiFactory = dynamic_cast<Dx12Module&>(GraphicCore::GetModule()).m_DxgiFactory;
     wrl::ComPtr<IDXGISwapChain1> swapChain1;
-    auto creationDesc = Translate(desc);
+
+    DXGI_SWAP_CHAIN_DESC1 dx12Desc = {};
+    dx12Desc.Width = desc.m_Resolution.x;
+    dx12Desc.Height = desc.m_Resolution.y;
+    dx12Desc.Format = Translate(desc.m_Format);
+    dx12Desc.Stereo = false;
+    dx12Desc.SampleDesc = Translate(desc.m_SampleDesc);
+    dx12Desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    dx12Desc.BufferCount = desc.m_NumBuffers;
+    dx12Desc.Scaling = DXGI_SCALING_STRETCH;
+    dx12Desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    dx12Desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+    dx12Desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
     HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(
-        dx12CommandQueue->m_CommandQueue.Get(),
+        cmdQueue->m_CommandQueue.Get(),
         (HWND)desc.m_SurfaceTarget,
-        &creationDesc,
+        &dx12Desc,
         nullptr,
         nullptr,
         &swapChain1);
@@ -258,6 +272,56 @@ std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Devi
 std::unique_ptr<Ether::Graphics::RhiPipelineStateDesc> Ether::Graphics::Dx12Device::CreatePipelineStateDesc() const
 {
     return std::make_unique<Dx12PipelineStateDesc>();
+}
+
+std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateRaytracingShaderBindingTable(
+    const char* name,
+    const RhiRaytracingShaderBindingTableDesc& desc) const
+{
+    uint32_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+    entrySize += desc.m_MaxRootSignatureSize;
+    entrySize = AlignUp(entrySize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+
+    std::unique_ptr<Dx12RaytracingShaderBindingTable> dx12Obj = std::make_unique<Dx12RaytracingShaderBindingTable>(
+        name,
+        entrySize,
+        3);
+
+    RhiCommitedResourceDesc bufferDesc = {};
+    bufferDesc.m_Name = "RaytracingShaderTable::ShaderTable";
+    bufferDesc.m_HeapType = RhiHeapType::Upload;
+    bufferDesc.m_State = RhiResourceState::GenericRead;
+    bufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(dx12Obj->GetTableSize());
+    dx12Obj->m_Buffer = CreateCommittedResource(bufferDesc);
+
+    uint8_t* mappedAddr;
+    dx12Obj->m_Buffer->Map((void**)&mappedAddr);
+
+    wrl::ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
+    dynamic_cast<Dx12RaytracingPipelineState*>(desc.m_RaytracingPipelineState)
+        ->m_PipelineState->QueryInterface(IID_PPV_ARGS(&stateObjectProperties));
+
+    memcpy(
+        mappedAddr,
+        stateObjectProperties->GetShaderIdentifier(desc.m_RayGenShaderName),
+        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    constexpr uint8_t rootTableSize = 8;
+    uint64_t* raygenDescriptorTable = (uint64_t*)(mappedAddr + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+    *raygenDescriptorTable = desc.m_RayGenRootTableAddress;
+
+    memcpy(
+        mappedAddr + 1 * entrySize,
+        stateObjectProperties->GetShaderIdentifier(desc.m_MissShaderName),
+        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    memcpy(
+        mappedAddr + 2 * entrySize,
+        stateObjectProperties->GetShaderIdentifier(desc.m_HitGroupName),
+        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+
+    dx12Obj->m_Buffer->Unmap();
+    return dx12Obj;
 }
 
 std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12Device::CreateAccelerationStructure(
@@ -407,54 +471,6 @@ std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiRaytracingShaderBindingTable> Ether::Graphics::Dx12Device::
-    CreateRaytracingShaderBindingTable(const RhiRaytracingShaderBindingTableDesc& desc) const
-{
-    uint32_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-    entrySize += desc.m_MaxRootSignatureSize;
-    entrySize = AlignUp(entrySize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
-
-    std::unique_ptr<Dx12RaytracingShaderBindingTable> dx12Obj = std::make_unique<Dx12RaytracingShaderBindingTable>(
-        entrySize,
-        3);
-
-    RhiCommitedResourceDesc bufferDesc = {};
-    bufferDesc.m_Name = "RaytracingShaderTable::ShaderTable";
-    bufferDesc.m_HeapType = RhiHeapType::Upload;
-    bufferDesc.m_State = RhiResourceState::GenericRead;
-    bufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(dx12Obj->GetTableSize());
-    dx12Obj->m_Buffer = CreateCommittedResource(bufferDesc);
-
-    uint8_t* mappedAddr;
-    dx12Obj->m_Buffer->Map((void**)&mappedAddr);
-
-    wrl::ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
-    dynamic_cast<Dx12RaytracingPipelineState*>(desc.m_RaytracingPipelineState)
-        ->m_PipelineState->QueryInterface(IID_PPV_ARGS(&stateObjectProperties));
-
-    memcpy(
-        mappedAddr,
-        stateObjectProperties->GetShaderIdentifier(desc.m_RayGenShaderName),
-        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-    constexpr uint8_t rootTableSize = 8;
-    uint64_t* raygenDescriptorTable = (uint64_t*)(mappedAddr + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-    *raygenDescriptorTable = desc.m_RayGenRootTableAddress;
-
-    memcpy(
-        mappedAddr + 1 * entrySize,
-        stateObjectProperties->GetShaderIdentifier(desc.m_MissShaderName),
-        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-    memcpy(
-        mappedAddr + 2 * entrySize,
-        stateObjectProperties->GetShaderIdentifier(desc.m_HitGroupName),
-        D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-    dx12Obj->m_Buffer->Unmap();
-    return dx12Obj;
-}
-
 std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateCommittedResource(
     const RhiCommitedResourceDesc& desc) const
 {
@@ -476,11 +492,20 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         IID_PPV_ARGS(&dx12Obj->m_Resource));
 
     if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 commited resource (%s)", desc.m_Name.c_str());
+        LogGraphicsFatal("Failed to create DirectX12 commited resource (%s)", desc.m_Name);
 
     dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
     dx12Obj->SetState(desc.m_State);
     return dx12Obj;
+}
+
+void Ether::Graphics::Dx12Device::CopyDescriptors(
+    uint32_t numDescriptors,
+    RhiCpuAddress srcAddr,
+    RhiCpuAddress destAddr,
+    RhiDescriptorHeapType type) const
+{
+    m_Device->CopyDescriptorsSimple(numDescriptors, { destAddr }, { srcAddr }, Translate(type));
 }
 
 std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::CreateRootSignature(

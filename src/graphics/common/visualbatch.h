@@ -29,5 +29,19 @@ struct ETH_GRAPHIC_DLL VisualBatch
     std::vector<Visual> m_Visuals;
 
     // Other batch related data will go in here in the future
+
+    bool operator==(const VisualBatch& other) const
+    {
+        if (m_Visuals.size() != other.m_Visuals.size())
+            return false;
+
+        for (uint32_t i = 0; i < m_Visuals.size(); ++i)
+        {
+            if (m_Visuals[i] != other.m_Visuals[i])
+                return false;
+        }
+
+        return true;
+    }
 };
 } // namespace Ether::Graphics

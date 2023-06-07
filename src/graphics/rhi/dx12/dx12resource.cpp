@@ -25,7 +25,7 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-Ether::Graphics::Dx12Resource::Dx12Resource(const std::string& name)
+Ether::Graphics::Dx12Resource::Dx12Resource(const char* name)
     : RhiResource(name)
 {
 }

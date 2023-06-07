@@ -33,5 +33,16 @@ struct ETH_GRAPHIC_DLL Visual
 
     Mesh* m_Mesh;
     Material* m_Material;
+
+    bool operator==(const Visual& other) const
+    {
+        if (m_Mesh != other.m_Mesh)
+            return false;
+
+        if (m_Material != other.m_Material)
+            return false;
+
+        return true;
+    }
 };
 } // namespace Ether::Graphics

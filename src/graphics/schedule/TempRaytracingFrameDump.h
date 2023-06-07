@@ -24,6 +24,7 @@
 #include "graphics/context/resourcecontext.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/rhiraytracingshaderbindingtable.h"
+#include "graphics/rhi/rhiresourceviews.h"
 
 namespace Ether::Graphics
 {
@@ -31,33 +32,33 @@ class TempRaytracingFrameDump
 {
 public:
     void Reset();
-    void Initialize(ResourceContext& resourceContext);
-    void FrameSetup(ResourceContext& resourceContext);
-    void Render(GraphicContext& graphicContext, ResourceContext& resourceContext);
+    void Initialize(ResourceContext& rc);
+    void FrameSetup(ResourceContext& rc);
+    void Render(GraphicContext& ctx, ResourceContext& rc);
 
 protected: 
     void InitializeShaders();
-    void InitializeShaderBindingTable();
     void InitializeRootSignatures();
     void InitializePipelineStates();
-    void InitializeAccelerationStructure(const VisualBatch* visualBatch, GraphicContext& context);
+    void InitializeShaderBindingTable(ResourceContext& rc);
 
 protected:
     std::unique_ptr<RhiShader> m_Shader;
     std::unique_ptr<RhiRootSignature> m_RayGenRootSignature;
     std::unique_ptr<RhiRootSignature> m_HitMissRootSignature;
     std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
-    std::unique_ptr<RhiAccelerationStructure> m_TopLevelAccelerationStructure;
     std::unique_ptr<RhiRaytracingPipelineState> m_RaytracingPipelineState;
-    std::unique_ptr<RhiRaytracingShaderBindingTable> m_RaytracingShaderBindingTable;
-
-private:
-    std::unique_ptr<RhiResource> m_OutputTexture;
-    std::unique_ptr<RhiResource> m_ConstantBuffer;
-    std::unique_ptr<RhiUnorderedAccessView> m_OutputTextureUav;
-    std::unique_ptr<RhiShaderResourceView> m_TlasSrv;
-    std::unique_ptr<RhiConstantBufferView> m_ConstantBufferView;
-
     std::unique_ptr<MemoryAllocation> m_RootTableDescriptorAlloc;
+
+protected:
+    RhiResource* m_TopLevelAccelerationStructure;
+    RhiResource* m_OutputTexture;
+    RhiResource* m_RaytracingShaderBindingTable[MaxSwapChainBuffers];
+
+    RhiUnorderedAccessView m_OutputTextureUav;
+    RhiShaderResourceView m_TlasSrv;
+    RhiShaderResourceView m_AlbedoSrv;
+    RhiShaderResourceView m_PositionSrv;
+    RhiShaderResourceView m_NormalSrv;
 };
 } // namespace Ether::Graphics
