@@ -42,13 +42,14 @@ struct VS_OUTPUT
     float3 Normal       : NORMAL;
     float2 TexCoord     : TEXCOORD0;
     float4 PositionWS   : TEXCOORD1;
+    float4 PositionPrev : TEXCOORD2;
 };
 
 struct PS_OUTPUT
 {
-    float4 Albedo       : SV_TARGET0;
-    float4 Position     : SV_TARGET1;
-    float4 Normal       : SV_TARGET2;
+    float4 Output0      : SV_TARGET0;
+    float4 Output1      : SV_TARGET1;
+    float4 Output2      : SV_TARGET2;
     float4 DebugOutput  : SV_TARGET3;
 };
 
@@ -63,8 +64,10 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 
     //float4x4 mv = mul(g_GlobalConstants.m_ViewMatrix, m_InstanceParams.m_ModelMatrix); (just leave model matrix as identity for now)
     float4x4 mvp = mul(g_GlobalConstants.m_ProjectionMatrix, g_GlobalConstants.m_ViewMatrix);
+    float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
 
     o.Position = mul(mvp, float4(pos, 1.0f));
+    o.PositionPrev = mul(mvpPrev, float4(pos, 1.0f));
     o.PositionWS = /* mul(m_ModelMatrix, */ float4(pos, 1.0f); //).xyz;
     //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0f)).xyz;
 
@@ -76,12 +79,20 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 
 PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    PS_OUTPUT o;
-    o.Albedo = g_InstanceParams.m_BaseColor;
-    o.Position = IN.PositionWS;
-    o.Normal = IN.Normal.xyzz;
-    o.DebugOutput = 1 / IN.Position.w;
+    //float2 a = (IN.PositionSS.xy / IN.PositionSS.w) * 0.5 + 0.5;
+    float2 posCurr = IN.Position.xy;
+   // posCurr.x = g_GlobalConstants.m_ScreenResolution.x - posCurr.x;
 
-    o.Albedo.w = 1;
+    float2 prevPos = ((IN.PositionPrev.xy * float2(1, -1) / IN.PositionPrev.w) * 0.5 + 0.5) * g_GlobalConstants.m_ScreenResolution;
+    //prevPos.y = 1 - prevPos.y;
+
+    float2 velocity = posCurr - prevPos;
+
+    PS_OUTPUT o;
+    o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz, 1);
+    o.Output1 = float4(IN.PositionWS.xyz, IN.Normal.x);
+    o.Output2 = float4(IN.Normal.yz, velocity);
+    //o.DebugOutput = float4(o.Output2.zw, 0, 0);
+    o.DebugOutput = float4(1 / IN.Position.www / 1, 0);
     return o;
 }

@@ -21,14 +21,15 @@
 #include "common/raypayload.h"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-Texture2D<float4> g_GBufferAlbedo                   : register(t1);
-Texture2D<float4> g_GBufferPosition                 : register(t2);
-Texture2D<float4> g_GBufferNormal                   : register(t3);
+Texture2D<float4> g_GBufferOutput0                  : register(t1);
+Texture2D<float4> g_GBufferOutput1                  : register(t2);
+Texture2D<float4> g_GBufferOutput2                  : register(t3);
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RWTexture2D<float4> g_Output                        : register(u0);
 
 sampler g_PointSampler                              : register(s0);
+sampler g_BilinearSampler                           : register(s1);
 
 float3 linearToSrgb(float3 c)
 {
@@ -72,28 +73,35 @@ void RayGeneration()
     RayPayload payload;
     payload.m_ScreenPosition = crd;
 
-    float4 albedo = g_GBufferAlbedo.Load(int3(crd, 0));
-    float4 position = g_GBufferPosition.Load(int3(crd, 0));
-    float4 normal = g_GBufferNormal.Load(int3(crd, 0));
+    float4 gbuffer0 = g_GBufferOutput0.Load(int3(crd, 0));
+    float4 gbuffer1 = g_GBufferOutput1.Load(int3(crd, 0));
+    float4 gbuffer2 = g_GBufferOutput2.Load(int3(crd, 0));
 
-    float4 output = 0;
+    float4 color = gbuffer0;
+    float3 position = gbuffer1.xyz;
+    float3 normal = float3(gbuffer1.w, gbuffer2.xy);
+    float2 velocity = gbuffer2.zw;
+
+    float4 output;
 
     for (int i = 0; i < 1; ++i)
     {
         RayDesc ray;
         ray.Origin = position.xyz;
-        ray.Direction = normalize(normal.xyz + uniformRandomDirection(d + (g_GlobalConstants.m_Time.x * .01 % 4096.) * 27.4723));
+        ray.Direction = normalize(normal.xyz + nonUniformRandomDirection(d + (g_GlobalConstants.m_FrameNumber * .01 % 4096.) * 27.4723));
         ray.TMin = 0.001;
         ray.TMax = 32;
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
-        if (payload.m_Hit && albedo.w > 0.9)
+        if (payload.m_Hit && color.w > 0.9)
             output = (payload.m_RayT) / 32;
         else
             output = float4(0.3, 0.5, 0.9, 1);
     }
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
+
+    float2 prevLaunchIndex = ((float2)launchIndex.xy - (float2)velocity) / g_GlobalConstants.m_ScreenResolution;
     g_Output[launchIndex.xy] = (output * a) + (1 - a) * g_Output[launchIndex.xy];
 }
 

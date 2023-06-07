@@ -44,18 +44,18 @@ void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& rc)
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     m_DepthBuffer = &rc.CreateDepthStencilResource("GBuffer - Depth Texture", resolution, DepthBufferFormat);
-    m_AlbedoTexture = &rc.CreateTexture2DResource("GBuffer - Albedo Texture", resolution, RhiFormat::R8G8B8A8Unorm);
-    m_PositionTexture = &rc.CreateTexture2DResource("GBuffer - Position Texture", resolution, RhiFormat::R32G32B32A32Float);
-    m_NormalTexture = &rc.CreateTexture2DResource("GBuffer - Normal Texture", resolution, RhiFormat::R32G32B32A32Float);
+    m_GBufferTexture0 = &rc.CreateTexture2DResource("GBuffer - Texture 0", resolution, RhiFormat::R8G8B8A8Unorm);
+    m_GBufferTexture1 = &rc.CreateTexture2DResource("GBuffer - Texture 1", resolution, RhiFormat::R32G32B32A32Float);
+    m_GBufferTexture2 = &rc.CreateTexture2DResource("GBuffer - Texture 2", resolution, RhiFormat::R32G32B32A32Float);
 
     m_DepthDsv = rc.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
-    m_AlbedoRtv = rc.CreateRenderTargetView("GBuffer - Albedo RTV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm);
-    m_PositionRtv = rc.CreateRenderTargetView("GBuffer - Position RTV", m_PositionTexture, RhiFormat::R32G32B32A32Float);
-    m_NormalRtv = rc.CreateRenderTargetView("GBuffer - Normal RTV", m_NormalTexture, RhiFormat::R32G32B32A32Float);
+    m_GBufferRtv0 = rc.CreateRenderTargetView("GBuffer - RTV 0", m_GBufferTexture0, RhiFormat::R8G8B8A8Unorm);
+    m_GBufferRtv1 = rc.CreateRenderTargetView("GBuffer - RTV 1", m_GBufferTexture1, RhiFormat::R32G32B32A32Float);
+    m_GBufferRtv2 = rc.CreateRenderTargetView("GBuffer - RTV 2", m_GBufferTexture2, RhiFormat::R32G32B32A32Float);
 
-    rc.CreateShaderResourceView("GBuffer - Albedo SRV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm, RhiShaderResourceDimension::Texture2D);
-    rc.CreateShaderResourceView("GBuffer - Position SRV", m_PositionTexture, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
-    rc.CreateShaderResourceView("GBuffer - Normal SRV", m_NormalTexture, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
+    rc.CreateShaderResourceView("GBuffer - SRV 0", m_GBufferTexture0, RhiFormat::R8G8B8A8Unorm, RhiShaderResourceDimension::Texture2D);
+    rc.CreateShaderResourceView("GBuffer - SRV 1", m_GBufferTexture1, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
+    rc.CreateShaderResourceView("GBuffer - SRV 2", m_GBufferTexture2, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
 }
 
 void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceContext& rc)
@@ -67,13 +67,13 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceConte
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*m_AlbedoTexture, RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*m_PositionTexture, RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*m_NormalTexture, RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*m_GBufferTexture0, RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*m_GBufferTexture1, RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*m_GBufferTexture2, RhiResourceState::RenderTarget);
     ctx.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
-    ctx.ClearColor(m_AlbedoRtv);
-    ctx.ClearColor(m_PositionRtv);
-    ctx.ClearColor(m_NormalRtv);
+    ctx.ClearColor(m_GBufferRtv0);
+    ctx.ClearColor(m_GBufferRtv1);
+    ctx.ClearColor(m_GBufferRtv2);
     ctx.ClearDepthStencil(m_DepthDsv, 1.0);
     ctx.PopMarker();
 
@@ -87,7 +87,7 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceConte
     ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
     ctx.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
 
-    RhiRenderTargetView rtvs[] = { m_AlbedoRtv, m_PositionRtv, m_NormalRtv, gfxDisplay.GetBackBufferRtv() };
+    RhiRenderTargetView rtvs[] = { m_GBufferRtv0, m_GBufferRtv1, m_GBufferRtv2, gfxDisplay.GetBackBufferRtv() };
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &m_DepthDsv);
 
     const VisualBatch& visualBatch = ctx.GetVisualBatch();

@@ -28,11 +28,15 @@ struct GlobalConstants
     ethMatrix4x4 m_ViewMatrix;
     ethMatrix4x4 m_ProjectionMatrix;
 
+    ethMatrix4x4 m_ViewMatrixPrev;
+    ethMatrix4x4 m_ProjectionMatrixPrev;
+
     ethVector4 m_EyePosition;
     ethVector4 m_EyeDirection;
     ethVector4 m_Time;
 
     ethVector2u m_ScreenResolution;
+    uint32_t m_FrameNumber;
 
     // Debug
     float m_TemporalAccumulationFactor;
@@ -41,7 +45,6 @@ struct GlobalConstants
     ethVector4 m_Padding1;
     ethVector4 m_Padding2;
     ethVector4 m_Padding3;
-    float m_Padding4;
 };
 
 ETH_END_SHADER_NAMESPACE

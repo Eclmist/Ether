@@ -46,9 +46,14 @@ void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicCon
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
+    static ethMatrix4x4 prevViewMatrix = graphicContext.GetViewMatrix();
+    static ethMatrix4x4 prevProjMatrix = graphicContext.GetProjectionMatrix();
+
     Shader::GlobalConstants globalConstants;
     globalConstants.m_ViewMatrix = graphicContext.GetViewMatrix();
     globalConstants.m_ProjectionMatrix = graphicContext.GetProjectionMatrix();
+    globalConstants.m_ViewMatrixPrev = prevViewMatrix;
+    globalConstants.m_ProjectionMatrixPrev = prevProjMatrix;
     globalConstants.m_EyeDirection = graphicContext.GetEyeDirection().Resize<4>();
     globalConstants.m_EyePosition = graphicContext.GetEyePosition().Resize<4>();
     globalConstants.m_Time = ethVector4(
@@ -57,6 +62,7 @@ void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicCon
         Time::GetTimeSinceStartup() * 2,
         Time::GetTimeSinceStartup() * 3);
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
+    globalConstants.m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
     globalConstants.m_TemporalAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
 
     auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate(
@@ -64,6 +70,8 @@ void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicCon
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(Shader::GlobalConstants));
 
     RhiLinkSpace::g_GlobalConstantsCbv = dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress();
+    prevViewMatrix = globalConstants.m_ViewMatrix;
+    prevProjMatrix = globalConstants.m_ProjectionMatrix;
 }
 
 void Ether::Graphics::GlobalConstantsProducer::Reset()

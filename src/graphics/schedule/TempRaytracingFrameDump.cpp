@@ -49,12 +49,20 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
+    if (!m_Shader->IsCompiled())
+    {
+        m_Shader->Compile();
+        GraphicCore::FlushGpu();
+        InitializeRootSignatures();
+        InitializePipelineStates();
+    }
+
     m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, BackBufferFormat);
     m_OutputTextureUav = rc.CreateUnorderedAccessView("Raytrace - Output UAV", m_OutputTexture, BackBufferFormat, RhiUnorderedAccessDimension::Texture2D);
 
-    m_AlbedoSrv = rc.GetView<RhiShaderResourceView>("GBuffer - Albedo SRV");
-    m_PositionSrv = rc.GetView<RhiShaderResourceView>("GBuffer - Position SRV");
-    m_NormalSrv = rc.GetView<RhiShaderResourceView>("GBuffer - Normal SRV");
+    m_AlbedoSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 0");
+    m_PositionSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 1");
+    m_NormalSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 2");
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, ResourceContext& rc)

@@ -38,5 +38,6 @@ typedef float2 ethVector2;
 typedef uint4 ethVector4u;
 typedef uint3 ethVector3u;
 typedef uint2 ethVector2u;
+typedef uint uint32_t;
 #endif
 
