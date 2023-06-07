@@ -83,12 +83,11 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateDepthStenc
     const ethVector2u resolution,
     RhiFormat format)
 {
-    static RhiClearValue clearVal = { format, { 1, 0 } };
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = resourceName;
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::DepthWrite;
-    desc.m_ClearValue = &clearVal;
+    desc.m_ClearValue = { format, { 1, 0 } };
     desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, resolution);
 
     if (!ShouldRecreateResource(resourceName, desc))
@@ -110,7 +109,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DR
     desc.m_Name = resourceName;
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::Common;
-    desc.m_ClearValue = nullptr;
+    desc.m_ClearValue = { format, { 0, 0, 0, 0 } };
     desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, resolution);
 
     if (!ShouldRecreateResource(resourceName, desc))
@@ -127,12 +126,12 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DU
     const char* resourceName,
     const ethVector2u resolution,
     RhiFormat format)
-{
+{ 
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = resourceName;
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::Common;
-    desc.m_ClearValue = nullptr;
+    desc.m_ClearValue = { format, { 0, 0, 0, 0 } };
     desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, resolution);
     desc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
 

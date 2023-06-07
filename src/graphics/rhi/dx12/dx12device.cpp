@@ -345,7 +345,6 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     scratchBufferDesc.m_State = RhiResourceState::Common;
     scratchBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(info.ScratchDataSizeInBytes);
     scratchBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
-    scratchBufferDesc.m_ClearValue = nullptr;
     dx12Obj->m_ScratchBuffer = CreateCommittedResource(scratchBufferDesc);
 
     RhiCommitedResourceDesc dataBufferDesc = {};
@@ -479,16 +478,19 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
     auto creationDesc = Translate(desc.m_ResourceDesc);
     auto heapDesc = CD3DX12_HEAP_PROPERTIES(Translate(desc.m_HeapType));
 
-    D3D12_CLEAR_VALUE clearValue;
-    if (desc.m_ClearValue != nullptr)
-        clearValue = Translate(*desc.m_ClearValue);
+    D3D12_CLEAR_VALUE clearValue = Translate(desc.m_ClearValue);
+    bool haveClearColor = true;
+    haveClearColor &= creationDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER;
+    haveClearColor &=
+        (creationDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET ||
+         creationDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 
     HRESULT hr = m_Device->CreateCommittedResource(
         &heapDesc,
         D3D12_HEAP_FLAG_NONE,
         &creationDesc,
         Translate(desc.m_State),
-        desc.m_ClearValue == nullptr ? nullptr : &clearValue,
+        haveClearColor ? &clearValue : nullptr,
         IID_PPV_ARGS(&dx12Obj->m_Resource));
 
     if (FAILED(hr))

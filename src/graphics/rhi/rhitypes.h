@@ -75,7 +75,10 @@ struct RhiClearValue
     bool operator==(const RhiClearValue& other) const
     {
         ETH_COMPARATOR_GUARD_CLAUS(m_Format)
-        ETH_COMPARATOR_GUARD_CLAUS(m_DepthStencil);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Color[0]);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Color[1]);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Color[2]);
+        ETH_COMPARATOR_GUARD_CLAUS(m_Color[3]);
         return true;
     }
 };
@@ -361,7 +364,7 @@ struct RhiCommitedResourceDesc
     RhiHeapType m_HeapType;
     RhiResourceState m_State;
     RhiResourceDesc m_ResourceDesc;
-    RhiClearValue* m_ClearValue;
+    RhiClearValue m_ClearValue;
 
     bool operator==(const RhiCommitedResourceDesc& other) const
     {

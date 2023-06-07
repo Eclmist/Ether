@@ -88,7 +88,7 @@ void RayGeneration()
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit && albedo.w > 0.9)
-            output = 0;
+            output = (payload.m_RayT) / 32;
         else
             output = float4(0.3, 0.5, 0.9, 1);
     }
