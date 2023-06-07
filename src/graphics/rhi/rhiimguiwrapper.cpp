@@ -69,6 +69,9 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             ImGui::Checkbox("VSync Enabled", &vSync);
             GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
 
+            static float& temporalAccumulation = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
+            ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
+
             static int numVblanks = 1;
             if (vSync)
             {

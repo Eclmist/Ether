@@ -76,7 +76,7 @@ void RayGeneration()
     float4 position = g_GBufferPosition.Load(int3(crd, 0));
     float4 normal = g_GBufferNormal.Load(int3(crd, 0));
 
-    float4 output = float4(1, 1, 1, 1);
+    float4 output = 0;
 
     for (int i = 0; i < 1; ++i)
     {
@@ -88,12 +88,13 @@ void RayGeneration()
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit && albedo.w > 0.9)
-            output -= (1 - (payload.m_RayT / ray.TMax));
+            output = 0;
         else
             output = float4(0.3, 0.5, 0.9, 1);
     }
 
-    g_Output[launchIndex.xy] = output;
+    float a = g_GlobalConstants.m_TemporalAccumulationFactor;
+    g_Output[launchIndex.xy] = (output * a) + (1 - a) * g_Output[launchIndex.xy];
 }
 
 [shader("miss")]

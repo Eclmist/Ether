@@ -34,11 +34,14 @@ struct GlobalConstants
 
     ethVector2u m_ScreenResolution;
 
+    // Debug
+    float m_TemporalAccumulationFactor;
+
     ethVector4 m_Padding0;
     ethVector4 m_Padding1;
     ethVector4 m_Padding2;
     ethVector4 m_Padding3;
-    ethVector2 m_Padding4;
+    float m_Padding4;
 };
 
 ETH_END_SHADER_NAMESPACE

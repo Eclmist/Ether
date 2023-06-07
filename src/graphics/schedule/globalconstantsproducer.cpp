@@ -57,6 +57,7 @@ void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicCon
         Time::GetTimeSinceStartup() * 2,
         Time::GetTimeSinceStartup() * 3);
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
+    globalConstants.m_TemporalAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
 
     auto alloc = m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Allocate(
         { sizeof(Shader::GlobalConstants), 256 });
