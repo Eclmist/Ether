@@ -52,6 +52,10 @@ void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& rc)
     m_AlbedoRtv = rc.CreateRenderTargetView("GBuffer - Albedo RTV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm);
     m_PositionRtv = rc.CreateRenderTargetView("GBuffer - Position RTV", m_PositionTexture, RhiFormat::R32G32B32A32Float);
     m_NormalRtv = rc.CreateRenderTargetView("GBuffer - Normal RTV", m_NormalTexture, RhiFormat::R32G32B32A32Float);
+
+    rc.CreateShaderResourceView("GBuffer - Albedo SRV", m_AlbedoTexture, RhiFormat::R8G8B8A8Unorm, RhiShaderResourceDimension::Texture2D);
+    rc.CreateShaderResourceView("GBuffer - Position SRV", m_PositionTexture, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
+    rc.CreateShaderResourceView("GBuffer - Normal SRV", m_NormalTexture, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
 }
 
 void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceContext& rc)
@@ -67,6 +71,9 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceConte
     ctx.TransitionResource(*m_PositionTexture, RhiResourceState::RenderTarget);
     ctx.TransitionResource(*m_NormalTexture, RhiResourceState::RenderTarget);
     ctx.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
+    ctx.ClearColor(m_AlbedoRtv);
+    ctx.ClearColor(m_PositionRtv);
+    ctx.ClearColor(m_NormalRtv);
     ctx.ClearDepthStencil(m_DepthDsv, 1.0);
     ctx.PopMarker();
 
@@ -79,7 +86,6 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceConte
     ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
     ctx.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
-    ctx.SetComputeRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
 
     RhiRenderTargetView rtvs[] = { m_AlbedoRtv, m_PositionRtv, m_NormalRtv, gfxDisplay.GetBackBufferRtv() };
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &m_DepthDsv);

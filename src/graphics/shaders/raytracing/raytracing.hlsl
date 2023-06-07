@@ -18,6 +18,7 @@
 */
 
 #include "common/globalconstants.h"
+#include "common/raypayload.h"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 Texture2D<float4> g_GBufferAlbedo                   : register(t1);
@@ -27,10 +28,7 @@ Texture2D<float4> g_GBufferNormal                   : register(t3);
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RWTexture2D<float4> g_Output                        : register(u0);
 
-struct Payload
-{
-    float3 color;
-};
+sampler g_PointSampler                              : register(s0);
 
 float3 linearToSrgb(float3 c)
 {
@@ -40,6 +38,23 @@ float3 linearToSrgb(float3 c)
     float3 sq3 = sqrt(sq2);
     float3 srgb = 0.662002687 * sq1 + 0.684122060 * sq2 - 0.323583601 * sq3 - 0.0225411470 * c;
     return srgb;
+}
+
+float hash(float2 p)
+{
+    return frac(dot(p + float2(.36834, .723), normalize(frac(p.yx * 73.91374) + 1e-4)) * 7.38734);
+}
+
+float3 nonUniformRandomDirection(float2 s)
+{
+    float3 r = float3(hash(s), hash(s * .8723), hash(s * .9574)) * 2. - 1.;
+    return normalize(r);
+}
+
+float3 uniformRandomDirection(float2 s)
+{
+    float3 r = float3(hash(s), hash(s * .8723), hash(s * .9574)) * 2. - 1.;
+    return normalize(r / cos(r));
 }
 
 [shader("raygeneration")]
@@ -53,37 +68,43 @@ void RayGeneration()
 
     float2 d = ((crd / dims) * 2.f - 1.f);
     float aspectRatio = dims.x / dims.y;
-    RayDesc ray;
 
-    ray.Origin = g_GlobalConstants.m_EyePosition.xyz;
-    ray.Direction = mul(transpose(g_GlobalConstants.m_ViewMatrix), normalize(float3(d.x * aspectRatio, -d.y, 1.2)));
-    ray.TMin = 0;
-    ray.TMax = 100000;
+    RayPayload payload;
+    payload.m_ScreenPosition = crd;
 
-    Payload payload;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
-    float3 col = linearToSrgb(payload.color);
-    g_Output[launchIndex.xy] = float4(col, 1);
+    float4 albedo = g_GBufferAlbedo.Load(int3(crd, 0));
+    float4 position = g_GBufferPosition.Load(int3(crd, 0));
+    float4 normal = g_GBufferNormal.Load(int3(crd, 0));
+
+    float4 output = float4(1, 1, 1, 1);
+
+    for (int i = 0; i < 1; ++i)
+    {
+        RayDesc ray;
+        ray.Origin = position.xyz;
+        ray.Direction = normalize(normal.xyz + uniformRandomDirection(d + (g_GlobalConstants.m_Time.x * .01 % 4096.) * 27.4723));
+        ray.TMin = 0.001;
+        ray.TMax = 32;
+        TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+
+        if (payload.m_Hit && albedo.w > 0.9)
+            output -= (1 - (payload.m_RayT / ray.TMax));
+        else
+            output = float4(0.3, 0.5, 0.9, 1);
+    }
+
+    g_Output[launchIndex.xy] = output;
 }
 
 [shader("miss")]
-void Miss(inout Payload payload)
+void Miss(inout RayPayload payload)
 { 
-    payload.color = float3(1,0,1);
+    payload.m_Hit = false;
 }
 
 [shader("closesthit")]
-void ClosestHit(inout Payload payload, in BuiltInTriangleIntersectionAttributes attribs)
+void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    float3 barycentrics = float3(
-        1.0 - attribs.barycentrics.x - attribs.barycentrics.y,
-        attribs.barycentrics.x,
-        attribs.barycentrics.y
-    );
-
-    const float3 R = float3(1, 0, 0);
-    const float3 G = float3(0, 1, 0);
-    const float3 B = float3(0, 0, 1);
-
-    payload.color = R * barycentrics.x + G * barycentrics.y + B * barycentrics.z;
+    payload.m_Hit = true;
+    payload.m_RayT = RayTCurrent();
 }

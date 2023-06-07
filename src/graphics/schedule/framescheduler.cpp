@@ -78,9 +78,9 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
         m_ResourceContext.RecompilePipelineStates();
 
-    g_TempRaytracingPass->FrameSetup(m_ResourceContext);
-    g_GBufferProducer->FrameSetup(m_ResourceContext);
     g_GlobalConstantsProducer->FrameSetup(m_ResourceContext);
+    g_GBufferProducer->FrameSetup(m_ResourceContext);
+    g_TempRaytracingPass->FrameSetup(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)

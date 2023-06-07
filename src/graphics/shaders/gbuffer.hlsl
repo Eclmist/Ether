@@ -80,6 +80,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     o.Albedo = g_InstanceParams.m_BaseColor;
     o.Position = IN.PositionWS;
     o.Normal = IN.Normal.xyzz;
-    o.DebugOutput = o.Position / 10;
+    o.DebugOutput = 1 / IN.Position.w;
+
+    o.Albedo.w = 1;
     return o;
 }

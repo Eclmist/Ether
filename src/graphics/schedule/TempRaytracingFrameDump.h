@@ -48,7 +48,8 @@ protected:
     std::unique_ptr<RhiRootSignature> m_HitMissRootSignature;
     std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
     std::unique_ptr<RhiRaytracingPipelineState> m_RaytracingPipelineState;
-    std::unique_ptr<MemoryAllocation> m_RootTableDescriptorAlloc;
+    std::unique_ptr<MemoryAllocation> m_RaygenRootTableAlloc;
+    std::unique_ptr<MemoryAllocation> m_GlobalRootTableAlloc;
 
 protected:
     RhiResource* m_TopLevelAccelerationStructure;

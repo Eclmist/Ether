@@ -53,6 +53,12 @@ public:
     RhiUnorderedAccessView CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
     RhiShaderResourceView CreateAccelerationStructureView(const char* viewName, const RhiResource* asDataBufferResource);
 
+    template <typename T>
+    T GetResource(const char* resourceName) const;
+
+    template <typename T>
+    T GetView(const char* viewName) const;
+
 private:
     bool ShouldRecreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
     bool ShouldRecreateResource(const char* resourceName, const RhiRaytracingShaderBindingTableDesc& desc);
@@ -78,4 +84,23 @@ private:
     std::unordered_map<StringID, std::unique_ptr<RhiResourceView>> m_DescriptorTable;
     std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_DescriptorAllocations;
 };
+
+template <typename T>
+T Ether::Graphics::ResourceContext::GetResource(const char* resourceName) const
+{
+    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+        LogGraphicsFatal("The requested resource (%s) has not yet been created", resourceName);
+
+    return (T&)*m_ResourceTable.at(resourceName);
+}
+
+template <typename T>
+T Ether::Graphics::ResourceContext::GetView(const char* viewName) const
+{
+    if (m_DescriptorTable.find(viewName) == m_DescriptorTable.end())
+        LogGraphicsFatal("The requested resource (%s) has not yet been created", viewName);
+
+    return (T&)*m_DescriptorTable.at(viewName);
+}
+
 } // namespace Ether::Graphics

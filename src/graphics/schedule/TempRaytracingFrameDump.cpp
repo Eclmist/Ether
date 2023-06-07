@@ -25,12 +25,18 @@
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/rhiresourceviews.h"
 #include "graphics/shaders/common/globalconstants.h"
+#include "graphics/shaders/common/raypayload.h"
 
 static const wchar_t* kRayGenShader = L"RayGeneration";
 static const wchar_t* kMissShader = L"Miss";
 static const wchar_t* kClosestHitShader = L"ClosestHit";
 static const wchar_t* kHitGroup = L"HitGroup";
 static const wchar_t* EntryPoints[] = { kRayGenShader, kMissShader, kClosestHitShader };
+
+namespace Ether::Graphics::RhiLinkSpace
+{
+extern RhiGpuAddress g_GlobalConstantsCbv;
+}
 
 void Ether::Graphics::TempRaytracingFrameDump::Initialize(ResourceContext& rc)
 {
@@ -44,11 +50,11 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, BackBufferFormat);
-    m_OutputTextureUav = rc.CreateUnorderedAccessView(
-        "Raytrace - Output UAV",
-        m_OutputTexture,
-        BackBufferFormat,
-        RhiUnorderedAccessDimension::Texture2D);
+    m_OutputTextureUav = rc.CreateUnorderedAccessView("Raytrace - Output UAV", m_OutputTexture, BackBufferFormat, RhiUnorderedAccessDimension::Texture2D);
+
+    m_AlbedoSrv = rc.GetView<RhiShaderResourceView>("GBuffer - Albedo SRV");
+    m_PositionSrv = rc.GetView<RhiShaderResourceView>("GBuffer - Position SRV");
+    m_NormalSrv = rc.GetView<RhiShaderResourceView>("GBuffer - Normal SRV");
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, ResourceContext& rc)
@@ -68,6 +74,9 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, Resou
 
     InitializeShaderBindingTable(rc);
 
+    const RhiResourceView* gbufferSrvs[] = { &m_AlbedoSrv, &m_PositionSrv, &m_NormalSrv };
+    m_GlobalRootTableAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(gbufferSrvs, 3));
+
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     ctx.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
@@ -76,8 +85,10 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, Resou
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.PushMarker("Raytrace");
     ctx.TransitionResource(*m_OutputTexture, RhiResourceState::UnorderedAccess);
-    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
     ctx.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
+    ctx.SetComputeRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
+    ctx.SetComputeRootDescriptorTable(1, ((DescriptorAllocation&)*m_GlobalRootTableAlloc).GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()]);
     ctx.SetRaytracingPipelineState(*m_RaytracingPipelineState);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
@@ -118,9 +129,13 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, true);
     m_HitMissRootSignature = rsDesc->Compile("Empty Root Signature (Local)");
 
-    rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, false);
+    rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 1, false);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
-    m_GlobalRootSignature = rsDesc->Compile("Empty Root Signature (Global)");
+    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 3, 0, 1);
+    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_PointSampler, RhiShaderVisibility::All);
+
+    m_GlobalRootSignature = rsDesc->Compile("Raytracing Root Signature (Global)");
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
@@ -133,7 +148,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializePipelineStates()
     desc.m_ClosestHitShaderName = kClosestHitShader;
     desc.m_HitGroupName = kHitGroup;
     desc.m_MaxAttributeSize = sizeof(float) * 2; // From builtin attributes
-    desc.m_MaxPayloadSize = sizeof(ethVector3);  // From payload struct in shader
+    desc.m_MaxPayloadSize = sizeof(Shader::RayPayload);
     desc.m_MaxRecursionDepth = 1;
     desc.m_LibraryShaderDesc = { m_Shader.get(), EntryPoints, sizeof(EntryPoints) / sizeof(EntryPoints[0]) };
     desc.m_RayGenRootSignature = m_RayGenRootSignature.get();
@@ -148,7 +163,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable(Reso
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
     const RhiResourceView* raygenDescriptors[] = { &m_TlasSrv, &m_OutputTextureUav };
-    m_RootTableDescriptorAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(raygenDescriptors, 2));
+    m_RaygenRootTableAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(raygenDescriptors, 2));
 
     RhiRaytracingShaderBindingTableDesc desc = {};
     desc.m_MaxRootSignatureSize = 8; // Raygen's descriptor table1 (8)
@@ -156,7 +171,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable(Reso
     desc.m_HitGroupName = kHitGroup;
     desc.m_MissShaderName = kMissShader;
     desc.m_RayGenShaderName = kRayGenShader;
-    desc.m_RayGenRootTableAddress = ((DescriptorAllocation&)*m_RootTableDescriptorAlloc).GetGpuAddress();
+    desc.m_RayGenRootTableAddress = ((DescriptorAllocation&)*m_RaygenRootTableAlloc).GetGpuAddress();
 
     m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()] = &rc.CreateRaytracingShaderBindingTable(
         ("Raytracing Shader Bindings Table" + std::to_string(gfxDisplay.GetBackBufferIndex())).c_str(),
