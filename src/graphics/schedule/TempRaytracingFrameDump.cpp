@@ -59,6 +59,7 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
 
     m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, BackBufferFormat);
     m_OutputTextureUav = rc.CreateUnorderedAccessView("Raytrace - Output UAV", m_OutputTexture, BackBufferFormat, RhiUnorderedAccessDimension::Texture2D);
+    m_AccumulationSrv = rc.CreateShaderResourceView("Raytrace - Accumulation SRV", m_OutputTexture, BackBufferFormat, RhiShaderResourceDimension::Texture2D);
 
     m_AlbedoSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 0");
     m_PositionSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 1");
@@ -130,18 +131,19 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0, true);
 
     rsDesc->SetAsDescriptorTable(0, 2, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 1, 0);
+    rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Srv, 2, 0);
     rsDesc->SetDescriptorTableRange(0, RhiDescriptorType::Uav, 1, 1);
     m_RayGenRootSignature = rsDesc->Compile("Ray Generation Root Signature (Local)");
 
     rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(0, 0, true);
     m_HitMissRootSignature = rsDesc->Compile("Empty Root Signature (Local)");
 
-    rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 1, false);
+    rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 2, false);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 3, 0, 1);
+    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 3, 0, 2);
     rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_PointSampler, RhiShaderVisibility::All);
+    rsDesc->SetAsSampler(1, GraphicCore::GetGraphicCommon().m_BilinearSampler, RhiShaderVisibility::All);
 
     m_GlobalRootSignature = rsDesc->Compile("Raytracing Root Signature (Global)");
 }
@@ -170,8 +172,8 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable(Reso
 {
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    const RhiResourceView* raygenDescriptors[] = { &m_TlasSrv, &m_OutputTextureUav };
-    m_RaygenRootTableAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(raygenDescriptors, 2));
+    const RhiResourceView* raygenDescriptors[] = { &m_TlasSrv, &m_AccumulationSrv, &m_OutputTextureUav };
+    m_RaygenRootTableAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(raygenDescriptors, sizeof(raygenDescriptors) / sizeof(raygenDescriptors[0])));
 
     RhiRaytracingShaderBindingTableDesc desc = {};
     desc.m_MaxRootSignatureSize = 8; // Raygen's descriptor table1 (8)

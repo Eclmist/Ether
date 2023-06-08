@@ -21,9 +21,10 @@
 #include "common/raypayload.h"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-Texture2D<float4> g_GBufferOutput0                  : register(t1);
-Texture2D<float4> g_GBufferOutput1                  : register(t2);
-Texture2D<float4> g_GBufferOutput2                  : register(t3);
+Texture2D<float4> g_AccumulationTex                 : register(t1);
+Texture2D<float4> g_GBufferOutput0                  : register(t2);
+Texture2D<float4> g_GBufferOutput1                  : register(t3);
+Texture2D<float4> g_GBufferOutput2                  : register(t4);
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RWTexture2D<float4> g_Output                        : register(u0);
@@ -64,31 +65,32 @@ void RayGeneration()
     uint3 launchIndex = DispatchRaysIndex();
     uint3 launchDim = DispatchRaysDimensions();
 
-    float2 crd = float2(launchIndex.xy);
-    float2 dims = launchDim.xy;
+    float2 texCoord = (float2)launchIndex.xy / launchDim.xy + (rcp(launchDim.xy) / 2);
 
-    float2 d = ((crd / dims) * 2.f - 1.f);
-    float aspectRatio = dims.x / dims.y;
-
-    RayPayload payload;
-    payload.m_ScreenPosition = crd;
-
-    float4 gbuffer0 = g_GBufferOutput0.Load(int3(crd, 0));
-    float4 gbuffer1 = g_GBufferOutput1.Load(int3(crd, 0));
-    float4 gbuffer2 = g_GBufferOutput2.Load(int3(crd, 0));
+    float4 gbuffer0 = g_GBufferOutput0.SampleLevel(g_PointSampler, texCoord, 0);
+    float4 gbuffer1 = g_GBufferOutput1.SampleLevel(g_PointSampler, texCoord, 0);
+    float4 gbuffer2 = g_GBufferOutput2.SampleLevel(g_PointSampler, texCoord, 0);
 
     float4 color = gbuffer0;
     float3 position = gbuffer1.xyz;
     float3 normal = float3(gbuffer1.w, gbuffer2.xy);
     float2 velocity = gbuffer2.zw;
 
+    float a = g_GlobalConstants.m_TemporalAccumulationFactor;
     float4 output;
+
+    if (color.w < 1)
+    {
+        g_Output[launchIndex.xy] = float4(0.3, 0.5, 0.9, 1);
+        return;
+    }
 
     for (int i = 0; i < 1; ++i)
     {
+        RayPayload payload;
         RayDesc ray;
         ray.Origin = position.xyz;
-        ray.Direction = normalize(normal.xyz + nonUniformRandomDirection(d + (g_GlobalConstants.m_FrameNumber * .01 % 4096.) * 27.4723));
+        ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((texCoord * 2 - 1) + (g_GlobalConstants.m_FrameNumber % 4096.) * 0.123)));
         ray.TMin = 0.001;
         ray.TMax = 32;
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
@@ -99,10 +101,10 @@ void RayGeneration()
             output = float4(0.3, 0.5, 0.9, 1);
     }
 
-    float a = g_GlobalConstants.m_TemporalAccumulationFactor;
+    float2 texCoordPrev = texCoord - velocity;
+    float4 prevOutput = g_AccumulationTex.SampleLevel(g_PointSampler, texCoordPrev, 0);
 
-    float2 prevLaunchIndex = ((float2)launchIndex.xy - (float2)velocity) / g_GlobalConstants.m_ScreenResolution;
-    g_Output[launchIndex.xy] = (output * a) + (1 - a) * g_Output[launchIndex.xy];
+    g_Output[launchIndex.xy] = (output * a) + (1 - a) * prevOutput;
 }
 
 [shader("miss")]

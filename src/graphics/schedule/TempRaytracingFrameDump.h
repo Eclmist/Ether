@@ -57,6 +57,7 @@ protected:
     RhiResource* m_RaytracingShaderBindingTable[MaxSwapChainBuffers];
 
     RhiUnorderedAccessView m_OutputTextureUav;
+    RhiShaderResourceView m_AccumulationSrv;
     RhiShaderResourceView m_TlasSrv;
     RhiShaderResourceView m_AlbedoSrv;
     RhiShaderResourceView m_PositionSrv;

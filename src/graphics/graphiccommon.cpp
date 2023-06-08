@@ -126,9 +126,9 @@ void Ether::Graphics::GraphicCommon::InitializeSamplers()
 {
     m_PointSampler = {};
     m_PointSampler.m_Filter = RhiFilter::MinMagMipPoint;
-    m_PointSampler.m_AddressU = RhiTextureAddressMode::Wrap;
-    m_PointSampler.m_AddressV = RhiTextureAddressMode::Wrap;
-    m_PointSampler.m_AddressW = RhiTextureAddressMode::Wrap;
+    m_PointSampler.m_AddressU = RhiTextureAddressMode::Clamp;
+    m_PointSampler.m_AddressV = RhiTextureAddressMode::Clamp;
+    m_PointSampler.m_AddressW = RhiTextureAddressMode::Clamp;
     m_PointSampler.m_MipLodBias = 0;
     m_PointSampler.m_MaxAnisotropy = 0;
     m_PointSampler.m_ComparisonFunc = RhiComparator::Never;

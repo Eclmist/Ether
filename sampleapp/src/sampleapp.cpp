@@ -124,8 +124,8 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
         m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
         m_CameraTransform->m_Rotation.x = std::clamp(
             (double)m_CameraTransform->m_Rotation.x,
-            -SMath::DegToRad(90),
-            SMath::DegToRad(90));
+            -SMath::DegToRad(89),
+            SMath::DegToRad(89));
     }
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
@@ -144,7 +144,7 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     ethMatrix4x4 rotation = Transform::GetRotationMatrix(m_CameraTransform->m_Rotation);
     ethVector3 forward = (rotation * ethVector4(0, 0, 1, 0)).Resize<3>().Normalized();
     ethVector3 upVec = { 0, 1, 0 };
-    ethVector3 rightVec = ethVector3::Cross(upVec, forward);
+    ethVector3 rightVec = ethVector3::Cross(upVec, forward).Normalized();
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::W))
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +

@@ -69,9 +69,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             ImGui::Checkbox("VSync Enabled", &vSync);
             GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
 
-            static float& temporalAccumulation = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
-            ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
-
             static int numVblanks = 1;
             if (vSync)
             {
@@ -82,6 +79,10 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 numVblanks = std::clamp(numVblanks, 1, 4);
                 GraphicCore::GetGraphicDisplay().SetVSyncVBlanks(numVblanks);
             }
+
+            static float& temporalAccumulation = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
+            ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
+
         }
 
         // if (ImGui::CollapsingHeader("Input"))

@@ -18,6 +18,7 @@
 */
 
 #include "common/globalconstants.h"
+#include "utils/fullscreenhelpers.hlsl"
 
 struct Material
 {
@@ -41,8 +42,9 @@ struct VS_OUTPUT
     float4 Position     : SV_POSITION;
     float3 Normal       : NORMAL;
     float2 TexCoord     : TEXCOORD0;
-    float4 PositionWS   : TEXCOORD1;
-    float4 PositionPrev : TEXCOORD2;
+    float4 WorldPos     : TEXCOORD1;
+    float4 ClipPos      : TEXCOORD2;
+    float4 ClipPosPrev  : TEXCOORD3;
 };
 
 struct PS_OUTPUT
@@ -67,8 +69,9 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
 
     o.Position = mul(mvp, float4(pos, 1.0f));
-    o.PositionPrev = mul(mvpPrev, float4(pos, 1.0f));
-    o.PositionWS = /* mul(m_ModelMatrix, */ float4(pos, 1.0f); //).xyz;
+    o.ClipPos = mul(mvp, float4(pos, 1.0f));
+    o.ClipPosPrev = mul(mvpPrev, float4(pos, 1.0f));
+    o.WorldPos = /* mul(m_ModelMatrix, */ float4(pos, 1.0f); //).xyz;
     //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0f)).xyz;
 
     o.TexCoord = IN.Tangent.xy;
@@ -79,20 +82,17 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 
 PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    //float2 a = (IN.PositionSS.xy / IN.PositionSS.w) * 0.5 + 0.5;
-    float2 posCurr = IN.Position.xy;
-   // posCurr.x = g_GlobalConstants.m_ScreenResolution.x - posCurr.x;
+    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
 
-    float2 prevPos = ((IN.PositionPrev.xy * float2(1, -1) / IN.PositionPrev.w) * 0.5 + 0.5) * g_GlobalConstants.m_ScreenResolution;
-    //prevPos.y = 1 - prevPos.y;
-
-    float2 velocity = posCurr - prevPos;
+    float2 curr = ClipSpaceToTextureSpace(IN.ClipPos);
+    float2 prev = ClipSpaceToTextureSpace(IN.ClipPosPrev);
+    float2 velocity = curr - prev;
 
     PS_OUTPUT o;
     o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz, 1);
-    o.Output1 = float4(IN.PositionWS.xyz, IN.Normal.x);
+    o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
     o.Output2 = float4(IN.Normal.yz, velocity);
     //o.DebugOutput = float4(o.Output2.zw, 0, 0);
-    o.DebugOutput = float4(1 / IN.Position.www / 1, 0);
+    o.DebugOutput = float4(velocity, 0, 0);
     return o;
 }
