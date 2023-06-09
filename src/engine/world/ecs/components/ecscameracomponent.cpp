@@ -22,7 +22,7 @@
 constexpr uint32_t EcsCameraComponentVersion = 0;
 
 Ether::Ecs::EcsCameraComponent::EcsCameraComponent()
-    : EcsToggleComponent(EcsCameraComponentVersion, StringID("Ecs::EcsCameraComponent").GetHash())
+    : EcsToggleComponent(EcsCameraComponentVersion, "Ecs::EcsCameraComponent")
     , m_ProjectionMode(ProjectionMode::Perspective)
     , m_FieldOfView(80.0f)
 {

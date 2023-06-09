@@ -49,13 +49,17 @@ void Ether::Ecs::EcsVisualSystem::Update()
         Graphics::Visual gfxVisual;
         gfxVisual.m_ParentBatch = &visualBatch;
         gfxVisual.m_Mesh = resources.GetMeshResource(data.m_MeshGuid);
-        gfxVisual.m_Material = resources.GetMaterialResource(data.m_MaterialGuid);
 
         if (gfxVisual.m_Mesh == nullptr)
             continue;
 
+        if (data.m_MaterialGuid == StringID(""))
+            gfxVisual.m_Material = Graphics::GraphicCore::GetGraphicCommon().m_DefaultMaterial.get();
+        else
+            gfxVisual.m_Material = resources.GetMaterialResource(data.m_MaterialGuid);
+
         if (gfxVisual.m_Material == nullptr)
-            continue;
+            gfxVisual.m_Material = Graphics::GraphicCore::GetGraphicCommon().m_ErrorMaterial.get();
 
         visualBatch.m_Visuals.emplace_back(gfxVisual);
     }

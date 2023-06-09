@@ -31,7 +31,7 @@ class EcsComponentArrayBase : public Serializable
 {
 public:
     EcsComponentArrayBase()
-        : Serializable(ComponentArrayVersion, StringID("Engine::EcsComponentArray").GetHash())
+        : Serializable(ComponentArrayVersion, "Engine::EcsComponentArray")
     {
     }
     ~EcsComponentArrayBase() = default;

@@ -22,7 +22,7 @@
 constexpr uint32_t EcsEntityManagerVersion = 0;
 
 Ether::Ecs::EcsEntityManager::EcsEntityManager()
-    : Serializable(EcsEntityManagerVersion, StringID("Engine::EcsEntityManager").GetHash())
+    : Serializable(EcsEntityManagerVersion, "Engine::EcsEntityManager")
 {
     for (EntityID id = 0; id < MaxNumEntities; ++id)
         m_AvailableEntities.push(id);

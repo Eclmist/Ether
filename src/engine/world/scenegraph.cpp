@@ -22,7 +22,7 @@
 constexpr uint32_t SceneGraphVersion = 0;
 
 Ether::SceneGraphNode::SceneGraphNode()
-    : Serializable(SceneGraphVersion, StringID("Engine::SceneGraphNode").GetHash())
+    : Serializable(SceneGraphVersion, "Engine::SceneGraphNode")
     , m_ParentIndex(InvalidEntityID)
     , m_IsRegistered(false)
 {
@@ -55,7 +55,7 @@ void Ether::SceneGraphNode::Deserialize(IStream& istream)
 }
 
 Ether::SceneGraph::SceneGraph()
-    : Serializable(SceneGraphVersion, StringID("Engine::SceneGraph").GetHash())
+    : Serializable(SceneGraphVersion, "Engine::SceneGraph")
 {
     m_Nodes[RootEntityID].m_IsRegistered = true;
     m_Nodes[RootEntityID].m_ParentIndex = InvalidEntityID;

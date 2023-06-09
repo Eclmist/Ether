@@ -37,56 +37,12 @@ void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
 
-#if 1
-    // The idea of this block is to test toolmode functionality without having the actual tool developed yet
-    // For example:
-    //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode sln)
-    //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
-    //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
-    //      - Build resource table
-    //          this is simulated by blindly loading all .eres files and assuming them to be meshes
-    //      - Create entity (menu > new > entity)
-    //          simulated by creating entity object
-    //      - Assign mesh to entity (through components)
-    //          simulated by AddComponent<Visual> and assigning mesh guid
-    //      - Save scene
-    //          World.save();
+    std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
+    const std::string modelName = "Sponza";
 
-    std::unique_ptr<Graphics::Material> sharedMaterial = std::make_unique<Graphics::Material>();
-    sharedMaterial->SetBaseColor({ 1, 1, 1, 1 });
-    sharedMaterial->SetSpecularColor({ 1, 1, 1, 1 });
-    sharedMaterial->SetMetalness(0);
-    sharedMaterial->SetRoughness(0.5f);
+    std::string worldPath = workspacePath + modelName + "\\glTF\\TestScene.ether";
 
-    const std::string path = "..\\..\\..\\content\\";
-
-    for (const auto& entry : std::filesystem::directory_iterator(path))
-    {
-        if (entry.path().extension().string() != ".eres")
-            continue;
-
-        std::unique_ptr<Graphics::Mesh> mesh = std::make_unique<Graphics::Mesh>();
-
-        IFileStream ifstream(entry.path().string());
-        mesh->Deserialize(ifstream);
-
-        Entity& entity = world.CreateEntity("Entity");
-        entity.AddComponent<Ecs::EcsVisualComponent>();
-
-        Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
-        visual.m_MeshGuid = mesh->GetGuid();
-        visual.m_MaterialGuid = sharedMaterial->GetGuid();
-
-        world.GetResourceManager().RegisterMeshResource(std::move(mesh));
-    }
-
-    world.GetResourceManager().RegisterMaterialResource(std::move(sharedMaterial));
-    world.GetResourceManager().CreateGpuResources();
-
-    world.Save("..\\..\\..\\content\\TestScene.ether");
-#else
-    world.Load("..\\..\\..\\content\\TestScene.ether");
-#endif
+    world.Load(worldPath);
 
     Entity& camera = world.CreateEntity("Main Camera");
     camera.AddComponent<Ecs::EcsCameraComponent>();

@@ -40,10 +40,13 @@ public:
     IFileStream& operator>>(unsigned long& v) override final;
     IFileStream& operator>>(unsigned char& v) override final;
     IFileStream& operator>>(std::string& v) override final;
+    IFileStream& operator>>(StringID& v) override final;
     IFileStream& operator>>(bool& v) override final;
     IFileStream& operator>>(ethVector2& v) override final;
     IFileStream& operator>>(ethVector3& v) override final;
     IFileStream& operator>>(ethVector4& v) override final;
+
+    void ReadBytes(void* dest, uint32_t numBytes) override final;
 
 private:
     std::ifstream m_File;
@@ -66,10 +69,13 @@ public:
     OFileStream& operator<<(const unsigned long v) override final;
     OFileStream& operator<<(const unsigned char v) override final;
     OFileStream& operator<<(const std::string& v) override final;
+    OFileStream& operator<<(const StringID& v) override final;
     OFileStream& operator<<(const bool v) override final;
     OFileStream& operator<<(const ethVector2& v) override final;
     OFileStream& operator<<(const ethVector3& v) override final;
     OFileStream& operator<<(const ethVector4& v) override final;
+
+    void WriteBytes(void* src, uint32_t numBytes) override final;
 
 public:
     void ClearFile();

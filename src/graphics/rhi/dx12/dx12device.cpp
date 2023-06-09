@@ -497,6 +497,7 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         LogGraphicsFatal("Failed to create DirectX12 commited resource (%s)", desc.m_Name);
 
     dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
+
     dx12Obj->SetState(desc.m_State);
     return dx12Obj;
 }

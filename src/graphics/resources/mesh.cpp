@@ -17,13 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/graphiccore.h"
 #include "graphics/resources/mesh.h"
+#include "graphics/graphiccore.h"
 
-constexpr uint32_t MeshVersion = 2;
+constexpr uint32_t MeshVersion = 3;
 
 Ether::Graphics::Mesh::Mesh()
-    : Serializable(MeshVersion, StringID("Graphics::Mesh").GetHash())
+    : Serializable(MeshVersion, ETH_CLASS_ID_MESH)
     , m_IndexBufferView({})
     , m_VertexBufferView({})
 {
@@ -40,6 +40,8 @@ void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
     ostream << static_cast<uint32_t>(m_Indices.size());
     for (int i = 0; i < m_Indices.size(); ++i)
         ostream << m_Indices[i];
+
+    ostream << m_DefaultMaterialGuid.GetString();
 }
 
 void Ether::Graphics::Mesh::Deserialize(IStream& istream)
@@ -59,6 +61,8 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
     m_Indices.resize(numIndices);
     for (int i = 0; i < m_Indices.size(); ++i)
         istream >> m_Indices[i];
+
+    istream >> m_DefaultMaterialGuid;
 }
 
 void Ether::Graphics::Mesh::SetPackedVertices(

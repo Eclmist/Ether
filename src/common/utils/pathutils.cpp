@@ -31,9 +31,14 @@ std::string Ether::PathUtils::GetFileExtension(const std::string& path)
     return std::filesystem::path(path).extension().string();
 }
 
-std::string Ether::PathUtils::GetFileName(const std::string& path)
+std::string Ether::PathUtils::GetFileNameWithExtension(const std::string& path)
 {
     return std::filesystem::path(path).filename().string();
+}
+
+std::string Ether::PathUtils::GetFileName(const std::string& path)
+{
+    return std::filesystem::path(path).stem().string();
 }
 
 std::string Ether::PathUtils::GetFolderPath(const std::string& path)
@@ -42,3 +47,4 @@ std::string Ether::PathUtils::GetFolderPath(const std::string& path)
         return std::filesystem::path(path).parent_path().string();
     return path;
 }
+

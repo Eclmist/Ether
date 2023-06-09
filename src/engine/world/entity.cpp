@@ -25,7 +25,7 @@
 constexpr uint32_t EntityVersion = 0;
 
 Ether::Entity::Entity()
-    : Serializable(EntityVersion, StringID("Engine::Entity").GetHash())
+    : Serializable(EntityVersion, "Engine::Entity")
     , m_EntityID(-1)
     , m_EntityManager(EngineCore::GetActiveWorld().GetEcsManager().GetEntityManager())
     , m_ComponentManager(EngineCore::GetActiveWorld().GetEcsManager().GetComponentManager())
@@ -35,7 +35,7 @@ Ether::Entity::Entity()
 }
 
 Ether::Entity::Entity(const std::string& name, Ecs::EntityID entityID)
-    : Serializable(EntityVersion, StringID("Engine::Entity").GetHash())
+    : Serializable(EntityVersion, "Engine::Entity")
     , m_EntityID(entityID)
     , m_EntityManager(EngineCore::GetActiveWorld().GetEcsManager().GetEntityManager())
     , m_ComponentManager(EngineCore::GetActiveWorld().GetEcsManager().GetComponentManager())

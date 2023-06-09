@@ -38,6 +38,7 @@ public:
 
 public:
     inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
+    inline UploadBufferAllocator& GetUploadBufferAllocator() const { return *m_UploadBufferAllocator; }
 
 public:
     void Reset();
@@ -71,9 +72,10 @@ public:
     void TransitionResource(RhiResource& resource, RhiResourceState newState);
 
     // Dispatches
-    void InitializeBufferRegion(RhiResource& dest, const void* data, size_t size, size_t destOffset = 0);
+    void InitializeBufferRegion(RhiResource& dest, const void* data, uint32_t size, uint32_t destOffset = 0);
+    void InitializeTexture(RhiResource& dest, const void* data, uint32_t width, uint32_t height, uint32_t bytesPerPixel);
     void CopyResource(RhiResource& src, RhiResource& dest);
-    void CopyBufferRegion(RhiResource& src, RhiResource& dest, size_t size, size_t srcOffset = 0, size_t destOffset = 0);
+    void CopyBufferRegion(RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset = 0, uint32_t destOffset = 0);
     void DispatchRays(uint32_t x, uint32_t y, uint32_t z);
 
 protected:

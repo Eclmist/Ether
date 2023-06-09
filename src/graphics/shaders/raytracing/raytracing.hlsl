@@ -77,11 +77,13 @@ void RayGeneration()
     float2 velocity = gbuffer2.zw;
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
-    float4 output;
+    float4 aoOutput;
+
+    float4 skyColor = float4(0.5, 0.7, 0.9, 1) * 1.8;
 
     if (color.w < 1)
     {
-        g_Output[launchIndex.xy] = float4(0.3, 0.5, 0.9, 1);
+        g_Output[launchIndex.xy] = skyColor;
         return;
     }
 
@@ -92,19 +94,19 @@ void RayGeneration()
         ray.Origin = position.xyz;
         ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((texCoord * 2 - 1) + (g_GlobalConstants.m_FrameNumber % 4096.) * 0.123)));
         ray.TMin = 0.001;
-        ray.TMax = 32;
+        ray.TMax = 8;
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit && color.w > 0.9)
-            output = (payload.m_RayT) / 32;
+            aoOutput = (0.5 + payload.m_RayT) / ray.TMax * color;
         else
-            output = float4(0.3, 0.5, 0.9, 1);
+            aoOutput = skyColor * color;
     }
 
-    float2 texCoordPrev = texCoord - velocity;
+    float2 texCoordPrev = texCoord;// - velocity;
     float4 prevOutput = g_AccumulationTex.SampleLevel(g_PointSampler, texCoordPrev, 0);
 
-    g_Output[launchIndex.xy] = (output * a) + (1 - a) * prevOutput;
+    g_Output[launchIndex.xy] = (aoOutput * a) + (1 - a) * prevOutput;
 }
 
 [shader("miss")]

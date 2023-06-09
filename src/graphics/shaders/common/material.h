@@ -19,20 +19,16 @@
 
 #pragma once
 
-#include "toolmode/pch.h"
+#include "hlsltranslation.h"
 
-namespace Ether::Toolmode
+ETH_BEGIN_SHADER_NAMESPACE
+
+struct Material
 {
-    class RawMesh
-    {
-    public:
-        RawMesh() = default;
-        ~RawMesh() = default;
-        
-    private:
-        friend class AssetImporter;
-        std::vector<ethVector3> m_Positions;
-        std::vector<ethVector3> m_Normals;
-        std::vector<ethVector2> m_TexCoords;
-    };
-}
+    ethVector4 m_BaseColor;
+    ethVector4 m_SpecularColor;
+
+    uint32_t m_AlbedoTextureIndex;
+};
+
+ETH_END_SHADER_NAMESPACE

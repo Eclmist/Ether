@@ -33,17 +33,20 @@ class IStream;
 class ETH_COMMON_DLL Serializable
 {
 public:
-    Serializable(uint32_t version, uint32_t classID);
+    Serializable(uint32_t version, const char* classID);
     virtual ~Serializable() = 0;
 
     inline std::string GetGuid() const { return m_Guid; }
 
     virtual void Serialize(OStream& ostream) const;
     virtual void Deserialize(IStream& istream);
+   
+public:
+    static std::string DeserializeClassID(IStream& istream);
 
 protected:
     std::string m_Guid;
     uint32_t m_Version;
-    uint32_t m_ClassID;
+    std::string m_ClassID;
 };
 } // namespace Ether

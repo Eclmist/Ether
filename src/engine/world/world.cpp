@@ -22,7 +22,7 @@
 constexpr uint32_t WorldVersion = 0;
 
 Ether::World::World()
-    : Serializable(WorldVersion, StringID("Engine::World").GetHash())
+    : Serializable(WorldVersion, "Engine::World")
     , m_WorldName("Default World")
 {
 }

@@ -22,7 +22,7 @@
 constexpr uint32_t EcsTransformComponentVersion = 0;
 
 Ether::Ecs::EcsTransformComponent::EcsTransformComponent()
-    : EcsComponent(EcsTransformComponentVersion, StringID("Ecs::EcsTransformComponent").GetHash())
+    : EcsComponent(EcsTransformComponentVersion, "Ecs::EcsTransformComponent")
     , m_Translation(0.0f, 0.0f, 0.0f)
     , m_Rotation(0.0f, 0.0f, 0.0f)
     , m_Scale(1.0f, 1.0f, 1.0f)

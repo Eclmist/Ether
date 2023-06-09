@@ -23,6 +23,8 @@
 
 namespace Ether
 {
+class StringID;
+
 class ETH_COMMON_DLL Stream : public NonCopyable
 {
 public:
@@ -46,10 +48,13 @@ public:
     virtual IStream& operator>>(unsigned long& v) = 0;
     virtual IStream& operator>>(unsigned char& v) = 0;
     virtual IStream& operator>>(std::string& v) = 0;
+    virtual IStream& operator>>(StringID& sid) = 0;
     virtual IStream& operator>>(bool& v) = 0;
     virtual IStream& operator>>(ethVector2& v) = 0;
     virtual IStream& operator>>(ethVector3& v) = 0;
     virtual IStream& operator>>(ethVector4& v) = 0;
+
+    virtual void ReadBytes(void* dest, uint32_t numBytes) = 0;
 };
 
 class ETH_COMMON_DLL OStream : public Stream
@@ -63,9 +68,12 @@ public:
     virtual OStream& operator<<(const unsigned long v) = 0;
     virtual OStream& operator<<(const unsigned char v) = 0;
     virtual OStream& operator<<(const std::string& v) = 0;
+    virtual OStream& operator<<(const StringID& sid) = 0;
     virtual OStream& operator<<(const bool v) = 0;
     virtual OStream& operator<<(const ethVector2& v) = 0;
     virtual OStream& operator<<(const ethVector3& v) = 0;
     virtual OStream& operator<<(const ethVector4& v) = 0;
+
+    virtual void WriteBytes(void* src, uint32_t numBytes) = 0;
 };
 } // namespace Ether

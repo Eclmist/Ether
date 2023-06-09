@@ -24,6 +24,8 @@
 #include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhiaccelerationstructure.h"
 
+#define ETH_CLASS_ID_MESH "Graphics::Mesh"
+
 namespace Ether::Graphics
 {
 
@@ -39,12 +41,14 @@ public:
     inline RhiAccelerationStructure& GetAccelerationStructure() const { return *m_AccelerationStructure; }
     inline uint32_t GetNumVertices() const { return m_PackedVertices.size(); }
     inline uint32_t GetNumIndices() const { return m_Indices.size(); }
+    inline StringID GetDefaultMaterialGuid() const { return m_DefaultMaterialGuid; }
 
 public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
 
 public:
+    void SetDefaultMaterialGuid(StringID guid) { m_DefaultMaterialGuid = guid; }
     void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices);
     void SetIndices(std::vector<uint32_t>&& indices);
     void CreateGpuResources(CommandContext& ctx);
@@ -64,6 +68,7 @@ private:
 private:
     std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord> m_PackedVertices;
     std::vector<uint32_t> m_Indices;
+    StringID m_DefaultMaterialGuid;
 
     std::unique_ptr<RhiResource> m_VertexBufferResource;
     std::unique_ptr<RhiResource> m_IndexBufferResource;

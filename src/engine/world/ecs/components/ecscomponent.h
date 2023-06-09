@@ -28,7 +28,7 @@ template <typename T>
 class EcsComponent : public Serializable
 {
 public:
-    EcsComponent(uint32_t version, uint32_t classID);
+    EcsComponent(uint32_t version, const char* classID);
     virtual ~EcsComponent() override = default;
 
 public:
@@ -36,7 +36,7 @@ public:
 };
 
 template <typename T>
-Ether::Ecs::EcsComponent<T>::EcsComponent(uint32_t version, uint32_t classID)
+Ether::Ecs::EcsComponent<T>::EcsComponent(uint32_t version, const char* classID)
     : Serializable(version, classID)
 {
 }

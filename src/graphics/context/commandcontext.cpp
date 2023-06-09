@@ -33,7 +33,7 @@ Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiComm
     m_CommandList = GraphicCore::GetCommandManager().CreateCommandList(contextName, type);
     m_CommandList->Close();
 
-    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_32MiB);
+    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_64MiB);
 }
 
 void Ether::Graphics::CommandContext::Reset()
@@ -99,9 +99,9 @@ void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource
 void Ether::Graphics::CommandContext::CopyBufferRegion(
     RhiResource& src,
     RhiResource& dest,
-    size_t size,
-    size_t srcOffset,
-    size_t destOffset)
+    uint32_t size,
+    uint32_t srcOffset,
+    uint32_t destOffset)
 {
     TransitionResource(dest, RhiResourceState::CopyDest);
     m_CommandList->CopyBufferRegion(src, dest, size, srcOffset, destOffset);
@@ -110,8 +110,8 @@ void Ether::Graphics::CommandContext::CopyBufferRegion(
 void Ether::Graphics::CommandContext::InitializeBufferRegion(
     RhiResource& dest,
     const void* data,
-    size_t size,
-    size_t destOffset)
+    uint32_t size,
+    uint32_t destOffset)
 {
     auto alloc = m_UploadBufferAllocator->Allocate(size);
     memcpy(alloc->GetCpuHandle(), data, size);
@@ -122,6 +122,21 @@ void Ether::Graphics::CommandContext::InitializeBufferRegion(
         size,
         alloc->GetOffset(),
         destOffset);
+    TransitionResource(dest, RhiResourceState::GenericRead);
+}
+
+void Ether::Graphics::CommandContext::InitializeTexture(
+    RhiResource& dest,
+    const void* data,
+    uint32_t width,
+    uint32_t height,
+    uint32_t bytesPerPixel)
+{
+    uint32_t size = width * height * bytesPerPixel;
+    auto alloc = m_UploadBufferAllocator->Allocate(size);
+
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    m_CommandList->CopyTextureRegion(((UploadBufferAllocation&)*alloc).GetResource(), dest, data, width, height, bytesPerPixel);
     TransitionResource(dest, RhiResourceState::GenericRead);
 }
 
@@ -200,3 +215,4 @@ void Ether::Graphics::CommandContext::DispatchRays(uint32_t x, uint32_t y, uint3
         "CommandContext::SetRaytracingShaderBindingTable");
     m_CommandList->DispatchRays(x, y, z, m_RaytracingBindTable);
 }
+

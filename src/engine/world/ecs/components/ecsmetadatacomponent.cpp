@@ -22,7 +22,7 @@
 constexpr uint32_t EcsEntityDataComponentVersion = 0;
 
 Ether::Ecs::EcsMetadataComponent::EcsMetadataComponent()
-    : EcsComponent(EcsEntityDataComponentVersion, StringID("Ecs::EcsEntityDataComponent").GetHash())
+    : EcsComponent(EcsEntityDataComponentVersion, "Ecs::EcsEntityDataComponent")
     , m_EntityID(-1)
     , m_EntityName("Entity")
     , m_EntityEnabled(true)

@@ -21,10 +21,11 @@
 
 #include "graphics/pch.h"
 #include "graphics/memory/descriptorallocator.h"
+#include "graphics/resources/material.h"
 
 namespace Ether::Graphics
 {
-class GraphicCommon : public NonCopyable, public NonMovable
+class ETH_GRAPHIC_DLL GraphicCommon : public NonCopyable, public NonMovable
 {
 public:
     GraphicCommon();
@@ -39,12 +40,13 @@ public:
     void InitializePipelineStates();
     void InitializeSamplers();
     void InitializeDefaultTextures();
+    void InitializeMaterials();
 
 public:
     RhiRasterizerDesc m_RasterizerDefault;
-    RhiRasterizerDesc m_RasterizerDefaultCw;
+    RhiRasterizerDesc m_RasterizerDefaultCcw;
     RhiRasterizerDesc m_RasterizerWireframe;
-    RhiRasterizerDesc m_RasterizerWireframeCw;
+    RhiRasterizerDesc m_RasterizerWireframeCcw;
 
     RhiBlendDesc m_BlendDisabled;
     RhiBlendDesc m_BlendPreMultiplied;
@@ -62,5 +64,8 @@ public:
     RhiSamplerParameterDesc m_EnvMapSampler;
 
     std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;
+
+    std::unique_ptr<Material> m_DefaultMaterial;
+    std::unique_ptr<Material> m_ErrorMaterial;
 };
 } // namespace Ether::Graphics

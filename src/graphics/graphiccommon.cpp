@@ -30,13 +30,14 @@ Ether::Graphics::GraphicCommon::GraphicCommon()
     InitializeShaders();
     InitializePipelineStates();
     InitializeDefaultTextures();
+    InitializeMaterials();
 }
 
 void Ether::Graphics::GraphicCommon::InitializeRasterizerStates()
 {
     m_RasterizerDefault.m_FillMode = RhiFillMode::Solid;
     m_RasterizerDefault.m_CullMode = RhiCullMode::Back;
-    m_RasterizerDefault.m_FrontCounterClockwise = true;
+    m_RasterizerDefault.m_FrontCounterClockwise = false;
     m_RasterizerDefault.m_DepthBias = 0;
     m_RasterizerDefault.m_DepthBiasClamp = 0;
     m_RasterizerDefault.m_SlopeScaledDepthBias = 0;
@@ -44,14 +45,14 @@ void Ether::Graphics::GraphicCommon::InitializeRasterizerStates()
     m_RasterizerDefault.m_MultisampleEnable = false;
     m_RasterizerDefault.m_AntialiasedLineEnable = false;
     m_RasterizerDefault.m_ForcedSampleCount = 0;
-    m_RasterizerDefaultCw = m_RasterizerDefault;
-    m_RasterizerDefaultCw.m_FrontCounterClockwise = false;
+    m_RasterizerDefaultCcw = m_RasterizerDefault;
+    m_RasterizerDefaultCcw.m_FrontCounterClockwise = true;
 
     m_RasterizerWireframe = m_RasterizerDefault;
     m_RasterizerWireframe.m_FillMode = RhiFillMode::Wireframe;
 
-    m_RasterizerWireframeCw = m_RasterizerWireframe;
-    m_RasterizerWireframeCw.m_FrontCounterClockwise = false;
+    m_RasterizerWireframeCcw = m_RasterizerWireframeCcw;
+    m_RasterizerWireframeCcw.m_FillMode = RhiFillMode::Wireframe;
 }
 
 void Ether::Graphics::GraphicCommon::InitializeDepthStates()
@@ -137,10 +138,24 @@ void Ether::Graphics::GraphicCommon::InitializeSamplers()
 
     m_BilinearSampler = m_PointSampler;
     m_BilinearSampler.m_Filter = RhiFilter::MinMagMipLinear;
+    m_BilinearSampler.m_AddressU = RhiTextureAddressMode::Wrap;
+    m_BilinearSampler.m_AddressV = RhiTextureAddressMode::Wrap;
+    m_BilinearSampler.m_AddressW = RhiTextureAddressMode::Wrap;
 
     m_EnvMapSampler = m_BilinearSampler;
 }
 
 void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()
 {
+}
+
+void Ether::Graphics::GraphicCommon::InitializeMaterials()
+{
+    m_DefaultMaterial = std::make_unique<Material>();
+    m_DefaultMaterial->SetBaseColor({ 1, 1, 1, 1 });
+    m_DefaultMaterial->SetSpecularColor({ 0.5, 0.5, 0.5, 0.5 });
+
+    m_ErrorMaterial = std::make_unique<Material>();
+    m_ErrorMaterial->SetBaseColor({ 1, 0, 1, 1 });
+    m_ErrorMaterial->SetSpecularColor({ 0, 0, 0, 0 });
 }

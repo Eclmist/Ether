@@ -21,6 +21,8 @@
 
 #include "graphics/pch.h"
 
+#define ETH_CLASS_ID_MATERIAL "Graphics::Material"
+
 namespace Ether::Graphics
 {
 class ETH_GRAPHIC_DLL Material : public Serializable
@@ -36,18 +38,25 @@ public:
 public:
     inline ethVector4 GetBaseColor() const { return m_BaseColor; }
     inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
-    inline float GetRoughness() const { return m_Roughness; }
-    inline float GetMetalness() const { return m_Metalness; }
+    inline StringID GetAlbedoTextureID() const { return m_AlbedoTextureID; }
+    inline StringID GetSpecularTextureID() const { return m_SpecularTextureID; }
+    inline StringID GetRoughnessTextureID() const { return m_RoughnessTextureID; }
+    inline StringID GetMetalnessTextureID() const { return m_MetalnessTextureID; }
 
-    inline void SetBaseColor(ethVector4 color) { m_BaseColor = color; }
-    inline void SetSpecularColor(ethVector4 color) { m_SpecularColor = color; }
-    inline void SetRoughness(float roughness) { m_Roughness = roughness; }
-    inline void SetMetalness(float metalness) { m_Metalness = metalness; }
+    inline void SetBaseColor(const ethVector4& color) { m_BaseColor = color; }
+    inline void SetSpecularColor(const ethVector4& color) { m_SpecularColor = color; }
+    inline void SetAlbedoTextureID(const StringID& id) { m_AlbedoTextureID = id; }
+    inline void SetSpecularTextureID(const StringID& id) { m_SpecularTextureID = id; }
+    inline void SetRoughnessTextureID(const StringID& id) { m_RoughnessTextureID = id; }
+    inline void SetMetalnessTextureID(const StringID& id) { m_MetalnessTextureID = id; }
 
 private:
-    ethVector4 m_BaseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    ethVector4 m_SpecularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    float m_Roughness = 0.5f;
-    float m_Metalness = 1.0f;
+    ethVector4 m_BaseColor;
+    ethVector4 m_SpecularColor;
+
+    StringID m_AlbedoTextureID;
+    StringID m_SpecularTextureID;
+    StringID m_RoughnessTextureID;
+    StringID m_MetalnessTextureID;
 };
 } // namespace Ether::Graphics

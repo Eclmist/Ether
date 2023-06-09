@@ -57,3 +57,11 @@ target_link_libraries(${ETHER_TOOLMODE}
 
 set_target_properties(${ETHER_TOOLMODE} PROPERTIES LINK_FLAGS "${CMAKE_SOURCE_DIR}/resource/Ether.res")
 set_target_properties(${ETHER_TOOLMODE} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
+
+add_custom_command(TARGET ${ETHER_TOOLMODE} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/redist"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}"
+    COMMENT "Copying contents of the redist folder to the working directory"
+)

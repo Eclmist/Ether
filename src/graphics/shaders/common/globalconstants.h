@@ -40,11 +40,6 @@ struct GlobalConstants
 
     // Debug
     float m_TemporalAccumulationFactor;
-
-    ethVector4 m_Padding0;
-    ethVector4 m_Padding1;
-    ethVector4 m_Padding2;
-    ethVector4 m_Padding3;
 };
 
 ETH_END_SHADER_NAMESPACE

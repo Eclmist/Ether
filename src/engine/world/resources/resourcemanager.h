@@ -22,6 +22,7 @@
 #include "pch.h"
 #include "graphics/resources/mesh.h"
 #include "graphics/resources/material.h"
+#include "graphics/resources/texture.h"
 
 namespace Ether
 {
@@ -38,10 +39,12 @@ public:
 public:
     ETH_ENGINE_DLL StringID RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh);
     ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
+    ETH_ENGINE_DLL StringID RegisterTextureResource(std::unique_ptr<Graphics::Texture>&& texture);
     ETH_ENGINE_DLL void CreateGpuResources() const;
 
     Graphics::Mesh* GetMeshResource(StringID guid) const;
     Graphics::Material* GetMaterialResource(StringID guid) const;
+    Graphics::Texture* GetTextureResource(StringID guid) const;
 
 private:
     template <typename T>
@@ -53,7 +56,7 @@ private:
     friend class World;
     std::unordered_map<StringID, std::unique_ptr<Graphics::Mesh>> m_Meshes;
     std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Materials;
-    // std::unordered_map<StringID, Graphics::Texture> m_Texture;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::Texture>> m_Textures;
 };
 
 template <typename T>

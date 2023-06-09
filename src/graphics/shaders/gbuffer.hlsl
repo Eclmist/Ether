@@ -18,15 +18,8 @@
 */
 
 #include "common/globalconstants.h"
+#include "common/material.h"
 #include "utils/fullscreenhelpers.hlsl"
-
-struct Material
-{
-    float4 m_BaseColor;
-    float4 m_SpecularColor;
-    float m_Roughness;
-    float m_Metalness;
-};
 
 struct VS_INPUT
 {
@@ -55,27 +48,26 @@ struct PS_OUTPUT
     float4 DebugOutput  : SV_TARGET3;
 };
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-ConstantBuffer<Material> g_InstanceParams : register(b1);
+ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
+ConstantBuffer<Material> g_InstanceParams           : register(b1);
+
+sampler g_BilinearSampler                           : register(s0);
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    float3 pos = IN.Position;
-
     //float4x4 mv = mul(g_GlobalConstants.m_ViewMatrix, m_InstanceParams.m_ModelMatrix); (just leave model matrix as identity for now)
     float4x4 mvp = mul(g_GlobalConstants.m_ProjectionMatrix, g_GlobalConstants.m_ViewMatrix);
     float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
 
-    o.Position = mul(mvp, float4(pos, 1.0f));
-    o.ClipPos = mul(mvp, float4(pos, 1.0f));
-    o.ClipPosPrev = mul(mvpPrev, float4(pos, 1.0f));
-    o.WorldPos = /* mul(m_ModelMatrix, */ float4(pos, 1.0f); //).xyz;
+    o.Position = mul(mvp, float4(IN.Position, 1.0f));
+    o.ClipPos = mul(mvp, float4(IN.Position, 1.0f));
+    o.ClipPosPrev = mul(mvpPrev, float4(IN.Position, 1.0f));
+    o.WorldPos = /* mul(m_ModelMatrix, */ float4(IN.Position, 1.0f); //).xyz;
     //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0f)).xyz;
-
-    o.TexCoord = IN.Tangent.xy;
     o.Normal = IN.Normal;
+    o.TexCoord = IN.TexCoord;
 
     return o;
 }
@@ -88,11 +80,19 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     float2 prev = ClipSpaceToTextureSpace(IN.ClipPosPrev);
     float2 velocity = curr - prev;
 
+    float4 albedo = float4(1,1,1,1);
+
+    if (g_InstanceParams.m_AlbedoTextureIndex != 0)
+    {
+        Texture2D<float4> albedoTex = ResourceDescriptorHeap[g_InstanceParams.m_AlbedoTextureIndex];
+        albedo = albedoTex.Sample(g_BilinearSampler, IN.TexCoord);
+    }
+
     PS_OUTPUT o;
-    o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz, 1);
+    o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz * albedo.xyz, 1);
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
     o.Output2 = float4(IN.Normal.yz, velocity);
-    //o.DebugOutput = float4(o.Output2.zw, 0, 0);
-    o.DebugOutput = float4(velocity, 0, 0);
+    o.DebugOutput = float4(IN.TexCoord, 0, 0);
+    o.DebugOutput = float4(o.Output0.xyz, 0);
     return o;
 }

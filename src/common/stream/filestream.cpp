@@ -86,13 +86,22 @@ Ether::IFileStream& Ether::IFileStream::operator>>(std::string& value)
 {
     value = "";
     char c;
-    do
+    while (true)
     {
         m_File.read(reinterpret_cast<char*>(&c), sizeof(char));
-        if (c == 0)
+        if (c == '\0')
             break;
+
         value += c;
-    } while (true);
+    }
+    return *this;
+}
+
+Ether::IFileStream& Ether::IFileStream::operator>>(StringID& value)
+{
+    std::string s;
+    *this >> s;
+    value = s;
     return *this;
 }
 
@@ -126,6 +135,11 @@ Ether::IFileStream& Ether::IFileStream::operator>>(ethVector4& v)
     return *this;
 }
 
+void Ether::IFileStream::ReadBytes(void* dest, uint32_t numBytes)
+{
+    m_File.read((char*)dest, numBytes);
+}
+
 Ether::OFileStream::OFileStream(const std::string& path)
     : m_Path(path)
 {
@@ -150,11 +164,6 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const float value)
 {
     m_File.write(reinterpret_cast<const char*>(&value), sizeof(float));
     return *this;
-}
-
-void Ether::OFileStream::ClearFile()
-{
-    m_File.clear();
 }
 
 Ether::OFileStream& Ether::OFileStream::operator<<(const int value)
@@ -195,10 +204,13 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const unsigned char value)
 
 Ether::OFileStream& Ether::OFileStream::operator<<(const std::string& value)
 {
-    if (!value.empty())
-        m_File.write(value.c_str(), value.size());
-    static const char end = 0;
-    m_File.write(&end, sizeof(end));
+    m_File.write(value.c_str(), value.size() + 1); // plus null terminator
+    return *this;
+}
+
+Ether::OFileStream& Ether::OFileStream::operator<<(const StringID& value)
+{
+    *this << value.GetString();
     return *this;
 }
 
@@ -230,4 +242,14 @@ Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector4& v)
     m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
     m_File.write(reinterpret_cast<const char*>(&v.w), sizeof(float));
     return *this;
+}
+
+void Ether::OFileStream::WriteBytes(void* src, uint32_t numBytes)
+{
+    m_File.write((char*)src, numBytes);
+}
+
+void Ether::OFileStream::ClearFile()
+{
+    m_File.clear();
 }

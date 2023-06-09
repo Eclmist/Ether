@@ -22,6 +22,9 @@
 #include "toolmode/pch.h"
 #include "assimp/scene.h"
 #include "graphics/common/vertexformats.h"
+#include <unordered_set>
+
+constexpr uint32_t MaxMaterialsPerAsset = 256;
 
 namespace Ether::Toolmode
 {
@@ -31,11 +34,21 @@ namespace Ether::Toolmode
         AssetImporter() = default;
         ~AssetImporter() = default;
 
-        void Import(const std::string& assetPath) const;
+        inline void SetWorkspacePath(const std::string& workspacePath) { m_WorkspacePath = workspacePath; }
+
+    public:
+        void Import(const std::string& assetPath);
 
     private:
-        void ProcessScene(const aiScene* assimpScene) const;
+        void ProcessScene(const aiScene* assimpScene);
         void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const;
+        void ProcessMaterials(aiMaterial** assimpMaterials, uint32_t numMaterials);
+        StringID ProcessTexture(const StringID& path);
+
+    private:
+        std::string m_WorkspacePath;
+        StringID m_MaterialGuidTable[MaxMaterialsPerAsset];
+        std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
 }
 

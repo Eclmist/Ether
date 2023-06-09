@@ -17,17 +17,28 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/memory/bindlessresourcemanager.h"
+#pragma once
 
-void Ether::Graphics::BindlessResourceManager::RegisterView(StringID viewID, uint32_t indexInHeap)
+#include "graphics/pch.h"
+#include "graphics/memory/descriptorallocation.h"
+
+namespace Ether::Graphics
 {
-    m_KeyToIndexMap[viewID.GetHash()] = indexInHeap;
-}
-
-uint32_t Ether::Graphics::BindlessResourceManager::GetViewIndex(StringID viewID) const
+class BindlessDescriptorManager
 {
-    if (m_KeyToIndexMap.find(viewID.GetHash()) == m_KeyToIndexMap.end())
-        return 0; // TODO: Reserve 0 for default texture
+public:
+    BindlessDescriptorManager() = default;
+    ~BindlessDescriptorManager() = default;
 
-    return m_KeyToIndexMap.at(viewID.GetHash());
-}
+public:
+    static constexpr uint32_t InvalidIndex = -1;
+
+public:
+    uint32_t RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource* resource, RhiFormat format);
+    uint32_t GetDescriptorIndex(StringID guid) const;
+
+private:
+    std::unordered_map<StringID, uint32_t> m_GuidToIndexMap;
+    std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_Allocations;
+};
+} // namespace Ether::Graphics

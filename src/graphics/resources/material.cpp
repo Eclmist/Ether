@@ -22,7 +22,13 @@
 constexpr uint32_t MaterialVersion = 0;
 
 Ether::Graphics::Material::Material()
-    : Serializable(MaterialVersion, StringID("Graphics::Material").GetHash())
+    : Serializable(MaterialVersion, ETH_CLASS_ID_MATERIAL)
+    , m_BaseColor(1, 1, 1, 1)
+    , m_SpecularColor(0.5, 0.5, 0.5, 0.5)
+    , m_AlbedoTextureID()
+    , m_SpecularTextureID()
+    , m_MetalnessTextureID()
+    , m_RoughnessTextureID()
 {
 }
 
@@ -31,8 +37,10 @@ void Ether::Graphics::Material::Serialize(OStream& ostream) const
     Serializable::Serialize(ostream);
     ostream << m_BaseColor;
     ostream << m_SpecularColor;
-    ostream << m_Roughness;
-    ostream << m_Metalness;
+    ostream << m_AlbedoTextureID;
+    ostream << m_SpecularTextureID;
+    ostream << m_MetalnessTextureID;
+    ostream << m_RoughnessTextureID;
 }
 
 void Ether::Graphics::Material::Deserialize(IStream& istream)
@@ -40,6 +48,8 @@ void Ether::Graphics::Material::Deserialize(IStream& istream)
     Serializable::Deserialize(istream);
     istream >> m_BaseColor;
     istream >> m_SpecularColor;
-    istream >> m_Roughness;
-    istream >> m_Metalness;
+    istream >> m_AlbedoTextureID;
+    istream >> m_SpecularTextureID;
+    istream >> m_MetalnessTextureID;
+    istream >> m_RoughnessTextureID;
 }

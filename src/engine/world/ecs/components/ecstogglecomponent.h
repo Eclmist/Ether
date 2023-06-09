@@ -28,7 +28,7 @@ template <typename T>
 class EcsToggleComponent : public EcsComponent<T>
 {
 public:
-    EcsToggleComponent(uint32_t version, uint32_t classID);
+    EcsToggleComponent(uint32_t version, const char* classID);
     virtual ~EcsToggleComponent() override = default;
 
 public:
@@ -40,7 +40,7 @@ public:
 };
 
 template <typename T>
-Ether::Ecs::EcsToggleComponent<T>::EcsToggleComponent(uint32_t version, uint32_t classID)
+Ether::Ecs::EcsToggleComponent<T>::EcsToggleComponent(uint32_t version, const char* classID)
     : EcsComponent<T>(version, classID)
     , m_Enabled(true)
 {

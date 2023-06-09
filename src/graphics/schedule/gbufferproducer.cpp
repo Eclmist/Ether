@@ -25,6 +25,7 @@
 #include "graphics/resources/material.h"
 
 #include "graphics/shaders/common/globalconstants.h"
+#include "graphics/shaders/common/material.h"
 
 namespace Ether::Graphics::RhiLinkSpace
 {
@@ -97,8 +98,13 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceConte
         ETH_MARKER_EVENT("Draw Meshes");
         Visual visual = visualBatch.m_Visuals[i];
 
-        auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Material), 256 });
-        memcpy(alloc->GetCpuHandle(), visual.m_Material, sizeof(Material));
+        Shader::Material instanceMaterial;
+        instanceMaterial.m_BaseColor = visual.m_Material->GetBaseColor();
+        instanceMaterial.m_SpecularColor = visual.m_Material->GetSpecularColor();
+        instanceMaterial.m_AlbedoTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetAlbedoTextureID());
+
+        auto alloc = m_FrameLocalUploadBuffer[gfxDisplay.GetBackBufferIndex()]->Allocate({ sizeof(Shader::Material), 256 });
+        memcpy(alloc->GetCpuHandle(), &instanceMaterial, sizeof(Shader::Material));
 
         ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
@@ -136,10 +142,11 @@ void Ether::Graphics::GBufferProducer::CreateShaders()
 
 void Ether::Graphics::GBufferProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 1);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout);
+    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_BilinearSampler, RhiShaderVisibility::All);
+    rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
 }
 

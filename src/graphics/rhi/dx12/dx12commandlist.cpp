@@ -291,6 +291,33 @@ void Ether::Graphics::Dx12CommandList::CopyBufferRegion(
         ->CopyBufferRegion(dx12DstResource->m_Resource.Get(), destOff, dx12SrcResource->m_Resource.Get(), srcOff, size);
 }
 
+void Ether::Graphics::Dx12CommandList::CopyTextureRegion(
+    const RhiResource& src,
+    RhiResource& dest,
+    const void* data,
+    uint32_t width,
+    uint32_t height,
+    uint32_t bytesPerPixel)
+{
+    const auto dx12SrcResource = (Dx12Resource*)&src;
+    const auto dx12DstResource = (Dx12Resource*)&dest;
+
+    D3D12_SUBRESOURCE_DATA textureData = {};
+    textureData.pData = data;
+    textureData.RowPitch = width * bytesPerPixel;
+    textureData.SlicePitch = height * textureData.RowPitch;
+
+    // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
+    UpdateSubresources(
+        m_CommandList.Get(),
+        dx12DstResource->m_Resource.Get(),
+        dx12SrcResource->m_Resource.Get(),
+        0,
+        0,
+        1,
+        &textureData);
+}
+
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(
     const RhiRenderTargetView& rtv,
     const ethVector4& clearColor)
@@ -328,11 +355,7 @@ void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(
     m_CommandList->DrawIndexedInstanced(numIndices, numInst, firstIdx, stride, firstInst);
 }
 
-void Ether::Graphics::Dx12CommandList::DispatchRays(
-    uint32_t x,
-    uint32_t y,
-    uint32_t z,
-    const RhiResource* bindTable)
+void Ether::Graphics::Dx12CommandList::DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiResource* bindTable)
 {
     const Dx12RaytracingShaderBindingTable* sbt = dynamic_cast<const Dx12RaytracingShaderBindingTable*>(bindTable);
 

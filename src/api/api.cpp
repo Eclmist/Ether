@@ -44,7 +44,6 @@ int Ether::Start(IApplicationBase& app)
 
 void Ether::Shutdown()
 {
-    // PostQuitMessage(0);
 }
 
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()

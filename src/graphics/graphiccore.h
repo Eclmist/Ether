@@ -30,7 +30,7 @@
 #include "graphics/common/visualbatch.h"
 #include "graphics/config/graphicconfig.h"
 #include "graphics/memory/descriptorallocator.h"
-#include "graphics/memory/bindlessresourcemanager.h"
+#include "graphics/memory/bindlessdescriptormanager.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
 
 #include "graphics/graphiccommon.h"
@@ -50,7 +50,7 @@ public:
     void Shutdown();
 
 public:
-    static inline BindlessResourceManager& GetBindlessResourceManager() { return *Instance().m_BindlessResourceManager; }
+    static inline BindlessDescriptorManager& GetBindlessDescriptorManager() { return *Instance().m_BindlessDescriptorManager; }
     static inline CommandManager& GetCommandManager() { return *Instance().m_CommandManager; }
     static inline DescriptorAllocator& GetRtvAllocator() { return *Instance().m_RtvAllocator; }
     static inline DescriptorAllocator& GetDsvAllocator() { return *Instance().m_DsvAllocator; }
@@ -71,7 +71,7 @@ private:
     std::unique_ptr<RhiModule> m_RhiModule;
     std::unique_ptr<RhiDevice> m_RhiDevice;
 
-    std::unique_ptr<BindlessResourceManager> m_BindlessResourceManager;
+    std::unique_ptr<BindlessDescriptorManager> m_BindlessDescriptorManager;
     std::unique_ptr<CommandManager> m_CommandManager;
     std::unique_ptr<DescriptorAllocator> m_RtvAllocator;
     std::unique_ptr<DescriptorAllocator> m_DsvAllocator;

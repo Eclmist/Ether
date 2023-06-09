@@ -22,7 +22,7 @@
 constexpr uint32_t EcsVisualComponentVersion = 0;
 
 Ether::Ecs::EcsVisualComponent::EcsVisualComponent()
-    : EcsToggleComponent(EcsVisualComponentVersion, StringID("Ecs::EcsVisualComponent").GetHash())
+    : EcsToggleComponent(EcsVisualComponentVersion, "Ecs::EcsVisualComponent")
 {
 }
 

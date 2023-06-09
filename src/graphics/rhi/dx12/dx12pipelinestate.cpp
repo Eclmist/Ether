@@ -29,7 +29,7 @@ Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
     , m_Dx12PsoDesc{}
 {
     SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
-    SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefaultCw);
+    SetRasterizerState(GraphicCore::GetGraphicCommon().m_RasterizerDefault);
     SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
     SetPrimitiveTopology(RhiPrimitiveTopologyType::Triangle);
     SetSamplingDesc(1, 0);

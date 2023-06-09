@@ -21,6 +21,9 @@
 #include "toolmode/ipc/ipcmanager.h"
 #include "engine/platform/win32/ethwin.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
+#include "asset/assetimporter.h"
+#include <filesystem>
+#include "engine/world/ecs/components/ecsvisualcomponent.h"
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 {
@@ -43,11 +46,92 @@ void Ether::Toolmode::EtherHeadless::Initialize()
 void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
-    world.Load("..\\..\\..\\content\\TestScene.ether");
+
+    const std::string modelName = "Sponza";
+    std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
+
+    workspacePath = workspacePath + modelName + "\\glTF\\";
+
+#if 1
+    // To speed up development, we will import the main sponza asset here each time we load toolmode, even
+    // without editor connection.
+    AssetImporter::Instance().SetWorkspacePath(workspacePath);
+    AssetImporter::Instance().Import(modelName + ".gltf");
+
+    // The idea of this block is to test toolmode functionality without having the actual tool developed yet
+    // For example:
+    //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode sln)
+    //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
+    //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
+    //      - Build resource table
+    //          this is simulated by blindly loading all .eres files and assuming them to be meshes
+    //      - Create entity (menu > new > entity)
+    //          simulated by creating entity object
+    //      - Assign mesh to entity (through components)
+    //          simulated by AddComponent<Visual> and assigning mesh guid
+    //      - Save scene
+    //          World.save();
+
+    std::vector<std::unique_ptr<Graphics::Mesh>> meshes;
+
+    for (const auto& entry : std::filesystem::directory_iterator(workspacePath))
+    {
+        if (entry.path().extension().string() != ".eres")
+            continue;
+
+        IFileStream classIdStream(entry.path().string());
+        std::string classID = Serializable::DeserializeClassID(classIdStream);
+
+        static const StringID MeshClassID = StringID(ETH_CLASS_ID_MESH);
+        static const StringID MaterialClassID = StringID(ETH_CLASS_ID_MATERIAL);
+        static const StringID TextureClassID = StringID(ETH_CLASS_ID_TEXTURE);
+
+        if (classID == MeshClassID)
+        {
+            IFileStream assetFileStream(entry.path().string());
+            meshes.emplace_back(std::make_unique<Graphics::Mesh>());
+            meshes.back()->Deserialize(assetFileStream);
+        }
+        else if (classID == MaterialClassID)
+        {
+            IFileStream assetFileStream(entry.path().string());
+            std::unique_ptr<Graphics::Material> material = std::make_unique<Graphics::Material>();
+            material->Deserialize(assetFileStream);
+            world.GetResourceManager().RegisterMaterialResource(std::move(material));
+        }
+        else if (classID == TextureClassID)
+        {
+            IFileStream assetFileStream(entry.path().string());
+            std::unique_ptr<Graphics::Texture> texture = std::make_unique<Graphics::Texture>();
+            texture->Deserialize(assetFileStream);
+            world.GetResourceManager().RegisterTextureResource(std::move(texture));
+        }
+    }
+
+    for (auto& mesh : meshes)
+    {
+        Entity& entity = world.CreateEntity("Entity (" + mesh->GetGuid() + ")");
+        entity.AddComponent<Ecs::EcsVisualComponent>();
+        Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
+        visual.m_MeshGuid = mesh->GetGuid();
+        visual.m_MaterialGuid = mesh->GetDefaultMaterialGuid();
+        world.GetResourceManager().RegisterMeshResource(std::move(mesh));
+    }
+
+    world.GetResourceManager().CreateGpuResources();
+    world.Save(workspacePath + "TestScene.ether");
+
+    // ====================================================================================================
+#else
+    world.Load(workspacePath + "TestScene.ether");
+#endif
+
 
     Entity& camera = world.CreateEntity("Main Camera");
     camera.AddComponent<Ecs::EcsCameraComponent>();
     m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
+
+    exit(0);
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()
@@ -60,47 +144,50 @@ void Ether::Toolmode::EtherHeadless::Shutdown()
 
 void Ether::Toolmode::EtherHeadless::OnUpdate(const Ether::UpdateEventArgs& e)
 {
-    IpcManager::Instance().ProcessIncomingCommands();
-    IpcManager::Instance().ProcessOutgoingCommands();
-
-    static ethVector3 cameraRotation;
-    static float moveSpeed = 0.001f;
-
-    if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
-        moveSpeed = 0.002f;
-    else
-        moveSpeed = 0.001f;
-
-    if (Input::GetMouseButton(2))
-    {
-        m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
-        m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
-        m_CameraTransform->m_Rotation.x = std::clamp((double)m_CameraTransform->m_Rotation.x, -SMath::DegToRad(90), SMath::DegToRad(90));
-    }
-
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
-        Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
-
-    if (Input::GetKey((KeyCode)Win32::KeyCode::E))
-        m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;
-
-    if (Input::GetKey((KeyCode)Win32::KeyCode::Q))
-        m_CameraTransform->m_Translation.y -= Time::GetDeltaTime() * moveSpeed;
 
 
-    ethMatrix4x4 rotation = Transform::GetRotationMatrix(m_CameraTransform->m_Rotation);
-    ethVector3 forward = (rotation * ethVector4(0, 0, 1, 0)).Resize<3>().Normalized();
-    ethVector3 upVec = { 0, 1, 0 };
-    ethVector3 rightVec = ethVector3::Cross(upVec, forward);
 
-    if (Input::GetKey((KeyCode)Win32::KeyCode::W))
-        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + forward * Time::GetDeltaTime() * moveSpeed;
-    if (Input::GetKey((KeyCode)Win32::KeyCode::A))
-        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - rightVec * Time::GetDeltaTime() * moveSpeed;
-    if (Input::GetKey((KeyCode)Win32::KeyCode::S))
-        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - forward * Time::GetDeltaTime() * moveSpeed;
-    if (Input::GetKey((KeyCode)Win32::KeyCode::D))
-        m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + rightVec * Time::GetDeltaTime() * moveSpeed;
+    //IpcManager::Instance().ProcessIncomingCommands();
+    //IpcManager::Instance().ProcessOutgoingCommands();
+
+    //static ethVector3 cameraRotation;
+    //static float moveSpeed = 0.001f;
+
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
+    //    moveSpeed = 0.002f;
+    //else
+    //    moveSpeed = 0.001f;
+
+    //if (Input::GetMouseButton(2))
+    //{
+    //    m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
+    //    m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
+    //    m_CameraTransform->m_Rotation.x = std::clamp((double)m_CameraTransform->m_Rotation.x, -SMath::DegToRad(90), SMath::DegToRad(90));
+    //}
+
+    //if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
+    //    Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
+
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::E))
+    //    m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;
+
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::Q))
+    //    m_CameraTransform->m_Translation.y -= Time::GetDeltaTime() * moveSpeed;
+
+
+    //ethMatrix4x4 rotation = Transform::GetRotationMatrix(m_CameraTransform->m_Rotation);
+    //ethVector3 forward = (rotation * ethVector4(0, 0, 1, 0)).Resize<3>().Normalized();
+    //ethVector3 upVec = { 0, 1, 0 };
+    //ethVector3 rightVec = ethVector3::Cross(upVec, forward);
+
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::W))
+    //    m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + forward * Time::GetDeltaTime() * moveSpeed;
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::A))
+    //    m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - rightVec * Time::GetDeltaTime() * moveSpeed;
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::S))
+    //    m_CameraTransform->m_Translation = m_CameraTransform->m_Translation - forward * Time::GetDeltaTime() * moveSpeed;
+    //if (Input::GetKey((KeyCode)Win32::KeyCode::D))
+    //    m_CameraTransform->m_Translation = m_CameraTransform->m_Translation + rightVec * Time::GetDeltaTime() * moveSpeed;
 }
 
 void Ether::Toolmode::EtherHeadless::OnRender(const Ether::RenderEventArgs& e)

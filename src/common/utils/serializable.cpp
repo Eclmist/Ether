@@ -21,7 +21,7 @@
 #include "common/stream/filestream.h"
 #include <format>
 
-Ether::Serializable::Serializable(uint32_t version, uint32_t classID)
+Ether::Serializable::Serializable(uint32_t version, const char* classID)
     : m_Version(version)
     , m_ClassID(classID)
 {
@@ -46,7 +46,8 @@ void Ether::Serializable::Serialize(OStream& ostream) const
 
 void Ether::Serializable::Deserialize(IStream& istream)
 {
-    uint32_t version, classID;
+    uint32_t version = 0;
+    std::string classID;
     istream >> version;
     istream >> classID;
 
@@ -59,4 +60,14 @@ void Ether::Serializable::Deserialize(IStream& istream)
             std::format("Asset type mismatch - expected type {} but found type {}", version, m_Version));
 
     istream >> m_Guid;
+}
+
+std::string Ether::Serializable::DeserializeClassID(IStream& istream)
+{
+    uint32_t version;
+    std::string classID;
+    istream >> version;
+    istream >> classID;
+
+    return classID;
 }

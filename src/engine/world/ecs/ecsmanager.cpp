@@ -22,7 +22,7 @@
 constexpr uint32_t EcsManagerVersion = 0;
 
 Ether::Ecs::EcsManager::EcsManager()
-    : Serializable(EcsManagerVersion, StringID("Engine::EcsManager").GetHash())
+    : Serializable(EcsManagerVersion, "Engine::EcsManager")
 {
 }
 

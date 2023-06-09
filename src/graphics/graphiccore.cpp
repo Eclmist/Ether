@@ -29,7 +29,7 @@ void Ether::Graphics::GraphicCore::Initialize()
     if (m_Config.GetUseShaderDaemon())
         m_ShaderDaemon = std::make_unique<ShaderDaemon>();
 
-    m_BindlessResourceManager = std::make_unique<BindlessResourceManager>();
+    m_BindlessDescriptorManager = std::make_unique<BindlessDescriptorManager>();
     m_RtvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Rtv, _4KiB);
     m_DsvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv, _4KiB);
     m_SrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, _64KiB, true);
@@ -52,7 +52,7 @@ void Ether::Graphics::GraphicCore::Shutdown()
     m_SrvCbvUavAllocator.reset();
     m_DsvAllocator.reset();
     m_RtvAllocator.reset();
-    m_BindlessResourceManager.reset();
+    m_BindlessDescriptorManager.reset();
     m_ShaderDaemon.reset();
 
     m_RhiDevice.reset();

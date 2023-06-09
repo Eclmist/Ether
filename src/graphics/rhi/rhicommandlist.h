@@ -79,6 +79,7 @@ public:
     virtual void TransitionResource(RhiResource& resource, RhiResourceState newState) = 0;
     virtual void CopyResource(const RhiResource& src, RhiResource& dest) = 0;
     virtual void CopyBufferRegion(const RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset, uint32_t destOffset) = 0;
+    virtual void CopyTextureRegion(const RhiResource& src, RhiResource& dest, const void* data, uint32_t width, uint32_t height, uint32_t bytesPerPixel) = 0;
 
     // Dispatches
     virtual void ClearRenderTargetView(const RhiRenderTargetView& rtv, const ethVector4& clearColor) = 0;

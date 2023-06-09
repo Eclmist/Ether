@@ -27,7 +27,7 @@
 constexpr uint32_t EcsComponentManagerVersion = 0;
 
 Ether::Ecs::EcsComponentManager::EcsComponentManager()
-    : Serializable(EcsComponentManagerVersion, StringID("Engine::EcsComponentManager").GetHash())
+    : Serializable(EcsComponentManagerVersion, "Engine::EcsComponentManager")
     , m_NextID(0)
 {
     RegisterComponent<EcsCameraComponent>();

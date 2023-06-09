@@ -51,5 +51,6 @@ namespace Ether::Graphics
     constexpr size_t _16MiB                         = 1 << 24;
     constexpr size_t _32MiB                         = 1 << 25;
     constexpr size_t _64MiB                         = 1 << 26;
+    constexpr size_t _128MiB                        = 1 << 27;
 }
 

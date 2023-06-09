@@ -34,7 +34,9 @@ public:
     StringID();
     StringID(const char* str);
     StringID(const std::string& str);
+    StringID(const StringID& other);
 
+    bool operator==(const std::string& other) const;
     bool operator==(const StringID& other) const;
     bool operator!=(const StringID& other) const;
 

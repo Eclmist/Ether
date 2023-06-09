@@ -23,7 +23,7 @@
 constexpr uint32_t ResourceManagerVersion = 0;
 
 Ether::ResourceManager::ResourceManager()
-    : Serializable(ResourceManagerVersion, StringID("Engine::ResourceManager").GetHash())
+    : Serializable(ResourceManagerVersion, "Engine::ResourceManager")
 {
 }
 
@@ -32,13 +32,16 @@ void Ether::ResourceManager::Serialize(OStream& ostream) const
     Serializable::Serialize(ostream);
     SerializeResource<Graphics::Mesh>(ostream, m_Meshes);
     SerializeResource<Graphics::Material>(ostream, m_Materials);
+    SerializeResource<Graphics::Texture>(ostream, m_Textures);
 }
+
 
 void Ether::ResourceManager::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
     DeserializeResource<Graphics::Mesh>(istream, m_Meshes);
     DeserializeResource<Graphics::Material>(istream, m_Materials);
+    DeserializeResource<Graphics::Texture>(istream, m_Textures);
     CreateGpuResources();
 }
 
@@ -56,20 +59,35 @@ Ether::StringID Ether::ResourceManager::RegisterMaterialResource(std::unique_ptr
     return sid;
 }
 
-Ether::Graphics::Mesh* Ether::ResourceManager::GetMeshResource(StringID id) const
+Ether::StringID Ether::ResourceManager::RegisterTextureResource(std::unique_ptr<Graphics::Texture>&& texture)
 {
-    if (m_Meshes.find(id) == m_Meshes.end())
-        return nullptr;
-
-    return m_Meshes.at(id).get();
+    StringID sid = texture->GetGuid();
+    m_Textures[sid] = std::move(texture);
+    return sid;
 }
 
-Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID id) const
+Ether::Graphics::Mesh* Ether::ResourceManager::GetMeshResource(StringID guid) const
 {
-    if (m_Materials.find(id) == m_Materials.end())
+    if (m_Meshes.find(guid) == m_Meshes.end())
         return nullptr;
 
-    return m_Materials.at(id).get();
+    return m_Meshes.at(guid).get();
+}
+
+Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID guid) const
+{
+    if (m_Materials.find(guid) == m_Materials.end())
+        return nullptr;
+
+    return m_Materials.at(guid).get();
+}
+
+Ether::Graphics::Texture* Ether::ResourceManager::GetTextureResource(StringID guid) const
+{
+    if (m_Textures.find(guid) == m_Textures.end())
+        return nullptr;
+
+    return m_Textures.at(guid).get();
 }
 
 void Ether::ResourceManager::CreateGpuResources() const 
@@ -85,4 +103,13 @@ void Ether::ResourceManager::CreateGpuResources() const
         ctx.PopMarker();
     }
     ctx.FinalizeAndExecute(true);
+
+    for (auto& pair : m_Textures)
+    {
+        // TODO: Critical texture copy bug ?!
+        Graphics::CommandContext textureUpload("TODO Texture Upload Context");
+        textureUpload.Reset();
+        pair.second->CreateGpuResource(textureUpload);
+        textureUpload.FinalizeAndExecute(true);
+    }
 }

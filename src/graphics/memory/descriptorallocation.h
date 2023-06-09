@@ -45,7 +45,7 @@ public:
     DescriptorAllocation& operator=(DescriptorAllocation&& move) noexcept;
 
 public:
-    size_t GetOffset() const override { return m_Offset * m_DescriptorSize; }
+    size_t GetOffset() const override { return m_Offset; }
     size_t GetSize() const override { return m_Size; }
 
 public:
