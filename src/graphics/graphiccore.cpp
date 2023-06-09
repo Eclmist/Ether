@@ -49,10 +49,10 @@ void Ether::Graphics::GraphicCore::Shutdown()
     m_GraphicDisplay.reset();
     m_GraphicCommon.reset();
     m_CommandManager.reset();
+    m_BindlessDescriptorManager.reset();
     m_SrvCbvUavAllocator.reset();
     m_DsvAllocator.reset();
     m_RtvAllocator.reset();
-    m_BindlessDescriptorManager.reset();
     m_ShaderDaemon.reset();
 
     m_RhiDevice.reset();

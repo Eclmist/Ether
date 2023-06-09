@@ -43,6 +43,7 @@ void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, R
     // Shaders that require recompilation defintely needs PSOs to be recompiled.
     if (pipelineStateDesc.RequiresShaderCompilation())
     {
+        GraphicCore::FlushGpu();
         pipelineStateDesc.CompileShaders();
         m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
         return;

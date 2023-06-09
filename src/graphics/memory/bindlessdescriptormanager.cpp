@@ -21,7 +21,7 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiresourceviews.h"
 
-uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
+void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     StringID resourceGuid,
     const RhiResource* resource,
     RhiFormat format)
@@ -42,7 +42,14 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
     auto srv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
     m_Allocations[resourceGuid] = std::move(allocation);
     m_GuidToIndexMap[resourceGuid] = indexInHeap;
-    return indexInHeap;
+}
+
+void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
+    StringID resourceGuid,
+    uint32_t indexInHeap)
+{
+    m_GuidToIndexMap[resourceGuid] = indexInHeap;
+
 }
 
 uint32_t Ether::Graphics::BindlessDescriptorManager::GetDescriptorIndex(StringID guid) const

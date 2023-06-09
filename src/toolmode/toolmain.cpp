@@ -38,7 +38,6 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
     return Start(etherHeadless);
 }
 
-
 void Ether::Toolmode::EtherHeadless::Initialize()
 {
 }
@@ -47,16 +46,29 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
 
-    const std::string modelName = "Sponza";
+    const std::string modelName = "NewSponza_Main_glTF_002";
     std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
 
     workspacePath = workspacePath + modelName + "\\glTF\\";
 
 #if 1
+    for (const auto& entry : std::filesystem::directory_iterator(workspacePath))
+    {
+        if (entry.path().extension().string() != ".eres")
+            continue;
+
+        std::filesystem::remove(entry);
+    }
+
+
+
+
     // To speed up development, we will import the main sponza asset here each time we load toolmode, even
     // without editor connection.
     AssetImporter::Instance().SetWorkspacePath(workspacePath);
-    AssetImporter::Instance().Import(modelName + ".gltf");
+    AssetImporter::Instance().Import("NewSponza_Curtains_glTF" ".gltf");
+    AssetImporter::Instance().Import("NewSponza_Main_glTF_002" ".gltf");
+    AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF" ".gltf");
 
     // The idea of this block is to test toolmode functionality without having the actual tool developed yet
     // For example:

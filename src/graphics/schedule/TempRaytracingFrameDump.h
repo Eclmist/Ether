@@ -59,8 +59,8 @@ protected:
     RhiUnorderedAccessView m_OutputTextureUav;
     RhiShaderResourceView m_AccumulationSrv;
     RhiShaderResourceView m_TlasSrv;
-    RhiShaderResourceView m_AlbedoSrv;
-    RhiShaderResourceView m_PositionSrv;
-    RhiShaderResourceView m_NormalSrv;
+    RhiShaderResourceView m_GBufferSrv0;
+    RhiShaderResourceView m_GBufferSrv1;
+    RhiShaderResourceView m_GBufferSrv2;
 };
 } // namespace Ether::Graphics

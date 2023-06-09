@@ -57,13 +57,13 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
         InitializePipelineStates();
     }
 
-    m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, BackBufferFormat);
-    m_OutputTextureUav = rc.CreateUnorderedAccessView("Raytrace - Output UAV", m_OutputTexture, BackBufferFormat, RhiUnorderedAccessDimension::Texture2D);
-    m_AccumulationSrv = rc.CreateShaderResourceView("Raytrace - Accumulation SRV", m_OutputTexture, BackBufferFormat, RhiShaderResourceDimension::Texture2D);
+    m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, RhiFormat::R32G32B32A32Float);
+    m_OutputTextureUav = rc.CreateUnorderedAccessView("Raytrace - Output UAV", m_OutputTexture, RhiFormat::R32G32B32A32Float, RhiUnorderedAccessDimension::Texture2D);
+    m_AccumulationSrv = rc.CreateShaderResourceView("Raytrace - Accumulation SRV", m_OutputTexture, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
 
-    m_AlbedoSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 0");
-    m_PositionSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 1");
-    m_NormalSrv = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 2");
+    m_GBufferSrv0 = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 0");
+    m_GBufferSrv1 = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 1");
+    m_GBufferSrv2 = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 2");
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, ResourceContext& rc)
@@ -83,8 +83,11 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, Resou
 
     InitializeShaderBindingTable(rc);
 
-    const RhiResourceView* gbufferSrvs[] = { &m_AlbedoSrv, &m_PositionSrv, &m_NormalSrv };
+    const RhiResourceView* gbufferSrvs[] = { &m_GBufferSrv0, &m_GBufferSrv1, &m_GBufferSrv2 };
     m_GlobalRootTableAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(gbufferSrvs, 3));
+    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView("GBuffer - SRV 0", m_GlobalRootTableAlloc->GetOffset());
+    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView("GBuffer - SRV 1", m_GlobalRootTableAlloc->GetOffset() + 1);
+    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView("GBuffer - SRV 2", m_GlobalRootTableAlloc->GetOffset() + 2);
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -101,12 +104,6 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, Resou
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()]);
     ctx.SetRaytracingPipelineState(*m_RaytracingPipelineState);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
-    ctx.PopMarker();
-
-    ctx.PushMarker("Copy to render target");
-    ctx.TransitionResource(*m_OutputTexture, RhiResourceState::CopySrc);
-    ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::CopyDest);
-    ctx.CopyResource(*m_OutputTexture, gfxDisplay.GetBackBuffer());
     ctx.PopMarker();
 }
 
@@ -174,6 +171,7 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeShaderBindingTable(Reso
 
     const RhiResourceView* raygenDescriptors[] = { &m_TlasSrv, &m_AccumulationSrv, &m_OutputTextureUav };
     m_RaygenRootTableAlloc = std::move(GraphicCore::GetSrvCbvUavAllocator().Commit(raygenDescriptors, sizeof(raygenDescriptors) / sizeof(raygenDescriptors[0])));
+    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView("Raytrace - Output UAV", m_RaygenRootTableAlloc->GetOffset() + 2);
 
     RhiRaytracingShaderBindingTableDesc desc = {};
     desc.m_MaxRootSignatureSize = 8; // Raygen's descriptor table1 (8)

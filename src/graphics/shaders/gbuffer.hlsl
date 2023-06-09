@@ -88,11 +88,15 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
         albedo = albedoTex.Sample(g_BilinearSampler, IN.TexCoord);
     }
 
+    // Don't support alpha yet
+    if (albedo.a != 1)
+        discard;
+
     PS_OUTPUT o;
     o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz * albedo.xyz, 1);
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
     o.Output2 = float4(IN.Normal.yz, velocity);
-    o.DebugOutput = float4(IN.TexCoord, 0, 0);
-    o.DebugOutput = float4(o.Output0.xyz, 0);
+    //o.DebugOutput = float4(IN.TexCoord, 0, 0);
+    o.DebugOutput = float4(albedo.xyz, 0);
     return o;
 }

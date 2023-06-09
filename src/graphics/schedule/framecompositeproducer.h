@@ -20,26 +20,30 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/memory/descriptorallocation.h"
+#include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/context/resourcecontext.h"
+#include "graphics/context/graphiccontext.h"
 
 namespace Ether::Graphics
 {
-class BindlessDescriptorManager
+class FrameCompositeProducer
 {
 public:
-    BindlessDescriptorManager() = default;
-    ~BindlessDescriptorManager() = default;
-
-public:
-    static constexpr uint32_t InvalidIndex = -1;
-
-public:
-    void RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource* resource, RhiFormat format);
-    void RegisterAsShaderResourceView(StringID resourceGuid, uint32_t indexInHeap);
-    uint32_t GetDescriptorIndex(StringID guid) const;
+    void Reset();
+    void Initialize(ResourceContext& rc);
+    void FrameSetup(ResourceContext& rc);
+    void Render(GraphicContext& ctx, ResourceContext& rc);
 
 private:
-    std::unordered_map<StringID, uint32_t> m_GuidToIndexMap;
-    std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_Allocations;
+    void CreateShaders();
+    void CreateRootSignature();
+    void CreatePipelineState(ResourceContext& rc);
+
+private:
+    std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
+
+    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
+    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
 };
 } // namespace Ether::Graphics

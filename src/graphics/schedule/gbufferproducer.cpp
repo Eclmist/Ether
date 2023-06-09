@@ -84,7 +84,6 @@ void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceConte
     ctx.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
     ctx.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
-    ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
     ctx.SetGraphicsRootConstantBufferView(0, RhiLinkSpace::g_GlobalConstantsCbv);
 

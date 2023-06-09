@@ -77,9 +77,10 @@ void RayGeneration()
     float2 velocity = gbuffer2.zw;
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
-    float4 aoOutput;
+    float4 light = 1.0;
 
-    float4 skyColor = float4(0.5, 0.7, 0.9, 1) * 1.8;
+    float4 skyColor = float4(0.5, 0.7, 0.9, 1);
+    float4 sunColor = float4(1, 0.85, 0.8, 1);
 
     if (color.w < 1)
     {
@@ -87,26 +88,35 @@ void RayGeneration()
         return;
     }
 
-    for (int i = 0; i < 1; ++i)
-    {
-        RayPayload payload;
-        RayDesc ray;
-        ray.Origin = position.xyz;
-        ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((texCoord * 2 - 1) + (g_GlobalConstants.m_FrameNumber % 4096.) * 0.123)));
-        ray.TMin = 0.001;
-        ray.TMax = 8;
-        TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+    RayPayload payload;
+    RayDesc ray;
 
-        if (payload.m_Hit && color.w > 0.9)
-            aoOutput = (0.5 + payload.m_RayT) / ray.TMax * color;
-        else
-            aoOutput = skyColor * color;
-    }
+    ray.Direction = normalize(float3(0.1, 1, 0.1));
+    ray.Origin = position;
+    ray.TMax = 999;
+    ray.TMin = 0;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
-    float2 texCoordPrev = texCoord;// - velocity;
+    if (!payload.m_Hit)
+        light += sunColor * saturate(dot(normal, ray.Direction)) * 7;
+
+    ray.Origin = position;
+    ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((texCoord * 2 - 1) + (g_GlobalConstants.m_FrameNumber % 4096.) * 0.123)));
+    ray.TMin = 0;
+    ray.TMax = 32;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+
+    if (payload.m_Hit && color.w == 1)
+        light *= saturate(0.15 + saturate(payload.m_RayT / ray.TMax));
+    else
+        light += skyColor * saturate(dot(normal, ray.Direction));
+
+
+
+    float2 texCoordPrev = texCoord - velocity;
     float4 prevOutput = g_AccumulationTex.SampleLevel(g_PointSampler, texCoordPrev, 0);
 
-    g_Output[launchIndex.xy] = (aoOutput * a) + (1 - a) * prevOutput;
+    g_Output[launchIndex.xy] = (light * a) + (1 - a) * prevOutput;
 }
 
 [shader("miss")]

@@ -23,9 +23,11 @@
 
 #include "graphics/schedule/gbufferproducer.h"
 #include "graphics/schedule/globalconstantsproducer.h"
+#include "graphics/schedule/framecompositeproducer.h"
 
-Ether::Graphics::GBufferProducer* g_GBufferProducer;
 Ether::Graphics::GlobalConstantsProducer* g_GlobalConstantsProducer;
+Ether::Graphics::GBufferProducer* g_GBufferProducer;
+Ether::Graphics::FrameCompositeProducer* g_FrameCompositeProducer;
 
 // TEMP ============================================
 #include "graphics/schedule/TempRaytracingFrameDump.h"
@@ -37,9 +39,10 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     // This should be where render passes should be scheduled.
 
     // For now, just setup the temp frame dump here
-    g_GBufferProducer = new GBufferProducer();
     g_GlobalConstantsProducer = new GlobalConstantsProducer();
+    g_GBufferProducer = new GBufferProducer();
     g_TempRaytracingPass = new TempRaytracingFrameDump();
+    g_FrameCompositeProducer = new FrameCompositeProducer();
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -47,9 +50,10 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
-    delete g_GBufferProducer;
     delete g_GlobalConstantsProducer;
+    delete g_GBufferProducer;
     delete g_TempRaytracingPass;
+    delete g_FrameCompositeProducer;
 }
 
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
@@ -60,9 +64,10 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Compile what needs compiling (which should be everything)
     // Put it into resource context (unordered_map cache)
 
-    g_TempRaytracingPass->Initialize(m_ResourceContext);
-    g_GBufferProducer->Initialize(m_ResourceContext);
     g_GlobalConstantsProducer->Initialize(m_ResourceContext);
+    g_GBufferProducer->Initialize(m_ResourceContext);
+    g_TempRaytracingPass->Initialize(m_ResourceContext);
+    g_FrameCompositeProducer->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -81,6 +86,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     g_GlobalConstantsProducer->FrameSetup(m_ResourceContext);
     g_GBufferProducer->FrameSetup(m_ResourceContext);
     g_TempRaytracingPass->FrameSetup(m_ResourceContext);
+    g_FrameCompositeProducer->FrameSetup(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
@@ -104,6 +110,9 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
     {
         g_TempRaytracingPass->Reset();
         g_TempRaytracingPass->Render(context, m_ResourceContext);
+
+        g_FrameCompositeProducer->Reset();
+        g_FrameCompositeProducer->Render(context, m_ResourceContext);
     }
 
     context.FinalizeAndExecute();
