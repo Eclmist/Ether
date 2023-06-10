@@ -95,7 +95,7 @@ void Ether::Graphics::FrameCompositeProducer::CreateRootSignature()
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 1);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_BilinearSampler, RhiShaderVisibility::All);
+    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_BilinearSampler_Wrap, RhiShaderVisibility::All);
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile("FrameComposite Root Signature");
 }

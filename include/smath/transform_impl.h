@@ -101,5 +101,3 @@ SMath::Matrix<T, 4> SMath::Transform<T>::GetPerspectiveMatrixRH(T fovy, T aspect
     return projection;
 }
 
-
-

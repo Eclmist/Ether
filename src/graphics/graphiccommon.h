@@ -59,8 +59,12 @@ public:
     RhiDepthStencilDesc m_DepthStateReadOnly;
     RhiDepthStencilDesc m_DepthStateTestEqual;
 
-    RhiSamplerParameterDesc m_PointSampler;
-    RhiSamplerParameterDesc m_BilinearSampler;
+    RhiSamplerParameterDesc m_PointSampler_Wrap;
+    RhiSamplerParameterDesc m_PointSampler_Clamp;
+    RhiSamplerParameterDesc m_PointSampler_Border;
+    RhiSamplerParameterDesc m_BilinearSampler_Wrap;
+    RhiSamplerParameterDesc m_BilinearSampler_Clamp;
+    RhiSamplerParameterDesc m_BilinearSampler_Border;
     RhiSamplerParameterDesc m_EnvMapSampler;
 
     std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;

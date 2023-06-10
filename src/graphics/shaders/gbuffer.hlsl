@@ -81,7 +81,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
 
     if (g_InstanceParams.m_AlbedoTextureIndex != 0)
     {
-        Texture2D<float4> albedoTex = ResourceDescriptorHeap[g_InstanceParams.m_AlbedoTextureIndex];
+        Texture2D<float4> albedoTex = ResourceDescriptorHeap[g_InstanceParams.m_AlbedoTextureIndex ];
         albedo = albedoTex.Sample(g_BilinearSampler, IN.TexCoord);
     }
 
@@ -92,8 +92,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     PS_OUTPUT o;
     o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz * albedo.xyz, 1);
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
-    o.Output2 = float4(IN.Normal.yz, texSpacePrev);
+    o.Output2 = float4(IN.Normal.yz, velocity);
     //o.DebugOutput = float4(IN.TexCoord, 0, 0);
-    o.DebugOutput = float4(albedo.xyz, 0);
+    o.DebugOutput = float4(velocity, 0, 0);
     return o;
 }

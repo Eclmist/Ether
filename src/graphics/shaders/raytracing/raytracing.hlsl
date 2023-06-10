@@ -21,7 +21,7 @@
 #include "common/raypayload.h"
 
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-Texture2D<float4> g_AccumulationTex                 : register(t1);
+Texture2D<float4> g_AccumulationBuffer              : register(t1);
 Texture2D<float4> g_GBufferOutput0                  : register(t2);
 Texture2D<float4> g_GBufferOutput1                  : register(t3);
 Texture2D<float4> g_GBufferOutput2                  : register(t4);
@@ -32,30 +32,20 @@ RWTexture2D<float4> g_Output                        : register(u0);
 sampler g_PointSampler                              : register(s0);
 sampler g_BilinearSampler                           : register(s1);
 
-float3 linearToSrgb(float3 c)
-{
-    // Based on http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-    float3 sq1 = sqrt(c);
-    float3 sq2 = sqrt(sq1);
-    float3 sq3 = sqrt(sq2);
-    float3 srgb = 0.662002687 * sq1 + 0.684122060 * sq2 - 0.323583601 * sq3 - 0.0225411470 * c;
-    return srgb;
-}
-
 float hash(float2 p)
 {
-    return frac(dot(p + float2(.36834, .723), normalize(frac(p.yx * 73.91374) + 1e-4)) * 7.38734);
+    return frac(dot(p + float2(.368434, .7263), normalize(frac(p.yx * 723.91374) + 1e-4)) * 7.382734);
 }
 
 float3 nonUniformRandomDirection(float2 s)
 {
-    float3 r = float3(hash(s), hash(s * .8723), hash(s * .9574)) * 2. - 1.;
+    float3 r = float3(hash(s), hash(s * .87243), hash(s * .95714)) * 2. - 1.;
     return normalize(r);
 }
 
 float3 uniformRandomDirection(float2 s)
 {
-    float3 r = float3(hash(s), hash(s * .8723), hash(s * .9574)) * 2. - 1.;
+    float3 r = float3(hash(s), hash(s * .872233), hash(s * .95574)) * 2. - 1.;
     return normalize(r / cos(r));
 }
 
@@ -64,12 +54,11 @@ void RayGeneration()
 {
     uint3 launchIndex = DispatchRaysIndex();
     uint3 launchDim = DispatchRaysDimensions();
+    float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
 
-    float2 texCoord = (float2)launchIndex.xy / launchDim.xy + (rcp(launchDim.xy) / 2);
-
-    float4 gbuffer0 = g_GBufferOutput0.SampleLevel(g_PointSampler, texCoord, 0);
-    float4 gbuffer1 = g_GBufferOutput1.SampleLevel(g_PointSampler, texCoord, 0);
-    float4 gbuffer2 = g_GBufferOutput2.SampleLevel(g_PointSampler, texCoord, 0);
+    float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
+    float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
+    float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
 
     float4 color = gbuffer0;
     float3 position = gbuffer1.xyz;
@@ -77,11 +66,13 @@ void RayGeneration()
     float2 velocity = gbuffer2.zw;
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
-    float4 light = 1.0;
 
-    float4 skyColor = float4(0.5, 0.7, 0.9, 1);
-    float4 sunColor = float4(1, 0.85, 0.8, 1);
+    float4 sunColor = float4(0.9, 0.85, 0.8, 1);
+    float4 skyColor = sunColor;
+    float4 ambientColor = skyColor * 0.1;
     float3 sunDirction = normalize(float3(0.4, 1, 0.10));
+
+    float4 light = ambientColor;
 
     if (color.w < 1)
     {
@@ -94,26 +85,28 @@ void RayGeneration()
 
     ray.Direction = sunDirction;
     ray.Origin = position;
-    ray.TMax = 999;
+    ray.TMax = 16;
     ray.TMin = 0;
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
-        light += sunColor * saturate(dot(normal, sunDirction)) * 7;
+        light += sunColor * saturate(dot(normal, sunDirction)) * 3;
 
-    ray.Origin = position;
-    ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((texCoord * 2 - 1) + (g_GlobalConstants.m_FrameNumber % 4096.) * 0.123)));
-    ray.TMin = 0;
-    ray.TMax = 32;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+    const int NumRays = 1;
+    for (int i = 0; i < NumRays; ++i)
+    {
+        ray.Origin = position;
+        ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((float2(launchIndex.xy) + (g_GlobalConstants.m_FrameNumber * (i + 1) % 4096.) * 0.123))));
+        TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
-    if (payload.m_Hit && color.w == 1)
-        light *= saturate(0.15 + saturate(payload.m_RayT / ray.TMax));
-    else
-        light += skyColor * saturate(dot(normal, ray.Direction));
+        if (payload.m_Hit)
+            light += (payload.m_RayT / ray.TMax) * skyColor * rcp(NumRays);
+        else
+            light += skyColor * rcp(NumRays);
+    }
 
-    float2 texCoordPrev = texCoord - velocity;
-    float4 prevOutput = g_AccumulationTex.SampleLevel(g_PointSampler, velocity, 0);
+    float4 prevOutput = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uv - velocity, 0);
+    prevOutput = max(ambientColor, prevOutput.xyz).xyzz;
 
     g_Output[launchIndex.xy] = (light * a) + (1 - a) * prevOutput;
 }

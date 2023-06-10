@@ -37,8 +37,5 @@ public:
     void OnShutdown() override;
 
 private:
-    void LoadTexture(const std::string& path, const std::string& key);
-
-private:
     Ether::Ecs::EcsTransformComponent* m_CameraTransform;
 };

@@ -70,6 +70,7 @@ void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicCon
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(Shader::GlobalConstants));
 
     RhiLinkSpace::g_GlobalConstantsCbv = dynamic_cast<UploadBufferAllocation&>(*alloc).GetGpuAddress();
+
     prevViewMatrix = globalConstants.m_ViewMatrix;
     prevProjMatrix = globalConstants.m_ProjectionMatrix;
 }

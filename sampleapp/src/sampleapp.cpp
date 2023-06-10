@@ -44,10 +44,9 @@ void SampleApp::LoadContent()
 
     world.Load(worldPath);
 
-    Entity& camera = world.CreateEntity("Main Camera");
-    camera.AddComponent<Ecs::EcsCameraComponent>();
-    m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
-
+    Entity& cameraObj = world.CreateEntity("Main Camera");
+    cameraObj.AddComponent<Ecs::EcsCameraComponent>();
+    m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
 }
 
 void SampleApp::UnloadContent()
@@ -60,12 +59,6 @@ void SampleApp::Shutdown()
 
 void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
-    // uint32_t y = (uint32_t)(200 * (sin(Time::GetCurrentTime() / 10000.0) + 2));
-
-    // Ether::Client::SetClientSize({ 1920, 1080 });
-
-    // if (Input::GetKeyDown(Win32::KeyCode::F3))
-    //     EngineCore::GetEngineConfig().ToggleDebugGui();
     static ethVector3 cameraRotation;
     static float moveSpeed = 0.001f;
 
@@ -114,23 +107,6 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     if (Input::GetKey((KeyCode)Win32::KeyCode::D))
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +
                                            rightVec * Time::GetDeltaTime() * moveSpeed;
-}
-
-void SampleApp::LoadTexture(const std::string& path, const std::string& key)
-{
-    // if (path == "")
-    //     return;
-
-    // if (m_Textures.find(path) == m_Textures.end())
-    //{
-    //     std::shared_ptr<CompiledTexture> texture = std::make_shared<CompiledTexture>();
-    //     IFileStream iistream(sceneRootPath + path + ".ether0");
-    //     if (iistream.IsOpen())
-    //     {
-    //         texture->Deserialize(iistream);
-    //         m_Textures[path] = texture;
-    //     }
-    // }
 }
 
 void SampleApp::OnRender(const RenderEventArgs& e)

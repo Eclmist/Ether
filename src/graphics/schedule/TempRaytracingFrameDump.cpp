@@ -51,15 +51,23 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
 
     if (!m_Shader->IsCompiled())
     {
-        m_Shader->Compile();
-        GraphicCore::FlushGpu();
-        InitializeRootSignatures();
-        InitializePipelineStates();
+        try
+        {
+            m_Shader->Compile();
+            GraphicCore::FlushGpu();
+            InitializeRootSignatures();
+            InitializePipelineStates();
+        }
+        catch (std::runtime_error err)
+        {
+            LogGraphicsError(err.what());
+        }
     }
 
     m_OutputTexture = &rc.CreateTexture2DUavResource("Raytrace - Output Texture", resolution, RhiFormat::R32G32B32A32Float);
+    m_OutputTexturePrev = &rc.CreateTexture2DUavResource("Raytrace - Output Texture Prev", resolution, RhiFormat::R32G32B32A32Float);
     m_OutputTextureUav = rc.CreateUnorderedAccessView("Raytrace - Output UAV", m_OutputTexture, RhiFormat::R32G32B32A32Float, RhiUnorderedAccessDimension::Texture2D);
-    m_AccumulationSrv = rc.CreateShaderResourceView("Raytrace - Accumulation SRV", m_OutputTexture, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
+    m_AccumulationSrv = rc.CreateShaderResourceView("Raytrace - Accumulation SRV", m_OutputTexturePrev, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
 
     m_GBufferSrv0 = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 0");
     m_GBufferSrv1 = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 1");
@@ -105,6 +113,12 @@ void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, Resou
     ctx.SetRaytracingPipelineState(*m_RaytracingPipelineState);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
     ctx.PopMarker();
+
+    ctx.PushMarker("Copy to accumulation buffer");
+    ctx.TransitionResource(*m_OutputTexture, RhiResourceState::CopySrc);
+    ctx.TransitionResource(*m_OutputTexturePrev, RhiResourceState::CopyDest);
+    ctx.CopyResource(*m_OutputTexture, *m_OutputTexturePrev);
+    ctx.PopMarker();
 }
 
 void Ether::Graphics::TempRaytracingFrameDump::Reset()
@@ -139,8 +153,8 @@ void Ether::Graphics::TempRaytracingFrameDump::InitializeRootSignatures()
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 3, 0, 2);
-    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_PointSampler, RhiShaderVisibility::All);
-    rsDesc->SetAsSampler(1, GraphicCore::GetGraphicCommon().m_BilinearSampler, RhiShaderVisibility::All);
+    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_PointSampler_Border, RhiShaderVisibility::All);
+    rsDesc->SetAsSampler(1, GraphicCore::GetGraphicCommon().m_BilinearSampler_Border, RhiShaderVisibility::All);
 
     m_GlobalRootSignature = rsDesc->Compile("Raytracing Root Signature (Global)");
 }

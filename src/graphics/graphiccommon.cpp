@@ -125,24 +125,38 @@ void Ether::Graphics::GraphicCommon::InitializePipelineStates()
 
 void Ether::Graphics::GraphicCommon::InitializeSamplers()
 {
-    m_PointSampler = {};
-    m_PointSampler.m_Filter = RhiFilter::MinMagMipPoint;
-    m_PointSampler.m_AddressU = RhiTextureAddressMode::Clamp;
-    m_PointSampler.m_AddressV = RhiTextureAddressMode::Clamp;
-    m_PointSampler.m_AddressW = RhiTextureAddressMode::Clamp;
-    m_PointSampler.m_MipLodBias = 0;
-    m_PointSampler.m_MaxAnisotropy = 0;
-    m_PointSampler.m_ComparisonFunc = RhiComparator::Never;
-    m_PointSampler.m_MinLod = 0;
-    m_PointSampler.m_MinLod = std::numeric_limits<float_t>().max();
+    m_PointSampler_Clamp = {};
+    m_PointSampler_Clamp.m_Filter = RhiFilter::MinMagMipPoint;
+    m_PointSampler_Clamp.m_AddressU = RhiTextureAddressMode::Clamp;
+    m_PointSampler_Clamp.m_AddressV = RhiTextureAddressMode::Clamp;
+    m_PointSampler_Clamp.m_AddressW = RhiTextureAddressMode::Clamp;
+    m_PointSampler_Clamp.m_MipLodBias = 0;
+    m_PointSampler_Clamp.m_MaxAnisotropy = 0;
+    m_PointSampler_Clamp.m_ComparisonFunc = RhiComparator::Never;
+    m_PointSampler_Clamp.m_MinLod = 0;
+    m_PointSampler_Clamp.m_MinLod = std::numeric_limits<float_t>().max();
 
-    m_BilinearSampler = m_PointSampler;
-    m_BilinearSampler.m_Filter = RhiFilter::MinMagMipLinear;
-    m_BilinearSampler.m_AddressU = RhiTextureAddressMode::Wrap;
-    m_BilinearSampler.m_AddressV = RhiTextureAddressMode::Wrap;
-    m_BilinearSampler.m_AddressW = RhiTextureAddressMode::Wrap;
+    m_PointSampler_Wrap = m_PointSampler_Clamp;
+    m_PointSampler_Wrap.m_AddressU = RhiTextureAddressMode::Wrap;
+    m_PointSampler_Wrap.m_AddressV = RhiTextureAddressMode::Wrap;
+    m_PointSampler_Wrap.m_AddressW = RhiTextureAddressMode::Wrap;
 
-    m_EnvMapSampler = m_BilinearSampler;
+    m_PointSampler_Border = m_PointSampler_Clamp;
+    m_PointSampler_Border.m_AddressU = RhiTextureAddressMode::Border;
+    m_PointSampler_Border.m_AddressV = RhiTextureAddressMode::Border;
+    m_PointSampler_Border.m_AddressW = RhiTextureAddressMode::Border;
+    m_PointSampler_Border.m_BorderColor = RhiBorderColor::OpaqueBlack;
+
+    m_BilinearSampler_Clamp = m_PointSampler_Clamp;
+    m_BilinearSampler_Clamp.m_Filter = RhiFilter::MinMagMipLinear;
+
+    m_BilinearSampler_Wrap = m_PointSampler_Wrap;
+    m_BilinearSampler_Wrap.m_Filter = RhiFilter::MinMagMipLinear;
+
+    m_BilinearSampler_Border = m_PointSampler_Border;
+    m_BilinearSampler_Border.m_Filter = RhiFilter::MinMagMipLinear;
+
+    m_EnvMapSampler = m_BilinearSampler_Wrap;
 }
 
 void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()

@@ -54,6 +54,7 @@ protected:
 protected:
     RhiResource* m_TopLevelAccelerationStructure;
     RhiResource* m_OutputTexture;
+    RhiResource* m_OutputTexturePrev;
     RhiResource* m_RaytracingShaderBindingTable[MaxSwapChainBuffers];
 
     RhiUnorderedAccessView m_OutputTextureUav;

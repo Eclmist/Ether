@@ -52,9 +52,16 @@ void Ether::Ecs::EcsCameraSystem::Update()
 
         ethVector2u resolution = EngineCore::GetEngineConfig().GetClientSize();
         float aspect = static_cast<float>(resolution.x) / resolution.y;
-        gfxContext.SetProjectionMatrix(
-            Transform::GetPerspectiveMatrixLH(SMath::DegToRad(camera.m_FieldOfView), aspect, 0.01f, 1000.0f));
 
+        ethMatrix4x4 projectionMatrix;
+        switch (camera.m_ProjectionMode)
+        {
+        case ProjectionMode::Perspective:
+            projectionMatrix = Transform::GetPerspectiveMatrixLH(SMath::DegToRad(camera.m_FieldOfView), aspect, 0.01f, 1000.0f);
+            break;
+        }
+
+        gfxContext.SetProjectionMatrix(projectionMatrix);
         ethMatrix4x4 rotation = Transform::GetRotationMatrix(transform.m_Rotation);
         ethVector4 forward = rotation * ethVector4(0, 0, 1, 0);
         gfxContext.SetEyeDirection(forward.Resize<3>());

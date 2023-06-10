@@ -45,16 +45,16 @@ void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& rc)
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     m_DepthBuffer = &rc.CreateDepthStencilResource("GBuffer - Depth Texture", resolution, DepthBufferFormat);
-    m_GBufferTexture0 = &rc.CreateTexture2DResource("GBuffer - Texture 0", resolution, RhiFormat::R8G8B8A8Unorm);
+    m_GBufferTexture0 = &rc.CreateTexture2DResource("GBuffer - Texture 0", resolution, RhiFormat::R32G32B32A32Float);
     m_GBufferTexture1 = &rc.CreateTexture2DResource("GBuffer - Texture 1", resolution, RhiFormat::R32G32B32A32Float);
     m_GBufferTexture2 = &rc.CreateTexture2DResource("GBuffer - Texture 2", resolution, RhiFormat::R32G32B32A32Float);
 
     m_DepthDsv = rc.CreateDepthStencilView("GBuffer - DSV", m_DepthBuffer, DepthBufferFormat);
-    m_GBufferRtv0 = rc.CreateRenderTargetView("GBuffer - RTV 0", m_GBufferTexture0, RhiFormat::R8G8B8A8Unorm);
+    m_GBufferRtv0 = rc.CreateRenderTargetView("GBuffer - RTV 0", m_GBufferTexture0, RhiFormat::R32G32B32A32Float);
     m_GBufferRtv1 = rc.CreateRenderTargetView("GBuffer - RTV 1", m_GBufferTexture1, RhiFormat::R32G32B32A32Float);
     m_GBufferRtv2 = rc.CreateRenderTargetView("GBuffer - RTV 2", m_GBufferTexture2, RhiFormat::R32G32B32A32Float);
 
-    rc.CreateShaderResourceView("GBuffer - SRV 0", m_GBufferTexture0, RhiFormat::R8G8B8A8Unorm, RhiShaderResourceDimension::Texture2D);
+    rc.CreateShaderResourceView("GBuffer - SRV 0", m_GBufferTexture0, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
     rc.CreateShaderResourceView("GBuffer - SRV 1", m_GBufferTexture1, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
     rc.CreateShaderResourceView("GBuffer - SRV 2", m_GBufferTexture2, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
 }
@@ -144,7 +144,7 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 1);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_BilinearSampler, RhiShaderVisibility::All);
+    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_BilinearSampler_Wrap, RhiShaderVisibility::All);
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
 }
@@ -155,7 +155,7 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
 
-    RhiFormat formats[] = { RhiFormat::R8G8B8A8Unorm, RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R8G8B8A8Unorm };
+    RhiFormat formats[] = { RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R8G8B8A8Unorm };
     m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(

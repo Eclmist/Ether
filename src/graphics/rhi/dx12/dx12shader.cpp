@@ -116,7 +116,20 @@ void Ether::Graphics::Dx12Shader::Compile()
             wrl::ComPtr<IDxcBlobEncoding> errorsBlob;
             hr = result->GetErrorBuffer(&errorsBlob);
             if (SUCCEEDED(hr) && errorsBlob)
-                LogGraphicsError((const char*)errorsBlob->GetBufferPointer());
+            {
+                std::string errorString = (const char*)errorsBlob->GetBufferPointer();
+
+                for (size_t i = 0; i < errorString.length(); i++)
+                {
+                    if (errorString[i] == '%')
+                    {
+                        errorString.replace(i, 1, "%%");
+                        i++;
+                    }
+                }
+
+                LogGraphicsError(errorString.c_str());
+            }
         }
 
         throw std::runtime_error(std::format("Failed to compile shader {}", m_FileName));
