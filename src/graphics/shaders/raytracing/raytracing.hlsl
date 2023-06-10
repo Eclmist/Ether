@@ -67,30 +67,28 @@ void RayGeneration()
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
 
+    float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection);
     float4 sunColor = g_GlobalConstants.m_SunColor;
-    float4 skyColor = sunColor;
+    float4 nightSkyColor = float4(0.1, 0.25, 0.4, 1.0);
+    float4 daySkyColor = sunColor;
+    float4 skyColor = lerp(nightSkyColor, daySkyColor, dot(sunDirection, float3(0, 1, 0)));
+
     float4 ambientColor = skyColor * 0.05;
-    float3 sunDirction = normalize(g_GlobalConstants.m_SunDirection);
 
     float4 light = ambientColor;
 
-    if (color.w < 1)
-    {
-        g_Output[launchIndex.xy] = skyColor;
-        return;
-    }
 
     RayPayload payload;
     RayDesc ray;
 
-    ray.Direction = sunDirction;
+    ray.Direction = sunDirection;
     ray.Origin = position;
-    ray.TMax = 16;
+    ray.TMax = 64;
     ray.TMin = 0;
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
-        light += sunColor * saturate(dot(normal, sunDirction)) * 2;
+        light += sunColor * saturate(dot(normal, sunDirection)) * 2;
 
     const int NumRays = 1;
     for (int i = 0; i < NumRays; ++i)
@@ -100,7 +98,7 @@ void RayGeneration()
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)
-            light += (payload.m_RayT / ray.TMax) * skyColor * rcp(NumRays);
+            light += (payload.m_RayT / 16) * skyColor * rcp(NumRays);
         else
             light += skyColor * rcp(NumRays);
     }

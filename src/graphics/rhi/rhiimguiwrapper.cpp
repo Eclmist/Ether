@@ -98,6 +98,8 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             static ethVector4& sunDirection = gfxConfig.m_SunDirection;
             ImGui::ColorEdit3("Sun Color", sunColor.m_Data);
             ImGui::SliderFloat3("Sun Direction", sunDirection.m_Data, -1, 1);
+
+            sunDirection.Normalize();
         }
 
         // if (ImGui::CollapsingHeader("Input"))

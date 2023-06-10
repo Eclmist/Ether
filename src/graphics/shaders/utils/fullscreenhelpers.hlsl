@@ -35,3 +35,8 @@ float2 ClipSpaceToTextureSpace(float4 clipSpacePos)
     float2 texSpace = (ndc.xy + 1.0f) * 0.5f;
     return texSpace;
 }
+
+float InterleavedGradientNoise(float2 pos)
+{
+    return frac(52.9829189 * frac(0.06711056 * pos.x + 0.00583715 * pos.y));
+}

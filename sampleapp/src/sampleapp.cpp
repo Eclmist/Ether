@@ -48,6 +48,8 @@ void SampleApp::LoadContent()
     Entity& cameraObj = world.CreateEntity("Main Camera");
     cameraObj.AddComponent<Ecs::EcsCameraComponent>();
     m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
+    m_CameraTransform->m_Translation = { 0, 2, 0 };
+    m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
 }
 
 void SampleApp::UnloadContent()
@@ -73,9 +75,9 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
         m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
         m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
         m_CameraTransform->m_Rotation.x = std::clamp(
-            (double)m_CameraTransform->m_Rotation.x,
-            -SMath::DegToRad(89),
-            SMath::DegToRad(89));
+            m_CameraTransform->m_Rotation.x,
+            -SMath::DegToRad(89.0f),
+            SMath::DegToRad(89.0f));
     }
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))

@@ -22,12 +22,14 @@
 
 namespace SMath
 {
-    inline double DegToRad(double deg)
+    template <typename T>
+    inline T DegToRad(T deg)
     {
         return deg * (Pi / 180);
     }
 
-    inline double RadToDeg(double rad)
+    template <typename T>
+    inline T RadToDeg(T rad)
     {
         return rad * (180.0 / Pi);
     }
