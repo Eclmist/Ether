@@ -37,7 +37,6 @@ struct VS_OUTPUT
     float2 TexCoord     : TEXCOORD0;
     float4 WorldPos     : TEXCOORD1;
     float4 ClipPos      : TEXCOORD2;
-    float4 ClipPosPrev  : TEXCOORD3;
 };
 
 struct PS_OUTPUT
@@ -63,9 +62,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 
     o.Position = mul(mvp, float4(IN.Position, 1.0f));
     o.ClipPos = mul(mvp, float4(IN.Position, 1.0f));
-    o.ClipPosPrev = mul(mvpPrev, float4(IN.Position, 1.0f));
     o.WorldPos = /* mul(m_ModelMatrix, */ float4(IN.Position, 1.0f); //).xyz;
-    //o.NormalWS = mul(m_InstanceParams.m_NormalMatrix, float4(IN.Normal, 1.0f)).xyz;
     o.Normal = IN.Normal;
     o.TexCoord = IN.TexCoord;
 
@@ -75,10 +72,10 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
 {
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
-
-    float2 curr = ClipSpaceToTextureSpace(IN.ClipPos);
-    float2 prev = ClipSpaceToTextureSpace(IN.ClipPosPrev);
-    float2 velocity = curr - prev;
+    float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
+    float2 texSpacePrev = ClipSpaceToTextureSpace(mul(mvpPrev, float4(IN.WorldPos.xyz, 1.0f)));
+    float2 texSpaceCurr = ClipSpaceToTextureSpace(IN.ClipPos);
+    float2 velocity = texSpaceCurr - texSpacePrev;
 
     float4 albedo = float4(1,1,1,1);
 
@@ -95,7 +92,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     PS_OUTPUT o;
     o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz * albedo.xyz, 1);
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
-    o.Output2 = float4(IN.Normal.yz, velocity);
+    o.Output2 = float4(IN.Normal.yz, texSpacePrev);
     //o.DebugOutput = float4(IN.TexCoord, 0, 0);
     o.DebugOutput = float4(albedo.xyz, 0);
     return o;

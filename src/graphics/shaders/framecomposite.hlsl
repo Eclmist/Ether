@@ -46,7 +46,7 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    RWTexture2D<float4> lightingOutput = ResourceDescriptorHeap[g_FrameCompositeInputs.m_LightingTextureIndex];
+    Texture2D<float4> lightingOutput = ResourceDescriptorHeap[g_FrameCompositeInputs.m_LightingTextureIndex];
     float4 light = lightingOutput[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
 
     Texture2D<float4> gbufferTex0 = ResourceDescriptorHeap[g_FrameCompositeInputs.m_GBufferTextureIndex0];

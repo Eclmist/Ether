@@ -81,6 +81,7 @@ void RayGeneration()
 
     float4 skyColor = float4(0.5, 0.7, 0.9, 1);
     float4 sunColor = float4(1, 0.85, 0.8, 1);
+    float3 sunDirction = normalize(float3(0.4, 1, 0.10));
 
     if (color.w < 1)
     {
@@ -91,14 +92,14 @@ void RayGeneration()
     RayPayload payload;
     RayDesc ray;
 
-    ray.Direction = normalize(float3(0.1, 1, 0.1));
+    ray.Direction = sunDirction;
     ray.Origin = position;
     ray.TMax = 999;
     ray.TMin = 0;
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
-        light += sunColor * saturate(dot(normal, ray.Direction)) * 7;
+        light += sunColor * saturate(dot(normal, sunDirction)) * 7;
 
     ray.Origin = position;
     ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((texCoord * 2 - 1) + (g_GlobalConstants.m_FrameNumber % 4096.) * 0.123)));
@@ -111,10 +112,8 @@ void RayGeneration()
     else
         light += skyColor * saturate(dot(normal, ray.Direction));
 
-
-
     float2 texCoordPrev = texCoord - velocity;
-    float4 prevOutput = g_AccumulationTex.SampleLevel(g_PointSampler, texCoordPrev, 0);
+    float4 prevOutput = g_AccumulationTex.SampleLevel(g_PointSampler, velocity, 0);
 
     g_Output[launchIndex.xy] = (light * a) + (1 - a) * prevOutput;
 }
