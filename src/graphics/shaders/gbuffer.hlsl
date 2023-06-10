@@ -94,6 +94,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
     o.Output2 = float4(IN.Normal.yz, velocity);
     //o.DebugOutput = float4(IN.TexCoord, 0, 0);
-    o.DebugOutput = float4(velocity, 0, 0);
+    o.DebugOutput = o.Output0;
     return o;
 }

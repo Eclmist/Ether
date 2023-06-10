@@ -69,7 +69,7 @@ void RayGeneration()
 
     float4 sunColor = float4(0.9, 0.85, 0.8, 1);
     float4 skyColor = sunColor;
-    float4 ambientColor = skyColor * 0.1;
+    float4 ambientColor = skyColor * 0.05;
     float3 sunDirction = normalize(float3(0.4, 1, 0.10));
 
     float4 light = ambientColor;
@@ -90,7 +90,7 @@ void RayGeneration()
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
-        light += sunColor * saturate(dot(normal, sunDirction)) * 3;
+        light += sunColor * saturate(dot(normal, sunDirction)) * 2;
 
     const int NumRays = 1;
     for (int i = 0; i < NumRays; ++i)

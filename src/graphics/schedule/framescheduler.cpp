@@ -106,7 +106,7 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
     g_GBufferProducer->Render(context, m_ResourceContext);
 
     // For now, just render the frame dump
-    if (GraphicCore::GetGraphicConfig().m_RaytracingDebugMode)
+    if (GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
     {
         g_TempRaytracingPass->Reset();
         g_TempRaytracingPass->Render(context, m_ResourceContext);

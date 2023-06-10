@@ -48,7 +48,7 @@ public:
 
 public:
     // Temporary debugging flags to be removed
-    bool m_RaytracingDebugMode;
+    bool m_IsRaytracingEnabled;
     float m_TemporalAccumulation = 0.1;
 
 private:

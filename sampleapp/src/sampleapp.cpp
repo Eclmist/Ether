@@ -39,6 +39,7 @@ void SampleApp::LoadContent()
 
     std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
     const std::string modelName = "NewSponza_Main_glTF_002";
+    //const std::string modelName = "San_Miguel";
 
     std::string worldPath = workspacePath + modelName + "\\glTF\\TestScene.ether";
 
@@ -82,7 +83,7 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
 
     Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
-        graphicConfig.m_RaytracingDebugMode = !graphicConfig.m_RaytracingDebugMode;
+        graphicConfig.m_IsRaytracingEnabled = !graphicConfig.m_IsRaytracingEnabled;
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::E))
         m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;

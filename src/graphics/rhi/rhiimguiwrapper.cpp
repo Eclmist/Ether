@@ -83,6 +83,8 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             static float& temporalAccumulation = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
             ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
 
+            static bool& raytracingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled;
+            ImGui::Checkbox("Raytracing", &raytracingDebug);
         }
 
         // if (ImGui::CollapsingHeader("Input"))
