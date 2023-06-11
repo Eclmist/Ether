@@ -38,7 +38,7 @@ void SampleApp::LoadContent()
     World& world = GetActiveWorld();
 
     std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
-    const std::string modelName = "DamagedHelmet";
+    const std::string modelName = "NewSponza_Main_glTF_002";
     //const std::string modelName = "San_Miguel";
 
     std::string worldPath = workspacePath + modelName + "\\glTF\\TestScene.ether";

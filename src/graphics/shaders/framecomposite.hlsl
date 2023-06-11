@@ -54,7 +54,6 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float4 finalColor = albedo * light;
 
-
     float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection);
     float4 sunColor = g_GlobalConstants.m_SunColor;
     float4 nightSkyColor = float4(0.1, 0.25, 0.4, 1.0);

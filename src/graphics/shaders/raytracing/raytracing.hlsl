@@ -56,11 +56,9 @@ void RayGeneration()
     uint3 launchDim = DispatchRaysDimensions();
     float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
 
-    float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
     float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
     float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
 
-    float4 color = gbuffer0;
     float3 position = gbuffer1.xyz;
     float3 normal = float3(gbuffer1.w, gbuffer2.xy);
     float2 velocity = gbuffer2.zw;
@@ -77,14 +75,13 @@ void RayGeneration()
 
     float4 light = ambientColor;
 
-
     RayPayload payload;
     RayDesc ray;
 
     ray.Direction = sunDirection;
     ray.Origin = position;
     ray.TMax = 64;
-    ray.TMin = 0;
+    ray.TMin = 0.001;
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
@@ -111,7 +108,7 @@ void RayGeneration()
 
 [shader("miss")]
 void Miss(inout RayPayload payload)
-{ 
+{  
     payload.m_Hit = false;
 }
 
