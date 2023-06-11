@@ -46,7 +46,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
 
-    const std::string modelName = "NewSponza_Main_glTF_002";
+    const std::string modelName = "DamagedHelmet";
     std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
 
     workspacePath = workspacePath + modelName + "\\glTF\\";
@@ -63,10 +63,11 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     // To speed up development, we will import the main sponza asset here each time we load toolmode, even
     // without editor connection.
     AssetImporter::Instance().SetWorkspacePath(workspacePath);
-    AssetImporter::Instance().Import("NewSponza_Curtains_glTF" ".gltf");
-    AssetImporter::Instance().Import("NewSponza_Main_glTF_002" ".gltf");
-    AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF" ".gltf");
+    AssetImporter::Instance().Import(modelName + ".gltf");
+    //AssetImporter::Instance().Import("NewSponza_Curtains_glTF" ".gltf");
+    //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF" ".gltf");
     //AssetImporter::Instance().Import("NewSponza_CypressTree_glTF" ".gltf");
+
 
     // The idea of this block is to test toolmode functionality without having the actual tool developed yet
     // For example:
@@ -169,9 +170,9 @@ void Ether::Toolmode::EtherHeadless::OnUpdate(const Ether::UpdateEventArgs& e)
         m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
         m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
         m_CameraTransform->m_Rotation.x = std::clamp(
-            (double)m_CameraTransform->m_Rotation.x,
-            -SMath::DegToRad(89),
-            SMath::DegToRad(89));
+            m_CameraTransform->m_Rotation.x,
+            -SMath::DegToRad(89.0f),
+            SMath::DegToRad(89.0f));
     }
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))

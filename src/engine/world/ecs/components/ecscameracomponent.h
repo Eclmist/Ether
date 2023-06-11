@@ -29,6 +29,13 @@ enum class ProjectionMode : uint32_t
     Orthographic
 };
 
+enum class JitterMode : uint32_t
+{
+    None,
+    Grid,
+    Halton,
+};
+
 class ETH_ENGINE_DLL EcsCameraComponent : public EcsToggleComponent<EcsCameraComponent>
 {
 public:
@@ -40,8 +47,40 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    ethVector2 GetJitterOffset(uint32_t index);
+
+private:
+    template <uint32_t baseX, uint32_t baseY>
+    ethVector2 GetHaltonSequence(uint32_t index);
+
+public:
     ProjectionMode m_ProjectionMode;
+    JitterMode m_JitterMode;
 
     float m_FieldOfView;
 };
+
+
+template <uint32_t baseX, uint32_t baseY>
+ethVector2 Ether::Ecs::EcsCameraComponent::GetHaltonSequence(uint32_t index)
+{
+    static auto Halton = [](int index, int base)
+    {
+        float result = 0.0;
+        float f = 1.0 / base;
+        int i = index;
+
+        while (i > 0)
+        {
+            result += f * (i % base);
+            i = static_cast<int>(std::floor(i / base));
+            f /= base;
+        }
+
+        return result;
+    };
+
+    return ethVector2{ Halton(index, baseX), Halton(index, baseY) };
+}
+
 } // namespace Ether::Ecs

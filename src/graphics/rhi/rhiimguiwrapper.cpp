@@ -73,7 +73,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 numVblanks = std::clamp(numVblanks, 1, 4);
                 GraphicCore::GetGraphicDisplay().SetVSyncVBlanks(numVblanks);
             }
-
         }
 
         if (ImGui::CollapsingHeader("Render Options"))
@@ -85,14 +84,22 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             // Edit bools storing our window open/close state
             gfxConfig.SetClearColor((ethVector4&)(*clearColor));
 
+            static bool& temporalAAEnabled = gfxConfig.m_IsTemporalAAEnabled;
+            ImGui::Checkbox("Temporal AA", &temporalAAEnabled);
+
+            if (temporalAAEnabled)
+            {
+                const char* items[] = { "None", "Grid", "Halton" };
+                ImGui::Combo("Jitter Mode", &gfxConfig.m_TemporalAAJitterMode, items, IM_ARRAYSIZE(items));
+                ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_JitterScale, 0, 10);
+            }
+
             static bool& raytracingDebug = gfxConfig.m_IsRaytracingEnabled;
             static float& temporalAccumulation = gfxConfig.m_TemporalAccumulation;
             ImGui::Checkbox("Raytracing", &raytracingDebug);
 
             if (raytracingDebug)
-            {
                 ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
-            }
 
             static ethVector4& sunColor = gfxConfig.m_SunColor;
             static ethVector4& sunDirection = gfxConfig.m_SunDirection;
@@ -102,36 +109,8 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             sunDirection.Normalize();
         }
 
-        // if (ImGui::CollapsingHeader("Input"))
-        //{
-        //     ImGui::Text("Mouse Position: (%f, %f)", Input::GetMousePosX(), Input::GetMousePosY());
-        //     ImGui::Text("Mouse Delta: (%f, %f)", Input::GetMouseDeltaX(), Input::GetMouseDeltaY());
-        // }
-
-        // if (ImGui::CollapsingHeader("Scene"))
-        //{
-        //     for (int i = 0; i < ETH_ECS_MAX_ENTITIES; ++i)
-        //     {
-        //         Entity* entity = EngineCore::GetEcsManager().GetEntity(i);
-        //         if (entity != nullptr)
-        //             ImGui::BulletText(entity->GetName().c_str());
-        //     }
-
-        //    if (ImGui::Button("Add entity"))
-        //    {
-        //        Entity* newEntity = EngineCore::GetEcsManager().CreateEntity("New Entity");
-        //        newEntity->GetComponent<TransformComponent>()->SetPosition({ (float)(rand() % 100 - 50),
-        //        (float)(rand() % 100 - 50), (float)(rand() % 100 - 50) });
-        //        newEntity->GetComponent<TransformComponent>()->SetRotation({ (float)rand(), (float)rand(),
-        //        (float)rand() }); newEntity->AddComponent<MeshComponent>();
-        //        newEntity->AddComponent<VisualComponent>();
-        //    }
-        //}
-
-        //if (ImGui::CollapsingHeader("ImGui"))
-        //{
-        //    ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo); // Edit bools storing our window open/close state
-        //}
+        static float fpsHistoryBuffer[128];
+        fpsHistoryBuffer[ImGui::GetFrameCount() % 128] = ImGui::GetIO().Framerate;
 
         if (ImGui::CollapsingHeader("Performance"))
         {
@@ -140,13 +119,17 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
             ImGui::Text("Frame Number: %lld", Graphics::GraphicCore::GetGraphicRenderer().GetFrameNumber());
-            // ImGui::PlotLines("", m_FpsHistory, HistoryBufferSize, m_FpsHistoryOffset, nullptr, 0.0f, 300.0f,
-            // ImVec2(384, 100));
+            ImGui::PlotLines(
+                "",
+                fpsHistoryBuffer,
+                128,
+                ImGui::GetFrameCount() % 128,
+                "FPS History",
+                0.0f,
+                300.0f,
+                ImVec2(360, 60));
         }
         ImGui::End();
-
-        // gfxContext->SetClearColor(clearColor);
-        // gfxContext->SetRenderWireframe(renderWireframe);
     }
     ImGui::PopStyleVar();
 
@@ -164,7 +147,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     m_Context.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
 
     RenderDrawData();
-
     m_Context.FinalizeAndExecute();
 }
 

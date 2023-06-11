@@ -35,6 +35,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
     ETH_MARKER_EVENT("Camera System - Update");
 
     Graphics::GraphicContext& gfxContext = Graphics::GraphicCore::GetGraphicRenderer().GetGraphicContext();
+    Graphics::GraphicConfig& gfxConfig = Graphics::GraphicCore::GetGraphicConfig();
 
     for (EntityID entityID : m_Entities)
     {
@@ -59,6 +60,18 @@ void Ether::Ecs::EcsCameraSystem::Update()
         case ProjectionMode::Perspective:
             projectionMatrix = Transform::GetPerspectiveMatrixLH(SMath::DegToRad(camera.m_FieldOfView), aspect, 0.01f, 1000.0f);
             break;
+        }
+
+        if (gfxConfig.m_IsTemporalAAEnabled)
+        {
+            static uint32_t idx = 0;
+            ethVector2 jitter = camera.GetJitterOffset(idx++);
+
+            ethMatrix4x4 jitterMat;
+            jitterMat.m_14 = (jitter.x * 2.0f - 1.0f) / resolution.x * gfxConfig.m_JitterScale;
+            jitterMat.m_24 = (jitter.y * 2.0f - 1.0f) / resolution.y * gfxConfig.m_JitterScale;
+
+            projectionMatrix = jitterMat * projectionMatrix;
         }
 
         gfxContext.SetProjectionMatrix(projectionMatrix);
