@@ -86,7 +86,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     }
 
     // Don't support alpha yet
-    if (albedo.a != 1)
+    if (albedo.a < 1)
         discard;
 
     PS_OUTPUT o;

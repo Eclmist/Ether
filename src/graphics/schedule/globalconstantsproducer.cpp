@@ -56,6 +56,10 @@ void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicCon
     globalConstants.m_ProjectionMatrixPrev = prevProjMatrix;
     globalConstants.m_EyeDirection = graphicContext.GetEyeDirection().Resize<4>();
     globalConstants.m_EyePosition = graphicContext.GetEyePosition().Resize<4>();
+
+    globalConstants.m_SunDirection = config.m_SunDirection;
+    globalConstants.m_SunColor = config.m_SunColor;
+
     globalConstants.m_Time = ethVector4(
         Time::GetTimeSinceStartup() / 20,
         Time::GetTimeSinceStartup(),

@@ -48,8 +48,10 @@ public:
 
 public:
     // Temporary debugging flags to be removed
-    bool m_IsRaytracingEnabled;
+    bool m_IsRaytracingEnabled = true;
     float m_TemporalAccumulation = 0.1;
+    ethVector4 m_SunDirection = { 0.073, 0.655, 0.109, 0 };
+    ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
 
 private:
     ethVector4 m_ClearColor;

@@ -67,10 +67,10 @@ void RayGeneration()
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
 
-    float4 sunColor = float4(0.9, 0.85, 0.8, 1);
+    float4 sunColor = g_GlobalConstants.m_SunColor;
     float4 skyColor = sunColor;
     float4 ambientColor = skyColor * 0.05;
-    float3 sunDirction = normalize(float3(0.4, 1, 0.10));
+    float3 sunDirction = normalize(g_GlobalConstants.m_SunDirection);
 
     float4 light = ambientColor;
 

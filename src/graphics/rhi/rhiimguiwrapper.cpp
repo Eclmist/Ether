@@ -43,6 +43,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     static bool showImGuiDemo = false;
     // GraphicContext& gfxContext = GraphicCore::GetGraphicRenderer().GetGraphicContext();
+    auto& gfxConfig = GraphicCore::GetGraphicConfig();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
@@ -58,13 +59,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
         if (ImGui::CollapsingHeader("Display Options"))
         {
-            static float clearColor[4];
-            ImGui::ColorEdit4("clear color", clearColor);
-            // Edit 3 floats representing a color
-            // ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);
-            // Edit bools storing our window open/close state
-            GraphicCore::GetGraphicConfig().SetClearColor((ethVector4&)(*clearColor));
-
             static bool vSync = GraphicCore::GetGraphicDisplay().IsVsyncEnabled();
             ImGui::Checkbox("VSync Enabled", &vSync);
             GraphicCore::GetGraphicDisplay().SetVSyncEnabled(vSync);
@@ -80,11 +74,30 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 GraphicCore::GetGraphicDisplay().SetVSyncVBlanks(numVblanks);
             }
 
-            static float& temporalAccumulation = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
-            ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
+        }
 
-            static bool& raytracingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled;
+        if (ImGui::CollapsingHeader("Render Options"))
+        {
+            static float clearColor[4];
+            ImGui::ColorEdit4("clear color", clearColor);
+            // Edit 3 floats representing a color
+            // ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);
+            // Edit bools storing our window open/close state
+            gfxConfig.SetClearColor((ethVector4&)(*clearColor));
+
+            static bool& raytracingDebug = gfxConfig.m_IsRaytracingEnabled;
+            static float& temporalAccumulation = gfxConfig.m_TemporalAccumulation;
             ImGui::Checkbox("Raytracing", &raytracingDebug);
+
+            if (raytracingDebug)
+            {
+                ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
+            }
+
+            static ethVector4& sunColor = gfxConfig.m_SunColor;
+            static ethVector4& sunDirection = gfxConfig.m_SunDirection;
+            ImGui::ColorEdit3("Sun Color", sunColor.m_Data);
+            ImGui::SliderFloat3("Sun Direction", sunDirection.m_Data, -1, 1);
         }
 
         // if (ImGui::CollapsingHeader("Input"))
@@ -113,10 +126,10 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         //    }
         //}
 
-        if (ImGui::CollapsingHeader("ImGui"))
-        {
-            ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo); // Edit bools storing our window open/close state
-        }
+        //if (ImGui::CollapsingHeader("ImGui"))
+        //{
+        //    ImGui::Checkbox("Show ImGui Demo Window", &showImGuiDemo); // Edit bools storing our window open/close state
+        //}
 
         if (ImGui::CollapsingHeader("Performance"))
         {

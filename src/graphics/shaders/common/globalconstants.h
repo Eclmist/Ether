@@ -35,6 +35,9 @@ struct GlobalConstants
     ethVector4 m_EyeDirection;
     ethVector4 m_Time;
 
+    ethVector4 m_SunDirection;
+    ethVector4 m_SunColor;
+
     ethVector2u m_ScreenResolution;
     uint32_t m_FrameNumber;
 

@@ -51,7 +51,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
     workspacePath = workspacePath + modelName + "\\glTF\\";
 
-#if 0
+#if 1
     for (const auto& entry : std::filesystem::directory_iterator(workspacePath))
     {
         if (entry.path().extension().string() != ".eres")
@@ -60,15 +60,13 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         std::filesystem::remove(entry);
     }
 
-
-
-
     // To speed up development, we will import the main sponza asset here each time we load toolmode, even
     // without editor connection.
     AssetImporter::Instance().SetWorkspacePath(workspacePath);
     AssetImporter::Instance().Import("NewSponza_Curtains_glTF" ".gltf");
     AssetImporter::Instance().Import("NewSponza_Main_glTF_002" ".gltf");
     AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF" ".gltf");
+    //AssetImporter::Instance().Import("NewSponza_CypressTree_glTF" ".gltf");
 
     // The idea of this block is to test toolmode functionality without having the actual tool developed yet
     // For example:
@@ -142,7 +140,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     camera.AddComponent<Ecs::EcsCameraComponent>();
     m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
 
-    // exit(0);
+    exit(0);
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()
