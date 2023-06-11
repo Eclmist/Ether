@@ -25,6 +25,14 @@ Ether is a 3D renderer written with DirectX 12 and C++, meant to be used as a pl
 
 Ether is open-sourced, licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
+## Features
+* Physically Based Rendering - UE4 Microfacet BRDF, Image Based Lighting
+* Raytracing with DXR (AO, shadows)
+* Post Processing
+* Resource/Descriptor Management
+* Shader Hot Reloading 
+* Asset Pipeline /w Tool Integration ([Matcha Editor](https://github.com/Eclmist/Matcha-Editor))
+
 ## Requirements
 
 As Ether is a DirectX 12 renderer, it can only be built and ran on a Windows 10 machine that supports DirectX 12.
@@ -47,7 +55,8 @@ This will generate projects in the `/build/` folder, and will build the Ether bi
 
 ## Screenshots
 <p align="center">
-  <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/rtx_on.png" width=1000>
+  <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/sponza.png" width=1000>
+  <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/san-miguel.png" width=1000>
   <img src="https://raw.githubusercontent.com/eclmist/ether/master/docs/brdf.png" width=1000>
 </p>
 
