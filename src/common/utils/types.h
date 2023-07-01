@@ -20,7 +20,7 @@
 #pragma once
 
 #include "common/common.h"
-#include "smath/smath.h"
+#include "smath/include/smath.h"
 
 namespace Ether
 {

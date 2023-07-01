@@ -1,0 +1,3 @@
+[submodule "include/smath"]
+	path = include/smath
+	url = https://github.com/Eclmist/SMath
