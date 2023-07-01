@@ -37,6 +37,8 @@ Ether is open-sourced, licensed under the [GNU General Public License v3](https:
 
 As Ether is a DirectX 12 renderer, it can only be built and ran on a Windows 10 machine that supports DirectX 12.
 
+Ether uses [SMath](https://github.com/Eclmist/SMath) as a submodule. As such, it is necessary to pull submodules when cloning Ether.
+
 ## Getting Started
 
 > Note: Ether is currently a very early WIP and is considered unstable and not particularly useful. Proceed with caution at your own risk.
