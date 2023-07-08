@@ -119,6 +119,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         srvDesc.m_Format = BackBufferFormat;
         srvDesc.m_Resource = m_RenderTargets[i];
         srvDesc.m_Dimensions = RhiShaderResourceDimension::Texture2D;
+        srvDesc.m_NumMips = 1;
         srvDesc.m_TargetCpuAddress = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuAddress();
         srvDesc.m_TargetGpuAddress = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuAddress();
         m_RenderTargetSrv[i] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);

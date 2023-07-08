@@ -24,6 +24,8 @@
 
 #define ETH_CLASS_ID_TEXTURE "Graphics::Texture"
 
+static constexpr uint32_t MaxNumMips = 14;
+
 namespace Ether::Graphics
 {
 class ETH_GRAPHIC_DLL Texture : public Serializable
@@ -43,29 +45,32 @@ public:
     inline const char* GetName() const { return m_Name.c_str(); }
     inline uint32_t GetWidth() const { return m_Width; }
     inline uint32_t GetHeight() const { return m_Height; }
-    inline uint32_t GetDepth() const { return m_Depth; }
+    inline uint32_t GetNumMips() const { return m_NumMips; }
     inline RhiFormat GetFormat() const { return m_Format; }
-    inline void* GetData() const { return m_Data; }
 
     inline void SetName(const char* name) { m_Name = name; }
     inline void SetWidth(uint32_t width) { m_Width = width; }
     inline void SetHeight(uint32_t height) { m_Height = height; }
-    inline void SetDepth(uint32_t depth) { m_Depth = depth; }
     inline void SetFormat(RhiFormat format) { m_Format = format; }
-    inline void SetData(const unsigned char* data);
+    inline void SetData(const unsigned char* data, bool generateMips = false);
 
-public:
-    size_t GetSizeInBytes() const;
+private:
+    size_t GetSizeInBytes(uint32_t mipLevel = 0) const;
     size_t GetBytesPerPixel() const;
+
+    ethColor4u GetColor(uint32_t x, uint32_t y, uint32_t mipLevel = 0) const;
+    void SetColor(const ethColor4u& color, uint32_t x, uint32_t y, uint32_t mipLevel = 0);
+    void GenerateMips();
 
 private:
     std::string m_Name;
 
     uint32_t m_Width;
     uint32_t m_Height;
-    uint32_t m_Depth;
+    uint32_t m_NumMips;
     RhiFormat m_Format;
-    void* m_Data;
+    void* m_Data[MaxNumMips];
+
 
     std::unique_ptr<RhiResource> m_Resource;
 };

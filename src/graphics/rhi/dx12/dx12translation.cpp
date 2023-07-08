@@ -829,13 +829,13 @@ D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResour
     switch (rhiDesc.m_Dimensions)
     {
     case RhiShaderResourceDimension::Texture2D:
-        dx12Desc.Texture2D.MipLevels = 1;
+        dx12Desc.Texture2D.MipLevels = rhiDesc.m_NumMips;
         dx12Desc.Texture2D.MostDetailedMip = 0;
         dx12Desc.Texture2D.PlaneSlice = 0;
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;
         break;
     case RhiShaderResourceDimension::TextureCube:
-        dx12Desc.Texture2D.MipLevels = 1;
+        dx12Desc.Texture2D.MipLevels = rhiDesc.m_NumMips;
         dx12Desc.Texture2D.MostDetailedMip = 0;
         dx12Desc.Texture2D.PlaneSlice = 0;
         dx12Desc.Texture2D.ResourceMinLODClamp = 0;

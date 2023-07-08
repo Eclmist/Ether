@@ -134,7 +134,7 @@ void Ether::Graphics::GraphicCommon::InitializeSamplers()
     m_PointSampler_Clamp.m_MaxAnisotropy = 0;
     m_PointSampler_Clamp.m_ComparisonFunc = RhiComparator::Never;
     m_PointSampler_Clamp.m_MinLod = 0;
-    m_PointSampler_Clamp.m_MinLod = std::numeric_limits<float_t>().max();
+    m_PointSampler_Clamp.m_MaxLod = std::numeric_limits<float_t>().max();
 
     m_PointSampler_Wrap = m_PointSampler_Clamp;
     m_PointSampler_Wrap.m_AddressU = RhiTextureAddressMode::Wrap;

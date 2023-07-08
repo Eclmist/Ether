@@ -36,17 +36,8 @@ using ethVector2u = SMath::Vector<unsigned int, 2>;
 using ethVector3u = SMath::Vector<unsigned int, 3>;
 using ethVector4u = SMath::Vector<unsigned int, 4>;
 
-using ethPoint2 = SMath::Point<float, 2>;
-using ethPoint3 = SMath::Point<float, 3>;
-using ethPoint4 = SMath::Point<float, 4>;
-
-using ethPoint2i = SMath::Point<int, 2>;
-using ethPoint3i = SMath::Point<int, 3>;
-using ethPoint4i = SMath::Point<int, 4>;
-
-using ethPoint2u = SMath::Point<unsigned int, 2>;
-using ethPoint3u = SMath::Point<unsigned int, 3>;
-using ethPoint4u = SMath::Point<unsigned int, 4>;
+using ethColor4 = SMath::Vector<float, 4>;
+using ethColor4u = SMath::Vector<unsigned int, 4>;
 
 using ethMatrix3x3 = SMath::Matrix<float, 3>;
 using ethMatrix4x4 = SMath::Matrix<float, 4>;
@@ -55,7 +46,6 @@ using ethMatrix4x4i = SMath::Matrix<int, 4>;
 using ethMatrix3x3u = SMath::Matrix<unsigned int, 3>;
 using ethMatrix4x4u = SMath::Matrix<unsigned int, 4>;
 
-using Ray = SMath::Ray;
 using Rect = SMath::Rect<unsigned int>;
 using Transform = SMath::Transform<float>;
 } // namespace Ether

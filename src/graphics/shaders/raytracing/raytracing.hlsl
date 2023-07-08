@@ -100,10 +100,12 @@ void RayGeneration()
             light += skyColor * rcp(NumRays);
     }
 
-    float4 prevOutput = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uv - velocity, 0);
-    prevOutput = max(ambientColor, prevOutput.xyz).xyzz;
+    float2 uvPrev = uv - velocity;
+    float3 outputPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev, 0);
 
-    g_Output[launchIndex.xy] = (light * a) + (1 - a) * prevOutput;
+    outputPrev.xyz = max(ambientColor, outputPrev.xyz);
+    g_Output[launchIndex.xy].xyz = ((light * a) + (1 - a) * outputPrev).xyz;
+
 }
 
 [shader("miss")]

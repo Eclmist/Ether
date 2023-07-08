@@ -28,6 +28,7 @@ class RhiResource : public NonCopyable, public NonMovable
 public:
     RhiResource(const char* name)
         : m_Name(name)
+        , m_NumMips(1)
     {
         // Make each view unique
         static uint64_t i = 0;
@@ -42,13 +43,17 @@ public:
 
 public:
     inline uint64_t GetResourceID() const { return m_ResourceID; }
+    inline uint32_t GetNumMips() const { return m_NumMips; }
     inline RhiResourceState GetCurrentState() const { return m_CurrentState; }
+
+    inline void SetNumMips(uint32_t numMips) { m_NumMips = numMips; }
     inline void SetState(RhiResourceState state) { m_CurrentState = state; }
 
 protected:
     RhiResourceState m_CurrentState = RhiResourceState::Common;
     std::string m_Name;
     uint64_t m_ResourceID;
+    uint32_t m_NumMips;
 };
 
 static RhiResourceDesc RhiCreateBaseResourceDesc()

@@ -107,9 +107,9 @@ void Ether::ResourceManager::CreateGpuResources() const
     for (auto& pair : m_Textures)
     {
         // TODO: Critical texture copy bug ?!
-        Graphics::CommandContext textureUpload("TODO Texture Upload Context");
-        textureUpload.Reset();
-        pair.second->CreateGpuResource(textureUpload);
-        textureUpload.FinalizeAndExecute(true);
+        Graphics::CommandContext textureUploadCtx("TODO Texture Upload Context");
+        textureUploadCtx.Reset();
+        pair.second->CreateGpuResource(textureUploadCtx);
+        textureUploadCtx.FinalizeAndExecute(true);
     }
 }

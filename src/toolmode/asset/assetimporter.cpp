@@ -176,8 +176,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(const StringID& p
     gfxTexture.SetFormat(Ether::Graphics::RhiFormat::R8G8B8A8Unorm);
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
-    gfxTexture.SetDepth(1);
-    gfxTexture.SetData(image);
+    gfxTexture.SetData(image, true);
     gfxTexture.Serialize(ofstream);
 
     m_PathToGuidMap[path] = gfxTexture.GetGuid();

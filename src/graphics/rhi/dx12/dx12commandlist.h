@@ -78,7 +78,7 @@ public:
     void TransitionResource(RhiResource& resource, RhiResourceState newState) override;
     void CopyResource(const RhiResource& src, RhiResource& dest) override;
     void CopyBufferRegion(const RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset, uint32_t destOffset) override;
-    void CopyTextureRegion(const RhiResource& src, RhiResource& dest, const void* data, uint32_t width, uint32_t height, uint32_t bytesPerPixel) override;
+    void CopyTexture(RhiResource& scratch, RhiResource& dest, void** data, uint32_t numMips, uint32_t width, uint32_t height, uint32_t bytesPerPixel) override;
 
     // Dispatches
     void ClearRenderTargetView(const RhiRenderTargetView& rtv, const ethVector4& clearColor) override;

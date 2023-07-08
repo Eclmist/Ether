@@ -294,6 +294,7 @@ struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
     RhiGpuAddress m_TargetGpuAddress;
     RhiFormat m_Format;
     RhiShaderResourceDimension m_Dimensions;
+    uint32_t m_NumMips;
     auto operator<=>(const RhiShaderResourceViewDesc&) const = default;
 };
 

@@ -33,7 +33,7 @@ Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiComm
     m_CommandList = GraphicCore::GetCommandManager().CreateCommandList(contextName, type);
     m_CommandList->Close();
 
-    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_64MiB);
+    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_128MiB);
 }
 
 void Ether::Graphics::CommandContext::Reset()
@@ -127,16 +127,22 @@ void Ether::Graphics::CommandContext::InitializeBufferRegion(
 
 void Ether::Graphics::CommandContext::InitializeTexture(
     RhiResource& dest,
-    const void* data,
+    void** data,
+    uint32_t numMips,
     uint32_t width,
     uint32_t height,
     uint32_t bytesPerPixel)
 {
     uint32_t size = width * height * bytesPerPixel;
+    
+    // 1.5x the texture size and it'll definitely be enough for all mips
+    if (numMips > 1)
+        size *= 1.5;
+
     auto alloc = m_UploadBufferAllocator->Allocate(size);
 
     TransitionResource(dest, RhiResourceState::CopyDest);
-    m_CommandList->CopyTextureRegion(((UploadBufferAllocation&)*alloc).GetResource(), dest, data, width, height, bytesPerPixel);
+    m_CommandList->CopyTexture(((UploadBufferAllocation&)*alloc).GetResource(), dest, data, numMips, width, height, bytesPerPixel);
     TransitionResource(dest, RhiResourceState::GenericRead);
 }
 

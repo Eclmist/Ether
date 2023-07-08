@@ -263,6 +263,7 @@ Ether::Graphics::RhiShaderResourceView Ether::Graphics::ResourceContext::CreateS
     srvDesc.m_Resource = const_cast<RhiResource*>(resource);
     srvDesc.m_Format = format;
     srvDesc.m_Dimensions = dimension;
+    srvDesc.m_NumMips = 1;
     srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
     srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*alloc)).GetGpuAddress();
 

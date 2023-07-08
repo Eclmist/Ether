@@ -291,31 +291,38 @@ void Ether::Graphics::Dx12CommandList::CopyBufferRegion(
         ->CopyBufferRegion(dx12DstResource->m_Resource.Get(), destOff, dx12SrcResource->m_Resource.Get(), srcOff, size);
 }
 
-void Ether::Graphics::Dx12CommandList::CopyTextureRegion(
-    const RhiResource& src,
+void Ether::Graphics::Dx12CommandList::CopyTexture(
+    RhiResource& scratch,
     RhiResource& dest,
-    const void* data,
+    void** data,
+    uint32_t numMips,
     uint32_t width,
     uint32_t height,
     uint32_t bytesPerPixel)
 {
-    const auto dx12SrcResource = (Dx12Resource*)&src;
+    const auto dx12ScratchResource = (Dx12Resource*)&scratch;
     const auto dx12DstResource = (Dx12Resource*)&dest;
 
-    D3D12_SUBRESOURCE_DATA textureData = {};
-    textureData.pData = data;
-    textureData.RowPitch = width * bytesPerPixel;
-    textureData.SlicePitch = height * textureData.RowPitch;
+    std::vector<D3D12_SUBRESOURCE_DATA> allMipsData;
+
+    for (uint32_t i = 0; i < numMips; ++i)
+    {
+        D3D12_SUBRESOURCE_DATA mipData = {};
+        mipData.pData = data[i];
+        mipData.RowPitch = width * std::pow(0.5, i) * bytesPerPixel;
+        mipData.SlicePitch = height * std::pow(0.5, i) * mipData.RowPitch;
+        allMipsData.push_back(mipData);
+    }
 
     // d3dx12.h helper that will eventually call commandList->CopyTextureRegion()
     UpdateSubresources(
         m_CommandList.Get(),
         dx12DstResource->m_Resource.Get(),
-        dx12SrcResource->m_Resource.Get(),
+        dx12ScratchResource->m_Resource.Get(),
         0,
         0,
-        1,
-        &textureData);
+        numMips,
+        allMipsData.data());
 }
 
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(

@@ -46,7 +46,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
 
-    const std::string modelName = "DamagedHelmet";
+    const std::string modelName = "San_Miguel";
     std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
 
     workspacePath = workspacePath + modelName + "\\glTF\\";
@@ -63,7 +63,8 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     // To speed up development, we will import the main sponza asset here each time we load toolmode, even
     // without editor connection.
     AssetImporter::Instance().SetWorkspacePath(workspacePath);
-    AssetImporter::Instance().Import(modelName + ".gltf");
+    //AssetImporter::Instance().Import(modelName + ".gltf");
+    AssetImporter::Instance().Import("san-miguel.obj");
     //AssetImporter::Instance().Import("NewSponza_Curtains_glTF" ".gltf");
     //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF" ".gltf");
     //AssetImporter::Instance().Import("NewSponza_CypressTree_glTF" ".gltf");

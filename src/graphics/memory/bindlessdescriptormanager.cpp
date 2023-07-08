@@ -36,6 +36,7 @@ void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     srvDesc.m_Resource = const_cast<RhiResource*>(resource);
     srvDesc.m_Format = format;
     srvDesc.m_Dimensions = RhiShaderResourceDimension::Texture2D;
+    srvDesc.m_NumMips = resource->GetNumMips();
     srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*allocation)).GetCpuAddress();
     srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*allocation)).GetGpuAddress();
 
