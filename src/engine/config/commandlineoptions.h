@@ -33,6 +33,8 @@ public:
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
     inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
+    inline const std::string& GetWorkspacePath() const { return m_WorkspacePath; }
+    inline const std::string& GetWorldPath() const { return m_WorldPath; }
 
 public:
     ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
@@ -44,6 +46,9 @@ private:
     bool m_UseSourceShaders;
     bool m_UseShaderDaemon;
     bool m_UseValidationLayer;
+
+    std::string m_WorkspacePath;
+    std::string m_WorldPath;
 
 private:
     ETH_TOOLONLY(uint16_t m_ToolmodePort);

@@ -51,6 +51,10 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseShaderDaemon = true;
     else if (flag == "-usevalidationlayer")
         m_UseValidationLayer = true;
+    else if (flag == "-workspace")
+        m_WorkspacePath = arg;
+    else if (flag == "-world")
+        m_WorldPath = arg;
 #if defined(ETH_TOOLMODE)
     else if (flag == "-toolmodeport")
         m_ToolmodePort = stoi(arg);

@@ -126,7 +126,7 @@ void Ether::Graphics::GraphicCommon::InitializePipelineStates()
 void Ether::Graphics::GraphicCommon::InitializeSamplers()
 {
     m_PointSampler_Clamp = {};
-    m_PointSampler_Clamp.m_Filter = RhiFilter::MinMagMipPoint;
+    m_PointSampler_Clamp.m_Filter = RhiFilter::Anisotropic;
     m_PointSampler_Clamp.m_AddressU = RhiTextureAddressMode::Clamp;
     m_PointSampler_Clamp.m_AddressV = RhiTextureAddressMode::Clamp;
     m_PointSampler_Clamp.m_AddressW = RhiTextureAddressMode::Clamp;

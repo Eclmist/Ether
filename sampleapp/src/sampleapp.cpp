@@ -20,6 +20,7 @@
 #include "sampleapp.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
+#include "engine/enginecore.h"
 #include <format>
 #include <algorithm>
 #include <filesystem>
@@ -37,13 +38,12 @@ void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
 
-    std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
-    //const std::string modelName = "NewSponza_Main_glTF_002";
-    const std::string modelName = "San_Miguel";
+    std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
+    const std::string worldPath = GetCommandLineOptions().GetWorldPath();
 
-    std::string worldPath = workspacePath + modelName + "\\glTF\\TestScene.ether";
+    std::string fullPath = workspacePath + worldPath;
 
-    world.Load(worldPath);
+    world.Load(fullPath);
 
     Entity& cameraObj = world.CreateEntity("Main Camera");
     cameraObj.AddComponent<Ecs::EcsCameraComponent>();
