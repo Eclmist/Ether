@@ -65,7 +65,7 @@ void RayGeneration()
 
     float a = g_GlobalConstants.m_TemporalAccumulationFactor;
 
-    float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection);
+    float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection).xyz;
     float4 sunColor = g_GlobalConstants.m_SunColor;
     float4 nightSkyColor = float4(0.1, 0.25, 0.4, 1.0);
     float4 daySkyColor = sunColor;
@@ -95,22 +95,28 @@ void RayGeneration()
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)
-            light += (payload.m_RayT / 16) * skyColor * rcp(NumRays);
+            light += pow(saturate(payload.m_RayT / 16), 2) * skyColor * rcp(NumRays);
         else
             light += skyColor * rcp(NumRays);
     }
-
+    float2 taaJitter = float2(g_GlobalConstants.m_ProjectionMatrix[0][2], g_GlobalConstants.m_ProjectionMatrix[1][2]);
     float2 uvPrev = uv - velocity;
-    float3 outputPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev, 0);
+    float3 outputPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev, 0).xyz;
 
-    outputPrev.xyz = max(ambientColor, outputPrev.xyz);
-    g_Output[launchIndex.xy].xyz = ((light * a) + (1 - a) * outputPrev).xyz;
+    float depth = length(position - g_GlobalConstants.m_EyePosition.xyz);
+    float depthPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev + taaJitter, 0).w;
 
+    //if (abs(depth - depthPrev) > 0.1)
+    //    a = 1.0;
+
+    outputPrev.xyz = max(ambientColor.xyz, outputPrev.xyz);
+    g_Output[launchIndex.xy].xyz = ((light.xyz * a) + (1 - a) * outputPrev).xyz;
+    g_Output[launchIndex.xy].w = depth;
 }
 
 [shader("miss")]
 void Miss(inout RayPayload payload)
-{  
+{
     payload.m_Hit = false;
 }
 
