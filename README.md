@@ -28,6 +28,7 @@ Ether is open-sourced, licensed under the [GNU General Public License v3](https:
 ## Features
 * Physically Based Rendering - UE4 Microfacet BRDF, Image Based Lighting
 * Raytracing with DXR (AO, shadows)
+* Bindless Textures
 * Post Processing (TAA, Bloom)
 * GPU Resource/Descriptor Management
 * Shader Hot Reloading 
