@@ -42,7 +42,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     ETH_MARKER_EVENT("Debug Menu Gui Component - Draw");
 
     static bool showImGuiDemo = false;
-    // GraphicContext& gfxContext = GraphicCore::GetGraphicRenderer().GetGraphicContext();
     auto& gfxConfig = GraphicCore::GetGraphicConfig();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));

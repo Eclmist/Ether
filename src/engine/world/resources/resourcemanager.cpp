@@ -92,7 +92,7 @@ Ether::Graphics::Texture* Ether::ResourceManager::GetTextureResource(StringID gu
 
 void Ether::ResourceManager::CreateGpuResources() const 
 {
-    Graphics::CommandContext ctx("CommandContext - Mesh Loading");
+    Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, Graphics::_64MiB);
 
     ctx.Reset();
     for (auto& pair : m_Meshes)
@@ -106,8 +106,7 @@ void Ether::ResourceManager::CreateGpuResources() const
 
     for (auto& pair : m_Textures)
     {
-        // TODO: Critical texture copy bug ?!
-        Graphics::CommandContext textureUploadCtx("TODO Texture Upload Context");
+        Graphics::CommandContext textureUploadCtx("TODO Texture Upload Context", Graphics::RhiCommandType::Graphic, Graphics::_256MiB);
         textureUploadCtx.Reset();
         pair.second->CreateGpuResource(textureUploadCtx);
         textureUploadCtx.FinalizeAndExecute(true);

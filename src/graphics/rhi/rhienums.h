@@ -231,8 +231,13 @@ enum class RhiResourceDimension
     Unknown,
     Buffer,
     Texture1D,
+    Texture1DArray,
     Texture2D,
+    Texture2DArray,
     Texture3D,
+    TextureCube,
+    TextureCubeArray,
+    RTAccelerationStructure,
 };
 
 enum class RhiResourceFlag : uint32_t
@@ -278,29 +283,6 @@ enum class RhiRootSignatureFlag : uint64_t
     DirectlyIndexed = 0x400,
 };
 ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
-
-enum class RhiShaderResourceDimension
-{
-    Unknown,
-    Buffer,
-    Texture1D,
-    Texture1DArray,
-    Texture2D,
-    Texture2DArray,
-    Texture3D,
-    TextureCube,
-    TextureCubeArray,
-    RTAccelerationStructure,
-};
-
-enum class RhiUnorderedAccessDimension
-{
-    Unknown,
-    Buffer,
-    Texture1D,
-    Texture2D,
-    Texture3D,
-};
 
 enum class RhiShaderType
 {

@@ -64,5 +64,6 @@ void Ether::Ecs::EcsVisualSystem::Update()
         visualBatch.m_Visuals.emplace_back(gfxVisual);
     }
 
-    Graphics::GraphicCore::GetGraphicRenderer().GetGraphicContext().SetVisualBatch(visualBatch);
+    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+    renderData.m_VisualBatch = visualBatch;
 }

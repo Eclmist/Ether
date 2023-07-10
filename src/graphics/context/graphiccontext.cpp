@@ -26,38 +26,13 @@
 
 Ether::Graphics::GraphicContext::GraphicContext(const char* contextName)
     : CommandContext(contextName, RhiCommandType::Graphic)
-    , m_ViewMatrix()
-    , m_ProjectionMatrix()
-    , m_EyeDirection()
-    , m_EyePosition()
     , m_Viewport()
-    , m_VisualBatch()
 {
 }
 
-void Ether::Graphics::GraphicContext::SetViewMatrix(ethMatrix4x4 viewMatrix)
+void Ether::Graphics::GraphicContext::SetRenderData(const RenderData& renderData)
 {
-    m_ViewMatrix = viewMatrix;
-}
-
-void Ether::Graphics::GraphicContext::SetProjectionMatrix(ethMatrix4x4 projectionMatrix)
-{
-    m_ProjectionMatrix = projectionMatrix;
-}
-
-void Ether::Graphics::GraphicContext::SetEyeDirection(ethVector3 eyeDirection)
-{
-    m_EyeDirection = eyeDirection;
-}
-
-void Ether::Graphics::GraphicContext::SetEyePosition(ethVector3 eyePosition)
-{
-    m_EyePosition = eyePosition;
-}
-
-void Ether::Graphics::GraphicContext::SetVisualBatch(const VisualBatch& visualBatch)
-{
-    m_VisualBatch = visualBatch;
+    m_RenderData = renderData;
 }
 
 void Ether::Graphics::GraphicContext::SetViewport(const RhiViewportDesc& viewport)
@@ -85,7 +60,7 @@ void Ether::Graphics::GraphicContext::SetPrimitiveTopology(const RhiPrimitiveTop
     m_CommandList->SetPrimitiveTopology(topology);
 }
 
-void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv)
+void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView rtv, const RhiDepthStencilView* dsv)
 {
     m_CommandList->SetRenderTargets(&rtv, 1, dsv);
 }
@@ -140,12 +115,12 @@ void Ether::Graphics::GraphicContext::SetGraphicsRootDescriptorTable(
     m_CommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, baseAddress);
 }
 
-void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView& rtv, const ethVector4& color)
+void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView rtv, const ethVector4& color)
 {
     m_CommandList->ClearRenderTargetView(rtv, color);
 }
 
-void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil)
+void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView dsv, float depth, float stencil)
 {
     m_CommandList->ClearDepthStencilView(dsv, depth, stencil);
 }

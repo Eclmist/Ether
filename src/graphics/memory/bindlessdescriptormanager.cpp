@@ -32,15 +32,14 @@ void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
 
-    RhiShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Resource = const_cast<RhiResource*>(resource);
-    srvDesc.m_Format = format;
-    srvDesc.m_Dimensions = RhiShaderResourceDimension::Texture2D;
-    srvDesc.m_NumMips = resource->GetNumMips();
-    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*allocation)).GetCpuAddress();
-    srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*allocation)).GetGpuAddress();
+    RhiShaderResourceView srv;
+    srv.SetResourceID(resource->GetResourceID());
+    srv.SetFormat(format);
+    srv.SetDimension(RhiResourceDimension::Texture2D);
+    srv.SetCpuAddress(((DescriptorAllocation&)(*allocation)).GetCpuAddress());
+    srv.SetGpuAddress(((DescriptorAllocation&)(*allocation)).GetGpuAddress());
 
-    auto srv = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
+    GraphicCore::GetDevice().InitializeShaderResourceView(srv, *resource);
     m_Allocations[resourceGuid] = std::move(allocation);
     m_GuidToIndexMap[resourceGuid] = indexInHeap;
 }

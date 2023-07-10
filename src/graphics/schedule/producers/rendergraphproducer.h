@@ -20,31 +20,34 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/schedule/rendergraph/rendergraphpass.h"
-#include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/schedule/frameschedulerutils.h"
+#include "graphics/schedule/schedulecontext.h"
 #include "graphics/context/resourcecontext.h"
 #include "graphics/context/graphiccontext.h"
+#include "graphics/rhi/rhiresourceviews.h"
 
 namespace Ether::Graphics
 {
-class FrameCompositeProducer : public RenderGraphPass
+class RenderGraphProducer
 {
 public:
-    void Reset() override;
-    void Initialize(ResourceContext& rc) override;
-    void PrepareFrame(ResourceContext& rc) override;
-    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+    RenderGraphProducer();
+    ~RenderGraphProducer() = default;
 
-private:
-    void CreateShaders();
-    void CreateRootSignature();
-    void CreatePipelineState(ResourceContext& rc);
+public:
+    virtual void Initialize(ResourceContext& rc) = 0;
+    virtual void GetInputOutput(ScheduleContext& schedule) = 0;
+    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) = 0;
+
+protected:
+    friend class FrameScheduler;
+    virtual void Reset();
+    virtual bool IsEnabled();
+
+protected:
+    UploadBufferAllocator& GetFrameAllocator();
 
 private:
     std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-
-    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
-    std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
 };
-} // namespace Ether::Graphics
+}

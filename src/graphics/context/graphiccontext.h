@@ -20,40 +20,27 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/common/visualbatch.h"
+#include "graphics/common/renderdata.h"
 #include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhitypes.h"
 
 namespace Ether::Graphics
 {
-class ETH_GRAPHIC_DLL GraphicContext : public CommandContext
+class GraphicContext : public CommandContext
 {
 public:
     GraphicContext(const char* contextName);
     ~GraphicContext() = default;
 
 public:
-    inline const ethMatrix4x4& GetViewMatrix() const { return m_ViewMatrix; }
-    inline const ethMatrix4x4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-    inline const ethVector3& GetEyePosition() const { return m_EyePosition; }
-    inline const ethVector3& GetEyeDirection() const { return m_EyeDirection; }
-
-    inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
-    inline const VisualBatch& GetVisualBatch() const { return m_VisualBatch; }
-
-public:
     // Common
-    void SetViewMatrix(ethMatrix4x4 viewMatrix);
-    void SetProjectionMatrix(ethMatrix4x4 projectionMatrix);
-    void SetEyeDirection(ethVector3 eyeDirection);
-    void SetEyePosition(ethVector3 eyePosition);
-    void SetVisualBatch(const VisualBatch& visualBatch);
+    void SetRenderData(const RenderData& renderData);
     void SetViewport(const RhiViewportDesc& viewport);
     void SetScissorRect(const RhiScissorDesc& scissor);
     void SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer);
     void SetIndexBuffer(const RhiIndexBufferViewDesc& indexBuffer);
     void SetPrimitiveTopology(const RhiPrimitiveTopology& topology);
-    void SetRenderTarget(const RhiRenderTargetView& rtv, const RhiDepthStencilView* dsv = nullptr);
+    void SetRenderTarget(const RhiRenderTargetView rtv, const RhiDepthStencilView* dsv = nullptr);
     void SetRenderTargets(const RhiRenderTargetView* rtvs, uint32_t numRtvs, const RhiDepthStencilView* dsv = nullptr);
 
     // Shader Data
@@ -65,18 +52,13 @@ public:
     void SetGraphicsRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress);
 
     // Dispatches
-    void ClearColor(RhiRenderTargetView& rtv, const ethVector4& color = { 0, 0, 0, 0 });
-    void ClearDepthStencil(RhiDepthStencilView& dsv, float depth, float stencil = 0.0f);
+    void ClearColor(RhiRenderTargetView rtv, const ethVector4& color = { 0, 0, 0, 0 });
+    void ClearDepthStencil(RhiDepthStencilView dsv, float depth, float stencil = 0.0f);
     void DrawInstanced(uint32_t numVertices, uint32_t numInstances);
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInstances);
 
 private:
-    ethMatrix4x4 m_ViewMatrix;
-    ethMatrix4x4 m_ProjectionMatrix;
-    ethVector3 m_EyeDirection;
-    ethVector3 m_EyePosition;
-
     RhiViewportDesc m_Viewport;
-    VisualBatch m_VisualBatch;
+    RenderData m_RenderData;
 };
 } // namespace Ether::Graphics

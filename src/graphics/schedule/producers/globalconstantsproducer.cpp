@@ -1,0 +1,77 @@
+/*
+    This file is part of Ether, an open-source DirectX 12 renderer.
+
+    Copyright (c) 2020-2023 Samuel Huang - All rights reserved.
+
+    Ether is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "globalconstantsproducer.h"
+
+#include "graphics/graphiccore.h"
+#include "graphics/shaders/common/globalconstants.h"
+
+DEFINE_GFX_PA(GlobalConstantsProducer)
+DEFINE_GFX_CB(GlobalConstantsRing)
+
+void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& rc)
+{
+}
+
+void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& schedule)
+{
+    schedule.NewCB(ACCESS_GFX_CB(GlobalConstantsRing), sizeof(Shader::GlobalConstants) * 3);
+}
+
+void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+{
+    ETH_MARKER_EVENT("GlobalConstantsProducer - Populate Upload Buffer");
+    const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetRenderData();
+
+    static ethMatrix4x4 prevViewMatrix = renderData.m_ViewMatrix;
+    static ethMatrix4x4 prevProjMatrix = renderData.m_ProjectionMatrix;
+
+    Shader::GlobalConstants globalConstants;
+    globalConstants.m_ViewMatrix = renderData.m_ViewMatrix;
+    globalConstants.m_ProjectionMatrix = renderData.m_ProjectionMatrix;
+    globalConstants.m_ViewMatrixPrev = prevViewMatrix;
+    globalConstants.m_ProjectionMatrixPrev = prevProjMatrix;
+    globalConstants.m_EyeDirection = renderData.m_EyeDirection.Resize<4>();
+    globalConstants.m_EyePosition = renderData.m_EyePosition.Resize<4>();
+    globalConstants.m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;
+    globalConstants.m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor;
+    globalConstants.m_Time = ethVector4(Time::GetTimeSinceStartup());
+    globalConstants.m_Time.x *= 20;
+    globalConstants.m_Time.y *= 1;
+    globalConstants.m_Time.z *= 0.5;
+    globalConstants.m_Time.w *= 0.25;
+    globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
+    globalConstants.m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
+    globalConstants.m_TemporalAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
+
+    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
+    memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(Shader::GlobalConstants));
+
+    ctx.CopyBufferRegion(
+        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
+        *rc.GetResource(ACCESS_GFX_CB(GlobalConstantsRing)),
+        sizeof(Shader::GlobalConstants),
+        0,
+        sizeof(Shader::GlobalConstants) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex()
+    );
+
+    // For velocity vector calculations
+    prevViewMatrix = globalConstants.m_ViewMatrix;
+    prevProjMatrix = globalConstants.m_ProjectionMatrix;
+}

@@ -28,11 +28,9 @@ class RhiResource : public NonCopyable, public NonMovable
 public:
     RhiResource(const char* name)
         : m_Name(name)
+        , m_ResourceID(name)
         , m_NumMips(1)
     {
-        // Make each view unique
-        static uint64_t i = 0;
-        m_ResourceID = i++;
     }
     virtual ~RhiResource() = default;
 
@@ -42,7 +40,7 @@ public:
     virtual void Unmap() const = 0;
 
 public:
-    inline uint64_t GetResourceID() const { return m_ResourceID; }
+    inline StringID GetResourceID() const { return m_ResourceID; }
     inline uint32_t GetNumMips() const { return m_NumMips; }
     inline RhiResourceState GetCurrentState() const { return m_CurrentState; }
 
@@ -52,7 +50,7 @@ public:
 protected:
     RhiResourceState m_CurrentState = RhiResourceState::Common;
     std::string m_Name;
-    uint64_t m_ResourceID;
+    StringID m_ResourceID;
     uint32_t m_NumMips;
 };
 
@@ -116,10 +114,4 @@ static RhiResourceDesc RhiCreateTexture3DResourceDesc(RhiFormat format, const et
     return desc;
 }
 
-static RhiResourceDesc RhiCreateDepthStencilResourceDesc(RhiFormat format, const ethVector2u& res)
-{
-    RhiResourceDesc desc = RhiCreateTexture2DResourceDesc(format, res);
-    desc.m_Flag = RhiResourceFlag::AllowDepthStencil;
-    return desc;
-}
 } // namespace Ether::Graphics

@@ -34,7 +34,6 @@ void Ether::Ecs::EcsCameraSystem::Update()
 {
     ETH_MARKER_EVENT("Camera System - Update");
 
-    Graphics::GraphicContext& gfxContext = Graphics::GraphicCore::GetGraphicRenderer().GetGraphicContext();
     Graphics::GraphicConfig& gfxConfig = Graphics::GraphicCore::GetGraphicConfig();
 
     for (EntityID entityID : m_Entities)
@@ -49,7 +48,6 @@ void Ether::Ecs::EcsCameraSystem::Update()
         ethMatrix4x4 rotationInv = Transform::GetRotationMatrix(transform.m_Rotation).Inversed();
         ethMatrix4x4 translationInv = Transform::GetTranslationMatrix(-transform.m_Translation);
         ethMatrix4x4 viewMatrix = rotationInv * translationInv;
-        gfxContext.SetViewMatrix(viewMatrix);
 
         ethVector2u resolution = EngineCore::GetEngineConfig().GetClientSize();
         float aspect = static_cast<float>(resolution.x) / resolution.y;
@@ -74,10 +72,16 @@ void Ether::Ecs::EcsCameraSystem::Update()
             projectionMatrix = jitterMat * projectionMatrix;
         }
 
-        gfxContext.SetProjectionMatrix(projectionMatrix);
         ethMatrix4x4 rotation = Transform::GetRotationMatrix(transform.m_Rotation);
         ethVector4 forward = rotation * ethVector4(0, 0, 1, 0);
-        gfxContext.SetEyeDirection(forward.Resize<3>());
-        gfxContext.SetEyePosition(transform.m_Translation);
+
+        Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+        renderData.m_ViewMatrix = viewMatrix;
+        renderData.m_ProjectionMatrix = projectionMatrix;
+        renderData.m_EyeDirection = forward.Resize<3>();
+        renderData.m_EyePosition = transform.m_Translation;
+
+        // Only render the first camera for now, since the renderer is not designed for multiple yet
+        break;
     }
 }

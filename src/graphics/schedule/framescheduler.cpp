@@ -18,34 +18,26 @@
 */
 
 #include "graphics/graphiccore.h"
-#include "graphics/graphicdisplay.h"
 #include "graphics/schedule/framescheduler.h"
+#include "graphics/schedule/schedulecontext.h"
 
-#include "graphics/schedule/gbufferproducer.h"
-#include "graphics/schedule/globalconstantsproducer.h"
-#include "graphics/schedule/framecompositeproducer.h"
+#include "graphics/schedule/producers/gbufferproducer.h"
+#include "graphics/schedule/producers/globalconstantsproducer.h"
+#include "graphics/schedule/producers/framecompositeproducer.h"
+#include "graphics/schedule/producers/TempRaytracingFrameDump.h"
 
 DECLARE_GFX_PA(GlobalConstantsProducer)
 DECLARE_GFX_PA(GBufferProducer)
-DECLARE_GFX_PA(FrameCompositeProducer)
-
-// TEMP ============================================
-#include "graphics/schedule/TempRaytracingFrameDump.h"
-DECLARE_GFX_PA(TempRaytracingFrameDump)
-// =================================================
+//DECLARE_GFX_PA(FrameCompositeProducer)
+//DECLARE_GFX_PA(TempRaytracingFrameDump)
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
-    // This should be where render passes should be scheduled.
-    ACCESS_GFX_PA(GlobalConstantsProducer).Set(new GlobalConstantsProducer());
-    ACCESS_GFX_PA(GBufferProducer).Set(new GBufferProducer());
-    ACCESS_GFX_PA(TempRaytracingFrameDump).Set(new TempRaytracingFrameDump());
-    ACCESS_GFX_PA(FrameCompositeProducer).Set(new FrameCompositeProducer());
-
-    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(GlobalConstantsProducer));
-    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(GBufferProducer));
-    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(TempRaytracingFrameDump));
-    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(FrameCompositeProducer));
+    // This should be where internal render passes should be registered
+    Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
+    Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
+    //Register(ACCESS_GFX_PA(TempRaytracingFrameDump), new TempRaytracingFrameDump());
+    //Register(ACCESS_GFX_PA(FrameCompositeProducer), new FrameCompositeProducer());
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -55,6 +47,22 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
 }
 
+void Ether::Graphics::FrameScheduler::Register(GFX_STATIC::GFX_PA_TYPE& pass, RenderGraphProducer* producer)
+{
+    AssertGraphics(m_RegisteredProducers.find(pass.GetName()) == m_RegisteredProducers.end(), "RenderPass already registered");
+    AssertGraphics(producer != nullptr, "Cannot register null producer");
+
+    pass.Create(producer);
+    m_RegisteredProducers.emplace(pass.GetName(), pass.Get());
+}
+
+void Ether::Graphics::FrameScheduler::Deregister(GFX_STATIC::GFX_PA_TYPE& pass)
+{
+    AssertGraphics(m_RegisteredProducers.find(pass.GetName()) != m_RegisteredProducers.end(), "RenderPass not registered");
+    m_RegisteredProducers.erase(pass.GetName());
+}
+
+
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
 {
     ETH_MARKER_EVENT("Frame Scheduler - Precompile pipeline states");
@@ -63,17 +71,15 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Compile what needs compiling (which should be everything)
     // Put it into resource context (unordered_map cache)
 
-    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->Initialize(m_ResourceContext);
-    ACCESS_GFX_PA(GBufferProducer).Get()->Initialize(m_ResourceContext);
-    ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->Initialize(m_ResourceContext);
-    ACCESS_GFX_PA(FrameCompositeProducer).Get()->Initialize(m_ResourceContext);
+    for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
+        iter->second->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
 {
     ETH_MARKER_EVENT("Frame Scheduler - Build Schedule");
 
-    // Analyze all registered render passes
+    // TODO: Analyze all registered render passes
     //  - Figure out in what order the passes need to execute by creating a graph of dependencies
     //  - Figure out which passes can be executed in parallel (copy pipe, async compute pipe?)
     //  - Figure out resource lifetimes, and what can be aliased in a big placed resource
@@ -82,35 +88,42 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
         m_ResourceContext.RecompilePipelineStates();
 
-    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->PrepareFrame(m_ResourceContext);
-    ACCESS_GFX_PA(GBufferProducer).Get()->PrepareFrame(m_ResourceContext);
-    ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->PrepareFrame(m_ResourceContext);
-    ACCESS_GFX_PA(FrameCompositeProducer).Get()->PrepareFrame(m_ResourceContext);
+    for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
+        iter->second->Reset();
+
+    ScheduleContext schedule;
+    for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
+        iter->second->GetInputOutput(schedule);
+
+    schedule.CreateResources(m_ResourceContext);
+
+    // TODO: Run a topological sort to order the producers based on their inputs and outputs
+    // defined in schedule context.
+    // For now, manually specify order
+    while (!m_OrderedProducers.empty())
+        m_OrderedProducers.pop();
+
+    m_OrderedProducers.push(ACCESS_GFX_PA(GlobalConstantsProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
 {
     ETH_MARKER_EVENT("Frame Scheduler - Render Single Threaded");
 
-    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
-    // Call some function to build command lists in all the passes
-    // Submit command lists in the correct execution order
-
     context.Reset();
+    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
-    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->Reset();
-    ACCESS_GFX_PA(GBufferProducer).Get()->Reset();
-    ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->Reset();
-    ACCESS_GFX_PA(FrameCompositeProducer).Get()->Reset();
-
-    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->RenderFrame(context, m_ResourceContext);
-    ACCESS_GFX_PA(GBufferProducer).Get()->RenderFrame(context, m_ResourceContext);
-
-    // For now, just render the frame dump
-    if (GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
+    // For single threaded rendering, all producers will append into the same context
+    while (!m_OrderedProducers.empty())
     {
-        ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->RenderFrame(context, m_ResourceContext);
-        ACCESS_GFX_PA(FrameCompositeProducer).Get()->RenderFrame(context, m_ResourceContext);
+        // This isEnabled check should be done during buildSchedule() instead.
+        // Any disabled producers should just not participate in scheduling
+        // (TODO)
+        if (m_OrderedProducers.front()->IsEnabled())
+            m_OrderedProducers.front()->RenderFrame(context, m_ResourceContext);
+
+        m_OrderedProducers.pop();
     }
 
     context.FinalizeAndExecute();
@@ -127,3 +140,4 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
 void Ether::Graphics::FrameScheduler::RenderMultiThreaded(GraphicContext& context)
 {
 }
+

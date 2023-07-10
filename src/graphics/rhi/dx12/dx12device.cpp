@@ -30,7 +30,6 @@
 #include "graphics/rhi/dx12/dx12fence.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
-#include "graphics/rhi/dx12/dx12resourceviews.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12swapchain.h"
 #include "graphics/rhi/dx12/dx12shader.h"
@@ -169,89 +168,6 @@ std::unique_ptr<Ether::Graphics::RhiSwapChain> Ether::Graphics::Dx12Device::Crea
         LogGraphicsWarning("Failed to disable alt-enter for hwnd");
 
     swapChain1.As(&dx12Obj->m_SwapChain);
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiRenderTargetView> Ether::Graphics::Dx12Device::CreateRenderTargetView(
-    const RhiRenderTargetViewDesc& desc) const
-{
-    std::unique_ptr<Dx12RenderTargetView> dx12Obj = std::make_unique<Dx12RenderTargetView>();
-
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
-    dx12Obj->m_Format = desc.m_Format;
-    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
-    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
-
-    auto creationDesc = Translate(desc);
-    m_Device->CreateRenderTargetView(d3dResource->m_Resource.Get(), &creationDesc, { dx12Obj->m_CpuAddress });
-
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiDepthStencilView> Ether::Graphics::Dx12Device::CreateDepthStencilView(
-    const RhiDepthStencilViewDesc& desc) const
-{
-    std::unique_ptr<Dx12DepthStencilView> dx12Obj = std::make_unique<Dx12DepthStencilView>();
-
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
-    dx12Obj->m_Format = desc.m_Format;
-    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
-    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
-
-    auto creationDesc = Translate(desc);
-    m_Device->CreateDepthStencilView(d3dResource->m_Resource.Get(), &creationDesc, { dx12Obj->m_CpuAddress });
-
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiShaderResourceView> Ether::Graphics::Dx12Device::CreateShaderResourceView(
-    const RhiShaderResourceViewDesc& desc) const
-{
-    std::unique_ptr<Dx12ShaderResourceView> dx12Obj = std::make_unique<Dx12ShaderResourceView>();
-
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
-    dx12Obj->m_GpuAddress = desc.m_TargetGpuAddress;
-    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
-    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
-
-    auto creationDesc = Translate(desc);
-
-    if (desc.m_Dimensions == RhiShaderResourceDimension::RTAccelerationStructure)
-        m_Device->CreateShaderResourceView(nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
-    else
-        m_Device->CreateShaderResourceView(d3dResource->m_Resource.Get(), &creationDesc, { dx12Obj->m_CpuAddress });
-
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiConstantBufferView> Ether::Graphics::Dx12Device::CreateConstantBufferView(
-    const RhiConstantBufferViewDesc& desc) const
-{
-    std::unique_ptr<Dx12ConstantBufferView> dx12Obj = std::make_unique<Dx12ConstantBufferView>();
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
-    dx12Obj->m_GpuAddress = desc.m_TargetGpuAddress;
-    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
-
-    auto creationDesc = Translate(desc);
-    m_Device->CreateConstantBufferView(&creationDesc, { dx12Obj->m_CpuAddress });
-
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiUnorderedAccessView> Ether::Graphics::Dx12Device::CreateUnorderedAccessView(
-    const RhiUnorderedAccessViewDesc& desc) const
-{
-    std::unique_ptr<Dx12UnorderedAccessView> dx12Obj = std::make_unique<Dx12UnorderedAccessView>();
-
-    dx12Obj->m_CpuAddress = desc.m_TargetCpuAddress;
-    dx12Obj->m_GpuAddress = desc.m_TargetGpuAddress;
-    dx12Obj->m_ResourceID = desc.m_Resource->GetResourceID();
-    const auto d3dResource = dynamic_cast<Dx12Resource*>(desc.m_Resource);
-
-    auto creationDesc = Translate(desc);
-    m_Device
-        ->CreateUnorderedAccessView(d3dResource->m_Resource.Get(), nullptr, &creationDesc, { dx12Obj->m_CpuAddress });
-
     return dx12Obj;
 }
 
@@ -558,6 +474,105 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
 
     dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
     return dx12Obj;
+}
+
+void Ether::Graphics::Dx12Device::InitializeRenderTargetView(RhiRenderTargetView& rtv, const RhiResource& resource) const
+{
+    const auto d3dResource = dynamic_cast<const Dx12Resource*>(&resource);
+
+    D3D12_RENDER_TARGET_VIEW_DESC desc = {};
+    desc.Format = Translate(rtv.GetFormat());
+    switch (rtv.GetDimension())
+    {
+    case RhiResourceDimension::Texture2D:
+        desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+        desc.Texture2D.MipSlice = 0;
+        break;
+    default:
+        LogGraphicsFatal("Not yet supported");
+    }
+
+    m_Device->CreateRenderTargetView(d3dResource->m_Resource.Get(), &desc, { rtv.GetCpuAddress() });
+}
+
+void Ether::Graphics::Dx12Device::InitializeDepthStencilView(RhiDepthStencilView& dsv, const RhiResource& resource) const
+{
+    const auto d3dResource = dynamic_cast<const Dx12Resource*>(&resource);
+
+    D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
+    desc.Format = Translate(dsv.GetFormat());
+    desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    desc.Texture2D.MipSlice = 0;
+    desc.Flags = D3D12_DSV_FLAG_NONE;
+
+    m_Device->CreateDepthStencilView(d3dResource->m_Resource.Get(), &desc, { dsv.GetCpuAddress() });
+}
+
+void Ether::Graphics::Dx12Device::InitializeShaderResourceView(RhiShaderResourceView& srv, const RhiResource& resource) const
+{
+    const auto d3dResource = dynamic_cast<const Dx12Resource*>(&resource);
+    ID3D12Resource* id3d12Resource = d3dResource->m_Resource.Get();
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.Format = Translate(srv.GetFormat());
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+    switch (srv.GetDimension())
+    {
+    case RhiResourceDimension::Texture2D:
+        desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        desc.Texture2D.MipLevels = resource.GetNumMips();
+        desc.Texture2D.MostDetailedMip = 0;
+        desc.Texture2D.PlaneSlice = 0;
+        desc.Texture2D.ResourceMinLODClamp = 0;
+        break;
+    case RhiResourceDimension::TextureCube:
+        desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        desc.Texture2D.MipLevels = resource.GetNumMips();
+        desc.Texture2D.MostDetailedMip = 0;
+        desc.Texture2D.PlaneSlice = 0;
+        desc.Texture2D.ResourceMinLODClamp = 0;
+        break;
+    case RhiResourceDimension::RTAccelerationStructure:
+        desc.RaytracingAccelerationStructure.Location = d3dResource->GetGpuAddress();
+        id3d12Resource = nullptr;
+        break;
+    default:
+        LogGraphicsFatal("Not yet supported");
+    }
+
+    m_Device->CreateShaderResourceView(id3d12Resource, &desc, { srv.GetCpuAddress() });
+}
+
+void Ether::Graphics::Dx12Device::InitializeUnorderedAccessView(RhiUnorderedAccessView& uav, const RhiResource& resource) const
+{
+    const auto d3dResource = dynamic_cast<const Dx12Resource*>(&resource);
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
+    desc.Format = Translate(uav.GetFormat());
+
+    switch (uav.GetDimension())
+    {
+    case RhiResourceDimension::Texture2D:
+        desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        desc.Texture2D.MipSlice = 0;
+        break;
+    default:
+        LogGraphicsFatal("Not yet supported");
+    }
+
+    m_Device->CreateUnorderedAccessView(d3dResource->m_Resource.Get(), nullptr, &desc, { uav.GetCpuAddress() });
+}
+
+void Ether::Graphics::Dx12Device::InitializeConstantBufferView(RhiConstantBufferView& cbv, const RhiResource& resource) const
+{
+    const auto d3dResource = dynamic_cast<const Dx12Resource*>(&resource);
+
+    D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
+    desc.SizeInBytes = cbv.GetWidth();
+    desc.BufferLocation = resource.GetGpuAddress();
+
+    m_Device->CreateConstantBufferView(&desc, { cbv.GetCpuAddress() });
 }
 
 #endif // ETH_GRAPHICS_DX12

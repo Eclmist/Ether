@@ -17,28 +17,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "rendergraphproducer.h"
+#include "graphics/graphiccore.h"
 
-#include "graphics/pch.h"
-#include "graphics/schedule/rendergraph/rendergraphutils.h"
-#include "graphics/schedule/rendergraph/rendergraphpass.h"
-
-namespace Ether::Graphics
+Ether::Graphics::RenderGraphProducer::RenderGraphProducer()
 {
-class RenderGraphManager : public NonCopyable, public NonMovable
+    for (int i = 0; i < MaxSwapChainBuffers; ++i)
+        m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
+}
+
+void Ether::Graphics::RenderGraphProducer::Reset()
 {
-public:
-    RenderGraphManager() = default;
-    ~RenderGraphManager() = default;
+    m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Reset();
+}
 
-public:
-    ETH_GRAPHIC_DLL void Register(GFX_STATIC_LINKSPACE::GFX_PA_TYPE pass);
-    ETH_GRAPHIC_DLL void Deregister(GFX_STATIC_LINKSPACE::GFX_PA_TYPE pass);
+bool Ether::Graphics::RenderGraphProducer::IsEnabled()
+{
+    // All producers are enabled by default
+    return true;
+}
 
-public:
-    RenderGraphPass* GetPass(GFX_STATIC_LINKSPACE::GFX_PA_TYPE pass) const;
-
-public:
-    std::unordered_map<StringID, std::unique_ptr<RenderGraphPass>> m_RenderGraphPasses;
-};
-} // namespace Ether::Graphics
+Ether::Graphics::UploadBufferAllocator& Ether::Graphics::RenderGraphProducer::GetFrameAllocator()
+{
+    return *m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()];
+}

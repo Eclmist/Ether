@@ -82,8 +82,8 @@ public:
     virtual void CopyTexture(RhiResource& scratch, RhiResource& dest, void** data, uint32_t numMips, uint32_t width, uint32_t height, uint32_t bytesPerPixel) = 0;
 
     // Dispatches
-    virtual void ClearRenderTargetView(const RhiRenderTargetView& rtv, const ethVector4& clearColor) = 0;
-    virtual void ClearDepthStencilView(const RhiDepthStencilView& dsv, float depth, float stencil) = 0;
+    virtual void ClearRenderTargetView(const RhiRenderTargetView rtv, const ethVector4& clearColor) = 0;
+    virtual void ClearDepthStencilView(const RhiDepthStencilView dsv, float depth, float stencil) = 0;
     virtual void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) = 0;
     virtual void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) = 0;
     virtual void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiResource* bindTable) = 0;

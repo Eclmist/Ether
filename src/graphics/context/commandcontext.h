@@ -33,7 +33,10 @@ class CommandAllocatorPool;
 class ETH_GRAPHIC_DLL CommandContext : public NonCopyable, public NonMovable
 {
 public:
-    CommandContext(const char* contextName, RhiCommandType type = RhiCommandType::Graphic);
+    CommandContext(
+        const char* contextName,
+        RhiCommandType type = RhiCommandType::Graphic,
+        size_t uploadBufferSize = _4MiB);
     ~CommandContext() = default;
 
 public:

@@ -44,12 +44,6 @@ public:
     virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal = false) const = 0;
     virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
 
-    virtual std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(const RhiShaderResourceViewDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const = 0;
-
     virtual std::unique_ptr<RhiResource> CreateRaytracingShaderBindingTable(const char* name, const RhiRaytracingShaderBindingTableDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const = 0;
@@ -59,6 +53,12 @@ public:
 
 public:
     virtual void CopyDescriptors(uint32_t numDescriptors, RhiCpuAddress srcAddr, RhiCpuAddress destAddr, RhiDescriptorHeapType type) const = 0;
+
+    virtual void InitializeRenderTargetView(RhiRenderTargetView& rtv, const RhiResource& resource) const = 0;
+    virtual void InitializeDepthStencilView(RhiDepthStencilView& dsv, const RhiResource& resource) const = 0;
+    virtual void InitializeShaderResourceView(RhiShaderResourceView& srv, const RhiResource& resource) const = 0;
+    virtual void InitializeConstantBufferView(RhiConstantBufferView& cbv, const RhiResource& resource) const = 0;
+    virtual void InitializeUnorderedAccessView(RhiUnorderedAccessView& uav, const RhiResource& resource) const = 0;
 
 protected:
     friend class RhiRootSignatureDesc;

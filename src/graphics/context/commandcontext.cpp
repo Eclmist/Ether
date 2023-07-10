@@ -23,7 +23,7 @@
 #include "graphics/rhi/rhicommandqueue.h"
 #include "graphics/rhi/rhiresource.h"
 
-Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiCommandType type)
+Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiCommandType type, size_t uploadBufferSize)
     : m_Name(contextName)
     , m_Type(type)
     , m_RaytracingBindTable(nullptr)
@@ -33,7 +33,7 @@ Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiComm
     m_CommandList = GraphicCore::GetCommandManager().CreateCommandList(contextName, type);
     m_CommandList->Close();
 
-    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(_128MiB);
+    m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(uploadBufferSize);
 }
 
 void Ether::Graphics::CommandContext::Reset()

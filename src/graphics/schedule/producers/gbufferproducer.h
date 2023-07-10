@@ -19,23 +19,25 @@
 
 #pragma once
 
-#include "graphics/pch.h"
-#include "graphics/schedule/rendergraph/rendergraphutils.h"
-#include "graphics/context/resourcecontext.h"
-#include "graphics/context/graphiccontext.h"
+#include "graphics/schedule/producers/rendergraphproducer.h"
 
 namespace Ether::Graphics
 {
-class RenderGraphPass
+class GBufferProducer : public RenderGraphProducer
 {
 public:
-    RenderGraphPass() = default;
-    ~RenderGraphPass() = default;
+    void Initialize(ResourceContext& rc) override;
+    void GetInputOutput(ScheduleContext& schedule) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
-public:
-    virtual void Reset() = 0;
-    virtual void Initialize(ResourceContext& rc) = 0;
-    virtual void PrepareFrame(ResourceContext& rc) = 0;
-    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) = 0;
+private:
+    void CreateShaders();
+    void CreateRootSignature();
+    void CreatePipelineState(ResourceContext& rc);
+
+private:
+    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
+    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
 };
-}
+} // namespace Ether::Graphics

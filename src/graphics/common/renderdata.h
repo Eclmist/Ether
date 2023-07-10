@@ -17,7 +17,20 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/rhi/dx12/dx12resourceviews.h"
+#pragma once
 
-#ifdef ETH_GRAPHICS_DX12
-#endif // ETH_GRAPHICS_DX12
+#include "graphics/pch.h"
+#include "graphics/common/visualbatch.h"
+
+namespace Ether::Graphics
+{
+struct ETH_GRAPHIC_DLL RenderData
+{
+public:
+    ethMatrix4x4 m_ViewMatrix;
+    ethMatrix4x4 m_ProjectionMatrix;
+    ethVector3 m_EyeDirection;
+    ethVector3 m_EyePosition;
+    VisualBatch m_VisualBatch;
+};
+} // namespace Ether::Graphics

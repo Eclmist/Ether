@@ -46,8 +46,8 @@ namespace Ether::Graphics
         inline uint32_t GetBackBufferIndex() const { return m_CurrentBackBufferIndex; }
         inline uint64_t GetBackBufferFence() const { return m_FrameBufferFences[GetBackBufferIndex()]; }
         inline RhiResource& GetBackBuffer() const { return *m_RenderTargets[GetBackBufferIndex()]; }
-        inline RhiRenderTargetView& GetBackBufferRtv() const { return *m_RenderTargetRtv[GetBackBufferIndex()]; }
-        inline RhiShaderResourceView& GetBackBufferSrv() const { return *m_RenderTargetSrv[GetBackBufferIndex()]; }
+        inline RhiRenderTargetView GetBackBufferRtv() const { return m_RenderTargetRtv[GetBackBufferIndex()]; }
+        inline RhiShaderResourceView GetBackBufferSrv() const { return m_RenderTargetSrv[GetBackBufferIndex()]; }
         inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
         inline const RhiScissorDesc& GetScissorRect() const { return m_ScissorRect; }
         inline bool IsVsyncEnabled() const { return m_VSyncEnabled; }
@@ -69,8 +69,8 @@ namespace Ether::Graphics
         BufferingMode m_BufferingMode;
 
         RhiResource* m_RenderTargets[MaxSwapChainBuffers];
-        std::unique_ptr<RhiRenderTargetView> m_RenderTargetRtv[MaxSwapChainBuffers];
-        std::unique_ptr<RhiShaderResourceView> m_RenderTargetSrv[MaxSwapChainBuffers];
+        RhiRenderTargetView m_RenderTargetRtv[MaxSwapChainBuffers];
+        RhiShaderResourceView m_RenderTargetSrv[MaxSwapChainBuffers];
 
         std::vector<std::unique_ptr<MemoryAllocation>> m_SwapChainDescriptors;
         uint64_t m_FrameBufferFences[MaxSwapChainBuffers];

@@ -32,7 +32,6 @@
 #include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/bindlessdescriptormanager.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
-#include "graphics/schedule/rendergraph/rendergraphmanager.h"
 
 #include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
@@ -63,7 +62,6 @@ public:
     static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
     static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
     static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
-    static inline RenderGraphManager& GetRenderGraphManager() { return *Instance().m_RenderGraphManager; }
     static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
 public:
@@ -82,7 +80,6 @@ private:
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
-    std::unique_ptr<RenderGraphManager> m_RenderGraphManager;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
 private:

@@ -23,7 +23,6 @@
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12pipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
-#include "graphics/rhi/dx12/dx12resourceviews.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
@@ -36,6 +35,12 @@
 Ether::Graphics::Dx12CommandList::Dx12CommandList(RhiCommandType type)
     : RhiCommandList(type)
 {
+}
+
+Ether::Graphics::Dx12CommandList::~Dx12CommandList()
+{
+    if (m_CommandAllocator != nullptr)
+        m_CommandAllocatorPool->DiscardAllocator(*m_CommandAllocator);
 }
 
 void Ether::Graphics::Dx12CommandList::Reset()
@@ -287,8 +292,7 @@ void Ether::Graphics::Dx12CommandList::CopyBufferRegion(
     const auto dx12SrcResource = (Dx12Resource*)&src;
     const auto dx12DstResource = (Dx12Resource*)&dest;
 
-    m_CommandList
-        ->CopyBufferRegion(dx12DstResource->m_Resource.Get(), destOff, dx12SrcResource->m_Resource.Get(), srcOff, size);
+    m_CommandList->CopyBufferRegion(dx12DstResource->m_Resource.Get(), destOff, dx12SrcResource->m_Resource.Get(), srcOff, size);
 }
 
 void Ether::Graphics::Dx12CommandList::CopyTexture(
@@ -326,13 +330,13 @@ void Ether::Graphics::Dx12CommandList::CopyTexture(
 }
 
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(
-    const RhiRenderTargetView& rtv,
+    const RhiRenderTargetView rtv,
     const ethVector4& clearColor)
 {
     m_CommandList->ClearRenderTargetView({ rtv.GetCpuAddress() }, clearColor.m_Data, 0, nullptr);
 }
 
-void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(const RhiDepthStencilView& dsv, float depth, float stencil)
+void Ether::Graphics::Dx12CommandList::ClearDepthStencilView(const RhiDepthStencilView dsv, float depth, float stencil)
 {
     m_CommandList->ClearDepthStencilView(
         { dsv.GetCpuAddress() },

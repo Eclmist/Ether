@@ -22,6 +22,8 @@
 #include "graphics/pch.h"
 #include "graphics/context/graphiccontext.h"
 #include "graphics/context/resourcecontext.h"
+#include "graphics/schedule/frameschedulerutils.h"
+#include "graphics/schedule/producers/rendergraphproducer.h"
 
 #include "graphics/rhi/rhiimguiwrapper.h"
 
@@ -34,14 +36,22 @@ public:
     ~FrameScheduler();
 
 public:
+    ETH_GRAPHIC_DLL void Register(GFX_STATIC::GFX_PA_TYPE& pass, RenderGraphProducer* producer);
+    ETH_GRAPHIC_DLL void Deregister(GFX_STATIC::GFX_PA_TYPE& pass);
+
+public:
     void PrecompilePipelineStates();
     void BuildSchedule();
-    void RenderSingleThreaded(GraphicContext& context);
-    void RenderMultiThreaded(GraphicContext& context);
+    void RenderSingleThreaded(GraphicContext& visualContext);
+    void RenderMultiThreaded(GraphicContext& visualContext);
 
 private:
     ResourceContext m_ResourceContext;
 
+    std::unordered_map<StringID, std::shared_ptr<RenderGraphProducer>> m_RegisteredProducers;
+    std::queue<RenderGraphProducer*> m_OrderedProducers;
+
+private:
     // TODO: Move this into some UI rendering pass
     std::unique_ptr<RhiImguiWrapper> m_ImguiWrapper;
 };

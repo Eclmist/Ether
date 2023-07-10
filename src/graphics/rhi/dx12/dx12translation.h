@@ -42,8 +42,6 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE Translate(const RhiPrimitiveTopologyType& rhiType)
 D3D12_RESOURCE_DIMENSION Translate(const RhiResourceDimension& rhiType);
 D3D12_RESOURCE_STATES Translate(const RhiResourceState& rhiType);
 D3D12_SHADER_VISIBILITY Translate(const RhiShaderVisibility& rhiType);
-D3D12_SRV_DIMENSION Translate(const RhiShaderResourceDimension& rhiType);
-D3D12_UAV_DIMENSION Translate(const RhiUnorderedAccessDimension& rhiType);
 D3D12_STATIC_BORDER_COLOR Translate(const RhiBorderColor& rhiType);
 D3D12_STENCIL_OP Translate(const RhiDepthStencilOperation& rhiType);
 D3D12_TEXTURE_ADDRESS_MODE Translate(const RhiTextureAddressMode& rhiType);
@@ -66,11 +64,6 @@ D3D12_STATIC_SAMPLER_DESC Translate(const RhiSamplerParameterDesc& rhiDesc);
 D3D12_VIEWPORT Translate(const RhiViewportDesc& rhiDesc);
 DXGI_SAMPLE_DESC Translate(const RhiSampleDesc& rhiDesc);
 
-D3D12_RENDER_TARGET_VIEW_DESC Translate(const RhiRenderTargetViewDesc& rhiDesc);
-D3D12_DEPTH_STENCIL_VIEW_DESC Translate(const RhiDepthStencilViewDesc& rhiDesc);
-D3D12_SHADER_RESOURCE_VIEW_DESC Translate(const RhiShaderResourceViewDesc& rhiDesc);
-D3D12_UNORDERED_ACCESS_VIEW_DESC Translate(const RhiUnorderedAccessViewDesc& rhiDesc);
-D3D12_CONSTANT_BUFFER_VIEW_DESC Translate(const RhiConstantBufferViewDesc& rhiDesc);
 D3D12_VERTEX_BUFFER_VIEW Translate(const RhiVertexBufferViewDesc& rhiDesc);
 D3D12_INDEX_BUFFER_VIEW Translate(const RhiIndexBufferViewDesc& rhiDesc);
 

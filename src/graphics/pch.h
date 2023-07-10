@@ -25,6 +25,7 @@
 
 #include "graphics/rhi/rhitypes.h"
 #include "graphics/rhi/rhiresource.h"
+#include "graphics/rhi/rhiresourceviews.h"
 
 namespace Ether::Graphics
 {
@@ -52,5 +53,8 @@ namespace Ether::Graphics
     constexpr size_t _32MiB                         = 1 << 25;
     constexpr size_t _64MiB                         = 1 << 26;
     constexpr size_t _128MiB                        = 1 << 27;
+    constexpr size_t _256MiB                        = 1 << 28;
+    constexpr size_t _512MiB                        = 1 << 29;
+    constexpr size_t _1GiB                          = 1 << 30;
 }
 

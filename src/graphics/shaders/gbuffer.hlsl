@@ -87,8 +87,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     }
 
     // Don't support alpha yet
-    //if (InterleavedGradientNoise(IN.Position) > albedo.a)
-    if (albedo.a < 0.5)
+    if (InterleavedGradientNoise(IN.Position) > albedo.a)
+    //if (albedo.a < 0.5)
         discard;
 
     PS_OUTPUT o;

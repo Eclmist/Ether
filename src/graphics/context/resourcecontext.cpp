@@ -25,7 +25,10 @@
 
 Ether::Graphics::ResourceContext::ResourceContext()
 {
-    m_StagingSrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, _64KiB, false);
+    m_StagingSrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(
+        RhiDescriptorHeapType::SrvCbvUav,
+        _64KiB,
+        false);
 }
 
 void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc)
@@ -65,31 +68,17 @@ Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipeline
     return *m_CachedPipelineStates.at(&pipelineStateDesc);
 }
 
-Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateResource(
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateBufferResource(
     const char* resourceName,
-    const RhiCommitedResourceDesc& desc)
-{
-    if (!ShouldRecreateResource(resourceName, desc))
-        return *m_ResourceTable.at(resourceName);
-
-    InvalidateViews(resourceName);
-    m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
-    m_ResourceDescriptionTable[resourceName] = desc;
-
-    return *m_ResourceTable.at(resourceName);
-}
-
-Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateDepthStencilResource(
-    const char* resourceName,
-    const ethVector2u resolution,
-    RhiFormat format)
+    size_t size,
+    RhiResourceFlag flags)
 {
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = resourceName;
     desc.m_HeapType = RhiHeapType::Default;
-    desc.m_State = RhiResourceState::DepthWrite;
-    desc.m_ClearValue = { format, { 1, 0 } };
-    desc.m_ResourceDesc = RhiCreateDepthStencilResourceDesc(DepthBufferFormat, resolution);
+    desc.m_State = RhiResourceState::Common;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(size);
+    desc.m_ResourceDesc.m_Flag = flags;
 
     if (!ShouldRecreateResource(resourceName, desc))
         return *m_ResourceTable.at(resourceName);
@@ -104,7 +93,8 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateDepthStenc
 Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DResource(
     const char* resourceName,
     const ethVector2u resolution,
-    RhiFormat format)
+    RhiFormat format,
+    RhiResourceFlag flags)
 {
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = resourceName;
@@ -112,6 +102,13 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DR
     desc.m_State = RhiResourceState::Common;
     desc.m_ClearValue = { format, { 0, 0, 0, 0 } };
     desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, resolution);
+    desc.m_ResourceDesc.m_Flag = flags;
+
+    if ((flags & RhiResourceFlag::AllowDepthStencil) != RhiResourceFlag::None)
+    {
+        desc.m_ClearValue = { format, { 1, 0 } };
+        desc.m_State = RhiResourceState::DepthWrite;
+    }
 
     if (!ShouldRecreateResource(resourceName, desc))
         return *m_ResourceTable.at(resourceName);
@@ -123,18 +120,19 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DR
     return *m_ResourceTable.at(resourceName);
 }
 
-Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DUavResource(
+Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture3DResource(
     const char* resourceName,
-    const ethVector2u resolution,
-    RhiFormat format)
-{ 
+    const ethVector3u resolution,
+    RhiFormat format,
+    RhiResourceFlag flags)
+{
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = resourceName;
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::Common;
     desc.m_ClearValue = { format, { 0, 0, 0, 0 } };
-    desc.m_ResourceDesc = RhiCreateTexture2DResourceDesc(format, resolution);
-    desc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
+    desc.m_ResourceDesc = RhiCreateTexture3DResourceDesc(format, resolution);
+    desc.m_ResourceDesc.m_Flag = flags;
 
     if (!ShouldRecreateResource(resourceName, desc))
         return *m_ResourceTable.at(resourceName);
@@ -184,156 +182,87 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateRaytracing
     return *m_ResourceTable.at(resourceName);
 }
 
-Ether::Graphics::RhiRenderTargetView Ether::Graphics::ResourceContext::CreateRenderTargetView(
-    const char* viewName,
-    const RhiResource* resource,
-    RhiFormat format)
+void Ether::Graphics::ResourceContext::InitializeRenderTargetView(std::shared_ptr<RhiResourceView> view)
 {
-    if (!ShouldRecreateView(viewName))
-        return (RhiRenderTargetView&)(*m_DescriptorTable.at(viewName));
+    if (!ShouldRecreateView(view->GetViewID()))
+        return;
 
     auto alloc = GraphicCore::GetRtvAllocator().Allocate();
+    view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
 
-    RhiRenderTargetViewDesc rtvDesc = {};
-    rtvDesc.m_Format = format;
-    rtvDesc.m_Resource = const_cast<RhiResource*>(resource);
-    rtvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-
-    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateRenderTargetView(rtvDesc);
-    m_DescriptorAllocations[viewName] = std::move(alloc);
-
-    return (RhiRenderTargetView&)(*m_DescriptorTable.at(viewName));
+    GraphicCore::GetDevice().InitializeRenderTargetView((*(RhiRenderTargetView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    m_DescriptorTable[view->GetViewID()] = view;
+    m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-Ether::Graphics::RhiDepthStencilView Ether::Graphics::ResourceContext::CreateDepthStencilView(
-    const char* viewName,
-    const RhiResource* resource,
-    RhiFormat format)
+void Ether::Graphics::ResourceContext::InitializeDepthStencilView(std::shared_ptr<RhiResourceView> view)
 {
-    if (!ShouldRecreateView(viewName))
-        return (RhiDepthStencilView&)(*m_DescriptorTable.at(viewName));
+    if (!ShouldRecreateView(view->GetViewID()))
+        return;
 
     auto alloc = GraphicCore::GetDsvAllocator().Allocate();
+    view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
 
-    RhiDepthStencilViewDesc dsvDesc = {};
-    dsvDesc.m_Format = format;
-    dsvDesc.m_Resource = const_cast<RhiResource*>(resource);
-    dsvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-
-    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateDepthStencilView(dsvDesc);
-    m_DescriptorAllocations[viewName] = std::move(alloc);
-
-    return (RhiDepthStencilView&)(*m_DescriptorTable.at(viewName));
+    GraphicCore::GetDevice().InitializeDepthStencilView((*(RhiDepthStencilView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    m_DescriptorTable[view->GetViewID()] = view;
+    m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-Ether::Graphics::RhiConstantBufferView Ether::Graphics::ResourceContext::CreateConstantBufferView(
-    const char* viewName,
-    const RhiResource* resource,
-    uint32_t size)
+void Ether::Graphics::ResourceContext::InitializeShaderResourceView(std::shared_ptr<RhiResourceView> view)
 {
-    if (!ShouldRecreateView(viewName))
-        return (RhiConstantBufferView&)(*m_DescriptorTable.at(viewName));
+    if (!ShouldRecreateView(view->GetViewID()))
+        return;
 
-    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
+    auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+    view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
+    ((RhiShaderResourceView*)view.get())->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
 
-    RhiConstantBufferViewDesc cbvDesc = {};
-    cbvDesc.m_Resource = const_cast<RhiResource*>(resource);
-    cbvDesc.m_BufferSize = size;
-    cbvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-    cbvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*alloc)).GetGpuAddress();
-
-    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateConstantBufferView(cbvDesc);
-    m_DescriptorAllocations[viewName] = std::move(alloc);
-
-    return (RhiConstantBufferView&)(*m_DescriptorTable.at(viewName));
+    GraphicCore::GetDevice().InitializeShaderResourceView((*(RhiShaderResourceView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    m_DescriptorTable[view->GetViewID()] = view;
+    m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-Ether::Graphics::RhiShaderResourceView Ether::Graphics::ResourceContext::CreateShaderResourceView(
-    const char* viewName,
-    const RhiResource* resource,
-    RhiFormat format,
-    RhiShaderResourceDimension dimension)
+void Ether::Graphics::ResourceContext::InitializeUnorderedAccessView(std::shared_ptr<RhiResourceView> view)
 {
-    if (!ShouldRecreateView(viewName))
-        return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
+    if (!ShouldRecreateView(view->GetViewID()))
+        return;
 
-    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
+    auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+    view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
+    ((RhiUnorderedAccessView*)view.get())->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
 
-    RhiShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Resource = const_cast<RhiResource*>(resource);
-    srvDesc.m_Format = format;
-    srvDesc.m_Dimensions = dimension;
-    srvDesc.m_NumMips = 1;
-    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-    srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*alloc)).GetGpuAddress();
-
-    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
-    m_DescriptorAllocations[viewName] = std::move(alloc);
-
-    return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
+    GraphicCore::GetDevice().InitializeUnorderedAccessView((*(RhiUnorderedAccessView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    m_DescriptorTable[view->GetViewID()] = view;
+    m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-Ether::Graphics::RhiUnorderedAccessView Ether::Graphics::ResourceContext::CreateUnorderedAccessView(
-    const char* viewName,
-    const RhiResource* resource,
-    RhiFormat format,
-    RhiUnorderedAccessDimension dimension)
+void Ether::Graphics::ResourceContext::InitializeConstantBufferView(std::shared_ptr<RhiResourceView> view)
 {
-    if (!ShouldRecreateView(viewName))
-        return (RhiUnorderedAccessView&)(*m_DescriptorTable.at(viewName));
+    if (!ShouldRecreateView(view->GetViewID()))
+        return;
 
-    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
+    auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+    view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
+    ((RhiConstantBufferView*)view.get())->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
 
-    RhiUnorderedAccessViewDesc uavDesc = {};
-    uavDesc.m_Resource = const_cast<RhiResource*>(resource);
-    uavDesc.m_Format = format;
-    uavDesc.m_Dimensions = dimension;
-    uavDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-    uavDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*alloc)).GetGpuAddress();
-
-    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateUnorderedAccessView(uavDesc);
-    m_DescriptorAllocations.erase(viewName);
-    m_DescriptorAllocations[viewName] = std::move(alloc);
-
-    return (RhiUnorderedAccessView&)(*m_DescriptorTable.at(viewName));
+    GraphicCore::GetDevice().InitializeConstantBufferView((*(RhiConstantBufferView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    m_DescriptorTable[view->GetViewID()] = view;
+    m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-Ether::Graphics::RhiShaderResourceView Ether::Graphics::ResourceContext::CreateAccelerationStructureView(
-    const char* viewName,
-    const RhiResource* asDataBufferResource)
-{
-    if (!ShouldRecreateView(viewName))
-        return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
-
-    auto alloc = m_StagingSrvCbvUavAllocator->Allocate();
-
-    RhiShaderResourceViewDesc srvDesc = {};
-    srvDesc.m_Resource = const_cast<RhiResource*>(asDataBufferResource);
-    srvDesc.m_Dimensions = RhiShaderResourceDimension::RTAccelerationStructure;
-    srvDesc.m_TargetCpuAddress = ((DescriptorAllocation&)(*alloc)).GetCpuAddress();
-    srvDesc.m_TargetGpuAddress = ((DescriptorAllocation&)(*alloc)).GetGpuAddress();
-
-    m_DescriptorTable[viewName] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
-    m_DescriptorAllocations[viewName] = std::move(alloc);
-
-    return (RhiShaderResourceView&)(*m_DescriptorTable.at(viewName));
-}
-
-bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
-    const char* resourceName,
-    const RhiCommitedResourceDesc& desc)
+bool Ether::Graphics::ResourceContext::ShouldRecreateResource(StringID resourceID, const RhiCommitedResourceDesc& desc)
 {
     // If the resource don't exist in the resource table at all
-    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
         return true;
 
     AssertGraphics(
-        m_ResourceDescriptionTable.find(resourceName) != m_ResourceDescriptionTable.end(),
-        "If the resource never existed, there should not be any cached desc with the same resourceName");
+        m_ResourceDescriptionTable.find(resourceID) != m_ResourceDescriptionTable.end(),
+        "If the resource never existed, there should not be any cached desc with the same resourceID");
 
     // If the resource exist, but it's description has changed
     if (std::memcmp(
-            &m_ResourceDescriptionTable.at(resourceName).m_ResourceDesc,
+            &m_ResourceDescriptionTable.at(resourceID).m_ResourceDesc,
             &desc.m_ResourceDesc,
             sizeof(RhiResourceDesc)) != 0)
         return true;
@@ -342,18 +271,18 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
 }
 
 bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
-    const char* resourceName,
+    StringID resourceID,
     const RhiTopLevelAccelerationStructureDesc& desc)
 {
     // If the resource don't exist in the resource table at all
-    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
         return true;
 
     AssertGraphics(
-        m_RaytracingResourceDescriptionTable.find(resourceName) != m_RaytracingResourceDescriptionTable.end(),
-        "If the resource never existed, there should not be any cached desc with the same resourceName");
+        m_RaytracingResourceDescriptionTable.find(resourceID) != m_RaytracingResourceDescriptionTable.end(),
+        "If the resource never existed, there should not be any cached desc with the same resourceID");
 
-    VisualBatch* vbOld = (VisualBatch*)m_RaytracingResourceDescriptionTable.at(resourceName).m_VisualBatch;
+    VisualBatch* vbOld = (VisualBatch*)m_RaytracingResourceDescriptionTable.at(resourceID).m_VisualBatch;
     VisualBatch* vbNew = (VisualBatch*)desc.m_VisualBatch;
 
     if (*vbOld != *vbNew)
@@ -363,33 +292,32 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
 }
 
 bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
-    const char* resourceName,
+    StringID resourceID,
     const RhiRaytracingShaderBindingTableDesc& desc)
 {
-    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
         return true;
 
     AssertGraphics(
-        m_RaytracingShaderBindingsTable.find(resourceName) != m_RaytracingShaderBindingsTable.end(),
-        "If the resource never existed, there should not be any cached desc with the same resourceName");
+        m_RaytracingShaderBindingsTable.find(resourceID) != m_RaytracingShaderBindingsTable.end(),
+        "If the resource never existed, there should not be any cached desc with the same resourceID");
 
-    if (m_RaytracingShaderBindingsTable.at(resourceName) != desc)
+    if (m_RaytracingShaderBindingsTable.at(resourceID) != desc)
         return true;
 
     return false;
 }
 
-bool Ether::Graphics::ResourceContext::ShouldRecreateView(const char* viewName)
+bool Ether::Graphics::ResourceContext::ShouldRecreateView(StringID viewID)
 {
-    return m_DescriptorTable.find(viewName) == m_DescriptorTable.end();
+    return m_DescriptorTable.find(viewID) == m_DescriptorTable.end();
 }
 
-void Ether::Graphics::ResourceContext::InvalidateViews(const char* resourceName)
+void Ether::Graphics::ResourceContext::InvalidateViews(StringID resourceID)
 {
-    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
+    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
         return;
 
-    const uint64_t resourceID = m_ResourceTable.at(resourceName)->GetResourceID();
     for (auto iter = m_DescriptorTable.begin(); iter != m_DescriptorTable.end();)
     {
         if (iter->second->GetResourceID() == resourceID)
@@ -410,4 +338,3 @@ void Ether::Graphics::ResourceContext::RecompilePipelineStates()
     for (auto& psoPair : m_CachedPipelineStates)
         RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
 }
-

@@ -42,12 +42,6 @@ public:
     std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal) const override;
     std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const override;
 
-    std::unique_ptr<RhiRenderTargetView> CreateRenderTargetView(const RhiRenderTargetViewDesc& desc) const override;
-    std::unique_ptr<RhiDepthStencilView> CreateDepthStencilView(const RhiDepthStencilViewDesc& desc) const override;
-    std::unique_ptr<RhiShaderResourceView> CreateShaderResourceView(const RhiShaderResourceViewDesc& desc) const override;
-    std::unique_ptr<RhiConstantBufferView> CreateConstantBufferView(const RhiConstantBufferViewDesc& desc) const override;
-    std::unique_ptr<RhiUnorderedAccessView> CreateUnorderedAccessView(const RhiUnorderedAccessViewDesc& desc) const override;
-
     std::unique_ptr<RhiResource> CreateRaytracingShaderBindingTable(const char* name, const RhiRaytracingShaderBindingTableDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const override;
@@ -57,6 +51,12 @@ public:
 
 public:
     void CopyDescriptors(uint32_t numDescriptors, RhiCpuAddress srcAddr, RhiCpuAddress destAddr, RhiDescriptorHeapType type) const override;
+
+    void InitializeRenderTargetView(RhiRenderTargetView& rtv, const RhiResource& resource) const;
+    void InitializeDepthStencilView(RhiDepthStencilView& dsv, const RhiResource& resource) const;
+    void InitializeShaderResourceView(RhiShaderResourceView& srv, const RhiResource& resource) const;
+    void InitializeConstantBufferView(RhiConstantBufferView& cbv, const RhiResource& resource) const;
+    void InitializeUnorderedAccessView(RhiUnorderedAccessView& uav, const RhiResource& resource) const;
 
 protected:
     std::unique_ptr<RhiRootSignature> CreateRootSignature(const char* name, const RhiRootSignatureDesc& desc) const override;

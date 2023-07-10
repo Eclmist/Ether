@@ -23,8 +23,7 @@
 #include "graphics/rhi/rhishader.h"
 
 Ether::Graphics::GraphicRenderer::GraphicRenderer()
-    : m_Context("GraphicRenderer - Main Graphics Context")
-    , m_FrameNumber(0)
+    : m_FrameNumber(0)
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
     m_Scheduler.PrecompilePipelineStates();
@@ -42,8 +41,10 @@ void Ether::Graphics::GraphicRenderer::WaitForPresent()
 void Ether::Graphics::GraphicRenderer::Render()
 {
     ETH_MARKER_EVENT("Renderer - Render");
+    static GraphicContext gfxContext("GraphicRenderer - Single Threaded Render Context");
+
     m_Scheduler.BuildSchedule();
-    m_Scheduler.RenderSingleThreaded(m_Context);
+    m_Scheduler.RenderSingleThreaded(gfxContext);
 }
 
 void Ether::Graphics::GraphicRenderer::Present()

@@ -24,8 +24,10 @@
 #include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/rhiaccelerationstructure.h"
+#include "graphics/memory/descriptorallocator.h"
 #include "graphics/memory/descriptorallocation.h"
 #include "graphics/context/graphiccontext.h"
+#include "graphics/schedule/frameschedulerutils.h"
 
 namespace Ether::Graphics
 {
@@ -39,33 +41,28 @@ public:
     void RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc);
     RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
 
-    RhiResource& CreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
-    RhiResource& CreateDepthStencilResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
-    RhiResource& CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
-    RhiResource& CreateTexture2DUavResource(const char* resourceName, const ethVector2u resolution, RhiFormat format);
+    RhiResource& CreateBufferResource(const char* resourceName, size_t size, RhiResourceFlag flags);
+    RhiResource& CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format, RhiResourceFlag flags);
+    RhiResource& CreateTexture3DResource(const char* resourceName, const ethVector3u resolution, RhiFormat format, RhiResourceFlag flags);
     RhiResource& CreateAccelerationStructure(const char* resourceName, const RhiTopLevelAccelerationStructureDesc& desc);
     RhiResource& CreateRaytracingShaderBindingTable(const char* resourceName, const RhiRaytracingShaderBindingTableDesc& desc);
 
-    RhiRenderTargetView CreateRenderTargetView(const char* viewName, const RhiResource* resource, RhiFormat format);
-    RhiDepthStencilView CreateDepthStencilView(const char* viewName, const RhiResource* resource, RhiFormat format);
-    RhiConstantBufferView CreateConstantBufferView(const char* viewName, const RhiResource* resource, uint32_t size);
-    RhiShaderResourceView CreateShaderResourceView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiShaderResourceDimension dimension);
-    RhiUnorderedAccessView CreateUnorderedAccessView(const char* viewName, const RhiResource* resource, RhiFormat format, RhiUnorderedAccessDimension dimension);
-    RhiShaderResourceView CreateAccelerationStructureView(const char* viewName, const RhiResource* asDataBufferResource);
+    void InitializeRenderTargetView(std::shared_ptr<RhiResourceView> view);
+    void InitializeDepthStencilView(std::shared_ptr<RhiResourceView> view);
+    void InitializeShaderResourceView(std::shared_ptr<RhiResourceView> view);
+    void InitializeUnorderedAccessView(std::shared_ptr<RhiResourceView> view);
+    void InitializeConstantBufferView(std::shared_ptr<RhiResourceView> view);
 
     template <typename T>
-    T GetResource(const char* resourceName) const;
-
-    template <typename T>
-    T GetView(const char* viewName) const;
+    RhiResource* GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const;
 
 private:
-    bool ShouldRecreateResource(const char* resourceName, const RhiCommitedResourceDesc& desc);
-    bool ShouldRecreateResource(const char* resourceName, const RhiRaytracingShaderBindingTableDesc& desc);
-    bool ShouldRecreateResource(const char* resourceName, const RhiTopLevelAccelerationStructureDesc& desc);
+    bool ShouldRecreateResource(StringID resourceID, const RhiCommitedResourceDesc& desc);
+    bool ShouldRecreateResource(StringID resourceID, const RhiRaytracingShaderBindingTableDesc& desc);
+    bool ShouldRecreateResource(StringID resourceID, const RhiTopLevelAccelerationStructureDesc& desc);
 
-    bool ShouldRecreateView(const char* viewName);
-    void InvalidateViews(const char* resourceName);
+    bool ShouldRecreateView(StringID viewID);
+    void InvalidateViews(StringID resourceID);
 
 private:
     friend class FrameScheduler;
@@ -81,26 +78,17 @@ private:
     std::unordered_map<StringID, RhiTopLevelAccelerationStructureDesc> m_RaytracingResourceDescriptionTable;
 
     std::unordered_map<StringID, std::unique_ptr<RhiResource>> m_ResourceTable;
-    std::unordered_map<StringID, std::unique_ptr<RhiResourceView>> m_DescriptorTable;
+    std::unordered_map<StringID, std::shared_ptr<RhiResourceView>> m_DescriptorTable;
     std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_DescriptorAllocations;
 };
 
 template <typename T>
-T Ether::Graphics::ResourceContext::GetResource(const char* resourceName) const
+RhiResource* Ether::Graphics::ResourceContext::GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const
 {
-    if (m_ResourceTable.find(resourceName) == m_ResourceTable.end())
-        LogGraphicsFatal("The requested resource (%s) has not yet been created", resourceName);
+    if (m_ResourceTable.find(view.GetSharedResourceName()) == m_ResourceTable.end())
+        LogGraphicsFatal("The requested resource (%s) has not yet been created", view.GetSharedResourceName());
 
-    return (T&)*m_ResourceTable.at(resourceName);
-}
-
-template <typename T>
-T Ether::Graphics::ResourceContext::GetView(const char* viewName) const
-{
-    if (m_DescriptorTable.find(viewName) == m_DescriptorTable.end())
-        LogGraphicsFatal("The requested resource (%s) has not yet been created", viewName);
-
-    return (T&)*m_DescriptorTable.at(viewName);
+    return m_ResourceTable.at(view.GetSharedResourceName()).get();
 }
 
 } // namespace Ether::Graphics

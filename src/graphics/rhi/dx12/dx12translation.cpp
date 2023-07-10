@@ -455,54 +455,6 @@ D3D12_RESOURCE_STATES Ether::Graphics::Translate(const RhiResourceState& rhiType
     }
 }
 
-D3D12_SRV_DIMENSION Ether::Graphics::Translate(const RhiShaderResourceDimension& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiShaderResourceDimension::Unknown:
-        return D3D12_SRV_DIMENSION_UNKNOWN;
-    case RhiShaderResourceDimension::Buffer:
-        return D3D12_SRV_DIMENSION_BUFFER;
-    case RhiShaderResourceDimension::Texture1D:
-        return D3D12_SRV_DIMENSION_TEXTURE1D;
-    case RhiShaderResourceDimension::Texture1DArray:
-        return D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
-    case RhiShaderResourceDimension::Texture2D:
-        return D3D12_SRV_DIMENSION_TEXTURE2D;
-    case RhiShaderResourceDimension::Texture2DArray:
-        return D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    case RhiShaderResourceDimension::Texture3D:
-        return D3D12_SRV_DIMENSION_TEXTURE3D;
-    case RhiShaderResourceDimension::TextureCube:
-        return D3D12_SRV_DIMENSION_TEXTURECUBE;
-    case RhiShaderResourceDimension::TextureCubeArray:
-        return D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
-    case RhiShaderResourceDimension::RTAccelerationStructure:
-        return D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
-    default:
-        return D3D12_SRV_DIMENSION_UNKNOWN;
-    }
-}
-
-D3D12_UAV_DIMENSION Ether::Graphics::Translate(const RhiUnorderedAccessDimension& rhiType)
-{
-    switch (rhiType)
-    {
-    case RhiUnorderedAccessDimension::Unknown:
-        return D3D12_UAV_DIMENSION_UNKNOWN;
-    case RhiUnorderedAccessDimension::Buffer:
-        return D3D12_UAV_DIMENSION_BUFFER;
-    case RhiUnorderedAccessDimension::Texture1D:
-        return D3D12_UAV_DIMENSION_TEXTURE1D;
-    case RhiUnorderedAccessDimension::Texture2D:
-        return D3D12_UAV_DIMENSION_TEXTURE2D;
-    case RhiUnorderedAccessDimension::Texture3D:
-        return D3D12_UAV_DIMENSION_TEXTURE3D;
-    default:
-        return D3D12_UAV_DIMENSION_UNKNOWN;
-    }
-}
-
 D3D12_SHADER_VISIBILITY Ether::Graphics::Translate(const RhiShaderVisibility& rhiType)
 {
     switch (rhiType)
@@ -794,75 +746,6 @@ D3D12_VIEWPORT Ether::Graphics::Translate(const RhiViewportDesc& rhiDesc)
     dx12Desc.Height = rhiDesc.m_Height;
     dx12Desc.MinDepth = rhiDesc.m_MinDepth;
     dx12Desc.MaxDepth = rhiDesc.m_MaxDepth;
-
-    return dx12Desc;
-}
-
-D3D12_RENDER_TARGET_VIEW_DESC Ether::Graphics::Translate(const RhiRenderTargetViewDesc& rhiDesc)
-{
-    D3D12_RENDER_TARGET_VIEW_DESC dx12Desc = {};
-    dx12Desc.Format = Translate(rhiDesc.m_Format);
-    dx12Desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-    dx12Desc.Texture2D.MipSlice = 0;
-
-    return dx12Desc;
-}
-
-D3D12_DEPTH_STENCIL_VIEW_DESC Ether::Graphics::Translate(const RhiDepthStencilViewDesc& rhiDesc)
-{
-    D3D12_DEPTH_STENCIL_VIEW_DESC dx12Desc = {};
-    dx12Desc.Format = Translate(rhiDesc.m_Format);
-    dx12Desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-    dx12Desc.Texture2D.MipSlice = 0;
-    dx12Desc.Flags = D3D12_DSV_FLAG_NONE;
-
-    return dx12Desc;
-}
-
-D3D12_SHADER_RESOURCE_VIEW_DESC Ether::Graphics::Translate(const RhiShaderResourceViewDesc& rhiDesc)
-{
-    D3D12_SHADER_RESOURCE_VIEW_DESC dx12Desc = {};
-    dx12Desc.Format = Translate(rhiDesc.m_Format);
-    dx12Desc.ViewDimension = Translate(rhiDesc.m_Dimensions);
-    dx12Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-    switch (rhiDesc.m_Dimensions)
-    {
-    case RhiShaderResourceDimension::Texture2D:
-        dx12Desc.Texture2D.MipLevels = rhiDesc.m_NumMips;
-        dx12Desc.Texture2D.MostDetailedMip = 0;
-        dx12Desc.Texture2D.PlaneSlice = 0;
-        dx12Desc.Texture2D.ResourceMinLODClamp = 0;
-        break;
-    case RhiShaderResourceDimension::TextureCube:
-        dx12Desc.Texture2D.MipLevels = rhiDesc.m_NumMips;
-        dx12Desc.Texture2D.MostDetailedMip = 0;
-        dx12Desc.Texture2D.PlaneSlice = 0;
-        dx12Desc.Texture2D.ResourceMinLODClamp = 0;
-        break;
-    case RhiShaderResourceDimension::RTAccelerationStructure:
-        dx12Desc.RaytracingAccelerationStructure.Location = rhiDesc.m_Resource->GetGpuAddress();
-        break;
-    default:
-        LogGraphicsFatal("Not yet supported");
-    }
-
-    return dx12Desc;
-}
-
-D3D12_UNORDERED_ACCESS_VIEW_DESC Ether::Graphics::Translate(const RhiUnorderedAccessViewDesc& rhiDesc)
-{
-    D3D12_UNORDERED_ACCESS_VIEW_DESC dx12Desc = {};
-    dx12Desc.Format = Translate(rhiDesc.m_Format);
-    dx12Desc.ViewDimension = Translate(rhiDesc.m_Dimensions);
-    return dx12Desc;
-}
-
-D3D12_CONSTANT_BUFFER_VIEW_DESC Ether::Graphics::Translate(const RhiConstantBufferViewDesc& rhiDesc)
-{
-    D3D12_CONSTANT_BUFFER_VIEW_DESC dx12Desc = {};
-    dx12Desc.SizeInBytes = rhiDesc.m_BufferSize;
-    dx12Desc.BufferLocation = rhiDesc.m_Resource->GetGpuAddress();
 
     return dx12Desc;
 }

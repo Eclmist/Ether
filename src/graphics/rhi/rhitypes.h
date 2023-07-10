@@ -269,50 +269,6 @@ struct RhiViewportDesc
 
 //========================= Resource Descs ==========================//
 
-struct RhiResourceViewDesc
-{
-    RhiResource* m_Resource;
-    RhiCpuAddress m_TargetCpuAddress;
-
-    auto operator<=>(const RhiResourceViewDesc&) const = default;
-};
-
-struct RhiRenderTargetViewDesc : public RhiResourceViewDesc
-{
-    RhiFormat m_Format;
-    auto operator<=>(const RhiRenderTargetViewDesc&) const = default;
-};
-
-struct RhiDepthStencilViewDesc : public RhiResourceViewDesc
-{
-    RhiFormat m_Format;
-    auto operator<=>(const RhiDepthStencilViewDesc&) const = default;
-};
-
-struct RhiShaderResourceViewDesc : public RhiResourceViewDesc
-{
-    RhiGpuAddress m_TargetGpuAddress;
-    RhiFormat m_Format;
-    RhiShaderResourceDimension m_Dimensions;
-    uint32_t m_NumMips;
-    auto operator<=>(const RhiShaderResourceViewDesc&) const = default;
-};
-
-struct RhiConstantBufferViewDesc : public RhiResourceViewDesc
-{
-    RhiGpuAddress m_TargetGpuAddress;
-    size_t m_BufferSize;
-    auto operator<=>(const RhiConstantBufferViewDesc&) const = default;
-};
-
-struct RhiUnorderedAccessViewDesc : public RhiResourceViewDesc
-{
-    RhiGpuAddress m_TargetGpuAddress;
-    RhiFormat m_Format;
-    RhiUnorderedAccessDimension m_Dimensions;
-    auto operator<=>(const RhiUnorderedAccessViewDesc&) const = default;
-};
-
 struct RhiIndexBufferViewDesc
 {
     RhiFormat m_Format;

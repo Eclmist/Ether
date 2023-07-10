@@ -28,27 +28,44 @@ class RhiResourceView
 public:
     RhiResourceView()
         : m_CpuAddress(0)
-        , m_GpuAddress(0)
-        , m_ResourceID(-1)
+        , m_ResourceID()
+        , m_ViewID()
     {
-        // Make each view unique
-        static uint64_t i = 0;
-        m_ViewID = i++;
     };
 
     virtual ~RhiResourceView() = 0;
 
 public:
-    inline uint64_t GetViewID() const { return m_ViewID; }
-    inline uint64_t GetResourceID() const { return m_ResourceID; }
+    inline StringID GetViewID() const { return m_ViewID; }
+    inline StringID GetResourceID() const { return m_ResourceID; }
     inline RhiCpuAddress GetCpuAddress() const { return m_CpuAddress; }
-    inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
+    inline RhiResourceDimension GetDimension() const { return m_Dimension; }
+    inline RhiFormat GetFormat() const { return m_Format; }
+    inline uint32_t GetWidth() const { return m_Width; }
+    inline uint32_t GetHeight() const { return m_Height; }
+    inline uint32_t GetDepth() const { return m_Depth; }
+
+public:
+    inline void SetViewID(StringID viewID) { m_ViewID = viewID; }
+    inline void SetResourceID(StringID resourceID) { m_ResourceID = resourceID; }
+    inline void SetCpuAddress(RhiCpuAddress addr) { m_CpuAddress = addr; }
+    inline void SetDimension(RhiResourceDimension dim) { m_Dimension = dim; }
+    inline void SetFormat(RhiFormat format) { m_Format = format; }
+    inline void SetWidth(uint32_t width) { m_Width = width; }
+    inline void SetHeight(uint32_t height) { m_Height = height; }
+    inline void SetDepth(uint32_t depth) { m_Depth = depth; }
 
 protected:
     RhiCpuAddress m_CpuAddress;
-    RhiGpuAddress m_GpuAddress;
-    uint64_t m_ViewID;
-    uint64_t m_ResourceID;
+    StringID m_ViewID;
+    StringID m_ResourceID;
+
+protected:
+    RhiResourceDimension m_Dimension;
+    RhiFormat m_Format;
+    uint32_t m_Width;
+    uint32_t m_Height;
+    uint32_t m_Depth;
 };
 
 inline RhiResourceView::~RhiResourceView()
@@ -58,8 +75,15 @@ inline RhiResourceView::~RhiResourceView()
 class RhiShaderVisibleResourceView : public RhiResourceView
 {
 public:
-    RhiShaderVisibleResourceView() = default;
+    RhiShaderVisibleResourceView() : m_GpuAddress(0) {}
     ~RhiShaderVisibleResourceView() = default;
+
+public:
+    inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
+    inline void SetGpuAddress(RhiGpuAddress addr) { m_GpuAddress = addr; }
+
+protected:
+    RhiGpuAddress m_GpuAddress;
 };
 
 class RhiRenderTargetView : public RhiResourceView
@@ -67,12 +91,6 @@ class RhiRenderTargetView : public RhiResourceView
 public:
     RhiRenderTargetView() = default;
     ~RhiRenderTargetView() = default;
-
-public:
-    inline RhiFormat GetFormat() const { return m_Format; }
-
-protected:
-    RhiFormat m_Format;
 };
 
 class RhiDepthStencilView : public RhiResourceView
@@ -80,12 +98,6 @@ class RhiDepthStencilView : public RhiResourceView
 public:
     RhiDepthStencilView() = default;
     ~RhiDepthStencilView() = default;
-
-public:
-    inline RhiFormat GetFormat() const { return m_Format; }
-
-protected:
-    RhiFormat m_Format;
 };
 
 class RhiShaderResourceView : public RhiShaderVisibleResourceView
@@ -95,17 +107,17 @@ public:
     ~RhiShaderResourceView() = default;
 };
 
-class RhiConstantBufferView : public RhiShaderVisibleResourceView
-{
-public:
-    RhiConstantBufferView() = default;
-    ~RhiConstantBufferView() = default;
-};
-
 class RhiUnorderedAccessView : public RhiShaderVisibleResourceView
 {
 public:
     RhiUnorderedAccessView() = default;
     ~RhiUnorderedAccessView() = default;
+};
+
+class RhiConstantBufferView : public RhiShaderVisibleResourceView
+{
+public:
+    RhiConstantBufferView() = default;
+    ~RhiConstantBufferView() = default;
 };
 } // namespace Ether::Graphics

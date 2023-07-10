@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/common/renderdata.h"
 #include "graphics/context/graphiccontext.h"
 #include "graphics/schedule/framescheduler.h"
 
@@ -33,10 +34,9 @@ public:
 
 public:
     inline uint64_t GetFrameNumber() const { return m_FrameNumber; }
-    inline GraphicContext& GetGraphicContext() { return m_Context; }
+    inline RenderData& GetRenderData() { return m_RenderData; }
 
 public:
-
     void WaitForPresent();
     void Render();
     void Present();
@@ -44,7 +44,7 @@ public:
 private:
     uint64_t m_FrameNumber;
 
-    GraphicContext m_Context;
     FrameScheduler m_Scheduler;
+    RenderData m_RenderData;
 };
 } // namespace Ether::Graphics

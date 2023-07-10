@@ -38,12 +38,6 @@ Ether::Graphics::GraphicDisplay::GraphicDisplay()
 Ether::Graphics::GraphicDisplay::~GraphicDisplay()
 {
     m_SwapChain.reset();
-
-    for (uint32_t i = 0; i < GetNumBuffers(); ++i)
-    {
-        m_RenderTargetRtv[i].reset();
-        m_RenderTargetSrv[i].reset();
-    }
 }
 
 void Ether::Graphics::GraphicDisplay::Present()
@@ -104,25 +98,33 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
     m_SwapChainDescriptors.clear();
 
     auto rtvAllocation = GraphicCore::GetRtvAllocator().Allocate(3);
-    auto srvAllocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
+    auto srvAllocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(3);
 
     for (uint32_t i = 0; i < GetNumBuffers(); ++i)
     {
-        RhiRenderTargetViewDesc rtvDesc = {};
-        rtvDesc.m_Format = BackBufferFormat;
-        rtvDesc.m_Resource = m_RenderTargets[i];
-        rtvDesc.m_TargetCpuAddress = dynamic_cast<DescriptorAllocation&>(*rtvAllocation).GetCpuAddress(i);
+        m_RenderTargetRtv[i] = {};
+        m_RenderTargetRtv[i].SetWidth(m_Viewport.m_Width);
+        m_RenderTargetRtv[i].SetHeight(m_Viewport.m_Height);
+        m_RenderTargetRtv[i].SetDepth(1);
+        m_RenderTargetRtv[i].SetDimension(RhiResourceDimension::Texture2D);
+        m_RenderTargetRtv[i].SetFormat(BackBufferFormat);
+        m_RenderTargetRtv[i].SetViewID("BackBuffer RTV " + std::to_string(i));
+        m_RenderTargetRtv[i].SetResourceID(m_RenderTargets[i]->GetResourceID());
+        m_RenderTargetRtv[i].SetCpuAddress(((DescriptorAllocation&)(*rtvAllocation)).GetCpuAddress(i));
+        GraphicCore::GetDevice().InitializeRenderTargetView(m_RenderTargetRtv[i], *m_RenderTargets[i]);
 
-        m_RenderTargetRtv[i] = GraphicCore::GetDevice().CreateRenderTargetView(rtvDesc);
-
-        RhiShaderResourceViewDesc srvDesc = {};
-        srvDesc.m_Format = BackBufferFormat;
-        srvDesc.m_Resource = m_RenderTargets[i];
-        srvDesc.m_Dimensions = RhiShaderResourceDimension::Texture2D;
-        srvDesc.m_NumMips = 1;
-        srvDesc.m_TargetCpuAddress = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetCpuAddress();
-        srvDesc.m_TargetGpuAddress = dynamic_cast<DescriptorAllocation&>(*srvAllocation).GetGpuAddress();
-        m_RenderTargetSrv[i] = GraphicCore::GetDevice().CreateShaderResourceView(srvDesc);
+        m_RenderTargetSrv[i] = {};
+        m_RenderTargetRtv[i].SetWidth(m_Viewport.m_Width);
+        m_RenderTargetRtv[i].SetHeight(m_Viewport.m_Height);
+        m_RenderTargetRtv[i].SetDepth(1);
+        m_RenderTargetRtv[i].SetDimension(RhiResourceDimension::Texture2D);
+        m_RenderTargetSrv[i].SetFormat(BackBufferFormat);
+        m_RenderTargetRtv[i].SetViewID("BackBuffer SRV " + std::to_string(i));
+        m_RenderTargetSrv[i].SetResourceID(m_RenderTargets[i]->GetResourceID());
+        m_RenderTargetSrv[i].SetDimension(RhiResourceDimension::Texture2D);
+        m_RenderTargetSrv[i].SetCpuAddress(((DescriptorAllocation&)(*srvAllocation)).GetCpuAddress(i));
+        m_RenderTargetSrv[i].SetGpuAddress(((DescriptorAllocation&)(*srvAllocation)).GetGpuAddress(i));
+        GraphicCore::GetDevice().InitializeShaderResourceView(m_RenderTargetSrv[i], *m_RenderTargets[i]);
     }
 
     m_SwapChainDescriptors.emplace_back(std::move(rtvAllocation));

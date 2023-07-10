@@ -95,7 +95,7 @@ void RayGeneration()
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)
-            light += pow(saturate(payload.m_RayT / 16), 0.5) * skyColor * rcp(NumRays);
+            light += pow(saturate(payload.m_RayT / 16), 1.5) * skyColor * rcp(NumRays);
         else
             light += skyColor * rcp(NumRays);
     }
