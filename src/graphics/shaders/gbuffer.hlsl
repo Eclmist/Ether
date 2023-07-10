@@ -87,7 +87,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     }
 
     // Don't support alpha yet
-    if (InterleavedGradientNoise(IN.Position.xy) > albedo.a)
+    //if (InterleavedGradientNoise(IN.Position) > albedo.a)
+    if (albedo.a < 0.5)
         discard;
 
     PS_OUTPUT o;
@@ -95,6 +96,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
     o.Output2 = float4(IN.Normal.yz, velocity);
     //o.DebugOutput = float4(IN.TexCoord, 0, 0);
-    o.DebugOutput = albedo;
+    o.DebugOutput = o.Output0;
     return o;
 }

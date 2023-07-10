@@ -25,24 +25,27 @@
 #include "graphics/schedule/globalconstantsproducer.h"
 #include "graphics/schedule/framecompositeproducer.h"
 
-Ether::Graphics::GlobalConstantsProducer* g_GlobalConstantsProducer;
-Ether::Graphics::GBufferProducer* g_GBufferProducer;
-Ether::Graphics::FrameCompositeProducer* g_FrameCompositeProducer;
+DECLARE_GFX_PA(GlobalConstantsProducer)
+DECLARE_GFX_PA(GBufferProducer)
+DECLARE_GFX_PA(FrameCompositeProducer)
 
 // TEMP ============================================
 #include "graphics/schedule/TempRaytracingFrameDump.h"
-Ether::Graphics::TempRaytracingFrameDump* g_TempRaytracingPass;
+DECLARE_GFX_PA(TempRaytracingFrameDump)
 // =================================================
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
     // This should be where render passes should be scheduled.
+    ACCESS_GFX_PA(GlobalConstantsProducer).Set(new GlobalConstantsProducer());
+    ACCESS_GFX_PA(GBufferProducer).Set(new GBufferProducer());
+    ACCESS_GFX_PA(TempRaytracingFrameDump).Set(new TempRaytracingFrameDump());
+    ACCESS_GFX_PA(FrameCompositeProducer).Set(new FrameCompositeProducer());
 
-    // For now, just setup the temp frame dump here
-    g_GlobalConstantsProducer = new GlobalConstantsProducer();
-    g_GBufferProducer = new GBufferProducer();
-    g_TempRaytracingPass = new TempRaytracingFrameDump();
-    g_FrameCompositeProducer = new FrameCompositeProducer();
+    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(GlobalConstantsProducer));
+    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(GBufferProducer));
+    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(TempRaytracingFrameDump));
+    GraphicCore::GetRenderGraphManager().Register(ACCESS_GFX_PA(FrameCompositeProducer));
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -50,10 +53,6 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
-    delete g_GlobalConstantsProducer;
-    delete g_GBufferProducer;
-    delete g_TempRaytracingPass;
-    delete g_FrameCompositeProducer;
 }
 
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
@@ -64,10 +63,10 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Compile what needs compiling (which should be everything)
     // Put it into resource context (unordered_map cache)
 
-    g_GlobalConstantsProducer->Initialize(m_ResourceContext);
-    g_GBufferProducer->Initialize(m_ResourceContext);
-    g_TempRaytracingPass->Initialize(m_ResourceContext);
-    g_FrameCompositeProducer->Initialize(m_ResourceContext);
+    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->Initialize(m_ResourceContext);
+    ACCESS_GFX_PA(GBufferProducer).Get()->Initialize(m_ResourceContext);
+    ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->Initialize(m_ResourceContext);
+    ACCESS_GFX_PA(FrameCompositeProducer).Get()->Initialize(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -83,10 +82,10 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
         m_ResourceContext.RecompilePipelineStates();
 
-    g_GlobalConstantsProducer->FrameSetup(m_ResourceContext);
-    g_GBufferProducer->FrameSetup(m_ResourceContext);
-    g_TempRaytracingPass->FrameSetup(m_ResourceContext);
-    g_FrameCompositeProducer->FrameSetup(m_ResourceContext);
+    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->PrepareFrame(m_ResourceContext);
+    ACCESS_GFX_PA(GBufferProducer).Get()->PrepareFrame(m_ResourceContext);
+    ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->PrepareFrame(m_ResourceContext);
+    ACCESS_GFX_PA(FrameCompositeProducer).Get()->PrepareFrame(m_ResourceContext);
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
@@ -99,25 +98,25 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
 
     context.Reset();
 
-    g_GlobalConstantsProducer->Reset();
-    g_GlobalConstantsProducer->Render(context, m_ResourceContext);
+    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->Reset();
+    ACCESS_GFX_PA(GBufferProducer).Get()->Reset();
+    ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->Reset();
+    ACCESS_GFX_PA(FrameCompositeProducer).Get()->Reset();
 
-    g_GBufferProducer->Reset();
-    g_GBufferProducer->Render(context, m_ResourceContext);
+    ACCESS_GFX_PA(GlobalConstantsProducer).Get()->RenderFrame(context, m_ResourceContext);
+    ACCESS_GFX_PA(GBufferProducer).Get()->RenderFrame(context, m_ResourceContext);
 
     // For now, just render the frame dump
     if (GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
     {
-        g_TempRaytracingPass->Reset();
-        g_TempRaytracingPass->Render(context, m_ResourceContext);
-
-        g_FrameCompositeProducer->Reset();
-        g_FrameCompositeProducer->Render(context, m_ResourceContext);
+        ACCESS_GFX_PA(TempRaytracingFrameDump).Get()->RenderFrame(context, m_ResourceContext);
+        ACCESS_GFX_PA(FrameCompositeProducer).Get()->RenderFrame(context, m_ResourceContext);
     }
 
     context.FinalizeAndExecute();
 
-    m_ImguiWrapper->Render();
+    if (GraphicCore::GetGraphicConfig().IsDebugGuiEnabled())
+        m_ImguiWrapper->Render();
 
     // The following can be moved into its own render pass
     context.Reset();

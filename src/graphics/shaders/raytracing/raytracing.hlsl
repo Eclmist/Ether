@@ -81,7 +81,7 @@ void RayGeneration()
     ray.Direction = sunDirection;
     ray.Origin = position;
     ray.TMax = 64;
-    ray.TMin = 0.001;
+    ray.TMin = 0;
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
@@ -95,7 +95,7 @@ void RayGeneration()
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)
-            light += pow(saturate(payload.m_RayT / 16), 2) * skyColor * rcp(NumRays);
+            light += pow(saturate(payload.m_RayT / 16), 0.5) * skyColor * rcp(NumRays);
         else
             light += skyColor * rcp(NumRays);
     }
@@ -105,6 +105,9 @@ void RayGeneration()
 
     float depth = length(position - g_GlobalConstants.m_EyePosition.xyz);
     float depthPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev + taaJitter, 0).w;
+
+    if (uvPrev.x < 0 || uvPrev.x > 1 || uvPrev.y < 0 || uvPrev.y > 1)
+        a = 1.0;
 
     //if (abs(depth - depthPrev) > 0.1)
     //    a = 1.0;

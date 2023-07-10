@@ -20,31 +20,25 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/schedule/rendergraph/rendergraphutils.h"
 #include "graphics/schedule/rendergraph/rendergraphpass.h"
-#include "graphics/rhi/rhiresourceviews.h"
-#include "graphics/context/resourcecontext.h"
-#include "graphics/context/graphiccontext.h"
 
 namespace Ether::Graphics
 {
-class FrameCompositeProducer : public RenderGraphPass
+class RenderGraphManager : public NonCopyable, public NonMovable
 {
 public:
-    void Reset() override;
-    void Initialize(ResourceContext& rc) override;
-    void PrepareFrame(ResourceContext& rc) override;
-    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+    RenderGraphManager() = default;
+    ~RenderGraphManager() = default;
 
-private:
-    void CreateShaders();
-    void CreateRootSignature();
-    void CreatePipelineState(ResourceContext& rc);
+public:
+    ETH_GRAPHIC_DLL void Register(GFX_STATIC_LINKSPACE::GFX_PA_TYPE pass);
+    ETH_GRAPHIC_DLL void Deregister(GFX_STATIC_LINKSPACE::GFX_PA_TYPE pass);
 
-private:
-    std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
+public:
+    RenderGraphPass* GetPass(GFX_STATIC_LINKSPACE::GFX_PA_TYPE pass) const;
 
-    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
-    std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
+public:
+    std::unordered_map<StringID, std::unique_ptr<RenderGraphPass>> m_RenderGraphPasses;
 };
 } // namespace Ether::Graphics

@@ -22,6 +22,8 @@
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/framecompositeinputs.h"
 
+DEFINE_GFX_PA(FrameCompositeProducer)
+
 namespace Ether::Graphics::RhiLinkSpace
 {
 extern RhiGpuAddress g_GlobalConstantsCbv;
@@ -37,11 +39,11 @@ void Ether::Graphics::FrameCompositeProducer::Initialize(ResourceContext& rc)
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::FrameCompositeProducer::FrameSetup(ResourceContext& rc)
+void Ether::Graphics::FrameCompositeProducer::PrepareFrame(ResourceContext& rc)
 {
 }
 
-void Ether::Graphics::FrameCompositeProducer::Render(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::FrameCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("Temp Frame Dump - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();

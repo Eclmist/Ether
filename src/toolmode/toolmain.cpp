@@ -46,10 +46,11 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
 
-    const std::string modelName = "San_Miguel";
-    std::string workspacePath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\glTF-Sample-Models-master\\2.0\\";
+    std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
+    const std::string worldPath = GetCommandLineOptions().GetWorldPath();
+    const std::string importPath = GetCommandLineOptions().GetImportPath();
 
-    workspacePath = workspacePath + modelName + "\\glTF\\";
+    std::string exportPath = workspacePath + worldPath;
 
 #if 1
     for (const auto& entry : std::filesystem::directory_iterator(workspacePath))
@@ -63,8 +64,8 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     // To speed up development, we will import the main sponza asset here each time we load toolmode, even
     // without editor connection.
     AssetImporter::Instance().SetWorkspacePath(workspacePath);
-    //AssetImporter::Instance().Import(modelName + ".gltf");
-    AssetImporter::Instance().Import("san-miguel.obj");
+    AssetImporter::Instance().Import(importPath);
+    //AssetImporter::Instance().Import("san-miguel.obj");
     //AssetImporter::Instance().Import("NewSponza_Curtains_glTF" ".gltf");
     //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF" ".gltf");
     //AssetImporter::Instance().Import("NewSponza_CypressTree_glTF" ".gltf");
@@ -131,11 +132,11 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     }
 
     world.GetResourceManager().CreateGpuResources();
-    world.Save(workspacePath + "TestScene.ether");
+    world.Save(exportPath);
 
     // ====================================================================================================
 #else
-    world.Load(workspacePath + "TestScene.ether");
+    world.Load(exportPath);
 #endif
 
     Entity& camera = world.CreateEntity("Main Camera");

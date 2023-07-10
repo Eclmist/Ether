@@ -27,6 +27,8 @@
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/material.h"
 
+DEFINE_GFX_PA(GBufferProducer)
+
 namespace Ether::Graphics::RhiLinkSpace
 {
 extern RhiGpuAddress g_GlobalConstantsCbv;
@@ -40,7 +42,7 @@ void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& rc)
+void Ether::Graphics::GBufferProducer::PrepareFrame(ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
@@ -59,7 +61,7 @@ void Ether::Graphics::GBufferProducer::FrameSetup(ResourceContext& rc)
     rc.CreateShaderResourceView("GBuffer - SRV 2", m_GBufferTexture2, RhiFormat::R32G32B32A32Float, RhiShaderResourceDimension::Texture2D);
 }
 
-void Ether::Graphics::GBufferProducer::Render(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("Temp Frame Dump - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();

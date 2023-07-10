@@ -27,6 +27,8 @@
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/raypayload.h"
 
+DEFINE_GFX_PA(TempRaytracingFrameDump)
+
 static const wchar_t* kRayGenShader = L"RayGeneration";
 static const wchar_t* kMissShader = L"Miss";
 static const wchar_t* kClosestHitShader = L"ClosestHit";
@@ -45,7 +47,7 @@ void Ether::Graphics::TempRaytracingFrameDump::Initialize(ResourceContext& rc)
     InitializePipelineStates();
 }
 
-void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
+void Ether::Graphics::TempRaytracingFrameDump::PrepareFrame(ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
@@ -74,7 +76,7 @@ void Ether::Graphics::TempRaytracingFrameDump::FrameSetup(ResourceContext& rc)
     m_GBufferSrv2 = rc.GetView<RhiShaderResourceView>("GBuffer - SRV 2");
 }
 
-void Ether::Graphics::TempRaytracingFrameDump::Render(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::TempRaytracingFrameDump::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("Raytraced GBuffer Pass - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();

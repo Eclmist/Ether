@@ -32,17 +32,19 @@ public:
 public:
     inline ethVector2u GetResolution() const { return m_Resolution; }
     inline std::string GetShaderSourceDir() const { return m_ShaderSourceDir; }
-    inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
+    inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
+    inline bool IsDebugGuiEnabled() const { return m_IsDebugGuiEnabled; }
     inline void* GetWindowHandle() const { return m_WindowHandle; }
     inline ethVector4 GetClearColor() const { return m_ClearColor; }
 
     void SetResolution(const ethVector2u& resolution);
     inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourceDir = dir; }
-    inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
     inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
     inline void SetUseShaderDaemon(bool enable) { m_UseShaderDaemon = enable; }
+    inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
+    inline void SetDebugGuiEnabled(bool enabled) { m_IsDebugGuiEnabled = enabled; }
     inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
     inline void SetClearColor(const ethVector4& clearColor) { m_ClearColor = clearColor; }
 
@@ -61,9 +63,10 @@ private:
     ethVector4 m_ClearColor;
     ethVector2u m_Resolution;
     std::string m_ShaderSourceDir;
-    bool m_IsValidationLayerEnabled;
     bool m_UseSourceShaders;
     bool m_UseShaderDaemon;
+    bool m_IsValidationLayerEnabled;
+    bool m_IsDebugGuiEnabled;
     void* m_WindowHandle;
 };
 } // namespace Ether::Graphics

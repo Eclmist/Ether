@@ -21,6 +21,8 @@
 #include "graphics/schedule/globalconstantsproducer.h"
 #include "graphics/shaders/common/globalconstants.h"
 
+DEFINE_GFX_PA(GlobalConstantsProducer);
+
 namespace Ether::Graphics::RhiLinkSpace
 {
 RhiGpuAddress g_GlobalConstantsCbv;
@@ -35,11 +37,11 @@ void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& resou
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 }
 
-void Ether::Graphics::GlobalConstantsProducer::FrameSetup(ResourceContext& resourceContext)
+void Ether::Graphics::GlobalConstantsProducer::PrepareFrame(ResourceContext& resourceContext)
 {
 }
 
-void Ether::Graphics::GlobalConstantsProducer::Render(GraphicContext& graphicContext, ResourceContext& resourceContext)
+void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& graphicContext, ResourceContext& resourceContext)
 {
     ETH_MARKER_EVENT("GlobalConstantsProducer - Populate Upload Buffer");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();

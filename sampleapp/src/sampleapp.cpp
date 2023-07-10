@@ -62,6 +62,54 @@ void SampleApp::Shutdown()
 
 void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
+    UpdateGraphicConfig();
+    UpdateCamera();
+}
+
+void SampleApp::OnRender(const RenderEventArgs& e)
+{
+}
+
+void SampleApp::OnShutdown()
+{
+}
+
+void SampleApp::UpdateGraphicConfig() const
+{
+    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
+
+    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
+        Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
+
+    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
+        graphicConfig.m_IsRaytracingEnabled = !graphicConfig.m_IsRaytracingEnabled;
+
+    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F3))
+        graphicConfig.SetDebugGuiEnabled(!graphicConfig.IsDebugGuiEnabled());
+
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::J))
+        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(-1, 0, 0, 0) *
+                                       Time::GetDeltaTime() * 0.001).Normalized();
+    if (Input::GetKey((KeyCode)Win32::KeyCode::L))
+        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(1, 0, 0, 0) *
+                                       Time::GetDeltaTime() * 0.001).Normalized();
+    if (Input::GetKey((KeyCode)Win32::KeyCode::I))
+        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, 1, 0) *
+                                       Time::GetDeltaTime() * 0.001).Normalized();
+    if (Input::GetKey((KeyCode)Win32::KeyCode::K))
+        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, -1, 0) *
+                                       Time::GetDeltaTime() * 0.001).Normalized();
+    if (Input::GetKey((KeyCode)Win32::KeyCode::U))
+        graphicConfig.m_SunDirection =
+            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.001);
+    if (Input::GetKey((KeyCode)Win32::KeyCode::O))
+        graphicConfig.m_SunDirection =
+            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.001);
+}
+
+void SampleApp::UpdateCamera() const
+{
     static ethVector3 cameraRotation;
     static float moveSpeed = 0.001f;
 
@@ -79,13 +127,6 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
             -SMath::DegToRad(89.0f),
             SMath::DegToRad(89.0f));
     }
-
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
-        Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
-
-    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
-        graphicConfig.m_IsRaytracingEnabled = !graphicConfig.m_IsRaytracingEnabled;
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::E))
         m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;
@@ -110,12 +151,4 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     if (Input::GetKey((KeyCode)Win32::KeyCode::D))
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +
                                            rightVec * Time::GetDeltaTime() * moveSpeed;
-}
-
-void SampleApp::OnRender(const RenderEventArgs& e)
-{
-}
-
-void SampleApp::OnShutdown()
-{
 }

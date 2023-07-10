@@ -36,7 +36,7 @@ Ether::Graphics::GraphicCommon::GraphicCommon()
 void Ether::Graphics::GraphicCommon::InitializeRasterizerStates()
 {
     m_RasterizerDefault.m_FillMode = RhiFillMode::Solid;
-    m_RasterizerDefault.m_CullMode = RhiCullMode::Back;
+    m_RasterizerDefault.m_CullMode = RhiCullMode::None;
     m_RasterizerDefault.m_FrontCounterClockwise = false;
     m_RasterizerDefault.m_DepthBias = 0;
     m_RasterizerDefault.m_DepthBiasClamp = 0;

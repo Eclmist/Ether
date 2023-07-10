@@ -20,19 +20,20 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/schedule/rendergraph/rendergraphpass.h"
 #include "graphics/rhi/rhiresourceviews.h"
 #include "graphics/context/resourcecontext.h"
 #include "graphics/context/graphiccontext.h"
 
 namespace Ether::Graphics
 {
-class GBufferProducer
+class GBufferProducer : public RenderGraphPass
 {
 public:
-    void Reset();
-    void Initialize(ResourceContext& rc);
-    void FrameSetup(ResourceContext& rc);
-    void Render(GraphicContext& ctx, ResourceContext& rc);
+    void Reset() override;
+    void Initialize(ResourceContext& rc) override;
+    void PrepareFrame(ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
 private:
     void CreateUploadBufferAllocators();

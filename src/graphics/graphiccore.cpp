@@ -34,6 +34,7 @@ void Ether::Graphics::GraphicCore::Initialize()
     m_DsvAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::Dsv, _4KiB);
     m_SrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(RhiDescriptorHeapType::SrvCbvUav, _64KiB, true);
     m_CommandManager = std::make_unique<CommandManager>();
+    m_RenderGraphManager = std::make_unique<RenderGraphManager>();
     m_GraphicCommon = std::make_unique<GraphicCommon>();
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     m_GraphicRenderer = std::make_unique<GraphicRenderer>();
@@ -48,6 +49,7 @@ void Ether::Graphics::GraphicCore::Shutdown()
     m_GraphicRenderer.reset();
     m_GraphicDisplay.reset();
     m_GraphicCommon.reset();
+    m_RenderGraphManager.reset();
     m_CommandManager.reset();
     m_BindlessDescriptorManager.reset();
     m_SrvCbvUavAllocator.reset();

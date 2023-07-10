@@ -20,25 +20,5 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/schedule/rendergraph/rendergraphpass.h"
+#include "rendergraphpass.h"
 
-#include "graphics/memory/uploadbufferallocator.h"
-#include "graphics/rhi/rhiresourceviews.h"
-#include "graphics/rhi/rhishader.h"
-#include "graphics/context/graphiccontext.h"
-#include "graphics/context/resourcecontext.h"
-
-namespace Ether::Graphics
-{
-class GlobalConstantsProducer : public RenderGraphPass
-{
-public:
-    void Reset() override;
-    void Initialize(ResourceContext& resourceContext) override;
-    void PrepareFrame(ResourceContext& resourceContext) override;
-    void RenderFrame(GraphicContext& graphicContext, ResourceContext& resourceContext) override;
-
-private:
-    std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
-};
-} // namespace Ether::Graphics
