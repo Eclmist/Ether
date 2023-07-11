@@ -142,7 +142,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     m_Context.Reset();
     m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
     m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
-    m_Context.SetDescriptorHeap(*m_DescriptorHeap);
+    m_Context.SetSrvCbvUavDescriptorHeap(*m_DescriptorHeap);
     m_Context.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
 
     RenderDrawData();

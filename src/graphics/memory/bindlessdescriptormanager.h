@@ -36,6 +36,9 @@ public:
 public:
     void RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource* resource, RhiFormat format);
     void RegisterAsShaderResourceView(StringID resourceGuid, uint32_t indexInHeap);
+
+    uint32_t RegisterSampler(StringID name, RhiSamplerParameterDesc& sampler);
+
     uint32_t GetDescriptorIndex(StringID guid) const;
 
 private:

@@ -17,6 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "graphics/rhi/dx12/dx12includes.h"
 #include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 
 #ifdef ETH_GRAPHICS_DX12
@@ -27,6 +28,9 @@ Ether::Graphics::Dx12RaytracingShaderBindingTable::Dx12RaytracingShaderBindingTa
     uint32_t numEntries)
     : RhiRaytracingShaderBindingTable(name, maxEntrySize, numEntries)
 {
+    // Shader table must be aligned to D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT on dx12
+    m_ShaderTableEntrySize = AlignUp(maxEntrySize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+    m_ShaderTableSize = m_ShaderTableEntrySize * numEntries;
 }
 
 Ether::Graphics::RhiGpuAddress Ether::Graphics::Dx12RaytracingShaderBindingTable::GetGpuAddress() const

@@ -21,23 +21,23 @@
 #include "graphics/schedule/framescheduler.h"
 #include "graphics/schedule/schedulecontext.h"
 
-#include "graphics/schedule/producers/gbufferproducer.h"
 #include "graphics/schedule/producers/globalconstantsproducer.h"
-#include "graphics/schedule/producers/framecompositeproducer.h"
-#include "graphics/schedule/producers/TempRaytracingFrameDump.h"
+#include "graphics/schedule/producers/gbufferproducer.h"
+#include "graphics/schedule/producers/raytracedlightingproducer.h"
+#include "graphics/schedule/producers/finalcompositeproducer.h"
 
 DECLARE_GFX_PA(GlobalConstantsProducer)
 DECLARE_GFX_PA(GBufferProducer)
-//DECLARE_GFX_PA(FrameCompositeProducer)
-//DECLARE_GFX_PA(TempRaytracingFrameDump)
+DECLARE_GFX_PA(RaytracedLightingProducer)
+DECLARE_GFX_PA(FinalCompositeProducer)
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
     // This should be where internal render passes should be registered
     Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
     Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
-    //Register(ACCESS_GFX_PA(TempRaytracingFrameDump), new TempRaytracingFrameDump());
-    //Register(ACCESS_GFX_PA(FrameCompositeProducer), new FrameCompositeProducer());
+    Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
+    Register(ACCESS_GFX_PA(FinalCompositeProducer), new FinalCompositeProducer());
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -93,7 +93,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 
     ScheduleContext schedule;
     for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
-        iter->second->GetInputOutput(schedule);
+        iter->second->GetInputOutput(schedule, m_ResourceContext);
 
     schedule.CreateResources(m_ResourceContext);
 
@@ -105,6 +105,8 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 
     m_OrderedProducers.push(ACCESS_GFX_PA(GlobalConstantsProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)

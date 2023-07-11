@@ -366,9 +366,6 @@ struct RhiRaytracingPipelineStateDesc
     uint32_t m_MaxRecursionDepth;
 
     RhiLibraryShaderDesc m_LibraryShaderDesc;
-
-    RhiRootSignature* m_RayGenRootSignature;
-    RhiRootSignature* m_HitMissRootSignature;
     RhiRootSignature* m_GlobalRootSignature;
 
     bool operator==(const RhiRaytracingPipelineStateDesc& other) const
@@ -387,8 +384,6 @@ struct RhiRaytracingPipelineStateDesc
         ETH_COMPARATOR_GUARD_CLAUS(m_MaxRootSignatureSize);
         ETH_COMPARATOR_GUARD_CLAUS(m_MaxRecursionDepth);
         ETH_COMPARATOR_GUARD_CLAUS(m_LibraryShaderDesc);
-        ETH_COMPARATOR_GUARD_CLAUS(m_RayGenRootSignature);
-        ETH_COMPARATOR_GUARD_CLAUS(m_HitMissRootSignature);
         ETH_COMPARATOR_GUARD_CLAUS(m_GlobalRootSignature);
         return true;
     }
@@ -402,8 +397,6 @@ struct RhiRaytracingShaderBindingTableDesc
 
     uint32_t m_MaxRootSignatureSize;
     RhiRaytracingPipelineState* m_RaytracingPipelineState;
-    
-    RhiGpuAddress m_RayGenRootTableAddress;
 
     bool operator==(const RhiRaytracingShaderBindingTableDesc& other) const
     {
@@ -416,7 +409,6 @@ struct RhiRaytracingShaderBindingTableDesc
 
         ETH_COMPARATOR_GUARD_CLAUS(m_MaxRootSignatureSize);
         ETH_COMPARATOR_GUARD_CLAUS(m_RaytracingPipelineState);
-        ETH_COMPARATOR_GUARD_CLAUS(m_RayGenRootTableAddress);
         return true;
     }
 };

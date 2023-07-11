@@ -60,3 +60,18 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::GetDescriptorIndex(StringID
     return m_GuidToIndexMap.at(guid);
 }
 
+uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterSampler(StringID name, RhiSamplerParameterDesc& sampler)
+{
+    if (m_GuidToIndexMap.find(name) != m_GuidToIndexMap.end())
+        LogGraphicsError("Sampler %s has already been registered", name.GetString());
+
+    auto allocation = GraphicCore::GetSamplerAllocator().Allocate(1);
+    uint32_t indexInHeap = allocation->GetOffset();
+
+    GraphicCore::GetDevice().CopySampler(sampler, ((DescriptorAllocation&)(*allocation)).GetCpuAddress());
+    m_Allocations[name] = std::move(allocation);
+    m_GuidToIndexMap[name] = indexInHeap;
+
+    return indexInHeap;
+}
+

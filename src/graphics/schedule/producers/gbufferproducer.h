@@ -27,8 +27,11 @@ class GBufferProducer : public RenderGraphProducer
 {
 public:
     void Initialize(ResourceContext& rc) override;
-    void GetInputOutput(ScheduleContext& schedule) override;
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+
+protected:
+    bool IsEnabled() override;
 
 private:
     void CreateShaders();

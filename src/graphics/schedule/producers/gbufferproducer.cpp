@@ -32,8 +32,11 @@ DEFINE_GFX_DS(GBufferDepthStencil)
 DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   ValidFlag]
 DEFINE_GFX_RT(GBufferTexture1) // [Position.x, Position.y, Position.z, Normal.x]
 DEFINE_GFX_RT(GBufferTexture2) // [Normal.y,   zormal.z,   Velocity.x, Velocity.y]
+DEFINE_GFX_SR(GBufferTexture0)
+DEFINE_GFX_SR(GBufferTexture1)
+DEFINE_GFX_SR(GBufferTexture2)
 
-DECLARE_GFX_CB(GlobalConstantsRing)
+DECLARE_GFX_CB(GlobalRingBuffer)
 
 void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
 {
@@ -42,15 +45,18 @@ void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule)
+void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.NewDS(ACCESS_GFX_DS(GBufferDepthStencil), resolution.x, resolution.y, DepthBufferFormat);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
+    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
 
-    schedule.Read(ACCESS_GFX_CB(GlobalConstantsRing));
+    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
 
 void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -59,6 +65,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
+    const VisualBatch& visualBatch = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch;
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -76,18 +83,17 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetViewport(gfxDisplay.GetViewport());
     ctx.SetScissorRect(gfxDisplay.GetScissorRect());
     ctx.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
-    ctx.SetDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstantsRing))->GetGpuAddress() + gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants));
 
-    RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0),
-                                   *ACCESS_GFX_RT(GBufferTexture1),
-                                   *ACCESS_GFX_RT(GBufferTexture2),
-                                   gfxDisplay.GetBackBufferRtv() };
+    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
+    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+
+    RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0), *ACCESS_GFX_RT(GBufferTexture1), *ACCESS_GFX_RT(GBufferTexture2), gfxDisplay.GetBackBufferRtv() };
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(GBufferDepthStencil)));
 
-    const VisualBatch& visualBatch = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch;
 
     for (int i = 0; i < visualBatch.m_Visuals.size(); ++i)
     {
@@ -111,6 +117,14 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.PopMarker();
 }
 
+bool Ether::Graphics::GBufferProducer::IsEnabled()
+{
+    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch.m_Visuals.empty())
+        return false;
+
+    return true;
+}
+
 void Ether::Graphics::GBufferProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
@@ -127,29 +141,24 @@ void Ether::Graphics::GBufferProducer::CreateShaders()
 
 void Ether::Graphics::GBufferProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 1);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetAsSampler(0, GraphicCore::GetGraphicCommon().m_BilinearSampler_Wrap, RhiShaderVisibility::All);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
+    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
+    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) Material
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
 }
 
 void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
 {
+    RhiFormat formats[] = { RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, BackBufferFormat };
     m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    RhiFormat formats[] = { RhiFormat::R32G32B32A32Float,
-                            RhiFormat::R32G32B32A32Float,
-                            RhiFormat::R32G32B32A32Float,
-                            BackBufferFormat };
     m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
     m_PsoDesc->SetRootSignature(*m_RootSignature);
-    m_PsoDesc->SetInputLayout(
-        VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc,
-        VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
+    m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
     rc.RegisterPipelineState("GBufferProducer Pipeline State", *m_PsoDesc);
 }
+

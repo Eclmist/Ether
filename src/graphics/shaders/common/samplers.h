@@ -23,37 +23,9 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
-struct GlobalConstants
+struct Samplers
 {
-    // ============= Common ============= //
-    ethMatrix4x4 m_ViewMatrix;
-    ethMatrix4x4 m_ProjectionMatrix;
 
-    ethMatrix4x4 m_ViewMatrixPrev;
-    ethMatrix4x4 m_ProjectionMatrixPrev;
-
-    ethVector4 m_EyePosition;
-    ethVector4 m_EyeDirection;
-    ethVector4 m_Time;
-
-    ethVector4 m_SunDirection;
-    ethVector4 m_SunColor;
-
-    ethVector2u m_ScreenResolution;
-    uint32_t m_FrameNumber;
-
-    // ============= Debug ============== //
-    float m_TemporalAccumulationFactor;
-
-    // ============ Samplers ============ //
-    uint32_t m_SamplerIndex_Point_Clamp;
-    uint32_t m_SamplerIndex_Point_Wrap;
-    uint32_t m_SamplerIndex_Point_Border;
-    uint32_t m_SamplerIndex_Linear_Clamp;
-    uint32_t m_SamplerIndex_Linear_Wrap;
-    uint32_t m_SamplerIndex_Linear_Border;
-
-    // ============ Padding ============= //
     ethVector4 m_Padding1;
     ethVector4 m_Padding2;
     ethVector4 m_Padding3;
@@ -62,9 +34,25 @@ struct GlobalConstants
     ethVector4 m_Padding6;
     ethVector4 m_Padding7;
     ethVector4 m_Padding8;
-    ethVector2 m_Padding9;
+    ethVector4 m_Padding9;
+    ethVector4 m_Padding10;
+    ethVector4 m_Padding11;
+    ethVector4 m_Padding12;
+    ethVector4 m_Padding13;
+    ethVector4 m_Padding14;
+    ethVector2 m_Padding15;
 };
 
-ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");
+ETH_SHADER_STATIC_ASSERT(sizeof(Samplers) % 256 == 0 && "CBV must be 256byte aligned");
+
+#ifdef __HLSL__
+ConstantBuffer<Samplers> g_Samplers : register(b0);
+sampler g_PointClampSampler = ResourceDescriptorHeap[g_Samplers.m_SamplerIndex_Point_Clamp];
+sampler g_PointWrapSampler = ResourceDescriptorHeap[g_Samplers.m_SamplerIndex_Point_Wrap];
+sampler g_PointBorderSampler = ResourceDescriptorHeap[g_Samplers.m_SamplerIndex_Point_Border];
+sampler g_LinearClampSampler = ResourceDescriptorHeap[g_Samplers.m_SamplerIndex_Linear_Clamp];
+sampler g_LinearWrapSampler = ResourceDescriptorHeap[g_Samplers.m_SamplerIndex_Linear_Wrap];
+sampler g_LinearBorderSampler = ResourceDescriptorHeap[g_Samplers.m_SamplerIndex_Linear_Border];
+#endif // __HLSL__
 
 ETH_END_SHADER_NAMESPACE

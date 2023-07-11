@@ -18,12 +18,13 @@
 */
 
 #include "common/globalconstants.h"
-#include "common/framecompositeinputs.h"
 #include "utils/fullscreenhelpers.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-ConstantBuffer<FrameCompositeInputs> g_FrameCompositeInputs : register(b1);
-sampler g_BilinearSampler : register(s0);
+Texture2D<float4> g_GBufferTexture0 : register(t0);
+Texture2D<float4> g_GBufferTexture1 : register(t1);
+Texture2D<float4> g_GBufferTexture2 : register(t2);
+Texture2D<float4> g_LightingTexture : register(t3);
 
 struct VS_OUTPUT
 {
@@ -212,12 +213,10 @@ float4 ProceduralSky(float2 texCoord)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    Texture2D<float4> lightingOutput = ResourceDescriptorHeap[g_FrameCompositeInputs.m_LightingTextureIndex];
-    float4 light = lightingOutput[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
 
-    Texture2D<float4> gbufferTex0 = ResourceDescriptorHeap[g_FrameCompositeInputs.m_GBufferTextureIndex0];
-    float4 albedo = gbufferTex0.Sample(g_BilinearSampler, IN.TexCoord);
-
+    float4 light = g_LightingTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    float4 albedo = g_GBufferTexture0.Sample(pointSampler, IN.TexCoord);
     float4 finalColor = albedo * light;
 
     float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection);

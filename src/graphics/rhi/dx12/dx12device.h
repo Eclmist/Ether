@@ -51,6 +51,7 @@ public:
 
 public:
     void CopyDescriptors(uint32_t numDescriptors, RhiCpuAddress srcAddr, RhiCpuAddress destAddr, RhiDescriptorHeapType type) const override;
+    void CopySampler(const RhiSamplerParameterDesc& sampler, RhiCpuAddress destAddr) const override;
 
     void InitializeRenderTargetView(RhiRenderTargetView& rtv, const RhiResource& resource) const;
     void InitializeDepthStencilView(RhiDepthStencilView& dsv, const RhiResource& resource) const;

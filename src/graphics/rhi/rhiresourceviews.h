@@ -120,4 +120,18 @@ public:
     RhiConstantBufferView() = default;
     ~RhiConstantBufferView() = default;
 };
+
+class RhiAccelerationStructureResourceView : public RhiShaderResourceView
+{
+public:
+    RhiAccelerationStructureResourceView() = default;
+    ~RhiAccelerationStructureResourceView() = default;
+
+    inline void* GetVisualBatch() const { return m_VisualBatch; }
+    inline void SetVisualBatch(void* visualBatch) { m_VisualBatch = visualBatch; }
+
+private:
+    void* m_VisualBatch;
+};
+
 } // namespace Ether::Graphics

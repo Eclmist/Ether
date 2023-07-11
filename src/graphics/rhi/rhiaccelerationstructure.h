@@ -23,7 +23,7 @@
 
 namespace Ether::Graphics
 {
-class RhiAccelerationStructure
+class RhiAccelerationStructure : public NonCopyable, public NonMovable
 {
 public:
     RhiAccelerationStructure() = default;

@@ -22,13 +22,11 @@
 #include "graphics/rhi/rhiresourceviews.h"
 
 #define MARK_FOR_READ(input)                                                                            \
-    AssertGraphics(m_Reads.find(input.GetName()) == m_Reads.end(), "Resource already marked for read"); \
     input.Create();                                                                                     \
     m_Reads[input.GetName()] = input.Get();                                                             \
     m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get().get();
 
 #define MARK_FOR_WRITE(input)                                                                              \
-    AssertGraphics(m_Writes.find(input.GetName()) == m_Writes.end(), "Resource already marked for write"); \
     input.Create();                                                                                        \
     m_Writes[input.GetName()] = input.Get();                                                               \
     m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get().get();
@@ -58,6 +56,11 @@ void Ether::Graphics::ScheduleContext::Read(GFX_STATIC::GFX_CB_TYPE& cbv)
     MARK_FOR_READ(cbv);
 }
 
+void Ether::Graphics::ScheduleContext::Read(GFX_STATIC::GFX_AS_TYPE& asv)
+{
+    MARK_FOR_READ(asv);
+}
+
 void Ether::Graphics::ScheduleContext::Write(GFX_STATIC::GFX_RT_TYPE& rtv)
 {
     MARK_FOR_WRITE(rtv);
@@ -81,6 +84,11 @@ void Ether::Graphics::ScheduleContext::Write(GFX_STATIC::GFX_UA_TYPE& uav)
 void Ether::Graphics::ScheduleContext::Write(GFX_STATIC::GFX_CB_TYPE& cbv)
 {
     MARK_FOR_WRITE(cbv);
+}
+
+void Ether::Graphics::ScheduleContext::Write(GFX_STATIC::GFX_AS_TYPE& asv)
+{
+    MARK_FOR_WRITE(asv);
 }
 
 const void Ether::Graphics::ScheduleContext::NewRT(
@@ -180,6 +188,22 @@ const void Ether::Graphics::ScheduleContext::NewCB(GFX_STATIC::GFX_CB_TYPE& cbv,
     Write(cbv);
 }
 
+const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const VisualBatch& visuals)
+{
+    acv.Create();
+    RhiAccelerationStructureResourceView* view = acv.Get().get();
+    view->SetWidth(0);
+    view->SetHeight(0);
+    view->SetDepth(0);
+    view->SetFormat(RhiFormat::Unknown);
+    view->SetDimension(RhiResourceDimension::RTAccelerationStructure);
+    view->SetViewID(acv.GetName());
+    view->SetResourceID(acv.GetSharedResourceName());
+    view->SetVisualBatch((void*)&visuals);
+
+    Write(acv);
+}
+
 void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resourceContext)
 {
     // 1) Go through all descriptors that point to a single resource
@@ -192,20 +216,21 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
     {
         auto& associatedViews = iter->second;
         AssertGraphics(!associatedViews.empty(), "A resource without views should never have been registered");
+        RhiResourceView* firstView = associatedViews.begin()->second;
 
         // 2)
-        RhiResourceDimension dimension = associatedViews.begin()->second->GetDimension();
-        RhiFormat format = associatedViews.begin()->second->GetFormat();
-        uint32_t width = associatedViews.begin()->second->GetWidth();
-        uint32_t height = associatedViews.begin()->second->GetHeight();
-        uint32_t depth = associatedViews.begin()->second->GetDepth();
-        StringID resourceID = associatedViews.begin()->second->GetResourceID();
+        RhiResourceDimension dimension = firstView->GetDimension();
+        RhiFormat format = firstView->GetFormat();
+        uint32_t width = firstView->GetWidth();
+        uint32_t height = firstView->GetHeight();
+        uint32_t depth = firstView->GetDepth();
+        StringID resourceID = firstView->GetResourceID();
 
         RhiResourceFlag flags = RhiResourceFlag::None;
         for (auto viewIter = associatedViews.begin(); viewIter != associatedViews.end(); ++viewIter)
         {
             RhiResourceView* view = viewIter->second;
-            ValidateView(associatedViews.begin()->second, view);
+            ValidateView(firstView, view);
 
             if (dynamic_cast<RhiRenderTargetView*>(view) != nullptr)
                 flags |= RhiResourceFlag::AllowRenderTarget;
@@ -226,6 +251,9 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
             break;
         case RhiResourceDimension::Texture3D:
             resourceContext.CreateTexture3DResource(resourceID.GetString().c_str(), { width, height, depth }, format, flags);
+            break;
+        case RhiResourceDimension::RTAccelerationStructure:
+            resourceContext.CreateAccelerationStructure(resourceID.GetString().c_str(), { ((RhiAccelerationStructureResourceView*)firstView)->GetVisualBatch() });
             break;
         default:
             LogGraphicsError("Resource of an unsupported dimension specified");

@@ -23,15 +23,15 @@
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(GlobalConstantsProducer)
-DEFINE_GFX_CB(GlobalConstantsRing)
+DEFINE_GFX_CB(GlobalRingBuffer)
 
 void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& rc)
 {
 }
 
-void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& schedule)
+void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    schedule.NewCB(ACCESS_GFX_CB(GlobalConstantsRing), sizeof(Shader::GlobalConstants) * 3);
+    schedule.NewCB(ACCESS_GFX_CB(GlobalRingBuffer), sizeof(Shader::GlobalConstants) * 3);
 }
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -59,13 +59,19 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
     globalConstants.m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
     globalConstants.m_TemporalAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
+    globalConstants.m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
+    globalConstants.m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
+    globalConstants.m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;
+    globalConstants.m_SamplerIndex_Linear_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Clamp;
+    globalConstants.m_SamplerIndex_Linear_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Wrap;
+    globalConstants.m_SamplerIndex_Linear_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Border;
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
     memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(Shader::GlobalConstants));
 
     ctx.CopyBufferRegion(
         dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
-        *rc.GetResource(ACCESS_GFX_CB(GlobalConstantsRing)),
+        *rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer)),
         sizeof(Shader::GlobalConstants),
         0,
         sizeof(Shader::GlobalConstants) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex()

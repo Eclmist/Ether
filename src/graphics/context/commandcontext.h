@@ -53,7 +53,8 @@ public:
     void PopMarker();
 
     // Common
-    void SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
+    void SetSrvCbvUavDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
+    void SetSamplerDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
     void SetPipelineState(const RhiPipelineState& pipelineState);
 
     // Shader Data
@@ -87,6 +88,9 @@ protected:
 
     std::unique_ptr<RhiCommandList> m_CommandList;
     std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
+
+    const RhiDescriptorHeap* m_SrvCbvUavHeap;
+    const RhiDescriptorHeap* m_SamplerHeap;
 
     // Raytracing
     const RhiResource* m_RaytracingBindTable;

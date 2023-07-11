@@ -53,6 +53,7 @@ public:
 
 public:
     virtual void CopyDescriptors(uint32_t numDescriptors, RhiCpuAddress srcAddr, RhiCpuAddress destAddr, RhiDescriptorHeapType type) const = 0;
+    virtual void CopySampler(const RhiSamplerParameterDesc& sampler, RhiCpuAddress destAddr) const = 0;
 
     virtual void InitializeRenderTargetView(RhiRenderTargetView& rtv, const RhiResource& resource) const = 0;
     virtual void InitializeDepthStencilView(RhiDepthStencilView& dsv, const RhiResource& resource) const = 0;

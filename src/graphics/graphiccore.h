@@ -58,6 +58,7 @@ public:
     static inline DescriptorAllocator& GetRtvAllocator() { return *Instance().m_RtvAllocator; }
     static inline DescriptorAllocator& GetDsvAllocator() { return *Instance().m_DsvAllocator; }
     static inline DescriptorAllocator& GetSrvCbvUavAllocator() { return *Instance().m_SrvCbvUavAllocator; }
+    static inline DescriptorAllocator& GetSamplerAllocator() { return *Instance().m_SamplerAllocator; }
     static inline GraphicConfig& GetGraphicConfig() { return Instance().m_Config; }
     static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
     static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
@@ -77,6 +78,7 @@ private:
     std::unique_ptr<DescriptorAllocator> m_RtvAllocator;
     std::unique_ptr<DescriptorAllocator> m_DsvAllocator;
     std::unique_ptr<DescriptorAllocator> m_SrvCbvUavAllocator;
+    std::unique_ptr<DescriptorAllocator> m_SamplerAllocator;
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;

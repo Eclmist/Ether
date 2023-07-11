@@ -20,14 +20,33 @@
 #pragma once
 
 #include "graphics/schedule/producers/rendergraphproducer.h"
+#include "graphics/rhi/rhiraytracingpipelinestate.h"
+#include "graphics/rhi/rhiraytracingshaderbindingtable.h"
 
 namespace Ether::Graphics
 {
-class GlobalConstantsProducer : public RenderGraphProducer
+class RaytracedLightingProducer : public RenderGraphProducer
 {
 public:
     void Initialize(ResourceContext& rc) override;
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+
+protected:
+    bool IsEnabled() override;
+
+protected: 
+    void InitializeShaders();
+    void InitializeRootSignatures();
+    void InitializePipelineStates();
+    void InitializeShaderBindingTable(ResourceContext& rc);
+
+protected:
+    std::unique_ptr<RhiShader> m_Shader;
+    std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
+    std::unique_ptr<RhiRaytracingPipelineState> m_RaytracingPipelineState;
+
+protected:
+    RhiResource* m_RaytracingShaderBindingTable[MaxSwapChainBuffers];
 };
 } // namespace Ether::Graphics

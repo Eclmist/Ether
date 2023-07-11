@@ -78,15 +78,16 @@ void Ether::Graphics::Dx12CommandList::PopMarker()
     PIXEndEvent(m_CommandList.Get());
 }
 
-void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiDescriptorHeap& descriptorHeap)
+void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiDescriptorHeap& srvHeap, const RhiDescriptorHeap* samplerHeap)
 {
     // Only one heap of each type ([SRV/CBV/UAV] & [Sampler]) can be bound for each command list
-    // Don't support sampler heaps for now
-    // AssertGraphics(desc.m_NumHeaps <= 2, "A maximum of 2 heaps can be bound on DX12");
-    ID3D12DescriptorHeap* heap;
-    heap = dynamic_cast<const Dx12DescriptorHeap*>(&descriptorHeap)->m_Heap.Get();
+    ID3D12DescriptorHeap* heaps[2];
+    heaps[0] = dynamic_cast<const Dx12DescriptorHeap*>(&srvHeap)->m_Heap.Get();
 
-    m_CommandList->SetDescriptorHeaps(1, &heap);
+    if (samplerHeap != nullptr)
+        heaps[1] = dynamic_cast<const Dx12DescriptorHeap*>(samplerHeap)->m_Heap.Get();
+
+    m_CommandList->SetDescriptorHeaps(samplerHeap == nullptr ? 1 : 2, heaps);
 }
 
 void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)

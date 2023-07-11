@@ -22,9 +22,13 @@
 #ifdef __cplusplus
 #define ETH_BEGIN_SHADER_NAMESPACE namespace Ether::Graphics::Shader {
 #define ETH_END_SHADER_NAMESPACE }
+
+#define ETH_SHADER_STATIC_ASSERT(cond) static_assert(cond)
 #else
 #define ETH_BEGIN_SHADER_NAMESPACE
 #define ETH_END_SHADER_NAMESPACE
+
+#define ETH_SHADER_STATIC_ASSERT(cond)
 #endif
 
 #ifdef __HLSL__

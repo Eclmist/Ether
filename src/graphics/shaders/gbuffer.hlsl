@@ -50,8 +50,6 @@ struct PS_OUTPUT
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 ConstantBuffer<Material> g_InstanceParams           : register(b1);
 
-sampler g_BilinearSampler                           : register(s0);
-
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
@@ -71,6 +69,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 
 PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
 {
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
     float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
     float2 texSpacePrev = ClipSpaceToTextureSpace(mul(mvpPrev, float4(IN.WorldPos.xyz, 1.0f)));
@@ -82,8 +82,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     if (g_InstanceParams.m_AlbedoTextureIndex != 0)
     {
         Texture2D<float4> albedoTex = ResourceDescriptorHeap[g_InstanceParams.m_AlbedoTextureIndex];
-        albedo = albedoTex.Sample(g_BilinearSampler, IN.TexCoord);
-        //albedo = albedoTex.SampleLevel(g_BilinearSampler, IN.TexCoord, 0);
+        albedo = albedoTex.Sample(linearSampler, IN.TexCoord);
     }
 
     // Don't support alpha yet
@@ -95,7 +94,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz * albedo.xyz, 1);
     o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
     o.Output2 = float4(IN.Normal.yz, velocity);
-    //o.DebugOutput = float4(IN.TexCoord, 0, 0);
     o.DebugOutput = o.Output0;
     return o;
 }

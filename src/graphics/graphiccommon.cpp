@@ -126,7 +126,7 @@ void Ether::Graphics::GraphicCommon::InitializePipelineStates()
 void Ether::Graphics::GraphicCommon::InitializeSamplers()
 {
     m_PointSampler_Clamp = {};
-    m_PointSampler_Clamp.m_Filter = RhiFilter::Anisotropic;
+    m_PointSampler_Clamp.m_Filter = RhiFilter::MinMagMipPoint;
     m_PointSampler_Clamp.m_AddressU = RhiTextureAddressMode::Clamp;
     m_PointSampler_Clamp.m_AddressV = RhiTextureAddressMode::Clamp;
     m_PointSampler_Clamp.m_AddressW = RhiTextureAddressMode::Clamp;
@@ -147,16 +147,19 @@ void Ether::Graphics::GraphicCommon::InitializeSamplers()
     m_PointSampler_Border.m_AddressW = RhiTextureAddressMode::Border;
     m_PointSampler_Border.m_BorderColor = RhiBorderColor::OpaqueBlack;
 
-    m_BilinearSampler_Clamp = m_PointSampler_Clamp;
-    m_BilinearSampler_Clamp.m_Filter = RhiFilter::MinMagMipLinear;
+    m_LinearSampler_Clamp = m_PointSampler_Clamp;
+    m_LinearSampler_Clamp.m_Filter = RhiFilter::Anisotropic;
+    m_LinearSampler_Wrap = m_PointSampler_Wrap;
+    m_LinearSampler_Wrap.m_Filter = RhiFilter::Anisotropic;
+    m_LinearSampler_Border = m_PointSampler_Border;
+    m_LinearSampler_Border.m_Filter = RhiFilter::Anisotropic;
 
-    m_BilinearSampler_Wrap = m_PointSampler_Wrap;
-    m_BilinearSampler_Wrap.m_Filter = RhiFilter::MinMagMipLinear;
-
-    m_BilinearSampler_Border = m_PointSampler_Border;
-    m_BilinearSampler_Border.m_Filter = RhiFilter::MinMagMipLinear;
-
-    m_EnvMapSampler = m_BilinearSampler_Wrap;
+    m_SamplerIndex_Point_Clamp = GraphicCore::GetBindlessDescriptorManager().RegisterSampler("Sampler_PointClamp", m_PointSampler_Clamp);
+    m_SamplerIndex_Point_Wrap = GraphicCore::GetBindlessDescriptorManager().RegisterSampler("Sampler_PointWrap", m_PointSampler_Wrap);
+    m_SamplerIndex_Point_Border =  GraphicCore::GetBindlessDescriptorManager().RegisterSampler("Sampler_PointBorder", m_PointSampler_Border);
+    m_SamplerIndex_Linear_Clamp = GraphicCore::GetBindlessDescriptorManager().RegisterSampler("Sampler_LinearClamp", m_LinearSampler_Clamp);
+    m_SamplerIndex_Linear_Wrap = GraphicCore::GetBindlessDescriptorManager().RegisterSampler("Sampler_LinearWrap", m_LinearSampler_Wrap);
+    m_SamplerIndex_Linear_Border = GraphicCore::GetBindlessDescriptorManager().RegisterSampler("Sampler_LinearBorder", m_LinearSampler_Border);
 }
 
 void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()

@@ -36,7 +36,7 @@ public:
 
 public:
     virtual void Initialize(ResourceContext& rc) = 0;
-    virtual void GetInputOutput(ScheduleContext& schedule) = 0;
+    virtual void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) = 0;
     virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) = 0;
 
 protected:

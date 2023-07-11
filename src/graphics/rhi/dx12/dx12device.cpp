@@ -196,7 +196,7 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
 {
     uint32_t entrySize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
     entrySize += desc.m_MaxRootSignatureSize;
-    entrySize = AlignUp(entrySize, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+    entrySize = AlignUp(entrySize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 
     std::unique_ptr<Dx12RaytracingShaderBindingTable> dx12Obj = std::make_unique<Dx12RaytracingShaderBindingTable>(
         name,
@@ -221,10 +221,6 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
         mappedAddr,
         stateObjectProperties->GetShaderIdentifier(desc.m_RayGenShaderName),
         D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-
-    constexpr uint8_t rootTableSize = 8;
-    uint64_t* raygenDescriptorTable = (uint64_t*)(mappedAddr + D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
-    *raygenDescriptorTable = desc.m_RayGenRootTableAddress;
 
     memcpy(
         mappedAddr + 1 * entrySize,
@@ -365,10 +361,6 @@ std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx
 
     dx12Obj->PushLibrary(desc.m_LibraryShaderDesc);
     dx12Obj->PushHitProgram(desc.m_HitGroupName, nullptr, desc.m_ClosestHitShaderName);
-    dx12Obj->PushLocalRootSignature(desc.m_RayGenRootSignature);
-    dx12Obj->PushExportAssociation(raygenExportName, sizeof(raygenExportName) / sizeof(raygenExportName[0]));
-    dx12Obj->PushLocalRootSignature(desc.m_HitMissRootSignature);
-    dx12Obj->PushExportAssociation(hitMissExportName, sizeof(hitMissExportName) / sizeof(hitMissExportName[0]));
     dx12Obj->PushShaderConfig(desc.m_MaxAttributeSize, desc.m_MaxPayloadSize);
     dx12Obj->PushExportAssociation(allExportName, sizeof(allExportName) / sizeof(allExportName[0]));
     dx12Obj->PushPipelineConfig(desc.m_MaxRecursionDepth);
@@ -418,15 +410,6 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
     return dx12Obj;
 }
 
-void Ether::Graphics::Dx12Device::CopyDescriptors(
-    uint32_t numDescriptors,
-    RhiCpuAddress srcAddr,
-    RhiCpuAddress destAddr,
-    RhiDescriptorHeapType type) const
-{
-    m_Device->CopyDescriptorsSimple(numDescriptors, { destAddr }, { srcAddr }, Translate(type));
-}
-
 std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::CreateRootSignature(
     const char* name,
     const RhiRootSignatureDesc& desc) const
@@ -442,7 +425,7 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
         errBlob.GetAddressOf());
 
     if (FAILED(hr))
-        LogGraphicsFatal("Failed to serialize root signature");
+        LogGraphicsFatal("Failed to serialize root signature: %s", errBlob->GetBufferPointer());
 
     hr = m_Device->CreateRootSignature(
         1,
@@ -474,6 +457,53 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
 
     dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
     return dx12Obj;
+}
+
+void Ether::Graphics::Dx12Device::CopyDescriptors(
+    uint32_t numDescriptors,
+    RhiCpuAddress srcAddr,
+    RhiCpuAddress destAddr,
+    RhiDescriptorHeapType type) const
+{
+    m_Device->CopyDescriptorsSimple(numDescriptors, { destAddr }, { srcAddr }, Translate(type));
+}
+
+void Ether::Graphics::Dx12Device::CopySampler(const RhiSamplerParameterDesc& sampler, RhiCpuAddress destAddr) const
+{
+    D3D12_SAMPLER_DESC dx12Desc = {};
+    dx12Desc.Filter = Translate(sampler.m_Filter);
+    dx12Desc.AddressU = Translate(sampler.m_AddressU);
+    dx12Desc.AddressV = Translate(sampler.m_AddressV);
+    dx12Desc.AddressW = Translate(sampler.m_AddressW);
+    dx12Desc.MipLODBias = sampler.m_MipLodBias;
+    dx12Desc.MaxAnisotropy = sampler.m_MaxAnisotropy;
+    dx12Desc.ComparisonFunc = Translate(sampler.m_ComparisonFunc);
+    dx12Desc.MinLOD = sampler.m_MinLod;
+    dx12Desc.MaxLOD = sampler.m_MaxLod;
+
+    switch (sampler.m_BorderColor)
+    {
+    case RhiBorderColor::OpaqueBlack:
+        dx12Desc.BorderColor[0] = 0;
+        dx12Desc.BorderColor[1] = 0;
+        dx12Desc.BorderColor[2] = 0;
+        dx12Desc.BorderColor[3] = 1;
+        break;
+    case RhiBorderColor::OpaqueWhite:
+        dx12Desc.BorderColor[0] = 1;
+        dx12Desc.BorderColor[1] = 1;
+        dx12Desc.BorderColor[2] = 1;
+        dx12Desc.BorderColor[3] = 1;
+        break;
+    case RhiBorderColor::TransparentBlack:
+        dx12Desc.BorderColor[0] = 0;
+        dx12Desc.BorderColor[1] = 0;
+        dx12Desc.BorderColor[2] = 0;
+        dx12Desc.BorderColor[3] = 0;
+        break;
+    }
+
+    m_Device->CreateSampler(&dx12Desc, { destAddr });
 }
 
 void Ether::Graphics::Dx12Device::InitializeRenderTargetView(RhiRenderTargetView& rtv, const RhiResource& resource) const
@@ -534,6 +564,7 @@ void Ether::Graphics::Dx12Device::InitializeShaderResourceView(RhiShaderResource
         desc.Texture2D.ResourceMinLODClamp = 0;
         break;
     case RhiResourceDimension::RTAccelerationStructure:
+        desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
         desc.RaytracingAccelerationStructure.Location = d3dResource->GetGpuAddress();
         id3d12Resource = nullptr;
         break;

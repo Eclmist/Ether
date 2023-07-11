@@ -62,10 +62,16 @@ public:
     RhiSamplerParameterDesc m_PointSampler_Wrap;
     RhiSamplerParameterDesc m_PointSampler_Clamp;
     RhiSamplerParameterDesc m_PointSampler_Border;
-    RhiSamplerParameterDesc m_BilinearSampler_Wrap;
-    RhiSamplerParameterDesc m_BilinearSampler_Clamp;
-    RhiSamplerParameterDesc m_BilinearSampler_Border;
-    RhiSamplerParameterDesc m_EnvMapSampler;
+    RhiSamplerParameterDesc m_LinearSampler_Wrap;
+    RhiSamplerParameterDesc m_LinearSampler_Clamp;
+    RhiSamplerParameterDesc m_LinearSampler_Border;
+
+    uint64_t m_SamplerIndex_Point_Clamp;
+    uint64_t m_SamplerIndex_Point_Wrap;
+    uint64_t m_SamplerIndex_Point_Border;
+    uint64_t m_SamplerIndex_Linear_Clamp;
+    uint64_t m_SamplerIndex_Linear_Wrap;
+    uint64_t m_SamplerIndex_Linear_Border;
 
     std::unique_ptr<RhiRootSignature> m_EmptyRootSignature;
 

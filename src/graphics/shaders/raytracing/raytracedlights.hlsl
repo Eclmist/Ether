@@ -20,17 +20,13 @@
 #include "common/globalconstants.h"
 #include "common/raypayload.h"
 
+ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-Texture2D<float4> g_AccumulationBuffer              : register(t1);
+Texture2D<float4> g_AccumulationTexture             : register(t1);
 Texture2D<float4> g_GBufferOutput0                  : register(t2);
 Texture2D<float4> g_GBufferOutput1                  : register(t3);
 Texture2D<float4> g_GBufferOutput2                  : register(t4);
-
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-RWTexture2D<float4> g_Output                        : register(u0);
-
-sampler g_PointSampler                              : register(s0);
-sampler g_BilinearSampler                           : register(s1);
+RWTexture2D<float4> g_LightingOutput                : register(u0);
 
 float hash(float2 p)
 {
@@ -52,6 +48,8 @@ float3 uniformRandomDirection(float2 s)
 [shader("raygeneration")]
 void RayGeneration()
 {
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+
     uint3 launchIndex = DispatchRaysIndex();
     uint3 launchDim = DispatchRaysDimensions();
     float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
@@ -101,10 +99,10 @@ void RayGeneration()
     }
     float2 taaJitter = float2(g_GlobalConstants.m_ProjectionMatrix[0][2], g_GlobalConstants.m_ProjectionMatrix[1][2]);
     float2 uvPrev = uv - velocity;
-    float3 outputPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev, 0).xyz;
+    float3 outputPrev = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0).xyz;
 
     float depth = length(position - g_GlobalConstants.m_EyePosition.xyz);
-    float depthPrev = g_AccumulationBuffer.SampleLevel(g_BilinearSampler, uvPrev + taaJitter, 0).w;
+    float depthPrev = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev + taaJitter, 0).w;
 
     if (uvPrev.x < 0 || uvPrev.x > 1 || uvPrev.y < 0 || uvPrev.y > 1)
         a = 1.0;
@@ -113,8 +111,8 @@ void RayGeneration()
     //    a = 1.0;
 
     outputPrev.xyz = max(ambientColor.xyz, outputPrev.xyz);
-    g_Output[launchIndex.xy].xyz = ((light.xyz * a) + (1 - a) * outputPrev).xyz;
-    g_Output[launchIndex.xy].w = depth;
+    g_LightingOutput[launchIndex.xy].xyz = ((light.xyz * a) + (1 - a) * outputPrev).xyz;
+    g_LightingOutput[launchIndex.xy].w = depth;
 }
 
 [shader("miss")]

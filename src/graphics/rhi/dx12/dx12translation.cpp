@@ -561,7 +561,8 @@ D3D12_ROOT_SIGNATURE_FLAGS Ether::Graphics::Translate(const RhiRootSignatureFlag
     case RhiRootSignatureFlag::LocalRootSignature:
         return D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
     case RhiRootSignatureFlag::DirectlyIndexed:
-        return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
+        return D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED | 
+               D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
     default:
         return D3D12_ROOT_SIGNATURE_FLAG_NONE;
     }

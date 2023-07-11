@@ -41,7 +41,7 @@ public:
     void PopMarker() override;
 
     // Common
-    void SetDescriptorHeaps(const RhiDescriptorHeap& descriptorHeap) override;
+    void SetDescriptorHeaps(const RhiDescriptorHeap& srvHeap, const RhiDescriptorHeap* samplerHeap) override;
     void SetPipelineState(const RhiPipelineState& pso) override;
 
     // Graphics

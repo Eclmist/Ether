@@ -19,17 +19,25 @@
 
 #pragma once
 
-#include "hlsltranslation.h"
+#include "graphics/schedule/producers/rendergraphproducer.h"
 
-ETH_BEGIN_SHADER_NAMESPACE
-
-struct FrameCompositeInputs
+namespace Ether::Graphics
 {
-    uint32_t m_LightingTextureIndex;
+class FinalCompositeProducer : public RenderGraphProducer
+{
+public:
+    void Initialize(ResourceContext& rc) override;
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
-    uint32_t m_GBufferTextureIndex0;
-    uint32_t m_GBufferTextureIndex1;
-    uint32_t m_GBufferTextureIndex2;
+private:
+    void CreateShaders();
+    void CreateRootSignature();
+    void CreatePipelineState(ResourceContext& rc);
+
+private:
+    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
+    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
 };
-
-ETH_END_SHADER_NAMESPACE
+} // namespace Ether::Graphics

@@ -27,6 +27,8 @@ Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiComm
     : m_Name(contextName)
     , m_Type(type)
     , m_RaytracingBindTable(nullptr)
+    , m_SrvCbvUavHeap(nullptr)
+    , m_SamplerHeap(nullptr)
 {
     ETH_MARKER_EVENT("Command Context - Constructor");
 
@@ -38,7 +40,6 @@ Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiComm
 
 void Ether::Graphics::CommandContext::Reset()
 {
-    ETH_MARKER_EVENT("Command Context - Reset");
     m_CommandList->Reset();
     m_RaytracingBindTable = nullptr;
     PushMarker(m_Name);
@@ -46,7 +47,6 @@ void Ether::Graphics::CommandContext::Reset()
 
 void Ether::Graphics::CommandContext::FinalizeAndExecute(bool waitForCompletion)
 {
-    ETH_MARKER_EVENT("Command Context - Finalize and Execute");
     PopMarker();
 
     GraphicCore::GetCommandManager().GetQueue(m_Type).Execute(*m_CommandList);
@@ -72,18 +72,23 @@ void Ether::Graphics::CommandContext::PopMarker()
 
 void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, RhiResourceState newState)
 {
-    ETH_MARKER_EVENT("Command Context - Transition Resource");
-
     if (resource.GetCurrentState() == newState)
         return;
 
     m_CommandList->TransitionResource(resource, newState);
 }
 
-void Ether::Graphics::CommandContext::SetDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
+void Ether::Graphics::CommandContext::SetSrvCbvUavDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
 {
-    ETH_MARKER_EVENT("Command Context - Set Descriptor Heap");
-    m_CommandList->SetDescriptorHeaps(descriptorHeap);
+    m_SrvCbvUavHeap = &descriptorHeap;
+    m_CommandList->SetDescriptorHeaps(descriptorHeap, m_SamplerHeap);
+}
+
+void Ether::Graphics::CommandContext::SetSamplerDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
+{
+    AssertGraphics(m_SrvCbvUavHeap != nullptr, "An SrvCbvUav heap must be set before a sampler heap can be set");
+    m_SamplerHeap = &descriptorHeap;
+    m_CommandList->SetDescriptorHeaps(*m_SrvCbvUavHeap, m_SamplerHeap);
 }
 
 void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& pipelineState)

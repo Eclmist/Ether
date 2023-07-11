@@ -42,7 +42,7 @@ public:
     virtual void PopMarker() = 0;
 
     // Common
-    virtual void SetDescriptorHeaps(const RhiDescriptorHeap& descriptorHeap) = 0;
+    virtual void SetDescriptorHeaps(const RhiDescriptorHeap& srvHeap, const RhiDescriptorHeap* samplerHeap) = 0;
     virtual void SetPipelineState(const RhiPipelineState& pso) = 0;
 
     // Graphics
