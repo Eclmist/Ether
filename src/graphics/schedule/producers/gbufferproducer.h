@@ -45,6 +45,6 @@ private:
 private:
     std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
     std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
+    std::unique_ptr<RhiGraphicPipelineStateDesc> m_PsoDesc;
 };
 } // namespace Ether::Graphics

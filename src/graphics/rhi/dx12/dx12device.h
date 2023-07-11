@@ -40,7 +40,8 @@ public:
     std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const override;
     std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const override;
     std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal) const override;
-    std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const override;
+    std::unique_ptr<RhiGraphicPipelineStateDesc> CreateGraphicPipelineStateDesc() const override;
+    std::unique_ptr<RhiComputePipelineStateDesc> CreateComputePipelineStateDesc() const override;
 
     std::unique_ptr<RhiResource> CreateRaytracingShaderBindingTable(const char* name, const RhiRaytracingShaderBindingTableDesc& desc) const override;
     std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const override;
@@ -61,7 +62,8 @@ public:
 
 protected:
     std::unique_ptr<RhiRootSignature> CreateRootSignature(const char* name, const RhiRootSignatureDesc& desc) const override;
-    std::unique_ptr<RhiPipelineState> CreatePipelineState(const char* name, const RhiPipelineStateDesc& desc) const override;
+    std::unique_ptr<RhiGraphicPipelineState> CreateGraphicPipelineState(const char* name, const RhiGraphicPipelineStateDesc& desc) const override;
+    std::unique_ptr<RhiComputePipelineState> CreateComputePipelineState(const char* name, const RhiComputePipelineStateDesc& desc) const override;
 
 protected:
     friend class Dx12Module;

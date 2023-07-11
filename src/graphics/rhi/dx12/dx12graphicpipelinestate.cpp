@@ -18,14 +18,14 @@
 */
 
 #include "graphics/graphiccore.h"
-#include "graphics/rhi/dx12/dx12pipelinestate.h"
+#include "graphics/rhi/dx12/dx12graphicpipelinestate.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
-Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
-    : RhiPipelineStateDesc()
+Ether::Graphics::Dx12GraphicPipelineStateDesc::Dx12GraphicPipelineStateDesc()
+    : RhiGraphicPipelineStateDesc()
     , m_Dx12PsoDesc{}
 {
     SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
@@ -37,17 +37,17 @@ Ether::Graphics::Dx12PipelineStateDesc::Dx12PipelineStateDesc()
     SetNodeMask(0);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetBlendState(const RhiBlendDesc& desc)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetBlendState(const RhiBlendDesc& desc)
 {
     m_Dx12PsoDesc.BlendState = Translate(desc);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRasterizerState(const RhiRasterizerDesc& desc)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetRasterizerState(const RhiRasterizerDesc& desc)
 {
     m_Dx12PsoDesc.RasterizerState = Translate(desc);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements)
 {
     for (int i = 0; i < numElements; ++i)
         m_InputElements.push_back(Translate(descs[i]));
@@ -56,45 +56,45 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetInputLayout(const RhiInputElemen
     m_Dx12PsoDesc.InputLayout.pInputElementDescs = m_InputElements.data();
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetPrimitiveTopology(const RhiPrimitiveTopologyType& type)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetPrimitiveTopology(const RhiPrimitiveTopologyType& type)
 {
     m_Dx12PsoDesc.PrimitiveTopologyType = Translate(type);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetDepthStencilState(const RhiDepthStencilDesc& desc)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetDepthStencilState(const RhiDepthStencilDesc& desc)
 {
     m_Dx12PsoDesc.DepthStencilState = Translate(desc);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetDepthTargetFormat(RhiFormat dsvFormat)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetDepthTargetFormat(RhiFormat dsvFormat)
 {
     m_Dx12PsoDesc.DSVFormat = Translate(dsvFormat);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormat(RhiFormat rtvFormat)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetRenderTargetFormat(RhiFormat rtvFormat)
 {
     return SetRenderTargetFormats(&rtvFormat, 1);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv)
 {
     m_Dx12PsoDesc.NumRenderTargets = numRtv;
     for (int i = 0; i < numRtv; ++i)
         m_Dx12PsoDesc.RTVFormats[i] = Translate(rtvFormats[i]);
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetRootSignature(const RhiRootSignature& rootSignature)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetRootSignature(const RhiRootSignature& rootSignature)
 {
     m_Dx12PsoDesc.pRootSignature = static_cast<const Dx12RootSignature&>(rootSignature).m_RootSignature.Get();
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality)
 {
     m_Dx12PsoDesc.SampleDesc.Count = numMsaaSamples;
     m_Dx12PsoDesc.SampleDesc.Quality = msaaQuality;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(const RhiShader& vs)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetVertexShader(const RhiShader& vs)
 {
     AssertGraphics(
         vs.GetType() == RhiShaderType::Vertex,
@@ -105,7 +105,7 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetVertexShader(const RhiShader& vs
     m_Shaders[vs.GetType()] = &vs;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(const RhiShader& ps)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetPixelShader(const RhiShader& ps)
 {
     AssertGraphics(
         ps.GetType() == RhiShaderType::Pixel,
@@ -116,17 +116,17 @@ void Ether::Graphics::Dx12PipelineStateDesc::SetPixelShader(const RhiShader& ps)
     m_Shaders[ps.GetType()] = &ps;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetNodeMask(uint32_t mask)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetNodeMask(uint32_t mask)
 {
     m_Dx12PsoDesc.NodeMask = mask;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::SetSampleMask(uint32_t mask)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetSampleMask(uint32_t mask)
 {
     m_Dx12PsoDesc.SampleMask = mask;
 }
 
-void Ether::Graphics::Dx12PipelineStateDesc::Reset()
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::Reset()
 {
     m_Dx12PsoDesc = {};
 }

@@ -22,7 +22,8 @@
 #include "graphics/pch.h"
 #include "graphics/memory/uploadbufferallocator.h"
 #include "graphics/rhi/rhicommandlist.h"
-#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhicomputepipelinestate.h"
+#include "graphics/rhi/rhigraphicpipelinestate.h"
 
 namespace Ether::Graphics
 {
@@ -55,7 +56,8 @@ public:
     // Common
     void SetSrvCbvUavDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
     void SetSamplerDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
-    void SetPipelineState(const RhiPipelineState& pipelineState);
+    void SetGraphicPipelineState(const RhiGraphicPipelineState& pipelineState);
+    void SetComputePipelineState(const RhiComputePipelineState& pipelineState);
 
     // Shader Data
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
@@ -80,6 +82,7 @@ public:
     void InitializeTexture(RhiResource& dest, void** data, uint32_t numMips, uint32_t width, uint32_t height, uint32_t bytesPerPixel);
     void CopyResource(RhiResource& src, RhiResource& dest);
     void CopyBufferRegion(RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset = 0, uint32_t destOffset = 0);
+    void Dispatch(uint32_t x, uint32_t y, uint32_t z);
     void DispatchRays(uint32_t x, uint32_t y, uint32_t z);
 
 protected:

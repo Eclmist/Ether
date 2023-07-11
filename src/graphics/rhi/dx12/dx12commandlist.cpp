@@ -21,7 +21,8 @@
 #include "graphics/rhi/dx12/dx12commandlist.h"
 #include "graphics/rhi/dx12/dx12commandallocator.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
-#include "graphics/rhi/dx12/dx12pipelinestate.h"
+#include "graphics/rhi/dx12/dx12graphicpipelinestate.h"
+#include "graphics/rhi/dx12/dx12computepipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
@@ -90,9 +91,14 @@ void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiDescriptorHea
     m_CommandList->SetDescriptorHeaps(samplerHeap == nullptr ? 1 : 2, heaps);
 }
 
-void Ether::Graphics::Dx12CommandList::SetPipelineState(const RhiPipelineState& pso)
+void Ether::Graphics::Dx12CommandList::SetGraphicPipelineState(const RhiGraphicPipelineState& pso)
 {
-    m_CommandList->SetPipelineState(dynamic_cast<const Dx12PipelineState&>(pso).m_PipelineState.Get());
+    m_CommandList->SetPipelineState(dynamic_cast<const Dx12GraphicPipelineState&>(pso).m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetComputePipelineState(const RhiComputePipelineState& pso)
+{
+    m_CommandList->SetPipelineState(dynamic_cast<const Dx12ComputePipelineState&>(pso).m_PipelineState.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::SetViewport(const RhiViewportDesc& viewport)
@@ -365,6 +371,11 @@ void Ether::Graphics::Dx12CommandList::DrawIndexedInstanced(
     uint32_t firstInst)
 {
     m_CommandList->DrawIndexedInstanced(numIndices, numInst, firstIdx, stride, firstInst);
+}
+
+void Ether::Graphics::Dx12CommandList::Dispatch(uint32_t x, uint32_t y, uint32_t z)
+{
+    m_CommandList->Dispatch(x, y, z);
 }
 
 void Ether::Graphics::Dx12CommandList::DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiResource* bindTable)

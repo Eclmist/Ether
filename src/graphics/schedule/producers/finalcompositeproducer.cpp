@@ -24,7 +24,7 @@
 
 DEFINE_GFX_PA(FinalCompositeProducer)
 
-DECLARE_GFX_SR(LightingCompositeTexture)
+DECLARE_GFX_SR(PostFxSourceTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
 Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
@@ -34,7 +34,7 @@ Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
 
 void Ether::Graphics::FinalCompositeProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    schedule.Read(ACCESS_GFX_SR(LightingCompositeTexture));
+    schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
 
@@ -42,22 +42,31 @@ void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, R
 {
     FullScreenProducer::RenderFrame(ctx, rc);
 
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingCompositeTexture)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(PostFxSourceTexture)), RhiResourceState::Common);
     ctx.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(LightingCompositeTexture)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     ctx.DrawInstanced(3, 1);
+}
+
+void Ether::Graphics::FinalCompositeProducer::CreatePipelineState(ResourceContext& rc)
+{
+    m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
+    m_PsoDesc->SetVertexShader(*m_VertexShader);
+    m_PsoDesc->SetPixelShader(*m_PixelShader);
+    m_PsoDesc->SetRenderTargetFormat(BackBufferFormat);
+    m_PsoDesc->SetRootSignature(*m_RootSignature);
+    m_PsoDesc->SetInputLayout(nullptr, 0);
+    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
+    rc.RegisterGraphicPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 
 void Ether::Graphics::FinalCompositeProducer::CreateRootSignature()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) LightingCompositeTexture
-
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

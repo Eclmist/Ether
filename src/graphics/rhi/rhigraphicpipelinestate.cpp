@@ -18,16 +18,16 @@
 */
 
 #include "graphics/graphiccore.h"
-#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhigraphicpipelinestate.h"
 #include "graphics/rhi/rhishader.h"
 
-std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiPipelineStateDesc::Compile(
+std::unique_ptr<Ether::Graphics::RhiGraphicPipelineState> Ether::Graphics::RhiGraphicPipelineStateDesc::Compile(
     const char* name) const
 {
-    return GraphicCore::GetDevice().CreatePipelineState(name, *this);
+    return GraphicCore::GetDevice().CreateGraphicPipelineState(name, *this);
 }
 
-bool Ether::Graphics::RhiPipelineStateDesc::RequiresShaderCompilation() const
+bool Ether::Graphics::RhiGraphicPipelineStateDesc::RequiresShaderCompilation() const
 {
     for (auto shader : m_Shaders)
         if (!shader.second->IsCompiled())
@@ -36,7 +36,7 @@ bool Ether::Graphics::RhiPipelineStateDesc::RequiresShaderCompilation() const
     return false;
 }
 
-void Ether::Graphics::RhiPipelineStateDesc::CompileShaders()
+void Ether::Graphics::RhiGraphicPipelineStateDesc::CompileShaders()
 {
     for (auto shader : m_Shaders)
     {

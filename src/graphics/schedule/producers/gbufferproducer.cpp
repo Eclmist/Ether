@@ -90,7 +90,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
-    ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
+    ctx.SetGraphicPipelineState(rc.GetGraphicPipelineState(*m_PsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
@@ -155,7 +155,7 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
 void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
 {
     RhiFormat formats[] = { RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, BackBufferFormat };
-    m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
+    m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
     m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
@@ -163,6 +163,6 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
-    rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
+    rc.RegisterGraphicPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 

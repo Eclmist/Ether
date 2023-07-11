@@ -20,51 +20,37 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhicomputepipelinestate.h"
 #include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
 {
-class Dx12PipelineStateDesc : public RhiPipelineStateDesc
+class Dx12ComputePipelineStateDesc : public RhiComputePipelineStateDesc
 {
 public:
-    Dx12PipelineStateDesc();
-    ~Dx12PipelineStateDesc() override = default;
+    Dx12ComputePipelineStateDesc();
+    ~Dx12ComputePipelineStateDesc() override = default;
 
 public:
-    void SetBlendState(const RhiBlendDesc& desc) override;
-    void SetRasterizerState(const RhiRasterizerDesc& desc) override;
-    void SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements) override;
-    void SetPrimitiveTopology(const RhiPrimitiveTopologyType& type) override;
-    void SetDepthStencilState(const RhiDepthStencilDesc& desc) override;
-    void SetDepthTargetFormat(RhiFormat dsvFormat) override;
-    void SetRenderTargetFormat(RhiFormat rtvFormat) override;
-    void SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv) override;
     void SetRootSignature(const RhiRootSignature& rootSignature) override;
-    void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
-    void SetVertexShader(const RhiShader& vs) override;
-    void SetPixelShader(const RhiShader& ps) override;
+    void SetComputeShader(const RhiShader& cs) override;
     void SetNodeMask(uint32_t mask) override;
-    void SetSampleMask(uint32_t mask) override;
-
-public:
     void Reset() override;
 
 protected:
     friend class Dx12Device;
-    std::vector<D3D12_INPUT_ELEMENT_DESC> m_InputElements;
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_Dx12PsoDesc;
+    D3D12_COMPUTE_PIPELINE_STATE_DESC m_Dx12PsoDesc;
 };
 
-class Dx12PipelineState : public RhiPipelineState
+class Dx12ComputePipelineState : public RhiComputePipelineState
 {
 public:
-    Dx12PipelineState(const RhiPipelineStateDesc& desc)
-        : RhiPipelineState(desc)
+    Dx12ComputePipelineState(const RhiComputePipelineState& desc)
+        : RhiComputePipelineState(desc)
     {
     }
-    ~Dx12PipelineState() override = default;
+    ~Dx12ComputePipelineState() override = default;
 
 private:
     friend class Dx12Device;

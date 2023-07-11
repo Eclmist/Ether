@@ -44,7 +44,6 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
     float4 lightingComposite = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     return lightingComposite;
 }

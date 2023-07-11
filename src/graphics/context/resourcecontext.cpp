@@ -31,7 +31,7 @@ Ether::Graphics::ResourceContext::ResourceContext()
         false);
 }
 
-void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc)
+void Ether::Graphics::ResourceContext::RegisterGraphicPipelineState(const char* name, RhiGraphicPipelineStateDesc& pipelineStateDesc)
 {
     // This caching doesn't actually work since it just cheats by using the address as a key
     // A mechanism for hashing the pipeline state data (maybe inherit serializable and create a stringstream?)
@@ -48,24 +48,49 @@ void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, R
     {
         GraphicCore::FlushGpu();
         pipelineStateDesc.CompileShaders();
-        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
+        m_CachedGraphicPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
         return;
     }
 
-    if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
-        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
+    if (m_CachedGraphicPipelineStates.find(&pipelineStateDesc) == m_CachedGraphicPipelineStates.end())
+        m_CachedGraphicPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
 }
-
-Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipelineState(
-    RhiPipelineStateDesc& pipelineStateDesc)
+void Ether::Graphics::ResourceContext::RegisterComputePipelineState(const char* name, RhiComputePipelineStateDesc& pipelineStateDesc)
 {
-    if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
+    if (pipelineStateDesc.RequiresShaderCompilation())
     {
-        LogGraphicsError("A pipeline state desc was registered before use");
-        RegisterPipelineState("Unknown Pipeline State", pipelineStateDesc);
+        GraphicCore::FlushGpu();
+        pipelineStateDesc.CompileShaders();
+        m_CachedComputePipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
+        return;
     }
 
-    return *m_CachedPipelineStates.at(&pipelineStateDesc);
+    if (m_CachedComputePipelineStates.find(&pipelineStateDesc) == m_CachedComputePipelineStates.end())
+        m_CachedComputePipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
+}
+
+Ether::Graphics::RhiGraphicPipelineState& Ether::Graphics::ResourceContext::GetGraphicPipelineState(
+    RhiGraphicPipelineStateDesc& pipelineStateDesc)
+{
+    if (m_CachedGraphicPipelineStates.find(&pipelineStateDesc) == m_CachedGraphicPipelineStates.end())
+    {
+        LogGraphicsError("A pipeline state desc was registered before use");
+        RegisterGraphicPipelineState("Unknown Pipeline State", pipelineStateDesc);
+    }
+
+    return *m_CachedGraphicPipelineStates.at(&pipelineStateDesc);
+}
+
+Ether::Graphics::RhiComputePipelineState& Ether::Graphics::ResourceContext::GetComputePipelineState(
+    RhiComputePipelineStateDesc& pipelineStateDesc)
+{
+    if (m_CachedComputePipelineStates.find(&pipelineStateDesc) == m_CachedComputePipelineStates.end())
+    {
+        LogGraphicsError("A pipeline state desc was registered before use");
+        RegisterComputePipelineState("Unknown Pipeline State", pipelineStateDesc);
+    }
+
+    return *m_CachedComputePipelineStates.at(&pipelineStateDesc);
 }
 
 Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateBufferResource(
@@ -335,6 +360,9 @@ void Ether::Graphics::ResourceContext::InvalidateViews(StringID resourceID)
 
 void Ether::Graphics::ResourceContext::RecompilePipelineStates()
 {
-    for (auto& psoPair : m_CachedPipelineStates)
-        RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
+    for (auto& psoPair : m_CachedGraphicPipelineStates)
+        RegisterGraphicPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
+
+    for (auto& psoPair : m_CachedComputePipelineStates)
+        RegisterComputePipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
 }

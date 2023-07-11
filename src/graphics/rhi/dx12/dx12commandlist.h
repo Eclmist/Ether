@@ -42,7 +42,8 @@ public:
 
     // Common
     void SetDescriptorHeaps(const RhiDescriptorHeap& srvHeap, const RhiDescriptorHeap* samplerHeap) override;
-    void SetPipelineState(const RhiPipelineState& pso) override;
+    void SetGraphicPipelineState(const RhiGraphicPipelineState& pso) override;
+    void SetComputePipelineState(const RhiComputePipelineState& pso) override;
 
     // Graphics
     void SetViewport(const RhiViewportDesc& viewport) override;
@@ -85,6 +86,7 @@ public:
     void ClearDepthStencilView(const RhiDepthStencilView dsv, float depth, float stencil) override;
     void DrawInstanced(uint32_t numVert, uint32_t numInst, uint32_t firstVert, uint32_t firstInst) override;
     void DrawIndexedInstanced(uint32_t numIndices, uint32_t numInst, uint32_t firstIdx, uint32_t stride, uint32_t firstInst) override;
+    void Dispatch(uint32_t x, uint32_t y, uint32_t z) override;
     void DispatchRays(uint32_t x, uint32_t y, uint32_t z, const RhiResource* bindTable) override;
 
 private:

@@ -26,12 +26,13 @@ DECLARE_GFX_CB(GlobalRingBuffer)
 
 Ether::Graphics::FullScreenProducer::FullScreenProducer(const char* name, const char* shaderPath)
     : GraphicProducer(name)
+    , m_ShaderPath(shaderPath)
 {
-    CreateShaders(shaderPath);
 }
 
 void Ether::Graphics::FullScreenProducer::Initialize(ResourceContext& rc)
 {
+    CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
@@ -48,18 +49,17 @@ void Ether::Graphics::FullScreenProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
-    ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
-    ctx.SetPipelineState(rc.GetPipelineState(*m_PsoDesc));
+    ctx.SetGraphicPipelineState(rc.GetGraphicPipelineState(*m_PsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
 }
 
-void Ether::Graphics::FullScreenProducer::CreateShaders(const char* shaderPath)
+void Ether::Graphics::FullScreenProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_VertexShader = gfxDevice.CreateShader({ shaderPath, "VS_Main", RhiShaderType::Vertex });
-    m_PixelShader = gfxDevice.CreateShader({ shaderPath, "PS_Main", RhiShaderType::Pixel });
+    m_VertexShader = gfxDevice.CreateShader({ m_ShaderPath.c_str(), "VS_Main", RhiShaderType::Vertex });
+    m_PixelShader = gfxDevice.CreateShader({ m_ShaderPath.c_str(), "PS_Main", RhiShaderType::Pixel });
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -70,13 +70,13 @@ void Ether::Graphics::FullScreenProducer::CreateShaders(const char* shaderPath)
 
 void Ether::Graphics::FullScreenProducer::CreatePipelineState(ResourceContext& rc)
 {
-    m_PsoDesc = GraphicCore::GetDevice().CreatePipelineStateDesc();
+    m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
     m_PsoDesc->SetRenderTargetFormat(RhiFormat::R32G32B32A32Float);
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
-    rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
+    rc.RegisterGraphicPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 

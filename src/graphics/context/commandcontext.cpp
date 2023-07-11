@@ -91,9 +91,14 @@ void Ether::Graphics::CommandContext::SetSamplerDescriptorHeap(const RhiDescript
     m_CommandList->SetDescriptorHeaps(*m_SrvCbvUavHeap, m_SamplerHeap);
 }
 
-void Ether::Graphics::CommandContext::SetPipelineState(const RhiPipelineState& pipelineState)
+void Ether::Graphics::CommandContext::SetGraphicPipelineState(const RhiGraphicPipelineState& pipelineState)
 {
-    m_CommandList->SetPipelineState(pipelineState);
+    m_CommandList->SetGraphicPipelineState(pipelineState);
+}
+
+void Ether::Graphics::CommandContext::SetComputePipelineState(const RhiComputePipelineState& pipelineState)
+{
+    m_CommandList->SetComputePipelineState(pipelineState);
 }
 
 void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
@@ -216,6 +221,11 @@ void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
     RhiGpuAddress baseAddress)
 {
     m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, baseAddress);
+}
+
+void Ether::Graphics::CommandContext::Dispatch(uint32_t x, uint32_t y, uint32_t z)
+{
+    m_CommandList->Dispatch(x, y, z);
 }
 
 void Ether::Graphics::CommandContext::DispatchRays(uint32_t x, uint32_t y, uint32_t z)

@@ -28,7 +28,8 @@
 #include "graphics/rhi/dx12/dx12commandqueue.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12fence.h"
-#include "graphics/rhi/dx12/dx12pipelinestate.h"
+#include "graphics/rhi/dx12/dx12graphicpipelinestate.h"
+#include "graphics/rhi/dx12/dx12computepipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12swapchain.h"
@@ -185,9 +186,14 @@ std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Devi
     return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers, isLocal);
 }
 
-std::unique_ptr<Ether::Graphics::RhiPipelineStateDesc> Ether::Graphics::Dx12Device::CreatePipelineStateDesc() const
+std::unique_ptr<Ether::Graphics::RhiGraphicPipelineStateDesc> Ether::Graphics::Dx12Device::CreateGraphicPipelineStateDesc() const
 {
-    return std::make_unique<Dx12PipelineStateDesc>();
+    return std::make_unique<Dx12GraphicPipelineStateDesc>();
+}
+
+std::unique_ptr<Ether::Graphics::RhiComputePipelineStateDesc> Ether::Graphics::Dx12Device::CreateComputePipelineStateDesc() const
+{
+    return std::make_unique<Dx12ComputePipelineStateDesc>();
 }
 
 std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateRaytracingShaderBindingTable(
@@ -441,14 +447,32 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreatePipelineState(
+std::unique_ptr<Ether::Graphics::RhiGraphicPipelineState> Ether::Graphics::Dx12Device::CreateGraphicPipelineState(
     const char* name,
-    const RhiPipelineStateDesc& desc) const
+    const RhiGraphicPipelineStateDesc& desc) const
 {
-    std::unique_ptr<Dx12PipelineState> dx12Obj = std::make_unique<Dx12PipelineState>(desc);
-    const Dx12PipelineStateDesc& dx12Desc = dynamic_cast<const Dx12PipelineStateDesc&>(desc);
+    std::unique_ptr<Dx12GraphicPipelineState> dx12Obj = std::make_unique<Dx12GraphicPipelineState>(desc);
+    const Dx12GraphicPipelineStateDesc& dx12Desc = dynamic_cast<const Dx12GraphicPipelineStateDesc&>(desc);
 
     HRESULT hr = m_Device->CreateGraphicsPipelineState(
+        &dx12Desc.m_Dx12PsoDesc,
+        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
+
+    dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiComputePipelineState> Ether::Graphics::Dx12Device::CreateComputePipelineState(
+    const char* name,
+    const RhiComputePipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12ComputePipelineState> dx12Obj = std::make_unique<Dx12ComputePipelineState>(desc);
+    const Dx12ComputePipelineStateDesc& dx12Desc = dynamic_cast<const Dx12ComputePipelineStateDesc&>(desc);
+
+    HRESULT hr = m_Device->CreateComputePipelineState(
         &dx12Desc.m_Dx12PsoDesc,
         IID_PPV_ARGS(&dx12Obj->m_PipelineState));
 

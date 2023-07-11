@@ -26,6 +26,8 @@
 #include "graphics/schedule/producers/gbufferproducer.h"
 #include "graphics/schedule/producers/raytracedlightingproducer.h"
 #include "graphics/schedule/producers/lightingcompositeproducer.h"
+#include "graphics/schedule/producers/postfxsourceproducer.h"
+#include "graphics/schedule/producers/temporalaaproducer.h"
 #include "graphics/schedule/producers/finalcompositeproducer.h"
 
 DECLARE_GFX_PA(GlobalConstantsProducer)
@@ -33,6 +35,8 @@ DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(GBufferProducer)
 DECLARE_GFX_PA(RaytracedLightingProducer)
 DECLARE_GFX_PA(LightingCompositeProducer)
+DECLARE_GFX_PA(PostFxSourceProducer)
+DECLARE_GFX_PA(TemporalAAProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
@@ -43,6 +47,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
     Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
     Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
+    Register(ACCESS_GFX_PA(PostFxSourceProducer), new PostFxSourceProducer());
+    Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
     Register(ACCESS_GFX_PA(FinalCompositeProducer), new FinalCompositeProducer());
 
     // Also for now, add imgui here
@@ -120,6 +126,8 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 }
 

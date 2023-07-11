@@ -22,7 +22,8 @@
 #include "graphics/pch.h"
 #include "graphics/rhi/rhiaccelerationstructure.h"
 #include "graphics/rhi/rhirootsignature.h"
-#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhigraphicpipelinestate.h"
+#include "graphics/rhi/rhicomputepipelinestate.h"
 #include "graphics/rhi/rhishader.h"
 
 namespace Ether::Graphics
@@ -42,7 +43,8 @@ public:
     virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const = 0;
     virtual std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const = 0;
     virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal = false) const = 0;
-    virtual std::unique_ptr<RhiPipelineStateDesc> CreatePipelineStateDesc() const = 0;
+    virtual std::unique_ptr<RhiGraphicPipelineStateDesc> CreateGraphicPipelineStateDesc() const = 0;
+    virtual std::unique_ptr<RhiComputePipelineStateDesc> CreateComputePipelineStateDesc() const = 0;
 
     virtual std::unique_ptr<RhiResource> CreateRaytracingShaderBindingTable(const char* name, const RhiRaytracingShaderBindingTableDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const = 0;
@@ -63,8 +65,10 @@ public:
 
 protected:
     friend class RhiRootSignatureDesc;
-    friend class RhiPipelineStateDesc;
-    virtual std::unique_ptr<RhiPipelineState> CreatePipelineState(const char* name, const RhiPipelineStateDesc& desc) const = 0;
+    friend class RhiGraphicPipelineStateDesc;
+    friend class RhiComputePipelineStateDesc;
+    virtual std::unique_ptr<RhiGraphicPipelineState> CreateGraphicPipelineState(const char* name, const RhiGraphicPipelineStateDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiComputePipelineState> CreateComputePipelineState(const char* name, const RhiComputePipelineStateDesc& desc) const = 0;
     virtual std::unique_ptr<RhiRootSignature> CreateRootSignature(const char* name, const RhiRootSignatureDesc& desc) const = 0;
 };
 } // namespace Ether::Graphics

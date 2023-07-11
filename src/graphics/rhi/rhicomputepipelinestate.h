@@ -24,31 +24,20 @@
 
 namespace Ether::Graphics
 {
-class RhiPipelineStateDesc
+class RhiComputePipelineStateDesc
 {
 public:
-    RhiPipelineStateDesc() = default;
-    virtual ~RhiPipelineStateDesc() {}
+    RhiComputePipelineStateDesc() = default;
+    virtual ~RhiComputePipelineStateDesc() {}
 
 public:
-    virtual void SetBlendState(const RhiBlendDesc& desc) = 0;
-    virtual void SetRasterizerState(const RhiRasterizerDesc& desc) = 0;
-    virtual void SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements) = 0;
-    virtual void SetPrimitiveTopology(const RhiPrimitiveTopologyType& type) = 0;
-    virtual void SetDepthStencilState(const RhiDepthStencilDesc& desc) = 0;
-    virtual void SetDepthTargetFormat(RhiFormat dsvFormat) = 0;
-    virtual void SetRenderTargetFormat(RhiFormat rtvFormat) = 0;
-    virtual void SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv) = 0;
     virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
-    virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
-    virtual void SetVertexShader(const RhiShader& vs) = 0;
-    virtual void SetPixelShader(const RhiShader& ps) = 0;
+    virtual void SetComputeShader(const RhiShader& cs) = 0;
     virtual void SetNodeMask(uint32_t mask) = 0;
-    virtual void SetSampleMask(uint32_t mask) = 0;
     virtual void Reset() = 0;
 
 public:
-    std::unique_ptr<RhiPipelineState> Compile(const char* name) const;
+    std::unique_ptr<RhiComputePipelineState> Compile(const char* name) const;
     bool RequiresShaderCompilation() const;
     void CompileShaders();
 
@@ -56,16 +45,16 @@ protected:
     std::unordered_map<RhiShaderType, const RhiShader*> m_Shaders;
 };
 
-class RhiPipelineState
+class RhiComputePipelineState
 {
 public:
-    RhiPipelineState(const RhiPipelineStateDesc& desc)
+    RhiComputePipelineState(const RhiComputePipelineStateDesc& desc)
         : m_CreationDesc(desc)
     {
     }
-    virtual ~RhiPipelineState() = default;
+    virtual ~RhiComputePipelineState() = default;
 
 protected:
-    const RhiPipelineStateDesc& m_CreationDesc;
+    const RhiComputePipelineStateDesc& m_CreationDesc;
 };
 } // namespace Ether::Graphics

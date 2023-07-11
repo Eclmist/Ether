@@ -17,23 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "common/globalconstants.h"
+#include "utils/fullscreenhelpers.hlsl"
 
-#include "graphics/schedule/producers/postprocessproducer.h"
+ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
+Texture2D<float4> g_SourceTexture                   : register(t0);
 
-namespace Ether::Graphics
+struct VS_OUTPUT
 {
-class TemporalAAProducer : public PostProcessProducer
-{
-public:
-    TemporalAAProducer();
-    ~TemporalAAProducer() override = default;
-
-public:
-    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
-    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
-
-private:
-    void CreateRootSignature() override;
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD;
 };
-} // namespace Ether::Graphics
+
+VS_OUTPUT VS_Main(uint ID : SV_VertexID)
+{
+    float2 pos;
+    float2 uv;
+    GetVertexFromID(ID, pos, uv);
+
+    VS_OUTPUT o;
+    o.Position = float4(pos, 1.0, 1.0);
+    o.TexCoord = uv;
+
+    return o;
+}
+
+float4 PS_Main(VS_OUTPUT IN) : SV_Target
+{
+    float4 col = g_SourceTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    return col;
+}

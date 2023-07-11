@@ -34,6 +34,7 @@ public:
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
 private:
+    void CreatePipelineState(ResourceContext& rc) override;
     void CreateRootSignature() override;
 };
 } // namespace Ether::Graphics

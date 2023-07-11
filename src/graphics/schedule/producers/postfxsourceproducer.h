@@ -19,15 +19,15 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/postprocessproducer.h"
+#include "graphics/schedule/producers/fullscreenproducer.h"
 
 namespace Ether::Graphics
 {
-class TemporalAAProducer : public PostProcessProducer
+class PostFxSourceProducer : public FullScreenProducer
 {
 public:
-    TemporalAAProducer();
-    ~TemporalAAProducer() override = default;
+    PostFxSourceProducer();
+    ~PostFxSourceProducer() override = default;
 
 public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
