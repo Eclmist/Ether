@@ -25,6 +25,11 @@
 DEFINE_GFX_PA(GlobalConstantsProducer)
 DEFINE_GFX_CB(GlobalRingBuffer)
 
+Ether::Graphics::GlobalConstantsProducer::GlobalConstantsProducer()
+    : GraphicProducer("GlobalConstantsProducer")
+{
+}
+
 void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& rc)
 {
 }
@@ -36,7 +41,6 @@ void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& s
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    ETH_MARKER_EVENT("GlobalConstantsProducer - Populate Upload Buffer");
     const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetRenderData();
 
     static ethMatrix4x4 prevViewMatrix = renderData.m_ViewMatrix;
@@ -81,3 +85,4 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     prevViewMatrix = globalConstants.m_ViewMatrix;
     prevProjMatrix = globalConstants.m_ProjectionMatrix;
 }
+

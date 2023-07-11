@@ -25,7 +25,7 @@
 
 /* Static Resource Types */
 #define GFX_STATICRESOURCE_TYPE(type) StaticResourceWrapper<type>
-#define GFX_PA_TYPE GFX_STATICRESOURCE_TYPE(RenderGraphProducer)
+#define GFX_PA_TYPE GFX_STATICRESOURCE_TYPE(GraphicProducer)
 #define GFX_RT_TYPE GFX_STATICRESOURCE_TYPE(RhiRenderTargetView)
 #define GFX_DS_TYPE GFX_STATICRESOURCE_TYPE(RhiDepthStencilView)
 #define GFX_SR_TYPE GFX_STATICRESOURCE_TYPE(RhiShaderResourceView)

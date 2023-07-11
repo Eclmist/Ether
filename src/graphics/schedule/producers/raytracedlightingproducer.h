@@ -19,14 +19,18 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/rendergraphproducer.h"
+#include "graphics/schedule/producers/graphicproducer.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/rhiraytracingshaderbindingtable.h"
 
 namespace Ether::Graphics
 {
-class RaytracedLightingProducer : public RenderGraphProducer
+class RaytracedLightingProducer : public GraphicProducer
 {
+public:
+    RaytracedLightingProducer();
+    ~RaytracedLightingProducer() override = default;
+
 public:
     void Initialize(ResourceContext& rc) override;
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;

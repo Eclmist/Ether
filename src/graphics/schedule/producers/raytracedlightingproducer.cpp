@@ -42,6 +42,11 @@ static const wchar_t* k_ClosestHitShader = L"ClosestHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
 static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader };
 
+Ether::Graphics::RaytracedLightingProducer::RaytracedLightingProducer()
+    : GraphicProducer("RaytracedLightingProducer")
+{
+}
+
 void Ether::Graphics::RaytracedLightingProducer::Initialize(ResourceContext& rc)
 {
     InitializeShaders();
@@ -67,7 +72,6 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
 
 void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    ETH_MARKER_EVENT("Raytraced Lighting Producer - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
@@ -114,7 +118,7 @@ bool Ether::Graphics::RaytracedLightingProducer::IsEnabled()
 void Ether::Graphics::RaytracedLightingProducer::InitializeShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_Shader = gfxDevice.CreateShader({ "raytracing\\raytracedlights.hlsl", "", RhiShaderType::Library });
+    m_Shader = gfxDevice.CreateShader({ "lighting\\raytracedlights.hlsl", "", RhiShaderType::Library });
     // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_Shader->Compile();
 
@@ -140,7 +144,7 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeRootSignatures()
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
 
-    m_GlobalRootSignature = rsDesc->Compile("Raytraced Lighting Root Signature");
+    m_GlobalRootSignature = rsDesc->Compile((GetName() + "Root Signature").c_str());
 }
 
 void Ether::Graphics::RaytracedLightingProducer::InitializePipelineStates()
@@ -174,4 +178,3 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeShaderBindingTable(Re
 
     m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()] = &rc.CreateRaytracingShaderBindingTable(("RT Bindings Table" + std::to_string(gfxDisplay.GetBackBufferIndex())).c_str(), desc);
 }
-

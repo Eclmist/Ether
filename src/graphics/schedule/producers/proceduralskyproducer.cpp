@@ -17,47 +17,42 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "finalcompositeproducer.h"
+#include "proceduralskyproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
 
-DEFINE_GFX_PA(FinalCompositeProducer)
+DEFINE_GFX_PA(ProceduralSkyProducer)
+DEFINE_GFX_RT(ProceduralSkyTexture)
+DEFINE_GFX_SR(ProceduralSkyTexture)
 
-DECLARE_GFX_SR(LightingCompositeTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
-Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
-    : FullScreenProducer("FinalCompositeProducer", "finalcomposite.hlsl")
+Ether::Graphics::ProceduralSkyProducer::ProceduralSkyProducer()
+    : FullScreenProducer("ProceduralSkyProducer", "proceduralsky.hlsl")
 {
 }
 
-void Ether::Graphics::FinalCompositeProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
+void Ether::Graphics::ProceduralSkyProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    schedule.Read(ACCESS_GFX_SR(LightingCompositeTexture));
+    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    schedule.NewRT(ACCESS_GFX_RT(ProceduralSkyTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
+    schedule.NewSR(ACCESS_GFX_SR(ProceduralSkyTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
 
-void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::ProceduralSkyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     FullScreenProducer::RenderFrame(ctx, rc);
-
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingCompositeTexture)), RhiResourceState::Common);
-    ctx.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(LightingCompositeTexture)->GetGpuAddress());
-    ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(ProceduralSkyTexture)), RhiResourceState::RenderTarget);
+    ctx.SetRenderTarget(*ACCESS_GFX_RT(ProceduralSkyTexture).Get());
     ctx.DrawInstanced(3, 1);
 }
 
-void Ether::Graphics::FinalCompositeProducer::CreateRootSignature()
+void Ether::Graphics::ProceduralSkyProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) LightingCompositeTexture
-
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

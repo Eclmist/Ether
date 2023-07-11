@@ -17,27 +17,29 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "rendergraphproducer.h"
+#include "graphicproducer.h"
 #include "graphics/graphiccore.h"
 
-Ether::Graphics::RenderGraphProducer::RenderGraphProducer()
+Ether::Graphics::GraphicProducer::GraphicProducer(const char* name)
 {
+    m_Name = name;
+
     for (int i = 0; i < MaxSwapChainBuffers; ++i)
         m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
 }
 
-void Ether::Graphics::RenderGraphProducer::Reset()
+void Ether::Graphics::GraphicProducer::Reset()
 {
     m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Reset();
 }
 
-bool Ether::Graphics::RenderGraphProducer::IsEnabled()
+bool Ether::Graphics::GraphicProducer::IsEnabled()
 {
     // All producers are enabled by default
     return true;
 }
 
-Ether::Graphics::UploadBufferAllocator& Ether::Graphics::RenderGraphProducer::GetFrameAllocator()
+Ether::Graphics::UploadBufferAllocator& Ether::Graphics::GraphicProducer::GetFrameAllocator()
 {
     return *m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()];
 }

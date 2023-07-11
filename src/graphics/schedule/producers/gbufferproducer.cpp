@@ -38,6 +38,11 @@ DEFINE_GFX_SR(GBufferTexture2)
 
 DECLARE_GFX_CB(GlobalRingBuffer)
 
+Ether::Graphics::GBufferProducer::GBufferProducer()
+    : GraphicProducer("GBufferProducer")
+{
+}
+
 void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
@@ -61,7 +66,6 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
 
 void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    ETH_MARKER_EVENT("GBufferProducer - Render");
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
@@ -79,7 +83,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.ClearDepthStencil(*ACCESS_GFX_DS(GBufferDepthStencil), 1.0);
     ctx.PopMarker();
 
-    ctx.PushMarker("Draw GBuffer Geometry");
+    ctx.PushMarker("Draw Geometry");
     ctx.SetViewport(gfxDisplay.GetViewport());
     ctx.SetScissorRect(gfxDisplay.GetScissorRect());
     ctx.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
@@ -145,7 +149,7 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) Material
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile("GBufferProducer Root Signature");
+    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 
 void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
@@ -159,6 +163,6 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
-    rc.RegisterPipelineState("GBufferProducer Pipeline State", *m_PsoDesc);
+    rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 

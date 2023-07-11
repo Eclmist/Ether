@@ -21,7 +21,11 @@
 #include "utils/fullscreenhelpers.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-Texture2D<float4> g_LightingCompositeTexture        : register(t0);
+Texture2D<float4> g_GBufferTexture0                 : register(t0);
+Texture2D<float4> g_GBufferTexture1                 : register(t1);
+Texture2D<float4> g_GBufferTexture2                 : register(t2);
+Texture2D<float4> g_LightingTexture                 : register(t3);
+Texture2D<float4> g_ProceduralSkyTexture            : register(t4);
 
 struct VS_OUTPUT
 {
@@ -45,6 +49,14 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
-    float4 lightingComposite = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    return lightingComposite;
+
+    float4 lighting = g_LightingTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    float4 albedo = g_GBufferTexture0.Sample(pointSampler, IN.TexCoord);
+    float4 sky = g_ProceduralSkyTexture.Sample(pointSampler, IN.TexCoord);
+
+    if (albedo.w == 0)
+        return sky;
+
+    float4 finalColor = albedo * lighting;
+    return finalColor;
 }

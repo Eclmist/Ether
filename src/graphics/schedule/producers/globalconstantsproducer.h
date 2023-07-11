@@ -19,12 +19,16 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/rendergraphproducer.h"
+#include "graphics/schedule/producers/graphicproducer.h"
 
 namespace Ether::Graphics
 {
-class GlobalConstantsProducer : public RenderGraphProducer
+class GlobalConstantsProducer : public GraphicProducer
 {
+public:
+    GlobalConstantsProducer();
+    ~GlobalConstantsProducer() override = default;
+
 public:
     void Initialize(ResourceContext& rc) override;
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;

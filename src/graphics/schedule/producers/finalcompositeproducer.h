@@ -19,25 +19,21 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/rendergraphproducer.h"
+#include "graphics/schedule/producers/fullscreenproducer.h"
 
 namespace Ether::Graphics
 {
-class FinalCompositeProducer : public RenderGraphProducer
+class FinalCompositeProducer : public FullScreenProducer
 {
 public:
-    void Initialize(ResourceContext& rc) override;
+    FinalCompositeProducer();
+    ~FinalCompositeProducer() override = default;
+
+public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
 private:
-    void CreateShaders();
-    void CreateRootSignature();
-    void CreatePipelineState(ResourceContext& rc);
-
-private:
-    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
-    std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
+    void CreateRootSignature() override;
 };
 } // namespace Ether::Graphics

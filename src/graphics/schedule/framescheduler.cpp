@@ -22,21 +22,27 @@
 #include "graphics/schedule/schedulecontext.h"
 
 #include "graphics/schedule/producers/globalconstantsproducer.h"
+#include "graphics/schedule/producers/proceduralskyproducer.h"
 #include "graphics/schedule/producers/gbufferproducer.h"
 #include "graphics/schedule/producers/raytracedlightingproducer.h"
+#include "graphics/schedule/producers/lightingcompositeproducer.h"
 #include "graphics/schedule/producers/finalcompositeproducer.h"
 
 DECLARE_GFX_PA(GlobalConstantsProducer)
+DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(GBufferProducer)
 DECLARE_GFX_PA(RaytracedLightingProducer)
+DECLARE_GFX_PA(LightingCompositeProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
     // This should be where internal render passes should be registered
     Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
+    Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
     Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
+    Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
     Register(ACCESS_GFX_PA(FinalCompositeProducer), new FinalCompositeProducer());
 
     // Also for now, add imgui here
@@ -47,7 +53,7 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
 }
 
-void Ether::Graphics::FrameScheduler::Register(GFX_STATIC::GFX_PA_TYPE& pass, RenderGraphProducer* producer)
+void Ether::Graphics::FrameScheduler::Register(GFX_STATIC::GFX_PA_TYPE& pass, GraphicProducer* producer)
 {
     AssertGraphics(m_RegisteredProducers.find(pass.GetName()) == m_RegisteredProducers.end(), "RenderPass already registered");
     AssertGraphics(producer != nullptr, "Cannot register null producer");
@@ -72,7 +78,10 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     // Put it into resource context (unordered_map cache)
 
     for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
+    {
+        ETH_MARKER_EVENT((iter->second->GetName() + " - Initialize").c_str());
         iter->second->Initialize(m_ResourceContext);
+    }
 }
 
 void Ether::Graphics::FrameScheduler::BuildSchedule()
@@ -93,7 +102,10 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 
     ScheduleContext schedule;
     for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
+    {
+        ETH_MARKER_EVENT((iter->second->GetName() + " - GetInputOutput").c_str());
         iter->second->GetInputOutput(schedule, m_ResourceContext);
+    }
 
     schedule.CreateResources(m_ResourceContext);
 
@@ -104,8 +116,10 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
         m_OrderedProducers.pop();
 
     m_OrderedProducers.push(ACCESS_GFX_PA(GlobalConstantsProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 }
 
@@ -123,7 +137,12 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
         // Any disabled producers should just not participate in scheduling
         // (TODO)
         if (m_OrderedProducers.front()->IsEnabled())
+        {
+            ETH_MARKER_EVENT((m_OrderedProducers.front()->GetName() + " - Render").c_str());
+            context.PushMarker(m_OrderedProducers.front()->GetName());
             m_OrderedProducers.front()->RenderFrame(context, m_ResourceContext);
+            context.PopMarker();
+        }
 
         m_OrderedProducers.pop();
     }

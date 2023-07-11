@@ -19,35 +19,28 @@
 
 #pragma once
 
-#include "graphics/pch.h"
-#include "graphics/schedule/frameschedulerutils.h"
-#include "graphics/schedule/schedulecontext.h"
-#include "graphics/context/resourcecontext.h"
-#include "graphics/context/graphiccontext.h"
-#include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/schedule/producers/graphicproducer.h"
 
 namespace Ether::Graphics
 {
-class RenderGraphProducer
+class FullScreenProducer : public GraphicProducer
 {
 public:
-    RenderGraphProducer();
-    ~RenderGraphProducer() = default;
+    FullScreenProducer(const char* name, const char* shaderPath);
+    ~FullScreenProducer() override = default;
 
 public:
-    virtual void Initialize(ResourceContext& rc) = 0;
-    virtual void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) = 0;
-    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) = 0;
+    virtual void Initialize(ResourceContext& rc) override;
+    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
 protected:
-    friend class FrameScheduler;
-    virtual void Reset();
-    virtual bool IsEnabled();
+    virtual void CreateShaders(const char* shaderPath);
+    virtual void CreatePipelineState(ResourceContext& rc);
+    virtual void CreateRootSignature() = 0;
 
 protected:
-    UploadBufferAllocator& GetFrameAllocator();
-
-private:
-    std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];
+    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
+    std::unique_ptr<RhiPipelineStateDesc> m_PsoDesc;
 };
-}
+} // namespace Ether::Graphics

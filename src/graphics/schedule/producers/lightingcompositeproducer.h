@@ -17,34 +17,23 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/globalconstants.h"
-#include "utils/fullscreenhelpers.hlsl"
+#pragma once
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-Texture2D<float4> g_LightingCompositeTexture        : register(t0);
+#include "graphics/schedule/producers/fullscreenproducer.h"
 
-struct VS_OUTPUT
+namespace Ether::Graphics
 {
-    float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD;
+class LightingCompositeProducer : public FullScreenProducer
+{
+public:
+    LightingCompositeProducer();
+    ~LightingCompositeProducer() override = default;
+
+public:
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+
+private:
+    void CreateRootSignature() override;
 };
-
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
-{
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
-
-    VS_OUTPUT o;
-    o.Position = float4(pos, 1.0, 1.0);
-    o.TexCoord = uv;
-
-    return o;
-}
-
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
-{
-    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
-    float4 lightingComposite = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    return lightingComposite;
-}
+} // namespace Ether::Graphics
