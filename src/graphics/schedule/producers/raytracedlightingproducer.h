@@ -51,6 +51,6 @@ protected:
     std::unique_ptr<RhiRaytracingPipelineState> m_RaytracingPipelineState;
 
 protected:
-    RhiResource* m_RaytracingShaderBindingTable[MaxSwapChainBuffers];
+    RhiResource* m_RaytracingShaderBindingTable;
 };
 } // namespace Ether::Graphics

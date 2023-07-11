@@ -33,6 +33,9 @@ public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
+protected:
+    bool IsEnabled() override;
+
 private:
     void CreateRootSignature() override;
 };

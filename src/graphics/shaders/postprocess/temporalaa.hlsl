@@ -21,13 +21,38 @@
 #include "utils/fullscreenhelpers.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-Texture2D<float4> g_GBufferTexture0                 : register(t0);
+Texture2D<float4> g_GBufferTexture2                 : register(t0);
+Texture2D<float4> g_AccumulationTextureIn           : register(t1);
 RWTexture2D<float4> g_TargetTexture                 : register(u0);
+RWTexture2D<float4> g_AccumulationTextureOut        : register(u1);
 
 [numthreads(32, 32, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    float4 col = g_TargetTexture[threadID.xy];
-    //col = 1 - col;
-    g_TargetTexture[threadID.xy] = col;
+    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    float2 uv = threadID.xy / resolution + 0.5 / resolution;
+    float2 uvPrev = uv - (float2)g_GBufferTexture2.Sample(linearSampler, uv).zw;
+    float4 colorPrev = g_AccumulationTextureIn.Sample(linearSampler, uvPrev);
+    float4 colorCurr = g_TargetTexture[threadID.xy];
+
+    // Variance Clipping
+    float4 minColor = 9999.0, maxColor = -9999.0;
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float4 color = g_TargetTexture[threadID.xy + int2(x, y)];
+            minColor = min(minColor, color);
+            maxColor = max(maxColor, color);
+        }
+    }
+    float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
+
+    float a = g_GlobalConstants.m_TaaAccumulationFactor;
+    float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
+
+    g_TargetTexture[threadID.xy] = newColor;
+    //g_TargetTexture[threadID.xy] = float4(uvPrev, 0,0);
 }

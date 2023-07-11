@@ -28,7 +28,6 @@
 DEFINE_GFX_PA(RaytracedLightingProducer)
 DEFINE_GFX_UA(RTLightingTexture)
 DEFINE_GFX_SR(RTLightingTexture)
-DEFINE_GFX_SR(RTAccumulationTexture)
 DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
 
 DECLARE_GFX_SR(GBufferTexture0)
@@ -59,7 +58,6 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
@@ -87,20 +85,13 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure))->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(RTAccumulationTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_UA(RTLightingTexture)->GetGpuAddress());
-    ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()]);
+    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_UA(RTLightingTexture)->GetGpuAddress());
+    ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState(*m_RaytracingPipelineState);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
-    ctx.PopMarker();
-
-    ctx.PushMarker("Copy to accumulation buffer");
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTLightingTexture)), RhiResourceState::CopySrc);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)), RhiResourceState::CopyDest);
-    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTLightingTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
     ctx.PopMarker();
 }
 
@@ -127,23 +118,20 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeShaders()
 
 void Ether::Graphics::RaytracedLightingProducer::InitializeRootSignatures()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(7, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(6, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
     rsDesc->SetAsShaderResourceView(1, 0, RhiShaderVisibility::All);        // (t0) TLAS
 
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 1);    // (t1) Accumulation
+    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 1);    // (t1) GBuffer0
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2);    // (t2) GBuffer0
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2);    // (t2) GBuffer1
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3);    // (t3) GBuffer1
+    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3);    // (t3) GBuffer2
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4);    // (t4) GBuffer2
-    rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) LightingTexture
+    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) LightingTexture
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-
     m_GlobalRootSignature = rsDesc->Compile((GetName() + "Root Signature").c_str());
 }
 
@@ -176,5 +164,5 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeShaderBindingTable(Re
     desc.m_MissShaderName = k_MissShader;
     desc.m_RayGenShaderName = k_RayGenShader;
 
-    m_RaytracingShaderBindingTable[gfxDisplay.GetBackBufferIndex()] = &rc.CreateRaytracingShaderBindingTable(("RT Bindings Table" + std::to_string(gfxDisplay.GetBackBufferIndex())).c_str(), desc);
+    m_RaytracingShaderBindingTable = &rc.CreateRaytracingShaderBindingTable("RT Bindings Table", desc);
 }

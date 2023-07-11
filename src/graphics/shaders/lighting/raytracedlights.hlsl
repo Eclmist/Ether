@@ -22,10 +22,9 @@
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-Texture2D<float4> g_AccumulationTexture             : register(t1);
-Texture2D<float4> g_GBufferOutput0                  : register(t2);
-Texture2D<float4> g_GBufferOutput1                  : register(t3);
-Texture2D<float4> g_GBufferOutput2                  : register(t4);
+Texture2D<float4> g_GBufferOutput0                  : register(t1);
+Texture2D<float4> g_GBufferOutput1                  : register(t2);
+Texture2D<float4> g_GBufferOutput2                  : register(t3);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 
 float hash(float2 p)
@@ -59,9 +58,6 @@ void RayGeneration()
 
     float3 position = gbuffer1.xyz;
     float3 normal = float3(gbuffer1.w, gbuffer2.xy);
-    float2 velocity = gbuffer2.zw;
-
-    float a = g_GlobalConstants.m_TemporalAccumulationFactor;
 
     float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection).xyz;
     float4 sunColor = g_GlobalConstants.m_SunColor;
@@ -70,7 +66,6 @@ void RayGeneration()
     float4 skyColor = lerp(nightSkyColor, daySkyColor, dot(sunDirection, float3(0, 1, 0)));
 
     float4 ambientColor = skyColor * 0.05;
-
     float4 light = ambientColor;
 
     RayPayload payload;
@@ -79,7 +74,7 @@ void RayGeneration()
     ray.Direction = sunDirection;
     ray.Origin = position;
     ray.TMax = 64;
-    ray.TMin = 0;
+    ray.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
@@ -97,22 +92,8 @@ void RayGeneration()
         else
             light += skyColor * rcp(NumRays);
     }
-    float2 taaJitter = float2(g_GlobalConstants.m_ProjectionMatrix[0][2], g_GlobalConstants.m_ProjectionMatrix[1][2]);
-    float2 uvPrev = uv - velocity;
-    float3 outputPrev = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0).xyz;
 
-    float depth = length(position - g_GlobalConstants.m_EyePosition.xyz);
-    float depthPrev = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev + taaJitter, 0).w;
-
-    if (uvPrev.x < 0 || uvPrev.x > 1 || uvPrev.y < 0 || uvPrev.y > 1)
-        a = 1.0;
-
-    //if (abs(depth - depthPrev) > 0.1)
-    //    a = 1.0;
-
-    outputPrev.xyz = max(ambientColor.xyz, outputPrev.xyz);
-    g_LightingOutput[launchIndex.xy].xyz = ((light.xyz * a) + (1 - a) * outputPrev).xyz;
-    g_LightingOutput[launchIndex.xy].w = depth;
+    g_LightingOutput[launchIndex.xy].xyz = light.xyz;
 }
 
 [shader("miss")]

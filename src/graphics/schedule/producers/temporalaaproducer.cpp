@@ -23,8 +23,11 @@
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(TemporalAAProducer)
+DEFINE_GFX_UA(TaaAccumulationTexture)
+DEFINE_GFX_SR(TaaAccumulationTexture)
+
 DECLARE_GFX_UA(PostFxSourceTexture)
-DECLARE_GFX_SR(GBufferTexture0)
+DECLARE_GFX_SR(GBufferTexture2) // For the velocity vectors
 
 Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
     : PostProcessProducer("TemporalAAProducer", "postprocess\\temporalaa.hlsl")
@@ -33,30 +36,53 @@ Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
 
 void Ether::Graphics::TemporalAAProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
+    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    schedule.NewUA(ACCESS_GFX_UA(TaaAccumulationTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(TaaAccumulationTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
+    schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
 }
 
 void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     PostProcessProducer::RenderFrame(ctx, rc);
 
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)), RhiResourceState::UnorderedAccess);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture0)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture2)), RhiResourceState::Common);
     ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(TaaAccumulationTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(TaaAccumulationTexture)->GetGpuAddress());
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.Dispatch(std::ceil(resolution.x / 32.0), std::ceil(resolution.y / 32.0), 1);
+
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::CopySrc);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)), RhiResourceState::CopyDest);
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), *rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)));
+}
+
+bool Ether::Graphics::TemporalAAProducer::IsEnabled()
+{
+    if (!GraphicCore::GetGraphicConfig().m_IsTemporalAAEnabled)
+        return false;
+
+    return true;
 }
 
 void Ether::Graphics::TemporalAAProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(5, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Uav, 1, 0, 0); // (u0) PostFxSource
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTexture0
+    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Uav, 1, 0, 1); // (u1) AccumulationOut
+    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTexture0
+    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 1); // (t1) AccumulationIn
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

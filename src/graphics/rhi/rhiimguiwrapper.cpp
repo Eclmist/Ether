@@ -91,14 +91,11 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 const char* items[] = { "None", "Grid", "Halton" };
                 ImGui::Combo("Jitter Mode", &gfxConfig.m_TemporalAAJitterMode, items, IM_ARRAYSIZE(items));
                 ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_JitterScale, 0, 10);
+                ImGui::SliderFloat("Temporal Accumulation", &gfxConfig.m_TemporalAAAcumulationFactor, 0, 1);
+
             }
 
-            static bool& raytracingDebug = gfxConfig.m_IsRaytracingEnabled;
-            static float& temporalAccumulation = gfxConfig.m_TemporalAccumulation;
-            ImGui::Checkbox("Raytracing", &raytracingDebug);
-
-            if (raytracingDebug)
-                ImGui::SliderFloat("Temporal Accumulation", &temporalAccumulation, 0, 1);
+            ImGui::Checkbox("Raytracing", &gfxConfig.m_IsRaytracingEnabled);
 
             static ethVector4& sunColor = gfxConfig.m_SunColor;
             static ethVector4& sunDirection = gfxConfig.m_SunDirection;

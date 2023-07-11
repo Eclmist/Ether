@@ -42,8 +42,8 @@ struct GlobalConstants
     ethVector2u m_ScreenResolution;
     uint32_t m_FrameNumber;
 
-    // ============= Debug ============== //
-    float m_TemporalAccumulationFactor;
+    // ============== TAA =============== //
+    float m_TaaAccumulationFactor;
 
     // ============ Samplers ============ //
     uint32_t m_SamplerIndex_Point_Clamp;

@@ -62,7 +62,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants.m_Time.w *= 0.25;
     globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
     globalConstants.m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
-    globalConstants.m_TemporalAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAccumulation;
+    globalConstants.m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
     globalConstants.m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
     globalConstants.m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
     globalConstants.m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;

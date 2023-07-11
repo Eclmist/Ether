@@ -66,8 +66,8 @@ void Ether::Ecs::EcsCameraSystem::Update()
             ethVector2 jitter = camera.GetJitterOffset(idx++);
 
             ethMatrix4x4 jitterMat;
-            jitterMat.m_14 = (jitter.x * 2.0f - 1.0f) / resolution.x * gfxConfig.m_JitterScale;
-            jitterMat.m_24 = (jitter.y * 2.0f - 1.0f) / resolution.y * gfxConfig.m_JitterScale;
+            jitterMat.m_14 = ((jitter.x - 0.5) * 0.5) / resolution.x * gfxConfig.m_JitterScale;
+            jitterMat.m_24 = ((jitter.y - 0.5) * 0.5) / resolution.y * gfxConfig.m_JitterScale;
 
             projectionMatrix = jitterMat * projectionMatrix;
         }
