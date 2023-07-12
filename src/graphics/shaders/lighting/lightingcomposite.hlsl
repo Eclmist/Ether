@@ -55,6 +55,9 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     if (albedo.w == 0)
         return sky;
 
+    if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+        return lighting;
+
     float4 finalColor = albedo * lighting;
     return finalColor;
 }

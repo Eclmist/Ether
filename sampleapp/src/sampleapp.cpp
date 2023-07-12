@@ -82,7 +82,7 @@ void SampleApp::UpdateGraphicConfig() const
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
-        graphicConfig.m_IsRaytracingEnabled = !graphicConfig.m_IsRaytracingEnabled;
+        graphicConfig.m_IsRaytracingDebugEnabled = !graphicConfig.m_IsRaytracingDebugEnabled;
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F3))
         graphicConfig.SetDebugGuiEnabled(!graphicConfig.IsDebugGuiEnabled());

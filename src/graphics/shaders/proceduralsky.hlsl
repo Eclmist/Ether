@@ -42,7 +42,7 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 }
 
 // 3D Gradient noise from: https://www.shadertoy.com/view/Xsl3Dl
-float3 hash(float3 p) // replace this by something better
+float3 hash(float3 p)
 {
     p = float3(dot(p, float3(127.1, 311.7, 74.7)), dot(p, float3(269.5, 183.3, 246.1)), dot(p, float3(113.5, 271.9, 124.6)));
 

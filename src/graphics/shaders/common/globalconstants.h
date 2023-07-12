@@ -45,6 +45,9 @@ struct GlobalConstants
     // ============== TAA =============== //
     float m_TaaAccumulationFactor;
 
+    // ============= Debug ============== //
+    uint32_t m_RaytracedLightingDebug;
+
     // ============ Samplers ============ //
     uint32_t m_SamplerIndex_Point_Clamp;
     uint32_t m_SamplerIndex_Point_Wrap;
@@ -62,7 +65,7 @@ struct GlobalConstants
     ethVector4 m_Padding6;
     ethVector4 m_Padding7;
     ethVector4 m_Padding8;
-    ethVector2 m_Padding9;
+    uint32_t m_Padding9;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");

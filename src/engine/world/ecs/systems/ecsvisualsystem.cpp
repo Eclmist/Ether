@@ -61,6 +61,9 @@ void Ether::Ecs::EcsVisualSystem::Update()
         if (gfxVisual.m_Material == nullptr)
             gfxVisual.m_Material = Graphics::GraphicCore::GetGraphicCommon().m_ErrorMaterial.get();
 
+        if (gfxVisual.m_Material->GetBaseColor().w < 1.0)
+            continue; // Don't support transparency
+
         visualBatch.m_Visuals.emplace_back(gfxVisual);
     }
 

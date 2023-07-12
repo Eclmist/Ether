@@ -27,20 +27,20 @@ Texture2D<float4> g_GBufferOutput1                  : register(t2);
 Texture2D<float4> g_GBufferOutput2                  : register(t3);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 
-float hash(float2 p)
+// 3D Gradient noise from: https://www.shadertoy.com/view/Xsl3Dl
+float3 hash(float3 p)
 {
-    return frac(dot(p + float2(.368434, .7263), normalize(frac(p.yx * 723.91374) + 1e-4)) * 7.382734);
+    p = float3(
+        dot(p, float3(127.1, 311.7, 74.7)),
+        dot(p, float3(269.5, 183.3, 246.1)),
+        dot(p, float3(113.5, 271.9, 124.6)));
+
+    return -1.0 + 2.0 * frac(sin(p) * 43758.5453123);
 }
 
-float3 nonUniformRandomDirection(float2 s)
+float3 uniformRandomDirection(float3 s)
 {
-    float3 r = float3(hash(s), hash(s * .87243), hash(s * .95714)) * 2. - 1.;
-    return normalize(r);
-}
-
-float3 uniformRandomDirection(float2 s)
-{
-    float3 r = float3(hash(s), hash(s * .872233), hash(s * .95574)) * 2. - 1.;
+    float3 r = hash(s);
     return normalize(r / cos(r));
 }
 
@@ -84,7 +84,7 @@ void RayGeneration()
     for (int i = 0; i < NumRays; ++i)
     {
         ray.Origin = position;
-        ray.Direction = normalize(normal.xyz + normalize(nonUniformRandomDirection((float2(launchIndex.xy) + (g_GlobalConstants.m_FrameNumber * (i + 1) % 4096.) * 0.123))));
+        ray.Direction = normalize(normal.xyz + normalize(uniformRandomDirection(position + (g_GlobalConstants.m_Time.w % 0.31415923))));
         TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)

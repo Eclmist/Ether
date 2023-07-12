@@ -26,7 +26,7 @@ Ether::Graphics::Material::Material()
     , m_BaseColor(1, 1, 1, 1)
     , m_SpecularColor(0.5, 0.5, 0.5, 0.5)
     , m_AlbedoTextureID()
-    , m_SpecularTextureID()
+    , m_NormalTextureID()
     , m_MetalnessTextureID()
     , m_RoughnessTextureID()
 {
@@ -38,7 +38,7 @@ void Ether::Graphics::Material::Serialize(OStream& ostream) const
     ostream << m_BaseColor;
     ostream << m_SpecularColor;
     ostream << m_AlbedoTextureID;
-    ostream << m_SpecularTextureID;
+    ostream << m_NormalTextureID;
     ostream << m_MetalnessTextureID;
     ostream << m_RoughnessTextureID;
 }
@@ -49,7 +49,7 @@ void Ether::Graphics::Material::Deserialize(IStream& istream)
     istream >> m_BaseColor;
     istream >> m_SpecularColor;
     istream >> m_AlbedoTextureID;
-    istream >> m_SpecularTextureID;
+    istream >> m_NormalTextureID;
     istream >> m_MetalnessTextureID;
     istream >> m_RoughnessTextureID;
 }

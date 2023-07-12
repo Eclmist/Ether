@@ -108,6 +108,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
         instanceMaterial.m_BaseColor = visual.m_Material->GetBaseColor();
         instanceMaterial.m_SpecularColor = visual.m_Material->GetSpecularColor();
         instanceMaterial.m_AlbedoTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetAlbedoTextureID());
+        instanceMaterial.m_NormalTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetNormalTextureID());
 
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::Material), 256 });
         memcpy(alloc->GetCpuHandle(), &instanceMaterial, sizeof(Shader::Material));

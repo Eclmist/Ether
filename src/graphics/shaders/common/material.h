@@ -29,6 +29,7 @@ struct Material
     ethVector4 m_SpecularColor;
 
     uint32_t m_AlbedoTextureIndex;
+    uint32_t m_NormalTextureIndex;
 };
 
 ETH_END_SHADER_NAMESPACE

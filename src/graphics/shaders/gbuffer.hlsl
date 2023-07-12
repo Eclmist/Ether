@@ -26,7 +26,7 @@ struct VS_INPUT
     float3 Position     : POSITION;
     float3 Normal       : NORMAL;
     float3 Tangent      : TANGENT;
-    float3 BiTangent    : BITANGENT;
+    float3 Bitangent    : BITANGENT;
     float2 TexCoord     : TEXCOORD;
 };
 
@@ -37,6 +37,8 @@ struct VS_OUTPUT
     float2 TexCoord     : TEXCOORD0;
     float4 WorldPos     : TEXCOORD1;
     float4 ClipPos      : TEXCOORD2;
+    float3 Tangent      : TEXCOORD3;
+    float3 Bitangent    : TEXCOORD4;
 };
 
 struct PS_OUTPUT
@@ -63,6 +65,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     o.WorldPos = /* mul(m_ModelMatrix, */ float4(IN.Position, 1.0f); //).xyz;
     o.Normal = IN.Normal;
     o.TexCoord = IN.TexCoord;
+    o.Tangent = IN.Tangent;
+    o.Bitangent = IN.Bitangent;
 
     return o;
 }
@@ -77,23 +81,32 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     float2 texSpaceCurr = ClipSpaceToTextureSpace(IN.ClipPos);
     float2 velocity = texSpaceCurr - texSpacePrev;
 
-    float4 albedo = float4(1,1,1,1);
+    float4 albedo = g_InstanceParams.m_BaseColor;
+    float3 normal = IN.Normal.xyz;
 
     if (g_InstanceParams.m_AlbedoTextureIndex != 0)
     {
         Texture2D<float4> albedoTex = ResourceDescriptorHeap[g_InstanceParams.m_AlbedoTextureIndex];
-        albedo = albedoTex.Sample(linearSampler, IN.TexCoord);
+        albedo *= albedoTex.Sample(linearSampler, IN.TexCoord);
+    }
+
+    if (g_InstanceParams.m_NormalTextureIndex != 0)
+    {
+        Texture2D<float4> normalTex = ResourceDescriptorHeap[g_InstanceParams.m_NormalTextureIndex];
+        normal = normalTex.Sample(linearSampler, IN.TexCoord).xyz;
+        normal = normal * 2.0 - 1.0;
+        float3x3 TBN = float3x3(IN.Tangent, IN.Bitangent, IN.Normal.xyz);
+        normal = normalize(mul(normal, TBN));
     }
 
     // Don't support alpha yet
     if (InterleavedGradientNoise(IN.Position + IN.TexCoord) > albedo.a)
-    //if (albedo.a < 0.5)
         discard;
 
     PS_OUTPUT o;
-    o.Output0 = float4(g_InstanceParams.m_BaseColor.xyz * albedo.xyz, 1);
-    o.Output1 = float4(IN.WorldPos.xyz, IN.Normal.x);
-    o.Output2 = float4(IN.Normal.yz, velocity);
+    o.Output0 = float4(albedo.xyz, 1);
+    o.Output1 = float4(IN.WorldPos.xyz, normal.x);
+    o.Output2 = float4(normal.yz, velocity);
     o.DebugOutput = o.Output0;
     return o;
 }

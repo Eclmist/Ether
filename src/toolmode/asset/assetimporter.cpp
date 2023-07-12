@@ -132,10 +132,12 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(aiMaterial** assimpMateria
 
         aiColor3D baseColor;
         aiColor3D specularColor;
+        float opacity;
         material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
         material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
+        material->Get(AI_MATKEY_OPACITY, opacity);
 
-        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, 1 });
+        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, opacity });
         gfxMaterial.SetSpecularColor({ specularColor.r, baseColor.g, baseColor.b, 1 });
 
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
@@ -143,6 +145,13 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(aiMaterial** assimpMateria
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
             gfxMaterial.SetAlbedoTextureID(ProcessTexture(textureName.data));
+        }
+
+        if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
+            gfxMaterial.SetNormalTextureID(ProcessTexture(textureName.data));
         }
 
         gfxMaterial.Serialize(ofstream);
