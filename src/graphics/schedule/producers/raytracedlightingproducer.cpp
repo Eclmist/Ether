@@ -22,7 +22,7 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
-#include "graphics/shaders/common/raypayload.h"
+#include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(RaytracedLightingProducer)

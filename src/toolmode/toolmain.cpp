@@ -67,10 +67,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         AssetImporter::Instance().SetWorkspacePath(workspacePath);
         AssetImporter::Instance().Import(importPath);
         // AssetImporter::Instance().Import("san-miguel.obj");
-        AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
-                                         ".gltf");
-        AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
-                                         ".gltf");
+        //AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
+        //                                 ".gltf");
+        //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
+        //                                 ".gltf");
 
         // The idea of this block is to test toolmode functionality without having the actual tool developed yet
         // For example:

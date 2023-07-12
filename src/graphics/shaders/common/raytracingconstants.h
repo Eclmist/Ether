@@ -23,11 +23,23 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
-struct RaytracingConstantBuffer
+struct RayPayload
 {
-    ethVector4 m_Padding0;
-    ethVector4 m_Padding1;
-    ethVector4 m_Padding2;
+    ethVector2 m_ScreenPosition;
+    ethVector3 m_Color;
+
+    bool m_Hit;
+    float m_RayT;
+};
+
+struct GeometryInfo
+{
+    uint32_t m_VertexOffset;
+    uint32_t m_IndexOffset;
+    uint32_t m_MaterialIndex;
+
+    // Apparently this improves performance according to RTGems2 Chpt17.4
+    uint32_t m_PadTo16Bytes;
 };
 
 ETH_END_SHADER_NAMESPACE

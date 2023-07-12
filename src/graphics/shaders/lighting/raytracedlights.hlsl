@@ -18,7 +18,7 @@
 */
 
 #include "common/globalconstants.h"
-#include "common/raypayload.h"
+#include "common/raytracingconstants.h"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -68,32 +68,32 @@ void RayGeneration()
     float4 daySkyColor = sunColor;
     float4 skyColor = lerp(nightSkyColor, daySkyColor, dot(sunDirection, float3(0, 1, 0)));
 
-    float4 ambientColor = skyColor * 0.05;
+    float4 ambientColor = skyColor * 0.6;
     float4 light = ambientColor;
+    float aoIntensity = g_GlobalConstants.m_RaytracedAOIntensity;
 
     RayPayload payload;
     RayDesc ray;
 
     ray.Direction = sunDirection;
     ray.Origin = position;
-    ray.TMax = 64;
+    ray.TMax = 32;
     ray.TMin = 0.01;
     TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
-        light += sunColor * saturate(dot(normal, sunDirection)) * 2;
+        light += sunColor * saturate(dot(normal, sunDirection)) * 2.5;
 
     const int NumRays = 1;
     for (int i = 0; i < NumRays; ++i)
     {
         ray.Origin = position;
         ray.Direction = normalize(normal.xyz + roughness * normalize(uniformRandomDirection(position + (g_GlobalConstants.m_Time.w % 0.31415923))));
+        ray.TMax = 8;
         TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)
-            light += pow(saturate(payload.m_RayT / 16), 1.5) * skyColor * rcp(NumRays);
-        else
-            light += skyColor * rcp(NumRays);
+            light = max(0.1, light - ((1.0 - (payload.m_RayT / ray.TMax)) * rcp(NumRays)) * aoIntensity);
     }
 
     g_LightingOutput[launchIndex.xy].xyz = light.xyz;

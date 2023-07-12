@@ -47,6 +47,7 @@ struct GlobalConstants
 
     // ============= Debug ============== //
     uint32_t m_RaytracedLightingDebug;
+    float m_RaytracedAOIntensity;
 
     // ============ Samplers ============ //
     uint32_t m_SamplerIndex_Point_Clamp;
@@ -65,7 +66,6 @@ struct GlobalConstants
     ethVector4 m_Padding6;
     ethVector4 m_Padding7;
     ethVector4 m_Padding8;
-    uint32_t m_Padding9;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");

@@ -48,6 +48,17 @@ float3 hash(float3 p)
 
     return -1.0 + 2.0 * frac(sin(p) * 43758.5453123);
 }
+
+float random(float2 co)
+{
+    float a = 12.9898;
+    float b = 78.233;
+    float c = 43758.5453;
+    float dt = dot(co.xy, float2(a, b));
+    float sn = dt % 3.14;
+    return frac(sin(sn) * c);
+}
+
 float noise(float3 p)
 {
     float3 i = floor(p);
@@ -72,6 +83,41 @@ float noise(float3 p)
             u.y),
         u.z);
 }
+
+float noise(float2 st)
+{
+    float2 i = floor(st);
+    float2 f = frac(st);
+
+    // Four corners in 2D of a tile
+    float a = random(i);
+    float b = random(i + float2(1.0, 0.0));
+    float c = random(i + float2(0.0, 1.0));
+    float d = random(i + float2(1.0, 1.0));
+
+    float2 u = f * f * (3.0 - 2.0 * f);
+
+    return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+#define OCTAVES 6
+float fbm(float2 st)
+{
+    // Initial values
+    float value = 0.0;
+    float amplitude = .5;
+    float frequency = 0.;
+    //
+    // Loop of octaves
+    for (int i = 0; i < OCTAVES; i++)
+    {
+        value += amplitude * noise(st);
+        st *= 2.;
+        amplitude *= .5;
+    }
+    return value;
+}
+
 
 
 float Stars(float3 viewDir)
@@ -200,12 +246,18 @@ float4 ProceduralSky(float2 texCoord)
         g_SkyLuminance);
 
     float3 stars = Stars(viewDirection);
+    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(viewDirection.xz * 10 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(viewDirection.xz * 4 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(viewDirection.xz * 1 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
 
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;
     totalRadiance += lerp(stars, 0, saturate(length(totalRadiance)));
+    //totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
+    //totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
     return float4(totalRadiance, 1.0f);
 }
+
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {

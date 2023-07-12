@@ -52,6 +52,8 @@ public:
     // Temporary debugging flags to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
+    float m_RaytracedAOIntensity = 0.5;
+
     bool m_IsTemporalAAEnabled = true;
     int32_t m_TemporalAAJitterMode = 2;
     float m_JitterScale = 1;
