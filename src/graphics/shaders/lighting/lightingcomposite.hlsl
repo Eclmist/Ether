@@ -24,8 +24,9 @@ ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_GBufferTexture0                 : register(t0);
 Texture2D<float4> g_GBufferTexture1                 : register(t1);
 Texture2D<float4> g_GBufferTexture2                 : register(t2);
-Texture2D<float4> g_LightingTexture                 : register(t3);
-Texture2D<float4> g_ProceduralSkyTexture            : register(t4);
+Texture2D<float4> g_GBufferTexture3                 : register(t3);
+Texture2D<float4> g_LightingTexture                 : register(t4);
+Texture2D<float4> g_ProceduralSkyTexture            : register(t5);
 
 struct VS_OUTPUT
 {
@@ -57,6 +58,8 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return lighting;
+
+    return g_GBufferTexture1[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].w;
 
     float4 finalColor = albedo * lighting;
     return finalColor;

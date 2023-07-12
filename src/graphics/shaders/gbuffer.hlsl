@@ -46,7 +46,7 @@ struct PS_OUTPUT
     float4 Output0      : SV_TARGET0;
     float4 Output1      : SV_TARGET1;
     float4 Output2      : SV_TARGET2;
-    float4 DebugOutput  : SV_TARGET3;
+    float4 Output3      : SV_TARGET3;
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
@@ -71,7 +71,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     return o;
 }
 
-PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
+PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
 
@@ -81,8 +81,11 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
     float2 texSpaceCurr = ClipSpaceToTextureSpace(IN.ClipPos);
     float2 velocity = texSpaceCurr - texSpacePrev;
 
+    float3 worldPos = IN.WorldPos.xyz;
     float4 albedo = g_InstanceParams.m_BaseColor;
     float3 normal = IN.Normal.xyz;
+    float roughness = 0.5;
+    float metalness = 0;
 
     if (g_InstanceParams.m_AlbedoTextureIndex != 0)
     {
@@ -99,14 +102,26 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN) : SV_Target
         normal = normalize(mul(normal, TBN));
     }
 
+    if (g_InstanceParams.m_RoughnessTextureIndex != 0)
+    {
+        Texture2D<float4> roughnessTex = ResourceDescriptorHeap[g_InstanceParams.m_RoughnessTextureIndex];
+        roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).b;
+    }
+
+    if (g_InstanceParams.m_MetalnessTextureIndex != 0)
+    {
+        Texture2D<float4> metalnessTex = ResourceDescriptorHeap[g_InstanceParams.m_MetalnessTextureIndex];
+        metalness = metalnessTex.Sample(linearSampler, IN.TexCoord).x;
+    }
+
     // Don't support alpha yet
-    if (InterleavedGradientNoise(IN.Position + IN.TexCoord) > albedo.a)
+    if (InterleavedGradientNoise(IN.TexCoord.xy) > albedo.a)
         discard;
 
     PS_OUTPUT o;
-    o.Output0 = float4(albedo.xyz, 1);
-    o.Output1 = float4(IN.WorldPos.xyz, normal.x);
-    o.Output2 = float4(normal.yz, velocity);
-    o.DebugOutput = o.Output0;
+    o.Output0 = float4(albedo.x,    albedo.y,   albedo.z,   1);
+    o.Output1 = float4(worldPos.x,  worldPos.y, worldPos.z, roughness);
+    o.Output2 = float4(normal.x,    normal.y,   normal.z,   metalness);
+    o.Output3 = float4(velocity.x,  velocity.y, 0,          0);
     return o;
 }

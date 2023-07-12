@@ -39,7 +39,7 @@ source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${all_files})
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
 add_library(${ETHER_COMMON} SHARED ${common_files})
-target_compile_definitions(${ETHER_COMMON} PRIVATE "ETH_COMMON")
+target_compile_definitions(${ETHER_COMMON} PRIVATE "ETH_COMMON_LIB")
 
 
 

@@ -162,8 +162,8 @@ float3 CalculateSkyRadiance(
     float skyLuminance)
 {
     // Calculate atmospheric scattering components
-    float3 rayleighScattering = CalculateRayleighScattering(viewDirection, g_GlobalConstants.m_SunDirection, skyRayleigh);
-    float3 mieScattering = CalculateMieScattering(viewDirection, g_GlobalConstants.m_SunDirection, skyMie, skyMieDirectionality);
+    float3 rayleighScattering = CalculateRayleighScattering(viewDirection, g_GlobalConstants.m_SunDirection.xyz, skyRayleigh);
+    float3 mieScattering = CalculateMieScattering(viewDirection, g_GlobalConstants.m_SunDirection.xyz, skyMie, skyMieDirectionality);
     float3 skyColor = CalculateSkyColor(rayleighScattering, mieScattering, skyLuminance);
 
     // Apply atmospheric turbidity

@@ -38,6 +38,10 @@ namespace Ether::Toolmode
         void OnShutdown() override;
 
     private:
+        void UpdateGraphicConfig() const;
+        void UpdateCamera() const;
+
+    private:
         Ether::Ecs::EcsTransformComponent* m_CameraTransform;
     };
 }

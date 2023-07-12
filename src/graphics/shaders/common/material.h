@@ -30,6 +30,8 @@ struct Material
 
     uint32_t m_AlbedoTextureIndex;
     uint32_t m_NormalTextureIndex;
+    uint32_t m_RoughnessTextureIndex;
+    uint32_t m_MetalnessTextureIndex;
 };
 
 ETH_END_SHADER_NAMESPACE

@@ -154,6 +154,20 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(aiMaterial** assimpMateria
             gfxMaterial.SetNormalTextureID(ProcessTexture(textureName.data));
         }
 
+        if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE_ROUGHNESS, 0), textureName);
+            gfxMaterial.SetRoughnessTextureID(ProcessTexture(textureName.data));
+        }
+
+        if (material->GetTextureCount(aiTextureType_METALNESS) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
+            gfxMaterial.SetMetalnessTextureID(ProcessTexture(textureName.data));
+        }
+
         gfxMaterial.Serialize(ofstream);
         m_MaterialGuidTable[i] = gfxMaterial.GetGuid();
     }

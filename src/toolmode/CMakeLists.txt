@@ -37,7 +37,6 @@ source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${toolmode_files})
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
 add_executable(${ETHER_TOOLMODE} WIN32 ${toolmode_files})
-target_compile_definitions(${ETHER_TOOLMODE} PRIVATE "ETH_TOOLMODE")
 
 # =========================================================================== #
 #                            PRECOMPILED HEADERS                              #

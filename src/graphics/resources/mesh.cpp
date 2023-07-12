@@ -33,11 +33,11 @@ void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
 
-    ostream << static_cast<uint32_t>(m_PackedVertices.size());
+    ostream << m_NumVertices;
     for (int i = 0; i < m_PackedVertices.size(); ++i)
         m_PackedVertices[i].Serialize(ostream);
 
-    ostream << static_cast<uint32_t>(m_Indices.size());
+    ostream << m_NumIndices;
     for (int i = 0; i < m_Indices.size(); ++i)
         ostream << m_Indices[i];
 
@@ -48,17 +48,13 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
 
-    uint32_t numVertices = 0;
-    istream >> numVertices;
-
-    m_PackedVertices.resize(numVertices);
+    istream >> m_NumVertices;
+    m_PackedVertices.resize(m_NumVertices);
     for (int i = 0; i < m_PackedVertices.size(); ++i)
         m_PackedVertices[i].Deserialize(istream);
 
-    uint32_t numIndices = 0;
-    istream >> numIndices;
-
-    m_Indices.resize(numIndices);
+    istream >> m_NumIndices;
+    m_Indices.resize(m_NumIndices);
     for (int i = 0; i < m_Indices.size(); ++i)
         istream >> m_Indices[i];
 
@@ -69,11 +65,13 @@ void Ether::Graphics::Mesh::SetPackedVertices(
     std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices)
 {
     m_PackedVertices = std::move(vertices);
+    m_NumVertices = m_PackedVertices.size();
 }
 
 void Ether::Graphics::Mesh::SetIndices(std::vector<uint32_t>&& indices)
 {
     m_Indices = indices;
+    m_NumIndices = m_Indices.size();
 }
 
 void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
@@ -81,6 +79,13 @@ void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
     CreateVertexBuffer(ctx);
     CreateIndexBuffer(ctx);
     CreateAccelerationStructure(ctx);
+
+#ifdef ETH_ENGINE
+    // Mesh data can be deallocated on the CPU. It's all in VRAM now.
+    // This might cause problems down the line, but if it is not deallocated the CPU memory usage is going to be crazy
+    m_PackedVertices.clear();
+    m_Indices.clear();
+#endif
 }
 
 void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)

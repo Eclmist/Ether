@@ -33,6 +33,8 @@ Ether::Graphics::Texture::~Texture()
     {
         if (m_Data[i] != nullptr)
             free(m_Data[i]);
+
+        m_Data[i] = nullptr;
     }
 }
 
@@ -83,6 +85,18 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
     m_Resource = GraphicCore::GetDevice().CreateCommittedResource(desc);
     ctx.InitializeTexture(*m_Resource, (void**)m_Data, m_NumMips, m_Width, m_Height, GetBytesPerPixel());
     GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(m_Guid, m_Resource.get(), m_Format);
+
+#ifdef ETH_ENGINE
+    // Texture data can be deallocated on the CPU. It's all in VRAM now.
+    // This might cause problems down the line, but if it is not deallocated the CPU memory usage is going to be crazy
+    for (uint32_t i = 0; i < m_NumMips; ++i)
+    {
+        if (m_Data[i] != nullptr)
+            free(m_Data[i]);
+
+        m_Data[i] = nullptr;
+    }
+#endif
 }
 
 void Ether::Graphics::Texture::SetData(const unsigned char* data, bool generateMips)

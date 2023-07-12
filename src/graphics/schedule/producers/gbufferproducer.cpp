@@ -30,11 +30,13 @@
 DEFINE_GFX_PA(GBufferProducer)
 DEFINE_GFX_DS(GBufferDepthStencil)
 DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   ValidFlag]
-DEFINE_GFX_RT(GBufferTexture1) // [Position.x, Position.y, Position.z, Normal.x]
-DEFINE_GFX_RT(GBufferTexture2) // [Normal.y,   zormal.z,   Velocity.x, Velocity.y]
+DEFINE_GFX_RT(GBufferTexture1) // [Position.x, Position.y, Position.z, Roughness]
+DEFINE_GFX_RT(GBufferTexture2) // [Normal.x,   Normal.y,   Normal.z,   Metalness]
+DEFINE_GFX_RT(GBufferTexture3) // [Velocity.x, Velocity.y, Unused,     Unused]
 DEFINE_GFX_SR(GBufferTexture0)
 DEFINE_GFX_SR(GBufferTexture1)
 DEFINE_GFX_SR(GBufferTexture2)
+DEFINE_GFX_SR(GBufferTexture3)
 
 DECLARE_GFX_CB(GlobalRingBuffer)
 
@@ -57,9 +59,11 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
+    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
@@ -76,10 +80,11 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture0)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture1)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture2)), RhiResourceState::RenderTarget);
-    ctx.ClearColor(gfxDisplay.GetBackBufferRtv(), config.GetClearColor());
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture3)), RhiResourceState::RenderTarget);
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture0));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture1));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture2));
+    ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture3));
     ctx.ClearDepthStencil(*ACCESS_GFX_DS(GBufferDepthStencil), 1.0);
     ctx.PopMarker();
 
@@ -95,7 +100,11 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
 
-    RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0), *ACCESS_GFX_RT(GBufferTexture1), *ACCESS_GFX_RT(GBufferTexture2), gfxDisplay.GetBackBufferRtv() };
+    RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0),
+                                   *ACCESS_GFX_RT(GBufferTexture1),
+                                   *ACCESS_GFX_RT(GBufferTexture2),
+                                   *ACCESS_GFX_RT(GBufferTexture3) };
+    
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(GBufferDepthStencil)));
 
 
@@ -109,6 +118,8 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
         instanceMaterial.m_SpecularColor = visual.m_Material->GetSpecularColor();
         instanceMaterial.m_AlbedoTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetAlbedoTextureID());
         instanceMaterial.m_NormalTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetNormalTextureID());
+        instanceMaterial.m_RoughnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetRoughnessTextureID());
+        instanceMaterial.m_MetalnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetMetalnessTextureID());
 
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::Material), 256 });
         memcpy(alloc->GetCpuHandle(), &instanceMaterial, sizeof(Shader::Material));
@@ -155,7 +166,10 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
 
 void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
 {
-    RhiFormat formats[] = { RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, RhiFormat::R32G32B32A32Float, BackBufferFormat };
+    RhiFormat formats[] = { RhiFormat::R32G32B32A32Float,
+                            RhiFormat::R32G32B32A32Float,
+                            RhiFormat::R32G32B32A32Float,
+                            RhiFormat::R32G32B32A32Float };
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);

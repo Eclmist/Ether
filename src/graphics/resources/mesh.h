@@ -39,8 +39,8 @@ public:
     inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
     inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
     inline RhiAccelerationStructure& GetAccelerationStructure() const { return *m_AccelerationStructure; }
-    inline uint32_t GetNumVertices() const { return m_PackedVertices.size(); }
-    inline uint32_t GetNumIndices() const { return m_Indices.size(); }
+    inline uint32_t GetNumVertices() const { return m_NumVertices; }
+    inline uint32_t GetNumIndices() const { return m_NumIndices; }
     inline StringID GetDefaultMaterialGuid() const { return m_DefaultMaterialGuid; }
 
 public:
@@ -68,6 +68,8 @@ private:
 private:
     std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord> m_PackedVertices;
     std::vector<uint32_t> m_Indices;
+    uint32_t m_NumVertices;
+    uint32_t m_NumIndices;
     StringID m_DefaultMaterialGuid;
 
     std::unique_ptr<RhiResource> m_VertexBufferResource;

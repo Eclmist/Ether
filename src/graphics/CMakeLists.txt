@@ -43,7 +43,7 @@ target_include_directories(${ETHER_GRAPHICS} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR
 target_include_directories(${ETHER_GRAPHICS} SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_include_directories(${ETHER_GRAPHICS} SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/src/graphics/imgui") # to avoid needing to update imgui includes
 
-target_compile_definitions(${ETHER_GRAPHICS} PRIVATE "ETH_GRAPHICS")
+target_compile_definitions(${ETHER_GRAPHICS} PRIVATE "ETH_GRAPHICS_LIB")
 target_compile_definitions(${ETHER_GRAPHICS} PRIVATE "ETH_GRAPHICS_DX12")
 
 # =========================================================================== #

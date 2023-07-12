@@ -25,6 +25,7 @@ RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 Texture2D<float4> g_GBufferOutput0                  : register(t1);
 Texture2D<float4> g_GBufferOutput1                  : register(t2);
 Texture2D<float4> g_GBufferOutput2                  : register(t3);
+Texture2D<float4> g_GBufferOutput3                  : register(t4);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 
 // 3D Gradient noise from: https://www.shadertoy.com/view/Xsl3Dl
@@ -57,7 +58,7 @@ void RayGeneration()
     float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
 
     float3 position = gbuffer1.xyz;
-    float3 normal = float3(gbuffer1.w, gbuffer2.xy);
+    float3 normal = gbuffer2.xyz;
 
     float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection).xyz;
     float4 sunColor = g_GlobalConstants.m_SunColor;
@@ -75,7 +76,7 @@ void RayGeneration()
     ray.Origin = position;
     ray.TMax = 64;
     ray.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
     if (!payload.m_Hit)
         light += sunColor * saturate(dot(normal, sunDirection)) * 2;
@@ -85,7 +86,7 @@ void RayGeneration()
     {
         ray.Origin = position;
         ray.Direction = normalize(normal.xyz + normalize(uniformRandomDirection(position + (g_GlobalConstants.m_Time.w % 0.31415923))));
-        TraceRay(g_RaytracingTlas, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, ray, payload);
+        TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)
             light += pow(saturate(payload.m_RayT / 16), 1.5) * skyColor * rcp(NumRays);

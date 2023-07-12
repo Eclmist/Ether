@@ -49,6 +49,12 @@ else ()
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32")
 endif()
 
+# Define ETH_TOOLMODE or ETH_ENGINE for ALL targets including subdirectory
+if (CONFIGURE_AS_TOOLMODE)
+    set_directory_properties(Engine COMPILE_DEFINITIONS ETH_TOOLMODE)
+else()
+    set_directory_properties(Engine COMPILE_DEFINITIONS ETH_ENGINE)
+endif()
 
 # Give WIN32 definition for all targets
 add_compile_definitions("ETH_PLATFORM_WIN32")
@@ -74,7 +80,7 @@ source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${engine_files})
 # =========================================================================== #
 
 add_library(Engine SHARED ${engine_files})
-target_compile_definitions(Engine PRIVATE $<IF:$<BOOL:${CONFIGURE_AS_TOOLMODE}>, ETH_TOOLMODE, ETH_ENGINE>)
+target_compile_definitions(Engine PRIVATE ETH_ENGINE_LIB)
 
 if(WIN32)
     # Enable multi-threaded compilation on Windows

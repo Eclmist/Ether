@@ -21,7 +21,7 @@
 #include "utils/fullscreenhelpers.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-Texture2D<float4> g_GBufferTexture2                 : register(t0);
+Texture2D<float4> g_GBufferTexture3                 : register(t0);
 Texture2D<float4> g_AccumulationTextureIn           : register(t1);
 RWTexture2D<float4> g_TargetTexture                 : register(u0);
 RWTexture2D<float4> g_AccumulationTextureOut        : register(u1);
@@ -33,7 +33,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     float2 resolution = g_GlobalConstants.m_ScreenResolution;
     float2 uv = threadID.xy / resolution + 0.5 / resolution;
-    float2 uvPrev = uv - (float2)g_GBufferTexture2.Sample(linearSampler, uv).zw;
+    float2 uvPrev = uv - (float2)g_GBufferTexture3.Sample(linearSampler, uv).xy;
     float4 colorPrev = g_AccumulationTextureIn.Sample(linearSampler, uvPrev);
     float4 colorCurr = g_TargetTexture[threadID.xy];
 
