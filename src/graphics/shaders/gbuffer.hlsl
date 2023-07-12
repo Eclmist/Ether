@@ -105,13 +105,13 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (g_InstanceParams.m_RoughnessTextureIndex != 0)
     {
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[g_InstanceParams.m_RoughnessTextureIndex];
-        roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).b;
+        roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).g;
     }
 
     if (g_InstanceParams.m_MetalnessTextureIndex != 0)
     {
         Texture2D<float4> metalnessTex = ResourceDescriptorHeap[g_InstanceParams.m_MetalnessTextureIndex];
-        metalness = metalnessTex.Sample(linearSampler, IN.TexCoord).x;
+        metalness = metalnessTex.Sample(linearSampler, IN.TexCoord).b;
     }
 
     // Don't support alpha yet

@@ -59,6 +59,8 @@ void RayGeneration()
 
     float3 position = gbuffer1.xyz;
     float3 normal = gbuffer2.xyz;
+    float roughness = gbuffer1.w;
+    float metalness = gbuffer2.w;
 
     float3 sunDirection = normalize(g_GlobalConstants.m_SunDirection).xyz;
     float4 sunColor = g_GlobalConstants.m_SunColor;
@@ -85,7 +87,7 @@ void RayGeneration()
     for (int i = 0; i < NumRays; ++i)
     {
         ray.Origin = position;
-        ray.Direction = normalize(normal.xyz + normalize(uniformRandomDirection(position + (g_GlobalConstants.m_Time.w % 0.31415923))));
+        ray.Direction = normalize(normal.xyz + roughness * normalize(uniformRandomDirection(position + (g_GlobalConstants.m_Time.w % 0.31415923))));
         TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
         if (payload.m_Hit)

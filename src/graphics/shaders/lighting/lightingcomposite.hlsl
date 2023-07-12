@@ -59,8 +59,6 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return lighting;
 
-    return g_GBufferTexture1[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].w;
-
     float4 finalColor = albedo * lighting;
     return finalColor;
 }
