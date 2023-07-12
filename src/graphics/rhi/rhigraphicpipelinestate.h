@@ -20,17 +20,19 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/rhi/rhirootsignature.h"
+#include "graphics/rhi/rhipipelinestate.h"
 
 namespace Ether::Graphics
 {
-class RhiGraphicPipelineStateDesc
+class RhiGraphicPipelineStateDesc : public RhiPipelineStateDesc
 {
 public:
     RhiGraphicPipelineStateDesc() = default;
     virtual ~RhiGraphicPipelineStateDesc() {}
 
 public:
+    virtual void SetVertexShader(const RhiShader& vs) = 0;
+    virtual void SetPixelShader(const RhiShader& ps) = 0;
     virtual void SetBlendState(const RhiBlendDesc& desc) = 0;
     virtual void SetRasterizerState(const RhiRasterizerDesc& desc) = 0;
     virtual void SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements) = 0;
@@ -39,33 +41,10 @@ public:
     virtual void SetDepthTargetFormat(RhiFormat dsvFormat) = 0;
     virtual void SetRenderTargetFormat(RhiFormat rtvFormat) = 0;
     virtual void SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv) = 0;
-    virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
     virtual void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) = 0;
-    virtual void SetVertexShader(const RhiShader& vs) = 0;
-    virtual void SetPixelShader(const RhiShader& ps) = 0;
-    virtual void SetNodeMask(uint32_t mask) = 0;
     virtual void SetSampleMask(uint32_t mask) = 0;
-    virtual void Reset() = 0;
 
 public:
-    std::unique_ptr<RhiGraphicPipelineState> Compile(const char* name) const;
-    bool RequiresShaderCompilation() const;
-    void CompileShaders();
-
-protected:
-    std::unordered_map<RhiShaderType, const RhiShader*> m_Shaders;
-};
-
-class RhiGraphicPipelineState
-{
-public:
-    RhiGraphicPipelineState(const RhiGraphicPipelineStateDesc& desc)
-        : m_CreationDesc(desc)
-    {
-    }
-    virtual ~RhiGraphicPipelineState() = default;
-
-protected:
-    const RhiGraphicPipelineStateDesc& m_CreationDesc;
+    virtual std::unique_ptr<RhiPipelineState> Compile(const char* name) const override;
 };
 } // namespace Ether::Graphics

@@ -196,6 +196,11 @@ std::unique_ptr<Ether::Graphics::RhiComputePipelineStateDesc> Ether::Graphics::D
     return std::make_unique<Dx12ComputePipelineStateDesc>();
 }
 
+std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineStateDesc> Ether::Graphics::Dx12Device::CreateRaytracingPipelineStateDesc() const
+{
+    return std::make_unique<Dx12RaytracingPipelineStateDesc>();
+}
+
 std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateRaytracingShaderBindingTable(
     const char* name,
     const RhiRaytracingShaderBindingTableDesc& desc) const
@@ -220,8 +225,7 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
     dx12Obj->m_Buffer->Map((void**)&mappedAddr);
 
     wrl::ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
-    dynamic_cast<Dx12RaytracingPipelineState*>(desc.m_RaytracingPipelineState)
-        ->m_PipelineState->QueryInterface(IID_PPV_ARGS(&stateObjectProperties));
+    ((Dx12RaytracingPipelineState*)(desc.m_RaytracingPipelineState))->m_PipelineState->QueryInterface(IID_PPV_ARGS(&stateObjectProperties));
 
     memcpy(
         mappedAddr,
@@ -356,34 +360,6 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     return dx12Obj;
 }
 
-std::unique_ptr<Ether::Graphics::RhiRaytracingPipelineState> Ether::Graphics::Dx12Device::CreateRaytracingPipelineState(
-    const RhiRaytracingPipelineStateDesc& desc) const
-{
-    std::unique_ptr<Dx12RaytracingPipelineState> dx12Obj = std::make_unique<Dx12RaytracingPipelineState>();
-
-    const wchar_t* raygenExportName[] = { desc.m_RayGenShaderName };
-    const wchar_t* hitMissExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName };
-    const wchar_t* allExportName[] = { desc.m_ClosestHitShaderName, desc.m_MissShaderName, desc.m_RayGenShaderName };
-
-    dx12Obj->PushLibrary(desc.m_LibraryShaderDesc);
-    dx12Obj->PushHitProgram(desc.m_HitGroupName, nullptr, desc.m_ClosestHitShaderName);
-    dx12Obj->PushShaderConfig(desc.m_MaxAttributeSize, desc.m_MaxPayloadSize);
-    dx12Obj->PushExportAssociation(allExportName, sizeof(allExportName) / sizeof(allExportName[0]));
-    dx12Obj->PushPipelineConfig(desc.m_MaxRecursionDepth);
-    dx12Obj->PushGlobalRootSignature(desc.m_GlobalRootSignature);
-
-    D3D12_STATE_OBJECT_DESC stateObjDesc = {};
-    stateObjDesc.NumSubobjects = dx12Obj->m_NumSubObjects;
-    stateObjDesc.pSubobjects = dx12Obj->m_SubObjects;
-    stateObjDesc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
-
-    HRESULT hr = m_Device->CreateStateObject(&stateObjDesc, IID_PPV_ARGS(&dx12Obj->m_PipelineState));
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 Raytracing Pipeline State");
-
-    return dx12Obj;
-}
-
 std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::CreateCommittedResource(
     const RhiCommitedResourceDesc& desc) const
 {
@@ -444,42 +420,6 @@ std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::Dx12Device::
 
     dx12Obj->m_RootSignature->SetName(ToWideString(name).c_str());
 
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiGraphicPipelineState> Ether::Graphics::Dx12Device::CreateGraphicPipelineState(
-    const char* name,
-    const RhiGraphicPipelineStateDesc& desc) const
-{
-    std::unique_ptr<Dx12GraphicPipelineState> dx12Obj = std::make_unique<Dx12GraphicPipelineState>(desc);
-    const Dx12GraphicPipelineStateDesc& dx12Desc = dynamic_cast<const Dx12GraphicPipelineStateDesc&>(desc);
-
-    HRESULT hr = m_Device->CreateGraphicsPipelineState(
-        &dx12Desc.m_Dx12PsoDesc,
-        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
-
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
-
-    dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
-    return dx12Obj;
-}
-
-std::unique_ptr<Ether::Graphics::RhiComputePipelineState> Ether::Graphics::Dx12Device::CreateComputePipelineState(
-    const char* name,
-    const RhiComputePipelineStateDesc& desc) const
-{
-    std::unique_ptr<Dx12ComputePipelineState> dx12Obj = std::make_unique<Dx12ComputePipelineState>(desc);
-    const Dx12ComputePipelineStateDesc& dx12Desc = dynamic_cast<const Dx12ComputePipelineStateDesc&>(desc);
-
-    HRESULT hr = m_Device->CreateComputePipelineState(
-        &dx12Desc.m_Dx12PsoDesc,
-        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
-
-    if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
-
-    dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
     return dx12Obj;
 }
 
@@ -628,6 +568,61 @@ void Ether::Graphics::Dx12Device::InitializeConstantBufferView(RhiConstantBuffer
     desc.BufferLocation = resource.GetGpuAddress();
 
     m_Device->CreateConstantBufferView(&desc, { cbv.GetCpuAddress() });
+}
+
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreateGraphicPipelineState(
+    const char* name,
+    const RhiGraphicPipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12GraphicPipelineState> dx12Obj = std::make_unique<Dx12GraphicPipelineState>(desc);
+    const Dx12GraphicPipelineStateDesc& dx12Desc = dynamic_cast<const Dx12GraphicPipelineStateDesc&>(desc);
+
+    HRESULT hr = m_Device->CreateGraphicsPipelineState(
+        &dx12Desc.m_Dx12PsoDesc,
+        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
+
+    dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreateComputePipelineState(
+    const char* name,
+    const RhiComputePipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12ComputePipelineState> dx12Obj = std::make_unique<Dx12ComputePipelineState>(desc);
+    const Dx12ComputePipelineStateDesc& dx12Desc = dynamic_cast<const Dx12ComputePipelineStateDesc&>(desc);
+
+    HRESULT hr = m_Device->CreateComputePipelineState(
+        &dx12Desc.m_Dx12PsoDesc,
+        IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
+
+    dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
+    return dx12Obj;
+}
+
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::CreateRaytracingPipelineState(
+    const char* name,
+    const RhiRaytracingPipelineStateDesc& desc) const
+{
+    std::unique_ptr<Dx12RaytracingPipelineState> dx12Obj = std::make_unique<Dx12RaytracingPipelineState>(desc);
+    const Dx12RaytracingPipelineStateDesc& dx12Desc = dynamic_cast<const Dx12RaytracingPipelineStateDesc&>(desc);
+
+    D3D12_STATE_OBJECT_DESC stateObjDesc = {};
+    stateObjDesc.NumSubobjects = dx12Desc.m_NumSubObjects;
+    stateObjDesc.pSubobjects = dx12Desc.m_SubObjects;
+    stateObjDesc.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
+
+    HRESULT hr = m_Device->CreateStateObject(&stateObjDesc, IID_PPV_ARGS(&dx12Obj->m_PipelineState));
+    if (FAILED(hr))
+        LogGraphicsFatal("Failed to create DirectX12 Raytracing Pipeline State");
+
+    return dx12Obj;
 }
 
 #endif // ETH_GRAPHICS_DX12

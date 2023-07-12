@@ -45,11 +45,11 @@ public:
     virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal = false) const = 0;
     virtual std::unique_ptr<RhiGraphicPipelineStateDesc> CreateGraphicPipelineStateDesc() const = 0;
     virtual std::unique_ptr<RhiComputePipelineStateDesc> CreateComputePipelineStateDesc() const = 0;
+    virtual std::unique_ptr<RhiRaytracingPipelineStateDesc> CreateRaytracingPipelineStateDesc() const = 0;
 
     virtual std::unique_ptr<RhiResource> CreateRaytracingShaderBindingTable(const char* name, const RhiRaytracingShaderBindingTableDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiTopLevelAccelerationStructureDesc& desc) const = 0;
     virtual std::unique_ptr<RhiAccelerationStructure> CreateAccelerationStructure(const RhiBottomLevelAccelerationStructureDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiRaytracingPipelineState> CreateRaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) const = 0;
 
     virtual std::unique_ptr<RhiResource> CreateCommittedResource(const RhiCommitedResourceDesc& desc) const = 0;
 
@@ -67,8 +67,11 @@ protected:
     friend class RhiRootSignatureDesc;
     friend class RhiGraphicPipelineStateDesc;
     friend class RhiComputePipelineStateDesc;
-    virtual std::unique_ptr<RhiGraphicPipelineState> CreateGraphicPipelineState(const char* name, const RhiGraphicPipelineStateDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiComputePipelineState> CreateComputePipelineState(const char* name, const RhiComputePipelineStateDesc& desc) const = 0;
+    friend class RhiRaytracingPipelineStateDesc;
+
+    virtual std::unique_ptr<RhiPipelineState> CreateGraphicPipelineState(const char* name, const RhiGraphicPipelineStateDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiPipelineState> CreateComputePipelineState(const char* name, const RhiComputePipelineStateDesc& desc) const = 0;
+    virtual std::unique_ptr<RhiPipelineState> CreateRaytracingPipelineState(const char* name, const RhiRaytracingPipelineStateDesc& desc) const = 0;
     virtual std::unique_ptr<RhiRootSignature> CreateRootSignature(const char* name, const RhiRootSignatureDesc& desc) const = 0;
 };
 } // namespace Ether::Graphics

@@ -101,6 +101,11 @@ void Ether::Graphics::CommandContext::SetComputePipelineState(const RhiComputePi
     m_CommandList->SetComputePipelineState(pipelineState);
 }
 
+void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState)
+{
+    m_CommandList->SetRaytracingPipelineState(pipelineState);
+}
+
 void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
 {
     m_CommandList->CopyResource(src, dest);
@@ -175,11 +180,6 @@ void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const R
 void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiResource* bindTable)
 {
     m_RaytracingBindTable = bindTable;
-}
-
-void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState)
-{
-    m_CommandList->SetRaytracingPipelineState(pipelineState);
 }
 
 void Ether::Graphics::CommandContext::SetComputeRootSignature(const RhiRootSignature& rootSignature)

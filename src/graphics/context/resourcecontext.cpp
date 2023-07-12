@@ -31,11 +31,13 @@ Ether::Graphics::ResourceContext::ResourceContext()
         false);
 }
 
-void Ether::Graphics::ResourceContext::RegisterGraphicPipelineState(const char* name, RhiGraphicPipelineStateDesc& pipelineStateDesc)
+void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc)
 {
     // This caching doesn't actually work since it just cheats by using the address as a key
-    // A mechanism for hashing the pipeline state data (maybe inherit serializable and create a stringstream?)
-    // (TODO)
+    // A mechanism for hashing the pipeline state data. This means that if two different pipeline states
+    // were registered, both will be compiled even if they are identical.
+    // TODO: maybe inherit serializable and create a stringstream?
+    //
     // Note: Shader recompile works by calling this function again for all registered psos.
     // If we replace this function with more complex checking with serialization, this process will be
     // really bad for performance because most PSOs probably don't need shader recompilation every frame,
@@ -48,49 +50,24 @@ void Ether::Graphics::ResourceContext::RegisterGraphicPipelineState(const char* 
     {
         GraphicCore::FlushGpu();
         pipelineStateDesc.CompileShaders();
-        m_CachedGraphicPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
+        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
         return;
     }
 
-    if (m_CachedGraphicPipelineStates.find(&pipelineStateDesc) == m_CachedGraphicPipelineStates.end())
-        m_CachedGraphicPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
-}
-void Ether::Graphics::ResourceContext::RegisterComputePipelineState(const char* name, RhiComputePipelineStateDesc& pipelineStateDesc)
-{
-    if (pipelineStateDesc.RequiresShaderCompilation())
-    {
-        GraphicCore::FlushGpu();
-        pipelineStateDesc.CompileShaders();
-        m_CachedComputePipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
-        return;
-    }
-
-    if (m_CachedComputePipelineStates.find(&pipelineStateDesc) == m_CachedComputePipelineStates.end())
-        m_CachedComputePipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
+    if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
+        m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
 }
 
-Ether::Graphics::RhiGraphicPipelineState& Ether::Graphics::ResourceContext::GetGraphicPipelineState(
-    RhiGraphicPipelineStateDesc& pipelineStateDesc)
+Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipelineState(
+    RhiPipelineStateDesc& pipelineStateDesc)
 {
-    if (m_CachedGraphicPipelineStates.find(&pipelineStateDesc) == m_CachedGraphicPipelineStates.end())
+    if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
     {
-        LogGraphicsError("A pipeline state desc was registered before use");
-        RegisterGraphicPipelineState("Unknown Pipeline State", pipelineStateDesc);
+        LogGraphicsError("A pipeline state desc was used before registration");
+        RegisterPipelineState("Unknown Pipeline State", pipelineStateDesc);
     }
 
-    return *m_CachedGraphicPipelineStates.at(&pipelineStateDesc);
-}
-
-Ether::Graphics::RhiComputePipelineState& Ether::Graphics::ResourceContext::GetComputePipelineState(
-    RhiComputePipelineStateDesc& pipelineStateDesc)
-{
-    if (m_CachedComputePipelineStates.find(&pipelineStateDesc) == m_CachedComputePipelineStates.end())
-    {
-        LogGraphicsError("A pipeline state desc was registered before use");
-        RegisterComputePipelineState("Unknown Pipeline State", pipelineStateDesc);
-    }
-
-    return *m_CachedComputePipelineStates.at(&pipelineStateDesc);
+    return *m_CachedPipelineStates.at(&pipelineStateDesc);
 }
 
 Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateBufferResource(
@@ -360,9 +337,7 @@ void Ether::Graphics::ResourceContext::InvalidateViews(StringID resourceID)
 
 void Ether::Graphics::ResourceContext::RecompilePipelineStates()
 {
-    for (auto& psoPair : m_CachedGraphicPipelineStates)
-        RegisterGraphicPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
-
-    for (auto& psoPair : m_CachedComputePipelineStates)
-        RegisterComputePipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
+    for (auto& psoPair : m_CachedPipelineStates)
+        RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
 }
+

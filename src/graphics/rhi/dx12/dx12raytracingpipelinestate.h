@@ -22,48 +22,75 @@
 #include "graphics/pch.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12includes.h"
+#include "graphics/rhi/dx12/dx12pipelinestate.h"
+
+#include <unordered_set>
 
 namespace Ether::Graphics
 {
-class Dx12RaytracingPipelineState : public RhiRaytracingPipelineState
+
+class Dx12RaytracingPipelineStateDesc : public RhiRaytracingPipelineStateDesc
 {
 public:
-    Dx12RaytracingPipelineState() = default;
-    ~Dx12RaytracingPipelineState() override = default;
+    Dx12RaytracingPipelineStateDesc() = default;
+    ~Dx12RaytracingPipelineStateDesc() override = default;
 
 public:
-    void PushLibrary(const RhiLibraryShaderDesc& desc);
-    void PushHitProgram(const wchar_t* name, const wchar_t* anyHitExport, const wchar_t* closestHitExport);
-    void PushLocalRootSignature(RhiRootSignature* rootSignature);
-    void PushGlobalRootSignature(RhiRootSignature* rootSignature);
-    void PushShaderConfig(uint32_t maxAttributeSize, uint32_t maxPayloadSize);
-    void PushPipelineConfig(uint32_t maxRecursionDepth);
-    void PushExportAssociation(const wchar_t** exportNames, uint32_t numExports);
+    void SetLibraryShader(const RhiShader& ls) override;
+    void SetHitGroupName(const wchar_t* name) override;
+    void SetAnyHitShaderName(const wchar_t* name) override;
+    void SetClosestHitShaderName(const wchar_t* name) override;
+    void SetMissShaderName(const wchar_t* name) override;
+    void SetRayGenShaderName(const wchar_t* name) override;
+    void SetMaxRecursionDepth(uint32_t maxRecursionDepth) override;
+    void SetMaxAttributeSize(size_t maxAttributeSize) override;
+    void SetMaxPayloadSize(size_t maxPayloadSize) override;
+    void SetRootSignature(const RhiRootSignature& rootSignature) override;
+    void SetNodeMask(uint32_t mask) override;
+
+    void PushHitProgram() override;
+    void PushShaderConfig() override;
+    void PushPipelineConfig() override;
+    void PushGlobalRootSignature() override;
+    void PushLibrary(const wchar_t** exportNames, uint32_t numExports) override;
+    void PushExportAssociation(const wchar_t** exportNames, uint32_t numExports) override;
+
+    void Reset() override;
+
+protected:
+    friend class Dx12Device;
+    std::wstring m_HitGroupName;
+    std::wstring m_AnyHitShaderName;
+    std::wstring m_ClosestHitShaderName;
+    std::wstring m_MissShaderName;
+    std::wstring m_RayGenShaderName;
+    uint32_t m_NodeMask;
+
+    D3D12_HIT_GROUP_DESC m_HitGroupDesc;
+    D3D12_RAYTRACING_SHADER_CONFIG m_ShaderConfig;
+    D3D12_RAYTRACING_PIPELINE_CONFIG m_PipelineConfig;
+    D3D12_DXIL_LIBRARY_DESC m_LibraryDesc;
+    std::vector<D3D12_EXPORT_DESC> m_LibraryExportDesc;
+    std::vector<std::wstring> m_LibraryExportName;
+
+    D3D12_STATE_SUBOBJECT m_SubObjects[32];
+    D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION m_ExportAssociations[32];
+    uint32_t m_NumSubObjects;
+    uint32_t m_NumExportAssociations;
+
+    ID3D12RootSignature* m_RootSignature;
+};
+
+class Dx12RaytracingPipelineState : public Dx12PipelineState
+{
+public:
+    Dx12RaytracingPipelineState(const RhiRaytracingPipelineStateDesc& desc) : Dx12PipelineState(desc) {}
+    ~Dx12RaytracingPipelineState() override = default;
 
 private:
     friend class Dx12Device;
     friend class Dx12CommandList;
 
-    D3D12_STATE_SUBOBJECT m_SubObjects[32];
-    uint32_t m_NumSubObjects;
-
     wrl::ComPtr<ID3D12StateObject> m_PipelineState;
-
-private:
-    // Scratch data that cannot be destroyed
-    D3D12_DXIL_LIBRARY_DESC m_LibraryDesc;
-    std::vector<D3D12_EXPORT_DESC> m_LibraryExportDesc;
-    std::vector<std::wstring> m_LibraryExportName;
-
-    D3D12_HIT_GROUP_DESC m_HitGroupDesc;
-    D3D12_RAYTRACING_SHADER_CONFIG m_ShaderConfig;
-    D3D12_RAYTRACING_PIPELINE_CONFIG m_PipelineConfig;
-
-    D3D12_LOCAL_ROOT_SIGNATURE m_LocalRootSignatures[32];
-    D3D12_GLOBAL_ROOT_SIGNATURE m_GlobalRootSignatures[32];
-    D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION m_ExportAssociations[32];
-    uint32_t m_NumLocalRootSignature;
-    uint32_t m_NumGlobalRootSignature;
-    uint32_t m_NumExportAssociations;
 };
 } // namespace Ether::Graphics

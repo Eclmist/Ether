@@ -17,13 +17,24 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/graphiccore.h"
-#include "graphics/rhi/rhigraphicpipelinestate.h"
-#include "graphics/rhi/rhishader.h"
+#pragma once
 
-std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiGraphicPipelineStateDesc::Compile(
-    const char* name) const
+#include "graphics/pch.h"
+#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/dx12/dx12includes.h"
+
+namespace Ether::Graphics
 {
-    return GraphicCore::GetDevice().CreateGraphicPipelineState(name, *this);
-}
+class Dx12PipelineState : public RhiPipelineState
+{
+public:
+    Dx12PipelineState(const RhiPipelineStateDesc& desc) : RhiPipelineState(desc) {}
+    virtual ~Dx12PipelineState() override {}
 
+private:
+    friend class Dx12Device;
+    friend class Dx12CommandList;
+    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
+};
+
+} // namespace Ether::Graphics

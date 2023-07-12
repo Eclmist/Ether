@@ -23,10 +23,10 @@
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12graphicpipelinestate.h"
 #include "graphics/rhi/dx12/dx12computepipelinestate.h"
+#include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12resource.h"
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
-#include "graphics/rhi/dx12/dx12raytracingpipelinestate.h"
 #include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 
 #include "graphics/graphiccore.h"
@@ -93,12 +93,20 @@ void Ether::Graphics::Dx12CommandList::SetDescriptorHeaps(const RhiDescriptorHea
 
 void Ether::Graphics::Dx12CommandList::SetGraphicPipelineState(const RhiGraphicPipelineState& pso)
 {
-    m_CommandList->SetPipelineState(dynamic_cast<const Dx12GraphicPipelineState&>(pso).m_PipelineState.Get());
+    const Dx12GraphicPipelineState* dx12RtPso = (Dx12GraphicPipelineState*)(&pso);
+    m_CommandList->SetPipelineState(dx12RtPso->m_PipelineState.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::SetComputePipelineState(const RhiComputePipelineState& pso)
 {
-    m_CommandList->SetPipelineState(dynamic_cast<const Dx12ComputePipelineState&>(pso).m_PipelineState.Get());
+    const Dx12ComputePipelineState* dx12RtPso = (Dx12ComputePipelineState*)(&pso);
+    m_CommandList->SetPipelineState(dx12RtPso->m_PipelineState.Get());
+}
+
+void Ether::Graphics::Dx12CommandList::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso)
+{
+    const Dx12RaytracingPipelineState* dx12RtPso = (Dx12RaytracingPipelineState*)(&pso);
+    m_CommandList->SetPipelineState1(dx12RtPso->m_PipelineState.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::SetViewport(const RhiViewportDesc& viewport)
@@ -250,12 +258,6 @@ void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccel
 
     m_CommandList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
     InsertUavBarrier(*as.m_DataBuffer);
-}
-
-void Ether::Graphics::Dx12CommandList::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso)
-{
-    const Dx12RaytracingPipelineState* dx12RtPso = dynamic_cast<const Dx12RaytracingPipelineState*>(&pso);
-    m_CommandList->SetPipelineState1(dx12RtPso->m_PipelineState.Get());
 }
 
 void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavResource)

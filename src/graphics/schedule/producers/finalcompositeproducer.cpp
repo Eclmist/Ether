@@ -58,7 +58,7 @@ void Ether::Graphics::FinalCompositeProducer::CreatePipelineState(ResourceContex
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
-    rc.RegisterGraphicPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
+    rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 
 void Ether::Graphics::FinalCompositeProducer::CreateRootSignature()

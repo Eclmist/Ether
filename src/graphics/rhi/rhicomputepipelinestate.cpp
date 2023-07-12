@@ -21,37 +21,9 @@
 #include "graphics/rhi/rhicomputepipelinestate.h"
 #include "graphics/rhi/rhishader.h"
 
-std::unique_ptr<Ether::Graphics::RhiComputePipelineState> Ether::Graphics::RhiComputePipelineStateDesc::Compile(
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiComputePipelineStateDesc::Compile(
     const char* name) const
 {
     return GraphicCore::GetDevice().CreateComputePipelineState(name, *this);
 }
 
-bool Ether::Graphics::RhiComputePipelineStateDesc::RequiresShaderCompilation() const
-{
-    for (auto shader : m_Shaders)
-        if (!shader.second->IsCompiled())
-            return true;
-
-    return false;
-}
-
-void Ether::Graphics::RhiComputePipelineStateDesc::CompileShaders()
-{
-    for (auto shader : m_Shaders)
-    {
-        if (!shader.second->IsCompiled())
-        {
-            try
-            {
-                const_cast<RhiShader*>(shader.second)->Compile();
-            }
-            catch (std::runtime_error err)
-            {
-                LogGraphicsError(err.what());
-            }
-
-            SetComputeShader(*shader.second);
-        }
-    }
-}

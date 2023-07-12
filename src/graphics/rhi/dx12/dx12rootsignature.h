@@ -86,7 +86,7 @@ private:
     friend class Dx12CommandList;
     friend class Dx12GraphicPipelineStateDesc;
     friend class Dx12ComputePipelineStateDesc;
-    friend class Dx12RaytracingPipelineState;
+    friend class Dx12RaytracingPipelineStateDesc;
     wrl::ComPtr<ID3D12RootSignature> m_RootSignature;
 };
 

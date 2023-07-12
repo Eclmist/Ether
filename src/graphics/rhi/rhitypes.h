@@ -44,11 +44,14 @@ class RhiResource;
 class RhiRootParameter;
 class RhiRootSignature;
 class RhiRootSignatureDesc;
+class RhiPipelineState;
+class RhiPipelineStateDesc;
 class RhiGraphicPipelineState;
 class RhiGraphicPipelineStateDesc;
 class RhiComputePipelineState;
 class RhiComputePipelineStateDesc;
 class RhiRaytracingPipelineState;
+class RhiRaytracingPipelineStateDesc;
 class RhiRaytracingShaderBindingTable;
 class RhiSwapChain;
 class RhiShader;
@@ -223,25 +226,6 @@ struct RhiShaderDesc
     }
 };
 
-struct RhiLibraryShaderDesc
-{
-    RhiShader* m_Shader;
-    const wchar_t** m_EntryPoints;
-    uint32_t m_NumEntryPoints;
-
-    bool operator==(const RhiLibraryShaderDesc& other) const
-    {
-        ETH_COMPARATOR_GUARD_CLAUS(m_NumEntryPoints);
-        ETH_COMPARATOR_GUARD_CLAUS(m_Shader);
-
-        for (uint32_t i = 0; i < m_NumEntryPoints; ++i)
-            if (wcscmp(m_EntryPoints[i], other.m_EntryPoints[i]) != 0)
-                return false;
-
-        return true;
-    }
-};
-
 struct RhiSwapChainDesc
 {
     void* m_SurfaceTarget;
@@ -353,42 +337,6 @@ struct RhiBottomLevelAccelerationStructureDesc
 struct RhiTopLevelAccelerationStructureDesc
 {
     void* m_VisualBatch;
-};
-
-struct RhiRaytracingPipelineStateDesc
-{
-    const wchar_t* m_HitGroupName;
-    const wchar_t* m_RayGenShaderName;
-    const wchar_t* m_MissShaderName;
-    const wchar_t* m_ClosestHitShaderName;
-
-    uint32_t m_MaxPayloadSize;
-    uint32_t m_MaxAttributeSize;
-    uint32_t m_MaxRootSignatureSize;
-    uint32_t m_MaxRecursionDepth;
-
-    RhiLibraryShaderDesc m_LibraryShaderDesc;
-    RhiRootSignature* m_GlobalRootSignature;
-
-    bool operator==(const RhiRaytracingPipelineStateDesc& other) const
-    {
-        if (wcscmp(m_HitGroupName, other.m_HitGroupName) != 0)
-            return false;
-        if (wcscmp(m_RayGenShaderName, other.m_RayGenShaderName) != 0)
-            return false;
-        if (wcscmp(m_MissShaderName, other.m_MissShaderName) != 0)
-            return false;
-        if (wcscmp(m_ClosestHitShaderName, other.m_ClosestHitShaderName) != 0)
-            return false;
-
-        ETH_COMPARATOR_GUARD_CLAUS(m_MaxPayloadSize);
-        ETH_COMPARATOR_GUARD_CLAUS(m_MaxAttributeSize);
-        ETH_COMPARATOR_GUARD_CLAUS(m_MaxRootSignatureSize);
-        ETH_COMPARATOR_GUARD_CLAUS(m_MaxRecursionDepth);
-        ETH_COMPARATOR_GUARD_CLAUS(m_LibraryShaderDesc);
-        ETH_COMPARATOR_GUARD_CLAUS(m_GlobalRootSignature);
-        return true;
-    }
 };
 
 struct RhiRaytracingShaderBindingTableDesc

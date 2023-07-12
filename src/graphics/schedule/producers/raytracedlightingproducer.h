@@ -40,15 +40,15 @@ protected:
     bool IsEnabled() override;
 
 protected: 
-    void InitializeShaders();
-    void InitializeRootSignatures();
-    void InitializePipelineStates();
+    void CreateShaders();
+    void CreateRootSignature();
+    void CreatePipelineState(ResourceContext& rc);
     void InitializeShaderBindingTable(ResourceContext& rc);
 
 protected:
     std::unique_ptr<RhiShader> m_Shader;
     std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
-    std::unique_ptr<RhiRaytracingPipelineState> m_RaytracingPipelineState;
+    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_RTPsoDesc;
 
 protected:
     RhiResource* m_RaytracingShaderBindingTable;

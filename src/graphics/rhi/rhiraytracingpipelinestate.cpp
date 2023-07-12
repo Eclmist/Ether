@@ -20,6 +20,8 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
 
-Ether::Graphics::RhiRaytracingPipelineState::~RhiRaytracingPipelineState()
+std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::RhiRaytracingPipelineStateDesc::Compile(
+    const char* name) const
 {
+    return GraphicCore::GetDevice().CreateRaytracingPipelineState(name, *this);
 }

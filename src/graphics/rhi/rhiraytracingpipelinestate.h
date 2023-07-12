@@ -20,13 +20,35 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhipipelinestate.h"
 
 namespace Ether::Graphics
 {
-class RhiRaytracingPipelineState
+class RhiRaytracingPipelineStateDesc : public RhiPipelineStateDesc
 {
 public:
-    RhiRaytracingPipelineState() = default;
-    virtual ~RhiRaytracingPipelineState() = 0;
+    RhiRaytracingPipelineStateDesc() = default;
+    virtual ~RhiRaytracingPipelineStateDesc() {}
+
+public:
+    virtual void SetLibraryShader(const RhiShader& ls) = 0;
+    virtual void SetHitGroupName(const wchar_t* name) = 0;
+    virtual void SetAnyHitShaderName(const wchar_t* name) = 0;
+    virtual void SetClosestHitShaderName(const wchar_t* name) = 0;
+    virtual void SetMissShaderName(const wchar_t* name) = 0;
+    virtual void SetRayGenShaderName(const wchar_t* name) = 0;
+    virtual void SetMaxRecursionDepth(uint32_t maxRecursionDepth) = 0;
+    virtual void SetMaxAttributeSize(size_t maxAttributeSize) = 0;
+    virtual void SetMaxPayloadSize(size_t maxPayloadSize) = 0;
+
+    virtual void PushHitProgram() = 0;
+    virtual void PushShaderConfig() = 0;
+    virtual void PushPipelineConfig() = 0;
+    virtual void PushGlobalRootSignature() = 0;
+    virtual void PushLibrary(const wchar_t** exportNames, uint32_t numExports) = 0;
+    virtual void PushExportAssociation(const wchar_t** exportNames, uint32_t numExports) = 0;
+
+public:
+    std::unique_ptr<RhiPipelineState> Compile(const char* name) const override;
 };
 } // namespace Ether::Graphics

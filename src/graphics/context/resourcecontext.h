@@ -21,6 +21,7 @@
 
 #include "graphics/pch.h"
 #include "graphics/rhi/rhitypes.h"
+#include "graphics/rhi/rhipipelinestate.h"
 #include "graphics/rhi/rhigraphicpipelinestate.h"
 #include "graphics/rhi/rhicomputepipelinestate.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
@@ -39,10 +40,8 @@ public:
     ~ResourceContext() = default;
 
 public:
-    void RegisterGraphicPipelineState(const char* name, RhiGraphicPipelineStateDesc& pipelineStateDesc);
-    void RegisterComputePipelineState(const char* name, RhiComputePipelineStateDesc& pipelineStateDesc);
-    RhiGraphicPipelineState& GetGraphicPipelineState(RhiGraphicPipelineStateDesc& pipelineStateDesc);
-    RhiComputePipelineState& GetComputePipelineState(RhiComputePipelineStateDesc& pipelineStateDesc);
+    void RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc);
+    RhiPipelineState& GetPipelineState(RhiPipelineStateDesc& pipelineStateDesc);
 
     RhiResource& CreateBufferResource(const char* resourceName, size_t size, RhiResourceFlag flags);
     RhiResource& CreateTexture2DResource(const char* resourceName, const ethVector2u resolution, RhiFormat format, RhiResourceFlag flags);
@@ -74,8 +73,7 @@ private:
 private:
     std::unique_ptr<DescriptorAllocator> m_StagingSrvCbvUavAllocator;
 
-    std::unordered_map<RhiGraphicPipelineStateDesc*, std::unique_ptr<RhiGraphicPipelineState>> m_CachedGraphicPipelineStates;
-    std::unordered_map<RhiComputePipelineStateDesc*, std::unique_ptr<RhiComputePipelineState>> m_CachedComputePipelineStates;
+    std::unordered_map<RhiPipelineStateDesc*, std::unique_ptr<RhiPipelineState>> m_CachedPipelineStates;
 
     std::unordered_map<StringID, RhiCommitedResourceDesc> m_ResourceDescriptionTable;
     std::unordered_map<StringID, RhiRaytracingShaderBindingTableDesc> m_RaytracingShaderBindingsTable;

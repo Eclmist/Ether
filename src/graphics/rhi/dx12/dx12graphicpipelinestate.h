@@ -21,8 +21,8 @@
 
 #include "graphics/pch.h"
 #include "graphics/rhi/rhigraphicpipelinestate.h"
-#include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/dx12/dx12includes.h"
+#include "graphics/rhi/dx12/dx12pipelinestate.h"
 
 namespace Ether::Graphics
 {
@@ -55,18 +55,10 @@ protected:
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_Dx12PsoDesc;
 };
 
-class Dx12GraphicPipelineState : public RhiGraphicPipelineState
+class Dx12GraphicPipelineState : public Dx12PipelineState
 {
 public:
-    Dx12GraphicPipelineState(const RhiGraphicPipelineStateDesc& desc)
-        : RhiGraphicPipelineState(desc)
-    {
-    }
+    Dx12GraphicPipelineState(const RhiGraphicPipelineStateDesc& desc) : Dx12PipelineState(desc) {}
     ~Dx12GraphicPipelineState() override = default;
-
-private:
-    friend class Dx12Device;
-    friend class Dx12CommandList;
-    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
 };
 } // namespace Ether::Graphics

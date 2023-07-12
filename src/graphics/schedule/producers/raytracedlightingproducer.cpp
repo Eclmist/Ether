@@ -48,9 +48,9 @@ Ether::Graphics::RaytracedLightingProducer::RaytracedLightingProducer()
 
 void Ether::Graphics::RaytracedLightingProducer::Initialize(ResourceContext& rc)
 {
-    InitializeShaders();
-    InitializeRootSignatures();
-    InitializePipelineStates();
+    CreateShaders();
+    CreateRootSignature();
+    CreatePipelineState(rc);
 }
 
 void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
@@ -90,7 +90,8 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_UA(RTLightingTexture)->GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
-    ctx.SetRaytracingPipelineState(*m_RaytracingPipelineState);
+    ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
+
     ctx.DispatchRays(resolution.x, resolution.y, 1);
     ctx.PopMarker();
 }
@@ -106,7 +107,7 @@ bool Ether::Graphics::RaytracedLightingProducer::IsEnabled()
     return true;
 }
 
-void Ether::Graphics::RaytracedLightingProducer::InitializeShaders()
+void Ether::Graphics::RaytracedLightingProducer::CreateShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_Shader = gfxDevice.CreateShader({ "lighting\\raytracedlights.hlsl", "", RhiShaderType::Library });
@@ -116,7 +117,7 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_Shader);
 }
 
-void Ether::Graphics::RaytracedLightingProducer::InitializeRootSignatures()
+void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(6, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
@@ -135,22 +136,29 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeRootSignatures()
     m_GlobalRootSignature = rsDesc->Compile((GetName() + "Root Signature").c_str());
 }
 
-void Ether::Graphics::RaytracedLightingProducer::InitializePipelineStates()
+void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceContext& rc)
 {
-    const RhiDevice& gfxDevice = GraphicCore::GetDevice();
+    m_RTPsoDesc = GraphicCore::GetDevice().CreateRaytracingPipelineStateDesc();
+    m_RTPsoDesc->SetLibraryShader(*m_Shader);
+    m_RTPsoDesc->SetHitGroupName(k_HitGroupName);
+    m_RTPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
+    m_RTPsoDesc->SetMissShaderName(k_MissShader);
+    m_RTPsoDesc->SetRayGenShaderName(k_RayGenShader);
+    m_RTPsoDesc->SetMaxRecursionDepth(1);
+    m_RTPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
+    m_RTPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload));
+    m_RTPsoDesc->SetRootSignature(*m_GlobalRootSignature);
 
-    RhiRaytracingPipelineStateDesc desc = {};
-    desc.m_RayGenShaderName = k_RayGenShader;
-    desc.m_MissShaderName = k_MissShader;
-    desc.m_ClosestHitShaderName = k_ClosestHitShader;
-    desc.m_HitGroupName = k_HitGroupName;
-    desc.m_MaxAttributeSize = sizeof(float) * 2; // From builtin attributes
-    desc.m_MaxPayloadSize = sizeof(Shader::RayPayload);
-    desc.m_MaxRecursionDepth = 1;
-    desc.m_LibraryShaderDesc = { m_Shader.get(), s_EntryPoints, sizeof(s_EntryPoints) / sizeof(s_EntryPoints[0]) };
-    desc.m_GlobalRootSignature = m_GlobalRootSignature.get();
+    uint32_t numExports = sizeof(s_EntryPoints) / sizeof(s_EntryPoints[0]);
 
-    m_RaytracingPipelineState = gfxDevice.CreateRaytracingPipelineState(desc);
+    m_RTPsoDesc->PushLibrary(s_EntryPoints, numExports);
+    m_RTPsoDesc->PushHitProgram();
+    m_RTPsoDesc->PushShaderConfig();
+    m_RTPsoDesc->PushExportAssociation(s_EntryPoints, numExports);
+    m_RTPsoDesc->PushPipelineConfig();
+    m_RTPsoDesc->PushGlobalRootSignature();
+
+    rc.RegisterPipelineState((GetName() + " Raytracing Pipeline State").c_str(), *m_RTPsoDesc);
 }
 
 void Ether::Graphics::RaytracedLightingProducer::InitializeShaderBindingTable(ResourceContext& rc)
@@ -159,7 +167,7 @@ void Ether::Graphics::RaytracedLightingProducer::InitializeShaderBindingTable(Re
 
     RhiRaytracingShaderBindingTableDesc desc = {};
     desc.m_MaxRootSignatureSize = 0; // Only ever use global root signature since we are bindless
-    desc.m_RaytracingPipelineState = m_RaytracingPipelineState.get();
+    desc.m_RaytracingPipelineState = &(RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc);
     desc.m_HitGroupName = k_HitGroupName;
     desc.m_MissShaderName = k_MissShader;
     desc.m_RayGenShaderName = k_RayGenShader;

@@ -21,8 +21,8 @@
 
 #include "graphics/pch.h"
 #include "graphics/rhi/rhicomputepipelinestate.h"
-#include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/dx12/dx12includes.h"
+#include "graphics/rhi/dx12/dx12pipelinestate.h"
 
 namespace Ether::Graphics
 {
@@ -30,7 +30,7 @@ class Dx12ComputePipelineStateDesc : public RhiComputePipelineStateDesc
 {
 public:
     Dx12ComputePipelineStateDesc();
-    ~Dx12ComputePipelineStateDesc() override = default;
+    ~Dx12ComputePipelineStateDesc() override {}
 
 public:
     void SetRootSignature(const RhiRootSignature& rootSignature) override;
@@ -43,18 +43,10 @@ protected:
     D3D12_COMPUTE_PIPELINE_STATE_DESC m_Dx12PsoDesc;
 };
 
-class Dx12ComputePipelineState : public RhiComputePipelineState
+class Dx12ComputePipelineState : public Dx12PipelineState
 {
 public:
-    Dx12ComputePipelineState(const RhiComputePipelineState& desc)
-        : RhiComputePipelineState(desc)
-    {
-    }
+    Dx12ComputePipelineState(const RhiPipelineStateDesc& desc) : Dx12PipelineState(desc) {}
     ~Dx12ComputePipelineState() override = default;
-
-private:
-    friend class Dx12Device;
-    friend class Dx12CommandList;
-    wrl::ComPtr<ID3D12PipelineState> m_PipelineState;
 };
 } // namespace Ether::Graphics

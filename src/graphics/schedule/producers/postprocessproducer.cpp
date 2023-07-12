@@ -38,7 +38,7 @@ void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_RootSignature);
-    ctx.SetComputePipelineState(rc.GetComputePipelineState(*m_ComputePsoDesc));
+    ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_ComputePsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
@@ -57,6 +57,6 @@ void Ether::Graphics::PostProcessProducer::CreatePipelineState(ResourceContext& 
     m_ComputePsoDesc = GraphicCore::GetDevice().CreateComputePipelineStateDesc();
     m_ComputePsoDesc->SetComputeShader(*m_ComputeShader);
     m_ComputePsoDesc->SetRootSignature(*m_RootSignature);
-    rc.RegisterComputePipelineState((GetName() + " Compute Pipeline State").c_str(), *m_ComputePsoDesc);
+    rc.RegisterPipelineState((GetName() + " Compute Pipeline State").c_str(), *m_ComputePsoDesc);
 }
 

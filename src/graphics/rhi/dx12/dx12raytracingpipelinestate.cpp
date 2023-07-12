@@ -23,21 +23,116 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
-void Ether::Graphics::Dx12RaytracingPipelineState::PushLibrary(const RhiLibraryShaderDesc& desc)
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetLibraryShader(const RhiShader& ls)
 {
-    AssertGraphics(desc.m_Shader->GetType() == RhiShaderType::Library, "Library shader expected");
+    AssertGraphics(
+        ls.GetType() == RhiShaderType::Library,
+        "Library shader expected, but encountered %u",
+        static_cast<uint32_t>(ls.GetType()));
 
-    m_LibraryExportDesc.resize(desc.m_NumEntryPoints);
-    m_LibraryExportName.resize(desc.m_NumEntryPoints);
+    m_LibraryDesc.DXILLibrary.pShaderBytecode = ls.GetCompiledData();
+    m_LibraryDesc.DXILLibrary.BytecodeLength = ls.GetCompiledSize();
+    m_Shaders[ls.GetType()] = &ls;
+}
 
-    m_LibraryDesc.DXILLibrary.pShaderBytecode = desc.m_Shader->GetCompiledData();
-    m_LibraryDesc.DXILLibrary.BytecodeLength = desc.m_Shader->GetCompiledSize();
-    m_LibraryDesc.NumExports = desc.m_NumEntryPoints;
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetHitGroupName(const wchar_t* name)
+{
+    m_HitGroupName = name;
+    m_HitGroupDesc.HitGroupExport = name;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetAnyHitShaderName(const wchar_t* name)
+{
+    m_AnyHitShaderName = name;
+    m_HitGroupDesc.AnyHitShaderImport = name;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetClosestHitShaderName(const wchar_t* name)
+{
+    m_ClosestHitShaderName = name;
+    m_HitGroupDesc.ClosestHitShaderImport = name;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetMissShaderName(const wchar_t* name)
+{
+    m_MissShaderName = name;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetRayGenShaderName(const wchar_t* name)
+{
+    m_RayGenShaderName = name;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetMaxAttributeSize(size_t maxAttributeSize)
+{
+    m_ShaderConfig.MaxAttributeSizeInBytes = maxAttributeSize;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetMaxPayloadSize(size_t maxPayloadSize)
+{
+    m_ShaderConfig.MaxPayloadSizeInBytes = maxPayloadSize;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetMaxRecursionDepth(uint32_t maxRecursionDepth)
+{
+    m_PipelineConfig.MaxTraceRecursionDepth = maxRecursionDepth;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetRootSignature(const RhiRootSignature& rootSignature)
+{
+    auto rs = dynamic_cast<const Dx12RootSignature&>(rootSignature).m_RootSignature;
+    m_RootSignature = rs.Get();
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::SetNodeMask(uint32_t mask)
+{
+    m_NodeMask = mask;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::Reset()
+{
+    m_NumSubObjects = 0;
+    m_NumExportAssociations = 0;
+    m_HitGroupDesc = {};
+    m_ShaderConfig = {};
+    m_PipelineConfig = {};
+    m_LibraryDesc = {};
+    m_LibraryExportDesc.clear();
+    m_LibraryExportName.clear();
+    m_RootSignature = nullptr;
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::PushHitProgram()
+{
+    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP, &m_HitGroupDesc };
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::PushShaderConfig()
+{
+    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG, &m_ShaderConfig };
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::PushPipelineConfig()
+{
+    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG, &m_PipelineConfig };
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::PushGlobalRootSignature()
+{
+    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE, &m_RootSignature };
+}
+
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::PushLibrary(const wchar_t** exportNames, uint32_t numExports)
+{
+    m_LibraryExportDesc.resize(numExports);
+    m_LibraryExportName.resize(numExports);
+
+    m_LibraryDesc.NumExports = numExports;
     m_LibraryDesc.pExports = m_LibraryExportDesc.data();
 
-    for (uint32_t i = 0; i < desc.m_NumEntryPoints; i++)
+    for (uint32_t i = 0; i < numExports; i++)
     {
-        m_LibraryExportName[i] = desc.m_EntryPoints[i];
+        m_LibraryExportName[i] = exportNames[i];
         m_LibraryExportDesc[i].Name = m_LibraryExportName[i].c_str();
         m_LibraryExportDesc[i].Flags = D3D12_EXPORT_FLAG_NONE;
         m_LibraryExportDesc[i].ExportToRename = nullptr;
@@ -46,52 +141,7 @@ void Ether::Graphics::Dx12RaytracingPipelineState::PushLibrary(const RhiLibraryS
     m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY, &m_LibraryDesc };
 }
 
-void Ether::Graphics::Dx12RaytracingPipelineState::PushHitProgram(
-    const wchar_t* name,
-    const wchar_t* anyHitExport,
-    const wchar_t* closestHitExport)
-{
-    m_HitGroupDesc.HitGroupExport = name;
-    m_HitGroupDesc.AnyHitShaderImport = anyHitExport;
-    m_HitGroupDesc.ClosestHitShaderImport = closestHitExport;
-
-    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP, &m_HitGroupDesc };
-}
-
-void Ether::Graphics::Dx12RaytracingPipelineState::PushLocalRootSignature(RhiRootSignature* rootSignature)
-{
-    m_LocalRootSignatures[m_NumLocalRootSignature] = {
-        dynamic_cast<Dx12RootSignature*>(rootSignature)->m_RootSignature.Get()
-    };
-
-    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE,
-                                        &m_LocalRootSignatures[m_NumLocalRootSignature++] };
-}
-
-void Ether::Graphics::Dx12RaytracingPipelineState::PushGlobalRootSignature(RhiRootSignature* rootSignature)
-{
-    m_GlobalRootSignatures[m_NumGlobalRootSignature] = {
-        dynamic_cast<Dx12RootSignature*>(rootSignature)->m_RootSignature.Get()
-    };
-
-    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE,
-                                        &m_GlobalRootSignatures[m_NumGlobalRootSignature++] };
-}
-
-void Ether::Graphics::Dx12RaytracingPipelineState::PushShaderConfig(uint32_t maxAttributeSize, uint32_t maxPayloadSize)
-{
-    m_ShaderConfig.MaxAttributeSizeInBytes = maxAttributeSize;
-    m_ShaderConfig.MaxPayloadSizeInBytes = maxPayloadSize;
-    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG, &m_ShaderConfig };
-}
-
-void Ether::Graphics::Dx12RaytracingPipelineState::PushPipelineConfig(uint32_t maxRecursionDepth)
-{
-    m_PipelineConfig.MaxTraceRecursionDepth = maxRecursionDepth;
-    m_SubObjects[m_NumSubObjects++] = { D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG, &m_PipelineConfig };
-}
-
-void Ether::Graphics::Dx12RaytracingPipelineState::PushExportAssociation(
+void Ether::Graphics::Dx12RaytracingPipelineStateDesc::PushExportAssociation(
     const wchar_t** exportNames,
     uint32_t numExports)
 {

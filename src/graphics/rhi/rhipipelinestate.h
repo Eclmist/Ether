@@ -20,20 +20,37 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/rhi/rhipipelinestate.h"
+#include "graphics/rhi/rhirootsignature.h"
 
 namespace Ether::Graphics
 {
-class RhiComputePipelineStateDesc : public RhiPipelineStateDesc
+class RhiPipelineStateDesc
 {
 public:
-    RhiComputePipelineStateDesc() = default;
-    virtual ~RhiComputePipelineStateDesc() {}
+    RhiPipelineStateDesc() = default;
+    virtual ~RhiPipelineStateDesc() {}
 
 public:
-    virtual void SetComputeShader(const RhiShader& cs) = 0;
+    virtual void SetRootSignature(const RhiRootSignature& rootSignature) = 0;
+    virtual void SetNodeMask(uint32_t mask) = 0;
+    virtual void Reset() = 0;
+    virtual std::unique_ptr<RhiPipelineState> Compile(const char* name) const = 0;
 
 public:
-    std::unique_ptr<RhiPipelineState> Compile(const char* name) const override;
+    bool RequiresShaderCompilation() const;
+    void CompileShaders();
+
+protected:
+    std::unordered_map<RhiShaderType, const RhiShader*> m_Shaders;
+};
+
+class RhiPipelineState
+{
+public:
+    RhiPipelineState(const RhiPipelineStateDesc& desc) : m_CreationDesc(desc) {}
+    virtual ~RhiPipelineState() {};
+
+protected:
+    const RhiPipelineStateDesc& m_CreationDesc;
 };
 } // namespace Ether::Graphics

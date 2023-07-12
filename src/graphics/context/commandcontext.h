@@ -24,6 +24,7 @@
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/rhicomputepipelinestate.h"
 #include "graphics/rhi/rhigraphicpipelinestate.h"
+#include "graphics/rhi/rhiraytracingpipelinestate.h"
 
 namespace Ether::Graphics
 {
@@ -58,6 +59,7 @@ public:
     void SetSamplerDescriptorHeap(const RhiDescriptorHeap& descriptorHeap);
     void SetGraphicPipelineState(const RhiGraphicPipelineState& pipelineState);
     void SetComputePipelineState(const RhiComputePipelineState& pipelineState);
+    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState);
 
     // Shader Data
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
@@ -71,7 +73,6 @@ public:
     void BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
     void BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
     void SetRaytracingShaderBindingTable(const RhiResource* bindTable);
-    void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState);
 
     // Barriers
     void InsertUavBarrier(const RhiResource& uavResource);
