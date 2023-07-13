@@ -17,31 +17,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+static const float Pi = 3.14159265359f;
+static const float Pi2 = 6.28318530718f;
+static const float Pi_2 = 1.57079632679f;
+static const float Pi_4 = 0.78539816339f;
+static const float InvPi = 0.31830988618f;
+static const float InvPi2 = 0.15915494309f;
 
-#include "graphics/schedule/producers/fullscreenproducer.h"
-
-namespace Ether::Graphics
-{
-class PostProcessProducer : public FullScreenProducer
-{
-public:
-    PostProcessProducer(const char* name, const char* shaderPath);
-    ~PostProcessProducer() override = default;
-
-public:
-    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
-
-protected:
-    virtual void CreateShaders() override;
-    virtual void CreatePipelineState(ResourceContext& rc) override;
-    virtual void CreateRootSignature() = 0;
-
-protected:
-    void DispatchFullscreen(GraphicContext& ctx);
-
-protected:
-    std::unique_ptr<RhiShader> m_ComputeShader;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_ComputePsoDesc;
-};
-} // namespace Ether::Graphics

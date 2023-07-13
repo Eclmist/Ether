@@ -19,11 +19,11 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/fullscreenproducer.h"
+#include "graphics/schedule/producers/postprocessproducer.h"
 
 namespace Ether::Graphics
 {
-class PostFxSourceProducer : public FullScreenProducer
+class PostFxSourceProducer : public PostProcessProducer
 {
 public:
     PostFxSourceProducer();

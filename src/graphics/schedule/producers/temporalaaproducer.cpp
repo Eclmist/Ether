@@ -55,8 +55,7 @@ void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(TaaAccumulationTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(TaaAccumulationTexture)->GetGpuAddress());
-    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    ctx.Dispatch(std::ceil(resolution.x / 32.0), std::ceil(resolution.y / 32.0), 1);
+    DispatchFullscreen(ctx);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::CopySrc);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)), RhiResourceState::CopyDest);

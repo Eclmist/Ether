@@ -17,31 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "graphics/schedule/producers/fullscreenproducer.h"
-
-namespace Ether::Graphics
+float Random(float2 uv)
 {
-class PostProcessProducer : public FullScreenProducer
-{
-public:
-    PostProcessProducer(const char* name, const char* shaderPath);
-    ~PostProcessProducer() override = default;
+    float a = 11.9898;
+    float b = 79.283;
+    float c = 49738.543;
+    float dt = dot(uv, float2(a, b));
+    float sn = dt % 3.14;
+    return frac(sin(sn) * c);
+}
 
-public:
-    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
-
-protected:
-    virtual void CreateShaders() override;
-    virtual void CreatePipelineState(ResourceContext& rc) override;
-    virtual void CreateRootSignature() = 0;
-
-protected:
-    void DispatchFullscreen(GraphicContext& ctx);
-
-protected:
-    std::unique_ptr<RhiShader> m_ComputeShader;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_ComputePsoDesc;
-};
-} // namespace Ether::Graphics

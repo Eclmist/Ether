@@ -23,21 +23,19 @@
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(PostFxSourceProducer)
-DEFINE_GFX_RT(PostFxSourceTexture)
 DEFINE_GFX_SR(PostFxSourceTexture)
 DEFINE_GFX_UA(PostFxSourceTexture)
 
 DECLARE_GFX_SR(LightingCompositeTexture)
 
 Ether::Graphics::PostFxSourceProducer::PostFxSourceProducer()
-    : FullScreenProducer("PostFxSourceProducer", "postprocess\\postprocess.hlsl")
+    : PostProcessProducer("PostFxSourceProducer", "postprocess\\postprocess.hlsl")
 {
 }
 
 void Ether::Graphics::PostFxSourceProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewRT(ACCESS_GFX_RT(PostFxSourceTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewSR(ACCESS_GFX_SR(PostFxSourceTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(PostFxSourceTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.Read(ACCESS_GFX_SR(LightingCompositeTexture));
@@ -45,21 +43,23 @@ void Ether::Graphics::PostFxSourceProducer::GetInputOutput(ScheduleContext& sche
 
 void Ether::Graphics::PostFxSourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    FullScreenProducer::RenderFrame(ctx, rc);
+    PostProcessProducer::RenderFrame(ctx, rc);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingCompositeTexture)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(PostFxSourceTexture)), RhiResourceState::RenderTarget);
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(LightingCompositeTexture)->GetGpuAddress());
-    ctx.SetRenderTarget(*ACCESS_GFX_RT(PostFxSourceTexture).Get());
-    ctx.DrawInstanced(3, 1);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
+    ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_SR(LightingCompositeTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
+    DispatchFullscreen(ctx);
 }
 
 void Ether::Graphics::PostFxSourceProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) SourceTexture
+    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Uav, 1, 0, 0); // (t0) DestinationTexture
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

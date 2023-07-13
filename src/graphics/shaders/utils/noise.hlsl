@@ -17,31 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "utils/random.hlsl"
 
-#include "graphics/schedule/producers/fullscreenproducer.h"
-
-namespace Ether::Graphics
+float InterleavedGradientNoise(float2 pos)
 {
-class PostProcessProducer : public FullScreenProducer
-{
-public:
-    PostProcessProducer(const char* name, const char* shaderPath);
-    ~PostProcessProducer() override = default;
-
-public:
-    virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
-
-protected:
-    virtual void CreateShaders() override;
-    virtual void CreatePipelineState(ResourceContext& rc) override;
-    virtual void CreateRootSignature() = 0;
-
-protected:
-    void DispatchFullscreen(GraphicContext& ctx);
-
-protected:
-    std::unique_ptr<RhiShader> m_ComputeShader;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_ComputePsoDesc;
-};
-} // namespace Ether::Graphics
+    return frac(52.9829189 * frac(0.06711056 * pos.x + 0.00583715 * pos.y));
+}

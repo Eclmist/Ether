@@ -22,28 +22,10 @@
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_SourceTexture                   : register(t0);
+RWTexture2D<float4> g_DestinationTexture            : register(u0);
 
-struct VS_OUTPUT
+[numthreads(32, 32, 1)]
+void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD;
-};
-
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
-{
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
-
-    VS_OUTPUT o;
-    o.Position = float4(pos, 1.0, 1.0);
-    o.TexCoord = uv;
-
-    return o;
-}
-
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
-{
-    float4 col = g_SourceTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    return col;
+    g_DestinationTexture[threadID.xy] = g_SourceTexture[threadID.xy];
 }

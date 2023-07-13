@@ -19,6 +19,7 @@
 
 #include "common/globalconstants.h"
 #include "common/raytracingconstants.h"
+#include "utils/sampling.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -28,23 +29,6 @@ Texture2D<float4> g_GBufferOutput2                  : register(t3);
 Texture2D<float4> g_GBufferOutput3                  : register(t4);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 
-// 3D Gradient noise from: https://www.shadertoy.com/view/Xsl3Dl
-float3 hash(float3 p)
-{
-    p = float3(
-        dot(p, float3(127.1, 311.7, 74.7)),
-        dot(p, float3(269.5, 183.3, 246.1)),
-        dot(p, float3(113.5, 271.9, 124.6)));
-
-    return -1.0 + 2.0 * frac(sin(p) * 43758.5453123);
-}
-
-float3 uniformRandomDirection(float3 s)
-{
-    float3 r = hash(s);
-    return normalize(r / cos(r));
-}
-
 [shader("raygeneration")]
 void RayGeneration()
 {
@@ -53,6 +37,7 @@ void RayGeneration()
     uint3 launchIndex = DispatchRaysIndex();
     uint3 launchDim = DispatchRaysDimensions();
     float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
+    uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
     float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
     float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
@@ -73,13 +58,13 @@ void RayGeneration()
     float aoIntensity = g_GlobalConstants.m_RaytracedAOIntensity;
 
     RayPayload payload;
-    RayDesc ray;
+    RayDesc shadowRay;
 
-    ray.Direction = sunDirection;
-    ray.Origin = position;
-    ray.TMax = 32;
-    ray.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
+    shadowRay.Direction = sunDirection;
+    shadowRay.Origin = position;
+    shadowRay.TMax = 32;
+    shadowRay.TMin = 0.01;
+    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, shadowRay, payload);
 
     if (!payload.m_Hit)
         light += sunColor * saturate(dot(normal, sunDirection)) * 2.5;
@@ -87,13 +72,19 @@ void RayGeneration()
     const int NumRays = 1;
     for (int i = 0; i < NumRays; ++i)
     {
-        ray.Origin = position;
-        ray.Direction = normalize(normal.xyz + roughness * normalize(uniformRandomDirection(position + (g_GlobalConstants.m_Time.w % 0.31415923))));
-        ray.TMax = 8;
-        TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
+        RayDesc aoRay;
+        float3 ranSphere = SampleDirectionSphere(
+            CMJ_Sample2D(sampleIdx, launchDim.x, launchDim.x, g_GlobalConstants.m_FrameNumber));
+        aoRay.Direction = normalize(normal.xyz + roughness * ranSphere);
+        aoRay.Origin = position;
+        aoRay.TMax = 8;
+        aoRay.TMin = 0.01;
+
+        TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, aoRay, payload);
+        g_LightingOutput[launchIndex.xy].xyz = ranSphere;
 
         if (payload.m_Hit)
-            light = max(0.1, light - ((1.0 - (payload.m_RayT / ray.TMax)) * rcp(NumRays)) * aoIntensity);
+            light = max(0.1, light - ((1.0 - (payload.m_RayT / aoRay.TMax)) * rcp(NumRays)) * aoIntensity);
     }
 
     g_LightingOutput[launchIndex.xy].xyz = light.xyz;

@@ -60,3 +60,9 @@ void Ether::Graphics::PostProcessProducer::CreatePipelineState(ResourceContext& 
     rc.RegisterPipelineState((GetName() + " Compute Pipeline State").c_str(), *m_ComputePsoDesc);
 }
 
+void Ether::Graphics::PostProcessProducer::DispatchFullscreen(GraphicContext& ctx)
+{
+    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    ctx.Dispatch(std::ceil(resolution.x / 32.0), std::ceil(resolution.y / 32.0), 1);
+}
+
