@@ -34,9 +34,11 @@ void Ether::Ecs::EcsVisualSystem::Update()
 {
     ETH_MARKER_EVENT("Visual System - Update");
 
-    Graphics::VisualBatch visualBatch;
-
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
+    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+    renderData.m_Visuals.clear();
+    renderData.m_VisualBatches.clear();
+    std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
     for (EntityID entityID : m_Entities)
     {
@@ -47,26 +49,41 @@ void Ether::Ecs::EcsVisualSystem::Update()
             continue;
 
         Graphics::Visual gfxVisual;
-        gfxVisual.m_ParentBatch = &visualBatch;
+        Graphics::VisualBatch* gfxVisualBatch;
+
+        if (materialToBatchMap.find(data.m_MaterialGuid) == materialToBatchMap.end())
+        {
+            renderData.m_VisualBatches.emplace_back();
+            materialToBatchMap[data.m_MaterialGuid] = renderData.m_VisualBatches.size() - 1;
+            gfxVisualBatch = &renderData.m_VisualBatches[materialToBatchMap.at(data.m_MaterialGuid)];
+            if (data.m_MaterialGuid == StringID(""))
+            {
+                gfxVisualBatch->m_Material = Graphics::GraphicCore::GetGraphicCommon().m_DefaultMaterial.get();
+            }
+            else
+            {
+                gfxVisualBatch->m_Material = resources.GetMaterialResource(data.m_MaterialGuid);
+
+                if (gfxVisualBatch->m_Material == nullptr)
+                    gfxVisualBatch->m_Material = Graphics::GraphicCore::GetGraphicCommon().m_ErrorMaterial.get();
+            }
+
+        }
+        else
+        {
+            gfxVisualBatch = &renderData.m_VisualBatches[materialToBatchMap.at(data.m_MaterialGuid)];
+        }
+
+        if (gfxVisualBatch->m_Material->GetBaseColor().w < 1.0)
+            continue; // Don't support transparency
+
         gfxVisual.m_Mesh = resources.GetMeshResource(data.m_MeshGuid);
+        gfxVisual.m_Material = gfxVisualBatch->m_Material;
 
         if (gfxVisual.m_Mesh == nullptr)
             continue;
 
-        if (data.m_MaterialGuid == StringID(""))
-            gfxVisual.m_Material = Graphics::GraphicCore::GetGraphicCommon().m_DefaultMaterial.get();
-        else
-            gfxVisual.m_Material = resources.GetMaterialResource(data.m_MaterialGuid);
-
-        if (gfxVisual.m_Material == nullptr)
-            gfxVisual.m_Material = Graphics::GraphicCore::GetGraphicCommon().m_ErrorMaterial.get();
-
-        if (gfxVisual.m_Material->GetBaseColor().w < 1.0)
-            continue; // Don't support transparency
-
-        visualBatch.m_Visuals.emplace_back(gfxVisual);
+        renderData.m_Visuals.push_back(gfxVisual);
+        gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
     }
-
-    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
-    renderData.m_VisualBatch = visualBatch;
 }

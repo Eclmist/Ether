@@ -51,7 +51,7 @@ public:
     ETH_GRAPHIC_DLL const void NewSR(GFX_STATIC::GFX_SR_TYPE& srv, uint32_t width, uint32_t height, RhiFormat format, RhiResourceDimension dimension, uint32_t depth = 1);
     ETH_GRAPHIC_DLL const void NewUA(GFX_STATIC::GFX_UA_TYPE& uav, uint32_t width, uint32_t height, RhiFormat format, RhiResourceDimension dimension, uint32_t depth = 1);
     ETH_GRAPHIC_DLL const void NewCB(GFX_STATIC::GFX_CB_TYPE& cbv, size_t size);
-    ETH_GRAPHIC_DLL const void NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const VisualBatch& visuals);
+    ETH_GRAPHIC_DLL const void NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const std::vector<Visual>& visuals);
 
 public:
     void CreateResources(ResourceContext& resourceContext);

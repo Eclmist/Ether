@@ -29,7 +29,7 @@ namespace Ether::Graphics
 class GraphicContext : public CommandContext
 {
 public:
-    GraphicContext(const char* contextName);
+    GraphicContext(const char* contextName, size_t uploadBufferSize = _4MiB);
     ~GraphicContext() = default;
 
 public:

@@ -127,11 +127,15 @@ public:
     RhiAccelerationStructureResourceView() = default;
     ~RhiAccelerationStructureResourceView() = default;
 
-    inline void* GetVisualBatch() const { return m_VisualBatch; }
-    inline void SetVisualBatch(void* visualBatch) { m_VisualBatch = visualBatch; }
+    inline void* GetVisuals() const { return m_Visuals; }
+    inline uint32_t GetNumVisuals() const { return m_NumVisuals; }
+
+    inline void SetVisuals(void* visuals) { m_Visuals = visuals; }
+    inline void SetNumVisuals(uint32_t numVisuals) { m_NumVisuals = numVisuals; }
 
 private:
-    void* m_VisualBatch;
+    void* m_Visuals;
+    uint32_t m_NumVisuals;
 };
 
 } // namespace Ether::Graphics

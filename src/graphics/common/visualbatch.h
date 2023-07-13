@@ -26,12 +26,14 @@ namespace Ether::Graphics
 {
 struct ETH_GRAPHIC_DLL VisualBatch
 {
+    Material* m_Material;
     std::vector<Visual> m_Visuals;
-
-    // Other batch related data will go in here in the future
 
     bool operator==(const VisualBatch& other) const
     {
+        if (m_Material != other.m_Material)
+            return false;
+
         if (m_Visuals.size() != other.m_Visuals.size())
             return false;
 

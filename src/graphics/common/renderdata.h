@@ -31,6 +31,8 @@ public:
     ethMatrix4x4 m_ProjectionMatrix;
     ethVector3 m_EyeDirection;
     ethVector3 m_EyePosition;
-    VisualBatch m_VisualBatch;
+
+    std::vector<Visual> m_Visuals;
+    std::vector<VisualBatch> m_VisualBatches;
 };
 } // namespace Ether::Graphics

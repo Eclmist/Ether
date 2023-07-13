@@ -59,7 +59,7 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
-    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch);
+    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
@@ -75,7 +75,6 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
-    const VisualBatch& visualBatch = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch;
 
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.PushMarker("Raytrace");
@@ -104,7 +103,7 @@ bool Ether::Graphics::RaytracedLightingProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch.m_Visuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
         return false;
 
     return true;

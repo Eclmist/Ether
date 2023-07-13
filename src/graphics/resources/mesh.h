@@ -33,6 +33,7 @@ class ETH_GRAPHIC_DLL Mesh : public Serializable
 {
 public:
     Mesh();
+    Mesh(const std::vector<Mesh*>& subMeshes);
     ~Mesh() override = default;
 
 public:

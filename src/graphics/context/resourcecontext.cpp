@@ -179,6 +179,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateRaytracing
     InvalidateViews(resourceName);
 
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateRaytracingShaderBindingTable(resourceName, desc);
+       
     m_RaytracingShaderBindingsTable[resourceName] = desc;
 
     return *m_ResourceTable.at(resourceName);
@@ -284,8 +285,14 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
         m_RaytracingResourceDescriptionTable.find(resourceID) != m_RaytracingResourceDescriptionTable.end(),
         "If the resource never existed, there should not be any cached desc with the same resourceID");
 
-    VisualBatch* vbOld = (VisualBatch*)m_RaytracingResourceDescriptionTable.at(resourceID).m_VisualBatch;
-    VisualBatch* vbNew = (VisualBatch*)desc.m_VisualBatch;
+    Visual* vbOld = (Visual*)m_RaytracingResourceDescriptionTable.at(resourceID).m_Visuals;
+    Visual* vbNew = (Visual*)desc.m_Visuals;
+
+    if (vbOld == vbNew)
+        return false;
+
+    if (vbOld == nullptr)
+        return true;
 
     if (*vbOld != *vbNew)
         return true;

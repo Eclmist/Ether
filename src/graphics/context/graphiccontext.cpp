@@ -24,8 +24,8 @@
 #include "graphics/rhi/rhidevice.h"
 #include "graphics/rhi/rhiresourceviews.h"
 
-Ether::Graphics::GraphicContext::GraphicContext(const char* contextName)
-    : CommandContext(contextName, RhiCommandType::Graphic)
+Ether::Graphics::GraphicContext::GraphicContext(const char* contextName, size_t uploadBufferSize)
+    : CommandContext(contextName, RhiCommandType::Graphic, uploadBufferSize)
     , m_Viewport()
 {
 }

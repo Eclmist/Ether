@@ -188,7 +188,7 @@ const void Ether::Graphics::ScheduleContext::NewCB(GFX_STATIC::GFX_CB_TYPE& cbv,
     Write(cbv);
 }
 
-const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const VisualBatch& visuals)
+const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const std::vector<Visual>& visuals)
 {
     acv.Create();
     RhiAccelerationStructureResourceView* view = acv.Get().get();
@@ -199,7 +199,8 @@ const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv,
     view->SetDimension(RhiResourceDimension::RTAccelerationStructure);
     view->SetViewID(acv.GetName());
     view->SetResourceID(acv.GetSharedResourceName());
-    view->SetVisualBatch((void*)&visuals);
+    view->SetVisuals((void*)visuals.data());
+    view->SetNumVisuals(visuals.size());
 
     Write(acv);
 }
@@ -253,7 +254,10 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
             resourceContext.CreateTexture3DResource(resourceID.GetString().c_str(), { width, height, depth }, format, flags);
             break;
         case RhiResourceDimension::RTAccelerationStructure:
-            resourceContext.CreateAccelerationStructure(resourceID.GetString().c_str(), { ((RhiAccelerationStructureResourceView*)firstView)->GetVisualBatch() });
+            resourceContext.CreateAccelerationStructure(
+                resourceID.GetString().c_str(),
+                { dynamic_cast<RhiAccelerationStructureResourceView*>(firstView)->GetVisuals(),
+                  dynamic_cast<RhiAccelerationStructureResourceView*>(firstView)->GetNumVisuals() });
             break;
         default:
             LogGraphicsError("Resource of an unsupported dimension specified");

@@ -75,15 +75,6 @@ void Ether::Graphics::Dx12Module::InitializeAdapter()
 {
     wrl::ComPtr<IDXGIAdapter1> dxgiAdapter1;
 
-    // bool useWarp = false;
-
-    // if (useWarp)
-    //{
-    //     HRESULT hr = m_DxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&m_Adapter));
-    //     if (FAILED(hr))
-    //         LogGraphicsError("Failed to enumerate Warp adapters");
-    // }
-
     SIZE_T maxDedicatedVideoMemory = 0;
     for (UINT i = 0; m_DxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
     {

@@ -336,7 +336,8 @@ struct RhiBottomLevelAccelerationStructureDesc
 
 struct RhiTopLevelAccelerationStructureDesc
 {
-    void* m_VisualBatch;
+    void* m_Visuals;
+    uint32_t m_NumVisuals;
 };
 
 struct RhiRaytracingShaderBindingTableDesc

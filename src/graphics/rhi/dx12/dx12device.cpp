@@ -250,11 +250,11 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     const RhiTopLevelAccelerationStructureDesc& desc) const
 {
     std::unique_ptr<Dx12AccelerationStructure> dx12Obj = std::make_unique<Dx12AccelerationStructure>();
-    VisualBatch* visualBatch = reinterpret_cast<VisualBatch*>(desc.m_VisualBatch);
+    Visual* visuals = reinterpret_cast<Visual*>(desc.m_Visuals);
 
     dx12Obj->m_Inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
     dx12Obj->m_Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_BUILD;
-    dx12Obj->m_Inputs.NumDescs = visualBatch->m_Visuals.size();
+    dx12Obj->m_Inputs.NumDescs = desc.m_NumVisuals;
     dx12Obj->m_Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
@@ -277,29 +277,31 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     dataBufferDesc.m_ResourceDesc.m_Flag = RhiResourceFlag::AllowUnorderedAccess;
     dx12Obj->m_DataBuffer = CreateCommittedResource(dataBufferDesc);
 
-    RhiCommitedResourceDesc instanceBufferDesc = {};
-    instanceBufferDesc.m_Name = "TLAS::InstanceBuffer";
-    instanceBufferDesc.m_HeapType = RhiHeapType::Upload;
-    instanceBufferDesc.m_State = RhiResourceState::GenericRead;
-    instanceBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(
-        sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * visualBatch->m_Visuals.size());
-    dx12Obj->m_InstanceDescBuffer = CreateCommittedResource(instanceBufferDesc);
-
-    D3D12_RAYTRACING_INSTANCE_DESC* instanceDesc;
-    dx12Obj->m_InstanceDescBuffer->Map(reinterpret_cast<void**>(&instanceDesc));
-    for (uint64_t i = 0; i < visualBatch->m_Visuals.size(); ++i, ++instanceDesc)
+    if (desc.m_NumVisuals > 0)
     {
-        instanceDesc->InstanceID = i;
-        instanceDesc->InstanceContributionToHitGroupIndex = 0;
-        instanceDesc->Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-        instanceDesc->InstanceMask = 0xFF;
-        ethMatrix4x4 I; // Identity matrix
-        memcpy(instanceDesc->Transform, &I, sizeof(instanceDesc->Transform));
-        instanceDesc->AccelerationStructure = visualBatch->m_Visuals[i]
-                                                  .m_Mesh->GetAccelerationStructure()
-                                                  .m_DataBuffer->GetGpuAddress();
+        RhiCommitedResourceDesc instanceBufferDesc = {};
+        instanceBufferDesc.m_Name = "TLAS::InstanceBuffer";
+        instanceBufferDesc.m_HeapType = RhiHeapType::Upload;
+        instanceBufferDesc.m_State = RhiResourceState::GenericRead;
+        instanceBufferDesc.m_ResourceDesc = RhiCreateBufferResourceDesc(
+            sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * desc.m_NumVisuals);
+        dx12Obj->m_InstanceDescBuffer = CreateCommittedResource(instanceBufferDesc);
+
+        D3D12_RAYTRACING_INSTANCE_DESC* instanceDesc;
+        dx12Obj->m_InstanceDescBuffer->Map(reinterpret_cast<void**>(&instanceDesc));
+        for (uint64_t i = 0; i < desc.m_NumVisuals; ++i, ++instanceDesc)
+        {
+            instanceDesc->InstanceID = i;
+            instanceDesc->InstanceContributionToHitGroupIndex = 0;
+            instanceDesc->Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+            instanceDesc->InstanceMask = 0xFF;
+            ethMatrix4x4 I; // Identity matrix
+            memcpy(instanceDesc->Transform, &I, sizeof(instanceDesc->Transform));
+            instanceDesc
+                ->AccelerationStructure = visuals[i].m_Mesh->GetAccelerationStructure().m_DataBuffer->GetGpuAddress();
+        }
+        dx12Obj->m_InstanceDescBuffer->Unmap();
     }
-    dx12Obj->m_InstanceDescBuffer->Unmap();
 
     return dx12Obj;
 }

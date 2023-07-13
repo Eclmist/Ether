@@ -73,7 +73,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
-    const VisualBatch& visualBatch = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch;
+    const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -108,11 +108,10 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(GBufferDepthStencil)));
 
 
-    for (int i = 0; i < visualBatch.m_Visuals.size(); ++i)
+    for (const VisualBatch& batch : batches)
+    for (const Visual& visual : batch.m_Visuals)
     {
         ETH_MARKER_EVENT("Draw Meshes");
-        Visual visual = visualBatch.m_Visuals[i];
-
         Shader::Material instanceMaterial;
         instanceMaterial.m_BaseColor = visual.m_Material->GetBaseColor();
         instanceMaterial.m_SpecularColor = visual.m_Material->GetSpecularColor();
@@ -135,7 +134,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
 
 bool Ether::Graphics::GBufferProducer::IsEnabled()
 {
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatch.m_Visuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
         return false;
 
     return true;

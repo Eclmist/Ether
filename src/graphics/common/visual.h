@@ -29,8 +29,6 @@ class Material;
 
 struct ETH_GRAPHIC_DLL Visual
 {
-    VisualBatch* m_ParentBatch;
-
     Mesh* m_Mesh;
     Material* m_Material;
 
@@ -38,10 +36,8 @@ struct ETH_GRAPHIC_DLL Visual
     {
         if (m_Mesh != other.m_Mesh)
             return false;
-
         if (m_Material != other.m_Material)
             return false;
-
         return true;
     }
 };
