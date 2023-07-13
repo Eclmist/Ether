@@ -230,6 +230,7 @@ enum class RhiResourceDimension
 {
     Unknown,
     Buffer,
+    StructuredBuffer,
     Texture1D,
     Texture1DArray,
     Texture2D,

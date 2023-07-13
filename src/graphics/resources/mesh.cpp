@@ -106,9 +106,10 @@ void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
 
 void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)
 {
+    m_VbName = "Mesh::VertexBuffer (" + GetGuid() + ")";
     size_t bufferSize = m_PackedVertices.size() * sizeof(m_PackedVertices[0]);
     RhiCommitedResourceDesc desc = {};
-    desc.m_Name = "Mesh::VertexBuffer";
+    desc.m_Name = m_VbName.c_str();
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::Common;
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
@@ -118,15 +119,16 @@ void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)
     ctx.InitializeBufferRegion(*m_VertexBufferResource, m_PackedVertices.data(), bufferSize);
     ctx.PopMarker();
 
-    CreateVertexBufferView();
+    InitializeVertexBufferViews();
 }
 
 void Ether::Graphics::Mesh::CreateIndexBuffer(CommandContext& ctx)
 {
+    m_IbName = "Mesh::IndexBuffer (" + GetGuid() + ")";
     size_t bufferSize = m_Indices.size() * sizeof(m_Indices[0]);
 
     RhiCommitedResourceDesc desc = {};
-    desc.m_Name = "Mesh::IndexBuffer";
+    desc.m_Name = m_IbName.c_str();
     desc.m_HeapType = RhiHeapType::Default;
     desc.m_State = RhiResourceState::Common;
     desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
@@ -136,7 +138,7 @@ void Ether::Graphics::Mesh::CreateIndexBuffer(CommandContext& ctx)
     ctx.InitializeBufferRegion(*m_IndexBufferResource, m_Indices.data(), bufferSize);
     ctx.PopMarker();
 
-    CreateIndexBufferView();
+    InitializeIndexBufferViews();
 }
 
 void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx)
@@ -155,18 +157,28 @@ void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx)
     ctx.PopMarker();
 }
 
-void Ether::Graphics::Mesh::CreateVertexBufferView()
+void Ether::Graphics::Mesh::InitializeVertexBufferViews()
 {
     m_VertexBufferView = {};
     m_VertexBufferView.m_BufferSize = m_PackedVertices.size() * sizeof(m_PackedVertices[0]);
     m_VertexBufferView.m_Stride = sizeof(m_PackedVertices[0]);
     m_VertexBufferView.m_TargetGpuAddress = m_VertexBufferResource->GetGpuAddress();
+
+    m_VertexBufferSrvIndex = GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(
+        m_VbName + " SRV",
+        *m_VertexBufferResource,
+        m_VertexBufferView);
 }
 
-void Ether::Graphics::Mesh::CreateIndexBufferView()
+void Ether::Graphics::Mesh::InitializeIndexBufferViews()
 {
     m_IndexBufferView = {};
     m_IndexBufferView.m_BufferSize = m_Indices.size() * sizeof(m_Indices[0]);
     m_IndexBufferView.m_Format = s_IndexBufferFormat;
     m_IndexBufferView.m_TargetGpuAddress = m_IndexBufferResource->GetGpuAddress();
+
+    m_IndexBufferSrvIndex = GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(
+        m_IbName + " SRV",
+        *m_IndexBufferResource,
+        m_IndexBufferView);
 }

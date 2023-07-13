@@ -23,21 +23,9 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
-struct GeometryInfo
+struct InstanceParams
 {
-    uint32_t m_VBDescriptorIndex;
-    uint32_t m_IBDescriptorIndex;
-    uint32_t m_MaterialIndex;
-    uint32_t m_PadTo16Bytes;
-};
-
-struct RayPayload
-{
-    bool m_Hit;
-    float m_HitT;
-    bool m_IsShadowRay;
-    uint32_t m_Depth;
-    ethVector3 m_Radiance;
+    uint32_t m_MaterialIdx;
 };
 
 ETH_END_SHADER_NAMESPACE

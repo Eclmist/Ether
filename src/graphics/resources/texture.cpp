@@ -84,7 +84,7 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
 
     m_Resource = GraphicCore::GetDevice().CreateCommittedResource(desc);
     ctx.InitializeTexture(*m_Resource, (void**)m_Data, m_NumMips, m_Width, m_Height, GetBytesPerPixel());
-    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(m_Guid, m_Resource.get(), m_Format);
+    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(m_Guid, *m_Resource.get(), m_Format);
 
 #ifdef ETH_ENGINE
     // Texture data can be deallocated on the CPU. It's all in VRAM now.

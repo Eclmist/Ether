@@ -137,17 +137,18 @@ const void Ether::Graphics::ScheduleContext::NewSR(
     uint32_t height,
     RhiFormat format,
     RhiResourceDimension dimension,
-    uint32_t depth)
+    uint32_t depthOrStride)
 {
     srv.Create();
     RhiShaderResourceView* view = srv.Get().get();
     view->SetWidth(width);
     view->SetHeight(height);
-    view->SetDepth(depth);
+    view->SetDepth(depthOrStride);
     view->SetFormat(format);
     view->SetDimension(dimension);
     view->SetViewID(srv.GetName());
     view->SetResourceID(srv.GetSharedResourceName());
+    view->SetStructuredBufferStride(depthOrStride);
 
     Write(srv);
 }
@@ -158,17 +159,18 @@ const void Ether::Graphics::ScheduleContext::NewUA(
     uint32_t height,
     RhiFormat format,
     RhiResourceDimension dimension,
-    uint32_t depth)
+    uint32_t depthOrStride)
 {
     uav.Create();
     RhiUnorderedAccessView* view = uav.Get().get();
     view->SetWidth(width);
     view->SetHeight(height);
-    view->SetDepth(depth);
+    view->SetDepth(depthOrStride);
     view->SetFormat(format);
     view->SetDimension(dimension);
     view->SetViewID(uav.GetName());
     view->SetResourceID(uav.GetSharedResourceName());
+    view->SetStructuredBufferStride(depthOrStride);
 
     Write(uav);
 }
@@ -245,6 +247,7 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
         switch (dimension)
         {
         case RhiResourceDimension::Buffer:
+        case RhiResourceDimension::StructuredBuffer:
             resourceContext.CreateBufferResource(resourceID.GetString().c_str(), width, flags);
             break;
         case RhiResourceDimension::Texture2D:

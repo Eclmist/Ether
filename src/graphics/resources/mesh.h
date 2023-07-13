@@ -39,6 +39,8 @@ public:
 public:
     inline RhiVertexBufferViewDesc GetVertexBufferView() const { return m_VertexBufferView; }
     inline RhiIndexBufferViewDesc GetIndexBufferView() const { return m_IndexBufferView; }
+    inline uint32_t GetVertexBufferSrvIndex() const { return m_VertexBufferSrvIndex; }
+    inline uint32_t GetIndexBufferSrvIndex() const { return m_IndexBufferSrvIndex; }
     inline RhiAccelerationStructure& GetAccelerationStructure() const { return *m_AccelerationStructure; }
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
@@ -63,8 +65,8 @@ private:
     void CreateIndexBuffer(CommandContext& ctx);
     void CreateAccelerationStructure(CommandContext& ctx);
 
-    void CreateVertexBufferView();
-    void CreateIndexBufferView();
+    void InitializeVertexBufferViews();
+    void InitializeIndexBufferViews();
 
 private:
     std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord> m_PackedVertices;
@@ -73,6 +75,7 @@ private:
     uint32_t m_NumIndices;
     StringID m_DefaultMaterialGuid;
 
+    // Transient Data
     std::unique_ptr<RhiResource> m_VertexBufferResource;
     std::unique_ptr<RhiResource> m_IndexBufferResource;
     std::unique_ptr<RhiResource> m_InstanceParams[MaxSwapChainBuffers];
@@ -80,5 +83,10 @@ private:
 
     RhiVertexBufferViewDesc m_VertexBufferView;
     RhiIndexBufferViewDesc m_IndexBufferView;
+    uint32_t m_VertexBufferSrvIndex;
+    uint32_t m_IndexBufferSrvIndex;
+
+    std::string m_VbName;
+    std::string m_IbName;
 };
 } // namespace Ether::Graphics

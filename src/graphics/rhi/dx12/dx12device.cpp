@@ -534,6 +534,18 @@ void Ether::Graphics::Dx12Device::InitializeShaderResourceView(RhiShaderResource
         desc.RaytracingAccelerationStructure.Location = d3dResource->GetGpuAddress();
         id3d12Resource = nullptr;
         break;
+    case RhiResourceDimension::Buffer:
+        desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        desc.Buffer.FirstElement = 0;
+        desc.Buffer.NumElements = 1;
+        desc.Buffer.StructureByteStride = 0;
+        break;
+    case RhiResourceDimension::StructuredBuffer:
+        desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        desc.Buffer.FirstElement = 0;
+        desc.Buffer.NumElements = srv.GetStructuredBufferCount();
+        desc.Buffer.StructureByteStride = srv.GetStructuredBufferStride();
+        break;
     default:
         LogGraphicsFatal("Not yet supported");
     }
@@ -553,6 +565,18 @@ void Ether::Graphics::Dx12Device::InitializeUnorderedAccessView(RhiUnorderedAcce
     case RhiResourceDimension::Texture2D:
         desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
         desc.Texture2D.MipSlice = 0;
+        break;
+    case RhiResourceDimension::Buffer:
+        desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+        desc.Buffer.FirstElement = 0;
+        desc.Buffer.NumElements = 1;
+        desc.Buffer.StructureByteStride = 0;
+        break;
+    case RhiResourceDimension::StructuredBuffer:
+        desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+        desc.Buffer.FirstElement = 0;
+        desc.Buffer.NumElements = uav.GetStructuredBufferCount();
+        desc.Buffer.StructureByteStride = uav.GetStructuredBufferStride();
         break;
     default:
         LogGraphicsFatal("Not yet supported");

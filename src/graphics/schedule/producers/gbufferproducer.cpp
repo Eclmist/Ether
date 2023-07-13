@@ -25,7 +25,7 @@
 #include "graphics/resources/material.h"
 
 #include "graphics/shaders/common/globalconstants.h"
-#include "graphics/shaders/common/material.h"
+#include "graphics/shaders/common/instanceparams.h"
 
 DEFINE_GFX_PA(GBufferProducer)
 DEFINE_GFX_DS(GBufferDepthStencil)
@@ -39,6 +39,7 @@ DEFINE_GFX_SR(GBufferTexture2)
 DEFINE_GFX_SR(GBufferTexture3)
 
 DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_SR(MaterialTable)
 
 Ether::Graphics::GBufferProducer::GBufferProducer()
     : GraphicProducer("GBufferProducer")
@@ -55,6 +56,7 @@ void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
 void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+
     schedule.NewDS(ACCESS_GFX_DS(GBufferDepthStencil), resolution.x, resolution.y, DepthBufferFormat);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
@@ -66,6 +68,7 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_SR(MaterialTable));
 }
 
 void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -73,7 +76,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
-    const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
+    const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -99,6 +102,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
 
     RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0),
                                    *ACCESS_GFX_RT(GBufferTexture1),
@@ -107,21 +111,12 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(GBufferDepthStencil)));
 
-
-    for (const VisualBatch& batch : batches)
-    for (const Visual& visual : batch.m_Visuals)
+    for (const Visual& visual : visuals)
     {
         ETH_MARKER_EVENT("Draw Meshes");
-        Shader::Material instanceMaterial;
-        instanceMaterial.m_BaseColor = visual.m_Material->GetBaseColor();
-        instanceMaterial.m_SpecularColor = visual.m_Material->GetSpecularColor();
-        instanceMaterial.m_AlbedoTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetAlbedoTextureID());
-        instanceMaterial.m_NormalTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetNormalTextureID());
-        instanceMaterial.m_RoughnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetRoughnessTextureID());
-        instanceMaterial.m_MetalnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(visual.m_Material->GetMetalnessTextureID());
-
-        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::Material), 256 });
-        memcpy(alloc->GetCpuHandle(), &instanceMaterial, sizeof(Shader::Material));
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
+        Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
+        instanceParams->m_MaterialIdx = visual.m_Material->GetTransientMaterialIdx();
 
         ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
@@ -156,9 +151,10 @@ void Ether::Graphics::GBufferProducer::CreateShaders()
 
 void Ether::Graphics::GBufferProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) Material
+    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) InstanceParams
+    rsDesc->SetAsShaderResourceView(2, 0, RhiShaderVisibility::All); // (t0) MaterialTable
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

@@ -22,6 +22,7 @@
 #include "graphics/schedule/schedulecontext.h"
 
 #include "graphics/schedule/producers/globalconstantsproducer.h"
+#include "graphics/schedule/producers/materialtableproducer.h"
 #include "graphics/schedule/producers/proceduralskyproducer.h"
 #include "graphics/schedule/producers/gbufferproducer.h"
 #include "graphics/schedule/producers/raytracedlightingproducer.h"
@@ -34,6 +35,7 @@ DECLARE_GFX_PA(FinalCompositeProducer)
 DECLARE_GFX_PA(GBufferProducer)
 DECLARE_GFX_PA(GlobalConstantsProducer)
 DECLARE_GFX_PA(LightingCompositeProducer)
+DECLARE_GFX_PA(MaterialTableProducer)
 DECLARE_GFX_PA(PostFxSourceProducer)
 DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(RaytracedLightingProducer)
@@ -45,6 +47,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
     Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
     Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
+    Register(ACCESS_GFX_PA(MaterialTableProducer), new MaterialTableProducer());
     Register(ACCESS_GFX_PA(PostFxSourceProducer), new PostFxSourceProducer());
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
@@ -121,6 +124,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
         m_OrderedProducers.pop();
 
     m_OrderedProducers.push(ACCESS_GFX_PA(GlobalConstantsProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(MaterialTableProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get().get());

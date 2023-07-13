@@ -34,9 +34,9 @@ public:
     static constexpr uint32_t InvalidIndex = -1;
 
 public:
-    void RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource* resource, RhiFormat format);
-    void RegisterAsShaderResourceView(StringID resourceGuid, uint32_t indexInHeap);
-
+    uint32_t RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource& resource, RhiFormat format);
+    uint32_t RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource& resource, RhiVertexBufferViewDesc vb);
+    uint32_t RegisterAsShaderResourceView(StringID resourceGuid, const RhiResource& resource, RhiIndexBufferViewDesc ib);
     uint32_t RegisterSampler(StringID name, RhiSamplerParameterDesc& sampler);
 
     uint32_t GetDescriptorIndex(StringID guid) const;

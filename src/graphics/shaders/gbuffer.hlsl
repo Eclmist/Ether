@@ -19,6 +19,7 @@
 
 #include "common/globalconstants.h"
 #include "common/material.h"
+#include "common/instanceparams.h"
 #include "utils/fullscreenhelpers.hlsl"
 
 struct VS_INPUT
@@ -50,7 +51,8 @@ struct PS_OUTPUT
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-ConstantBuffer<Material> g_InstanceParams           : register(b1);
+ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
+StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
@@ -74,6 +76,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    Material material = g_MaterialTable[g_InstanceParams.m_MaterialIdx];
 
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
     float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
@@ -82,35 +85,35 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float2 velocity = texSpaceCurr - texSpacePrev;
 
     float3 worldPos = IN.WorldPos.xyz;
-    float4 albedo = g_InstanceParams.m_BaseColor;
+    float4 albedo = material.m_BaseColor;
     float3 normal = IN.Normal.xyz;
     float roughness = 0.5;
     float metalness = 0;
 
-    if (g_InstanceParams.m_AlbedoTextureIndex != 0)
+    if (material.m_AlbedoTextureIndex != 0)
     {
-        Texture2D<float4> albedoTex = ResourceDescriptorHeap[g_InstanceParams.m_AlbedoTextureIndex];
+        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
         albedo *= albedoTex.Sample(linearSampler, IN.TexCoord);
     }
 
-    if (g_InstanceParams.m_NormalTextureIndex != 0)
+    if (material.m_NormalTextureIndex != 0)
     {
-        Texture2D<float4> normalTex = ResourceDescriptorHeap[g_InstanceParams.m_NormalTextureIndex];
+        Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
         normal = normalTex.Sample(linearSampler, IN.TexCoord).xyz;
         normal = normal * 2.0 - 1.0;
         float3x3 TBN = float3x3(IN.Tangent, IN.Bitangent, IN.Normal.xyz);
         normal = normalize(mul(normal, TBN));
     }
 
-    if (g_InstanceParams.m_RoughnessTextureIndex != 0)
+    if (material.m_RoughnessTextureIndex != 0)
     {
-        Texture2D<float4> roughnessTex = ResourceDescriptorHeap[g_InstanceParams.m_RoughnessTextureIndex];
+        Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
         roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).g;
     }
 
-    if (g_InstanceParams.m_MetalnessTextureIndex != 0)
+    if (material.m_MetalnessTextureIndex != 0)
     {
-        Texture2D<float4> metalnessTex = ResourceDescriptorHeap[g_InstanceParams.m_MetalnessTextureIndex];
+        Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];
         metalness = metalnessTex.Sample(linearSampler, IN.TexCoord).b;
     }
 

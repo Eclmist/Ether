@@ -80,10 +80,15 @@ public:
 
 public:
     inline RhiGpuAddress GetGpuAddress() const { return m_GpuAddress; }
+    inline size_t GetStructuredBufferStride() const { return m_StructuredBufferStride; }
+    inline uint32_t GetStructuredBufferCount() const { return m_Width / m_StructuredBufferStride; }
+
     inline void SetGpuAddress(RhiGpuAddress addr) { m_GpuAddress = addr; }
+    inline void SetStructuredBufferStride(size_t stride) { m_StructuredBufferStride = stride; }
 
 protected:
     RhiGpuAddress m_GpuAddress;
+    size_t m_StructuredBufferStride;
 };
 
 class RhiRenderTargetView : public RhiResourceView

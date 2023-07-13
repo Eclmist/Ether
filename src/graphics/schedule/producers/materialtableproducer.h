@@ -19,25 +19,19 @@
 
 #pragma once
 
-#include "hlsltranslation.h"
+#include "graphics/schedule/producers/graphicproducer.h"
 
-ETH_BEGIN_SHADER_NAMESPACE
-
-struct GeometryInfo
+namespace Ether::Graphics
 {
-    uint32_t m_VBDescriptorIndex;
-    uint32_t m_IBDescriptorIndex;
-    uint32_t m_MaterialIndex;
-    uint32_t m_PadTo16Bytes;
-};
-
-struct RayPayload
+class MaterialTableProducer : public GraphicProducer
 {
-    bool m_Hit;
-    float m_HitT;
-    bool m_IsShadowRay;
-    uint32_t m_Depth;
-    ethVector3 m_Radiance;
-};
+public:
+    MaterialTableProducer();
+    ~MaterialTableProducer() override = default;
 
-ETH_END_SHADER_NAMESPACE
+public:
+    void Initialize(ResourceContext& rc) override;
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+};
+} // namespace Ether::Graphics

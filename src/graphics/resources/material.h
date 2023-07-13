@@ -36,6 +36,7 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    inline uint32_t GetTransientMaterialIdx() const { return m_TransientMaterialIdx; }
     inline ethVector4 GetBaseColor() const { return m_BaseColor; }
     inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
     inline StringID GetAlbedoTextureID() const { return m_AlbedoTextureID; }
@@ -43,6 +44,7 @@ public:
     inline StringID GetRoughnessTextureID() const { return m_RoughnessTextureID; }
     inline StringID GetMetalnessTextureID() const { return m_MetalnessTextureID; }
 
+    inline void SetTransientMaterialIdx(uint32_t id) { m_TransientMaterialIdx = id; }
     inline void SetBaseColor(const ethVector4& color) { m_BaseColor = color; }
     inline void SetSpecularColor(const ethVector4& color) { m_SpecularColor = color; }
     inline void SetAlbedoTextureID(const StringID& id) { m_AlbedoTextureID = id; }
@@ -58,5 +60,8 @@ private:
     StringID m_NormalTextureID;
     StringID m_RoughnessTextureID;
     StringID m_MetalnessTextureID;
+
+    // Transient Data
+    uint32_t m_TransientMaterialIdx;
 };
 } // namespace Ether::Graphics

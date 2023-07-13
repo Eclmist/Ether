@@ -20,10 +20,11 @@
 #include "graphics/memory/bindlessdescriptormanager.h"
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/common/vertexformats.h"
 
-void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
+uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     StringID resourceGuid,
-    const RhiResource* resource,
+    const RhiResource& resource,
     RhiFormat format)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
@@ -33,23 +34,67 @@ void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     uint32_t indexInHeap = allocation->GetOffset();
 
     RhiShaderResourceView srv;
-    srv.SetResourceID(resource->GetResourceID());
+    srv.SetResourceID(resource.GetResourceID());
     srv.SetFormat(format);
     srv.SetDimension(RhiResourceDimension::Texture2D);
     srv.SetCpuAddress(((DescriptorAllocation&)(*allocation)).GetCpuAddress());
     srv.SetGpuAddress(((DescriptorAllocation&)(*allocation)).GetGpuAddress());
 
-    GraphicCore::GetDevice().InitializeShaderResourceView(srv, *resource);
+    GraphicCore::GetDevice().InitializeShaderResourceView(srv, resource);
     m_Allocations[resourceGuid] = std::move(allocation);
     m_GuidToIndexMap[resourceGuid] = indexInHeap;
+    return indexInHeap;
 }
 
-void Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
+uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     StringID resourceGuid,
-    uint32_t indexInHeap)
+    const RhiResource& resource,
+    RhiVertexBufferViewDesc vb)
 {
-    m_GuidToIndexMap[resourceGuid] = indexInHeap;
+    if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
+        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString());
 
+    auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
+    uint32_t indexInHeap = allocation->GetOffset();
+
+    RhiShaderResourceView srv;
+    srv.SetResourceID(resource.GetResourceID());
+    srv.SetFormat(RhiFormat::Unknown);
+    srv.SetDimension(RhiResourceDimension::StructuredBuffer);
+    srv.SetCpuAddress(((DescriptorAllocation&)(*allocation)).GetCpuAddress());
+    srv.SetGpuAddress(((DescriptorAllocation&)(*allocation)).GetGpuAddress());
+    srv.SetWidth(vb.m_BufferSize);
+    srv.SetStructuredBufferStride(vb.m_Stride);
+
+    GraphicCore::GetDevice().InitializeShaderResourceView(srv, resource);
+    m_Allocations[resourceGuid] = std::move(allocation);
+    m_GuidToIndexMap[resourceGuid] = indexInHeap;
+    return indexInHeap;
+}
+
+uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
+    StringID resourceGuid,
+    const RhiResource& resource,
+    RhiIndexBufferViewDesc ib)
+{
+    if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
+        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString());
+
+    auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
+    uint32_t indexInHeap = allocation->GetOffset();
+
+    RhiShaderResourceView srv;
+    srv.SetResourceID(resource.GetResourceID());
+    srv.SetDimension(RhiResourceDimension::StructuredBuffer);
+    srv.SetCpuAddress(((DescriptorAllocation&)(*allocation)).GetCpuAddress());
+    srv.SetGpuAddress(((DescriptorAllocation&)(*allocation)).GetGpuAddress());
+    srv.SetWidth(ib.m_BufferSize);
+    srv.SetStructuredBufferStride(sizeof(uint32_t));
+
+    GraphicCore::GetDevice().InitializeShaderResourceView(srv, resource);
+    m_Allocations[resourceGuid] = std::move(allocation);
+    m_GuidToIndexMap[resourceGuid] = indexInHeap;
+    return indexInHeap;
 }
 
 uint32_t Ether::Graphics::BindlessDescriptorManager::GetDescriptorIndex(StringID guid) const

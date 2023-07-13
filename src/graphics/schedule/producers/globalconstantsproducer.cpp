@@ -46,34 +46,32 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     static ethMatrix4x4 prevViewMatrix = renderData.m_ViewMatrix;
     static ethMatrix4x4 prevProjMatrix = renderData.m_ProjectionMatrix;
 
-    Shader::GlobalConstants globalConstants;
-    globalConstants.m_ViewMatrix = renderData.m_ViewMatrix;
-    globalConstants.m_ProjectionMatrix = renderData.m_ProjectionMatrix;
-    globalConstants.m_ViewMatrixPrev = prevViewMatrix;
-    globalConstants.m_ProjectionMatrixPrev = prevProjMatrix;
-    globalConstants.m_EyeDirection = renderData.m_EyeDirection.Resize<4>();
-    globalConstants.m_EyePosition = renderData.m_EyePosition.Resize<4>();
-    globalConstants.m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;
-    globalConstants.m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor;
-    globalConstants.m_Time = ethVector4(Time::GetTimeSinceStartup());
-    globalConstants.m_Time.x *= 20;
-    globalConstants.m_Time.y *= 1;
-    globalConstants.m_Time.z *= 0.5;
-    globalConstants.m_Time.w *= 0.25;
-    globalConstants.m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
-    globalConstants.m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
-    globalConstants.m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
-    globalConstants.m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
-    globalConstants.m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
-    globalConstants.m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
-    globalConstants.m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
-    globalConstants.m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;
-    globalConstants.m_SamplerIndex_Linear_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Clamp;
-    globalConstants.m_SamplerIndex_Linear_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Wrap;
-    globalConstants.m_SamplerIndex_Linear_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Border;
-
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
-    memcpy(alloc->GetCpuHandle(), &globalConstants, sizeof(Shader::GlobalConstants));
+    Shader::GlobalConstants* globalConstants = (Shader::GlobalConstants*)alloc->GetCpuHandle();
+    globalConstants->m_ViewMatrix = renderData.m_ViewMatrix;
+    globalConstants->m_ProjectionMatrix = renderData.m_ProjectionMatrix;
+    globalConstants->m_ViewMatrixPrev = prevViewMatrix;
+    globalConstants->m_ProjectionMatrixPrev = prevProjMatrix;
+    globalConstants->m_EyeDirection = renderData.m_EyeDirection.Resize<4>();
+    globalConstants->m_EyePosition = renderData.m_EyePosition.Resize<4>();
+    globalConstants->m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;
+    globalConstants->m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor;
+    globalConstants->m_Time = ethVector4(Time::GetTimeSinceStartup());
+    globalConstants->m_Time.x *= 20;
+    globalConstants->m_Time.y *= 1;
+    globalConstants->m_Time.z *= 0.5;
+    globalConstants->m_Time.w *= 0.25;
+    globalConstants->m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
+    globalConstants->m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
+    globalConstants->m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
+    globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
+    globalConstants->m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
+    globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
+    globalConstants->m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
+    globalConstants->m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;
+    globalConstants->m_SamplerIndex_Linear_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Clamp;
+    globalConstants->m_SamplerIndex_Linear_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Wrap;
+    globalConstants->m_SamplerIndex_Linear_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Border;
 
     ctx.CopyBufferRegion(
         dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
@@ -84,7 +82,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     );
 
     // For velocity vector calculations
-    prevViewMatrix = globalConstants.m_ViewMatrix;
-    prevProjMatrix = globalConstants.m_ProjectionMatrix;
+    prevViewMatrix = globalConstants->m_ViewMatrix;
+    prevProjMatrix = globalConstants->m_ProjectionMatrix;
 }
 

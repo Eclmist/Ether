@@ -68,6 +68,7 @@ void Ether::Ecs::EcsVisualSystem::Update()
                     gfxVisualBatch->m_Material = Graphics::GraphicCore::GetGraphicCommon().m_ErrorMaterial.get();
             }
 
+            gfxVisualBatch->m_Material->SetTransientMaterialIdx(materialToBatchMap.at(data.m_MaterialGuid));
         }
         else
         {

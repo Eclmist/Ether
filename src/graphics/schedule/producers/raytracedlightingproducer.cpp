@@ -22,12 +22,15 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
+#include "graphics/resources/mesh.h"
+#include "graphics/resources/material.h"
 #include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(RaytracedLightingProducer)
 DEFINE_GFX_UA(RTLightingTexture)
 DEFINE_GFX_SR(RTLightingTexture)
+DEFINE_GFX_SR(RTGeometryInfo)
 DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
 
 DECLARE_GFX_SR(GBufferTexture0)
@@ -35,6 +38,7 @@ DECLARE_GFX_SR(GBufferTexture1)
 DECLARE_GFX_SR(GBufferTexture2)
 DECLARE_GFX_SR(GBufferTexture3)
 DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_SR(MaterialTable)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
@@ -57,8 +61,11 @@ void Ether::Graphics::RaytracedLightingProducer::Initialize(ResourceContext& rc)
 void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    uint32_t numVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.size();
+
     schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
     schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
@@ -66,6 +73,7 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture3));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
     InitializeShaderBindingTable(rc);
 }
@@ -75,6 +83,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
+    const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
 
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.PushMarker("Raytrace");
@@ -86,13 +95,31 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure))->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_UA(RTLightingTexture)->GetGpuAddress());
+    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());
+    ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(RTLightingTexture)->GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
+
+    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * visuals.size(), 256 });
+    Shader::GeometryInfo* geometryInfos = (Shader::GeometryInfo*)alloc->GetCpuHandle();
+    for (uint32_t i = 0; i < visuals.size(); ++i)
+    {
+        geometryInfos[i].m_VBDescriptorIndex = visuals[i].m_Mesh->GetVertexBufferSrvIndex();
+        geometryInfos[i].m_IBDescriptorIndex = visuals[i].m_Mesh->GetIndexBufferSrvIndex();
+        geometryInfos[i].m_MaterialIndex = visuals[i].m_Material->GetTransientMaterialIdx();
+    }
+
+    ctx.CopyBufferRegion(
+        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
+        *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo)),
+        sizeof(Shader::GeometryInfo) * visuals.size(),
+        0,
+        0);
 
     ctx.DispatchRays(resolution.x, resolution.y, 1);
     ctx.PopMarker();
@@ -121,23 +148,25 @@ void Ether::Graphics::RaytracedLightingProducer::CreateShaders()
 
 void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(7, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(9, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
     rsDesc->SetAsShaderResourceView(1, 0, RhiShaderVisibility::All);        // (t0) TLAS
+    rsDesc->SetAsShaderResourceView(2, 1, RhiShaderVisibility::All);        // (t1) RTGeometryInfo
+    rsDesc->SetAsShaderResourceView(3, 2, RhiShaderVisibility::All);        // (t2) MaterialTable
 
-    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 1);    // (t1) GBuffer0
-    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2);    // (t2) GBuffer1
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3);    // (t3) GBuffer2
-    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4);    // (t4) GBuffer3
+    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3);    // (t3) GBuffer0
+    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);       
+    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4);    // (t4) GBuffer1
     rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) LightingTexture
+    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 5);    // (t5) GBuffer2
+    rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Srv, 1, 0, 6);    // (t6) GBuffer3
+    rsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);       
+    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) LightingTexture
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_GlobalRootSignature = rsDesc->Compile((GetName() + "Root Signature").c_str());
+    m_GlobalRootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 
 void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceContext& rc)
@@ -148,7 +177,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceCon
     m_RTPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_RTPsoDesc->SetMissShaderName(k_MissShader);
     m_RTPsoDesc->SetRayGenShaderName(k_RayGenShader);
-    m_RTPsoDesc->SetMaxRecursionDepth(1);
+    m_RTPsoDesc->SetMaxRecursionDepth(3);
     m_RTPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_RTPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload));
     m_RTPsoDesc->SetRootSignature(*m_GlobalRootSignature);
