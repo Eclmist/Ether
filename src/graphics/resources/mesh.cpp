@@ -31,27 +31,6 @@ Ether::Graphics::Mesh::Mesh()
 {
 }
 
-Ether::Graphics::Mesh::Mesh(const std::vector<Mesh*>& subMeshes)
-    : Serializable(MeshVersion, ETH_CLASS_ID_MESH)
-    , m_NumVertices(0)
-    , m_NumIndices(0)
-    , m_IndexBufferView({})
-    , m_VertexBufferView({})
-{
-    for (uint32_t i = 0; i < subMeshes.size(); ++i)
-    {
-        m_PackedVertices.insert(
-            m_PackedVertices.end(),
-            subMeshes[i]->m_PackedVertices.begin(),
-            subMeshes[i]->m_PackedVertices.end());
-    
-        m_Indices.insert(m_Indices.end(), subMeshes[i]->m_Indices.begin(), subMeshes[i]->m_Indices.end());
-
-        m_NumVertices += subMeshes[i]->m_NumVertices;
-        m_NumIndices += subMeshes[i]->m_NumIndices;
-    }
-}
-
 void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
@@ -102,6 +81,13 @@ void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
     CreateVertexBuffer(ctx);
     CreateIndexBuffer(ctx);
     CreateAccelerationStructure(ctx);
+
+#ifdef ETH_ENGINE
+    // Mesh data can be deallocated on the CPU. It's all in VRAM now.
+    // This might cause problems down the line, but if it is not deallocated the CPU memory usage is going to be crazy
+    m_PackedVertices.clear();
+    m_Indices.clear();
+#endif
 }
 
 void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)

@@ -92,21 +92,17 @@ Ether::Graphics::Texture* Ether::ResourceManager::GetTextureResource(StringID gu
 
 void Ether::ResourceManager::CreateGpuResources() const 
 {
-    Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, Graphics::_64MiB);
-
-    ctx.Reset();
     for (auto& pair : m_Meshes)
     {
-        std::string meshName = "Uploading mesh (" + pair.second->GetGuid() + ")";
-        ctx.PushMarker(meshName);
+        Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, Graphics::_64MiB);
+        ctx.Reset();
         pair.second->CreateGpuResources(ctx);
-        ctx.PopMarker();
+        ctx.FinalizeAndExecute(true);
     }
-    ctx.FinalizeAndExecute(true);
 
     for (auto& pair : m_Textures)
     {
-        Graphics::CommandContext textureUploadCtx("TODO Texture Upload Context", Graphics::RhiCommandType::Graphic, Graphics::_256MiB);
+        Graphics::CommandContext textureUploadCtx("TODO Texture Upload Context", Graphics::RhiCommandType::Graphic, Graphics::_128MiB);
         textureUploadCtx.Reset();
         pair.second->CreateGpuResource(textureUploadCtx);
         textureUploadCtx.FinalizeAndExecute(true);

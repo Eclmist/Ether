@@ -34,7 +34,6 @@ struct GeometryInfo
 struct RayPayload
 {
     bool m_Hit;
-    float m_HitT;
     bool m_IsShadowRay;
     uint32_t m_Depth;
     ethVector3 m_Radiance;

@@ -118,8 +118,6 @@ float fbm(float2 st)
     return value;
 }
 
-
-
 float Stars(float3 viewDir)
 {
     float stars_threshold = 12.0f;                                   // modifies the number of stars that are visible
@@ -245,10 +243,12 @@ float4 ProceduralSky(float2 texCoord)
         g_SkyMieDirectionality,
         g_SkyLuminance);
 
+    float2 fakeSkyUv = viewDirection.xz * viewDirection.y;
+
     float3 stars = Stars(viewDirection);
-    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(viewDirection.xz * 10 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
-    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(viewDirection.xz * 4 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
-    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(viewDirection.xz * 1 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 4 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 1 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
 
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;

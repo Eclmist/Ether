@@ -39,9 +39,10 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 
     // Variance Clipping
     float4 minColor = 9999.0, maxColor = -9999.0;
-    for (int x = -1; x <= 1; ++x)
+    const int kernelSize = 1;
+    for (int x = -kernelSize; x <= kernelSize; ++x)
     {
-        for (int y = -1; y <= 1; ++y)
+        for (int y = -kernelSize; y <= kernelSize; ++y)
         {
             float4 color = g_TargetTexture[threadID.xy + int2(x, y)];
             minColor = min(minColor, color);

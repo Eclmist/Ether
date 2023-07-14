@@ -66,11 +66,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         // without editor connection.
         AssetImporter::Instance().SetWorkspacePath(workspacePath);
         AssetImporter::Instance().Import(importPath);
-        // AssetImporter::Instance().Import("san-miguel.obj");
-        //AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
-        //                                 ".gltf");
-        //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
-        //                                 ".gltf");
+        AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
+                                         ".gltf");
+        AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
+                                         ".gltf");
 
         // The idea of this block is to test toolmode functionality without having the actual tool developed yet
         // For example:
@@ -145,7 +144,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     camera.AddComponent<Ecs::EcsCameraComponent>();
     m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
 
-    //exit(0);
+    exit(0);
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()

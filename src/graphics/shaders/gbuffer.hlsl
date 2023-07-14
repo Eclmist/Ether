@@ -85,7 +85,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float2 velocity = texSpaceCurr - texSpacePrev;
 
     float3 worldPos = IN.WorldPos.xyz;
-    float4 albedo = material.m_BaseColor;
+    float4 albedo = 1;
     float3 normal = IN.Normal.xyz;
     float roughness = 0.5;
     float metalness = 0;
@@ -108,7 +108,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (material.m_RoughnessTextureIndex != 0)
     {
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
-        roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).g;
+        roughness = sqrt(roughnessTex.Sample(linearSampler, IN.TexCoord).g);
     }
 
     if (material.m_MetalnessTextureIndex != 0)
