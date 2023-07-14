@@ -49,7 +49,9 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float4 lighting = g_LightingTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+
+    float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
     float4 albedo = g_GBufferTexture0[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
 

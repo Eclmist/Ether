@@ -246,14 +246,14 @@ float4 ProceduralSky(float2 texCoord)
     float2 fakeSkyUv = viewDirection.xz * viewDirection.y;
 
     float3 stars = Stars(viewDirection);
-    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + g_GlobalConstants.m_Time.x / 1600000.0) * 1));
     float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 4 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
     float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 1 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
 
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;
     totalRadiance += lerp(stars, 0, saturate(length(totalRadiance)));
-    //totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
+    totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
     return float4(totalRadiance, 1.0f);
 }
 

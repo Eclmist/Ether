@@ -170,7 +170,7 @@ void RayGeneration()
     const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
     const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
 
-    const float a = 0.2;
+    const float a = 0.02;
     const float3 finalIndirectIrradiance = (a * indirectIrradiance.xyz) + (1 - a) * accumulation.xyz;
     const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance + ambient;
 

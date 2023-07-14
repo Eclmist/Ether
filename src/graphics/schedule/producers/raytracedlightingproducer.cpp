@@ -27,8 +27,6 @@
 #include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"
 
-#include "oidn/oidn.hpp"
-
 DEFINE_GFX_PA(RaytracedLightingProducer)
 DEFINE_GFX_UA(RTLightingTexture)
 DEFINE_GFX_SR(RTLightingTexture)
