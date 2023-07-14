@@ -33,6 +33,7 @@ Texture2D<float4> g_GBufferOutput1                  : register(t5);
 Texture2D<float4> g_GBufferOutput2                  : register(t6);
 Texture2D<float4> g_GBufferOutput3                  : register(t7);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
+RWTexture2D<float4> g_IndirectOutput                : register(u1);
 
 MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
 {
@@ -91,7 +92,7 @@ float3 ComputeIndirectIrradiance(float3 position, float3 normal, float roughness
     indirectRay.TMin = 0.01;
 
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
-    return saturate(dot(normal, indirectRay.Direction)) * payload.m_Radiance;
+    return payload.m_Radiance;
 }
 
 float3 ComputeSkyColor()
@@ -108,6 +109,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
         return 0;
 
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    const uint mipLevelToSample = 99;
 
     float4 albedo = material.m_BaseColor;
     float3 normal = hitSurface.m_Normal;
@@ -117,13 +119,13 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     if (material.m_AlbedoTextureIndex != 0)
     {
         Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
-        albedo *= albedoTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, 0);
+        albedo *= albedoTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample);
     }
 
     if (material.m_NormalTextureIndex != 0)
     {
         Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
-        normal = normalTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, 0).xyz;
+        normal = normalTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).xyz;
         normal = normal * 2.0 - 1.0;
         float3x3 TBN = float3x3(hitSurface.m_Tangent, hitSurface.m_Bitangent, hitSurface.m_Normal.xyz);
         normal = normalize(mul(normal, TBN));
@@ -132,7 +134,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     if (material.m_RoughnessTextureIndex != 0)
     {
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
-        roughness = roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, 0).g;
+        roughness = roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).g;
     }
 
     float3 radiance = 0;
@@ -150,7 +152,7 @@ void RayGeneration()
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
-    const float2 uvPrev = uv - (float2)g_GBufferOutput3.SampleLevel(linearSampler, uv, 0).xy;
+    const float2 uvPrev = uv - g_GBufferOutput3.Load(launchIndex).xy;
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
     const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
@@ -165,14 +167,15 @@ void RayGeneration()
     const float metalness = gbuffer2.w;
 
     const float3 ambient = ComputeSkyColor() * 0.25;
+    const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
+    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
 
-    float3 finalRadiance = 0;
-    finalRadiance += ComputeDirectIrradiance(position, normal);
-    finalRadiance += ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
-    finalRadiance += ambient;
+    const float a = 0.2;
+    const float3 finalIndirectIrradiance = (a * indirectIrradiance.xyz) + (1 - a) * accumulation.xyz;
+    const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance + ambient;
 
-    const float a = 0.1;
-    g_LightingOutput[launchIndex.xy].xyz = (a * finalRadiance.xyz) + (1 - a) * accumulation.xyz;
+    g_LightingOutput[launchIndex.xy].xyz = finalRadiance;
+    g_IndirectOutput[launchIndex.xy].xyz = finalIndirectIrradiance;
 }
 
 [shader("miss")]
@@ -184,7 +187,7 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 3;
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 2;
         return;
     }
 

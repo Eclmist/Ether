@@ -27,9 +27,12 @@
 #include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"
 
+#include "oidn/oidn.hpp"
+
 DEFINE_GFX_PA(RaytracedLightingProducer)
 DEFINE_GFX_UA(RTLightingTexture)
 DEFINE_GFX_SR(RTLightingTexture)
+DEFINE_GFX_UA(RTIndirectTexture)
 DEFINE_GFX_SR(RTAccumulationTexture)
 DEFINE_GFX_SR(RTGeometryInfo)
 DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
@@ -64,6 +67,7 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     uint32_t numVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.size();
 
+    schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
@@ -105,6 +109,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(RTLightingTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(RTIndirectTexture)->GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
 
@@ -126,9 +131,9 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
 
     ctx.DispatchRays(resolution.x, resolution.y, 1);
 
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTLightingTexture)), RhiResourceState::CopySrc);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)), RhiResourceState::CopyDest);
-    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTLightingTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
 
     ctx.PopMarker();
 }
@@ -156,7 +161,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreateShaders()
 
 void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(10, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(11, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
     rsDesc->SetAsShaderResourceView(1, 0, RhiShaderVisibility::All);        // (t0) TLAS
     rsDesc->SetAsShaderResourceView(2, 1, RhiShaderVisibility::All);        // (t1) RTGeometryInfo
@@ -171,9 +176,11 @@ void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Srv, 1, 0, 6);    // (t6) GBuffer2
     rsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);      
-    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Srv, 1, 0, 7); // (t7) GBuffer3
+    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Srv, 1, 0, 7);    // (t7) GBuffer3
     rsDesc->SetAsDescriptorTable(9, 1, RhiShaderVisibility::All);       
     rsDesc->SetDescriptorTableRange(9, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) LightingTexture
+    rsDesc->SetAsDescriptorTable(10, 1, RhiShaderVisibility::All);       
+    rsDesc->SetDescriptorTableRange(10, RhiDescriptorType::Uav, 1, 0, 1);   // (u0) IndirectTexture
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_GlobalRootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
@@ -187,7 +194,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceCon
     m_RTPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_RTPsoDesc->SetMissShaderName(k_MissShader);
     m_RTPsoDesc->SetRayGenShaderName(k_RayGenShader);
-    m_RTPsoDesc->SetMaxRecursionDepth(2);
+    m_RTPsoDesc->SetMaxRecursionDepth(3);
     m_RTPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_RTPsoDesc->SetMaxPayloadSize(24);
     m_RTPsoDesc->SetRootSignature(*m_GlobalRootSignature);

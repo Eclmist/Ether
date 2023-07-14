@@ -26,9 +26,9 @@
     m_Reads[input.GetName()] = input.Get();                                                             \
     m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get().get();
 
-#define MARK_FOR_WRITE(input)                                                                              \
-    input.Create();                                                                                        \
-    m_Writes[input.GetName()] = input.Get();                                                               \
+#define MARK_FOR_WRITE(input)                                                                           \
+    input.Create();                                                                                     \
+    m_Writes[input.GetName()] = input.Get();                                                            \
     m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get().get();
 
 void Ether::Graphics::ScheduleContext::Read(GFX_STATIC::GFX_RT_TYPE& rtv)

@@ -85,7 +85,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float2 velocity = texSpaceCurr - texSpacePrev;
 
     float3 worldPos = IN.WorldPos.xyz;
-    float4 albedo = 1;
+    float4 albedo = material.m_BaseColor;
     float3 normal = IN.Normal.xyz;
     float roughness = 0.5;
     float metalness = 0;
