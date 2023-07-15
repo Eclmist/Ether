@@ -114,6 +114,9 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     for (const VisualBatch& batch : batches)
     for (const Visual& visual : batch.m_Visuals)
     {
+        // Basic culling
+
+
         ETH_MARKER_EVENT("Draw Meshes");
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
@@ -171,7 +174,7 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     m_PsoDesc->SetPixelShader(*m_PixelShader);
     m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
     m_PsoDesc->SetRootSignature(*m_RootSignature);
-    m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements);
+    m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentTexcoord::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);

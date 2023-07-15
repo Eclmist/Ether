@@ -54,7 +54,7 @@ Ether::StringID Ether::ResourceManager::RegisterMeshResource(std::unique_ptr<Gra
 
 Ether::StringID Ether::ResourceManager::RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material)
 {
-    StringID sid = material->GetGuid();
+    StringID sid = material->GetGuid();0;// 
     m_Materials[sid] = std::move(material);
     return sid;
 }
@@ -91,10 +91,10 @@ Ether::Graphics::Texture* Ether::ResourceManager::GetTextureResource(StringID gu
 }
 
 void Ether::ResourceManager::CreateGpuResources() const 
-{
+{ 
     for (auto& pair : m_Meshes)
     {
-        Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, Graphics::_64MiB);
+        Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, Graphics::_16MiB);
         ctx.Reset();
         pair.second->CreateGpuResources(ctx);
         ctx.FinalizeAndExecute(true);
@@ -102,7 +102,7 @@ void Ether::ResourceManager::CreateGpuResources() const
 
     for (auto& pair : m_Textures)
     {
-        Graphics::CommandContext textureUploadCtx("TODO Texture Upload Context", Graphics::RhiCommandType::Graphic, Graphics::_128MiB);
+        Graphics::CommandContext textureUploadCtx("CommandContext - Texture Loading", Graphics::RhiCommandType::Graphic, Graphics::_128MiB);
         textureUploadCtx.Reset();
         pair.second->CreateGpuResource(textureUploadCtx);
         textureUploadCtx.FinalizeAndExecute(true);

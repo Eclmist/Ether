@@ -58,6 +58,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
 #if defined(ETH_TOOLMODE)
     else if (flag == "-import")
         m_ImportPath = arg;
+    else if (flag == "-importscale")
+        m_ImportScale = stof(arg);
     else if (flag == "-toolmodeport")
         m_ToolmodePort = stoi(arg);
 #endif

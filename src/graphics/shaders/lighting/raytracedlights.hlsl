@@ -64,7 +64,7 @@ float3 ComputeDirectIrradiance(float3 position, float3 normal)
 
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-    shadowRay.Origin = position;
+    shadowRay.Origin = position + normal * 0.01;
     shadowRay.TMax = 64;
     shadowRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
@@ -87,8 +87,8 @@ float3 ComputeIndirectIrradiance(float3 position, float3 normal, float roughness
 
     RayDesc indirectRay;
     indirectRay.Direction = ranDirection;
-    indirectRay.Origin = position;
-    indirectRay.TMax = 32;
+    indirectRay.Origin = position + normal * 0.01;
+    indirectRay.TMax = 64;
     indirectRay.TMin = 0.01;
 
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
@@ -127,7 +127,8 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
         Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
         normal = normalTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).xyz;
         normal = normal * 2.0 - 1.0;
-        float3x3 TBN = float3x3(hitSurface.m_Tangent, hitSurface.m_Bitangent, hitSurface.m_Normal.xyz);
+        float3 bitangent = cross(hitSurface.m_Tangent, hitSurface.m_Normal);
+        float3x3 TBN = float3x3(hitSurface.m_Tangent, bitangent, hitSurface.m_Normal.xyz);
         normal = normalize(mul(normal, TBN));
     }
 
@@ -139,7 +140,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
 
     float3 radiance = 0;
     radiance += ComputeDirectIrradiance(hitSurface.m_Position, normal) * albedo.xyz;
-    radiance += ComputeIndirectIrradiance(hitSurface.m_Position, normal, roughness, payload.m_Depth - 1) * albedo.xyz;
+    radiance += ComputeIndirectIrradiance(hitSurface.m_Position, normal, 1, payload.m_Depth - 1) * albedo.xyz;
 
     return radiance;
 }
@@ -168,9 +169,9 @@ void RayGeneration()
 
     const float3 ambient = ComputeSkyColor() * 0.25;
     const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
-    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
+    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 4;
 
-    const float a = 0.02;
+    const float a = 0.1;
     const float3 finalIndirectIrradiance = (a * indirectIrradiance.xyz) + (1 - a) * accumulation.xyz;
     const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance + ambient;
 

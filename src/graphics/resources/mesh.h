@@ -28,6 +28,8 @@
 
 namespace Ether::Graphics
 {
+constexpr uint32_t MaxVerticesPerMesh = 1 << 18;
+constexpr uint32_t MaxTrianglePerMesh = 1 << 18;
 
 class ETH_GRAPHIC_DLL Mesh : public Serializable
 {
@@ -51,7 +53,7 @@ public:
 
 public:
     void SetDefaultMaterialGuid(StringID guid) { m_DefaultMaterialGuid = guid; }
-    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices);
+    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices);
     void SetIndices(std::vector<uint32_t>&& indices);
     void CreateGpuResources(CommandContext& ctx);
 
@@ -68,7 +70,7 @@ private:
     void InitializeIndexBufferViews();
 
 private:
-    std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord> m_PackedVertices;
+    std::vector<VertexFormats::PositionNormalTangentTexcoord> m_PackedVertices;
     std::vector<uint32_t> m_Indices;
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;

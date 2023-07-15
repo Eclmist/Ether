@@ -19,32 +19,30 @@
 
 #include "graphics/common/vertexformats.h"
 
-Ether::Graphics::RhiInputElementDesc
-    Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::s_InputElementDesc[5] = {
+uint32_t Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::
+    s_NumElements = PositionNormalTangentTexcoord_NumElements;
+
+Ether::Graphics::RhiInputElementDesc Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::s_InputElementDesc
+    [PositionNormalTangentTexcoord_NumElements] = {
         { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "BITANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
     };
 
-uint32_t Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::s_NumElements = 5;
-
-void Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::Serialize(OStream& ostream) const
+void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Serialize(OStream& ostream) const
 {
     ostream << m_Position;
     ostream << m_Normal;
     ostream << m_Tangent;
-    ostream << m_BiTangent;
     ostream << m_TexCoord;
 }
 
-void Ether::Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord::Deserialize(IStream& istream)
+void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Deserialize(IStream& istream)
 {
     istream >> m_Position;
     istream >> m_Normal;
     istream >> m_Tangent;
-    istream >> m_BiTangent;
     istream >> m_TexCoord;
 }
 

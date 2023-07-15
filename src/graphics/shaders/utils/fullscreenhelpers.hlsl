@@ -28,12 +28,30 @@ void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
     uv.y = 1 - uv.y;
 }
 
-float2 ClipSpaceToTextureSpace(float4 clipSpacePos)
+float2 ClipToTextureSpace(float4 clip)
 {
-    float3 ndc = clipSpacePos.xyz / clipSpacePos.w;
+    float4 ndc = clip;
+    ndc.xyz /= ndc.w;
     ndc.y = -ndc.y;
-    float2 texSpace = (ndc.xy + 1.0f) * 0.5f;
-    return texSpace;
+    float2 uv = (ndc.xy + 1.0f) * 0.5f;
+    return uv;
+}
+
+float4 ScreenToClipSpace(float4 screen, float2 resolution)
+{
+    float4 clip = screen;
+    clip.xy /= resolution;
+    clip.xy = clip.xy * 2.0 - 1.0;
+    clip.y = -clip.y;
+    clip.xyz *= clip.w;
+    return clip;
+}
+
+float2 ScreenToTextureSpace(float4 screen, float2 resolution)
+{
+    float2 uv = screen.xy;
+    uv.xy /= resolution;
+    return uv;
 }
 
 float InterleavedGradientNoise(float2 pos)

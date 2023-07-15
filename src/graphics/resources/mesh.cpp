@@ -20,7 +20,7 @@
 #include "graphics/resources/mesh.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t MeshVersion = 3;
+constexpr uint32_t MeshVersion = 5;
 
 Ether::Graphics::Mesh::Mesh()
     : Serializable(MeshVersion, ETH_CLASS_ID_MESH)
@@ -51,11 +51,15 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
     Serializable::Deserialize(istream);
 
     istream >> m_NumVertices;
+    AssertGraphics(m_NumVertices <= MaxVerticesPerMesh, "Num vertices exceeds limit");
+
     m_PackedVertices.resize(m_NumVertices);
     for (int i = 0; i < m_PackedVertices.size(); ++i)
         m_PackedVertices[i].Deserialize(istream);
 
     istream >> m_NumIndices;
+    AssertGraphics(m_NumIndices <= MaxTrianglePerMesh * 3, "Num triangles exceeds limit");
+
     m_Indices.resize(m_NumIndices);
     for (int i = 0; i < m_Indices.size(); ++i)
         istream >> m_Indices[i];
@@ -64,7 +68,7 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
 }
 
 void Ether::Graphics::Mesh::SetPackedVertices(
-    std::vector<VertexFormats::PositionNormalTangentBitangentTexcoord>&& vertices)
+    std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices)
 {
     m_PackedVertices = std::move(vertices);
     m_NumVertices = m_PackedVertices.size();

@@ -18,14 +18,17 @@
 */
 
 #include "toolmode/asset/assetimporter.h"
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
 #include "graphics/resources/mesh.h"
+#include "graphics/resources/texture.h"
 #include "graphics/common/vertexformats.h"
 #include "graphics/rhi/rhienums.h"
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "parser/image/stb_image.h"
+#include "parser/image/stb_image_resize.h"
 
 void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath)
 {
@@ -34,6 +37,8 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath)
     LogToolmodeInfo("Importing asset %s", fullPath.c_str());
 
     Assimp::Importer importer;
+    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, Graphics::MaxVerticesPerMesh);
+    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, Graphics::MaxTrianglePerMesh);
 
     auto scene = importer.ReadFile(
         fullPath,
@@ -66,18 +71,23 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
     {
         const aiMesh* mesh = assimpMesh[i];
 
-        std::vector<Graphics::VertexFormats::PositionNormalTangentBitangentTexcoord> packedVertices;
+        std::vector<Graphics::VertexFormats::PositionNormalTangentTexcoord> packedVertices;
+
+        AssertToolmode(mesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
         packedVertices.resize(mesh->mNumVertices);
 
         for (int j = 0; j < mesh->mNumVertices; ++j)
         {
             // There might be a bug here if ethVector3 and aiVector3D's floating point precisions mismatch
             // However, since we compile assimp ourselves and did not specify double precision, this should be fine
-            assert(sizeof(ethVector3) == sizeof(aiVector3D));
-            assert(sizeof(ethVector2) == sizeof(aiVector2D));
+            AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
+            AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
 
             if (mesh->HasPositions())
+            {
                 packedVertices[j].m_Position = { mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z };
+                packedVertices[j].m_Position *= m_MeshScale;
+            }
 
             if (mesh->HasNormals())
                 packedVertices[j].m_Normal = { mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z };
@@ -85,17 +95,13 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
             if (mesh->HasTangentsAndBitangents())
                 packedVertices[j].m_Tangent = { mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
 
-            if (mesh->HasTangentsAndBitangents())
-                packedVertices[j].m_BiTangent = { mesh->mBitangents[j].x,
-                                                  mesh->mBitangents[j].y,
-                                                  mesh->mBitangents[j].z };
-
             if (mesh->HasTextureCoords(0))
                 packedVertices[j].m_TexCoord = { mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y };
         }
 
         const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
         std::vector<uint32_t> indices;
+        AssertToolmode(mesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
         indices.reserve(mesh->mNumFaces * numVerticesPerFace);
         for (int j = 0; j < mesh->mNumFaces; ++j)
         {
@@ -195,11 +201,22 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(const StringID& p
         return {};
     }
 
+    unsigned char* downscaleOutput = image;
+
+    if (w > Graphics::MaxTextureSize)
+    {
+        int outputWidth = Graphics::MaxTextureSize;
+        int outputHeight = (int)((float)Graphics::MaxTextureSize / w * h);
+        stbir_resize_uint8(image, w, h, 0, downscaleOutput, outputWidth, outputHeight, 0, 4);
+        w = outputWidth;
+        h = outputHeight;
+    }
+
     gfxTexture.SetName(PathUtils::GetFileName(path.GetString()).c_str());
     gfxTexture.SetFormat(Ether::Graphics::RhiFormat::R8G8B8A8Unorm);
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
-    gfxTexture.SetData(image, true);
+    gfxTexture.SetData(downscaleOutput);
     gfxTexture.Serialize(ofstream);
 
     m_PathToGuidMap[path] = gfxTexture.GetGuid();

@@ -27,7 +27,6 @@ struct VS_INPUT
     float3 Position     : POSITION;
     float3 Normal       : NORMAL;
     float3 Tangent      : TANGENT;
-    float3 Bitangent    : BITANGENT;
     float2 TexCoord     : TEXCOORD;
 };
 
@@ -36,10 +35,7 @@ struct VS_OUTPUT
     float4 Position     : SV_POSITION;
     float3 Normal       : NORMAL;
     float2 TexCoord     : TEXCOORD0;
-    float4 WorldPos     : TEXCOORD1;
-    float4 ClipPos      : TEXCOORD2;
-    float3 Tangent      : TEXCOORD3;
-    float3 Bitangent    : TEXCOORD4;
+    float3 Tangent      : TEXCOORD1;
 };
 
 struct PS_OUTPUT
@@ -58,17 +54,10 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    //float4x4 mv = mul(g_GlobalConstants.m_ViewMatrix, m_InstanceParams.m_ModelMatrix); (just leave model matrix as identity for now)
-    float4x4 mvp = mul(g_GlobalConstants.m_ProjectionMatrix, g_GlobalConstants.m_ViewMatrix);
-    float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
-
-    o.Position = mul(mvp, float4(IN.Position, 1.0f));
-    o.ClipPos = mul(mvp, float4(IN.Position, 1.0f));
-    o.WorldPos = /* mul(m_ModelMatrix, */ float4(IN.Position, 1.0f); //).xyz;
+    o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, float4(IN.Position, 1.0f));
     o.Normal = IN.Normal;
     o.TexCoord = IN.TexCoord;
     o.Tangent = IN.Tangent;
-    o.Bitangent = IN.Bitangent;
 
     return o;
 }
@@ -78,17 +67,17 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Material material = g_MaterialTable[g_InstanceParams.m_MaterialIdx];
 
-    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
-    float4x4 mvpPrev = mul(g_GlobalConstants.m_ProjectionMatrixPrev, g_GlobalConstants.m_ViewMatrixPrev);
-    float2 texSpacePrev = ClipSpaceToTextureSpace(mul(mvpPrev, float4(IN.WorldPos.xyz, 1.0f)));
-    float2 texSpaceCurr = ClipSpaceToTextureSpace(IN.ClipPos);
-    float2 velocity = texSpaceCurr - texSpacePrev;
+    float4 clipPos = ScreenToClipSpace(IN.Position, g_GlobalConstants.m_ScreenResolution);
+    float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clipPos);
+    float4 clipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrev, worldPos);
+    float2 texSpacePrev = ClipToTextureSpace(clipPosPrev);
+    float2 texSpaceCurr = ScreenToTextureSpace(IN.Position, g_GlobalConstants.m_ScreenResolution);
 
-    float3 worldPos = IN.WorldPos.xyz;
     float4 albedo = material.m_BaseColor;
     float3 normal = IN.Normal.xyz;
     float roughness = 0.5;
     float metalness = 0;
+    float2 velocity = texSpaceCurr - texSpacePrev;
 
     if (material.m_AlbedoTextureIndex != 0)
     {
@@ -101,7 +90,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
         normal = normalTex.Sample(linearSampler, IN.TexCoord).xyz;
         normal = normal * 2.0 - 1.0;
-        float3x3 TBN = float3x3(IN.Tangent, IN.Bitangent, IN.Normal.xyz);
+        float3 bitangent = normalize(cross(IN.Normal, IN.Tangent));
+        float3x3 TBN = float3x3(IN.Tangent, bitangent, IN.Normal);
         normal = normalize(mul(normal, TBN));
     }
 

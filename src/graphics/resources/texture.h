@@ -24,10 +24,12 @@
 
 #define ETH_CLASS_ID_TEXTURE "Graphics::Texture"
 
-static constexpr uint32_t MaxNumMips = 14;
-
 namespace Ether::Graphics
 {
+
+static constexpr uint32_t MaxNumMips = 11;
+static constexpr uint32_t MaxTextureSize = 1 << MaxNumMips;
+
 class ETH_GRAPHIC_DLL Texture : public Serializable
 {
 public:
@@ -52,14 +54,15 @@ public:
     inline void SetWidth(uint32_t width) { m_Width = width; }
     inline void SetHeight(uint32_t height) { m_Height = height; }
     inline void SetFormat(RhiFormat format) { m_Format = format; }
-    inline void SetData(const unsigned char* data, bool generateMips = false);
+    inline void SetData(const unsigned char* data);
 
 private:
     size_t GetSizeInBytes(uint32_t mipLevel = 0) const;
     size_t GetBytesPerPixel() const;
 
-    ethColor4u GetColor(uint32_t x, uint32_t y, uint32_t mipLevel = 0) const;
-    void SetColor(const ethColor4u& color, uint32_t x, uint32_t y, uint32_t mipLevel = 0);
+    ethColor4u GetColor(const void* src, uint32_t x, uint32_t y, uint32_t pitch) const;
+    void SetColor(void* dest, const ethColor4u& color, uint32_t x, uint32_t y, uint32_t pitch) const;
+    void DownsizeData(const void* src, void* dest, uint32_t width, uint32_t height);
     void GenerateMips();
 
 private:

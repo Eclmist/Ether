@@ -225,6 +225,11 @@ float4 ProceduralSky(float2 texCoord)
     const float g_SkyMieDirectionality = 0.7f;
     const float g_SkyLuminance = 1.0f;
 
+    // Temporarily override procedural sky until LUTs are implemented
+    float3 daySkyColor = float3(0.6, 0.7, 1.0);
+    float3 nightSkyColor = float3(0.1, 0.25, 0.4) * 0.2;
+    float3 skyColor = lerp(nightSkyColor, daySkyColor, dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
+
     // Normalize screenUV to get a direction vector
     float3 viewDirection = NormalizeDirection(texCoord);
 
@@ -242,6 +247,8 @@ float4 ProceduralSky(float2 texCoord)
         g_SkyMie,
         g_SkyMieDirectionality,
         g_SkyLuminance);
+
+    //float3 skyRadiance = skyColor;
 
     float2 fakeSkyUv = viewDirection.xz * viewDirection.y;
 

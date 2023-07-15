@@ -46,11 +46,11 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& world = GetActiveWorld();
 
-    std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
+    const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::string worldPath = GetCommandLineOptions().GetWorldPath();
     const std::string importPath = GetCommandLineOptions().GetImportPath();
-
-    std::string fullPath = workspacePath + worldPath;
+    const std::string fullPath = workspacePath + worldPath;
+    const float meshScale = GetCommandLineOptions().GetImportScale();
 
     if (importPath != "")
     {
@@ -65,7 +65,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         // To speed up development, we will import the main sponza asset here each time we load toolmode, even
         // without editor connection.
         AssetImporter::Instance().SetWorkspacePath(workspacePath);
+        AssetImporter::Instance().SetMeshScale(meshScale);
         AssetImporter::Instance().Import(importPath);
+        //AssetImporter::Instance().Import("exterior.obj");
         AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
                                          ".gltf");
         AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
@@ -132,19 +134,18 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             world.GetResourceManager().RegisterMeshResource(std::move(mesh));
         }
 
-        world.GetResourceManager().CreateGpuResources();
         world.Save(fullPath);
+        exit(0);
     }
     else
     {
         world.Load(fullPath);
+        world.GetResourceManager().CreateGpuResources();
     }
 
     Entity& camera = world.CreateEntity("Main Camera");
     camera.AddComponent<Ecs::EcsCameraComponent>();
     m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
-
-    exit(0);
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()

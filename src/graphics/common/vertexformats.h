@@ -23,25 +23,27 @@
 
 namespace Ether::Graphics::VertexFormats
 {
-class ETH_GRAPHIC_DLL PositionNormalTangentBitangentTexcoord
+
+static constexpr uint32_t PositionNormalTangentTexcoord_NumElements = 4;
+
+class ETH_GRAPHIC_DLL PositionNormalTangentTexcoord
 {
 public:
-    PositionNormalTangentBitangentTexcoord() = default;
-    ~PositionNormalTangentBitangentTexcoord() = default;
+    PositionNormalTangentTexcoord() = default;
+    ~PositionNormalTangentTexcoord() = default;
 
 public:
     void Serialize(OStream& ostream) const;
     void Deserialize(IStream& istream);
 
 public:
-    static RhiInputElementDesc s_InputElementDesc[5];
+    static RhiInputElementDesc s_InputElementDesc[PositionNormalTangentTexcoord_NumElements];
     static uint32_t s_NumElements;
 
 public:
     ethVector3 m_Position;
     ethVector3 m_Normal;
     ethVector3 m_Tangent;
-    ethVector3 m_BiTangent;
     ethVector2 m_TexCoord;
 };
 } // namespace Ether::Graphics::VertexFormats

@@ -99,16 +99,10 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
 #endif
 }
 
-void Ether::Graphics::Texture::SetData(const unsigned char* data, bool generateMips)
+void Ether::Graphics::Texture::SetData(const unsigned char* data)
 {
     m_Data[0] = (void*)data;
-    m_NumMips = 1;
-
-    if (generateMips)
-    {
-        m_NumMips = std::log2(std::min(m_Width, m_Height)) + 1;
-        GenerateMips();
-    }
+    GenerateMips();
 }
 
 size_t Ether::Graphics::Texture::GetSizeInBytes(uint32_t mipLevel) const
@@ -123,57 +117,64 @@ size_t Ether::Graphics::Texture::GetBytesPerPixel() const
     return 4;
 }
 
-Ether::ethColor4u Ether::Graphics::Texture::GetColor(uint32_t x, uint32_t y, uint32_t mipLevel) const
+Ether::ethColor4u Ether::Graphics::Texture::GetColor(const void* src, uint32_t x, uint32_t y, uint32_t pitch) const
 {
     const uint32_t bpp = GetBytesPerPixel();
-    const uint32_t pitch = bpp * m_Width * std::pow(0.5, mipLevel);
-    const uint32_t r = ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 0];
-    const uint32_t g = ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 1];
-    const uint32_t b = ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 2];
-    const uint32_t a = ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 3];
+    const uint32_t r = ((uint8_t*)src)[y * pitch + x * bpp + 0];
+    const uint32_t g = ((uint8_t*)src)[y * pitch + x * bpp + 1];
+    const uint32_t b = ((uint8_t*)src)[y * pitch + x * bpp + 2];
+    const uint32_t a = ((uint8_t*)src)[y * pitch + x * bpp + 3];
 
     return { r, g, b, a };
 }
 
-void Ether::Graphics::Texture::SetColor(const ethColor4u& color, uint32_t x, uint32_t y, uint32_t mipLevel)
+void Ether::Graphics::Texture::SetColor(void* dest, const ethColor4u& color, uint32_t x, uint32_t y, uint32_t pitch) const
 {
     const uint32_t bpp = GetBytesPerPixel();
-    const uint32_t pitch = bpp * m_Width * std::pow(0.5, mipLevel);
-    ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 0] = (uint8_t)color.x;
-    ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 1] = (uint8_t)color.y;
-    ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 2] = (uint8_t)color.z;
-    ((uint8_t**)m_Data)[mipLevel][y * pitch + x * bpp + 3] = (uint8_t)color.w;
+    ((uint8_t*)dest)[y * pitch + x * bpp + 0] = (uint8_t)color.x;
+    ((uint8_t*)dest)[y * pitch + x * bpp + 1] = (uint8_t)color.y;
+    ((uint8_t*)dest)[y * pitch + x * bpp + 2] = (uint8_t)color.z;
+    ((uint8_t*)dest)[y * pitch + x * bpp + 3] = (uint8_t)color.w;
+}
+
+void Ether::Graphics::Texture::DownsizeData(const void* src, void* dest, uint32_t width, uint32_t height)
+{
+    const uint32_t halfWidth = width / 2;
+    const uint32_t halfHeight = height / 2;
+    const uint32_t bpp = GetBytesPerPixel();
+    const uint32_t pitchSrc = width * bpp;
+    const uint32_t pitchDest = halfWidth * bpp;
+
+    for (uint32_t y = 0; y < halfHeight; ++y)
+        for (uint32_t x = 0; x < halfWidth; ++x)
+        {
+            const uint32_t xUp = x * 2;
+            const uint32_t yUp = y * 2;
+
+            const ethColor4u upColor0 = GetColor(src, xUp + 0, yUp + 0, pitchSrc);
+            const ethColor4u upColor1 = GetColor(src, xUp + 1, yUp + 0, pitchSrc);
+            const ethColor4u upColor2 = GetColor(src, xUp + 0, yUp + 1, pitchSrc);
+            const ethColor4u upColor3 = GetColor(src, xUp + 1, yUp + 1, pitchSrc);
+
+            const ethColor4u avgColor = (upColor0 + upColor1 + upColor2 + upColor3) / 4.0;
+            SetColor(dest, avgColor, x, y, pitchDest);
+        }
 }
 
 void Ether::Graphics::Texture::GenerateMips()
 {
-    if (m_NumMips == 1)
-        return;
+    const uint32_t lowestDim = std::min(m_Width, m_Height);
+    m_NumMips = std::min(MaxNumMips, (uint32_t)std::log2(lowestDim) + 1);
 
-    for (uint32_t i = 0; i < m_NumMips; ++i)
+    uint32_t width = m_Width;
+    uint32_t height = m_Height;
+
+    for (uint32_t i = 0; i < m_NumMips - 1; ++i)
     {
-        const uint32_t prevMipLevel = i;
-        const uint32_t currMipLevel = i + 1;
-        const void* prevMipData = m_Data[prevMipLevel];
-
-        const uint32_t currWidth = m_Width * std::pow(0.5, currMipLevel);
-        const uint32_t currHeight = m_Height * std::pow(0.5, currMipLevel);
-
-        m_Data[currMipLevel] = malloc(GetSizeInBytes(currMipLevel));
-
-        for (uint32_t y = 0; y < currHeight; ++y)
-            for (uint32_t x = 0; x < currWidth; ++x)
-            {
-                const uint32_t xUp = x * 2;
-                const uint32_t yUp = y * 2;
-
-                const ethColor4u upColor0 = GetColor(xUp + 0, yUp + 0, prevMipLevel);
-                const ethColor4u upColor1 = GetColor(xUp + 1, yUp + 0, prevMipLevel);
-                const ethColor4u upColor2 = GetColor(xUp + 0, yUp + 1, prevMipLevel);
-                const ethColor4u upColor3 = GetColor(xUp + 1, yUp + 1, prevMipLevel);
-
-                const ethColor4u avgColor = (upColor0 + upColor1 + upColor2 + upColor3) / 4.0;
-                SetColor(avgColor, x, y, currMipLevel);
-            }
+        m_Data[i + 1] = malloc(GetSizeInBytes(i + 1));
+        DownsizeData(m_Data[i], m_Data[i + 1], width, height);
+        width /= 2;
+        height /= 2;
     }
 }
+

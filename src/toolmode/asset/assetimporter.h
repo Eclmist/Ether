@@ -20,8 +20,8 @@
 #pragma once
 
 #include "toolmode/pch.h"
-#include "assimp/scene.h"
 #include "graphics/common/vertexformats.h"
+#include "assimp/scene.h"
 #include <unordered_set>
 
 constexpr uint32_t MaxMaterialsPerAsset = 256;
@@ -35,6 +35,7 @@ namespace Ether::Toolmode
         ~AssetImporter() = default;
 
         inline void SetWorkspacePath(const std::string& workspacePath) { m_WorkspacePath = workspacePath; }
+        inline void SetMeshScale(float scale) { m_MeshScale = scale; }
 
     public:
         void Import(const std::string& assetPath);
@@ -46,7 +47,9 @@ namespace Ether::Toolmode
         StringID ProcessTexture(const StringID& path);
 
     private:
-        std::string m_WorkspacePath;
+        std::string m_WorkspacePath = "";
+        float m_MeshScale = 1.0f;
+
         StringID m_MaterialGuidTable[MaxMaterialsPerAsset];
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };

@@ -22,7 +22,6 @@ struct MeshVertex
     float3 m_Position;
     float3 m_Normal;
     float3 m_Tangent;
-    float3 m_Bitangent;
     float2 m_TexCoord;
 };
 
@@ -52,7 +51,6 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
     vtx.m_Position = BarycentricLerp(v0.m_Position, v1.m_Position, v2.m_Position, barycentrics);
     vtx.m_Normal = normalize(BarycentricLerp(v0.m_Normal, v1.m_Normal, v2.m_Normal, barycentrics));
     vtx.m_Tangent = normalize(BarycentricLerp(v0.m_Tangent, v1.m_Tangent, v2.m_Tangent, barycentrics));
-    vtx.m_Bitangent = normalize(BarycentricLerp(v0.m_Bitangent, v1.m_Bitangent, v2.m_Bitangent, barycentrics));
     vtx.m_TexCoord = BarycentricLerp(v0.m_TexCoord, v1.m_TexCoord, v2.m_TexCoord, barycentrics);
 
     return vtx;

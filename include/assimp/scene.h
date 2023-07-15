@@ -209,6 +209,7 @@ struct ASSIMP_API aiNode {
  */
 #define AI_SCENE_FLAGS_NON_VERBOSE_FORMAT   0x8
 
+
  /**
  * Denotes pure height-map terrain data. Pure terrains usually consist of quads,
  * sometimes triangles, in a regular grid. The x,y coordinates of all vertex

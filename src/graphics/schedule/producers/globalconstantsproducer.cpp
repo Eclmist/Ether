@@ -49,9 +49,14 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
     Shader::GlobalConstants* globalConstants = (Shader::GlobalConstants*)alloc->GetCpuHandle();
     globalConstants->m_ViewMatrix = renderData.m_ViewMatrix;
-    globalConstants->m_ProjectionMatrix = renderData.m_ProjectionMatrix;
+    globalConstants->m_ViewMatrixInv = renderData.m_ViewMatrix.Inversed();
     globalConstants->m_ViewMatrixPrev = prevViewMatrix;
+    globalConstants->m_ProjectionMatrix = renderData.m_ProjectionMatrix;
+    globalConstants->m_ProjectionMatrixInv = renderData.m_ProjectionMatrix.Inversed();
     globalConstants->m_ProjectionMatrixPrev = prevProjMatrix;
+    globalConstants->m_ViewProjectionMatrix = globalConstants->m_ProjectionMatrix * globalConstants->m_ViewMatrix;
+    globalConstants->m_ViewProjectionMatrixInv = globalConstants->m_ViewMatrixInv * globalConstants->m_ProjectionMatrixInv;
+    globalConstants->m_ViewProjectionMatrixPrev = globalConstants->m_ProjectionMatrixPrev * globalConstants->m_ViewMatrixPrev;
     globalConstants->m_EyeDirection = renderData.m_EyeDirection.Resize<4>();
     globalConstants->m_EyePosition = renderData.m_EyePosition.Resize<4>();
     globalConstants->m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;

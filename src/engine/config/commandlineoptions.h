@@ -39,6 +39,7 @@ public:
 public:
     ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
     ETH_TOOLONLY(inline const std::string& GetImportPath() const { return m_ImportPath; })
+    ETH_TOOLONLY(inline const float GetImportScale() const { return m_ImportScale; })
 
 private:
     void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
@@ -54,5 +55,6 @@ private:
 private:
     ETH_TOOLONLY(uint16_t m_ToolmodePort);
     ETH_TOOLONLY(std::string m_ImportPath);
+    ETH_TOOLONLY(float m_ImportScale = 1.0f);
 };
 } // namespace Ether

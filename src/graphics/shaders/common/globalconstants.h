@@ -27,10 +27,14 @@ struct GlobalConstants
 {
     // ============= Common ============= //
     ethMatrix4x4 m_ViewMatrix;
-    ethMatrix4x4 m_ProjectionMatrix;
-
+    ethMatrix4x4 m_ViewMatrixInv;
     ethMatrix4x4 m_ViewMatrixPrev;
+    ethMatrix4x4 m_ProjectionMatrix;
+    ethMatrix4x4 m_ProjectionMatrixInv;
     ethMatrix4x4 m_ProjectionMatrixPrev;
+    ethMatrix4x4 m_ViewProjectionMatrix;
+    ethMatrix4x4 m_ViewProjectionMatrixInv;
+    ethMatrix4x4 m_ViewProjectionMatrixPrev;
 
     ethVector4 m_EyePosition;
     ethVector4 m_EyeDirection;
@@ -58,14 +62,7 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Border;
 
     // ============ Padding ============= //
-    ethVector4 m_Padding1;
-    ethVector4 m_Padding2;
-    ethVector4 m_Padding3;
-    ethVector4 m_Padding4;
-    ethVector4 m_Padding5;
-    ethVector4 m_Padding6;
-    ethVector4 m_Padding7;
-    ethVector4 m_Padding8;
+    ethMatrix4x4 m_Padding0;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");
