@@ -45,8 +45,7 @@ void SampleApp::LoadContent()
 
     world.Load(fullPath);
 
-    Entity& cameraObj = world.CreateEntity("Main Camera");
-    cameraObj.AddComponent<Ecs::EcsCameraComponent>();
+    Entity& cameraObj = world.CreateCamera();
     m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
     m_CameraTransform->m_Translation = { 0, 2, 0 };
     m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };

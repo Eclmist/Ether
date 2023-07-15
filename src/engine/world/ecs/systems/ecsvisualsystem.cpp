@@ -78,13 +78,21 @@ void Ether::Ecs::EcsVisualSystem::Update()
         if (gfxVisualBatch->m_Material->GetBaseColor().w < 1.0)
             continue; // Don't support transparency
 
-        gfxVisual.m_Mesh = resources.GetMeshResource(data.m_MeshGuid);
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
+        gfxVisual.m_Mesh = resources.GetMeshResource(data.m_MeshGuid);
 
         if (gfxVisual.m_Mesh == nullptr)
+            continue;
+
+        if (ShouldCullVisual(gfxVisual))
             continue;
 
         renderData.m_Visuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
     }
+}
+
+bool Ether::Ecs::EcsVisualSystem::ShouldCullVisual(const Graphics::Visual& visual) const
+{
+    return true;
 }

@@ -101,9 +101,9 @@ const void Ether::Graphics::ScheduleContext::NewRT(
 {
     rtv.Create();
     RhiRenderTargetView* view = rtv.Get().get();
-    view->SetWidth(width);
-    view->SetHeight(height);
-    view->SetDepth(depth);
+    view->SetWidth(std::max(1u, width));
+    view->SetHeight(std::max(1u, height));
+    view->SetDepth(std::max(1u, depth));
     view->SetDimension(dimension);
     view->SetFormat(format);
     view->SetViewID(rtv.GetName());
@@ -120,8 +120,8 @@ const void Ether::Graphics::ScheduleContext::NewDS(
 {
     dsv.Create();
     RhiDepthStencilView* view = dsv.Get().get();
-    view->SetWidth(width);
-    view->SetHeight(height);
+    view->SetWidth(std::max(1u, width));
+    view->SetHeight(std::max(1u, height));
     view->SetDepth(1);
     view->SetDimension(RhiResourceDimension::Texture2D);
     view->SetFormat(format);
@@ -141,14 +141,14 @@ const void Ether::Graphics::ScheduleContext::NewSR(
 {
     srv.Create();
     RhiShaderResourceView* view = srv.Get().get();
-    view->SetWidth(width);
-    view->SetHeight(height);
-    view->SetDepth(depthOrStride);
+    view->SetStructuredBufferStride(std::max(1u, depthOrStride));
+    view->SetWidth(std::max((uint32_t)view->GetStructuredBufferStride(), width));
+    view->SetHeight(std::max(1u, height));
+    view->SetDepth(std::max(1u, depthOrStride));
     view->SetFormat(format);
     view->SetDimension(dimension);
     view->SetViewID(srv.GetName());
     view->SetResourceID(srv.GetSharedResourceName());
-    view->SetStructuredBufferStride(depthOrStride);
 
     Write(srv);
 }
@@ -163,14 +163,14 @@ const void Ether::Graphics::ScheduleContext::NewUA(
 {
     uav.Create();
     RhiUnorderedAccessView* view = uav.Get().get();
-    view->SetWidth(width);
-    view->SetHeight(height);
-    view->SetDepth(depthOrStride);
+    view->SetStructuredBufferStride(std::max(1u, depthOrStride));
+    view->SetWidth(std::max((uint32_t)view->GetStructuredBufferStride(), width));
+    view->SetHeight(std::max(1u, height));
+    view->SetDepth(std::max(1u, depthOrStride));
     view->SetFormat(format);
     view->SetDimension(dimension);
     view->SetViewID(uav.GetName());
     view->SetResourceID(uav.GetSharedResourceName());
-    view->SetStructuredBufferStride(depthOrStride);
 
     Write(uav);
 }
@@ -179,7 +179,7 @@ const void Ether::Graphics::ScheduleContext::NewCB(GFX_STATIC::GFX_CB_TYPE& cbv,
 {
     cbv.Create();
     RhiConstantBufferView* view = cbv.Get().get();
-    view->SetWidth(size);
+    view->SetWidth(std::max(1u, uint32_t(size)));
     view->SetHeight(1);
     view->SetDepth(1);
     view->SetDimension(RhiResourceDimension::Buffer);

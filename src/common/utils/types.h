@@ -48,4 +48,5 @@ using ethMatrix4x4u = SMath::Matrix<unsigned int, 4>;
 
 using Rect = SMath::Rect<unsigned int>;
 using Transform = SMath::Transform<float>;
+using Aabb = SMath::Box<float>;
 } // namespace Ether

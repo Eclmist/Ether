@@ -44,9 +44,11 @@ public:
     inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
     inline ResourceManager& GetResourceManager() { return m_ResourceManager; }
     inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
+    inline Entity* GetMainCamera() { return m_MainCamera; }
 
 public:
     Entity& CreateEntity(const std::string& name);
+    Entity& CreateCamera();
 
 private:
     void Serialize(OStream& ostream) const override;
@@ -60,6 +62,8 @@ private:
 
     Ecs::EcsManager m_EcsManager;
     std::unordered_map<Ecs::EntityID, std::unique_ptr<Entity>> m_Entities;
+
+    Entity* m_MainCamera;
 };
 
 } // namespace Ether

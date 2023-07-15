@@ -21,6 +21,7 @@
 
 #include "pch.h"
 #include "engine/world/ecs/systems/ecssystem.h"
+#include "graphics/common/visual.h"
 
 namespace Ether::Ecs
 {
@@ -33,5 +34,8 @@ public:
 protected:
     friend class EcsManager;
     void Update() override;
+
+protected:
+    bool ShouldCullVisual(const Graphics::Visual& visual) const;
 };
 } // namespace Ether::Ecs

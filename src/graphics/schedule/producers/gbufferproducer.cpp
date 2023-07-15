@@ -114,9 +114,6 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     for (const VisualBatch& batch : batches)
     for (const Visual& visual : batch.m_Visuals)
     {
-        // Basic culling
-
-
         ETH_MARKER_EVENT("Draw Meshes");
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();

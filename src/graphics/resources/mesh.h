@@ -46,6 +46,7 @@ public:
     inline uint32_t GetNumVertices() const { return m_NumVertices; }
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
     inline StringID GetDefaultMaterialGuid() const { return m_DefaultMaterialGuid; }
+    inline Aabb GetBoundingBox() const { return m_BoundingBox; }
 
 public:
     void Serialize(OStream& ostream) const override;
@@ -75,6 +76,7 @@ private:
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;
     StringID m_DefaultMaterialGuid;
+    Aabb m_BoundingBox;
 
     // Transient Data
     std::unique_ptr<RhiResource> m_VertexBufferResource;

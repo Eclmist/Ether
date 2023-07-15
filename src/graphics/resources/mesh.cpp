@@ -20,7 +20,7 @@
 #include "graphics/resources/mesh.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t MeshVersion = 5;
+constexpr uint32_t MeshVersion = 6;
 
 Ether::Graphics::Mesh::Mesh()
     : Serializable(MeshVersion, ETH_CLASS_ID_MESH)
@@ -44,6 +44,8 @@ void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
         ostream << m_Indices[i];
 
     ostream << m_DefaultMaterialGuid.GetString();
+    ostream << m_BoundingBox.m_Min;
+    ostream << m_BoundingBox.m_Max;
 }
 
 void Ether::Graphics::Mesh::Deserialize(IStream& istream)
@@ -65,6 +67,8 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
         istream >> m_Indices[i];
 
     istream >> m_DefaultMaterialGuid;
+    istream >> (ethVector3&)m_BoundingBox.m_Min;
+    istream >> (ethVector3&)m_BoundingBox.m_Max;
 }
 
 void Ether::Graphics::Mesh::SetPackedVertices(
@@ -72,6 +76,17 @@ void Ether::Graphics::Mesh::SetPackedVertices(
 {
     m_PackedVertices = std::move(vertices);
     m_NumVertices = m_PackedVertices.size();
+
+    for (auto& vertex : m_PackedVertices)
+    {
+        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Position.x);
+        m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Position.y);
+        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.z, vertex.m_Position.z);
+    
+        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Position.x);
+        m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Position.y);
+        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.z, vertex.m_Position.z);
+    }
 }
 
 void Ether::Graphics::Mesh::SetIndices(std::vector<uint32_t>&& indices)

@@ -18,12 +18,14 @@
 */
 
 #include "engine/world/world.h"
+#include "engine/world/ecs/components/ecscameracomponent.h"
 
 constexpr uint32_t WorldVersion = 0;
 
 Ether::World::World()
     : Serializable(WorldVersion, "Engine::World")
     , m_WorldName("Default World")
+    , m_MainCamera(nullptr)
 {
 }
 
@@ -89,4 +91,14 @@ Ether::Entity& Ether::World::CreateEntity(const std::string& name)
     std::unique_ptr<Entity> entity = std::make_unique<Entity>(name, entityID);
     m_Entities[entityID] = std::move(entity);
     return *m_Entities[entityID];
+}
+
+Ether::Entity& Ether::World::CreateCamera()
+{
+    if (m_MainCamera != nullptr)
+        return *m_MainCamera;
+
+    m_MainCamera = &CreateEntity("Main Camera");
+    m_MainCamera->AddComponent<Ecs::EcsCameraComponent>();
+    return *m_MainCamera;
 }

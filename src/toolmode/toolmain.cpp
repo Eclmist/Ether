@@ -68,10 +68,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         AssetImporter::Instance().SetMeshScale(meshScale);
         AssetImporter::Instance().Import(importPath);
         //AssetImporter::Instance().Import("exterior.obj");
-        AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
-                                         ".gltf");
-        AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
-                                         ".gltf");
+        //AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
+        //                                 ".gltf");
+        //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
+        //                                 ".gltf");
 
         // The idea of this block is to test toolmode functionality without having the actual tool developed yet
         // For example:
@@ -143,9 +143,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         world.GetResourceManager().CreateGpuResources();
     }
 
-    Entity& camera = world.CreateEntity("Main Camera");
-    camera.AddComponent<Ecs::EcsCameraComponent>();
-    m_CameraTransform = &camera.GetComponent<Ecs::EcsTransformComponent>();
+    Entity& cameraObj = world.CreateCamera();
+    m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
+    m_CameraTransform->m_Translation = { 0, 2, 0 };
+    m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()
