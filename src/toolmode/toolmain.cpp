@@ -67,7 +67,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         AssetImporter::Instance().SetWorkspacePath(workspacePath);
         AssetImporter::Instance().SetMeshScale(meshScale);
         AssetImporter::Instance().Import(importPath);
-        //AssetImporter::Instance().Import("exterior.obj");
+        AssetImporter::Instance().Import("exterior.obj");
         //AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
         //                                 ".gltf");
         //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"

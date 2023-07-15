@@ -115,6 +115,9 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     for (const Visual& visual : batch.m_Visuals)
     {
         ETH_MARKER_EVENT("Draw Meshes");
+        if (visual.m_Culled)
+            continue;
+
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
         instanceParams->m_MaterialIdx = visual.m_Material->GetTransientMaterialIdx();
@@ -130,8 +133,8 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
 
 bool Ether::Graphics::GBufferProducer::IsEnabled()
 {
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
-        return false;
+    //if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
+    //    return false;
 
     return true;
 }

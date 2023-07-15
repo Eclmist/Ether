@@ -42,6 +42,10 @@ void Ether::Ecs::EcsCameraSystem::Update()
         EcsCameraComponent& camera = entity.GetComponent<EcsCameraComponent>();
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
 
+        // TODO: Jitter mode is set through imgui debug menu (which is in gfx project), so we need to update the component manually
+        // In the future, this should be updated through the engine side, and this can be removed.
+        camera.SetJitterMode((JitterMode)Graphics::GraphicCore::GetGraphicConfig().m_TemporalAAJitterMode);
+
         if (!camera.m_Enabled)
             continue;
 
@@ -56,7 +60,11 @@ void Ether::Ecs::EcsCameraSystem::Update()
         switch (camera.m_ProjectionMode)
         {
         case ProjectionMode::Perspective:
-            projectionMatrix = Transform::GetPerspectiveMatrixLH(SMath::DegToRad(camera.m_FieldOfView), aspect, 0.01f, 1000.0f);
+            projectionMatrix = Transform::GetPerspectiveMatrixLH(
+                SMath::DegToRad(camera.m_FieldOfView),
+                aspect,
+                camera.m_NearPlane,
+                camera.m_FarPlane);
             break;
         }
 

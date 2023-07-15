@@ -74,6 +74,9 @@ float3 ComputeDirectIrradiance(float3 position, float3 normal)
 
 float3 ComputeIndirectIrradiance(float3 position, float3 normal, float roughness, uint depth)
 {
+    if (depth <= 0)
+        return 0;
+
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
@@ -105,9 +108,6 @@ float3 ComputeSkyColor()
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
 {
-    if (payload.m_Depth <= 0)
-        return 0;
-
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     const uint mipLevelToSample = 99;
 

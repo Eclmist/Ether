@@ -47,22 +47,38 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
-    ethVector2 GetJitterOffset(uint32_t index);
+    inline float GetFieldOfView() const { return m_FieldOfView; }
+    inline float GetNearPlane() const { return m_NearPlane; }
+    inline float GetFarPlane() const { return m_FarPlane; }
+    inline ProjectionMode GetProjectionMode() const { return m_ProjectionMode; }
+    inline JitterMode GetJitterMode() const { return m_JitterMode; }
+
+    inline void SetFieldOfView(float fov) { m_FieldOfView = fov; }
+    inline void SetNearPlane(float nearPlane) { m_NearPlane = nearPlane; }
+    inline void SetFarPlane(float farPlane) { m_FarPlane = farPlane; }
+    inline void SetProjectionMode(ProjectionMode projectionMode) { m_ProjectionMode = projectionMode; }
+    inline void SetJitterMode(JitterMode jitterMode) { m_JitterMode = jitterMode; }
+
+public:
+    ethVector2 GetJitterOffset(uint32_t index) const;
+    Aabb GetCameraSpaceFrustum() const;
 
 private:
     template <uint32_t baseX, uint32_t baseY>
-    ethVector2 GetHaltonSequence(uint32_t index);
+    ethVector2 GetHaltonSequence(uint32_t index) const;
 
 public:
+    float m_FieldOfView;
+    float m_NearPlane;
+    float m_FarPlane;
+
     ProjectionMode m_ProjectionMode;
     JitterMode m_JitterMode;
-
-    float m_FieldOfView;
 };
 
 
 template <uint32_t baseX, uint32_t baseY>
-ethVector2 Ether::Ecs::EcsCameraComponent::GetHaltonSequence(uint32_t index)
+ethVector2 Ether::Ecs::EcsCameraComponent::GetHaltonSequence(uint32_t index) const
 {
     static auto Halton = [](int index, int base)
     {

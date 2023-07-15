@@ -103,7 +103,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     //  - Batch resource barriers
 
     if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
-        m_ResourceContext.RecompilePipelineStates();
+        m_ResourceContext.Reset();
 
     for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
         iter->second->Reset();

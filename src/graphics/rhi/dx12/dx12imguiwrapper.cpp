@@ -45,6 +45,7 @@ Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
 
 Ether::Graphics::Dx12ImguiWrapper::~Dx12ImguiWrapper()
 {
+
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
 }

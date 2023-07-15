@@ -36,6 +36,6 @@ protected:
     void Update() override;
 
 protected:
-    bool ShouldCullVisual(const Graphics::Visual& visual) const;
+    bool IsVisualCulled(const Graphics::Visual& visual) const;
 };
 } // namespace Ether::Ecs

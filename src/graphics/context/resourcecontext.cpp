@@ -86,6 +86,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateBufferReso
         return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
+    InvalidateResource(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
@@ -116,6 +117,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DR
         return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
+    InvalidateResource(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
@@ -140,6 +142,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture3DR
         return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
+    InvalidateResource(resourceName);
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateCommittedResource(desc);
     m_ResourceDescriptionTable[resourceName] = desc;
 
@@ -154,6 +157,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateAccelerati
         return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
+    InvalidateResource(resourceName);
 
     std::unique_ptr<RhiAccelerationStructure> as = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
 
@@ -177,9 +181,9 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateRaytracing
         return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
+    InvalidateResource(resourceName);
 
     m_ResourceTable[resourceName] = GraphicCore::GetDevice().CreateRaytracingShaderBindingTable(resourceName, desc);
-       
     m_RaytracingShaderBindingsTable[resourceName] = desc;
 
     return *m_ResourceTable.at(resourceName);
@@ -281,6 +285,8 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
         return true;
 
+    return false;
+
     AssertGraphics(
         m_RaytracingResourceDescriptionTable.find(resourceID) != m_RaytracingResourceDescriptionTable.end(),
         "If the resource never existed, there should not be any cached desc with the same resourceID");
@@ -342,7 +348,19 @@ void Ether::Graphics::ResourceContext::InvalidateViews(StringID resourceID)
     }
 }
 
-void Ether::Graphics::ResourceContext::RecompilePipelineStates()
+void Ether::Graphics::ResourceContext::InvalidateResource(StringID resourceID)
+{
+    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
+        return;
+
+    m_StaleResources.push(std::move(m_ResourceTable.at(resourceID)));
+    
+    // Start deallocating stale resources once there's too many (64 is arbitrary)
+    if (m_StaleResources.size() > 64)
+        m_StaleResources.pop();
+}
+
+void Ether::Graphics::ResourceContext::Reset()
 {
     for (auto& psoPair : m_CachedPipelineStates)
         RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);

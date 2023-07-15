@@ -31,6 +31,7 @@ struct ETH_GRAPHIC_DLL Visual
 {
     Mesh* m_Mesh;
     Material* m_Material;
+    bool m_Culled;
 
     bool operator==(const Visual& other) const
     {

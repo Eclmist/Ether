@@ -20,7 +20,7 @@
 #include "graphics/resources/mesh.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t MeshVersion = 6;
+constexpr uint32_t MeshVersion = 7;
 
 Ether::Graphics::Mesh::Mesh()
     : Serializable(MeshVersion, ETH_CLASS_ID_MESH)
@@ -77,15 +77,18 @@ void Ether::Graphics::Mesh::SetPackedVertices(
     m_PackedVertices = std::move(vertices);
     m_NumVertices = m_PackedVertices.size();
 
+    m_BoundingBox.m_Min = 9999999;
+    m_BoundingBox.m_Max = -9999999;
+
     for (auto& vertex : m_PackedVertices)
     {
         m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Position.x);
         m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Position.y);
-        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.z, vertex.m_Position.z);
+        m_BoundingBox.m_Min.z = std::min(m_BoundingBox.m_Min.z, vertex.m_Position.z);
     
         m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Position.x);
         m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Position.y);
-        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.z, vertex.m_Position.z);
+        m_BoundingBox.m_Max.z = std::max(m_BoundingBox.m_Max.z, vertex.m_Position.z);
     }
 }
 

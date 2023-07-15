@@ -20,13 +20,15 @@
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t EcsCameraComponentVersion = 1;
+constexpr uint32_t EcsCameraComponentVersion = 2;
 
 Ether::Ecs::EcsCameraComponent::EcsCameraComponent()
     : EcsToggleComponent(EcsCameraComponentVersion, "Ecs::EcsCameraComponent")
+    , m_FieldOfView(80.0f)
+    , m_NearPlane(0.01f)
+    , m_FarPlane(1000.0f)
     , m_ProjectionMode(ProjectionMode::Perspective)
     , m_JitterMode(JitterMode::None)
-    , m_FieldOfView(80.0f)
 {
 }
 
@@ -34,29 +36,26 @@ void Ether::Ecs::EcsCameraComponent::Serialize(OStream& ostream) const
 {
     EcsComponent::Serialize(ostream);
 
+    ostream << m_FieldOfView;
+    ostream << m_NearPlane;
+    ostream << m_FarPlane;
     ostream << static_cast<uint32_t>(m_ProjectionMode);
     ostream << static_cast<uint32_t>(m_JitterMode);
-    ostream << m_FieldOfView;
 }
 
 void Ether::Ecs::EcsCameraComponent::Deserialize(IStream& istream)
 {
     EcsComponent::Deserialize(istream);
 
-    uint32_t projectionMode;
-    uint32_t jitterMode;
-    istream >> projectionMode;
-    istream >> jitterMode;
-    m_ProjectionMode = static_cast<ProjectionMode>(projectionMode);
-    m_JitterMode = static_cast<JitterMode>(jitterMode);
     istream >> m_FieldOfView;
+    istream >> m_NearPlane;
+    istream >> m_FarPlane;
+    istream >> (uint32_t&)m_ProjectionMode;
+    istream >> (uint32_t&)m_JitterMode;
 }
 
-Ether::ethVector2 Ether::Ecs::EcsCameraComponent::GetJitterOffset(uint32_t index)
+Ether::ethVector2 Ether::Ecs::EcsCameraComponent::GetJitterOffset(uint32_t index) const
 {
-    // TODO: Find a better way to set this
-    m_JitterMode = static_cast<JitterMode>(Graphics::GraphicCore::GetGraphicConfig().m_TemporalAAJitterMode);
-
     switch (m_JitterMode)
     {
     case Ether::Ecs::JitterMode::None:
@@ -73,4 +72,12 @@ Ether::ethVector2 Ether::Ecs::EcsCameraComponent::GetJitterOffset(uint32_t index
     }
 
     return {};
+}
+
+Ether::Aabb Ether::Ecs::EcsCameraComponent::GetCameraSpaceFrustum() const
+{
+    Aabb simpleFrustumCs;
+    simpleFrustumCs.m_Min = { -999999.0, -999999.0, m_NearPlane };
+    simpleFrustumCs.m_Max = { 999999.0, 999999.0, m_FarPlane };
+    return simpleFrustumCs;
 }

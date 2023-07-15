@@ -65,10 +65,11 @@ private:
 
     bool ShouldRecreateView(StringID viewID);
     void InvalidateViews(StringID resourceID);
+    void InvalidateResource(StringID resourceID);
 
 private:
     friend class FrameScheduler;
-    void RecompilePipelineStates();
+    void Reset();
 
 private:
     std::unique_ptr<DescriptorAllocator> m_StagingSrvCbvUavAllocator;
@@ -82,6 +83,8 @@ private:
     std::unordered_map<StringID, std::unique_ptr<RhiResource>> m_ResourceTable;
     std::unordered_map<StringID, std::shared_ptr<RhiResourceView>> m_DescriptorTable;
     std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_DescriptorAllocations;
+
+    std::queue<std::unique_ptr<RhiResource>> m_StaleResources;
 };
 
 template <typename T>
