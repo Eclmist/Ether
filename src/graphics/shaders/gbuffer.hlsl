@@ -112,7 +112,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         discard;
 
     PS_OUTPUT o;
-    o.Output0 = float4(albedo.x,    albedo.y,   albedo.z,   1);
+    o.Output0 = float4(albedo.x,    albedo.y,   albedo.z,   IN.Position.w);
     o.Output1 = float4(worldPos.x,  worldPos.y, worldPos.z, roughness);
     o.Output2 = float4(normal.x,    normal.y,   normal.z,   metalness);
     o.Output3 = float4(velocity.x,  velocity.y, 0,          0);

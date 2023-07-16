@@ -260,7 +260,7 @@ float4 ProceduralSky(float2 texCoord)
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;
     totalRadiance += lerp(stars, 0, saturate(length(totalRadiance)));
-    totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
+    //totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
     return float4(totalRadiance, 1.0f);
 }
 

@@ -169,9 +169,9 @@ void RayGeneration()
 
     const float3 ambient = ComputeSkyColor() * 0.25;
     const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
-    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 4;
+    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
 
-    const float a = 0.1;
+    float a = 0.1;
     const float3 finalIndirectIrradiance = (a * indirectIrradiance.xyz) + (1 - a) * accumulation.xyz;
     const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance + ambient;
 
@@ -189,11 +189,12 @@ void Miss(inout RayPayload payload)
     {
         // Sample sun color
         payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 2;
-        return;
     }
-
-    // Sample sky color
-    payload.m_Radiance = ComputeSkyColor().xyz;
+    else
+    {
+        // Sample sky color
+        payload.m_Radiance = ComputeSkyColor().xyz;
+    }
 }
 
 [shader("closesthit")]
