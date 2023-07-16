@@ -33,13 +33,13 @@ public:
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
     inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
-    inline const std::string& GetWorkspacePath() const { return m_WorkspacePath; }
-    inline const std::string& GetWorldPath() const { return m_WorldPath; }
+    inline const std::string& GetWorldName() const { return m_WorldName; }
 
 public:
+    ETH_TOOLONLY(inline const std::string& GetWorkspacePath() const { return m_WorkspacePath; })
     ETH_TOOLONLY(inline uint16_t GetToolmodePort() const { return m_ToolmodePort; })
-    ETH_TOOLONLY(inline const std::string& GetImportPath() const { return m_ImportPath; })
     ETH_TOOLONLY(inline const float GetImportScale() const { return m_ImportScale; })
+    ETH_TOOLONLY(inline const std::vector<std::string>& GetImportPaths() const { return m_ImportPaths; })
 
 private:
     void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
@@ -49,12 +49,12 @@ private:
     bool m_UseShaderDaemon;
     bool m_UseValidationLayer;
 
-    std::string m_WorkspacePath;
-    std::string m_WorldPath;
+    std::string m_WorldName;
 
 private:
+    ETH_TOOLONLY(std::string m_WorkspacePath);
     ETH_TOOLONLY(uint16_t m_ToolmodePort);
-    ETH_TOOLONLY(std::string m_ImportPath);
     ETH_TOOLONLY(float m_ImportScale = 1.0f);
+    ETH_TOOLONLY(std::vector<std::string> m_ImportPaths);
 };
 } // namespace Ether

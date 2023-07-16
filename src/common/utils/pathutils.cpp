@@ -43,8 +43,6 @@ std::string Ether::PathUtils::GetFileName(const std::string& path)
 
 std::string Ether::PathUtils::GetFolderPath(const std::string& path)
 {
-    if (std::filesystem::path(path).has_parent_path())
-        return std::filesystem::path(path).parent_path().string();
-    return path;
+    return std::filesystem::path(path).remove_filename().string();
 }
 

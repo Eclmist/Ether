@@ -30,18 +30,16 @@
 #include "parser/image/stb_image.h"
 #include "parser/image/stb_image_resize.h"
 
-void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath)
+void Ether::Toolmode::AssetImporter::ImportToLibrary(const std::string& assetPath)
 {
-    std::string fullPath = m_WorkspacePath + assetPath;
-
-    LogToolmodeInfo("Importing asset %s", fullPath.c_str());
+    LogToolmodeInfo("Importing asset %s", assetPath.c_str());
 
     Assimp::Importer importer;
     importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, Graphics::MaxVerticesPerMesh);
     importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, Graphics::MaxTrianglePerMesh);
 
     auto scene = importer.ReadFile(
-        fullPath,
+        assetPath,
         aiProcess_ConvertToLeftHanded           | 
         aiProcessPreset_TargetRealtime_Quality  |
         aiProcess_PreTransformVertices          |
@@ -49,17 +47,17 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath)
 
     if (scene == nullptr)
     {
-        throw std::runtime_error(std::format("Failed to load asset {}", fullPath));
+        throw std::runtime_error(std::format("Failed to load asset {}", assetPath));
         return;
     }
 
-    ProcessScene(scene);
+    ProcessScene(PathUtils::GetFolderPath(assetPath), scene);
 }
 
-void Ether::Toolmode::AssetImporter::ProcessScene(const aiScene* assimpScene)
+void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath, const aiScene* assimpScene)
 {
     if (assimpScene->HasMaterials())
-        ProcessMaterials(assimpScene->mMaterials, assimpScene->mNumMaterials);
+        ProcessMaterials(folderPath, assimpScene->mMaterials, assimpScene->mNumMaterials);
 
     if (assimpScene->HasMeshes())
         ProcessMeshs(assimpScene->mMeshes, assimpScene->mNumMeshes);
@@ -116,7 +114,7 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
             continue;
 
         Graphics::Mesh gfxMesh;
-        OFileStream ofstream(std::format("{}{}.eres", m_WorkspacePath, gfxMesh.GetGuid()));
+        OFileStream ofstream(std::format("{}{}.eres", m_LibraryPath, gfxMesh.GetGuid()));
 
         gfxMesh.SetPackedVertices(std::move(packedVertices));
         gfxMesh.SetIndices(std::move(indices));
@@ -125,14 +123,16 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
     }
 }
 
-void Ether::Toolmode::AssetImporter::ProcessMaterials(aiMaterial** assimpMaterials, uint32_t numMaterials)
+void Ether::Toolmode::AssetImporter::ProcessMaterials(
+    const std::string& folderPath, aiMaterial** assimpMaterials,
+    uint32_t numMaterials)
 {
     for (uint32_t i = 0; i < numMaterials; ++i)
     {
         const aiMaterial* material = assimpMaterials[i];
 
         Graphics::Material gfxMaterial;
-        OFileStream ofstream(std::format("{}{}.eres", m_WorkspacePath, gfxMaterial.GetGuid()));
+        OFileStream ofstream(std::format("{}{}.eres", m_LibraryPath, gfxMaterial.GetGuid()));
 
         assert(sizeof(ethVector3) == sizeof(aiColor3D));
 
@@ -150,28 +150,28 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(aiMaterial** assimpMateria
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
-            gfxMaterial.SetAlbedoTextureID(ProcessTexture(textureName.data));
+            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
-            gfxMaterial.SetNormalTextureID(ProcessTexture(textureName.data));
+            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
         if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE_ROUGHNESS, 0), textureName);
-            gfxMaterial.SetRoughnessTextureID(ProcessTexture(textureName.data));
+            gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
         if (material->GetTextureCount(aiTextureType_METALNESS) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
-            gfxMaterial.SetMetalnessTextureID(ProcessTexture(textureName.data));
+            gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
         gfxMaterial.Serialize(ofstream);
@@ -179,25 +179,25 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(aiMaterial** assimpMateria
     }
 }
 
-Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(const StringID& path)
+Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
+    const std::string& folderPath,
+    const StringID& texturePath)
 {
-    if (m_PathToGuidMap.find(path) != m_PathToGuidMap.end())
-        return m_PathToGuidMap.at(path);
+    if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
+        return m_PathToGuidMap.at(texturePath);
 
     Graphics::Texture gfxTexture;
-    OFileStream ofstream(std::format("{}{}.eres", m_WorkspacePath, gfxTexture.GetGuid()));
+    OFileStream ofstream(std::format("{}{}.eres", m_LibraryPath, gfxTexture.GetGuid()));
 
     int w, h, channels;
-    unsigned char* image = stbi_load(
-        (std::string(m_WorkspacePath) + path.GetString()).c_str(),
-        &w,
+    unsigned char* image = stbi_load((folderPath + texturePath.GetString()).c_str(), &w,
         &h,
         &channels,
         STBI_rgb_alpha);
 
     if (image == nullptr)
     {
-        LogToolmodeError("Failed to load texture: %s", path.GetString().c_str());
+        LogToolmodeError("Failed to load texture: %s", (folderPath + texturePath.GetString()).c_str());
         return {};
     }
 
@@ -212,13 +212,14 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(const StringID& p
         h = outputHeight;
     }
 
-    gfxTexture.SetName(PathUtils::GetFileName(path.GetString()).c_str());
+    gfxTexture.SetName(PathUtils::GetFileName(folderPath).c_str());
     gfxTexture.SetFormat(Ether::Graphics::RhiFormat::R8G8B8A8Unorm);
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
     gfxTexture.SetData(downscaleOutput);
     gfxTexture.Serialize(ofstream);
 
-    m_PathToGuidMap[path] = gfxTexture.GetGuid();
+    m_PathToGuidMap[texturePath] = gfxTexture.GetGuid();
     return gfxTexture.GetGuid();
 }
+

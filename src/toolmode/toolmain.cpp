@@ -44,53 +44,61 @@ void Ether::Toolmode::EtherHeadless::Initialize()
 
 void Ether::Toolmode::EtherHeadless::LoadContent()
 {
-    World& world = GetActiveWorld();
+    World& currentWorld = GetActiveWorld();
 
+    const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
-    const std::string worldPath = GetCommandLineOptions().GetWorldPath();
-    const std::string importPath = GetCommandLineOptions().GetImportPath();
-    const std::string fullPath = workspacePath + worldPath;
-    const float meshScale = GetCommandLineOptions().GetImportScale();
+    const std::string importWorldName = GetCommandLineOptions().GetWorldName();
+    const std::string exportWorldName = PathUtils::GetFileName(m_ImportPaths[0]);
+    const std::string sceneLoadPath = workspacePath + importWorldName;
+    const std::string sceneSavePath = workspacePath + exportWorldName + ".ether";
+    const std::string libraryPath = workspacePath + "\\Library\\" + exportWorldName + "\\";
 
-    if (importPath != "")
+    const float meshScale = GetCommandLineOptions().GetImportScale();
+    const bool hasImports = !m_ImportPaths.empty();
+
+    if (hasImports)
     {
-        for (const auto& entry : std::filesystem::directory_iterator(workspacePath))
+        AssetImporter::Instance().SetWorkspacePath(workspacePath);
+        AssetImporter::Instance().SetLibraryPath(libraryPath);
+        AssetImporter::Instance().SetMeshScale(meshScale);
+
+        // Clean library directory
+        std::filesystem::create_directory(libraryPath);
+        for (const auto& entry : std::filesystem::directory_iterator(libraryPath))
         {
             if (entry.path().extension().string() != ".eres")
                 continue;
 
             std::filesystem::remove(entry);
         }
+    }
 
-        // To speed up development, we will import the main sponza asset here each time we load toolmode, even
-        // without editor connection.
-        AssetImporter::Instance().SetWorkspacePath(workspacePath);
-        AssetImporter::Instance().SetMeshScale(meshScale);
-        AssetImporter::Instance().Import(importPath);
-        AssetImporter::Instance().Import("exterior.obj");
-        //AssetImporter::Instance().Import("NewSponza_Curtains_glTF"
-        //                                 ".gltf");
-        //AssetImporter::Instance().Import("NewSponza_IvyGrowth_glTF"
-        //                                 ".gltf");
+    // The idea of this block is to test toolmode functionality without having the actual tool developed yet
+    // For example:
+    //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode
+    //      sln)
+    //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
+    //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
+    //      - Build resource table
+    //          this is simulated by blindly loading all .eres files and assuming them to be meshes
+    //      - Create entity (menu > new > entity)
+    //          simulated by creating entity object
+    //      - Assign mesh to entity (through components)
+    //          simulated by AddComponent<Visual> and assigning mesh guid
+    //      - Save scene
+    //          World.save();
 
-        // The idea of this block is to test toolmode functionality without having the actual tool developed yet
-        // For example:
-        //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode
-        //      sln)
-        //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
-        //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
-        //      - Build resource table
-        //          this is simulated by blindly loading all .eres files and assuming them to be meshes
-        //      - Create entity (menu > new > entity)
-        //          simulated by creating entity object
-        //      - Assign mesh to entity (through components)
-        //          simulated by AddComponent<Visual> and assigning mesh guid
-        //      - Save scene
-        //          World.save();
+    for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
+        AssetImporter::Instance().ImportToLibrary(m_ImportPaths[i]);
 
+    if (hasImports)
+    {
+        // Load from library files and serialize to world
+        // This simulates user dragging resources from the editor resource browser into the scene,
+        // then saving the world file.
         std::vector<std::unique_ptr<Graphics::Mesh>> meshes;
-
-        for (const auto& entry : std::filesystem::directory_iterator(workspacePath))
+        for (const auto& entry : std::filesystem::directory_iterator(libraryPath))
         {
             if (entry.path().extension().string() != ".eres")
                 continue;
@@ -113,40 +121,42 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
                 IFileStream assetFileStream(entry.path().string());
                 std::unique_ptr<Graphics::Material> material = std::make_unique<Graphics::Material>();
                 material->Deserialize(assetFileStream);
-                world.GetResourceManager().RegisterMaterialResource(std::move(material));
+                currentWorld.GetResourceManager().RegisterMaterialResource(std::move(material));
             }
             else if (classID == TextureClassID)
             {
                 IFileStream assetFileStream(entry.path().string());
                 std::unique_ptr<Graphics::Texture> texture = std::make_unique<Graphics::Texture>();
                 texture->Deserialize(assetFileStream);
-                world.GetResourceManager().RegisterTextureResource(std::move(texture));
+                currentWorld.GetResourceManager().RegisterTextureResource(std::move(texture));
             }
         }
 
         for (auto& mesh : meshes)
         {
-            Entity& entity = world.CreateEntity("Entity (" + mesh->GetGuid() + ")");
+            Entity& entity = currentWorld.CreateEntity("Entity (" + mesh->GetGuid() + ")");
             entity.AddComponent<Ecs::EcsVisualComponent>();
             Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
             visual.m_MeshGuid = mesh->GetGuid();
             visual.m_MaterialGuid = mesh->GetDefaultMaterialGuid();
-            world.GetResourceManager().RegisterMeshResource(std::move(mesh));
+            currentWorld.GetResourceManager().RegisterMeshResource(std::move(mesh));
         }
 
-        world.Save(fullPath);
+        currentWorld.SetWorldName(exportWorldName);
+        currentWorld.Save(sceneSavePath);
         exit(0);
     }
-    else
-    {
-        world.Load(fullPath);
-        world.GetResourceManager().CreateGpuResources();
-    }
 
-    Entity& cameraObj = world.CreateCamera();
-    m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
-    m_CameraTransform->m_Translation = { 0, 2, 0 };
-    m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
+    if (PathUtils::GetFileExtension(sceneLoadPath) != "ether")
+    {
+        currentWorld.Load(sceneLoadPath);
+        currentWorld.GetResourceManager().CreateGpuResources();
+
+        Entity& cameraObj = currentWorld.CreateCamera();
+        m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
+        m_CameraTransform->m_Translation = { 0, 2, 0 };
+        m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
+    }
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()

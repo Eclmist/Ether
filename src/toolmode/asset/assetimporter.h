@@ -34,20 +34,22 @@ namespace Ether::Toolmode
         AssetImporter() = default;
         ~AssetImporter() = default;
 
+        inline void SetLibraryPath(const std::string& libraryPath) { m_LibraryPath = libraryPath; }
         inline void SetWorkspacePath(const std::string& workspacePath) { m_WorkspacePath = workspacePath; }
         inline void SetMeshScale(float scale) { m_MeshScale = scale; }
 
     public:
-        void Import(const std::string& assetPath);
+        void ImportToLibrary(const std::string& assetPath);
 
     private:
-        void ProcessScene(const aiScene* assimpScene);
+        void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
         void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const;
-        void ProcessMaterials(aiMaterial** assimpMaterials, uint32_t numMaterials);
-        StringID ProcessTexture(const StringID& path);
+        void ProcessMaterials(const std::string& folderPath, aiMaterial** assimpMaterials, uint32_t numMaterials);
+        StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath);
 
     private:
         std::string m_WorkspacePath = "";
+        std::string m_LibraryPath = "";
         float m_MeshScale = 1.0f;
 
         StringID m_MaterialGuidTable[MaxMaterialsPerAsset];

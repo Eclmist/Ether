@@ -27,6 +27,11 @@
 
 using namespace Ether;
 
+static constexpr KeyCode KeyCode_LoadScene = (KeyCode)Win32::KeyCode::F1;
+static constexpr KeyCode KeyCode_ToggleDebugGui = (KeyCode)Win32::KeyCode::F3;
+static constexpr KeyCode KeyCode_ToggleFullscreen = (KeyCode)Win32::KeyCode::F11;
+static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode::Space;
+
 void SampleApp::Initialize()
 {
     LogInfo("Initializing Application: Sample App");
@@ -37,13 +42,8 @@ void SampleApp::Initialize()
 void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
-
-    std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
-    const std::string worldPath = GetCommandLineOptions().GetWorldPath();
-
-    std::string fullPath = workspacePath + worldPath;
-
-    world.Load(fullPath);
+    const std::string worldToLoad = GetCommandLineOptions().GetWorldName();
+    world.Load(worldToLoad);
 
     Entity& cameraObj = world.CreateCamera();
     m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
@@ -77,18 +77,19 @@ void SampleApp::UpdateGraphicConfig() const
 {
     Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
 
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
+    if (Input::GetKeyDown(KeyCode_ToggleFullscreen))
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
 
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
+    if (Input::GetKeyDown(KeyCode_ToggleRaytracingDebug))
         graphicConfig.m_IsRaytracingDebugEnabled = !graphicConfig.m_IsRaytracingDebugEnabled;
 
-    if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F3))
+    if (Input::GetKeyDown(KeyCode_ToggleDebugGui))
         graphicConfig.SetDebugGuiEnabled(!graphicConfig.IsDebugGuiEnabled());
 
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::J))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(-1, 0, 0, 0) *
+
                                        Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::L))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(1, 0, 0, 0) *

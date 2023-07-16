@@ -51,15 +51,15 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseShaderDaemon = true;
     else if (flag == "-usevalidationlayer")
         m_UseValidationLayer = true;
+    else if (flag == "-world")
+        m_WorldName = arg;
+#if defined(ETH_TOOLMODE)
     else if (flag == "-workspace")
         m_WorkspacePath = arg;
-    else if (flag == "-world")
-        m_WorldPath = arg;
-#if defined(ETH_TOOLMODE)
-    else if (flag == "-import")
-        m_ImportPath = arg;
     else if (flag == "-importscale")
         m_ImportScale = stof(arg);
+    else if (flag == "-import")
+        m_ImportPaths.push_back(arg);
     else if (flag == "-toolmodeport")
         m_ToolmodePort = stoi(arg);
 #endif

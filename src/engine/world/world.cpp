@@ -49,6 +49,11 @@ void Ether::World::Load(const std::string& path)
     Deserialize(inFile);
 }
 
+void Ether::World::Unload()
+{
+
+}
+
 void Ether::World::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);

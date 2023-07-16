@@ -37,6 +37,7 @@ public:
     void Update();
     void Save(const std::string& path) const;
     void Load(const std::string& path);
+    void Unload();
 
 public:
     inline std::string GetWorldName() const { return m_WorldName; }
@@ -45,6 +46,8 @@ public:
     inline ResourceManager& GetResourceManager() { return m_ResourceManager; }
     inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
     inline Entity* GetMainCamera() { return m_MainCamera; }
+
+    inline void SetWorldName(const std::string& name) { m_WorldName = name; }
 
 public:
     Entity& CreateEntity(const std::string& name);
