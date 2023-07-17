@@ -24,11 +24,11 @@ void Ether::Time::Initialize()
 {
     m_StartupTime = Clock::now();
     m_PreviousTime = m_StartupTime;
-    m_CurrentTime = m_StartupTime;
+    m_CurrentFrameTime = m_StartupTime;
 }
 
 void Ether::Time::NewFrame_Impl()
 {
-    m_PreviousTime = m_CurrentTime;
-    m_CurrentTime = Clock::now();
+    m_PreviousTime = m_CurrentFrameTime;
+    m_CurrentFrameTime = Clock::now();
 }

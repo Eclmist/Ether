@@ -46,7 +46,6 @@ public:
     inline void* GetParentWindowHandle() const { return m_ParentWindowHandle; }
 
 public:
-    virtual void PlatformMessageLoop() = 0;
     virtual bool ProcessPlatformMessages() = 0;
 
 protected:

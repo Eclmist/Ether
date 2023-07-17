@@ -94,7 +94,7 @@ void Ether::ResourceManager::CreateGpuResources() const
 { 
     for (auto& pair : m_Meshes)
     {
-        Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, Graphics::_16MiB);
+        Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, _16MiB);
         ctx.Reset();
         pair.second->CreateGpuResources(ctx);
         ctx.FinalizeAndExecute(true);
@@ -102,7 +102,7 @@ void Ether::ResourceManager::CreateGpuResources() const
 
     for (auto& pair : m_Textures)
     {
-        Graphics::CommandContext textureUploadCtx("CommandContext - Texture Loading", Graphics::RhiCommandType::Graphic, Graphics::_128MiB);
+        Graphics::CommandContext textureUploadCtx("CommandContext - Texture Loading", Graphics::RhiCommandType::Graphic, _128MiB);
         textureUploadCtx.Reset();
         pair.second->CreateGpuResource(textureUploadCtx);
         textureUploadCtx.FinalizeAndExecute(true);

@@ -43,7 +43,6 @@ public:
     void SetParentWindowHandle(void* parentHandle) override;
 
 public:
-    void PlatformMessageLoop() override;
     bool ProcessPlatformMessages() override;
 
 public:

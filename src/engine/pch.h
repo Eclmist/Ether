@@ -23,5 +23,7 @@
 
 #include "common/common.h"
 #include "common/logging/loggingmanager.h"
+#include "common/stream/filestream.h"
+#include "common/stream/bytestream.h"
 
 #include "engine/input/input.h"

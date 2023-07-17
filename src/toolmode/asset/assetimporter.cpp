@@ -47,7 +47,7 @@ void Ether::Toolmode::AssetImporter::ImportToLibrary(const std::string& assetPat
 
     if (scene == nullptr)
     {
-        throw std::runtime_error(std::format("Failed to load asset {}", assetPath));
+        LogToolmodeError("Failed to load asset %s", assetPath.c_str());
         return;
     }
 

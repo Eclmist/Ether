@@ -20,16 +20,16 @@
 #pragma once
 
 #include "common/stream/stream.h"
-#include <fstream>
-#include <sstream>
+#include "common/stream/filestream.h"
 
 namespace Ether
 {
-class ETH_COMMON_DLL IFileStream : public IStream
+class ETH_COMMON_DLL IByteStream : public IStream
 {
 public:
-    IFileStream(const std::string& path);
-    ~IFileStream();
+    IByteStream(size_t size);
+    IByteStream(IFileStream& file);
+    ~IByteStream();
 
     IStream& operator>>(float& v) override final;
     IStream& operator>>(int& v) override final;
@@ -47,19 +47,17 @@ public:
 
     void ReadBytes(void* dest, uint32_t numBytes) override final;
 
-public:
-    inline size_t GetFileSize() const { return m_FileSize; }
-
 private:
-    std::ifstream m_File;
-    size_t m_FileSize;
+    char* m_StartPtr;
+    const char* m_CurrPtr;
+    size_t m_Size;
 };
 
-class ETH_COMMON_DLL OFileStream : public OStream
+class ETH_COMMON_DLL OByteStream : public OStream
 {
 public:
-    OFileStream(const std::string& path);
-    ~OFileStream();
+    OByteStream();
+    ~OByteStream();
 
     OStream& operator<<(const float v) override final;
     OStream& operator<<(const int v) override final;
@@ -77,10 +75,9 @@ public:
 
     void WriteBytes(const void* src, uint32_t numBytes) override final;
 
-public:
-    void ClearFile();
-
 private:
-    std::ofstream m_File;
+    char* m_StartPtr;
+    char* m_CurrPtr;
 };
+
 } // namespace Ether

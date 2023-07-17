@@ -28,7 +28,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
     RhiFormat format)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
-        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString());
+        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString().c_str());
 
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
@@ -52,7 +52,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
     RhiVertexBufferViewDesc vb)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
-        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString());
+        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString().c_str());
 
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
@@ -78,7 +78,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
     RhiIndexBufferViewDesc ib)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
-        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString());
+        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString().c_str());
 
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
@@ -108,7 +108,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::GetDescriptorIndex(StringID
 uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterSampler(StringID name, RhiSamplerParameterDesc& sampler)
 {
     if (m_GuidToIndexMap.find(name) != m_GuidToIndexMap.end())
-        LogGraphicsError("Sampler %s has already been registered", name.GetString());
+        LogGraphicsError("Sampler %s has already been registered", name.GetString().c_str());
 
     auto allocation = GraphicCore::GetSamplerAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();

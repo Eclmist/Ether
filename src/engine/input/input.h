@@ -34,12 +34,12 @@ public:
 
 public:
     static bool GetKey(KeyCode key) { return Instance().m_KeyStates[key]; }
-    static bool GetKeyDown(KeyCode key) { return Instance().m_TransientKeyDownStates[key]; }
-    static bool GetKeyUp(KeyCode key) { return Instance().m_TransientKeyUpStates[key]; }
+    static bool GetKeyDown(KeyCode key) { return Instance().m_KeyDownCurrentFrame[key]; }
+    static bool GetKeyUp(KeyCode key) { return Instance().m_KeyUpCurrentFrame[key]; }
 
     static bool GetMouseButton(int index) { return Instance().m_MouseStates[index]; }
-    static bool GetMouseButtonDown(int index) { return Instance().m_TransientMouseDownStates[index]; }
-    static bool GetMouseButtonUp(int index) { return Instance().m_TransientMouseUpStates[index]; }
+    static bool GetMouseButtonDown(int index) { return Instance().m_MouseDownCurrentFrame[index]; }
+    static bool GetMouseButtonUp(int index) { return Instance().m_MouseUpCurrentFrame[index]; }
 
     static double GetMouseWheelDelta() { return Instance().m_MouseWheelDelta; }
     static double GetMousePosX() { return Instance().m_MousePosX; }
@@ -49,7 +49,7 @@ public:
 
 public:
     static void NewFrame() { return Instance().NewFrame_Impl(); }
-    static void EndFrame() { return Instance().EndFrame_Impl(); }
+    static void Reset() { return Instance().Reset_Impl(); }
 
 public:
     void SetKeyDown(KeyCode key);
@@ -64,15 +64,15 @@ public:
 
 private:
     void NewFrame_Impl();
-    void EndFrame_Impl();
+    void Reset_Impl();
 
 private:
     bool m_KeyStates[MaxNumKeycodes] = {};
-    bool m_TransientKeyDownStates[MaxNumKeycodes] = {};
-    bool m_TransientKeyUpStates[MaxNumKeycodes] = {};
+    bool m_KeyDownCurrentFrame[MaxNumKeycodes] = {};
+    bool m_KeyUpCurrentFrame[MaxNumKeycodes] = {};
     bool m_MouseStates[3] = {};
-    bool m_TransientMouseDownStates[3] = {};
-    bool m_TransientMouseUpStates[3] = {};
+    bool m_MouseDownCurrentFrame[3] = {};
+    bool m_MouseUpCurrentFrame[3] = {};
 
     double m_MousePosX = 0.0;
     double m_MousePosY = 0.0;

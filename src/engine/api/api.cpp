@@ -31,7 +31,7 @@ int Ether::Start(IApplicationBase& app)
     EngineCore::Instance().LoadApplication(app);
     ETH_ENGINEONLY(EngineCore::Instance().GetMainWindow().Show());
 
-    EngineCore::Instance().Run();
+    EngineCore::Instance().RunEngineLoop();
 
     LogInfo("Shutting down Ether");
     EngineCore::Instance().Shutdown();

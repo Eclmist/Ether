@@ -62,10 +62,10 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;
     globalConstants->m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor;
     globalConstants->m_Time = ethVector4(Time::GetTimeSinceStartup());
-    globalConstants->m_Time.x *= 20;
-    globalConstants->m_Time.y *= 1;
-    globalConstants->m_Time.z *= 0.5;
-    globalConstants->m_Time.w *= 0.25;
+    globalConstants->m_Time.x *= 20000;
+    globalConstants->m_Time.y *= 1000;
+    globalConstants->m_Time.z *= 500;
+    globalConstants->m_Time.w *= 250;
     globalConstants->m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
     globalConstants->m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
     globalConstants->m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;

@@ -42,23 +42,34 @@ void Ether::Toolmode::EtherHeadless::Initialize()
 {
 }
 
+// The idea of this block is to test toolmode functionality without having the actual tool developed yet
+// For example:
+//      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode
+//      sln)
+//          this generates a library of .eres files. In practice, toolmode itself should serialize this library
+//          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
+//      - Build resource table
+//          this is simulated by blindly loading all .eres files and assuming them to be meshes
+//      - Create entity (menu > new > entity)
+//          simulated by creating entity object
+//      - Assign mesh to entity (through components)
+//          simulated by AddComponent<Visual> and assigning mesh guid
+//      - Save scene
+//          World.save();
 void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& currentWorld = GetActiveWorld();
 
-    const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
-    const std::string importWorldName = GetCommandLineOptions().GetWorldName();
-    const std::string exportWorldName = PathUtils::GetFileName(m_ImportPaths[0]);
-    const std::string sceneLoadPath = workspacePath + importWorldName;
-    const std::string sceneSavePath = workspacePath + exportWorldName + ".ether";
-    const std::string libraryPath = workspacePath + "\\Library\\" + exportWorldName + "\\";
-
-    const float meshScale = GetCommandLineOptions().GetImportScale();
+    const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const bool hasImports = !m_ImportPaths.empty();
 
     if (hasImports)
     {
+        const float meshScale = GetCommandLineOptions().GetImportScale();
+        const std::string exportWorldName = PathUtils::GetFileName(m_ImportPaths[0]);
+        const std::string sceneSavePath = workspacePath + exportWorldName + ".ether";
+        const std::string libraryPath = workspacePath + "\\Library\\" + exportWorldName;
         AssetImporter::Instance().SetWorkspacePath(workspacePath);
         AssetImporter::Instance().SetLibraryPath(libraryPath);
         AssetImporter::Instance().SetMeshScale(meshScale);
@@ -72,28 +83,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
             std::filesystem::remove(entry);
         }
-    }
 
-    // The idea of this block is to test toolmode functionality without having the actual tool developed yet
-    // For example:
-    //      - Asset import (menu > asset > import) (Not simulated because asset importer code are all in toolmode
-    //      sln)
-    //          this generates a library of .eres files. In practice, toolmode itself should serialize this library
-    //          which could contain guid to type mappings, and could reload all the guids during toolmode runtime.
-    //      - Build resource table
-    //          this is simulated by blindly loading all .eres files and assuming them to be meshes
-    //      - Create entity (menu > new > entity)
-    //          simulated by creating entity object
-    //      - Assign mesh to entity (through components)
-    //          simulated by AddComponent<Visual> and assigning mesh guid
-    //      - Save scene
-    //          World.save();
+        for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
+            AssetImporter::Instance().ImportToLibrary(m_ImportPaths[i]);
 
-    for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
-        AssetImporter::Instance().ImportToLibrary(m_ImportPaths[i]);
-
-    if (hasImports)
-    {
         // Load from library files and serialize to world
         // This simulates user dragging resources from the editor resource browser into the scene,
         // then saving the world file.
@@ -144,19 +137,19 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
         currentWorld.SetWorldName(exportWorldName);
         currentWorld.Save(sceneSavePath);
-        exit(0);
+        PostQuitMessage(0);
     }
 
-    if (PathUtils::GetFileExtension(sceneLoadPath) != "ether")
-    {
+    const std::string importWorldName = GetCommandLineOptions().GetWorldName();
+    const std::string sceneLoadPath = workspacePath + "\\" + importWorldName;
+
+    if (PathUtils::GetFileExtension(sceneLoadPath) == ".ether")
         currentWorld.Load(sceneLoadPath);
-        currentWorld.GetResourceManager().CreateGpuResources();
 
-        Entity& cameraObj = currentWorld.CreateCamera();
-        m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
-        m_CameraTransform->m_Translation = { 0, 2, 0 };
-        m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
-    }
+    Entity& cameraObj = currentWorld.CreateCamera();
+    m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
+    m_CameraTransform->m_Translation = { 0, 2, 0 };
+    m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()
@@ -215,21 +208,21 @@ void Ether::Toolmode::EtherHeadless::UpdateGraphicConfig() const
                                            .Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::U))
         graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.001);
+            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime());
     if (Input::GetKey((KeyCode)Win32::KeyCode::O))
         graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.001);
+            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime());
 }
 
 void Ether::Toolmode::EtherHeadless::UpdateCamera() const
 {
     static ethVector3 cameraRotation;
-    static float moveSpeed = 0.001f;
+    static float moveSpeed = 1.0f;
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
-        moveSpeed = 0.002f;
+        moveSpeed = 2.0f;
     else
-        moveSpeed = 0.001f;
+        moveSpeed = 1.0f;
 
     if (Input::GetMouseButton(2))
     {

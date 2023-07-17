@@ -92,16 +92,16 @@ void SampleApp::UpdateGraphicConfig() const
     if (Input::GetKey((KeyCode)Win32::KeyCode::J))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(-1, 0, 0, 0) *
 
-                                       Time::GetDeltaTime() * 0.0002).Normalized();
+                                       Time::GetDeltaTime() * 0.2).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::L))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(1, 0, 0, 0) *
-                                       Time::GetDeltaTime() * 0.0002).Normalized();
+                                       Time::GetDeltaTime() * 0.2).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::I))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, 1, 0) *
-                                       Time::GetDeltaTime() * 0.0002).Normalized();
+                                       Time::GetDeltaTime() * 0.2).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::K))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, -1, 0) *
-                                       Time::GetDeltaTime() * 0.0002).Normalized();
+                                       Time::GetDeltaTime() * 0.2).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::U))
         graphicConfig.m_SunDirection =
             (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.001);

@@ -24,7 +24,7 @@ Ether::LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
     : m_Text(text)
     , m_Level(level)
     , m_Type(type)
-    , m_Time(Time::GetCurrentTime() / 1000.0f)
+    , m_Time(Time::GetCurrentTime() / 1000.0)
 {
 }
 
@@ -78,7 +78,7 @@ std::string Ether::LogEntry::GetTimePrefix() const
     return "[ " + FormatTime(epochTime, "%Y/%m/%d %X") + " ]";
 }
 
-std::string Ether::LogEntry::FormatTime(const time_t t, const char* format) const
+std::string Ether::LogEntry::FormatTime(time_t t, const char* format) const
 {
     char formatted[80];
     tm newTime;

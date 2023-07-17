@@ -23,6 +23,28 @@
 
 namespace Ether
 {
+    constexpr size_t _1KiB                          = 1 << 10;
+    constexpr size_t _2KiB                          = 1 << 11;
+    constexpr size_t _4KiB                          = 1 << 12;
+    constexpr size_t _8KiB                          = 1 << 13;
+    constexpr size_t _16KiB                         = 1 << 14;
+    constexpr size_t _32KiB                         = 1 << 15;
+    constexpr size_t _64KiB                         = 1 << 16;
+    constexpr size_t _128KiB                        = 1 << 17;
+    constexpr size_t _256KiB                        = 1 << 18;
+    constexpr size_t _512KiB                        = 1 << 19;
+    constexpr size_t _1MiB                          = 1 << 20;
+    constexpr size_t _2MiB                          = 1 << 21;
+    constexpr size_t _4MiB                          = 1 << 22;
+    constexpr size_t _8MiB                          = 1 << 23;
+    constexpr size_t _16MiB                         = 1 << 24;
+    constexpr size_t _32MiB                         = 1 << 25;
+    constexpr size_t _64MiB                         = 1 << 26;
+    constexpr size_t _128MiB                        = 1 << 27;
+    constexpr size_t _256MiB                        = 1 << 28;
+    constexpr size_t _512MiB                        = 1 << 29;
+    constexpr size_t _1GiB                          = 1 << 30;
+
 /**
  * The following helpers were taken from the MiniEngine:
  * https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Math/Common.h

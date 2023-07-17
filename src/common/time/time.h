@@ -37,8 +37,10 @@ public:
     static inline void NewFrame() { Instance().NewFrame_Impl(); }
 
     static inline double GetStartupTime() { return Instance().m_StartupTime.time_since_epoch().count(); }
-    static inline double GetCurrentTime() { return Instance().m_CurrentTime.time_since_epoch().count(); }
+    static inline double GetCurrentTime() { return Instance().m_CurrentFrameTime.time_since_epoch().count(); }
     static inline double GetTimeSinceStartup() { return GetCurrentTime() - GetStartupTime(); }
+    static inline double GetRealTime() { return TimePoint(Clock::now()).time_since_epoch().count(); }
+    static inline double GetRealTimeSinceStartup() { return GetRealTime() - GetStartupTime(); }
     static inline double GetDeltaTime() { return GetCurrentTime() - GetPreviousTime(); }
 
 private:
@@ -56,7 +58,7 @@ private:
 private:
     TimePoint m_StartupTime;
     TimePoint m_PreviousTime;
-    TimePoint m_CurrentTime;
+    TimePoint m_CurrentFrameTime;
 };
 
 } // namespace Ether

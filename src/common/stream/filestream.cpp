@@ -19,85 +19,74 @@
 
 #include "common/stream/filestream.h"
 #include <stdexcept>
+#include <sstream>
 
 Ether::IFileStream::IFileStream(const std::string& path)
-    : m_Path(path)
 {
-    m_File.open(path, std::ios::in | std::ios::binary);
+    m_File.open(path, std::ios::in | std::ios::binary | std::ios::ate);
     if (!m_File.is_open())
-        throw std::runtime_error("Failed to open file");
+        return;
 
-    m_IsOpen = m_File.is_open();
+    m_IsOpen = true;
+    m_FileSize = m_File.tellg();
+    m_File.seekg(0, std::ios::beg);
 }
 
 Ether::IFileStream::~IFileStream()
 {
     m_File.close();
+    m_IsOpen = false;
 }
 
-std::string Ether::IFileStream::GetPath()
+Ether::IStream& Ether::IFileStream::operator>>(float& value)
 {
-    return m_Path;
-}
-
-Ether::IFileStream& Ether::IFileStream::operator>>(float& value)
-{
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(float));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(int& value)
+Ether::IStream& Ether::IFileStream::operator>>(int& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(int));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(long& value)
+Ether::IStream& Ether::IFileStream::operator>>(long& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(long));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(char& value)
+Ether::IStream& Ether::IFileStream::operator>>(char& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(char));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(unsigned int& value)
+Ether::IStream& Ether::IFileStream::operator>>(unsigned int& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(unsigned int));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(unsigned long& value)
+Ether::IStream& Ether::IFileStream::operator>>(unsigned long& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(unsigned long));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(unsigned char& value)
+Ether::IStream& Ether::IFileStream::operator>>(unsigned char& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(unsigned char));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(std::string& value)
+Ether::IStream& Ether::IFileStream::operator>>(std::string& value)
 {
-    value = "";
-    char c;
-    while (true)
-    {
-        m_File.read(reinterpret_cast<char*>(&c), sizeof(char));
-        if (c == '\0')
-            break;
-
-        value += c;
-    }
+    std::getline(m_File, value, '\0');
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(StringID& value)
+Ether::IStream& Ether::IFileStream::operator>>(StringID& value)
 {
     std::string s;
     *this >> s;
@@ -105,43 +94,36 @@ Ether::IFileStream& Ether::IFileStream::operator>>(StringID& value)
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(bool& value)
+Ether::IStream& Ether::IFileStream::operator>>(bool& value)
 {
-    m_File.read(reinterpret_cast<char*>(&value), sizeof(bool));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(ethVector2& v)
+Ether::IStream& Ether::IFileStream::operator>>(ethVector2& value)
 {
-    m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
-    m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(ethVector3& v)
+Ether::IStream& Ether::IFileStream::operator>>(ethVector3& value)
 {
-    m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
-    m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
-    m_File.read(reinterpret_cast<char*>(&v.z), sizeof(float));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IFileStream& Ether::IFileStream::operator>>(ethVector4& v)
+Ether::IStream& Ether::IFileStream::operator>>(ethVector4& value)
 {
-    m_File.read(reinterpret_cast<char*>(&v.x), sizeof(float));
-    m_File.read(reinterpret_cast<char*>(&v.y), sizeof(float));
-    m_File.read(reinterpret_cast<char*>(&v.z), sizeof(float));
-    m_File.read(reinterpret_cast<char*>(&v.w), sizeof(float));
+    ReadBytes(&value, sizeof(value));
     return *this;
 }
 
 void Ether::IFileStream::ReadBytes(void* dest, uint32_t numBytes)
 {
-    m_File.read((char*)dest, numBytes);
+    m_File.read(reinterpret_cast<char*>(dest), numBytes);
 }
 
 Ether::OFileStream::OFileStream(const std::string& path)
-    : m_Path(path)
 {
     m_File.open(path, std::ios::out | std::ios::binary);
     if (!m_File.is_open())
@@ -153,98 +135,88 @@ Ether::OFileStream::OFileStream(const std::string& path)
 Ether::OFileStream::~OFileStream()
 {
     m_File.close();
+    m_IsOpen = false;
 }
 
-std::string Ether::OFileStream::GetPath()
+Ether::OStream& Ether::OFileStream::operator<<(const float value)
 {
-    return m_Path;
-}
-
-Ether::OFileStream& Ether::OFileStream::operator<<(const float value)
-{
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(float));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const int value)
+Ether::OStream& Ether::OFileStream::operator<<(const int value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(int));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const long value)
+Ether::OStream& Ether::OFileStream::operator<<(const long value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(long));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const char value)
+Ether::OStream& Ether::OFileStream::operator<<(const char value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(char));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const unsigned int value)
+Ether::OStream& Ether::OFileStream::operator<<(const unsigned int value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned int));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const unsigned long value)
+Ether::OStream& Ether::OFileStream::operator<<(const unsigned long value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned long));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const unsigned char value)
+Ether::OStream& Ether::OFileStream::operator<<(const unsigned char value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(unsigned char));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const std::string& value)
+Ether::OStream& Ether::OFileStream::operator<<(const std::string& value)
 {
-    m_File.write(value.c_str(), value.size() + 1); // plus null terminator
+    WriteBytes(value.c_str(), value.size() + 1); // plus null terminator
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const StringID& value)
+Ether::OStream& Ether::OFileStream::operator<<(const StringID& value)
 {
     *this << value.GetString();
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const bool value)
+Ether::OStream& Ether::OFileStream::operator<<(const bool value)
 {
-    m_File.write(reinterpret_cast<const char*>(&value), sizeof(bool));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector2& v)
+Ether::OStream& Ether::OFileStream::operator<<(const ethVector2& value)
 {
-    m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
-    m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector3& v)
+Ether::OStream& Ether::OFileStream::operator<<(const ethVector3& value)
 {
-    m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
-    m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
-    m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OFileStream& Ether::OFileStream::operator<<(const ethVector4& v)
+Ether::OStream& Ether::OFileStream::operator<<(const ethVector4& value)
 {
-    m_File.write(reinterpret_cast<const char*>(&v.x), sizeof(float));
-    m_File.write(reinterpret_cast<const char*>(&v.y), sizeof(float));
-    m_File.write(reinterpret_cast<const char*>(&v.z), sizeof(float));
-    m_File.write(reinterpret_cast<const char*>(&v.w), sizeof(float));
+    WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-void Ether::OFileStream::WriteBytes(void* src, uint32_t numBytes)
+void Ether::OFileStream::WriteBytes(const void* src, uint32_t numBytes)
 {
     m_File.write((char*)src, numBytes);
 }

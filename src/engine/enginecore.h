@@ -25,6 +25,7 @@
 #include "engine/config/engineconfig.h"
 #include "engine/config/commandlineoptions.h"
 #include "engine/platform/platformwindow.h"
+#include "engine/platform/platformnotificationtray.h"
 #include "engine/world/world.h"
 
 #include "graphics/graphiccore.h"
@@ -39,7 +40,7 @@ public:
 
     void Initialize();
     void LoadApplication(IApplicationBase& app);
-    void Run();
+    void RunEngineLoop();
     void Shutdown();
 
 public:
@@ -52,13 +53,12 @@ public:
 
 private:
     void InitializeGraphicsLayer();
-    void MainEngineThread();
 
 private:
     bool m_IsInitialized = false;
-    std::thread m_MainEngineThread;
 
     std::unique_ptr<PlatformWindow> m_MainWindow;
+    std::unique_ptr<PlatformNotificationTray> m_NotificationTray;
     std::unique_ptr<World> m_ActiveWorld;
 
     IApplicationBase* m_MainApplication = nullptr;

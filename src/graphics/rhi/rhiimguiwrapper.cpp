@@ -41,7 +41,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     ETH_MARKER_EVENT("Debug Menu Gui Component - Draw");
 
-    static bool showImGuiDemo = false;
+    static bool showImGuiDemo = true;
     auto& gfxConfig = GraphicCore::GetGraphicConfig();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));
@@ -76,13 +76,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
         if (ImGui::CollapsingHeader("Render Options"))
         {
-            static float clearColor[4];
-            ImGui::ColorEdit4("clear color", clearColor);
-            // Edit 3 floats representing a color
-            // ImGui::Checkbox("Render Wireframe", &EngineCore::GetEngineConfig().m_RenderWireframe);
-            // Edit bools storing our window open/close state
-            gfxConfig.SetClearColor((ethVector4&)(*clearColor));
-
             static bool& temporalAAEnabled = gfxConfig.m_IsTemporalAAEnabled;
             ImGui::Checkbox("Temporal AA", &temporalAAEnabled);
 

@@ -19,10 +19,12 @@
 
 #include "engine/enginecore.h"
 #include "engine/platform/win32/win32window.h"
+#include "engine/platform/win32/win32notificationtray.h"
 
 void Ether::EngineCore::Initialize()
 {
     m_MainWindow = std::make_unique<Win32::Win32Window>();
+    m_NotificationTray = std::make_unique<Win32::Win32NotificationTray>();
     m_ActiveWorld = std::make_unique<World>();
 
     InitializeGraphicsLayer();
@@ -37,20 +39,34 @@ void Ether::EngineCore::LoadApplication(IApplicationBase& app)
     m_MainApplication->LoadContent();
 }
 
-void Ether::EngineCore::Run()
+void Ether::EngineCore::RunEngineLoop()
 {
-    m_MainEngineThread = std::thread(&EngineCore::MainEngineThread, this);
-    m_MainWindow->PlatformMessageLoop();
-    m_MainEngineThread.join();
+    while (true)
+    {
+        ETH_MARKER_FRAME("Engine Frame");
+
+        Time::NewFrame();
+        Input::NewFrame();
+
+        if (!m_MainWindow->ProcessPlatformMessages())
+            break;
+
+        m_MainApplication->OnUpdate({});
+        m_ActiveWorld->Update();
+
+        Graphics::GraphicCore::GetGraphicConfig().SetResolution(m_EngineConfig.GetClientSize());
+        Graphics::GraphicCore::Main();
+    }
 }
 
 void Ether::EngineCore::Shutdown()
 {
-    Graphics::GraphicCore::Instance().Shutdown();
     m_MainApplication->OnShutdown();
 
     m_ActiveWorld.reset();
+    m_NotificationTray.reset();
     m_MainWindow.reset();
+    Graphics::GraphicCore::Instance().Shutdown();
 
     m_IsInitialized = false;
 }
@@ -67,23 +83,3 @@ void Ether::EngineCore::InitializeGraphicsLayer()
     Graphics::GraphicCore::Instance().Initialize();
 }
 
-void Ether::EngineCore::MainEngineThread()
-{
-    while (true)
-    {
-        ETH_MARKER_FRAME("Engine Frame");
-
-        Time::NewFrame();
-        Input::NewFrame();
-
-        if (!m_MainWindow->ProcessPlatformMessages())
-            break;
-
-        m_MainApplication->OnUpdate({});
-
-        m_ActiveWorld->Update();
-        Graphics::GraphicCore::Main();
-
-        Input::EndFrame();
-    }
-}

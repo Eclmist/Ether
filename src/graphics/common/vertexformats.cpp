@@ -32,17 +32,11 @@ Ether::Graphics::RhiInputElementDesc Ether::Graphics::VertexFormats::PositionNor
 
 void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Serialize(OStream& ostream) const
 {
-    ostream << m_Position;
-    ostream << m_Normal;
-    ostream << m_Tangent;
-    ostream << m_TexCoord;
+    ostream.WriteBytes(this, sizeof(PositionNormalTangentTexcoord));
 }
 
 void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Deserialize(IStream& istream)
 {
-    istream >> m_Position;
-    istream >> m_Normal;
-    istream >> m_Tangent;
-    istream >> m_TexCoord;
+    istream.ReadBytes(this, sizeof(PositionNormalTangentTexcoord));
 }
 

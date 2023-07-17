@@ -21,36 +21,35 @@
 
 void Ether::Input::Initialize()
 {
-    memset(m_KeyStates, 0, sizeof(m_KeyStates));
-    memset(m_TransientKeyDownStates, 0, sizeof(m_TransientKeyDownStates));
-    memset(m_TransientKeyUpStates, 0, sizeof(m_TransientKeyUpStates));
+    memset(m_KeyDownCurrentFrame, 0, sizeof(m_KeyDownCurrentFrame));
+    memset(m_KeyUpCurrentFrame, 0, sizeof(m_KeyUpCurrentFrame));
     memset(m_MouseStates, 0, sizeof(m_MouseStates));
-    memset(m_TransientMouseDownStates, 0, sizeof(m_TransientMouseDownStates));
-    memset(m_TransientMouseUpStates, 0, sizeof(m_TransientMouseUpStates));
+    memset(m_MouseDownCurrentFrame, 0, sizeof(m_MouseDownCurrentFrame));
+    memset(m_MouseUpCurrentFrame, 0, sizeof(m_MouseUpCurrentFrame));
 }
 
 void Ether::Input::SetKeyDown(KeyCode key)
 {
     m_KeyStates[(int)key] = true;
-    m_TransientKeyDownStates[(int)key] = true;
+    m_KeyDownCurrentFrame[(int)key] = true;
 }
 
 void Ether::Input::SetKeyUp(KeyCode key)
 {
     m_KeyStates[(int)key] = false;
-    m_TransientKeyUpStates[(int)key] = true;
+    m_KeyUpCurrentFrame[(int)key] = true;
 }
 
 void Ether::Input::SetMouseButtonDown(int index)
 {
     m_MouseStates[index] = true;
-    m_TransientMouseDownStates[index] = true;
+    m_MouseDownCurrentFrame[index] = true;
 }
 
 void Ether::Input::SetMouseButtonUp(int index)
 {
     m_MouseStates[index] = false;
-    m_TransientKeyUpStates[index] = true;
+    m_KeyUpCurrentFrame[index] = true;
 }
 
 void Ether::Input::SetMouseWheelDelta(double delta)
@@ -72,16 +71,20 @@ void Ether::Input::SetMousePosY(double posY)
 
 void Ether::Input::NewFrame_Impl()
 {
-    memset(m_TransientKeyDownStates, 0, sizeof(m_TransientKeyDownStates));
-    memset(m_TransientKeyUpStates, 0, sizeof(m_TransientKeyUpStates));
-    memset(m_TransientMouseDownStates, 0, sizeof(m_TransientMouseDownStates));
-    memset(m_TransientMouseUpStates, 0, sizeof(m_TransientMouseUpStates));
+    memset(m_KeyDownCurrentFrame, 0, sizeof(m_KeyDownCurrentFrame));
+    memset(m_KeyUpCurrentFrame, 0, sizeof(m_KeyUpCurrentFrame));
+    memset(m_MouseDownCurrentFrame, 0, sizeof(m_MouseDownCurrentFrame));
+    memset(m_MouseUpCurrentFrame, 0, sizeof(m_MouseUpCurrentFrame));
 
     m_MouseWheelDelta = 0;
     m_MouseDeltaX = 0;
     m_MouseDeltaY = 0;
 }
 
-void Ether::Input::EndFrame_Impl()
+void Ether::Input::Reset_Impl()
 {
+    NewFrame_Impl();
+    memset(m_MouseStates, 0, sizeof(m_MouseStates));
+    memset(m_KeyStates, 0, sizeof(m_KeyStates));
 }
+

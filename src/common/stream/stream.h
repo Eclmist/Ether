@@ -29,8 +29,6 @@ class ETH_COMMON_DLL Stream : public NonCopyable
 {
 public:
     virtual ~Stream() {}
-    virtual std::string GetPath() = 0;
-
     inline bool IsOpen() const { return m_IsOpen; }
 
 protected:
@@ -74,6 +72,6 @@ public:
     virtual OStream& operator<<(const ethVector3& v) = 0;
     virtual OStream& operator<<(const ethVector4& v) = 0;
 
-    virtual void WriteBytes(void* src, uint32_t numBytes) = 0;
+    virtual void WriteBytes(const void* src, uint32_t numBytes) = 0;
 };
 } // namespace Ether

@@ -81,7 +81,7 @@ float3 ComputeIndirectIrradiance(float3 position, float3 normal, float roughness
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
-    const float3 ranSphere = SampleDirectionSphere(CMJ_Sample2D(sampleIdx, launchDim.x, launchDim.x, g_GlobalConstants.m_FrameNumber));
+    const float3 ranSphere = SampleDirectionSphere(CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber));
     const float3 ranDirection = normalize(normal + roughness * ranSphere);
 
     RayPayload payload;

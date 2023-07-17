@@ -155,88 +155,17 @@ void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
     ::SetParent((HWND)m_WindowHandle, (HWND)m_ParentWindowHandle);
 }
 
-void Ether::Win32::Win32Window::PlatformMessageLoop()
+bool Ether::Win32::Win32Window::ProcessPlatformMessages()
 {
     MSG msg = {};
-    while (true)
+    while (::PeekMessage(&msg, (HWND)m_ParentWindowHandle, 0, 0, PM_REMOVE))
     {
-        ::GetMessage(&msg, nullptr, 0, 0);
         ::TranslateMessage(&msg);
         ::DispatchMessage(&msg);
 
         if (msg.message == WM_QUIT)
-            break;
-    }
-}
-
-bool Ether::Win32::Win32Window::ProcessPlatformMessages()
-{
-    uint8_t backBufferIdx = m_MessageQueueFrontBufferIdx;
-    m_MessageQueueFrontBufferIdx = 1 - m_MessageQueueFrontBufferIdx;
-
-    for (auto& pair : m_Win32MessageQueue[backBufferIdx])
-    {
-        Win32Window& win32window = static_cast<Win32Window&>(EngineCore::GetMainWindow());
-        MSG& msg = pair.second;
-
-        switch (msg.message)
-        {
-        case WM_MOUSEACTIVATE:
-            ETH_TOOLONLY(::SetFocus((HWND)win32window.m_WindowHandle));
-            continue;
-        case WM_SIZE:
-            if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ LOWORD(msg.lParam), HIWORD(msg.lParam) })
-                EngineCore::GetEngineConfig().SetClientSize({ LOWORD(msg.lParam), HIWORD(msg.lParam) });
-            continue;
-        case WM_MOVE:
-        {
-            Rect clientRect = { LOWORD(msg.lParam), HIWORD(msg.lParam), 0, 0 };
-            win32window.ToClientRect(clientRect);
-            ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
-            if (EngineCore::GetEngineConfig().GetClientPosition() != clientPos)
-                EngineCore::GetEngineConfig().SetClientPosition(clientPos);
-            continue;
-        }
-        case WM_KEYDOWN:
-            Input::Instance().SetKeyDown(static_cast<Ether::KeyCode>(msg.wParam));
-            continue;
-            ;
-        case WM_KEYUP:
-            Input::Instance().SetKeyUp(static_cast<Ether::KeyCode>(msg.wParam));
-            continue;
-        case WM_MOUSEWHEEL:
-            Input::Instance().SetMouseWheelDelta(GET_WHEEL_DELTA_WPARAM(msg.wParam));
-            continue;
-        case WM_MOUSEMOVE:
-            Input::Instance().SetMousePosX((short)LOWORD(msg.lParam));
-            Input::Instance().SetMousePosY((short)HIWORD(msg.lParam));
-            continue;
-        case WM_LBUTTONDOWN:
-            Input::Instance().SetMouseButtonDown(0);
-            continue;
-        case WM_LBUTTONUP:
-            Input::Instance().SetMouseButtonUp(0);
-            continue;
-        case WM_MBUTTONDOWN:
-            Input::Instance().SetMouseButtonDown(1);
-            continue;
-        case WM_MBUTTONUP:
-            Input::Instance().SetMouseButtonUp(1);
-            continue;
-        case WM_RBUTTONDOWN:
-            Input::Instance().SetMouseButtonDown(2);
-            continue;
-        case WM_RBUTTONUP:
-            Input::Instance().SetMouseButtonUp(2);
-            continue;
-        case WM_DESTROY:
             return false;
-        default:
-            continue;
-        }
     }
-
-    m_Win32MessageQueue[backBufferIdx].clear();
 
     return true;
 }
@@ -323,35 +252,64 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
     if (Graphics::Dx12ImguiWrapper::Win32MessageHandler(hWnd, msg, wParam, lParam))
         return true;
 
-    if (msg == WM_DESTROY)
-        PostQuitMessage(0);
-
     switch (msg)
     {
-    // Messages that should be deferred to engine thread to be processed later
-    case WM_MOUSEACTIVATE:
+    case WM_ACTIVATE:
+        if (LOWORD(wParam) == WA_INACTIVE)
+            Input::Instance().Reset();
+        break;
     case WM_SIZE:
+        if (EngineCore::GetEngineConfig().GetClientSize() != ethVector2u{ LOWORD(lParam), HIWORD(lParam) })
+            EngineCore::GetEngineConfig().SetClientSize({ LOWORD(lParam), HIWORD(lParam) });
+        break;
     case WM_MOVE:
+    {
+        Rect clientRect = { LOWORD(lParam), HIWORD(lParam), 0, 0 };
+        win32window.ToClientRect(clientRect);
+        ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
+        if (EngineCore::GetEngineConfig().GetClientPosition() != clientPos)
+            EngineCore::GetEngineConfig().SetClientPosition(clientPos);
+        break;
+    }
     case WM_KEYDOWN:
+        Input::Instance().SetKeyDown(static_cast<Ether::KeyCode>(wParam));
+        break;
     case WM_KEYUP:
+        Input::Instance().SetKeyUp(static_cast<Ether::KeyCode>(wParam));
+        break;
     case WM_MOUSEWHEEL:
+        Input::Instance().SetMouseWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam));
+        break;
     case WM_MOUSEMOVE:
+        Input::Instance().SetMousePosX((short)LOWORD(lParam));
+        Input::Instance().SetMousePosY((short)HIWORD(lParam));
+        break;
     case WM_LBUTTONDOWN:
+        Input::Instance().SetMouseButtonDown(0);
+        break;
     case WM_LBUTTONUP:
+        Input::Instance().SetMouseButtonUp(0);
+        break;
     case WM_MBUTTONDOWN:
+        Input::Instance().SetMouseButtonDown(1);
+        break;
     case WM_MBUTTONUP:
+        Input::Instance().SetMouseButtonUp(1);
+        break;
     case WM_RBUTTONDOWN:
+        Input::Instance().SetMouseButtonDown(2);
+        break;
     case WM_RBUTTONUP:
+        Input::Instance().SetMouseButtonUp(2);
+        break;
     case WM_DESTROY:
-    case WM_QUIT:
-        win32window.m_Win32MessageQueue[win32window.m_MessageQueueFrontBufferIdx][msg] = { hWnd, msg, wParam, lParam };
-        return 0;
-        // Messages that can be handled immediately
-        // case WM_ERASEBKGND:
-        //    return 1;
+        ETH_ENGINEONLY(::PostQuitMessage(0));
+        break;
+    default:
+        return ::DefWindowProc(hWnd, msg, wParam, lParam);
     }
 
-    return ::DefWindowProc(hWnd, msg, wParam, lParam);
+    return 0;
 }
 
 #endif // ETH_PLATFORM_WIN32

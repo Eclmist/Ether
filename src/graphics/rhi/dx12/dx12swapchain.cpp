@@ -74,6 +74,8 @@ void Ether::Graphics::Dx12SwapChain::ResetBuffers()
         m_BufferResources[i] = std::make_unique<Dx12Resource>(("Swapchain RenderTarget" + std::to_string(i)).c_str());
 }
 
+#include "graphics/graphiccore.h"
+
 void Ether::Graphics::Dx12SwapChain::Present(uint8_t numVblanks)
 {
     HRESULT hr = m_SwapChain->Present(numVblanks, numVblanks > 0 ? 0 : DXGI_PRESENT_ALLOW_TEARING);

@@ -37,7 +37,6 @@ void Ether::World::Update()
 
 void Ether::World::Save(const std::string& path) const
 {
-    // TODO: Get target directory
     OFileStream outFile(path);
     outFile.ClearFile();
     Serialize(outFile);
@@ -45,13 +44,24 @@ void Ether::World::Save(const std::string& path) const
 
 void Ether::World::Load(const std::string& path)
 {
-    IFileStream inFile(path);
-    Deserialize(inFile);
+    auto start = Time::GetRealTime();
+
+    IFileStream ifstream(path.c_str());
+    if (!ifstream.IsOpen())
+    {
+        LogEngineError("Failed to open world file: %s", path.c_str());
+        return;
+    }
+
+    //IByteStream bstream(ifstream);
+    Deserialize(ifstream);
+
+    auto end = Time::GetRealTime();
+    LogInfo("Deserialization took %f seconds", (end - start) / 1000.0f);
 }
 
 void Ether::World::Unload()
 {
-
 }
 
 void Ether::World::Serialize(OStream& ostream) const

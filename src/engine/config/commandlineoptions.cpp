@@ -33,9 +33,9 @@ Ether::CommandLineOptions::CommandLineOptions()
     , m_ShaderSourcePath(".\\Data\\shaders\\")
 #if defined(ETH_TOOLMODE)
     , m_WorkspacePath("")
-    , m_ToolmodePort(3241)
+    , m_ToolmodePort(2134)
     , m_ImportScale(1.0f)
-    , m_ImportPaths("")
+    , m_ImportPaths()
 #endif
 {
     std::unique_ptr<PlatformLaunchArgs> args;

@@ -37,17 +37,10 @@ void Ether::EngineConfig::SetClientTitle(const std::string& title)
 
 void Ether::EngineConfig::SetClientSize(const ethVector2u& clientSize)
 {
-    if (m_ClientSize == clientSize)
-        return;
-
     m_ClientSize = clientSize;
-    Graphics::GraphicCore::GetGraphicConfig().SetResolution(clientSize);
 }
 
 void Ether::EngineConfig::SetClientPosition(const ethVector2u& clientPosition)
 {
-    if (m_ClientPosition == clientPosition)
-        return;
-
     m_ClientPosition = clientPosition;
 }

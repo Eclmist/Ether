@@ -76,11 +76,11 @@ void Ether::ResourceManager::DeserializeResource(
 {
     uint32_t numResources;
     istream >> numResources;
-    for (int i = 0; i < numResources; ++i)
+    for (uint32_t i = 0; i < numResources; ++i)
     {
         std::unique_ptr<T> resource = std::make_unique<T>();
         resource->Deserialize(istream);
-        container.insert({ resource->GetGuid(), std::move(resource) });
+        container[resource->GetGuid()] = std::move(resource);
     }
 }
 } // namespace Ether
