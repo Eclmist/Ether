@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pch.h"
+#include "engine/pch.h"
 
 namespace Ether
 {
@@ -34,6 +34,7 @@ public:
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
     inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
     inline const std::string& GetWorldName() const { return m_WorldName; }
+    inline const std::string& GetShaderSourcePath() const { return m_ShaderSourcePath; }
 
 public:
     ETH_TOOLONLY(inline const std::string& GetWorkspacePath() const { return m_WorkspacePath; })
@@ -50,6 +51,7 @@ private:
     bool m_UseValidationLayer;
 
     std::string m_WorldName;
+    std::string m_ShaderSourcePath;
 
 private:
     ETH_TOOLONLY(std::string m_WorkspacePath);

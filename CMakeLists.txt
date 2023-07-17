@@ -27,12 +27,6 @@ cmake_minimum_required (VERSION "3.18")
 option(CONFIGURE_AS_TOOLMODE "Configure as Toolmode" OFF)
 option(USE_PRECOMPILED_HEADERS "Use precompiled headers" ON)
 
-if (CONFIGURE_AS_TOOLMODE)
-    project(Ether.Toolmode)
-else ()
-    project(Ether)
-endif()
-
 # Sets the C++ versions
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,65 +34,35 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Sets project output directories
 if (CONFIGURE_AS_TOOLMODE)
+    project(Ether.Toolmode)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32.toolmode")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32.toolmode")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32.toolmode")
+    set_directory_properties(Engine COMPILE_DEFINITIONS ETH_TOOLMODE)
 else ()
+    project(Ether)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/win32")
-endif()
-
-# Define ETH_TOOLMODE or ETH_ENGINE for ALL targets including subdirectory
-if (CONFIGURE_AS_TOOLMODE)
-    set_directory_properties(Engine COMPILE_DEFINITIONS ETH_TOOLMODE)
-else()
     set_directory_properties(Engine COMPILE_DEFINITIONS ETH_ENGINE)
 endif()
+
 
 # Give WIN32 definition for all targets
 add_compile_definitions("ETH_PLATFORM_WIN32")
 
+# Enable multi-threaded compilation on Windows
+include(ProcessorCount)
+ProcessorCount(N)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
+
 # =========================================================================== #
-#                        ADD SOURCE FILES TO PROJECT                          #
+#                             ADD GLOBAL INCLUDES                             #
 # =========================================================================== #
 
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/resource")
-
-file(GLOB_RECURSE engine_files "${CMAKE_SOURCE_DIR}/src/engine/*")
-file(GLOB_RECURSE api_files "${CMAKE_SOURCE_DIR}/src/api/*")
-file(GLOB_RECURSE resources "${CMAKE_SOURCE_DIR}/resource/*")
-file(GLOB root_files "${CMAKE_SOURCE_DIR}/src/*.h")
-
-set(engine_files ${engine_files} ${root_files} ${api_files})
-source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${engine_files})
-
-# =========================================================================== #
-#                          SET COMPILATION TARGETS                            #
-# =========================================================================== #
-
-add_library(Engine SHARED ${engine_files})
-target_compile_definitions(Engine PRIVATE ETH_ENGINE_LIB)
-
-if(WIN32)
-    # Enable multi-threaded compilation on Windows
-    include(ProcessorCount)
-    ProcessorCount(N)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
-endif()
-
-# =========================================================================== #
-#                            PRECOMPILED HEADERS                              #
-# =========================================================================== #
-
-if (USE_PRECOMPILED_HEADERS)
-    target_precompile_headers(Engine PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
-endif()
-
-# Move cmake_pch.cxx to "src" filter
-source_group("src" FILES "${CMAKE_BINARY_DIR}/CMakeFiles/Engine.dir/src/cmake_pch.cxx")
 
 # =========================================================================== #
 #                              ADD SUBPROJECTS                                #
@@ -106,20 +70,10 @@ source_group("src" FILES "${CMAKE_BINARY_DIR}/CMakeFiles/Engine.dir/src/cmake_pc
 
 add_subdirectory(src/common)
 add_subdirectory(src/graphics)
+add_subdirectory(src/engine)
 
 if (CONFIGURE_AS_TOOLMODE)
     add_subdirectory(src/toolmode)
 else()
     add_subdirectory(sampleapp)
 endif()
-
-# =========================================================================== #
-#                             LINK DEPENDENCIES                               #
-# =========================================================================== #
-
-target_link_libraries(Engine
-    Common
-    Graphics
-    "${CMAKE_SOURCE_DIR}/include/optick/OptickCore.lib"
-)
-

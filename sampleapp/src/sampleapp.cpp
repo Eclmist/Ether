@@ -43,7 +43,9 @@ void SampleApp::LoadContent()
 {
     World& world = GetActiveWorld();
     const std::string worldToLoad = GetCommandLineOptions().GetWorldName();
-    world.Load(worldToLoad);
+
+    if (worldToLoad != "")
+        world.Load(worldToLoad);
 
     Entity& cameraObj = world.CreateCamera();
     m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();

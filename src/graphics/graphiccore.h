@@ -65,11 +65,16 @@ public:
     static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
     static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
+    static inline bool IsInitialized() { return Instance().m_IsInitialized; }
+
+
 public:
     static void Main();
     static void FlushGpu();
 
 private:
+    bool m_IsInitialized;
+
     std::unique_ptr<RhiModule> m_RhiModule;
     std::unique_ptr<RhiDevice> m_RhiDevice;
 

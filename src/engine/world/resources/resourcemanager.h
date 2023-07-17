@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pch.h"
+#include "engine/pch.h"
 #include "graphics/resources/mesh.h"
 #include "graphics/resources/material.h"
 #include "graphics/resources/texture.h"

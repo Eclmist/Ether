@@ -26,7 +26,7 @@ Ether::Graphics::RhiShader::RhiShader(const RhiShaderDesc& desc)
     , m_CompiledSize(0)
     , m_CompiledData(nullptr)
     , m_FileName(desc.m_Filename)
-    , m_FilePath(GraphicCore::GetGraphicConfig().GetShaderSourceDir() + desc.m_Filename)
+    , m_FilePath(GraphicCore::GetGraphicConfig().GetShaderPath() + "\\" + desc.m_Filename)
     , m_EntryPoint(desc.m_EntryPoint)
 {
 }

@@ -21,10 +21,12 @@
 #include "graphics/config/graphicconfig.h"
 
 Ether::Graphics::GraphicConfig::GraphicConfig()
-    : m_Resolution(DefaultBackBufferWidth, DefaultBackBufferHeight)
-    , m_ShaderSourceDir()
-    , m_IsValidationLayerEnabled(false)
+    : m_ClearColor()
+    , m_Resolution(DefaultBackBufferWidth, DefaultBackBufferHeight)
+    , m_ShaderPath("")
     , m_UseSourceShaders(false)
+    , m_IsValidationLayerEnabled(false)
+    , m_IsDebugGuiEnabled(false)
     , m_WindowHandle(nullptr)
 {
 }
@@ -37,5 +39,6 @@ void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution
     m_Resolution.x = std::max(1u, resolution.x);
     m_Resolution.y = std::max(1u, resolution.y);
 
-    GraphicCore::GetGraphicDisplay().ResizeBuffers(m_Resolution);
+    if (GraphicCore::IsInitialized())
+        GraphicCore::GetGraphicDisplay().ResizeBuffers(m_Resolution);
 }

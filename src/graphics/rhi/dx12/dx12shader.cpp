@@ -43,7 +43,7 @@ void Ether::Graphics::Dx12Shader::Compile()
     // This is so that PSO won't keep trying to recompile broken shaders every frame
     m_IsCompiled = true;
 
-    std::wstring wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourceDir());
+    std::wstring wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderPath());
     std::wstring wFilePath = ToWideString(m_FilePath);
     std::wstring wFileName = ToWideString(m_FileName);
     std::wstring wEntryPoint = ToWideString(m_EntryPoint);

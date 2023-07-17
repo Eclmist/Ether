@@ -40,7 +40,6 @@ set_source_files_properties(${shader_files} PROPERTIES VS_TOOL_OVERRIDE "None")
 add_library(${ETHER_GRAPHICS} SHARED ${graphics_files})
 
 target_include_directories(${ETHER_GRAPHICS} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_include_directories(${ETHER_GRAPHICS} SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_include_directories(${ETHER_GRAPHICS} SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/src/graphics/imgui") # to avoid needing to update imgui includes
 
 target_compile_definitions(${ETHER_GRAPHICS} PRIVATE "ETH_GRAPHICS_LIB")
@@ -64,7 +63,7 @@ target_link_libraries(${ETHER_GRAPHICS}
     "${CMAKE_SOURCE_DIR}/include/dxc/dxcompiler.lib"
     "${CMAKE_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib"
     "${CMAKE_SOURCE_DIR}/include/optick/OptickCore.lib"
-
+    "${CMAKE_SOURCE_DIR}/include/denoiser/nrd/NRD.lib"
 )
 
 

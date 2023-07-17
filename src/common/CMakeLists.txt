@@ -27,9 +27,6 @@ set(ETHER_COMMON Common)
 #                        ADD SOURCE FILES TO PROJECT                          #
 # =========================================================================== #
 
-include_directories("${CMAKE_SOURCE_DIR}/include")
-include_directories("${CMAKE_SOURCE_DIR}/src")
-
 file(GLOB_RECURSE common_files "*")
 set(all_files ${common_files})
 

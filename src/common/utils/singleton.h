@@ -56,14 +56,14 @@ protected:
     {
         assert(
             s_IsInitializing &&
-            "Singleton not properly initialized. Are you calling 'new' instead of Singleton::InitSingleton()?");
+            "Singleton not properly initialized. Are you calling 'new' instead of Singleton::Instance()?");
     };
 
     ~Singleton()
     {
         assert(
             s_IsDestroying &&
-            "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::DestroySingleton()?");
+            "Singleton not properly destroyed. Are you calling 'delete' instead of Singleton::Reset()?");
         s_IsDestroying = false;
     };
 

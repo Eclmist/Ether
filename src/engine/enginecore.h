@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pch.h"
+#include "engine/pch.h"
 
 #include "api/iapplicationbase.h"
 #include "engine/config/engineconfig.h"
@@ -43,12 +43,12 @@ public:
     void Shutdown();
 
 public:
-    static EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
-    static CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
-    static PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
-    static World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
+    static inline EngineConfig& GetEngineConfig() { return Instance().m_EngineConfig; }
+    static inline CommandLineOptions& GetCommandLineOptions() { return Instance().m_CommandLineOptions; }
+    static inline PlatformWindow& GetMainWindow() { return *Instance().m_MainWindow; }
+    static inline World& GetActiveWorld() { return *Instance().m_ActiveWorld; }
 
-    static bool IsInitialized() { return Instance().m_IsInitialized; }
+    static inline bool IsInitialized() { return Instance().m_IsInitialized; }
 
 private:
     void InitializeGraphicsLayer();

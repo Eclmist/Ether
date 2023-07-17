@@ -21,9 +21,6 @@
 #                        ADD SOURCE FILES TO PROJECT                          #
 # =========================================================================== #
 
-include_directories("${CMAKE_SOURCE_DIR}/include")
-include_directories("${CMAKE_SOURCE_DIR}/src")
-
 file(GLOB_RECURSE sample_app "${CMAKE_SOURCE_DIR}/sampleapp/src/*")
 
 set(all_files ${sample_app})

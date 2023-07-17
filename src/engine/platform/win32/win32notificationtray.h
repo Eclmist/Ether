@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pch.h"
+#include "engine/pch.h"
 #include "engine/platform/platformnotificationtray.h"
 #include "engine/platform/win32/ethwin.h"
 

@@ -27,15 +27,13 @@ set(ETHER_TOOLMODE Toolmode)
 #                        ADD SOURCE FILES TO PROJECT                          #
 # =========================================================================== #
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-include_directories("${CMAKE_SOURCE_DIR}/include")
-
 file(GLOB_RECURSE toolmode_files "*")
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${toolmode_files})
 
 # =========================================================================== #
 #                          SET COMPILATION TARGETS                            #
 # =========================================================================== #
+
 add_executable(${ETHER_TOOLMODE} WIN32 ${toolmode_files})
 
 # =========================================================================== #

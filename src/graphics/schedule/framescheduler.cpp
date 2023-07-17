@@ -21,16 +21,18 @@
 #include "graphics/schedule/framescheduler.h"
 #include "graphics/schedule/schedulecontext.h"
 
-#include "graphics/schedule/producers/globalconstantsproducer.h"
-#include "graphics/schedule/producers/materialtableproducer.h"
-#include "graphics/schedule/producers/proceduralskyproducer.h"
-#include "graphics/schedule/producers/gbufferproducer.h"
-#include "graphics/schedule/producers/raytracedlightingproducer.h"
-#include "graphics/schedule/producers/lightingcompositeproducer.h"
-#include "graphics/schedule/producers/postfxsourceproducer.h"
-#include "graphics/schedule/producers/temporalaaproducer.h"
+#include "graphics/schedule/producers/denoisedlightingproducer.h"
 #include "graphics/schedule/producers/finalcompositeproducer.h"
+#include "graphics/schedule/producers/gbufferproducer.h"
+#include "graphics/schedule/producers/globalconstantsproducer.h"
+#include "graphics/schedule/producers/lightingcompositeproducer.h"
+#include "graphics/schedule/producers/materialtableproducer.h"
+#include "graphics/schedule/producers/postfxsourceproducer.h"
+#include "graphics/schedule/producers/proceduralskyproducer.h"
+#include "graphics/schedule/producers/raytracedlightingproducer.h"
+#include "graphics/schedule/producers/temporalaaproducer.h"
 
+DECLARE_GFX_PA(DenoisedLightingProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
 DECLARE_GFX_PA(GBufferProducer)
 DECLARE_GFX_PA(GlobalConstantsProducer)
@@ -43,6 +45,7 @@ DECLARE_GFX_PA(TemporalAAProducer)
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
+    Register(ACCESS_GFX_PA(DenoisedLightingProducer), new DenoisedLightingProducer());
     Register(ACCESS_GFX_PA(FinalCompositeProducer), new FinalCompositeProducer());
     Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
     Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
@@ -128,6 +131,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(DenoisedLightingProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());

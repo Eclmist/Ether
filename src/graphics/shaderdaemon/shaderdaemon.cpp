@@ -25,7 +25,7 @@
 Ether::Graphics::ShaderDaemon::ShaderDaemon()
 {
 #ifdef ETH_PLATFORM_WIN32
-    if (!GraphicCore::GetGraphicConfig().GetUseSourceShaders())
+    if (!GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
     {
         LogGraphicsInfo("To enable shader daemon, run with -usesourceshaders");
         return;
@@ -57,7 +57,7 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
 #ifdef ETH_PLATFORM_WIN32
     ETH_MARKER_EVENT("Shader Daemon");
 
-    std::wstring shaderDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourceDir());
+    std::wstring shaderDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderPath());
     HANDLE hDir = CreateFileW(
         shaderDir.c_str(),
         FILE_LIST_DIRECTORY,
@@ -115,8 +115,8 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
 void Ether::Graphics::ShaderDaemon::WaitForFileUnlock(const std::wstring& shaderFileName)
 {
 #ifdef ETH_PLATFORM_WIN32
-    std::wstring shaderDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourceDir());
-    std::wstring fullPathToFile = shaderDir + L"\\" + shaderFileName;
+    std::wstring shaderPath = ToWideString(GraphicCore::GetGraphicConfig().GetShaderPath());
+    std::wstring fullPathToFile = shaderPath + L"\\" + shaderFileName;
 
     // Apparently there is no better way to do this..
     // https://stackoverflow.com/questions/1746781/waiting-until-a-file-is-available-for-reading-with-win32

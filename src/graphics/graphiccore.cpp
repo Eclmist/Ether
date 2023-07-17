@@ -37,7 +37,7 @@ void Ether::Graphics::GraphicCore::Initialize()
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     m_GraphicRenderer = std::make_unique<GraphicRenderer>();
 
-    m_GraphicDisplay->Present();
+    m_IsInitialized = true;
 }
 
 void Ether::Graphics::GraphicCore::Shutdown()
@@ -56,6 +56,8 @@ void Ether::Graphics::GraphicCore::Shutdown()
 
     m_RhiDevice.reset();
     m_RhiModule.reset();
+
+    m_IsInitialized = false;
 }
 
 void Ether::Graphics::GraphicCore::FlushGpu()

@@ -27,9 +27,15 @@ constexpr uint16_t DefaultToolmodePort = 2134;
 
 Ether::CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
+    , m_UseShaderDaemon(false)
     , m_UseValidationLayer(false)
+    , m_WorldName("")
+    , m_ShaderSourcePath(".\\Data\\shaders\\")
 #if defined(ETH_TOOLMODE)
-    , m_ToolmodePort(DefaultToolmodePort)
+    , m_WorkspacePath("")
+    , m_ToolmodePort(3241)
+    , m_ImportScale(1.0f)
+    , m_ImportPaths("")
 #endif
 {
     std::unique_ptr<PlatformLaunchArgs> args;
@@ -46,10 +52,10 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
     bool isValid = true;
 
     if (flag == "-sourceshaders")
-        m_UseSourceShaders = true;
-    else if (flag == "-useshaderdaemon")
+        { m_UseSourceShaders = true; m_ShaderSourcePath = arg; }
+    else if (flag == "-shaderdaemon")
         m_UseShaderDaemon = true;
-    else if (flag == "-usevalidationlayer")
+    else if (flag == "-validationlayer")
         m_UseValidationLayer = true;
     else if (flag == "-world")
         m_WorldName = arg;

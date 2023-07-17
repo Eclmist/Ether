@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pch.h"
+#include "engine/pch.h"
 #include "engine/platform/win32/win32keycodes.h"
 
 namespace Ether

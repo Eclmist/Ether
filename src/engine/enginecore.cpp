@@ -23,8 +23,6 @@
 void Ether::EngineCore::Initialize()
 {
     m_MainWindow = std::make_unique<Win32::Win32Window>();
-
-    // Deserialize world here?
     m_ActiveWorld = std::make_unique<World>();
 
     InitializeGraphicsLayer();
@@ -48,13 +46,13 @@ void Ether::EngineCore::Run()
 
 void Ether::EngineCore::Shutdown()
 {
+    Graphics::GraphicCore::Instance().Shutdown();
     m_MainApplication->OnShutdown();
 
-    // Release GPU mesh resources before shutting down graphics layer
-    Graphics::GraphicCore::FlushGpu();
     m_ActiveWorld.reset();
+    m_MainWindow.reset();
 
-    Graphics::GraphicCore::Instance().Shutdown();
+    m_IsInitialized = false;
 }
 
 void Ether::EngineCore::InitializeGraphicsLayer()
@@ -62,10 +60,9 @@ void Ether::EngineCore::InitializeGraphicsLayer()
     Graphics::GraphicConfig& config = Graphics::GraphicCore::GetGraphicConfig();
     config.SetWindowHandle(m_MainWindow->GetWindowHandle());
     config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
-    config.SetUseSourceShaders(m_CommandLineOptions.GetUseSourceShaders());
     config.SetUseShaderDaemon(m_CommandLineOptions.GetUseShaderDaemon());
-    config.SetShaderSourceDir(
-        m_CommandLineOptions.GetUseSourceShaders() ? "../../../src/graphics/shaders/" : "Data/shaders/");
+    config.SetShaderSourceDir(m_CommandLineOptions.GetShaderSourcePath());
+    config.SetResolution(m_EngineConfig.GetClientSize());
 
     Graphics::GraphicCore::Instance().Initialize();
 }

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pch.h"
+#include "engine/pch.h"
 #include "engine/world/ecs/ecsmanager.h"
 #include "engine/world/scenegraph.h"
 

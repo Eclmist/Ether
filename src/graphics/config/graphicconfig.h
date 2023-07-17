@@ -31,7 +31,7 @@ public:
 
 public:
     inline ethVector2u GetResolution() const { return m_Resolution; }
-    inline std::string GetShaderSourceDir() const { return m_ShaderSourceDir; }
+    inline std::string GetShaderPath() const { return m_ShaderPath; }
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
     inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
@@ -40,7 +40,7 @@ public:
     inline ethVector4 GetClearColor() const { return m_ClearColor; }
 
     void SetResolution(const ethVector2u& resolution);
-    inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourceDir = dir; }
+    inline void SetShaderSourceDir(const std::string& dir) { m_ShaderPath = dir; }
     inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
     inline void SetUseShaderDaemon(bool enable) { m_UseShaderDaemon = enable; }
     inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
@@ -59,13 +59,13 @@ public:
     float m_JitterScale = 1;
     float m_TemporalAAAcumulationFactor = 0.1;
 
-    ethVector4 m_SunDirection = { 0.073, 0.655, 0.109, 0 };
+    ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
 
 private:
     ethVector4 m_ClearColor;
     ethVector2u m_Resolution;
-    std::string m_ShaderSourceDir;
+    std::string m_ShaderPath;
     bool m_UseSourceShaders;
     bool m_UseShaderDaemon;
     bool m_IsValidationLayerEnabled;
