@@ -91,7 +91,7 @@ float3 ComputeIndirectIrradiance(float3 position, float3 normal, float roughness
     RayDesc indirectRay;
     indirectRay.Direction = ranDirection;
     indirectRay.Origin = position + normal * 0.01;
-    indirectRay.TMax = 64;
+    indirectRay.TMax = 6;
     indirectRay.TMin = 0.01;
 
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
@@ -167,13 +167,12 @@ void RayGeneration()
     const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
-    const float3 ambient = ComputeSkyColor() * 0.25;
     const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
     const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
 
-    float a = 0.1;
+    float a = 0.05;
     const float3 finalIndirectIrradiance = (a * indirectIrradiance.xyz) + (1 - a) * accumulation.xyz;
-    const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance + ambient;
+    const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance;
 
     g_LightingOutput[launchIndex.xy].xyz = finalRadiance;
     g_IndirectOutput[launchIndex.xy].xyz = finalIndirectIrradiance;
@@ -193,7 +192,7 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample sky color
-        payload.m_Radiance = ComputeSkyColor().xyz;
+        payload.m_Radiance = ComputeSkyColor().xyz / 3.0;
     }
 }
 
