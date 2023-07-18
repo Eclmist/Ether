@@ -42,8 +42,8 @@ Ether::Graphics::LightingCompositeProducer::LightingCompositeProducer()
 void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewRT(ACCESS_GFX_RT(LightingCompositeTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
-    schedule.NewSR(ACCESS_GFX_SR(LightingCompositeTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewRT(ACCESS_GFX_RT(LightingCompositeTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float);
+    schedule.NewSR(ACCESS_GFX_SR(LightingCompositeTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));

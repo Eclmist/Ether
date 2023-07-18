@@ -73,7 +73,7 @@ void Ether::Graphics::FullScreenProducer::CreatePipelineState(ResourceContext& r
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormat(RhiFormat::R32G32B32A32Float);
+    m_PsoDesc->SetRenderTargetFormat(RhiFormat::R11G11B10Float);
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
