@@ -75,7 +75,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
 
     float4 albedo = material.m_BaseColor;
     float3 normal = IN.Normal.xyz;
-    float roughness = 0.5;
+    float roughness = 1;
     float metalness = 0;
     float2 velocity = texSpaceCurr - texSpacePrev;
 
@@ -115,7 +115,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float2 octNormals = EncodeNormals(normal);
 
     PS_OUTPUT o;
-    o.Output0 = float4(albedo.x,     albedo.y,      albedo.z,   IN.Position.w);
+    o.Output0 = float4(albedo.x,     albedo.y,      albedo.z,   metalness);
     o.Output1 = float4(worldPos.x,   worldPos.y,    worldPos.z, roughness);
     o.Output2 = float4(octNormals.x, octNormals.y,  velocity.x, velocity.y);
     return o;

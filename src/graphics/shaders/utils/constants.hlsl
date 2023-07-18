@@ -23,4 +23,3 @@ static const float Pi_2 = 1.57079632679f;
 static const float Pi_4 = 0.78539816339f;
 static const float InvPi = 0.31830988618f;
 static const float InvPi2 = 0.15915494309f;
-

@@ -150,7 +150,7 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
-            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data));
+            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
         }
 
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
@@ -181,7 +181,8 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
 
 Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     const std::string& folderPath,
-    const StringID& texturePath)
+    const StringID& texturePath,
+    bool isSrgb)
 {
     if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
         return m_PathToGuidMap.at(texturePath);
@@ -213,7 +214,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     }
 
     gfxTexture.SetName(PathUtils::GetFileName(folderPath).c_str());
-    gfxTexture.SetFormat(Ether::Graphics::RhiFormat::R8G8B8A8Unorm);
+    gfxTexture.SetFormat(isSrgb ? Ether::Graphics::RhiFormat::R8G8B8A8UnormSrgb : Graphics::RhiFormat::R8G8B8A8Unorm);
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
     gfxTexture.SetData(downscaleOutput);

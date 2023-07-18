@@ -71,16 +71,19 @@ void Ether::Graphics::Dx12Shader::Compile()
     arguments.push_back(L"-T");
     arguments.push_back(wProfile.c_str());
 
-    // Strip reflection data and pdbs
-    // ETH_TOOLONLY(arguments.push_back(L"-Qstrip_debug"));
-    // ETH_TOOLONLY(arguments.push_back(L"-Qstrip_reflect"));
-
+#ifdef _DEBUG
     // Disable optimization for renderdoc pixel debugging
-    ETH_TOOLONLY(arguments.push_back(L"-Od"));
+    arguments.push_back(L"-Od");
+    arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS); //-WX
 
-    ETH_TOOLONLY(arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS)); //-WX
-    ETH_TOOLONLY(arguments.push_back(DXC_ARG_DEBUG));               //-Zi
-    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);             //-Zp
+    // Strip reflection data and pdbs
+    arguments.push_back(DXC_ARG_DEBUG);
+
+#endif
+    //arguments.push_back(L"-Qstrip_debug");
+    //arguments.push_back(L"-Qstrip_reflect");
+
+    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);
 
     ETH_TOOLONLY(arguments.push_back(L"-D"));
     ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));

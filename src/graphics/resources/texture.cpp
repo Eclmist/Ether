@@ -113,28 +113,34 @@ size_t Ether::Graphics::Texture::GetSizeInBytes(uint32_t mipLevel) const
 
 size_t Ether::Graphics::Texture::GetBytesPerPixel() const
 {
-    AssertGraphics(m_Format == RhiFormat::R8G8B8A8Unorm, "Only R8G8B8A8Unorm format is supported");
+    AssertGraphics(
+        m_Format == RhiFormat::R8G8B8A8Unorm || m_Format == RhiFormat::R8G8B8A8UnormSrgb,
+        "Only R8G8B8A8Unorm|Srgb format is supported");
     return 4;
 }
 
-Ether::ethColor4u Ether::Graphics::Texture::GetColor(const void* src, uint32_t x, uint32_t y, uint32_t pitch) const
+Ether::ethColor4 Ether::Graphics::Texture::GetColor(const void* src, uint32_t x, uint32_t y, uint32_t pitch) const
 {
     const uint32_t bpp = GetBytesPerPixel();
-    const uint32_t r = ((uint8_t*)src)[y * pitch + x * bpp + 0];
-    const uint32_t g = ((uint8_t*)src)[y * pitch + x * bpp + 1];
-    const uint32_t b = ((uint8_t*)src)[y * pitch + x * bpp + 2];
-    const uint32_t a = ((uint8_t*)src)[y * pitch + x * bpp + 3];
+    const float r = ((uint8_t*)src)[y * pitch + x * bpp + 0] / 255.0f;
+    const float g = ((uint8_t*)src)[y * pitch + x * bpp + 1] / 255.0f;
+    const float b = ((uint8_t*)src)[y * pitch + x * bpp + 2] / 255.0f;
+    const float a = ((uint8_t*)src)[y * pitch + x * bpp + 3] / 255.0f;
 
-    return { r, g, b, a };
+    const bool isSrgb = m_Format == RhiFormat::R8G8B8A8UnormSrgb;
+    const float gamma = isSrgb ? 2.2f : 1.0f;
+    return { std::pow(r, gamma), std::pow(g, gamma), std::pow(b, gamma), std::pow(a, gamma) };
 }
 
-void Ether::Graphics::Texture::SetColor(void* dest, const ethColor4u& color, uint32_t x, uint32_t y, uint32_t pitch) const
+void Ether::Graphics::Texture::SetColor(void* dest, const ethColor4& color, uint32_t x, uint32_t y, uint32_t pitch) const
 {
+    const bool isSrgb = m_Format == RhiFormat::R8G8B8A8UnormSrgb;
+    const float gamma = isSrgb ? (1.0f / 2.2f) : 1.0f;
     const uint32_t bpp = GetBytesPerPixel();
-    ((uint8_t*)dest)[y * pitch + x * bpp + 0] = (uint8_t)color.x;
-    ((uint8_t*)dest)[y * pitch + x * bpp + 1] = (uint8_t)color.y;
-    ((uint8_t*)dest)[y * pitch + x * bpp + 2] = (uint8_t)color.z;
-    ((uint8_t*)dest)[y * pitch + x * bpp + 3] = (uint8_t)color.w;
+    ((uint8_t*)dest)[y * pitch + x * bpp + 0] = (uint8_t)(std::pow(color.x, gamma) * 255);
+    ((uint8_t*)dest)[y * pitch + x * bpp + 1] = (uint8_t)(std::pow(color.y, gamma) * 255);
+    ((uint8_t*)dest)[y * pitch + x * bpp + 2] = (uint8_t)(std::pow(color.z, gamma) * 255);
+    ((uint8_t*)dest)[y * pitch + x * bpp + 3] = (uint8_t)(std::pow(color.w, gamma) * 255);
 }
 
 void Ether::Graphics::Texture::DownsizeData(const void* src, void* dest, uint32_t width, uint32_t height)
@@ -151,12 +157,12 @@ void Ether::Graphics::Texture::DownsizeData(const void* src, void* dest, uint32_
             const uint32_t xUp = x * 2;
             const uint32_t yUp = y * 2;
 
-            const ethColor4u upColor0 = GetColor(src, xUp + 0, yUp + 0, pitchSrc);
-            const ethColor4u upColor1 = GetColor(src, xUp + 1, yUp + 0, pitchSrc);
-            const ethColor4u upColor2 = GetColor(src, xUp + 0, yUp + 1, pitchSrc);
-            const ethColor4u upColor3 = GetColor(src, xUp + 1, yUp + 1, pitchSrc);
+            const ethColor4 upColor0 = GetColor(src, xUp + 0, yUp + 0, pitchSrc);
+            const ethColor4 upColor1 = GetColor(src, xUp + 1, yUp + 0, pitchSrc);
+            const ethColor4 upColor2 = GetColor(src, xUp + 0, yUp + 1, pitchSrc);
+            const ethColor4 upColor3 = GetColor(src, xUp + 1, yUp + 1, pitchSrc);
 
-            const ethColor4u avgColor = (upColor0 + upColor1 + upColor2 + upColor3) / 4.0;
+            const ethColor4 avgColor = (upColor0 + upColor1 + upColor2 + upColor3) / 4.0;
             SetColor(dest, avgColor, x, y, pitchDest);
         }
 }

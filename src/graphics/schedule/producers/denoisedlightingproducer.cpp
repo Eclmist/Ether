@@ -21,20 +21,7 @@
 #include "denoisedlightingproducer.h"
 #include "graphics/graphiccore.h"
 
-//#include "denoiser/nri/Extensions/NRIWrapperD3D12.h"
-//#include "denoiser/nri/Extensions/NRIHelper.h"
-//#include "denoiser/nrd/NRDDescs.h"
-//#include "denoiser/nrd/NRD.h"
-//#include "denoiser/nrd/NRDIntegration.h"
-
 DEFINE_GFX_PA(DenoisedLightingProducer)
-
-//struct NriInterface
-//    : public nri::CoreInterface
-//    , public nri::HelperInterface
-//    , public nri::WrapperD3D12Interface
-//{};
-//NriInterface NRI;
 
 Ether::Graphics::DenoisedLightingProducer::DenoisedLightingProducer()
     : GraphicProducer("DenoisedLightingProducer")
@@ -48,18 +35,6 @@ Ether::Graphics::DenoisedLightingProducer::~DenoisedLightingProducer()
 void Ether::Graphics::DenoisedLightingProducer::Initialize(ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-
-    //nrd::DenoiserDesc denoiserDesc;
-    //denoiserDesc.denoiser = nrd::Denoiser::REBLUR_DIFFUSE;
-    //denoiserDesc.identifier = nrd::Identifier(nrd::Denoiser::REBLUR_DIFFUSE);
-    //denoiserDesc.renderWidth = resolution.x;
-    //denoiserDesc.renderHeight = resolution.y;
-
-    //nrd::InstanceCreationDesc instanceCreationDesc = {};
-    //instanceCreationDesc.denoisers = &denoiserDesc;
-    //instanceCreationDesc.denoisersNum = 1;
-
-    //g_Nrd.Initialize(instanceCreationDesc, , NRI, NRI));
 }
 
 void Ether::Graphics::DenoisedLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)

@@ -36,7 +36,7 @@ void SampleApp::Initialize()
 {
     LogInfo("Initializing Application: Sample App");
     Client::SetClientTitle("Ether Sample App");
-    Client::SetClientSize({ 1920, 1080 });
+    Client::SetClientSize({ 800, 480 });
 }
 
 void SampleApp::LoadContent()
@@ -92,22 +92,22 @@ void SampleApp::UpdateGraphicConfig() const
     if (Input::GetKey((KeyCode)Win32::KeyCode::J))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(-1, 0, 0, 0) *
 
-                                       Time::GetDeltaTime() * 0.2).Normalized();
+                                       Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::L))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(1, 0, 0, 0) *
-                                       Time::GetDeltaTime() * 0.2).Normalized();
+                                       Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::I))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, 1, 0) *
-                                       Time::GetDeltaTime() * 0.2).Normalized();
+                                       Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::K))
         graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, -1, 0) *
-                                       Time::GetDeltaTime() * 0.2).Normalized();
+                                       Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::U))
         graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.001);
+            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.0002);
     if (Input::GetKey((KeyCode)Win32::KeyCode::O))
         graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.001);
+            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.0002);
 }
 
 void SampleApp::UpdateCamera() const

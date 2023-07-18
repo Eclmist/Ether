@@ -78,7 +78,9 @@ void Ether::Graphics::GraphicDisplay::CreateSwapChain(void* hwnd)
 {
     RhiSwapChainDesc desc = {};
     desc.m_Resolution = { m_Viewport.m_Width, m_Viewport.m_Height };
-    desc.m_Format = BackBufferFormat;
+    desc.m_Format = RhiFormat::R8G8B8A8Unorm; // BackBufferFormat as defined in PCH is SRGB for the sake of 
+                                              // automatic gamma correction. However, swapchain must still be
+                                              // created without the SRGB flag.
     desc.m_SampleDesc = { 1, 0 };
     desc.m_NumBuffers = GetNumBuffers();
     desc.m_SurfaceTarget = hwnd;

@@ -246,6 +246,8 @@ DXGI_FORMAT Ether::Graphics::Translate(const RhiFormat& rhiType)
         return DXGI_FORMAT_UNKNOWN;
     case RhiFormat::R8G8B8A8Unorm:
         return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case RhiFormat::R8G8B8A8UnormSrgb:
+        return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     case RhiFormat::R16G16B16A16Float:
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case RhiFormat::R32G32Float:

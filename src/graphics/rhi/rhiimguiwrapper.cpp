@@ -211,4 +211,13 @@ void Ether::Graphics::RhiImguiWrapper::SetStyle() const
     style->Colors[ImGuiCol_Tab] = style->Colors[ImGuiCol_Button];
     style->Colors[ImGuiCol_TabHovered] = style->Colors[ImGuiCol_ButtonActive];
     style->Colors[ImGuiCol_TabActive] = style->Colors[ImGuiCol_ButtonHovered];
+
+    static const float gamma = 2.2f;
+    for (int i = 0; i < ImGuiCol_COUNT; ++i)
+        style->Colors[i] = ImVec4(
+            std::pow(style->Colors[i].x, gamma),
+            std::pow(style->Colors[i].y, gamma),
+            std::pow(style->Colors[i].z, gamma),
+            style->Colors[i].w
+        );
 }

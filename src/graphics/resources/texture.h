@@ -60,8 +60,8 @@ private:
     size_t GetSizeInBytes(uint32_t mipLevel = 0) const;
     size_t GetBytesPerPixel() const;
 
-    ethColor4u GetColor(const void* src, uint32_t x, uint32_t y, uint32_t pitch) const;
-    void SetColor(void* dest, const ethColor4u& color, uint32_t x, uint32_t y, uint32_t pitch) const;
+    ethColor4 GetColor(const void* src, uint32_t x, uint32_t y, uint32_t pitch) const;
+    void SetColor(void* dest, const ethColor4& color, uint32_t x, uint32_t y, uint32_t pitch) const;
     void DownsizeData(const void* src, void* dest, uint32_t width, uint32_t height);
     void GenerateMips();
 
@@ -73,7 +73,6 @@ private:
     uint32_t m_NumMips;
     RhiFormat m_Format;
     void* m_Data[MaxNumMips];
-
 
     std::unique_ptr<RhiResource> m_Resource;
 };
