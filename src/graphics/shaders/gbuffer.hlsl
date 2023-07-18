@@ -21,6 +21,7 @@
 #include "common/material.h"
 #include "common/instanceparams.h"
 #include "utils/fullscreenhelpers.hlsl"
+#include "utils/encoding.hlsl"
 
 struct VS_INPUT
 {
@@ -111,10 +112,11 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (InterleavedGradientNoise(IN.TexCoord.xy) > albedo.a)
         discard;
 
+    float2 octNormals = EncodeNormals(normal);
+
     PS_OUTPUT o;
-    o.Output0 = float4(albedo.x,    albedo.y,   albedo.z,   IN.Position.w);
-    o.Output1 = float4(worldPos.x,  worldPos.y, worldPos.z, roughness);
-    o.Output2 = float4(normal.x,    normal.y,   normal.z,   metalness);
-    o.Output3 = float4(velocity.x,  velocity.y, 0,          0);
+    o.Output0 = float4(albedo.x,     albedo.y,      albedo.z,   IN.Position.w);
+    o.Output1 = float4(worldPos.x,   worldPos.y,    worldPos.z, roughness);
+    o.Output2 = float4(octNormals.x, octNormals.y,  velocity.x, velocity.y);
     return o;
 }

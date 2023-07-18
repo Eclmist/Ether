@@ -36,8 +36,8 @@ Ether::Graphics::ProceduralSkyProducer::ProceduralSkyProducer()
 void Ether::Graphics::ProceduralSkyProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewRT(ACCESS_GFX_RT(ProceduralSkyTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
-    schedule.NewSR(ACCESS_GFX_SR(ProceduralSkyTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewRT(ACCESS_GFX_RT(ProceduralSkyTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float);
+    schedule.NewSR(ACCESS_GFX_SR(ProceduralSkyTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
 

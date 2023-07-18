@@ -29,7 +29,6 @@ DEFINE_GFX_SR(LightingCompositeTexture)
 DECLARE_GFX_SR(GBufferTexture0)
 DECLARE_GFX_SR(GBufferTexture1)
 DECLARE_GFX_SR(GBufferTexture2)
-DECLARE_GFX_SR(GBufferTexture3)
 DECLARE_GFX_SR(RTLightingTexture)
 DECLARE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
@@ -48,7 +47,6 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture3));
     schedule.Read(ACCESS_GFX_SR(RTLightingTexture));
     schedule.Read(ACCESS_GFX_SR(ProceduralSkyTexture));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
@@ -61,7 +59,6 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture0)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture1)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture2)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture3)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTLightingTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(ProceduralSkyTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(LightingCompositeTexture)), RhiResourceState::RenderTarget);
@@ -69,9 +66,8 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(RTLightingTexture)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(6, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(4, ACCESS_GFX_SR(RTLightingTexture)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
     ctx.SetRenderTarget(*ACCESS_GFX_RT(LightingCompositeTexture).Get());
 
     ctx.DrawInstanced(3, 1);
@@ -79,7 +75,7 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
 
 void Ether::Graphics::LightingCompositeProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(7, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(6, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
 
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
@@ -89,11 +85,9 @@ void Ether::Graphics::LightingCompositeProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2); // (t2) GBufferTexture2
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3); // (t3) GBufferTexture3
+    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3); // (t3) RTLightingTexture
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4); // (t4) RTLightingTexture
-    rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 5); // (t5) ProceduralSkyTexture
+    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4); // (t4) ProceduralSkyTexture
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());

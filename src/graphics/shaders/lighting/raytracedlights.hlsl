@@ -22,6 +22,7 @@
 #include "common/material.h"
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
+#include "utils/encoding.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -31,7 +32,6 @@ Texture2D<float4> g_AccumulationTexture             : register(t3);
 Texture2D<float4> g_GBufferOutput0                  : register(t4);
 Texture2D<float4> g_GBufferOutput1                  : register(t5);
 Texture2D<float4> g_GBufferOutput2                  : register(t6);
-Texture2D<float4> g_GBufferOutput3                  : register(t7);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 RWTexture2D<float4> g_IndirectOutput                : register(u1);
 
@@ -152,20 +152,20 @@ void RayGeneration()
 
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
-    const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
-    const float2 uvPrev = uv - g_GBufferOutput3.Load(launchIndex).xy;
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
     const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
     const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
     const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
-    const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 color = gbuffer0.xyz;
     const float3 position = gbuffer1.xyz;
-    const float3 normal = gbuffer2.xyz;
+    const float3 normal = DecodeNormals(gbuffer2.xy);
     const float roughness = gbuffer1.w;
-    const float metalness = gbuffer2.w;
+    const float2 velocity = gbuffer2.zw;
+    const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
+    const float2 uvPrev = uv - velocity;
+    const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 ambient = ComputeSkyColor() * 0.25;
     const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
