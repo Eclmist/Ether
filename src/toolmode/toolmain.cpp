@@ -68,7 +68,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     {
         const float meshScale = GetCommandLineOptions().GetImportScale();
         const std::string exportWorldName = PathUtils::GetFileName(m_ImportPaths[0]);
-        const std::string sceneSavePath = workspacePath + exportWorldName + ".ether";
+        const std::string sceneSavePath = workspacePath + "\\" + exportWorldName + ".ether";
         const std::string libraryPath = workspacePath + "\\Library\\" + exportWorldName;
         AssetImporter::Instance().SetWorkspacePath(workspacePath);
         AssetImporter::Instance().SetLibraryPath(libraryPath);

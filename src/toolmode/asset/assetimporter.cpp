@@ -114,7 +114,7 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
             continue;
 
         Graphics::Mesh gfxMesh;
-        OFileStream ofstream(std::format("{}{}.eres", m_LibraryPath, gfxMesh.GetGuid()));
+        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxMesh.GetGuid()));
 
         gfxMesh.SetPackedVertices(std::move(packedVertices));
         gfxMesh.SetIndices(std::move(indices));
@@ -132,7 +132,7 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
         const aiMaterial* material = assimpMaterials[i];
 
         Graphics::Material gfxMaterial;
-        OFileStream ofstream(std::format("{}{}.eres", m_LibraryPath, gfxMaterial.GetGuid()));
+        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxMaterial.GetGuid()));
 
         assert(sizeof(ethVector3) == sizeof(aiColor3D));
 
@@ -187,7 +187,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
         return m_PathToGuidMap.at(texturePath);
 
     Graphics::Texture gfxTexture;
-    OFileStream ofstream(std::format("{}{}.eres", m_LibraryPath, gfxTexture.GetGuid()));
+    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxTexture.GetGuid()));
 
     int w, h, channels;
     unsigned char* image = stbi_load((folderPath + texturePath.GetString()).c_str(), &w,

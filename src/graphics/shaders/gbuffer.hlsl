@@ -44,7 +44,6 @@ struct PS_OUTPUT
     float4 Output0      : SV_TARGET0;
     float4 Output1      : SV_TARGET1;
     float4 Output2      : SV_TARGET2;
-    float4 Output3      : SV_TARGET3;
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
@@ -91,6 +90,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
         normal = normalTex.Sample(linearSampler, IN.TexCoord).xyz;
         normal = normal * 2.0 - 1.0;
+        normal = normalize(normal);
         float3 bitangent = normalize(cross(IN.Normal, IN.Tangent));
         float3x3 TBN = float3x3(IN.Tangent, bitangent, IN.Normal);
         normal = normalize(mul(normal, TBN));

@@ -140,7 +140,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
 
     float3 radiance = 0;
     radiance += ComputeDirectIrradiance(hitSurface.m_Position, normal) * albedo.xyz;
-    radiance += ComputeIndirectIrradiance(hitSurface.m_Position, normal, 1, payload.m_Depth - 1) * albedo.xyz;
+    radiance += ComputeIndirectIrradiance(hitSurface.m_Position, normal, 0, payload.m_Depth - 1) * albedo.xyz;
 
     return radiance;
 }
@@ -161,16 +161,16 @@ void RayGeneration()
     const float3 color = gbuffer0.xyz;
     const float3 position = gbuffer1.xyz;
     const float3 normal = DecodeNormals(gbuffer2.xy);
-    const float roughness = gbuffer1.w;
     const float2 velocity = gbuffer2.zw;
+    const float roughness = gbuffer1.w;
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
     const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 finalDirectIrradiance = ComputeDirectIrradiance(position, normal);
-    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, 1, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 8;
+    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, normal, roughness, 1) * g_GlobalConstants.m_RaytracedAOIntensity * 4;
 
-    float a = 0.05;
+    float a = 0.3;
     const float3 finalIndirectIrradiance = (a * indirectIrradiance.xyz) + (1 - a) * accumulation.xyz;
     const float3 finalRadiance = finalDirectIrradiance + finalIndirectIrradiance;
 
@@ -187,12 +187,12 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 2;
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 3;
     }
     else
     {
         // Sample sky color
-        payload.m_Radiance = ComputeSkyColor().xyz / 3.0;
+        payload.m_Radiance = ComputeSkyColor().xyz;
     }
 }
 
