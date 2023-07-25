@@ -182,7 +182,8 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
 Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     const std::string& folderPath,
     const StringID& texturePath,
-    bool isSrgb)
+    bool isSrgb,
+    bool genMips)
 {
     if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
         return m_PathToGuidMap.at(texturePath);
@@ -217,7 +218,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     gfxTexture.SetFormat(isSrgb ? Ether::Graphics::RhiFormat::R8G8B8A8UnormSrgb : Graphics::RhiFormat::R8G8B8A8Unorm);
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
-    gfxTexture.SetData(downscaleOutput);
+    gfxTexture.SetData(downscaleOutput, genMips);
     gfxTexture.Serialize(ofstream);
 
     m_PathToGuidMap[texturePath] = gfxTexture.GetGuid();

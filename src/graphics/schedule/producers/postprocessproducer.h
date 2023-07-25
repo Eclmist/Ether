@@ -19,29 +19,32 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/fullscreenproducer.h"
+#include "graphics/schedule/producers/graphicproducer.h"
 
 namespace Ether::Graphics
 {
-class PostProcessProducer : public FullScreenProducer
+class PostProcessProducer : public GraphicProducer
 {
 public:
     PostProcessProducer(const char* name, const char* shaderPath);
     ~PostProcessProducer() override = default;
 
 public:
+    virtual void Initialize(ResourceContext& rc) override;
     virtual void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
 protected:
-    virtual void CreateShaders() override;
-    virtual void CreatePipelineState(ResourceContext& rc) override;
+    virtual void CreateShaders();
+    virtual void CreatePipelineState(ResourceContext& rc);
     virtual void CreateRootSignature() = 0;
 
 protected:
     void DispatchFullscreen(GraphicContext& ctx);
 
 protected:
+    std::string m_ShaderPath;
     std::unique_ptr<RhiShader> m_ComputeShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
     std::unique_ptr<RhiComputePipelineStateDesc> m_ComputePsoDesc;
 };
 } // namespace Ether::Graphics

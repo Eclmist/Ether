@@ -49,15 +49,22 @@ public:
     inline void SetClearColor(const ethVector4& clearColor) { m_ClearColor = clearColor; }
 
 public:
-    // Temporary debugging flags to be removed
+    // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
     float m_RaytracedAOIntensity = 0.5;
 
+    // TAA
     bool m_IsTemporalAAEnabled = true;
     int32_t m_TemporalAAJitterMode = 2;
     float m_JitterScale = 1;
     float m_TemporalAAAcumulationFactor = 0.1;
+
+    // Bloom
+    bool m_IsBloomEnabled = false;
+    float m_BloomIntensity = 0.25f;
+    float m_BloomScatter = 0.8f;
+    float m_BloomAnamorphic = 0.0f;
 
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };

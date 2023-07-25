@@ -19,6 +19,8 @@
 
 #include "linearallocator.h"
 
+static constexpr size_t InternalAlignment = 32;
+
 Ether::LinearAllocator::LinearAllocator(size_t capacity)
     : MemoryAllocator(capacity)
     , m_Offset(0)
@@ -30,7 +32,7 @@ std::unique_ptr<Ether::MemoryAllocation> Ether::LinearAllocator::Allocate(SizeAl
     if (!HasSpace(sizeAlign))
         return nullptr;
 
-    size_t alignedOffset = AlignUp(m_Offset, sizeAlign.m_Alignment);
+    size_t alignedOffset = AlignUp(m_Offset, InternalAlignment);
     size_t alignedSize = AlignUp(sizeAlign.m_Size, sizeAlign.m_Alignment);
 
     m_Offset = alignedOffset + alignedSize;
@@ -46,7 +48,7 @@ void Ether::LinearAllocator::Free(std::unique_ptr<MemoryAllocation>&& alloc)
 bool Ether::LinearAllocator::HasSpace(SizeAlign sizeAlign) const
 {
     size_t alignedSize = AlignUp(sizeAlign.m_Size, sizeAlign.m_Alignment);
-    size_t alignedOffset = AlignUp(m_Offset, sizeAlign.m_Alignment);
+    size_t alignedOffset = AlignUp(m_Offset, InternalAlignment);
     return alignedOffset + alignedSize <= m_Capacity;
 }
 

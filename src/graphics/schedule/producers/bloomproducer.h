@@ -19,23 +19,31 @@
 
 #pragma once
 
-#include "common/common.h"
-#include "common/logging/loggingmanager.h"
-#include "common/time/time.h"
-#include "common/stream/filestream.h"
-#include "common/stream/bytestream.h"
-
-#include "graphics/rhi/rhitypes.h"
-#include "graphics/rhi/rhiresource.h"
-#include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/schedule/producers/postprocessproducer.h"
 
 namespace Ether::Graphics
 {
-    constexpr uint32_t MaxSwapChainBuffers          = 3;
-    constexpr uint32_t DefaultBackBufferWidth       = 1920;
-    constexpr uint32_t DefaultBackBufferHeight      = 1080;
-    constexpr RhiFormat BackBufferLdrFormat         = RhiFormat::R8G8B8A8UnormSrgb; // Needs to be SRGB for auto gamma correction
-    constexpr RhiFormat BackBufferHdrFormat         = RhiFormat::R32G32B32A32Float; // Will be copied to LDR buffer, so no need SRGB
-    constexpr RhiFormat DepthBufferFormat           = RhiFormat::D24UnormS8Uint;
-}
+class BloomProducer : public PostProcessProducer
+{
+public:
+    BloomProducer();
+    ~BloomProducer() override = default;
 
+public:
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+
+protected:
+    bool IsEnabled() override;
+    void CreateRootSignature() override;
+
+private:
+    void AddBloomSubpass(
+        uint32_t passType,
+        GraphicContext& ctx,
+        ResourceContext& rc,
+        GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView> src,
+        RhiGpuAddress dst,
+        ethVector2 dstResolution);
+};
+} // namespace Ether::Graphics

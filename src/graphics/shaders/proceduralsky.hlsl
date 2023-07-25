@@ -148,7 +148,7 @@ float3 CalculateSunRadiance(float3 viewDirection, float3 sunDirection, float3 su
     float cosTheta = dot(viewDirection, sunDirection);
     float sunIntensity = saturate(smoothstep(0.999, 1.0, cosTheta));
     float3 sunRadiance = sunColor * sunIntensity;
-    return saturate(sunRadiance);
+    return saturate(sunRadiance) * 100000.0f;
 }
 float3 CalculateRayleighScattering(float3 viewDirection, float3 sunDirection, float rayleighCoefficient)
 {
@@ -214,7 +214,7 @@ float3 CalculateSkyRadiance(
     float3 turbidityCorrection = CalculateTurbidityCorrection(skyTurbidity);
     skyColor *= turbidityCorrection;
 
-    return saturate(skyColor);
+    return saturate(skyColor) * 5000.0f;
 }
 
 float4 ProceduralSky(float2 texCoord)

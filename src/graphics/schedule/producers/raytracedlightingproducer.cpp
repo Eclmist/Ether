@@ -64,10 +64,10 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     uint32_t numVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.size();
 
-    schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
-    schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTIndirectTexture), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
     schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals);
 

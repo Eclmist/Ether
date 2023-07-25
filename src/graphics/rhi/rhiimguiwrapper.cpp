@@ -41,7 +41,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     ETH_MARKER_EVENT("Debug Menu Gui Component - Draw");
 
-    static bool showImGuiDemo = true;
     auto& gfxConfig = GraphicCore::GetGraphicConfig();
 
     ImGui::SetNextWindowPos(ImVec2(20, 20));
@@ -76,30 +75,41 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
         if (ImGui::CollapsingHeader("Render Options"))
         {
-            static bool& temporalAAEnabled = gfxConfig.m_IsTemporalAAEnabled;
-            ImGui::Checkbox("Temporal AA", &temporalAAEnabled);
-
-            if (temporalAAEnabled)
+            if (ImGui::TreeNode("Bloom"))
             {
+                ImGui::Checkbox("Enabled", &gfxConfig.m_IsBloomEnabled);
+                ImGui::SliderFloat("Intensity", &gfxConfig.m_BloomIntensity, 0, 1);
+                ImGui::SliderFloat("Scatter", &gfxConfig.m_BloomScatter, 0, 1);
+                ImGui::SliderFloat("Anamorphic", &gfxConfig.m_BloomAnamorphic, 0, 1);
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Temporal AA"))
+            {
+                ImGui::Checkbox("Enabled", &gfxConfig.m_IsTemporalAAEnabled);
                 const char* items[] = { "None", "Grid", "Halton" };
                 ImGui::Combo("Jitter Mode", &gfxConfig.m_TemporalAAJitterMode, items, IM_ARRAYSIZE(items));
                 ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_JitterScale, 0, 10);
                 ImGui::SliderFloat("Temporal Accumulation", &gfxConfig.m_TemporalAAAcumulationFactor, 0, 1);
+                ImGui::TreePop();
             }
 
-            static bool& raytracingEnabled = gfxConfig.m_IsRaytracingEnabled;
-            ImGui::Checkbox("Raytracing", &raytracingEnabled);
-            if (raytracingEnabled)
+            if (ImGui::TreeNode("Raytracing"))
             {
-                ImGui::SliderFloat("AO Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 1);
+                ImGui::Checkbox("Enabled", &gfxConfig.m_IsRaytracingEnabled);
+                ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 1);
+                ImGui::TreePop();
             }
 
-            static ethVector4& sunColor = gfxConfig.m_SunColor;
-            static ethVector4& sunDirection = gfxConfig.m_SunDirection;
-            ImGui::ColorEdit3("Sun Color", sunColor.m_Data);
-            ImGui::SliderFloat3("Sun Direction", sunDirection.m_Data, -1, 1);
+            if (ImGui::TreeNode("Debug Sun"))
+            {
+                static ethVector4& sunDirection = gfxConfig.m_SunDirection;
+                ImGui::ColorEdit3("Sun Color", gfxConfig.m_SunColor.m_Data);
+                ImGui::SliderFloat3("Sun Direction", gfxConfig.m_SunDirection.m_Data, -1, 1);
+                sunDirection.Normalize();
+                ImGui::TreePop();
+            }
 
-            sunDirection.Normalize();
         }
 
         static float fpsHistoryBuffer[128];
@@ -126,10 +136,9 @@ void Ether::Graphics::RhiImguiWrapper::Render()
     }
     ImGui::PopStyleVar();
 
-    if (showImGuiDemo)
-    {
-        ImGui::ShowDemoWindow(&showImGuiDemo);
-    }
+#if 0
+    ImGui::ShowDemoWindow();
+#endif 
 
     ImGui::Render();
 
@@ -206,7 +215,7 @@ void Ether::Graphics::RhiImguiWrapper::SetStyle() const
     style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
     style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
     style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
+    style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.543f);
     style->Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
     style->Colors[ImGuiCol_Tab] = style->Colors[ImGuiCol_Button];
     style->Colors[ImGuiCol_TabHovered] = style->Colors[ImGuiCol_ButtonActive];

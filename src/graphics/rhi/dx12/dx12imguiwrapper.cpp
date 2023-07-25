@@ -37,7 +37,7 @@ Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
     ImGui_ImplDX12_Init(
         ((Dx12Device&)GraphicCore::GetDevice()).m_Device.Get(),
         GraphicCore::GetGraphicDisplay().GetNumBuffers(),
-        Translate(BackBufferFormat),
+        Translate(BackBufferLdrFormat),
         ((Dx12DescriptorHeap&)m_DescriptorHeap).m_Heap.Get(),
         { m_DescriptorHeap->GetBaseCpuAddress() },
         { m_DescriptorHeap->GetBaseGpuAddress() });

@@ -31,6 +31,7 @@
 #include "graphics/schedule/producers/proceduralskyproducer.h"
 #include "graphics/schedule/producers/raytracedlightingproducer.h"
 #include "graphics/schedule/producers/temporalaaproducer.h"
+#include "graphics/schedule/producers/bloomproducer.h"
 
 DECLARE_GFX_PA(DenoisedLightingProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
@@ -42,6 +43,7 @@ DECLARE_GFX_PA(PostFxSourceProducer)
 DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(RaytracedLightingProducer)
 DECLARE_GFX_PA(TemporalAAProducer)
+DECLARE_GFX_PA(BloomProducer)
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
@@ -55,6 +57,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
     Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
+    Register(ACCESS_GFX_PA(BloomProducer), new BloomProducer());
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -135,6 +138,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(BloomProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 }
 

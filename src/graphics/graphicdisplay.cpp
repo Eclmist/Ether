@@ -25,8 +25,8 @@
 
 Ether::Graphics::GraphicDisplay::GraphicDisplay()
     : m_BufferingMode(BufferingMode::Triple)
-    , m_VSyncEnabled(false)
-    , m_VSyncVBlanks(1)
+    , m_VSyncEnabled(true)
+    , m_VSyncVBlanks(4)
 {
     ResizeViewport(GraphicCore::GetGraphicConfig().GetResolution());
     CreateSwapChain(GraphicCore::GetGraphicConfig().GetWindowHandle());
@@ -109,7 +109,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         m_RenderTargetRtv[i].SetHeight(m_Viewport.m_Height);
         m_RenderTargetRtv[i].SetDepth(1);
         m_RenderTargetRtv[i].SetDimension(RhiResourceDimension::Texture2D);
-        m_RenderTargetRtv[i].SetFormat(BackBufferFormat);
+        m_RenderTargetRtv[i].SetFormat(BackBufferLdrFormat);
         m_RenderTargetRtv[i].SetViewID("BackBuffer RTV " + std::to_string(i));
         m_RenderTargetRtv[i].SetResourceID(m_RenderTargets[i]->GetResourceID());
         m_RenderTargetRtv[i].SetCpuAddress(((DescriptorAllocation&)(*rtvAllocation)).GetCpuAddress(i));
@@ -120,7 +120,7 @@ void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
         m_RenderTargetRtv[i].SetHeight(m_Viewport.m_Height);
         m_RenderTargetRtv[i].SetDepth(1);
         m_RenderTargetRtv[i].SetDimension(RhiResourceDimension::Texture2D);
-        m_RenderTargetSrv[i].SetFormat(BackBufferFormat);
+        m_RenderTargetSrv[i].SetFormat(BackBufferLdrFormat);
         m_RenderTargetRtv[i].SetViewID("BackBuffer SRV " + std::to_string(i));
         m_RenderTargetSrv[i].SetResourceID(m_RenderTargets[i]->GetResourceID());
         m_RenderTargetSrv[i].SetDimension(RhiResourceDimension::Texture2D);

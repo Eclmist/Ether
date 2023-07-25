@@ -41,7 +41,8 @@ float3 ComputeSkyColor()
     float3 daySkyColor = float3(0.6, 0.7, 1.0) * 0.4;
     float3 nightSkyColor = float3(0.1, 0.25, 0.4) * 0.1;
     float3 skyColor = lerp(nightSkyColor, daySkyColor, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
-    return skyColor * 0.1;
+    float3 sunColor = g_GlobalConstants.m_SunColor;
+    return skyColor * 15000.0f * sunColor * g_GlobalConstants.m_RaytracedAOIntensity;
 }
 
 MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
@@ -66,14 +67,14 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
     return BarycentricLerp(v0, v1, v2, barycentrics);
 }
 
-float3 ComputeDirectIrradiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
 
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-    shadowRay.Origin = position;
+    shadowRay.Origin = position + (normal * 0.01);
     shadowRay.TMax = 64;
     shadowRay.TMin = 0.05;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
@@ -86,42 +87,70 @@ float3 ComputeDirectIrradiance(float3 position, float3 wo, float3 normal, float3
     return Lo;
 }
 
-float3 ComputeIndirectIrradiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
+float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
 {
-    const float3 ambient = ComputeSkyColor() * 0.1;
-
+    const float3 ambient = ComputeSkyColor();
     if (depth <= 0)
         return ambient;
+
+    roughness = max(0.05, roughness);
 
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
-    float3 direction = normalize(ImportanceSampleGGX(rand2D, roughness, normal));
-    float pdf = GGX_PDF(dot(normal, direction), roughness);
+    const float3 H = normalize(ImportanceSampleGGX(rand2D, roughness, normal));
+    const float nDotH = saturate(dot(normal, H));
+    const float vDotH = saturate(dot(wo, H));
 
-    const float3 sphere = normalize(SampleDirectionSphere(rand2D));
-    const float3 mirror = reflect(-wo, normal);
-    direction = normalize(mirror) + sphere * roughness;
+    float3 wi = 0;
+    float3 f = 0;
+    float pdf = 0;
+
+    // weights.x = specular, weights.y = diffuse (1 - specular)
+    // <-- rough ------------------------------- smooth -->
+    // ^ (0, 1)                                      (1, 0)
+    // |
+    // metal 
+    // |
+    // |
+    // |
+    // |
+    // nonmetal
+    // |
+    // v (0, 1)                                  (0.5, 0.5)
+    float specularEstimatorWeight = lerp(lerp(0.5f, 1.0f, metalness), 0.0f, roughness);
+
+    if (Random(rand2D.x) <= specularEstimatorWeight)
+    {
+        wi = normalize(reflect(-wo, H));
+        f = UE4_Brdf(wi, wo, normal, albedo, roughness, metalness) * specularEstimatorWeight;
+        pdf = UE4_Specular_D_Pdf(nDotH, vDotH, roughness);
+    }
+    else
+    {
+        wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal));
+        f = UE4_Brdf(wi, wo, normal, albedo, roughness, metalness) * (1 - specularEstimatorWeight);
+        pdf = SampleDirectionCosineHemisphere_Pdf(saturate(dot(wi, normal)));
+    }
 
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
 
     RayDesc indirectRay;
-    indirectRay.Direction = direction;
-    indirectRay.Origin = position + normal;
-    indirectRay.TMax = 12;
+    indirectRay.Direction = wi;
+    indirectRay.Origin = position;
+    indirectRay.TMax = 16;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
 
-    const float3 wi = direction;
-    const float3 Li = payload.m_Radiance;
-    const float cosTheta = dot(wi, normal);
+    const float cosTheta = saturate(dot(wi, normal));
+    const float3 Li = min(10000.0f, payload.m_Radiance);
     const float indirectBoost = (g_GlobalConstants.m_RaytracedAOIntensity * 5);
-    const float3 Lo = Li * albedo * indirectBoost; 
-    return Lo + ambient;
+    const float3 Lo = Li * f * cosTheta / ZERO_GUARD(pdf);
+    return Lo;
 }
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
@@ -163,9 +192,9 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     }
 
     const float3 wo = normalize(-WorldRayDirection());
-    const float3 sunIrradiance = ComputeDirectIrradiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 bounceIrradiance = ComputeIndirectIrradiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
-    return sunIrradiance + bounceIrradiance;
+    const float3 direct = GetDirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
+    const float3 indirectSpecular = GetIndirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
+    return direct + indirectSpecular;
 }
 
 [shader("raygeneration")]
@@ -192,13 +221,13 @@ void RayGeneration()
     const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
-    const float3 directIrradiance = ComputeDirectIrradiance(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirectIrradiance = ComputeIndirectIrradiance(position, viewDir, normal, color, roughness, metalness, 2);
+    const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
+    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 2);
 
-    float a = 0.1;
-    const float3 accumulatedDiffuseIndirect = (a * indirectIrradiance) + (1 - a) * accumulation.xyz;
-    g_LightingOutput[launchIndex.xy].xyz = directIrradiance + accumulatedDiffuseIndirect;
-    g_IndirectOutput[launchIndex.xy].xyz = accumulatedDiffuseIndirect;
+    float a = 1;
+    const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
+    g_LightingOutput[launchIndex.xy].xyz = direct + accumulatedIndirect;
+    g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
 }
 
 [shader("miss")]
@@ -210,12 +239,12 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 10.0;
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 100000.0f;
     }
     else
     {
         // Sample sky color
-        payload.m_Radiance = ComputeSkyColor() * 8.0;
+        payload.m_Radiance = ComputeSkyColor();
     }
 }
 

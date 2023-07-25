@@ -54,7 +54,7 @@ public:
     inline void SetWidth(uint32_t width) { m_Width = width; }
     inline void SetHeight(uint32_t height) { m_Height = height; }
     inline void SetFormat(RhiFormat format) { m_Format = format; }
-    inline void SetData(const unsigned char* data);
+    inline void SetData(const unsigned char* data, bool genMips);
 
 private:
     size_t GetSizeInBytes(uint32_t mipLevel = 0) const;

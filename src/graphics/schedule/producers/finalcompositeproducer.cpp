@@ -54,7 +54,7 @@ void Ether::Graphics::FinalCompositeProducer::CreatePipelineState(ResourceContex
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormat(BackBufferFormat);
+    m_PsoDesc->SetRenderTargetFormat(BackBufferLdrFormat);
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);

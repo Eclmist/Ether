@@ -25,8 +25,17 @@
 DECLARE_GFX_CB(GlobalRingBuffer)
 
 Ether::Graphics::PostProcessProducer::PostProcessProducer(const char* name, const char* shaderPath)
-    : FullScreenProducer(name, shaderPath)
+    : GraphicProducer(name)
+    , m_ShaderPath(shaderPath)
 {
+
+}
+
+void Ether::Graphics::PostProcessProducer::Initialize(ResourceContext& rc)
+{
+    CreateShaders();
+    CreateRootSignature();
+    CreatePipelineState(rc);
 }
 
 void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)

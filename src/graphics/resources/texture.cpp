@@ -99,10 +99,13 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
 #endif
 }
 
-void Ether::Graphics::Texture::SetData(const unsigned char* data)
+void Ether::Graphics::Texture::SetData(const unsigned char* data, bool genMips)
 {
     m_Data[0] = (void*)data;
-    GenerateMips();
+    m_NumMips = 1;
+
+    if (genMips)
+        GenerateMips();
 }
 
 size_t Ether::Graphics::Texture::GetSizeInBytes(uint32_t mipLevel) const

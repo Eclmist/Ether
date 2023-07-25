@@ -42,8 +42,86 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
     return o;
 }
 
+float luminance(float3 v)
+{
+    return dot(v, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
+float3 change_luminance(float3 c_in, float l_out)
+{
+    float l_in = luminance(c_in);
+    return c_in * (l_out / l_in);
+}
+
+float3 reinhard_extended_luminance(float3 v, float max_white_l)
+{
+    float l_old = luminance(v);
+    float numerator = l_old * (1.0f + (l_old / (max_white_l * max_white_l)));
+    float l_new = numerator / (1.0f + l_old);
+    return change_luminance(v, l_new);
+}
+
+float3 reinhard_jodie(float3 v)
+{
+    float l = luminance(v);
+    float3 tv = v / (1.0f + v);
+    return lerp(v / (1.0f + l), tv, tv);
+}
+
+// sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
+static const float3x3 ACESInputMat = { { 0.59719, 0.35458, 0.04823 },
+                                       { 0.07600, 0.90834, 0.01566 },
+                                       { 0.02840, 0.13383, 0.83777 } };
+
+// ODT_SAT => XYZ => D60_2_D65 => sRGB
+static const float3x3 ACESOutputMat = { { 1.60475, -0.53108, -0.07367 },
+                                        { -0.10208, 1.10813, -0.00605 },
+                                        { -0.00327, -0.07276, 1.07602 } };
+
+float3 RRTAndODTFit(float3 v)
+{
+    float3 a = v * (v + 0.0245786f) - 0.000090537f;
+    float3 b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
+    return a / b;
+}
+
+float3 ACESFitted(float3 color)
+{
+    color = mul(ACESInputMat, color);
+
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = mul(ACESOutputMat, color);
+
+    // Clamp to [0, 1]
+    color = saturate(color);
+
+    return color;
+}
+
+float3 aces_approx(float3 v)
+{
+    v *= 0.6f;
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return clamp((v * (a * v + b)) / (v * (c * v + d) + e), 0.0f, 1.0f);
+}
+
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float4 lightingComposite = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    return lightingComposite;
+    const float manualExposure = 0.0003;
+    const float contrast = 1.03;
+
+    float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
+    col = col * manualExposure;
+    col = max(0.0f, (col - 0.5f) * contrast + 0.5f);
+
+    //col = reinhard_extended_luminance(col, 200000.0);
+    col = ACESFitted(col);
+    //col = aces_approx(col);
+    return float4(col, 1.0f);
 }

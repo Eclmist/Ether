@@ -18,41 +18,73 @@
 */
 
 #include "common/globalconstants.h"
-#include "utils/fullscreenhelpers.hlsl"
+#include "common/bloomparams.h"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-Texture2D<float4> g_GBufferTexture3                 : register(t0);
-Texture2D<float4> g_AccumulationTextureIn           : register(t1);
-RWTexture2D<float4> g_TargetTexture                 : register(u0);
-RWTexture2D<float4> g_AccumulationTextureOut        : register(u1);
+ConstantBuffer<BloomParams> g_BloomParams           : register(b1);
+Texture2D<float4> g_SourceTexture                   : register(t0);
+RWTexture2D<float4> g_DestinationTexture            : register(u0);
 
-[numthreads(32, 32, 1)]
+void DownsamplePass(uint3 threadID)
+{
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 resolution = g_BloomParams.m_Resolution;
+    const float2 halfTexelSize = 1.0f / resolution / 2.0f;
+    const float2 uv = threadID.xy / resolution + halfTexelSize;
+    const float4 offset = halfTexelSize.xyxy * float4(-1, -1, 1, 1);
+
+    float4 col = g_SourceTexture.Sample(linearSampler, uv) * 4.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.xy);
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.xw);
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.zy);
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.zw);
+
+    g_DestinationTexture[threadID.xy] = col / 8.0f;
+}
+
+void UpsamplePass(uint3 threadID)
+{
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 resolution = g_BloomParams.m_Resolution;
+    const float2 halfTexelSize = 1.0f / resolution / 2.0f;
+    const float2 uv = threadID.xy / resolution + halfTexelSize;
+    const float4 offset = halfTexelSize.xyxy * float4(-1, -1, 1, 1);
+    const float2 anamorphy = float2(1.0f + (g_BloomParams.m_Anamorphic), 1.0f);
+
+    float4 col = g_SourceTexture.Sample(linearSampler, uv + float2(offset.x, 0.0f) * anamorphy);
+    col += g_SourceTexture.Sample(linearSampler, uv + float2(offset.z, 0.0f) * anamorphy);
+    col += g_SourceTexture.Sample(linearSampler, uv + float2(0.0f, offset.y) * anamorphy);
+    col += g_SourceTexture.Sample(linearSampler, uv + float2(0.0f, offset.w) * anamorphy);
+
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.xy / 2.0f) * anamorphy) * 2.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.xw / 2.0f) * anamorphy) * 2.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.zy / 2.0f) * anamorphy) * 2.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.zw / 2.0f) * anamorphy) * 2.0f;
+
+    g_DestinationTexture[threadID.xy] = col / 12.0f;
+}
+
+void CompositePass(uint3 threadID)
+{
+    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    const float2 halfPixel = 1.0f / resolution / 2.0f;
+    const float2 uv = threadID.xy / resolution + halfPixel;
+    const float bloomIntensity = g_BloomParams.m_Intensity * 0.12;
+
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float4 bloom = g_SourceTexture.Sample(linearSampler, uv);
+    g_DestinationTexture[threadID.xy] += bloom * bloomIntensity;
+}
+
+[numthreads(BLOOM_KERNEL_GROUP_SIZE_X, BLOOM_KERNEL_GROUP_SIZE_Y, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    float2 resolution = g_GlobalConstants.m_ScreenResolution;
-    float2 uv = threadID.xy / resolution + 0.5 / resolution;
-    float2 uvPrev = uv - (float2)g_GBufferTexture3.Sample(linearSampler, uv).xy;
-    float4 colorPrev = g_AccumulationTextureIn.Sample(linearSampler, uvPrev);
-    float4 colorCurr = g_TargetTexture[threadID.xy];
-
-    // Variance Clipping
-    float4 minColor = 9999.0, maxColor = -9999.0;
-    for (int x = -1; x <= 1; ++x)
-    {
-        for (int y = -1; y <= 1; ++y)
-        {
-            float4 color = g_TargetTexture[threadID.xy + int2(x, y)];
-            minColor = min(minColor, color);
-            maxColor = max(maxColor, color);
-        }
-    }
-    float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
-
-    float a = g_GlobalConstants.m_TaaAccumulationFactor;
-    float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
-
-    g_TargetTexture[threadID.xy] = newColor;
-    //g_TargetTexture[threadID.xy] = float4(uvPrev, 0,0);
+    //if (threadID.y > g_BloomParams.m_Resolution.y)
+    //    return;
+    if (g_BloomParams.m_PassIndex == BLOOM_PASSINDEX_DOWNSAMPLE)
+        DownsamplePass(threadID);
+    else if (g_BloomParams.m_PassIndex == BLOOM_PASSINDEX_UPSAMPLE)
+        UpsamplePass(threadID);
+    else if (g_BloomParams.m_PassIndex == BLOOM_PASSINDEX_COMPOSITE)
+        CompositePass(threadID);
 }

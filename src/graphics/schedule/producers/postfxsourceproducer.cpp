@@ -36,8 +36,8 @@ Ether::Graphics::PostFxSourceProducer::PostFxSourceProducer()
 void Ether::Graphics::PostFxSourceProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewSR(ACCESS_GFX_SR(PostFxSourceTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
-    schedule.NewUA(ACCESS_GFX_UA(PostFxSourceTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(PostFxSourceTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(PostFxSourceTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.Read(ACCESS_GFX_SR(LightingCompositeTexture));
 }
 

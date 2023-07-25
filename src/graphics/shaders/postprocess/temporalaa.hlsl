@@ -38,7 +38,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     float4 colorCurr = g_TargetTexture[threadID.xy];
 
     // Variance Clipping
-    float4 minColor = 9999.0, maxColor = -9999.0;
+    float4 minColor = 999999.0, maxColor = -999999.0;
     const int kernelSize = 1;
     for (int x = -kernelSize; x <= kernelSize; ++x)
     {

@@ -37,8 +37,8 @@ Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
 void Ether::Graphics::TemporalAAProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewUA(ACCESS_GFX_UA(TaaAccumulationTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(TaaAccumulationTexture), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(TaaAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(TaaAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture2));

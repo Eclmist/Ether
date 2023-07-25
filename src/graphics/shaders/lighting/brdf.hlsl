@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define ZERO_GUARD(f) (max(0.001, f))
+#define ZERO_GUARD(f) (max(0.000000001, f))
 
 float Sqr(float v)
 {
@@ -33,6 +33,30 @@ float3 Lambert(float3 albedo)
 float UE4_Specular_D(float alphaSqr, float nDotH)
 {
     return alphaSqr / ZERO_GUARD(Pi * Sqr(Sqr(nDotH) * (alphaSqr - 1) + 1));
+}
+
+inline float UE4_Specular_D_Pdf(float nDotH, float vDotH, float roughness)
+{
+    const float alpha = Sqr(saturate(roughness));
+    const float alphaSqr = Sqr(alpha);
+    return ZERO_GUARD((UE4_Specular_D(alphaSqr, nDotH) * nDotH) / (4 * vDotH));
+}
+
+float3 ImportanceSampleGGX(float2 Xi, float roughness, float3 N)
+{
+    const float a = roughness * roughness;
+    const float phi = 2 * Pi * Xi.x;
+    const float cosTheta = sqrt((1 - Xi.y) / ZERO_GUARD(1 + (a * a - 1) * Xi.y));
+    const float sinTheta = sqrt(1 - cosTheta * cosTheta);
+    float3 H;
+    H.x = sinTheta * cos(phi);
+    H.y = sinTheta * sin(phi);
+    H.z = cosTheta;
+    const float3 upVector = N.y < 0.9999 ? float3(0, 1, 0) : float3(0, 0, 1);
+    const float3 tangentX = normalize(cross(upVector, N));
+    const float3 tangentY = cross(N, tangentX);
+    // Tangent to world space
+    return tangentX * H.x + tangentY * H.y + N * H.z;
 }
 
 // UE4's modification of Schlick geometry term
@@ -58,7 +82,7 @@ float3 FresnelSchlick(float3 f0, float vDotH)
 
 float3 UE4_Specular(float roughness, float3 f0, float nDotL, float nDotV, float nDotH, float vDotH)
 {
-    const float alpha = Sqr(saturate(roughness));
+    const float alpha = Sqr(max(0.05, roughness));
     const float alphaSqr = Sqr(alpha);
 
     const float3 D = UE4_Specular_D(alphaSqr, nDotH);
@@ -70,9 +94,9 @@ float3 UE4_Specular(float roughness, float3 f0, float nDotL, float nDotV, float 
 
 float3 UE4_Brdf(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
-    const float3 l = wi;
-    const float3 v = wo;
-    const float3 n = normal;
+    const float3 l = normalize(wi);
+    const float3 v = normalize(wo);
+    const float3 n = normalize(normal);
     const float3 h = normalize(l + v);
 
     const float nDotL = saturate(dot(n, l));
@@ -83,30 +107,6 @@ float3 UE4_Brdf(float3 wi, float3 wo, float3 normal, float3 albedo, float roughn
     const float3 f0 = lerp(0.08, albedo, metalness);
     const float3 diffuse = Lambert(albedo);
     const float3 specular = UE4_Specular(roughness, f0, nDotL, nDotV, nDotH, vDotH);
-    return diffuse * (1.0 - metalness) + specular;
+    return diffuse * (1 - metalness) + specular;
 }
 
-float3 ImportanceSampleGGX(float2 Xi, float roughness, float3 N)
-{
-    const float a = roughness * roughness;
-    const float phi = 2 * Pi * Xi.x;
-    const float cosTheta = sqrt((1 - Xi.y) / (1 + (a * a - 1) * Xi.y));
-    const float sinTheta = sqrt(1 - cosTheta * cosTheta);
-    float3 H;
-    H.x = sinTheta * cos(phi);
-    H.y = sinTheta * sin(phi);
-    H.z = cosTheta;
-    const float3 upVector = N.y < 0.9999 ? float3(0, 1, 0) : float3(0, 0, 1);
-    const float3 tangentX = normalize(cross(upVector, N));
-    const float3 tangentY = cross(N, tangentX);
-    // Tangent to world space
-    return tangentX * H.x + tangentY * H.y + N * H.z;
-}
-
-inline float GGX_PDF(float NdotH, float roughness)
-{
-    const float alpha = Sqr(saturate(roughness));
-    const float alphaSqr = Sqr(alpha);
-
-    return UE4_Specular_D(alphaSqr, NdotH) * NdotH;
-}

@@ -36,7 +36,7 @@ void SampleApp::Initialize()
 {
     LogInfo("Initializing Application: Sample App");
     Client::SetClientTitle("Ether Sample App");
-    Client::SetClientSize({ 800, 480 });
+    Client::SetClientSize({ 1920, 1080 });
 }
 
 void SampleApp::LoadContent()
