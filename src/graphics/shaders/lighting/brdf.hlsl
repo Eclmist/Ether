@@ -29,38 +29,12 @@ float3 Lambert(float3 albedo)
     return albedo * InvPi;
 }
 
-// UE4's modification of GGX/Trowbridge-Reitz
-float UE4_Specular_D(float alphaSqr, float nDotH)
+float DistributionGGX(float alphaSqr, float nDotH)
 {
     return alphaSqr / ZERO_GUARD(Pi * Sqr(Sqr(nDotH) * (alphaSqr - 1) + 1));
 }
 
-inline float UE4_Specular_D_Pdf(float nDotH, float vDotH, float roughness)
-{
-    const float alpha = Sqr(saturate(roughness));
-    const float alphaSqr = Sqr(alpha);
-    return ZERO_GUARD((UE4_Specular_D(alphaSqr, nDotH) * nDotH) / (4 * vDotH));
-}
-
-float3 ImportanceSampleGGX(float2 Xi, float roughness, float3 N)
-{
-    const float a = roughness * roughness;
-    const float phi = 2 * Pi * Xi.x;
-    const float cosTheta = sqrt((1 - Xi.y) / ZERO_GUARD(1 + (a * a - 1) * Xi.y));
-    const float sinTheta = sqrt(1 - cosTheta * cosTheta);
-    float3 H;
-    H.x = sinTheta * cos(phi);
-    H.y = sinTheta * sin(phi);
-    H.z = cosTheta;
-    const float3 upVector = N.y < 0.9999 ? float3(0, 1, 0) : float3(0, 0, 1);
-    const float3 tangentX = normalize(cross(upVector, N));
-    const float3 tangentY = cross(N, tangentX);
-    // Tangent to world space
-    return tangentX * H.x + tangentY * H.y + N * H.z;
-}
-
-// UE4's modification of Schlick geometry term
-float UE4_Specular_G(float alpha, float nDotL, float nDotV)
+float GeometrySchlick(float alpha, float nDotL, float nDotV)
 {
     const float k = alpha / 2.0f;
     const float G1_L = nDotL / ZERO_GUARD((nDotL * (1 - k) + k));
@@ -68,9 +42,9 @@ float UE4_Specular_G(float alpha, float nDotL, float nDotV)
     return G1_L * G2_V;
 }
 
-// UE4's modification of Schlick's fresnel term
-float3 UE4_Specular_F(float3 f0, float vDotH)
+float3 FresnelSchlickApprox(float3 f0, float vDotH)
 {
+
     const float pwr = (-5.55473 * vDotH - 6.98316) * vDotH;
     return f0 + (1 - f0) * pow(2, pwr);
 }
@@ -80,20 +54,23 @@ float3 FresnelSchlick(float3 f0, float vDotH)
     return f0 + (1 - f0) * pow(1 - vDotH, 5.0);
 }
 
-float3 UE4_Specular(float roughness, float3 f0, float nDotL, float nDotV, float nDotH, float vDotH)
+float3 Microfacet(float roughness, float3 f0, float nDotL, float nDotV, float nDotH, float vDotH)
 {
-    const float alpha = Sqr(max(0.05, roughness));
+    const float alpha = Sqr(roughness);
     const float alphaSqr = Sqr(alpha);
 
-    const float3 D = UE4_Specular_D(alphaSqr, nDotH);
-    const float3 F = UE4_Specular_F(f0, vDotH);
-    const float3 G = UE4_Specular_G(alpha, nDotL, nDotV);
+    const float3 D = DistributionGGX(alphaSqr, nDotH);
+    const float3 F = FresnelSchlickApprox(f0, vDotH);
+    const float3 G = GeometrySchlick(alpha, nDotL, nDotV);
 
     return (D * F * G) / ZERO_GUARD(4 * nDotL * nDotV);
 }
 
-float3 UE4_Brdf(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
+    // Preserve specular highlight even for mirror surfaces
+    roughness = max(0.01, roughness);
+
     const float3 l = normalize(wi);
     const float3 v = normalize(wo);
     const float3 n = normalize(normal);
@@ -104,9 +81,50 @@ float3 UE4_Brdf(float3 wi, float3 wo, float3 normal, float3 albedo, float roughn
     const float nDotH = saturate(dot(n, h));
     const float vDotH = saturate(dot(v, h));
 
-    const float3 f0 = lerp(0.08, albedo, metalness);
+    const float specularConstant = 0.5;
+
+    const float3 f0 = lerp(0.08 * specularConstant, albedo, metalness);
     const float3 diffuse = Lambert(albedo);
-    const float3 specular = UE4_Specular(roughness, f0, nDotL, nDotV, nDotH, vDotH);
+    const float3 specular = Microfacet(roughness, f0, nDotL, nDotV, nDotH, vDotH);
     return diffuse * (1 - metalness) + specular;
+}
+
+float3 ImportanceSampleGGX(float2 Xi, float3 wo, float3 N, float roughness)
+{
+    const float a = roughness * roughness;
+    const float phi = 2 * Pi * Xi.x;
+    const float cosTheta = sqrt((1 - Xi.y) / max(0.001, (1 + (a * a - 1) * Xi.y)));
+    const float sinTheta = sqrt(max(0, 1 - cosTheta * cosTheta));
+    float3 H;
+    H.x = sinTheta * cos(phi);
+    H.y = sinTheta * sin(phi);
+    H.z = cosTheta;
+
+    // Tangent to world space
+    const float3 ws_H = TangentToWorld(H, N);
+    const float3 wi = normalize(reflect(-wo, ws_H));
+    return wi;
+}
+
+inline float DistributionGGX_Pdf(float nDotH, float vDotH, float roughness)
+{
+    const float alpha = Sqr(roughness);
+    const float alphaSqr = Sqr(alpha);
+    return (DistributionGGX(alphaSqr, nDotH) * nDotH) / ZERO_GUARD(4 * vDotH);
+}
+
+// Pdf of sampling both diffuse and specular terms of a joint BRDF like
+// UE4's BRDF.
+// t: t is the probability of sampling the specular term,
+//    whereas 1 - t is the probability of sampling the diffuse term.
+//    This maps to "specularWeight" in raytracedlights.hlsl
+inline float UE4JointPdf(float t, float nDotH, float nDotL, float vDotH, float roughness)
+{
+    // Preserve specular highlight even for mirror surfaces
+    roughness = max(0.01, roughness);
+
+    const float pdf_d = nDotL / Pi;
+    const float pdf_s = DistributionGGX_Pdf(nDotH, vDotH, roughness);
+    return ((1 - t) * pdf_d) + (t * pdf_s);
 }
 

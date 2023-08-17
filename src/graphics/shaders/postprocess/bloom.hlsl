@@ -69,7 +69,7 @@ void CompositePass(uint3 threadID)
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
     const float2 halfPixel = 1.0f / resolution / 2.0f;
     const float2 uv = threadID.xy / resolution + halfPixel;
-    const float bloomIntensity = g_BloomParams.m_Intensity * 0.12;
+    const float bloomIntensity = g_BloomParams.m_Intensity * 0.82;
 
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     const float4 bloom = g_SourceTexture.Sample(linearSampler, uv);

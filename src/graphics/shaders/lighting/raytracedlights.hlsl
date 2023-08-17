@@ -38,11 +38,12 @@ RWTexture2D<float4> g_IndirectOutput                : register(u1);
 
 float3 ComputeSkyColor()
 {
+    float atten = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
     float3 daySkyColor = float3(0.6, 0.7, 1.0) * 0.4;
     float3 nightSkyColor = float3(0.1, 0.25, 0.4) * 0.1;
-    float3 skyColor = lerp(nightSkyColor, daySkyColor, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+    float3 skyColor = lerp(nightSkyColor, daySkyColor, atten);
     float3 sunColor = g_GlobalConstants.m_SunColor;
-    return skyColor * 15000.0f * sunColor * g_GlobalConstants.m_RaytracedAOIntensity;
+    return skyColor * lerp(8000.0f, 15000.0f, atten) * sunColor;
 }
 
 MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
@@ -79,12 +80,32 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
     shadowRay.TMin = 0.05;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
+
+    const float3 pointLightColor = float3(238/255.0, 129/255.0, 57/255.0) * 0;// 100000.0;
+    const float3 pointLightPositions[4] = {
+        float3(2.1315, 9.2852, -4.665),
+        float3(-5.8484, 9.2852, -4.665),
+        float3(2.1315, 9.2852, 4.665),
+        float3(-5.8484, 9.2852, 4.665),
+    };
+
+    float3 pointLightContribution = 0;
+    
+
+    for (int i = 0; i < 3; ++i)
+    {
+        const float3 wi = pointLightPositions[i] - float3(0.2, 0., 0) - position;
+        pointLightContribution += (pointLightColor / pow(length(wi), 2.8)) *
+                                  BRDF_UE4(normalize(wi), wo, normal, albedo, roughness, metalness) *
+                                  saturate(dot(wi, normal));
+    }
+
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
-    const float3 f = UE4_Brdf(wi, wo, normal, albedo, roughness, metalness);
+    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
     const float cosTheta = saturate(dot(wi, normal));
     const float3 Lo = Li * f * cosTheta;
-    return Lo;
+    return Lo + pointLightContribution;
 }
 
 float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
@@ -93,47 +114,28 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
     if (depth <= 0)
         return ambient;
 
-    roughness = max(0.05, roughness);
-
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
-
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
-    const float3 H = normalize(ImportanceSampleGGX(rand2D, roughness, normal));
-    const float nDotH = saturate(dot(normal, H));
-    const float vDotH = saturate(dot(wo, H));
+
+    const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
+    const float specularWeight = 1.0 - diffuseWeight;
 
     float3 wi = 0;
-    float3 f = 0;
-    float pdf = 0;
-
-    // weights.x = specular, weights.y = diffuse (1 - specular)
-    // <-- rough ------------------------------- smooth -->
-    // ^ (0, 1)                                      (1, 0)
-    // |
-    // metal 
-    // |
-    // |
-    // |
-    // |
-    // nonmetal
-    // |
-    // v (0, 1)                                  (0.5, 0.5)
-    float specularEstimatorWeight = lerp(lerp(0.5f, 1.0f, metalness), 0.0f, roughness);
-
-    if (Random(rand2D.x) <= specularEstimatorWeight)
-    {
-        wi = normalize(reflect(-wo, H));
-        f = UE4_Brdf(wi, wo, normal, albedo, roughness, metalness) * specularEstimatorWeight;
-        pdf = UE4_Specular_D_Pdf(nDotH, vDotH, roughness);
-    }
+    if (Random(rand2D.x) <= specularWeight)
+        wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
     else
-    {
-        wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal));
-        f = UE4_Brdf(wi, wo, normal, albedo, roughness, metalness) * (1 - specularEstimatorWeight);
-        pdf = SampleDirectionCosineHemisphere_Pdf(saturate(dot(wi, normal)));
-    }
+        wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
+
+    const float3 H = normalize(wi + wo);
+    const float nDotH = saturate(dot(normal, H));
+    const float nDotV = saturate(dot(normal, wo));
+    const float vDotH = saturate(dot(wo, H));
+    const float cosTheta = saturate(dot(wi, normal));
+    const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+
 
     RayPayload payload;
     payload.m_IsShadowRay = false;
@@ -145,18 +147,15 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
     indirectRay.TMax = 16;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
-
-    const float cosTheta = saturate(dot(wi, normal));
-    const float3 Li = min(10000.0f, payload.m_Radiance);
-    const float indirectBoost = (g_GlobalConstants.m_RaytracedAOIntensity * 5);
-    const float3 Lo = Li * f * cosTheta / ZERO_GUARD(pdf);
+    float3 Li = min(10000.0f, payload.m_Radiance);
+    const float3 Lo = Li * f * cosTheta;
     return Lo;
 }
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    const uint mipLevelToSample = 99;
+    const uint mipLevelToSample = 5;
 
     float4 albedo = material.m_BaseColor;
     float3 normal = hitSurface.m_Normal;
@@ -216,7 +215,7 @@ void RayGeneration()
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float2 velocity = gbuffer2.zw;
     const float metalness = gbuffer0.w;
-    const float roughness = gbuffer1.w;
+    const float roughness = pow(min(0.99, gbuffer1.w), 1);
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
     const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
@@ -239,7 +238,7 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * 100000.0f;
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(400.0f, 100000.0f, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     }
     else
     {

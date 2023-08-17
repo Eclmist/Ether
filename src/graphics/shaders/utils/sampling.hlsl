@@ -102,7 +102,6 @@ float3 TangentToWorld(float3 v, float3 N)
     // Tangent to world space
     return tangentX * v.x + tangentY * v.y + N * v.z;
 }
-
 float SampleDirectionSphere_Pdf()
 {
     return 1.0f / (Pi * 4.0f);

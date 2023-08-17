@@ -44,7 +44,10 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 // 3D Gradient noise from: https://www.shadertoy.com/view/Xsl3Dl
 float3 hash(float3 p)
 {
-    p = float3(dot(p, float3(127.1, 311.7, 74.7)), dot(p, float3(269.5, 183.3, 246.1)), dot(p, float3(113.5, 271.9, 124.6)));
+    p = float3(
+        dot(p, float3(127.1, 311.7, 74.7)),
+        dot(p, float3(269.5, 183.3, 246.1)),
+        dot(p, float3(113.5, 271.9, 124.6)));
 
     return -1.0 + 2.0 * frac(sin(p) * 43758.5453123);
 }
@@ -67,17 +70,23 @@ float noise(float3 p)
     float3 u = f * f * (3.0 - 2.0 * f);
 
     return lerp(
-        lerp(lerp(dot(hash(i + float3(0.0, 0.0, 0.0)), f - float3(0.0, 0.0, 0.0)),
+        lerp(
+            lerp(
+                dot(hash(i + float3(0.0, 0.0, 0.0)), f - float3(0.0, 0.0, 0.0)),
                 dot(hash(i + float3(1.0, 0.0, 0.0)), f - float3(1.0, 0.0, 0.0)),
                 u.x),
-            lerp(dot(hash(i + float3(0.0, 1.0, 0.0)), f - float3(0.0, 1.0, 0.0)),
+            lerp(
+                dot(hash(i + float3(0.0, 1.0, 0.0)), f - float3(0.0, 1.0, 0.0)),
                 dot(hash(i + float3(1.0, 1.0, 0.0)), f - float3(1.0, 1.0, 0.0)),
                 u.x),
             u.y),
-        lerp(lerp(dot(hash(i + float3(0.0, 0.0, 1.0)), f - float3(0.0, 0.0, 1.0)),
+        lerp(
+            lerp(
+                dot(hash(i + float3(0.0, 0.0, 1.0)), f - float3(0.0, 0.0, 1.0)),
                 dot(hash(i + float3(1.0, 0.0, 1.0)), f - float3(1.0, 0.0, 1.0)),
                 u.x),
-            lerp(dot(hash(i + float3(0.0, 1.0, 1.0)), f - float3(0.0, 1.0, 1.0)),
+            lerp(
+                dot(hash(i + float3(0.0, 1.0, 1.0)), f - float3(0.0, 1.0, 1.0)),
                 dot(hash(i + float3(1.0, 1.0, 1.0)), f - float3(1.0, 1.0, 1.0)),
                 u.x),
             u.y),
@@ -120,11 +129,11 @@ float fbm(float2 st)
 
 float Stars(float3 viewDir)
 {
-    float stars_threshold = 12.0f;                                   // modifies the number of stars that are visible
-    float stars_exposure = 2000.0f;                                  // modifies the overall strength of the stars
+    float stars_threshold = 15.0f;  // modifies the number of stars that are visible
+    float stars_exposure = 20000000.0f; // modifies the overall strength of the stars
     float stars = pow(clamp(noise(viewDir * 200.0f), 0.0f, 1.0f), stars_threshold) * stars_exposure;
     stars *= lerp(0.4, 1.4, noise(viewDir * 100.0f + g_GlobalConstants.m_Time.x / 100)); // time based flickering
-    return saturate(stars);
+    return max(0.0f, stars);
 }
 
 float3 NormalizeDirection(float2 screenUV)
@@ -166,9 +175,8 @@ float3 CalculateMieScattering(float3 viewDirection, float3 sunDirection, float m
     {
         float g = mieDirectionality;
         float phase = 1.5 * 1.0 / (4.0 * 3.1415) * (1.0 - g * g) *
-                             pow(max(1.0 + (g * g) - 2.0 * g * cosTheta, 0.0001), -3.0 / 2.0) *
-                             (1.0 + cosTheta * cosTheta) /
-                             (2.0 + g * g);
+                      pow(max(1.0 + (g * g) - 2.0 * g * cosTheta, 0.0001), -3.0 / 2.0) * (1.0 + cosTheta * cosTheta) /
+                      (2.0 + g * g);
 
         return mieCoefficient * phase;
     }
@@ -179,8 +187,12 @@ float3 CalculateMieScattering(float3 viewDirection, float3 sunDirection, float m
 float3 CalculateSkyColor(float3 rayleighScattering, float3 mieScattering, float skyLuminance)
 {
     // Combine the Rayleigh and Mie scattering components and adjust the luminance
-    float3 skyColor = saturate(rayleighScattering) * lerp(float3(5.8, 8.5, 33.1) * 0.1, float3(0.3, 0.3, 0.7), 1 - (g_GlobalConstants.m_SunDirection.y - 0.3));
-    skyColor += saturate(mieScattering) * lerp(float3(0.8, 0.3, 0.9), float3(1, 1, 1), 1 - g_GlobalConstants.m_SunDirection.y);
+    float3 skyColor = saturate(rayleighScattering) * lerp(
+                                                         float3(5.8, 8.5, 33.1) * 0.1,
+                                                         float3(0.3, 0.3, 0.7),
+                                                         1 - (g_GlobalConstants.m_SunDirection.y - 0.3));
+    skyColor += saturate(mieScattering) *
+                lerp(float3(0.8, 0.3, 0.9), float3(1, 1, 1), 1 - g_GlobalConstants.m_SunDirection.y);
     skyColor *= skyLuminance;
 
     return skyColor;
@@ -206,15 +218,22 @@ float3 CalculateSkyRadiance(
     float skyLuminance)
 {
     // Calculate atmospheric scattering components
-    float3 rayleighScattering = CalculateRayleighScattering(viewDirection, g_GlobalConstants.m_SunDirection.xyz, skyRayleigh);
-    float3 mieScattering = CalculateMieScattering(viewDirection, g_GlobalConstants.m_SunDirection.xyz, skyMie, skyMieDirectionality);
+    float3 rayleighScattering = CalculateRayleighScattering(
+        viewDirection,
+        g_GlobalConstants.m_SunDirection.xyz,
+        skyRayleigh);
+    float3 mieScattering = CalculateMieScattering(
+        viewDirection,
+        g_GlobalConstants.m_SunDirection.xyz,
+        skyMie,
+        skyMieDirectionality);
     float3 skyColor = CalculateSkyColor(rayleighScattering, mieScattering, skyLuminance);
 
     // Apply atmospheric turbidity
     float3 turbidityCorrection = CalculateTurbidityCorrection(skyTurbidity);
     skyColor *= turbidityCorrection;
 
-    return saturate(skyColor) * 5000.0f;
+    return saturate(skyColor) * 8000.0f;
 }
 
 float4 ProceduralSky(float2 texCoord)
@@ -248,7 +267,7 @@ float4 ProceduralSky(float2 texCoord)
         g_SkyMieDirectionality,
         g_SkyLuminance);
 
-    //float3 skyRadiance = skyColor;
+    // float3 skyRadiance = skyColor;
 
     float2 fakeSkyUv = viewDirection.xz * viewDirection.y;
 
@@ -259,13 +278,13 @@ float4 ProceduralSky(float2 texCoord)
 
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;
-    totalRadiance += lerp(stars, 0, saturate(length(totalRadiance)));
-    //totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
+    totalRadiance += stars;
+    // totalRadiance += (cloud3 + cloud2 + cloud) * skyRadiance.r;
     return float4(totalRadiance, 1.0f);
 }
 
-
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
+float4 PS_Main(VS_OUTPUT IN)
+    : SV_Target
 {
     return ProceduralSky(IN.TexCoord);
 }
