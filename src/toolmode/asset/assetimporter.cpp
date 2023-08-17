@@ -188,20 +188,24 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
         return m_PathToGuidMap.at(texturePath);
 
-    Graphics::Texture gfxTexture;
-    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxTexture.GetGuid()));
+    std::string path = texturePath.GetString();
+    if (PathUtils::GetFileExtension(path) == ".dds")
+        path = PathUtils::GetFolderPath(path) + PathUtils::GetFileName(path) + ".png";
 
     int w, h, channels;
-    unsigned char* image = stbi_load((folderPath + texturePath.GetString()).c_str(), &w,
+    unsigned char* image = stbi_load((folderPath + path).c_str(), &w,
         &h,
         &channels,
         STBI_rgb_alpha);
 
     if (image == nullptr)
     {
-        LogToolmodeError("Failed to load texture: %s", (folderPath + texturePath.GetString()).c_str());
+        LogToolmodeError("Failed to load texture: %s", (folderPath + path).c_str());
         return {};
     }
+
+    Graphics::Texture gfxTexture;
+    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxTexture.GetGuid()));
 
     unsigned char* downscaleOutput = image;
 

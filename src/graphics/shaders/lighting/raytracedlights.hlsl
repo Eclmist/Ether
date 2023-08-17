@@ -43,7 +43,7 @@ float3 ComputeSkyColor()
     float3 nightSkyColor = float3(0.1, 0.25, 0.4) * 0.1;
     float3 skyColor = lerp(nightSkyColor, daySkyColor, atten);
     float3 sunColor = g_GlobalConstants.m_SunColor;
-    return skyColor * lerp(8000.0f, 15000.0f, atten) * sunColor;
+    return skyColor * lerp(8000.0f, 15000.0f, atten) * sunColor * g_GlobalConstants.m_RaytracedAOIntensity;
 }
 
 MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
@@ -155,7 +155,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    const uint mipLevelToSample = 5;
+    const uint mipLevelToSample = 8;
 
     float4 albedo = material.m_BaseColor;
     float3 normal = hitSurface.m_Normal;
@@ -221,9 +221,9 @@ void RayGeneration()
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 2);
+    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 2) * 4;
 
-    float a = 1;
+    float a = 0.005;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
