@@ -58,8 +58,9 @@ This will generate projects in the `/build/` folder, and will build the Ether bi
 
 ## Screenshots
 <p align="center">
+  <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/suntemple.png" width=1000>
   <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/bistro.png" width=1000>
-  <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/sponza.png" width=1000>
+  <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/sponza2.png" width=1000>
   <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/san-miguel.png" width=1000>
   <img src="https://raw.githubusercontent.com/eclmist/ether/master/docs/brdf.png" width=1000>
 </p>
