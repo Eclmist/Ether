@@ -19,6 +19,7 @@
 
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
+#include "utils/constants.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
 
@@ -152,6 +153,14 @@ float3 NormalizeDirection(float2 screenUV)
     return dir;
 }
 
+float2 SampleSphericalMap(float3 direction)
+{
+    float2 uv = float2(atan2(direction.z, direction.x), asin(-direction.y));
+    uv *= float2(InvPi2, InvPi);
+    uv += 0.5;
+    return uv;
+}
+
 float3 CalculateSunRadiance(float3 viewDirection, float3 sunDirection, float3 sunColor)
 {
     float cosTheta = dot(viewDirection, sunDirection);
@@ -283,8 +292,13 @@ float4 ProceduralSky(float2 texCoord)
     return float4(totalRadiance, 1.0f);
 }
 
-float4 PS_Main(VS_OUTPUT IN)
-    : SV_Target
+float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    return ProceduralSky(IN.TexCoord);
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
+
+    //float2 hdriUv = SampleSphericalMap(NormalizeDirection(IN.TexCoord));
+    //return hdriTexture.Sample(linearSampler, hdriUv) * 10000.0;
+
+    return ProceduralSky(IN.TexCoord) + float4(0, 0, 100, 0);
 }

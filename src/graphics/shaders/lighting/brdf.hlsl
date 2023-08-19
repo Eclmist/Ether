@@ -60,7 +60,7 @@ float3 Microfacet(float roughness, float3 f0, float nDotL, float nDotV, float nD
     const float alphaSqr = Sqr(alpha);
 
     const float3 D = DistributionGGX(alphaSqr, nDotH);
-    const float3 F = FresnelSchlickApprox(f0, vDotH);
+    const float3 F = FresnelSchlick(f0, vDotH);
     const float3 G = GeometrySchlick(alpha, nDotL, nDotV);
 
     return (D * F * G) / ZERO_GUARD(4 * nDotL * nDotV);

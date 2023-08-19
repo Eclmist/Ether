@@ -88,6 +88,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
         renderData.m_ProjectionMatrix = projectionMatrix;
         renderData.m_EyeDirection = forward.Resize<3>();
         renderData.m_EyePosition = transform.m_Translation;
+        renderData.m_HdriTextureID = camera.GetHdriTextureID();
 
         // Only render the first camera for now, since the renderer is not designed for multiple yet
         break;

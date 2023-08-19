@@ -32,6 +32,8 @@ public:
     ethVector3 m_EyeDirection;
     ethVector3 m_EyePosition;
 
+    StringID m_HdriTextureID;
+
     std::vector<Visual> m_Visuals;
     std::vector<VisualBatch> m_VisualBatches;
 };

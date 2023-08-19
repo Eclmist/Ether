@@ -20,6 +20,8 @@
 #include "graphics/resources/texture.h"
 #include "graphics/graphiccore.h"
 
+#define IS_POWER_OF_2(num) (num > 0 && (num & (num - 1)) == 0)
+
 constexpr uint32_t TextureVersion = 1;
 
 Ether::Graphics::Texture::Texture()
@@ -104,7 +106,7 @@ void Ether::Graphics::Texture::SetData(const unsigned char* data, bool genMips)
     m_Data[0] = (void*)data;
     m_NumMips = 1;
 
-    if (genMips)
+    if (genMips && IS_POWER_OF_2(m_Width) && IS_POWER_OF_2(m_Height))
         GenerateMips();
 }
 

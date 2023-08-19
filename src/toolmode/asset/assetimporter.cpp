@@ -30,7 +30,7 @@
 #include "parser/image/stb_image.h"
 #include "parser/image/stb_image_resize.h"
 
-void Ether::Toolmode::AssetImporter::ImportToLibrary(const std::string& assetPath)
+void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath)
 {
     LogToolmodeInfo("Importing asset %s", assetPath.c_str());
 
@@ -52,6 +52,20 @@ void Ether::Toolmode::AssetImporter::ImportToLibrary(const std::string& assetPat
     }
 
     ProcessScene(PathUtils::GetFolderPath(assetPath), scene);
+}
+
+void Ether::Toolmode::AssetImporter::ImportTexture(const std::string& assetPath, bool isSrgb, bool genMips)
+{
+    ProcessTexture(PathUtils::GetFolderPath(assetPath), PathUtils::GetFileNameWithExtension(assetPath), isSrgb, genMips);
+}
+
+Ether::StringID Ether::Toolmode::AssetImporter::GetAssetGuid(const std::string& assetPath) const
+{
+    const StringID texturePath = PathUtils::GetFileNameWithExtension(assetPath);
+    if (m_PathToGuidMap.find(texturePath) == m_PathToGuidMap.end())
+        return {};
+
+    return m_PathToGuidMap.at(texturePath);
 }
 
 void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath, const aiScene* assimpScene)
@@ -153,11 +167,29 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
             gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
         }
 
+        if (material->GetTextureCount(aiTextureType_HEIGHT) > 0)
+        {
+            // Experimental: Bistro labels normal maps as bump. We don't support bump mapping,
+            // so load it as normals regardless
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_HEIGHT, 0), textureName);
+            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
             gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+
+        if (material->GetTextureCount(aiTextureType_SPECULAR) > 0)
+        {
+            // Expeimental: Specular contains metalness in g, and roughness in b. ( or is it the other way round?? )
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_SPECULAR, 0), textureName);
+            gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
+            gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
         if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)

@@ -175,3 +175,11 @@ float2 CMJ_Sample2D(uint idx, uint numSamplesX, uint numSamplesY, uint pattern)
     float jy = CMJ_Random_Internal(idx, pattern * 0x368cc8b7);
     return float2((sx + (sy + jx) / numSamplesY) / numSamplesX, (idx + jy) / N);
 }
+
+float2 SampleSphericalMap(float3 direction)
+{
+    float2 uv = float2(atan2(direction.z, direction.x), asin(-direction.y));
+    uv *= float2(InvPi2, InvPi);
+    uv += 0.5;
+    return uv;
+}

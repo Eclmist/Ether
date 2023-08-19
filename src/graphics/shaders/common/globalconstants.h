@@ -46,6 +46,9 @@ struct GlobalConstants
     ethVector2u m_ScreenResolution;
     uint32_t m_FrameNumber;
 
+    // ============== HDRI =============== //
+    uint32_t m_HdriTextureIndex;
+
     // ============== TAA =============== //
     float m_TaaAccumulationFactor;
 
@@ -62,7 +65,10 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Border;
 
     // ============ Padding ============= //
-    ethMatrix4x4 m_Padding0;
+    ethVector4 m_Padding0;
+    ethVector4 m_Padding1;
+    ethVector4 m_Padding2;
+    ethVector3 m_Padding3;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");

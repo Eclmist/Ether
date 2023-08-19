@@ -29,6 +29,7 @@ Ether::Ecs::EcsCameraComponent::EcsCameraComponent()
     , m_FarPlane(1000.0f)
     , m_ProjectionMode(ProjectionMode::Perspective)
     , m_JitterMode(JitterMode::None)
+    , m_HdriTextureID()
 {
 }
 
@@ -41,6 +42,7 @@ void Ether::Ecs::EcsCameraComponent::Serialize(OStream& ostream) const
     ostream << m_FarPlane;
     ostream << static_cast<uint32_t>(m_ProjectionMode);
     ostream << static_cast<uint32_t>(m_JitterMode);
+    ostream << m_HdriTextureID;
 }
 
 void Ether::Ecs::EcsCameraComponent::Deserialize(IStream& istream)
@@ -52,6 +54,7 @@ void Ether::Ecs::EcsCameraComponent::Deserialize(IStream& istream)
     istream >> m_FarPlane;
     istream >> (uint32_t&)m_ProjectionMode;
     istream >> (uint32_t&)m_JitterMode;
+    istream >> m_HdriTextureID;
 }
 
 Ether::ethVector2 Ether::Ecs::EcsCameraComponent::GetJitterOffset(uint32_t index) const

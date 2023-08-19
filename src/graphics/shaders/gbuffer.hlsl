@@ -99,7 +99,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (material.m_RoughnessTextureIndex != 0)
     {
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
-        roughness = sqrt(roughnessTex.Sample(linearSampler, IN.TexCoord).g);
+        roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).g;
     }
 
     if (material.m_MetalnessTextureIndex != 0)

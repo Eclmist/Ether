@@ -52,12 +52,14 @@ public:
     inline float GetFarPlane() const { return m_FarPlane; }
     inline ProjectionMode GetProjectionMode() const { return m_ProjectionMode; }
     inline JitterMode GetJitterMode() const { return m_JitterMode; }
+    inline StringID GetHdriTextureID() const { return m_HdriTextureID; }
 
     inline void SetFieldOfView(float fov) { m_FieldOfView = fov; }
     inline void SetNearPlane(float nearPlane) { m_NearPlane = nearPlane; }
     inline void SetFarPlane(float farPlane) { m_FarPlane = farPlane; }
     inline void SetProjectionMode(ProjectionMode projectionMode) { m_ProjectionMode = projectionMode; }
     inline void SetJitterMode(JitterMode jitterMode) { m_JitterMode = jitterMode; }
+    inline void SetHdriTextureID(const StringID& hdriID) { m_HdriTextureID = hdriID; }
 
 public:
     ethVector2 GetJitterOffset(uint32_t index) const;
@@ -74,6 +76,8 @@ public:
 
     ProjectionMode m_ProjectionMode;
     JitterMode m_JitterMode;
+
+    StringID m_HdriTextureID;
 };
 
 

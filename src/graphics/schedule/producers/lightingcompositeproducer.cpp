@@ -68,8 +68,8 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(4, ACCESS_GFX_SR(RTLightingTexture)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
-    ctx.SetRenderTarget(*ACCESS_GFX_RT(LightingCompositeTexture).Get());
 
+    ctx.SetRenderTarget(*ACCESS_GFX_RT(LightingCompositeTexture).Get());
     ctx.DrawInstanced(3, 1);
 }
 

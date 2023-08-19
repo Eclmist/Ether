@@ -76,6 +76,8 @@ void Ether::World::Serialize(OStream& ostream) const
     ostream << static_cast<uint32_t>(m_Entities.size());
     for (auto& pair : m_Entities)
         pair.second->Serialize(ostream);
+
+    ostream << m_MainCamera->GetID();
 }
 
 void Ether::World::Deserialize(IStream& istream)
@@ -98,6 +100,10 @@ void Ether::World::Deserialize(IStream& istream)
         m_EcsManager.GetSystemManager().UpdateEntitySignature(entity->GetID(), sigToReregister);
         m_Entities.insert({ entity->GetID(), std::move(entity) });
     }
+
+    Ecs::EntityID mainCameraId;
+    istream >> mainCameraId;
+    m_MainCamera = m_Entities.at(mainCameraId).get();
 }
 
 Ether::Entity& Ether::World::CreateEntity(const std::string& name)

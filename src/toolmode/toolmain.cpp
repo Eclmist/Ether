@@ -60,6 +60,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& currentWorld = GetActiveWorld();
 
+    const std::string hdriPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Hdri\\kloofendal_48d_partly_cloudy_puresky_8k.hdr";
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const bool hasImports = !m_ImportPaths.empty();
@@ -85,7 +86,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         }
 
         for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
-            AssetImporter::Instance().ImportToLibrary(m_ImportPaths[i]);
+            AssetImporter::Instance().ImportMesh(m_ImportPaths[i]);
+
+        AssetImporter::Instance().ImportTexture(hdriPath);
 
         // Load from library files and serialize to world
         // This simulates user dragging resources from the editor resource browser into the scene,
@@ -134,6 +137,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             visual.m_MaterialGuid = mesh->GetDefaultMaterialGuid();
             currentWorld.GetResourceManager().RegisterMeshResource(std::move(mesh));
         }
+
+        Entity& cameraObj = currentWorld.CreateCamera();
+        cameraObj.GetComponent<Ecs::EcsCameraComponent>().SetHdriTextureID(AssetImporter::Instance().GetAssetGuid(hdriPath));
 
         currentWorld.SetWorldName(exportWorldName);
         currentWorld.Save(sceneSavePath);

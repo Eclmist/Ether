@@ -78,6 +78,9 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_SamplerIndex_Linear_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Wrap;
     globalConstants->m_SamplerIndex_Linear_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Border;
 
+    StringID hdriID = GraphicCore::GetGraphicRenderer().GetRenderData().m_HdriTextureID;
+    globalConstants->m_HdriTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(hdriID); 
+
     ctx.CopyBufferRegion(
         dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
         *rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer)),
