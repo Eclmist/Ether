@@ -70,8 +70,9 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 clipPos = ScreenToClipSpace(IN.Position, g_GlobalConstants.m_ScreenResolution);
     float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clipPos);
     float4 clipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrev, worldPos);
+    float4 clipPosCurr = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
     float2 texSpacePrev = ClipToTextureSpace(clipPosPrev);
-    float2 texSpaceCurr = ScreenToTextureSpace(IN.Position, g_GlobalConstants.m_ScreenResolution);
+    float2 texSpaceCurr = ClipToTextureSpace(clipPosCurr);
 
     float4 albedo = material.m_BaseColor;
     float3 normal = IN.Normal.xyz;

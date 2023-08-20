@@ -41,7 +41,7 @@ float3 ComputeSkyHdri(float3 wi)
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
     float2 hdriUv = SampleSphericalMap(wi);
-    return hdriTexture.SampleLevel(linearSampler, hdriUv, 0).xyz * 5000.0 * g_GlobalConstants.m_RaytracedAOIntensity;
+    return hdriTexture.SampleLevel(linearSampler, hdriUv, 0).xyz * 5000.0;
 }
 
 float3 ComputeSkyColor()
@@ -84,7 +84,7 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
 
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-    shadowRay.Origin = position + (normal * 0.01);
+    shadowRay.Origin = position + (normal * 0.001);
     shadowRay.TMax = 128;
     shadowRay.TMin = 0.05;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
@@ -165,7 +165,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 #endif
 
     if (depth <= 0)
-        return ComputeSkyHdri(wi);
+        return ComputeSkyHdri(wi) * g_GlobalConstants.m_RaytracedAOIntensity;
 
 
     RayPayload payload;
@@ -248,13 +248,13 @@ void RayGeneration()
     const float metalness = gbuffer0.w;
     const float roughness = gbuffer1.w;
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
-    const float2 uvPrev = uv - velocity;
+    const float2 uvPrev = uv;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
     const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 2) * 4;
 
-    float a = 1;
+    const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;

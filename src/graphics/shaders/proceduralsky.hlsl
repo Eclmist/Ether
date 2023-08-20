@@ -166,7 +166,7 @@ float3 CalculateSunRadiance(float3 viewDirection, float3 sunDirection, float3 su
     float cosTheta = dot(viewDirection, sunDirection);
     float sunIntensity = saturate(smoothstep(0.999, 1.0, cosTheta));
     float3 sunRadiance = sunColor * sunIntensity;
-    return saturate(sunRadiance) * 100000.0f;
+    return saturate(sunRadiance) * 2000000.0f;
 }
 float3 CalculateRayleighScattering(float3 viewDirection, float3 sunDirection, float rayleighCoefficient)
 {
@@ -198,8 +198,8 @@ float3 CalculateSkyColor(float3 rayleighScattering, float3 mieScattering, float 
     // Combine the Rayleigh and Mie scattering components and adjust the luminance
     float3 skyColor = saturate(rayleighScattering) * lerp(
                                                          float3(5.8, 8.5, 33.1) * 0.1,
-                                                         float3(0.3, 0.3, 0.7),
-                                                         1 - (g_GlobalConstants.m_SunDirection.y - 0.3));
+                                                         float3(0.4, 0.25, 0.7),
+                                                         max(0, 1 - (g_GlobalConstants.m_SunDirection.y)));
     skyColor += saturate(mieScattering) *
                 lerp(float3(0.8, 0.3, 0.9), float3(1, 1, 1), 1 - g_GlobalConstants.m_SunDirection.y);
     skyColor *= skyLuminance;
@@ -297,8 +297,8 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
 
-    //float2 hdriUv = SampleSphericalMap(NormalizeDirection(IN.TexCoord));
-    //return hdriTexture.Sample(linearSampler, hdriUv) * 10000.0;
+    float2 hdriUv = SampleSphericalMap(NormalizeDirection(IN.TexCoord));
+    float4 hdri = hdriTexture.Sample(linearSampler, hdriUv);
 
-    return ProceduralSky(IN.TexCoord) + float4(0, 0, 100, 0);
+    return (ProceduralSky(IN.TexCoord) + float4(0, 0, 100, 0)) * hdri;
 }

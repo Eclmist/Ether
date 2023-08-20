@@ -45,6 +45,10 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
 
     static ethMatrix4x4 prevViewMatrix = renderData.m_ViewMatrix;
     static ethMatrix4x4 prevProjMatrix = renderData.m_ProjectionMatrix;
+    static uint32_t lastMovedFrameNumber = 0;
+
+    if (renderData.m_ViewMatrix != prevViewMatrix)
+        lastMovedFrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
     Shader::GlobalConstants* globalConstants = (Shader::GlobalConstants*)alloc->GetCpuHandle();
@@ -69,6 +73,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
     globalConstants->m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
     globalConstants->m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
+    globalConstants->m_FrameSinceLastMovement = lastMovedFrameNumber;
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
     globalConstants->m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
     globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;

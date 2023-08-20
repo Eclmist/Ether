@@ -31,11 +31,12 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
     sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    float2 resolution = g_GlobalConstants.m_ScreenResolution;
-    float2 uv = threadID.xy / resolution + 0.5 / resolution;
-    float2 uvPrev = uv - (float2)g_GBufferTexture2.Sample(linearSampler, uv).zw;
-    float4 colorPrev = g_AccumulationTextureIn.Sample(linearSampler, uvPrev);
-    float4 colorCurr = g_TargetTexture[threadID.xy];
+    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    const float2 uv = threadID.xy / resolution + 0.5 / resolution;
+    const float2 velocity = g_GBufferTexture2.Sample(linearSampler, uv).zw;
+    const float2 uvPrev = uv - velocity;
+    const float4 colorPrev = g_AccumulationTextureIn.Sample(linearSampler, uvPrev);
+    const float4 colorCurr = g_TargetTexture[threadID.xy];
 
     // Variance Clipping
     float4 minColor = 999999.0, maxColor = -999999.0;
