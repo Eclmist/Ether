@@ -61,7 +61,7 @@ public:
     float m_TemporalAAAcumulationFactor = 0.1;
 
     // Bloom
-    bool m_IsBloomEnabled = false;
+    bool m_IsBloomEnabled = true;
     float m_BloomIntensity = 0.25f;
     float m_BloomScatter = 0.8f;
     float m_BloomAnamorphic = 0.0f;

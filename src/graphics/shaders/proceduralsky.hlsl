@@ -281,9 +281,9 @@ float4 ProceduralSky(float2 texCoord)
     float2 fakeSkyUv = viewDirection.xz * viewDirection.y;
 
     float3 stars = Stars(viewDirection);
-    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + g_GlobalConstants.m_Time.x / 1600000.0) * 1));
-    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 4 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
-    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 1 + g_GlobalConstants.m_Time.x / 600000.0) * 1));
+    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + g_GlobalConstants.m_Time.x) * 1));
+    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 4 + g_GlobalConstants.m_Time.x) * 1));
+    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 1 + g_GlobalConstants.m_Time.x) * 1));
 
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;
@@ -292,13 +292,41 @@ float4 ProceduralSky(float2 texCoord)
     return float4(totalRadiance, 1.0f);
 }
 
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
+float4 SampleHdri(float2 uv)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
 
-    float2 hdriUv = SampleSphericalMap(NormalizeDirection(IN.TexCoord));
-    float4 hdri = hdriTexture.Sample(linearSampler, hdriUv);
+    const float flow1 = frac(g_GlobalConstants.m_Time.w);
+    const float flow2 = frac(g_GlobalConstants.m_Time.w + 0.5f);
+    const float alt = abs((flow1 - 0.5) * 2.0);
 
-    return (ProceduralSky(IN.TexCoord) + float4(0, 0, 100, 0)) * hdri;
+    const float2 distortion = float2(-0.05, 0);
+
+    const float4 hdri1 = hdriTexture.Sample(linearSampler, uv + flow1 * distortion);
+    const float4 hdri2 = hdriTexture.Sample(linearSampler, uv + flow2 * distortion);
+
+    return lerp(hdri1, hdri2, alt);
+}
+
+float4 GetHdriSkyColor(float2 uv)
+{
+    const float exposure = 4000.0f;
+    const float3 viewDir = NormalizeDirection(uv);
+    const float2 hdriUv = SampleSphericalMap(viewDir);
+    const float4 hdri = SampleHdri(hdriUv);
+    const float4 stars = Stars(viewDir);
+    const float4 sun = CalculateSunRadiance(viewDir, g_GlobalConstants.m_SunDirection.xyz, g_GlobalConstants.m_SunColor.rgb).xyzz;
+
+    const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+    const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
+    
+    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
+
+    return exposure * hdri * color + stars + sun;
+}
+
+float4 PS_Main(VS_OUTPUT IN) : SV_Target
+{
+    return GetHdriSkyColor(IN.TexCoord);
 }

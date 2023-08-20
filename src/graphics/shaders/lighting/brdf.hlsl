@@ -44,7 +44,6 @@ float GeometrySchlick(float alpha, float nDotL, float nDotV)
 
 float3 FresnelSchlickApprox(float3 f0, float vDotH)
 {
-
     const float pwr = (-5.55473 * vDotH - 6.98316) * vDotH;
     return f0 + (1 - f0) * pow(2, pwr);
 }

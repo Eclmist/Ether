@@ -40,19 +40,15 @@ float3 ComputeSkyHdri(float3 wi)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    float2 hdriUv = SampleSphericalMap(wi);
-    return hdriTexture.SampleLevel(linearSampler, hdriUv, 0).xyz * 5000.0;
-}
+    const float exposure = 4000.0f;
+    const float2 hdriUv = SampleSphericalMap(wi);
+    const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 0);
+    const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+    const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
 
-float3 ComputeSkyColor()
-{
-    return float3(1, 0, 1) * 10000;
-    float atten = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
-    float3 daySkyColor = float3(0.6, 0.7, 1.0) * 0.4;
-    float3 nightSkyColor = float3(0.1, 0.25, 0.4) * 0.1;
-    float3 skyColor = lerp(nightSkyColor, daySkyColor, atten);
-    float3 sunColor = g_GlobalConstants.m_SunColor;
-    return skyColor * lerp(8000.0f, 15000.0f, atten) * sunColor * g_GlobalConstants.m_RaytracedAOIntensity;
+    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
+
+    return (exposure * hdri * color).xyz;
 }
 
 MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
