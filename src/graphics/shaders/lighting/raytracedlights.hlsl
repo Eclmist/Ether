@@ -25,6 +25,8 @@
 #include "utils/encoding.hlsl"
 #include "lighting/brdf.hlsl"
 
+#define EMISSION_SCALE 20000
+
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 StructuredBuffer<GeometryInfo> g_GeometryInfo       : register(t1);
@@ -33,6 +35,7 @@ Texture2D<float4> g_AccumulationTexture             : register(t3);
 Texture2D<float4> g_GBufferOutput0                  : register(t4);
 Texture2D<float4> g_GBufferOutput1                  : register(t5);
 Texture2D<float4> g_GBufferOutput2                  : register(t6);
+Texture2D<float4> g_GBufferOutput3                  : register(t7);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 RWTexture2D<float4> g_IndirectOutput                : register(u1);
 
@@ -40,7 +43,7 @@ float3 ComputeSkyHdri(float3 wi)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    const float exposure = 4000.0f;
+    const float exposure = 2000.0f;
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 0);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
@@ -80,9 +83,9 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
 
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-    shadowRay.Origin = position + (normal * 0.001);
+    shadowRay.Origin = position + (normal * 0.01);
     shadowRay.TMax = 128;
-    shadowRay.TMin = 0.05;
+    shadowRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
 
@@ -170,7 +173,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 
     RayDesc indirectRay;
     indirectRay.Direction = wi;
-    indirectRay.Origin = position;
+    indirectRay.Origin = position + (normal * 0.01);
     indirectRay.TMax = 128;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
@@ -185,6 +188,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     const uint mipLevelToSample = 8;
 
     float4 albedo = material.m_BaseColor;
+    float4 emission = material.m_EmissiveColor;
     float3 normal = hitSurface.m_Normal;
     float roughness = 1;
     float metalness = 0;
@@ -217,10 +221,19 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
         metalness = metalnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).b;
     }
 
+    if (material.m_EmissiveTextureIndex != 0)
+    {
+        Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
+        emission *= emissiveTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample) * EMISSION_SCALE;
+    }
+
+    // Flip normal if backface. This fixes a lot of light leakage
+    normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal; 
+
     const float3 wo = normalize(-WorldRayDirection());
     const float3 direct = GetDirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
     const float3 indirectSpecular = GetIndirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
-    return direct + indirectSpecular;
+    return emission.xyz + direct + indirectSpecular;
 }
 
 [shader("raygeneration")]
@@ -235,8 +248,10 @@ void RayGeneration()
     const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
     const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
     const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
+    const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
 
     const float3 color = gbuffer0.xyz;
+    const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
     const float3 position = gbuffer1.xyz;
     const float3 viewDir = normalize(g_GlobalConstants.m_EyePosition.xyz - position);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
@@ -252,7 +267,7 @@ void RayGeneration()
 
     const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
-    g_LightingOutput[launchIndex.xy].xyz = direct + accumulatedIndirect;
+    g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
 }
 

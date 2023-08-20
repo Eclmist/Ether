@@ -25,8 +25,9 @@ ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_GBufferTexture0                 : register(t0);
 Texture2D<float4> g_GBufferTexture1                 : register(t1);
 Texture2D<float4> g_GBufferTexture2                 : register(t2);
-Texture2D<float4> g_LightingTexture                 : register(t3);
-Texture2D<float4> g_ProceduralSkyTexture            : register(t4);
+Texture2D<float4> g_GBufferTexture3                 : register(t3);
+Texture2D<float4> g_LightingTexture                 : register(t4);
+Texture2D<float4> g_ProceduralSkyTexture            : register(t5);
 
 struct VS_OUTPUT
 {
@@ -53,14 +54,14 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
     float4 normals = g_GBufferTexture2[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    float4 albedo = g_GBufferTexture0[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    float4 albedo = g_GBufferTexture3[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
 
     if (normals.x == 0 && normals.y == 0)
         return sky;
 
-    if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return albedo * 1000.0;
+    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    //    return albedo * 1000.0;
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return float4(DecodeNormals(normals.xy) * 1000.0, 0);

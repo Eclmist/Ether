@@ -39,27 +39,33 @@ public:
     inline uint32_t GetTransientMaterialIdx() const { return m_TransientMaterialIdx; }
     inline ethVector4 GetBaseColor() const { return m_BaseColor; }
     inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
+    inline ethVector4 GetEmissiveColor() const { return m_EmissiveColor; }
     inline StringID GetAlbedoTextureID() const { return m_AlbedoTextureID; }
     inline StringID GetNormalTextureID() const { return m_NormalTextureID; }
     inline StringID GetRoughnessTextureID() const { return m_RoughnessTextureID; }
     inline StringID GetMetalnessTextureID() const { return m_MetalnessTextureID; }
+    inline StringID GetEmissiveTextureID() const { return m_EmissiveTextureID; }
 
     inline void SetTransientMaterialIdx(uint32_t id) { m_TransientMaterialIdx = id; }
     inline void SetBaseColor(const ethVector4& color) { m_BaseColor = color; }
     inline void SetSpecularColor(const ethVector4& color) { m_SpecularColor = color; }
+    inline void SetEmissiveColor(const ethVector4& color) { m_EmissiveColor = color; }
     inline void SetAlbedoTextureID(const StringID& id) { m_AlbedoTextureID = id; }
     inline void SetNormalTextureID(const StringID& id) { m_NormalTextureID = id; }
     inline void SetRoughnessTextureID(const StringID& id) { m_RoughnessTextureID = id; }
     inline void SetMetalnessTextureID(const StringID& id) { m_MetalnessTextureID = id; }
+    inline void SetEmissiveTextureID(const StringID& id) { m_EmissiveTextureID = id; }
 
 private:
     ethVector4 m_BaseColor;
     ethVector4 m_SpecularColor;
+    ethVector4 m_EmissiveColor;
 
     StringID m_AlbedoTextureID;
     StringID m_NormalTextureID;
     StringID m_RoughnessTextureID;
     StringID m_MetalnessTextureID;
+    StringID m_EmissiveTextureID;
 
     // Transient Data
     uint32_t m_TransientMaterialIdx;

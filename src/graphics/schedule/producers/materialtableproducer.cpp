@@ -52,10 +52,12 @@ void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, Re
         Material* currMat = renderData.m_VisualBatches[i].m_Material;
         materials[i].m_BaseColor = currMat->GetBaseColor();
         materials[i].m_SpecularColor = currMat->GetSpecularColor();
+        materials[i].m_EmissiveColor = currMat->GetEmissiveColor();
         materials[i].m_AlbedoTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetAlbedoTextureID());
         materials[i].m_NormalTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetNormalTextureID());
         materials[i].m_RoughnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetRoughnessTextureID());
         materials[i].m_MetalnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetMetalnessTextureID());
+        materials[i].m_EmissiveTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetEmissiveTextureID());
     }
 
     ctx.CopyBufferRegion(

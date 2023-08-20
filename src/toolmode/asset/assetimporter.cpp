@@ -152,13 +152,16 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
 
         aiColor3D baseColor;
         aiColor3D specularColor;
+        aiColor3D emissiveColor;
         float opacity;
         material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
         material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
+        material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
         material->Get(AI_MATKEY_OPACITY, opacity);
 
         gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, opacity });
         gfxMaterial.SetSpecularColor({ specularColor.r, baseColor.g, baseColor.b, 1 });
+        gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b, 0 });
 
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
@@ -166,20 +169,25 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
             gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
         }
-
-        if (material->GetTextureCount(aiTextureType_HEIGHT) > 0)
+        else if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
         {
-            // Experimental: Bistro labels normal maps as bump. We don't support bump mapping,
-            // so load it as normals regardless
             aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_HEIGHT, 0), textureName);
-            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_BASE_COLOR, 0), textureName);
+            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
         }
 
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
+            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+        else if (material->GetTextureCount(aiTextureType_HEIGHT) > 0)
+        {
+            // Experimental: Bistro labels normal maps as bump. We don't support bump mapping,
+            // so load it as normals regardless
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_HEIGHT, 0), textureName);
             gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
@@ -204,6 +212,19 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
             gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+
+        if (material->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSION_COLOR, 0), textureName);
+            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
+        } 
+        else if (material->GetTextureCount(aiTextureType_EMISSIVE) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSIVE, 0), textureName);
+            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
         }
 
         gfxMaterial.Serialize(ofstream);

@@ -27,11 +27,13 @@ struct Material
 {
     ethVector4 m_BaseColor;
     ethVector4 m_SpecularColor;
+    ethVector4 m_EmissiveColor;
 
     uint32_t m_AlbedoTextureIndex;
     uint32_t m_NormalTextureIndex;
     uint32_t m_RoughnessTextureIndex;
     uint32_t m_MetalnessTextureIndex;
+    uint32_t m_EmissiveTextureIndex;
 };
 
 ETH_END_SHADER_NAMESPACE
