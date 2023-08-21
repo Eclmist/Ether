@@ -62,8 +62,8 @@ public:
 
     // Bloom
     bool m_IsBloomEnabled = true;
-    float m_BloomIntensity = 0.25f;
-    float m_BloomScatter = 0.8f;
+    float m_BloomIntensity = 0.15f;
+    float m_BloomScatter = 0.85f;
     float m_BloomAnamorphic = 0.0f;
 
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };

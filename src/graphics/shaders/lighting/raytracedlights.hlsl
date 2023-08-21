@@ -25,7 +25,7 @@
 #include "utils/encoding.hlsl"
 #include "lighting/brdf.hlsl"
 
-#define EMISSION_SCALE 20000
+#define EMISSION_SCALE 80000
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -91,10 +91,10 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
 
     const float3 pointLightColor = float3(238/255.0, 129/255.0, 57/255.0) * 0;// 100000.0;
     const float3 pointLightPositions[4] = {
-        float3(2.1315, 9.2852, -4.665),
-        float3(-5.8484, 9.2852, -4.665),
-        float3(2.1315, 9.2852, 4.665),
-        float3(-5.8484, 9.2852, 4.665),
+        float3(2.1315, 2.2852, -4.665),
+        float3(-5.8484, 2.2852, -4.665),
+        float3(2.1315, 2.2852, 4.665),
+        float3(-5.8484, 2.2852, 4.665),
     };
 
     float3 pointLightContribution = 0;

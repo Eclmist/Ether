@@ -23,23 +23,30 @@
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 ConstantBuffer<BloomParams> g_BloomParams           : register(b1);
 Texture2D<float4> g_SourceTexture                   : register(t0);
-RWTexture2D<float4> g_DestinationTexture            : register(u0);
+Texture2D<float4> g_DestinationTexture              : register(t1);
+RWTexture2D<float4> g_DestinationTextureUav         : register(u0);
 
-void DownsamplePass(uint3 threadID)
+float4 UpsampleSource(uint3 threadID)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     const float2 resolution = g_BloomParams.m_Resolution;
     const float2 halfTexelSize = 1.0f / resolution / 2.0f;
     const float2 uv = threadID.xy / resolution + halfTexelSize;
-    const float4 offset = halfTexelSize.xyxy * float4(-1, -1, 1, 1);
+    const float4 offset = halfTexelSize.xyxy *
+                          float4(-1 - g_BloomParams.m_Anamorphic * 5, -1, 1 + g_BloomParams.m_Anamorphic * 5, 1) * 2;
 
-    float4 col = g_SourceTexture.Sample(linearSampler, uv) * 4.0f;
-    col += g_SourceTexture.Sample(linearSampler, uv + offset.xy);
-    col += g_SourceTexture.Sample(linearSampler, uv + offset.xw);
-    col += g_SourceTexture.Sample(linearSampler, uv + offset.zy);
-    col += g_SourceTexture.Sample(linearSampler, uv + offset.zw);
+    float4 col = g_SourceTexture.Sample(linearSampler, uv + float2(offset.x * 2.0f, 0.0f));
+    col += g_SourceTexture.Sample(linearSampler, uv + float2(offset.z * 2.0f, 0.0f));
+    col += g_SourceTexture.Sample(linearSampler, uv + float2(0.0f, offset.y * 2.0f));
+    col += g_SourceTexture.Sample(linearSampler, uv + float2(0.0f, offset.w * 2.0f));
 
-    g_DestinationTexture[threadID.xy] = col / 8.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.xy)) * 2.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.xw)) * 2.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.zy)) * 2.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + (offset.zw)) * 2.0f;
+
+    col /= 12.0f;
+    return col;
 }
 
 void UpsamplePass(uint3 threadID)
@@ -48,32 +55,39 @@ void UpsamplePass(uint3 threadID)
     const float2 resolution = g_BloomParams.m_Resolution;
     const float2 halfTexelSize = 1.0f / resolution / 2.0f;
     const float2 uv = threadID.xy / resolution + halfTexelSize;
-    const float4 offset = halfTexelSize.xyxy * float4(-1, -1, 1, 1);
-    const float2 anamorphy = float2(1.0f + (g_BloomParams.m_Anamorphic), 1.0f);
+    float4 upsampled = UpsampleSource(threadID);
+    float4 original = g_DestinationTexture.Sample(linearSampler, uv);
+    g_DestinationTextureUav[threadID.xy] = lerp(original, upsampled, g_BloomParams.m_Scatter);
+}
 
-    float4 col = g_SourceTexture.Sample(linearSampler, uv + float2(offset.x, 0.0f) * anamorphy);
-    col += g_SourceTexture.Sample(linearSampler, uv + float2(offset.z, 0.0f) * anamorphy);
-    col += g_SourceTexture.Sample(linearSampler, uv + float2(0.0f, offset.y) * anamorphy);
-    col += g_SourceTexture.Sample(linearSampler, uv + float2(0.0f, offset.w) * anamorphy);
+void DownsamplePass(uint3 threadID)
+{
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 resolution = g_BloomParams.m_Resolution;
+    const float2 halfTexelSize = 1.0f / resolution / 2.0f;
+    const float2 uv = threadID.xy / resolution + halfTexelSize;
+    const float4 offset = halfTexelSize.xyxy * float4(-1, -1, 1, 1) * 2;
 
-    col += g_SourceTexture.Sample(linearSampler, uv + (offset.xy / 2.0f) * anamorphy) * 2.0f;
-    col += g_SourceTexture.Sample(linearSampler, uv + (offset.xw / 2.0f) * anamorphy) * 2.0f;
-    col += g_SourceTexture.Sample(linearSampler, uv + (offset.zy / 2.0f) * anamorphy) * 2.0f;
-    col += g_SourceTexture.Sample(linearSampler, uv + (offset.zw / 2.0f) * anamorphy) * 2.0f;
+    float4 col = g_SourceTexture.Sample(linearSampler, uv) * 4.0f;
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.xy);
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.xw);
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.zy);
+    col += g_SourceTexture.Sample(linearSampler, uv + offset.zw);
 
-    g_DestinationTexture[threadID.xy] = col / 12.0f;
+    g_DestinationTextureUav[threadID.xy] = col / 8.0f;
 }
 
 void CompositePass(uint3 threadID)
 {
-    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
-    const float2 halfPixel = 1.0f / resolution / 2.0f;
-    const float2 uv = threadID.xy / resolution + halfPixel;
-    const float bloomIntensity = g_BloomParams.m_Intensity * 0.82;
-
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    const float2 halfTexelSize = 1.0f / resolution / 2.0f;
+    const float2 uv = threadID.xy / resolution + halfTexelSize;
+    float4 upsampled = UpsampleSource(threadID);
+
     const float4 bloom = g_SourceTexture.Sample(linearSampler, uv);
-    g_DestinationTexture[threadID.xy] += bloom * bloomIntensity;
+    //g_DestinationTextureUav[threadID.xy] += bloom * bloomIntensity;
+    g_DestinationTextureUav[threadID.xy] = lerp(g_DestinationTextureUav[threadID.xy], upsampled, g_BloomParams.m_Intensity);
 }
 
 [numthreads(BLOOM_KERNEL_GROUP_SIZE_X, BLOOM_KERNEL_GROUP_SIZE_Y, 1)]

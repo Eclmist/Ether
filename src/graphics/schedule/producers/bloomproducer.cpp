@@ -36,6 +36,8 @@ DEFINE_GFX_UA_SR(BloomTexture8)
 
 DECLARE_GFX_UA_SR(PostFxSourceTexture)
 
+constexpr  uint32_t NumBloomTextures = 9;
+
 Ether::Graphics::BloomProducer::BloomProducer()
     : PostProcessProducer("BloomProducer", "postprocess\\bloom.hlsl")
 {
@@ -74,10 +76,10 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
     PostProcessProducer::RenderFrame(ctx, rc);
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const ethVector2u resolution = config.GetResolution();
-    const uint32_t numBloomTextures = 9;
-    const uint32_t numIterations = config.m_BloomScatter * numBloomTextures;
+    const uint32_t numIterations = NumBloomTextures;
 
     GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView> srvs[] = {
+        ACCESS_GFX_SR(PostFxSourceTexture),
         ACCESS_GFX_SR(BloomTexture0),
         ACCESS_GFX_SR(BloomTexture1),
         ACCESS_GFX_SR(BloomTexture2),
@@ -89,7 +91,9 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
         ACCESS_GFX_SR(BloomTexture8),
     };
 
+
     GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView> uavs[] = {
+        ACCESS_GFX_UA(PostFxSourceTexture),
         ACCESS_GFX_UA(BloomTexture0),
         ACCESS_GFX_UA(BloomTexture1),
         ACCESS_GFX_UA(BloomTexture2),
@@ -101,35 +105,28 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
         ACCESS_GFX_UA(BloomTexture8),
     };
 
-    // Base pass
-    AddBloomSubpass(
-        BLOOM_PASSINDEX_DOWNSAMPLE,
-        ctx,
-        rc,
-        ACCESS_GFX_SR(PostFxSourceTexture),
-        ACCESS_GFX_UA(BloomTexture0)->GetGpuAddress(),
-        ethVector2(resolution.x / 2.0f, resolution.y / 2.0f));
-
-    for (uint32_t i = 1; i < numIterations; ++i)
+    for (uint32_t i = 1; i <= numIterations; ++i)
     {
         AddBloomSubpass(
             BLOOM_PASSINDEX_DOWNSAMPLE,
             ctx,
             rc,
             srvs[i - 1],
-            uavs[i]->GetGpuAddress(),
-            ethVector2(resolution.x / std::pow(2.0f, i + 1), resolution.y / std::pow(2.0f, i + 1)));
+            srvs[i],
+            uavs[i],
+            ethVector2(resolution.x / std::pow(2.0f, i), resolution.y / std::pow(2.0f, i)));
     }
 
-    for (int32_t i = numIterations - 1; i > 0; --i)
+    for (int32_t i = numIterations; i > 1; --i)
     {
         AddBloomSubpass(
             BLOOM_PASSINDEX_UPSAMPLE,
             ctx,
             rc,
             srvs[i],
-            uavs[i - 1]->GetGpuAddress(),
-            ethVector2(resolution.x / std::pow(2.0f, i), resolution.y / std::pow(2.0f, i)));
+            srvs[i - 1],
+            uavs[i - 1],
+            ethVector2(resolution.x / std::pow(2.0f, i - 1), resolution.y / std::pow(2.0f, i - 1)));
     }
 
     // Composite
@@ -138,7 +135,8 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
         ctx,
         rc,
         ACCESS_GFX_SR(BloomTexture0),
-        ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress(),
+        ACCESS_GFX_SR(PostFxSourceTexture),
+        ACCESS_GFX_UA(PostFxSourceTexture),
         ethVector2(resolution.x, resolution.y));
 }
 
@@ -152,13 +150,15 @@ bool Ether::Graphics::BloomProducer::IsEnabled()
 
 void Ether::Graphics::BloomProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(4, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(5, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);     // (b1) Bloom Params
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 0); // (t0) Source
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) Destination
+    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
@@ -168,7 +168,8 @@ void Ether::Graphics::BloomProducer::AddBloomSubpass(
     GraphicContext& ctx,
     ResourceContext& rc,
     GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView> src,
-    RhiGpuAddress dst,
+    GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView> dst,
+    GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView> dstUav,
     ethVector2 dstResolution)
 {
     if (dstResolution.x <= 1 || dstResolution.y <= 1)
@@ -187,7 +188,8 @@ void Ether::Graphics::BloomProducer::AddBloomSubpass(
     ctx.InsertUavBarrier(*rc.GetResource(src));
     ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(2, src->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, dst);
+    ctx.SetComputeRootDescriptorTable(3, dst->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(4, dstUav->GetGpuAddress());
     ctx.Dispatch(
         std::ceil(dstResolution.x / float(BLOOM_KERNEL_GROUP_SIZE_X)),
         std::ceil(dstResolution.y / float(BLOOM_KERNEL_GROUP_SIZE_Y)),

@@ -43,7 +43,8 @@ private:
         GraphicContext& ctx,
         ResourceContext& rc,
         GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView> src,
-        RhiGpuAddress dst,
+        GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView> dst,
+        GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView> dstUav,
         ethVector2 dstResolution);
 };
 } // namespace Ether::Graphics

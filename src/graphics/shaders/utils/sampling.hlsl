@@ -96,7 +96,7 @@ float3 SampleDirectionCosineHemisphere(float2 uv)
 
 float3 TangentToWorld(float3 v, float3 N)
 {
-    const float3 upVector = N.y < 0.9999 ? float3(0, 1, 0) : float3(0, 0, 1);
+    const float3 upVector = abs(N.y) < 0.9999 ? float3(0, 1, 0) : float3(0, 0, 1);
     const float3 tangentX = normalize(cross(upVector, N));
     const float3 tangentY = cross(N, tangentX);
     // Tangent to world space

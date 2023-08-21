@@ -137,19 +137,18 @@ float Stars(float3 viewDir)
     return max(0.0f, stars);
 }
 
-float3 NormalizeDirection(float2 screenUV)
+float3 NormalizeDirection(float2 uv)
 {
-    float2 res = g_GlobalConstants.m_ScreenResolution;
-    float aspect = res.x / res.y;
-    float2 offset;
-    offset.x = tan(1.39626 * 0.5) * (screenUV.x * 2.0 - 1.0) * aspect;
-    offset.y = tan(1.39626 * 0.5) * (screenUV.y * 2.0 - 1.0);
+    float2 offset = float2(uv.x - 0.5, 0.5 - uv.y) * g_GlobalConstants.m_ScreenResolution /
+                    g_GlobalConstants.m_ScreenResolution.y;
+
+    offset *= 1.39626;
 
     float3 forward = normalize(g_GlobalConstants.m_EyeDirection.xyz);
-    float3 right = normalize(cross(float3(0, 1, 0), forward));
+    float3 right = normalize(cross(forward, float3(0, 1, 0)));
     float3 up = normalize(cross(right, forward));
 
-    float3 dir = normalize(g_GlobalConstants.m_EyeDirection.xyz + offset.x * right + offset.y * up);
+    float3 dir = normalize(g_GlobalConstants.m_EyeDirection.xyz - offset.x * right + offset.y * up);
     return dir;
 }
 
@@ -313,17 +312,19 @@ float4 GetHdriSkyColor(float2 uv)
 {
     const float exposure = 4000.0f;
     const float3 viewDir = NormalizeDirection(uv);
-    const float2 hdriUv = SampleSphericalMap(viewDir);
-    const float4 hdri = SampleHdri(hdriUv);
+    const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
+    const float cloudMask = 1 - hdri.r;
     const float4 stars = Stars(viewDir);
-    const float4 sun = CalculateSunRadiance(viewDir, g_GlobalConstants.m_SunDirection.xyz, g_GlobalConstants.m_SunColor.rgb).xyzz;
+    const float4 sun = pow(cloudMask, 10) * CalculateSunRadiance(viewDir, g_GlobalConstants.m_SunDirection.xyz, g_GlobalConstants.m_SunColor.rgb).xyzz;
 
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
     
-    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
-
-    return exposure * hdri * color + stars + sun;
+    const float4 color = lerp(float4(0.6, 0.2, 0.2, 0), 1, sunsetFactor) * sunlightFactor;
+    const float4 sunAttenuatedHdri = hdri * max(0.5, 2 * pow(saturate(dot(viewDir, g_GlobalConstants.m_SunDirection.xyz)), 2));
+    const float4 coloredHdri = sunAttenuatedHdri * color;
+    const float4 finalHdri = lerp(hdri, coloredHdri, cloudMask);
+    return exposure * finalHdri + stars + sun;
 }
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target

@@ -56,8 +56,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(PostFxSourceProducer), new PostFxSourceProducer());
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
-    Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
     Register(ACCESS_GFX_PA(BloomProducer), new BloomProducer());
+    Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
