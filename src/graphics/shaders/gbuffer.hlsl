@@ -78,7 +78,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 albedo = material.m_BaseColor;
     float4 emissive = material.m_EmissiveColor;
     float3 normal = IN.Normal.xyz;
-    float roughness = 1;
+    float roughness = 0.5;
     float metalness = 0;
     float2 velocity = texSpaceCurr - texSpacePrev;
 
@@ -115,7 +115,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     {
         Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
         emissive *= emissiveTex.Sample(linearSampler, IN.TexCoord);
-        emissive = pow(emissive, 2);
     }
 
     // Don't support alpha yet
@@ -128,6 +127,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     o.Output0 = float4(albedo.x,     albedo.y,      albedo.z,   metalness);
     o.Output1 = float4(worldPos.x,   worldPos.y,    worldPos.z, roughness);
     o.Output2 = float4(octNormals.x, octNormals.y,  velocity.x, velocity.y);
-    o.Output3 = float3(emissive.x, emissive.y,  emissive.z);
+    o.Output3 = float3(emissive.x,   emissive.y,    emissive.z);
     return o;
 }

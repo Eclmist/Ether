@@ -32,8 +32,16 @@ float4 UpsampleSource(uint3 threadID)
     const float2 resolution = g_BloomParams.m_Resolution;
     const float2 halfTexelSize = 1.0f / resolution / 2.0f;
     const float2 uv = threadID.xy / resolution + halfTexelSize;
-    const float4 offset = halfTexelSize.xyxy *
-                          float4(-1 - g_BloomParams.m_Anamorphic * 5, -1, 1 + g_BloomParams.m_Anamorphic * 5, 1) * 2;
+    const float2 anamorphicFactor = float2(g_BloomParams.m_Anamorphic * 5, 1);
+    const float2 diffractionFactor = float2(1, 1);
+    const float offsetConstant = 2;
+
+    float4 offset = float4(-1, -1, 1, 1) 
+        * offsetConstant 
+        * halfTexelSize.xyxy 
+        * anamorphicFactor.xyxy 
+        * diffractionFactor.xyxy;
+
 
     float4 col = g_SourceTexture.Sample(linearSampler, uv + float2(offset.x * 2.0f, 0.0f));
     col += g_SourceTexture.Sample(linearSampler, uv + float2(offset.z * 2.0f, 0.0f));
@@ -86,7 +94,6 @@ void CompositePass(uint3 threadID)
     float4 upsampled = UpsampleSource(threadID);
 
     const float4 bloom = g_SourceTexture.Sample(linearSampler, uv);
-    //g_DestinationTextureUav[threadID.xy] += bloom * bloomIntensity;
     g_DestinationTextureUav[threadID.xy] = lerp(g_DestinationTextureUav[threadID.xy], upsampled, g_BloomParams.m_Intensity);
 }
 
