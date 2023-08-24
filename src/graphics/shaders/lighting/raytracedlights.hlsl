@@ -17,30 +17,33 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/globalconstants.h"
-#include "common/raytracingconstants.h"
-#include "common/material.h"
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 #include "utils/encoding.hlsl"
+#include "common/globalconstants.h"
+#include "common/raytracingconstants.h"
+#include "common/material.h"
 #include "lighting/brdf.hlsl"
 
-#define EMISSION_SCALE 1000
-#define SUNLIGHT_SCALE 120000
-#define SKYLIGHT_SCALE 2000
+#define EMISSION_SCALE   400000
+#define SUNLIGHT_SCALE   120000
+#define SKYLIGHT_SCALE   2000
 #define POINTLIGHT_SCALE 0
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
-StructuredBuffer<GeometryInfo> g_GeometryInfo       : register(t1);
-StructuredBuffer<Material> g_MaterialTable          : register(t2);
-Texture2D<float4> g_AccumulationTexture             : register(t3);
-Texture2D<float4> g_GBufferOutput0                  : register(t4);
-Texture2D<float4> g_GBufferOutput1                  : register(t5);
-Texture2D<float4> g_GBufferOutput2                  : register(t6);
-Texture2D<float4> g_GBufferOutput3                  : register(t7);
-RWTexture2D<float4> g_LightingOutput                : register(u0);
-RWTexture2D<float4> g_IndirectOutput                : register(u1);
+ConstantBuffer<GlobalConstants> g_GlobalConstants           : register(b0);
+RaytracingAccelerationStructure g_RaytracingTlas            : register(t0);
+StructuredBuffer<GeometryInfo> g_GeometryInfo               : register(t1);
+StructuredBuffer<Material> g_MaterialTable                  : register(t2);
+Texture2D<float4> g_GBufferOutput0                          : register(t3);
+Texture2D<float4> g_GBufferOutput1                          : register(t4);
+Texture2D<float4> g_GBufferOutput2                          : register(t5);
+Texture2D<float4> g_GBufferOutput3                          : register(t6);
+RWTexture2D<float4> g_LightingOutput                        : register(u0);
+
+/* ReSTIR GI Implementation */
+RWStructuredBuffer<Reservoir> g_ReSTIR_InitialReservoir     : register(u1);
+RWStructuredBuffer<Reservoir> g_ReSTIR_TemporalReservoir    : register(u2);
+RWStructuredBuffer<Reservoir> g_ReSTIR_SpatialReservoir     : register(u3);
 
 float3 ComputeSkyHdri(float3 wi)
 {
@@ -79,6 +82,115 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
     return BarycentricLerp(v0, v1, v2, barycentrics);
 }
 
+void SampleDirectionCosine(float3 normal, out float3 wi, out float pdf)
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+    wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
+    pdf = SampleDirectionCosineHemisphere_Pdf(saturate(dot(wi, normal)));
+}
+
+void SampleDirectionUniform(float3 normal, out float3 wi, out float pdf)
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+    wi = TangentToWorld(SampleDirectionHemisphere(rand2D), normal);
+    pdf = SampleDirectionHemisphere_Pdf();
+}
+
+void SampleDirectionBrdf(float3 normal, float3 wo, float roughness, float metalness, out float3 wi, out float pdf)
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+    const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
+    const float specularWeight = 1.0 - diffuseWeight;
+    if (Random(rand2D.x) <= specularWeight)
+        wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
+    else
+        wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
+
+    const float3 H = normalize(wi + wo);
+    const float nDotH = saturate(dot(normal, H));
+    const float vDotH = saturate(dot(wo, H));
+    const float cosTheta = saturate(dot(wi, normal));
+    pdf = 1;
+}
+
+float GetTargetPdf(ReservoirSample rs)
+{
+    return dot(1, rs.m_Radiance);
+}
+
+bool AreDepthSimilar(float3 a, float3 b)
+{
+    const float aDepth = length(a - g_GlobalConstants.m_EyePosition.xyz);
+    const float bDepth = length(b - g_GlobalConstants.m_EyePosition.xyz);
+    return abs(aDepth - bDepth) < 50;
+}
+
+bool AreSamplesSimilar(ReservoirSample a, ReservoirSample b)
+{
+    //if (dot(a.m_VisibleNormal, b.m_VisibleNormal) < 0)
+    //    return false;
+
+    if (!AreDepthSimilar(a.m_VisiblePosition, b.m_VisiblePosition))
+        return false;
+
+    return true;
+}
+
+float3 ClampRadiance(float3 radiance)
+{
+    return min(10000, radiance);
+}
+
+bool TraceVisibility(float3 a, float3 b)
+{
+    RayPayload payload;
+    payload.m_IsShadowRay = true;
+    payload.m_Depth = 0;
+    payload.m_Hit = false;
+
+    RayDesc ray;
+    ray.Direction = normalize(b - a);
+    ray.Origin = a;
+    ray.TMax = length(b - a) - 0.01;
+    ray.TMin = 0.01;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+
+    return !payload.m_Hit;
+}
+
+void TraceHitSurface(
+    float3 position,
+    float3 direction,
+    uint depth,
+    out float3 hitPosition,
+    out float3 hitNormal,
+    out float3 radiance)
+{
+    RayPayload payload;
+    payload.m_IsShadowRay = false;
+    payload.m_Depth = depth;
+
+    RayDesc ray;
+    ray.Direction = direction;
+    ray.Origin = position;
+    ray.TMax = 128;
+    ray.TMin = 0.01;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+
+    hitPosition = payload.m_HitPosition;
+    hitNormal = payload.m_HitNormal;
+    radiance = payload.m_Radiance;
+}
+
 float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
     RayPayload payload;
@@ -89,10 +201,17 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
     shadowRay.Origin = position + (normal * 0.01);
     shadowRay.TMax = 128;
     shadowRay.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
+    TraceRay(
+        g_RaytracingTlas,
+        RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
+        0xFF,
+        0,
+        0,
+        0,
+        shadowRay,
+        payload);
 
-
-    const float3 pointLightColor = float3(238/255.0, 129/255.0, 57/255.0) * POINTLIGHT_SCALE;
+    const float3 pointLightColor = float3(238 / 255.0, 129 / 255.0, 57 / 255.0) * POINTLIGHT_SCALE;
     const float3 pointLightPositions[4] = {
         float3(2.1315, 2.2852, -4.665),
         float3(-5.8484, 2.2852, -4.665),
@@ -101,7 +220,6 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
     };
 
     float3 pointLightContribution = 0;
-    
 
     for (int i = 0; i < 3; ++i)
     {
@@ -116,12 +234,20 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
     const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
     const float cosTheta = saturate(dot(wi, normal));
     const float3 Lo = Li * f * cosTheta;
+
     return Lo + pointLightContribution;
 }
 
 #define IMPORTANCE_SAMPLING 0
 
-float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
+float3 GetIndirectRadiance(
+    float3 position,
+    float3 wo,
+    float3 normal,
+    float3 albedo,
+    float roughness,
+    float metalness,
+    uint depth)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -143,32 +269,22 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
     const float vDotH = saturate(dot(wo, H));
     const float cosTheta = saturate(dot(wi, normal));
     const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
-
-    float3 f = 0;
-    if (cosTheta > 0)
-        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
 
 #elif IMPORTANCE_SAMPLING == 1
     float3 wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
     const float cosTheta = saturate(dot(wi, normal));
     const float pdf = cosTheta / Pi;
-
-    float3 f = 0;
-    if (cosTheta > 0)
-        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
 #else
     float3 wi = TangentToWorld(SampleDirectionHemisphere(rand2D), normal);
     const float cosTheta = saturate(dot(wi, normal));
     const float pdf = 1 / Pi2;
-
-    float3 f = 0;
-    if (cosTheta > 0)
-        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
 #endif
 
     if (depth <= 0)
         return ComputeSkyHdri(wi) * g_GlobalConstants.m_RaytracedAOIntensity;
-
 
     RayPayload payload;
     payload.m_IsShadowRay = false;
@@ -180,7 +296,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
     indirectRay.TMax = 128;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
-    float3 Li = min(10000.0f, payload.m_Radiance);
+    float3 Li = payload.m_Radiance;
     const float3 Lo = Li * f * cosTheta;
     return Lo;
 }
@@ -221,6 +337,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     if (material.m_MetalnessTextureIndex != 0)
     {
         Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];
+
         metalness = metalnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).b;
     }
 
@@ -231,11 +348,19 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     }
 
     // Flip normal if backface. This fixes a lot of light leakage
-    normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal; 
+    normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal;
 
     const float3 wo = normalize(-WorldRayDirection());
     const float3 direct = GetDirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirectSpecular = GetIndirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
+    const float3 indirectSpecular = GetIndirectRadiance(
+        hitSurface.m_Position,
+        wo,
+        normal,
+        albedo.xyz,
+        roughness,
+        metalness,
+        payload.m_Depth - 1);
+
     return emission.xyz + direct + indirectSpecular;
 }
 
@@ -253,25 +378,127 @@ void RayGeneration()
     const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
     const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
 
-    const float3 color = gbuffer0.xyz;
+    const float3 albedo = gbuffer0.xyz;
     const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
     const float3 position = gbuffer1.xyz;
-    const float3 viewDir = normalize(g_GlobalConstants.m_EyePosition.xyz - position);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float2 velocity = gbuffer2.zw;
     const float metalness = gbuffer0.w;
     const float roughness = gbuffer1.w;
-    const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
-    const float2 uvPrev = uv;
-    const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+    const float3 wo = normalize(g_GlobalConstants.m_EyePosition.xyz - position);
 
-    const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 1) * 4;
+    const float2 uv = float2(launchIndex.xy) / launchDim.xy + 0.5 / launchDim.xy;
+    const float2 uvPrev = clamp(uv - velocity, 0, 1);
+    const uint2 launchIndexPrev = uvPrev * launchDim.xy;
+    const uint sampleIdxPrev = launchIndexPrev.y * launchDim.x + launchIndexPrev.x;
 
-    const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
-    const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
-    g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
-    g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
+    const uint depth = 1;
+    float3 wi;
+    float sourcePdf;
+
+    SampleDirectionUniform(normal, wi, sourcePdf);
+    // SampleDirectionCosine(normal, wi, sourcePdf);
+    //SampleDirectionBrdf(normal, wo, roughness, metalness, wi, sourcePdf);
+    float3 hitPosition, hitNormal, radiance;
+
+    TraceHitSurface(position, wi, depth, hitPosition, hitNormal, radiance);
+
+    ReservoirSample initialSample;
+    initialSample.m_VisiblePosition = position;
+    initialSample.m_VisibleNormal = normal;
+    initialSample.m_SamplePosition = hitPosition;
+    initialSample.m_SampleNormal = hitNormal;
+    initialSample.m_Radiance = ClampRadiance(radiance);
+    initialSample.m_Random = 0;
+
+    Reservoir Ri;
+    Ri.m_Sample = initialSample;
+    Ri.m_TotalW = GetTargetPdf(initialSample);
+    Ri.m_M = 1;
+    Ri.m_W = Ri.m_TotalW / max(0.001, Ri.m_M * GetTargetPdf(Ri.m_Sample));
+    DeviceMemoryBarrier();
+  
+    Reservoir Rs = g_ReSTIR_SpatialReservoir[sampleIdx];
+    Reservoir Rt = g_ReSTIR_TemporalReservoir[sampleIdxPrev];
+
+    //if (!AreDepthSimilar(Rt.m_Sample.m_VisiblePosition, position) || 
+    //    length(Rt.m_Sample.m_VisiblePosition - position) > 0.1)
+    //{
+    //    Rt.Reset();
+    //    Rs.Reset();
+    //}
+
+    //if (g_GlobalConstants.m_FrameSinceLastMovement == g_GlobalConstants.m_FrameNumber)
+    //{
+    //    Rt.Reset();
+    //    Rs.Reset();
+    //}
+
+    //// Temporal Resampling
+    const float w = GetTargetPdf(initialSample) / sourcePdf;
+    Rt.Update(initialSample, w, Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 30);
+    Rt.m_W = Rt.m_TotalW / max(0.001, Rt.m_M * GetTargetPdf(Rt.m_Sample));
+    g_ReSTIR_TemporalReservoir[sampleIdx] = Rt;
+    DeviceMemoryBarrier();
+
+    // Spatial Resampling
+
+    Rs.m_Sample = Rt.m_Sample;
+    Rs.m_TotalW = GetTargetPdf(Rt.m_Sample);
+    Rs.m_M = 1;
+    Rs.m_W = Rs.m_TotalW / max(0.001, Rs.m_M * GetTargetPdf(Rs.m_Sample));
+
+    const uint numSpatialIterations = clamp(lerp(10, 3, (Rt.m_M / 30.0f)), 3, 10);
+    const float searchRadius = 10;
+
+
+    for (uint i = 0; i < numSpatialIterations; ++i)
+    {
+        const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
+        const uint3 neighbourCoords = clamp((launchIndex + float3((rand2D * 2 - 1) * searchRadius, 0)), 0, launchDim - 1);
+        const uint neighbourIdx = neighbourCoords.y * launchDim.x + neighbourCoords.x;
+
+        Reservoir Rn = g_ReSTIR_TemporalReservoir[neighbourIdx];
+        float targetPdfRn = GetTargetPdf(Rn.m_Sample);
+
+        if (!AreSamplesSimilar(Rn.m_Sample, Rt.m_Sample))
+            continue;
+
+        if (!TraceVisibility(Rn.m_Sample.m_SamplePosition, Rt.m_Sample.m_VisiblePosition))
+            targetPdfRn = 0;
+
+        Rs.Merge(Rn, targetPdfRn, Random(sampleIdx * g_GlobalConstants.m_FrameNumber * i * 2), 100);
+        Rs.m_W = Rs.m_TotalW / max(0.001, Rs.m_M * GetTargetPdf(Rs.m_Sample));
+        // neighbours[i] = Rn.m_Sample;
+    }
+
+    // float Z = 0;
+
+    // for (uint i = 0; i < numSpatialIterations; ++i)
+    //{
+    //     if (GetTargetPdf(neighbours[i].m_Sample) > 0)
+    //         Z += R
+    //
+    // }
+
+    g_ReSTIR_SpatialReservoir[sampleIdx] = Rs;
+    DeviceMemoryBarrier();
+
+
+
+    Reservoir finalReservoir = Rs;
+    //if (uv.x + uv.y / 10 > sin(g_GlobalConstants.m_Time.y) * 0.7 + 0.7)
+    //    finalReservoir = Ri;
+
+    ReservoirSample finalSample = finalReservoir.m_Sample;
+    const float3 finalWo = wo;
+    const float3 finalWi = normalize(finalSample.m_SamplePosition - finalSample.m_VisiblePosition);
+
+    const float3 f = albedo;//BRDF_UE4(finalWi, finalWo, normal, albedo, roughness, metalness);
+    const float3 indirect = finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(normal, finalWi));
+
+    const float3 direct = GetDirectRadiance(position, wo, normal, albedo, roughness, metalness);
+    g_LightingOutput[launchIndex.xy].xyz = emission + direct + indirect * 3;
 }
 
 [shader("miss")]
@@ -283,7 +510,11 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(400.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz *
+                             lerp(
+                                 400.0f,
+                                 SUNLIGHT_SCALE,
+                                 saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     }
     else
     {
@@ -295,15 +526,15 @@ void Miss(inout RayPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    payload.m_Hit = true;
-    payload.m_Radiance = 0;
-
-    if (payload.m_IsShadowRay)
-        return;
-
     const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
-    payload.m_Radiance = PathTrace(vertex, material, payload);
+    payload.m_Hit = true;
+    payload.m_Radiance = 0;
+    payload.m_HitPosition = vertex.m_Position;
+    payload.m_HitNormal = vertex.m_Normal;
+
+    if (!payload.m_IsShadowRay)
+        payload.m_Radiance = PathTrace(vertex, material, payload);
 }
