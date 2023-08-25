@@ -196,11 +196,12 @@ void TraceHitSurface(
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
+    payload.m_Hit = false;
 
     RayDesc ray;
     ray.Direction = direction;
     ray.Origin = position;
-    ray.TMax = 128;
+    ray.TMax = 64;
     ray.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
 
@@ -394,8 +395,6 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
 [shader("raygeneration")]
 void RayGeneration()
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
@@ -419,18 +418,18 @@ void RayGeneration()
     const uint2 launchIndexPrev = clamp(uvPrev * launchDim.xy, 0, launchDim.xy - 1);
     const uint sampleIdxPrev = launchIndexPrev.y * launchDim.x + launchIndexPrev.x;
 
-    const uint depth = 2;
+    const uint depth = 1;
     float3 wi;
     float sourcePdf;
     bool isSpecular = false;
 
     if (g_GlobalConstants.m_FrameSinceLastMovement == g_GlobalConstants.m_FrameNumber)
     {
-        g_ReSTIR_TemporalReservoir[sampleIdx].Reset();
-        g_ReSTIR_SpatialReservoir[sampleIdx].Reset();
+        //g_ReSTIR_TemporalReservoir[sampleIdx].Reset();
+        //g_ReSTIR_SpatialReservoir[sampleIdx].Reset();
     }
 
-    //SampleDirectionUniform(normal, wi, sourcePdf);
+    // SampleDirectionUniform(normal, wi, sourcePdf);
     // SampleDirectionCosine(normal, wi, sourcePdf);
     SampleDirectionBrdf(normal, wo, roughness, metalness, wi, sourcePdf, isSpecular);
 
@@ -456,29 +455,27 @@ void RayGeneration()
     Ri.m_TotalW = GetTargetPdf(initialSample) / sourcePdf;
     Ri.m_M = 1;
     Ri.m_W = Ri.m_TotalW / max(0.001, Ri.m_M * GetTargetPdf(Ri.m_Sample));
-    DeviceMemoryBarrier();
   
     Reservoir Rt = g_ReSTIR_TemporalReservoir[sampleIdxPrev];
 
     if (!AreSamplesSimilar(Rt.m_Sample, initialSample))
-    {
         Rt.Reset();
-    }
-
 
     // Temporal Resampling
     const float w = GetTargetPdf(initialSample) / sourcePdf;
-    Rt.Update(initialSample, w, Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 30);
+    Rt.Update(initialSample, w, Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 15);
     Rt.m_W = Rt.m_TotalW / max(0.001, Rt.m_M * GetTargetPdf(Rt.m_Sample));
     g_ReSTIR_TemporalReservoir[sampleIdx] = Rt;
     DeviceMemoryBarrier();
 
     // Spatial Resampling
-    Reservoir Rs = Rt;
+    Reservoir Rs = g_ReSTIR_SpatialReservoir[sampleIdx];
 
-    const uint numSpatialIterations = 4;
-    const float searchRadius = 1 + roughness * 20;
+    const int numSpatialIterations = Rs.m_M > 50 ? 3 : 10;
+    float searchRadius = 1 + roughness;
 
+    uint Q[10];
+    uint numQ = 0;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
@@ -487,32 +484,51 @@ void RayGeneration()
         const uint neighbourIdx = neighbourCoords.y * launchDim.x + neighbourCoords.x;
 
         Reservoir Rn = g_ReSTIR_TemporalReservoir[neighbourIdx];
-        float targetPdfRn = GetTargetPdf(Rn.m_Sample);
 
         if (!AreSamplesSimilar(Rn.m_Sample, Rt.m_Sample))
             continue;
 
-        if (!TraceVisibility(Rn.m_Sample.m_SamplePosition, Rt.m_Sample.m_VisiblePosition))
-            continue;
+        const float3 xq1 = Rn.m_Sample.m_VisiblePosition;
+        const float3 xq2 = Rn.m_Sample.m_SamplePosition;
+        const float3 xr1 = Rt.m_Sample.m_VisiblePosition;
+        const float3 xq1Subxq2 = xq1 - xq2; // offset B
+        const float3 xr1Subxq2 = xr1 - xq2; // offset A
+        const float rb2 = dot(xq1Subxq2, xq1Subxq2);
+        const float ra2 = dot(xr1Subxq2, xr1Subxq2);
 
-        Rs.Merge(Rn, targetPdfRn, Random(sampleIdx * g_GlobalConstants.m_FrameNumber * i * 2), 100);
-        Rs.m_W = Rs.m_TotalW / max(0.001, Rs.m_M * GetTargetPdf(Rs.m_Sample));
-        // neighbours[i] = Rn.m_Sample;
+        const float cosPq2 = dot(normalize(xq1Subxq2), Rn.m_Sample.m_SampleNormal); // cosPhiB^2
+        const float cosPr2 = dot(normalize(xr1Subxq2), Rn.m_Sample.m_SampleNormal); // cosPhiA^2
+
+        const float jacobian = rb2 * cosPr2 / (ra2 * cosPq2);
+        float targetPdf = GetTargetPdf(Rn.m_Sample);
+
+        if (!TraceVisibility(Rn.m_Sample.m_SamplePosition, Rt.m_Sample.m_VisiblePosition))
+            targetPdf = 0;
+
+        Rs.Merge(Rn, targetPdf, Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 500);
+        Q[numQ++] = neighbourIdx;
+        searchRadius *= 1.5;
     }
 
-    // float Z = 0;
+    //g_ReSTIR_SpatialReservoir[sampleIdx] = Rs;
+    //DeviceMemoryBarrier();
 
-    // for (uint i = 0; i < numSpatialIterations; ++i)
-    //{
-    //     if (GetTargetPdf(neighbours[i].m_Sample) > 0)
-    //         Z += R
-    //
-    // }
+    float Z = 0;
+    for (uint i = 0; i < numQ; ++i)
+    {
+        if (GetTargetPdf(g_ReSTIR_TemporalReservoir[Q[i]].m_Sample) > 0)
+            Z += g_ReSTIR_TemporalReservoir[Q[i]].m_M;
+    }
+
+    Rs.m_W = Rs.m_TotalW / max(0.001, Z * GetTargetPdf(Rs.m_Sample));
 
     //g_ReSTIR_SpatialReservoir[sampleIdx] = Rs;
     //DeviceMemoryBarrier();
 
     Reservoir finalReservoir = Rs;
+
+    if (g_GlobalConstants.m_RaytracedLightingDebug)
+        finalReservoir = Ri;
 
     //if (uv.x + uv.y / 10 > sin(g_GlobalConstants.m_Time.z) * 0.7 + 0.7)
     //    finalReservoir = Ri;

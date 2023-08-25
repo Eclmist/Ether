@@ -55,6 +55,9 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     float a = g_GlobalConstants.m_TaaAccumulationFactor;
     float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
 
-    g_TargetTexture[threadID.xy] = newColor;
-    //g_TargetTexture[threadID.xy] = float4(uvPrev, 0,0);
+    //if (uv.x + uv.y / 10 < sin(g_GlobalConstants.m_Time.z) * 0.7 + 0.7)
+    //    g_TargetTexture[threadID.xy] = newColor;
+
+    if (!g_GlobalConstants.m_RaytracedLightingDebug)
+        g_TargetTexture[threadID.xy] = newColor;
 }
