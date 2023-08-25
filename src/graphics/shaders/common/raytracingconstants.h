@@ -43,6 +43,12 @@ struct RayPayload
 
 struct ReservoirSample
 {
+    ethVector3 m_Wo;
+    ethVector3 m_Wi;
+    ethVector3 m_Albedo;
+    float m_Roughness;
+    float m_Metalness;
+
     ethVector3 m_VisiblePosition;
     ethVector3 m_VisibleNormal;
     ethVector3 m_SamplePosition;

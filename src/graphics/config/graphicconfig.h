@@ -52,7 +52,7 @@ public:
     // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
-    float m_RaytracedAOIntensity = 0.02;
+    float m_RaytracedAOIntensity = 0.1;
 
     // TAA
     bool m_IsTemporalAAEnabled = true;

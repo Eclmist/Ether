@@ -25,7 +25,7 @@
 #include "common/material.h"
 #include "lighting/brdf.hlsl"
 
-#define EMISSION_SCALE   400000
+#define EMISSION_SCALE   4000
 #define SUNLIGHT_SCALE   120000
 #define SKYLIGHT_SCALE   2000
 #define POINTLIGHT_SCALE 0
@@ -102,7 +102,7 @@ void SampleDirectionUniform(float3 normal, out float3 wi, out float pdf)
     pdf = SampleDirectionHemisphere_Pdf();
 }
 
-void SampleDirectionBrdf(float3 normal, float3 wo, float roughness, float metalness, out float3 wi, out float pdf)
+void SampleDirectionBrdf(float3 normal, float3 wo, float roughness, float metalness, out float3 wi, out float pdf, out bool isSpecular)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -111,33 +111,51 @@ void SampleDirectionBrdf(float3 normal, float3 wo, float roughness, float metaln
     const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
     const float specularWeight = 1.0 - diffuseWeight;
     if (Random(rand2D.x) <= specularWeight)
+    {
         wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
+        isSpecular = true;
+    }
     else
+    {
         wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
+        isSpecular = false;
+    }
 
     const float3 H = normalize(wi + wo);
     const float nDotH = saturate(dot(normal, H));
+    const float nDotV = saturate(dot(normal, wo));
     const float vDotH = saturate(dot(wo, H));
     const float cosTheta = saturate(dot(wi, normal));
-    pdf = 1;
+    pdf = max(UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness), 0.001);
 }
 
 float GetTargetPdf(ReservoirSample rs)
 {
-    return dot(1, rs.m_Radiance);
+    const float3 normal = rs.m_VisibleNormal;
+    const float3 wi = normalize(rs.m_SamplePosition - rs.m_VisiblePosition);
+    const float3 f = BRDF_UE4(rs.m_Wi, rs.m_Wo, rs.m_VisibleNormal, rs.m_Albedo, rs.m_Roughness, rs.m_Metalness);
+
+    const float cosTheta = saturate(dot(normal, wi));
+    //const float3 H = normalize(rs.m_Wi + rs.m_Wo);
+    //const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
+    //const float vDotH = saturate(dot(rs.m_Wo, H));
+    //const float diffuseWeight = lerp(lerp(0.5, 1.0, rs.m_Roughness), 0.0, rs.m_Metalness);
+    //const float specularWeight = 1.0 - diffuseWeight;
+    //const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, rs.m_Roughness);
+    return dot(1, rs.m_Radiance * f * cosTheta);
 }
 
 bool AreDepthSimilar(float3 a, float3 b)
 {
     const float aDepth = length(a - g_GlobalConstants.m_EyePosition.xyz);
     const float bDepth = length(b - g_GlobalConstants.m_EyePosition.xyz);
-    return abs(aDepth - bDepth) < 50;
+    return abs(aDepth - bDepth) < 0.3;
 }
 
 bool AreSamplesSimilar(ReservoirSample a, ReservoirSample b)
 {
-    //if (dot(a.m_VisibleNormal, b.m_VisibleNormal) < 0)
-    //    return false;
+    if (dot(a.m_VisibleNormal, b.m_VisibleNormal) < 0.9)
+        return false;
 
     if (!AreDepthSimilar(a.m_VisiblePosition, b.m_VisiblePosition))
         return false;
@@ -147,7 +165,7 @@ bool AreSamplesSimilar(ReservoirSample a, ReservoirSample b)
 
 float3 ClampRadiance(float3 radiance)
 {
-    return min(10000, radiance);
+    return clamp(radiance, 0, 10000);
 }
 
 bool TraceVisibility(float3 a, float3 b)
@@ -186,8 +204,17 @@ void TraceHitSurface(
     ray.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
 
-    hitPosition = payload.m_HitPosition;
-    hitNormal = payload.m_HitNormal;
+    if (payload.m_Hit)
+    {
+        hitPosition = payload.m_HitPosition;
+        hitNormal = payload.m_HitNormal;
+    }
+    else
+    {
+        hitPosition = position + direction;
+        hitNormal = 0;
+    }
+
     radiance = payload.m_Radiance;
 }
 
@@ -392,18 +419,31 @@ void RayGeneration()
     const uint2 launchIndexPrev = uvPrev * launchDim.xy;
     const uint sampleIdxPrev = launchIndexPrev.y * launchDim.x + launchIndexPrev.x;
 
-    const uint depth = 1;
+    const uint depth = 2;
     float3 wi;
     float sourcePdf;
+    bool isSpecular = false;
 
-    SampleDirectionUniform(normal, wi, sourcePdf);
+    if (g_GlobalConstants.m_FrameSinceLastMovement == g_GlobalConstants.m_FrameNumber)
+    {
+        g_ReSTIR_TemporalReservoir[sampleIdx].Reset();
+        g_ReSTIR_SpatialReservoir[sampleIdx].Reset();
+    }
+
+    //SampleDirectionUniform(normal, wi, sourcePdf);
     // SampleDirectionCosine(normal, wi, sourcePdf);
-    //SampleDirectionBrdf(normal, wo, roughness, metalness, wi, sourcePdf);
+    SampleDirectionBrdf(normal, wo, roughness, metalness, wi, sourcePdf, isSpecular);
+
     float3 hitPosition, hitNormal, radiance;
 
     TraceHitSurface(position, wi, depth, hitPosition, hitNormal, radiance);
 
     ReservoirSample initialSample;
+    initialSample.m_Wo = wo;
+    initialSample.m_Wi = wi;
+    initialSample.m_Albedo = albedo;
+    initialSample.m_Roughness = roughness;
+    initialSample.m_Metalness = metalness;
     initialSample.m_VisiblePosition = position;
     initialSample.m_VisibleNormal = normal;
     initialSample.m_SamplePosition = hitPosition;
@@ -418,17 +458,10 @@ void RayGeneration()
     Ri.m_W = Ri.m_TotalW / max(0.001, Ri.m_M * GetTargetPdf(Ri.m_Sample));
     DeviceMemoryBarrier();
   
-    Reservoir Rs = g_ReSTIR_SpatialReservoir[sampleIdx];
     Reservoir Rt = g_ReSTIR_TemporalReservoir[sampleIdxPrev];
 
     //if (!AreDepthSimilar(Rt.m_Sample.m_VisiblePosition, position) || 
     //    length(Rt.m_Sample.m_VisiblePosition - position) > 0.1)
-    //{
-    //    Rt.Reset();
-    //    Rs.Reset();
-    //}
-
-    //if (g_GlobalConstants.m_FrameSinceLastMovement == g_GlobalConstants.m_FrameNumber)
     //{
     //    Rt.Reset();
     //    Rs.Reset();
@@ -442,14 +475,10 @@ void RayGeneration()
     DeviceMemoryBarrier();
 
     // Spatial Resampling
+    Reservoir Rs = Rt;
 
-    Rs.m_Sample = Rt.m_Sample;
-    Rs.m_TotalW = GetTargetPdf(Rt.m_Sample);
-    Rs.m_M = 1;
-    Rs.m_W = Rs.m_TotalW / max(0.001, Rs.m_M * GetTargetPdf(Rs.m_Sample));
-
-    const uint numSpatialIterations = clamp(lerp(10, 3, (Rt.m_M / 30.0f)), 3, 10);
-    const float searchRadius = 10;
+    const uint numSpatialIterations = 3;
+    const float searchRadius = 1;
 
 
     for (uint i = 0; i < numSpatialIterations; ++i)
@@ -467,7 +496,7 @@ void RayGeneration()
         if (!TraceVisibility(Rn.m_Sample.m_SamplePosition, Rt.m_Sample.m_VisiblePosition))
             targetPdfRn = 0;
 
-        Rs.Merge(Rn, targetPdfRn, Random(sampleIdx * g_GlobalConstants.m_FrameNumber * i * 2), 100);
+        Rs.Merge(Rn, targetPdfRn, Random(sampleIdx * g_GlobalConstants.m_FrameNumber * i * 2), 500);
         Rs.m_W = Rs.m_TotalW / max(0.001, Rs.m_M * GetTargetPdf(Rs.m_Sample));
         // neighbours[i] = Rn.m_Sample;
     }
@@ -484,19 +513,21 @@ void RayGeneration()
     g_ReSTIR_SpatialReservoir[sampleIdx] = Rs;
     DeviceMemoryBarrier();
 
-
-
     Reservoir finalReservoir = Rs;
-    //if (uv.x + uv.y / 10 > sin(g_GlobalConstants.m_Time.y) * 0.7 + 0.7)
+    //if (uv.x + uv.y / 10 > sin(g_GlobalConstants.m_Time.z) * 0.7 + 0.7)
     //    finalReservoir = Ri;
 
     ReservoirSample finalSample = finalReservoir.m_Sample;
-    const float3 finalWo = wo;
-    const float3 finalWi = normalize(finalSample.m_SamplePosition - finalSample.m_VisiblePosition);
 
-    const float3 f = albedo;//BRDF_UE4(finalWi, finalWo, normal, albedo, roughness, metalness);
-    const float3 indirect = finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(normal, finalWi));
+    const float3 f = BRDF_UE4(
+        finalSample.m_Wi,
+        finalSample.m_Wo,
+        finalSample.m_VisibleNormal,
+        finalSample.m_Albedo,
+        finalSample.m_Roughness,
+        finalSample.m_Metalness);
 
+    const float3 indirect = finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(finalSample.m_VisibleNormal, finalSample.m_Wi));
     const float3 direct = GetDirectRadiance(position, wo, normal, albedo, roughness, metalness);
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + indirect * 3;
 }
