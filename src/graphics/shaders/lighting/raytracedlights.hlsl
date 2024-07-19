@@ -25,7 +25,7 @@
 #include "utils/encoding.hlsl"
 #include "lighting/brdf.hlsl"
 
-#define EMISSION_SCALE 1000
+#define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 120000
 #define SKYLIGHT_SCALE 2000
 #define POINTLIGHT_SCALE 0

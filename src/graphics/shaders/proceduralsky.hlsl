@@ -139,17 +139,11 @@ float Stars(float3 viewDir)
 
 float3 NormalizeDirection(float2 uv)
 {
-    float2 offset = float2(uv.x - 0.5, 0.5 - uv.y) * g_GlobalConstants.m_ScreenResolution /
-                    g_GlobalConstants.m_ScreenResolution.y;
-
-    offset *= 1.39626;
-
-    float3 forward = normalize(g_GlobalConstants.m_CameraDirection.xyz);
-    float3 right = normalize(cross(forward, float3(0, 1, 0)));
-    float3 up = normalize(cross(right, forward));
-
-    float3 dir = normalize(g_GlobalConstants.m_CameraDirection.xyz - offset.x * right + offset.y * up);
-    return dir;
+    // Step 1: Compute Screen Space Coordinates
+    uv.y = 1 - uv.y;
+    uv = uv * 2 - 1;
+    float4 worldSpaceDirection = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, float4(uv, 1.0, 1.0));
+    return normalize(worldSpaceDirection.xyz);
 }
 
 float2 SampleSphericalMap(float3 direction)
@@ -302,8 +296,8 @@ float4 SampleHdri(float2 uv)
 
     const float2 distortion = float2(-0.05, 0);
 
-    const float4 hdri1 = hdriTexture.Sample(linearSampler, uv + flow1 * distortion);
-    const float4 hdri2 = hdriTexture.Sample(linearSampler, uv + flow2 * distortion);
+    const float4 hdri1 = hdriTexture.SampleLevel(linearSampler, uv + flow1 * distortion, 0);
+    const float4 hdri2 = hdriTexture.SampleLevel(linearSampler, uv + flow2 * distortion, 0);
 
     return lerp(hdri1, hdri2, alt);
 }
@@ -313,6 +307,7 @@ float4 GetHdriSkyColor(float2 uv)
     const float exposure = 8000.0f;
     const float3 viewDir = NormalizeDirection(uv);
     const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
+
     const float cloudMask = 1 - smoothstep(0.15, 0.3, hdri.r);
     const float4 stars = cloudMask * Stars(viewDir);
     const float4 sun = cloudMask * CalculateSunRadiance(viewDir, g_GlobalConstants.m_SunDirection.xyz, g_GlobalConstants.m_SunColor.rgb).xyzz;
