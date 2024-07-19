@@ -43,26 +43,26 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
 {
     const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetRenderData();
 
-    static ethMatrix4x4 prevViewMatrix = renderData.m_ViewMatrix;
-    static ethMatrix4x4 prevProjMatrix = renderData.m_ProjectionMatrix;
+    static ethMatrix4x4 viewMatrixPrev = renderData.m_ViewMatrix;
+    static ethMatrix4x4 projMatrixPrev = renderData.m_ProjectionMatrix;
     static uint32_t lastMovedFrameNumber = 0;
 
-    if (renderData.m_ViewMatrix != prevViewMatrix)
+    if (renderData.m_ViewMatrix != viewMatrixPrev)
         lastMovedFrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
     Shader::GlobalConstants* globalConstants = (Shader::GlobalConstants*)alloc->GetCpuHandle();
     globalConstants->m_ViewMatrix = renderData.m_ViewMatrix;
     globalConstants->m_ViewMatrixInv = renderData.m_ViewMatrix.Inversed();
-    globalConstants->m_ViewMatrixPrev = prevViewMatrix;
+    globalConstants->m_ViewMatrixPrev = viewMatrixPrev;
     globalConstants->m_ProjectionMatrix = renderData.m_ProjectionMatrix;
     globalConstants->m_ProjectionMatrixInv = renderData.m_ProjectionMatrix.Inversed();
-    globalConstants->m_ProjectionMatrixPrev = prevProjMatrix;
+    globalConstants->m_ProjectionMatrixPrev = projMatrixPrev;
     globalConstants->m_ViewProjectionMatrix = globalConstants->m_ProjectionMatrix * globalConstants->m_ViewMatrix;
     globalConstants->m_ViewProjectionMatrixInv = globalConstants->m_ViewMatrixInv * globalConstants->m_ProjectionMatrixInv;
     globalConstants->m_ViewProjectionMatrixPrev = globalConstants->m_ProjectionMatrixPrev * globalConstants->m_ViewMatrixPrev;
-    globalConstants->m_EyeDirection = renderData.m_EyeDirection.Resize<4>();
-    globalConstants->m_EyePosition = renderData.m_EyePosition.Resize<4>();
+    globalConstants->m_CameraDirection = renderData.m_CameraDirection.Resize<4>();
+    globalConstants->m_CameraPosition = renderData.m_CameraPosition.Resize<4>();
     globalConstants->m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;
     globalConstants->m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor;
     globalConstants->m_Time = ethVector4(Time::GetTimeSinceStartup()) / 1000.0f;
@@ -73,6 +73,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_ScreenResolution = GraphicCore::GetGraphicConfig().GetResolution();
     globalConstants->m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
     globalConstants->m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
+    globalConstants->m_CameraJitter = renderData.m_CameraJitter;
     globalConstants->m_FrameSinceLastMovement = lastMovedFrameNumber;
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
     globalConstants->m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
@@ -95,7 +96,9 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     );
 
     // For velocity vector calculations
-    prevViewMatrix = globalConstants->m_ViewMatrix;
-    prevProjMatrix = globalConstants->m_ProjectionMatrix;
+    viewMatrixPrev = globalConstants->m_ViewMatrix;
+    projMatrixPrev = globalConstants->m_ProjectionMatrix;
+    projMatrixPrev.m_13 -= globalConstants->m_CameraJitter.x;
+    projMatrixPrev.m_23 -= globalConstants->m_CameraJitter.y;
 }
 

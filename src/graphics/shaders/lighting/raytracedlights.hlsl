@@ -167,7 +167,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 #endif
 
     if (depth <= 0)
-        return ComputeSkyHdri(wi) * g_GlobalConstants.m_RaytracedAOIntensity;
+        return 0;
 
 
     RayPayload payload;
@@ -256,17 +256,17 @@ void RayGeneration()
     const float3 color = gbuffer0.xyz;
     const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
     const float3 position = gbuffer1.xyz;
-    const float3 viewDir = normalize(g_GlobalConstants.m_EyePosition.xyz - position);
+    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float2 velocity = gbuffer2.zw;
     const float metalness = gbuffer0.w;
     const float roughness = gbuffer1.w;
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
-    const float2 uvPrev = uv;
+    const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 1) * 4;
+    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 1) * g_GlobalConstants.m_RaytracedAOIntensity;
 
     const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;

@@ -36,8 +36,8 @@ struct GlobalConstants
     ethMatrix4x4 m_ViewProjectionMatrixInv;
     ethMatrix4x4 m_ViewProjectionMatrixPrev;
 
-    ethVector4 m_EyePosition;
-    ethVector4 m_EyeDirection;
+    ethVector4 m_CameraPosition;
+    ethVector4 m_CameraDirection;
     ethVector4 m_Time;
 
     ethVector4 m_SunDirection;
@@ -51,6 +51,7 @@ struct GlobalConstants
 
     // ============== TAA =============== //
     float m_TaaAccumulationFactor;
+    ethVector2 m_CameraJitter;
     uint32_t m_FrameSinceLastMovement;
 
     // ============= Debug ============== //
@@ -69,7 +70,6 @@ struct GlobalConstants
     ethVector4 m_Padding0;
     ethVector4 m_Padding1;
     ethVector4 m_Padding2;
-    ethVector2 m_Padding3;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");
