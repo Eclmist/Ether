@@ -75,6 +75,15 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
     globalConstants->m_CameraJitter = renderData.m_CameraJitter;
     globalConstants->m_FrameSinceLastMovement = lastMovedFrameNumber;
+
+    globalConstants->m_TonemapperType = GraphicCore::GetGraphicConfig().m_TonemapperType;
+    globalConstants->m_TonemapperParamA = GraphicCore::GetGraphicConfig().m_TonemapperParamA;
+    globalConstants->m_TonemapperParamB = GraphicCore::GetGraphicConfig().m_TonemapperParamB;
+    globalConstants->m_TonemapperParamC = GraphicCore::GetGraphicConfig().m_TonemapperParamC;
+    globalConstants->m_TonemapperParamD = GraphicCore::GetGraphicConfig().m_TonemapperParamD;
+    globalConstants->m_TonemapperParamE = GraphicCore::GetGraphicConfig().m_TonemapperParamE;
+    globalConstants->m_TonemapperParamF = GraphicCore::GetGraphicConfig().m_TonemapperParamF;
+
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
     globalConstants->m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
     globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;

@@ -66,6 +66,15 @@ public:
     float m_BloomScatter = 0.85f;
     float m_BloomAnamorphic = 0.0f;
 
+    // Tonemapping
+    int32_t m_TonemapperType = 3;
+    float m_TonemapperParamA = 1;
+    float m_TonemapperParamB = 1;
+    float m_TonemapperParamC = 0.22;
+    float m_TonemapperParamD = 0.4;
+    float m_TonemapperParamE = 1.33;
+    float m_TonemapperParamF = 0;
+
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
 

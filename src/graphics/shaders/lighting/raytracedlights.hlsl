@@ -47,6 +47,7 @@ float3 ComputeSkyHdri(float3 wi)
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
     const float exposure = SKYLIGHT_SCALE;
+
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 0);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
@@ -77,6 +78,7 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
     const MeshVertex v2 = vtxBuffer[idx2];
 
     return BarycentricLerp(v0, v1, v2, barycentrics);
+
 }
 
 float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
@@ -267,7 +269,8 @@ void RayGeneration()
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
     const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 1) * g_GlobalConstants.m_RaytracedAOIntensity;
 
-    const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    //const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    const float a = 0.25;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;

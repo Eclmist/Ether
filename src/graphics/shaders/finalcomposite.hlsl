@@ -68,6 +68,55 @@ float3 reinhard_jodie(float3 v)
     return lerp(v / (1.0f + l), tv, tv);
 }
 
+static const float e = 2.71828;
+
+float W_f(float x, float e0, float e1)
+{
+    if (x <= e0)
+        return 0;
+    if (x >= e1)
+        return 1;
+    float a = (x - e0) / (e1 - e0);
+    return a * a * (3 - 2 * a);
+}
+float H_f(float x, float e0, float e1)
+{
+    if (x <= e0)
+        return 0;
+    if (x >= e1)
+        return 1;
+    return (x - e0) / (e1 - e0);
+}
+
+float GTTonemap_Internal(float x)
+{
+    float P = g_GlobalConstants.m_TonemapperParamA; // max brightness
+    float a = g_GlobalConstants.m_TonemapperParamB; // contrast
+    float m = g_GlobalConstants.m_TonemapperParamC; // linear section start
+    float l = g_GlobalConstants.m_TonemapperParamD; // linear section length
+    float c = g_GlobalConstants.m_TonemapperParamE; // black tightness
+    float b = g_GlobalConstants.m_TonemapperParamF; // dummy?
+    float l0 = (P - m) * l / a;
+    float L0 = m - m / a;
+    float L1 = m + (1 - m) / a;
+    float L_x = m + a * (x - m);
+    float T_x = m * pow(x / m, c) + b;
+    float S0 = m + l0;
+    float S1 = m + a * l0;
+    float C2 = a * P / (P - S1);
+    float S_x = P - (P - S1) * pow(e, -(C2 * (x - S0) / P));
+    float w0_x = 1 - W_f(x, 0, m);
+    float w2_x = H_f(x, m + l0, m + l0);
+    float w1_x = 1 - w0_x - w2_x;
+    float f_x = T_x * w0_x + L_x * w1_x + S_x * w2_x;
+    return f_x;
+}
+
+float3 GTTonemap(float3 v)
+{
+    return float3(GTTonemap_Internal(v.r), GTTonemap_Internal(v.g), GTTonemap_Internal(v.b));
+}
+
 // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
 static const float3x3 ACESInputMat = { { 0.59719, 0.35458, 0.04823 },
                                        { 0.07600, 0.90834, 0.01566 },
@@ -113,15 +162,17 @@ float3 aces_approx(float3 v)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    const float manualExposure = 0.00034;
-    const float contrast = 1.0;
+    const float manualExposure = 0.00014;
 
     float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
     col = col * manualExposure;
-    col = max(0.0f, (col - 0.5f) * contrast + 0.5f);
 
-    //col = reinhard_extended_luminance(col, 200000.0);
-    col = ACESFitted(col);
-    //col = aces_approx(col);
+    if (g_GlobalConstants.m_TonemapperType == 1)
+        col = ACESFitted(col);
+    else if (g_GlobalConstants.m_TonemapperType == 2)
+        col = reinhard_extended_luminance(col, 200000.0);
+    else if (g_GlobalConstants.m_TonemapperType == 3)
+        col = GTTonemap(col);
+
     return float4(col, 1.0f);
 }

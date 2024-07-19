@@ -101,6 +101,24 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Tonemapper"))
+            {
+                const char* items[] = { "None", "ACES Refitted", "Reinhard Extended", "GT" };
+                ImGui::Combo("Tonemapper", &gfxConfig.m_TonemapperType, items, IM_ARRAYSIZE(items));
+
+                // GT Tonemapper
+                if (gfxConfig.m_TonemapperType == 3)
+                {
+                    ImGui::SliderFloat("Max Brightness", &gfxConfig.m_TonemapperParamA, 1, 100);
+                    ImGui::SliderFloat("Contrast", &gfxConfig.m_TonemapperParamB, 0, 5);
+                    ImGui::SliderFloat("Slope Start", &gfxConfig.m_TonemapperParamC, 0, 1);
+                    ImGui::SliderFloat("Slope Length", &gfxConfig.m_TonemapperParamD, 0, 1);
+                    ImGui::SliderFloat("Black Tightness", &gfxConfig.m_TonemapperParamE, 1, 3);
+                }
+
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Debug Sun"))
             {
                 static ethVector4& sunDirection = gfxConfig.m_SunDirection;

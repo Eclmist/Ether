@@ -54,6 +54,15 @@ struct GlobalConstants
     ethVector2 m_CameraJitter;
     uint32_t m_FrameSinceLastMovement;
 
+    // =========== TONEMAPPER =========== //
+    uint32_t m_TonemapperType;
+    float m_TonemapperParamA;
+    float m_TonemapperParamB;
+    float m_TonemapperParamC;
+    float m_TonemapperParamD;
+    float m_TonemapperParamE;
+    float m_TonemapperParamF;
+
     // ============= Debug ============== //
     uint32_t m_RaytracedLightingDebug;
     float m_RaytracedAOIntensity;
@@ -68,8 +77,7 @@ struct GlobalConstants
 
     // ============ Padding ============= //
     ethVector4 m_Padding0;
-    ethVector4 m_Padding1;
-    ethVector4 m_Padding2;
+    float m_Padding1;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");
