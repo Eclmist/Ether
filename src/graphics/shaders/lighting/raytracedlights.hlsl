@@ -264,7 +264,6 @@ void RayGeneration()
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
     const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
-
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
     const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 1) * g_GlobalConstants.m_RaytracedAOIntensity;
 

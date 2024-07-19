@@ -31,7 +31,7 @@ DEFINE_GFX_PA(RaytracedLightingProducer)
 DEFINE_GFX_UA(RTLightingTexture)
 DEFINE_GFX_SR(RTLightingTexture)
 DEFINE_GFX_UA(RTIndirectTexture)
-DEFINE_GFX_SR(RTIndirectTexture)
+DEFINE_GFX_SR(RTAccumulationTexture)
 DEFINE_GFX_SR(RTGeometryInfo)
 DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
 
@@ -68,7 +68,7 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.NewUA(ACCESS_GFX_UA(RTLightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTLightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
     schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals);
 
@@ -101,7 +101,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(RTIndirectTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(RTAccumulationTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
@@ -129,10 +129,9 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
 
     ctx.DispatchRays(resolution.x, resolution.y, 1);
 
-    //ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
-    //ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)), RhiResourceState::CopyDest);
-    //ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
-
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)), RhiResourceState::CopyDest);
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
     ctx.PopMarker();
 }
 

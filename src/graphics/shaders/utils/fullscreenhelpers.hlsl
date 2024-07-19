@@ -30,8 +30,7 @@ void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
 
 float2 ClipToTextureSpace(float4 clip)
 {
-    float4 ndc = clip;
-    ndc.xyz /= ndc.w;
+    float4 ndc = clip / clip.w;
     ndc.y = -ndc.y;
     float2 uv = (ndc.xy + 1.0f) * 0.5f;
     return uv;

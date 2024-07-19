@@ -32,10 +32,10 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    const float2 velocity = g_GBufferTexture2.Load(threadID).zw;
     const float2 uv = threadID.xy / resolution + 0.5 / resolution;
-    const float2 velocity = g_GBufferTexture2.Sample(linearSampler, uv).zw;
     const float2 uvPrev = uv - velocity;
-    const float4 colorPrev = g_AccumulationTextureIn.Sample(linearSampler, uvPrev);
+    const float4 colorPrev = g_AccumulationTextureIn.SampleLevel(linearSampler, uvPrev, 0);
     const float4 colorCurr = g_TargetTexture[threadID.xy];
 
     // Variance Clipping
@@ -56,5 +56,4 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
 
     g_TargetTexture[threadID.xy] = newColor;
-    //g_TargetTexture[threadID.xy] = float4(uvPrev, 0,0);
 }
