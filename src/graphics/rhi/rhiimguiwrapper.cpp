@@ -89,7 +89,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsTemporalAAEnabled);
                 const char* items[] = { "None", "Grid", "Halton" };
                 ImGui::Combo("Jitter Mode", &gfxConfig.m_TemporalAAJitterMode, items, IM_ARRAYSIZE(items));
-                ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_JitterScale, 0, 10);
+                ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_DebugJitterScale, 0, 10);
                 ImGui::SliderFloat("Temporal Accumulation", &gfxConfig.m_TemporalAAAcumulationFactor, 0, 1);
                 ImGui::TreePop();
             }
@@ -97,7 +97,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             if (ImGui::TreeNode("Raytracing"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsRaytracingEnabled);
-                ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 1);
+                ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 10);
                 ImGui::TreePop();
             }
 

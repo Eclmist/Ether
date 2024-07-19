@@ -25,7 +25,7 @@
 
 Ether::Graphics::GraphicDisplay::GraphicDisplay()
     : m_BufferingMode(BufferingMode::Triple)
-    , m_VSyncEnabled(true)
+    , m_VSyncEnabled(false)
     , m_VSyncVBlanks(4)
 {
     ResizeViewport(GraphicCore::GetGraphicConfig().GetResolution());

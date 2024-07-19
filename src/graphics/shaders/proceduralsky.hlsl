@@ -144,11 +144,11 @@ float3 NormalizeDirection(float2 uv)
 
     offset *= 1.39626;
 
-    float3 forward = normalize(g_GlobalConstants.m_EyeDirection.xyz);
+    float3 forward = normalize(g_GlobalConstants.m_CameraDirection.xyz);
     float3 right = normalize(cross(forward, float3(0, 1, 0)));
     float3 up = normalize(cross(right, forward));
 
-    float3 dir = normalize(g_GlobalConstants.m_EyeDirection.xyz - offset.x * right + offset.y * up);
+    float3 dir = normalize(g_GlobalConstants.m_CameraDirection.xyz - offset.x * right + offset.y * up);
     return dir;
 }
 

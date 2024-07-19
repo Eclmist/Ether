@@ -147,8 +147,8 @@ float GetTargetPdf(ReservoirSample rs)
 
 bool AreDepthSimilar(float3 a, float3 b)
 {
-    const float aDepth = length(a - g_GlobalConstants.m_EyePosition.xyz);
-    const float bDepth = length(b - g_GlobalConstants.m_EyePosition.xyz);
+    const float aDepth = length(a - g_GlobalConstants.m_CameraPosition.xyz);
+    const float bDepth = length(b - g_GlobalConstants.m_CameraPosition.xyz);
     return abs(aDepth - bDepth) < 0.3;
 }
 
@@ -312,7 +312,7 @@ float3 GetIndirectRadiance(
 #endif
 
     if (depth <= 0)
-        return ComputeSkyHdri(wi) * g_GlobalConstants.m_RaytracedAOIntensity;
+        return 0;
 
     RayPayload payload;
     payload.m_IsShadowRay = false;
@@ -407,12 +407,12 @@ void RayGeneration()
     const float3 albedo = gbuffer0.xyz;
     const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
     const float3 position = gbuffer1.xyz;
+    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float2 velocity = gbuffer2.zw;
     const float metalness = gbuffer0.w;
     const float roughness = gbuffer1.w;
-    const float3 wo = normalize(g_GlobalConstants.m_EyePosition.xyz - position);
-
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float2 uv = float2(launchIndex.xy) / launchDim.xy + 0.5 / launchDim.xy;
     const float2 uvPrev = uv - velocity;
     const uint2 launchIndexPrev = clamp(uvPrev * launchDim.xy, 0, launchDim.xy - 1);

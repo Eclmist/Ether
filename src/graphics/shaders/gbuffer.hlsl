@@ -52,6 +52,17 @@ ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
 StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
+float4x4 RemoveJitter(float4x4 jitteredProjMatrix)
+{
+    float4x4 inverseJitterMatrix = float4x4(
+        1, 0, -g_GlobalConstants.m_CameraJitter.x, 0,
+        0, 1, -g_GlobalConstants.m_CameraJitter.y, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
+    float4x4 originalProjMatrix = mul(inverseJitterMatrix, jitteredProjMatrix);
+    return originalProjMatrix;
+}
+
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
@@ -72,7 +83,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 clipPos = ScreenToClipSpace(IN.Position, g_GlobalConstants.m_ScreenResolution);
     float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clipPos);
     float4 clipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrev, worldPos);
-    float4 clipPosCurr = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
+    float4 clipPosCurr = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrix), worldPos);
     float2 texSpacePrev = ClipToTextureSpace(clipPosPrev);
     float2 texSpaceCurr = ClipToTextureSpace(clipPosCurr);
 

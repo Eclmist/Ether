@@ -68,16 +68,16 @@ void Ether::Ecs::EcsCameraSystem::Update()
             break;
         }
 
+        ethVector2 cameraJitter;
         if (gfxConfig.m_IsTemporalAAEnabled)
         {
             static uint32_t idx = 0;
-            ethVector2 jitter = camera.GetJitterOffset(idx++);
+            ethVector2 sample = camera.GetJitterOffset(idx++);
+            cameraJitter.x = (sample.x - 0.5f) * gfxConfig.m_DebugJitterScale / resolution.x;
+            cameraJitter.y = (sample.y - 0.5f) * gfxConfig.m_DebugJitterScale / resolution.y;
 
-            ethMatrix4x4 jitterMat;
-            jitterMat.m_14 = ((jitter.x - 0.5) * 0.5) / resolution.x * gfxConfig.m_JitterScale;
-            jitterMat.m_24 = ((jitter.y - 0.5) * 0.5) / resolution.y * gfxConfig.m_JitterScale;
-
-            projectionMatrix = jitterMat * projectionMatrix;
+            projectionMatrix.m_13 += cameraJitter.x;
+            projectionMatrix.m_23 += cameraJitter.y;
         }
 
         ethMatrix4x4 rotation = Transform::GetRotationMatrix(transform.m_Rotation);
@@ -86,8 +86,9 @@ void Ether::Ecs::EcsCameraSystem::Update()
         Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
         renderData.m_ViewMatrix = viewMatrix;
         renderData.m_ProjectionMatrix = projectionMatrix;
-        renderData.m_EyeDirection = forward.Resize<3>();
-        renderData.m_EyePosition = transform.m_Translation;
+        renderData.m_CameraDirection = forward.Resize<3>();
+        renderData.m_CameraPosition = transform.m_Translation;
+        renderData.m_CameraJitter = cameraJitter;
         renderData.m_HdriTextureID = camera.GetHdriTextureID();
 
         // Only render the first camera for now, since the renderer is not designed for multiple yet
