@@ -22,6 +22,7 @@
 #include "common/instanceparams.h"
 #include "utils/fullscreenhelpers.hlsl"
 #include "utils/encoding.hlsl"
+#include "utils/noise.hlsl"
 
 struct VS_INPUT
 {
