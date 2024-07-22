@@ -431,7 +431,7 @@ void RayGeneration()
     Rt.Update(initialSample, w, rand);
     Rt.m_W = Rt.m_w / ZERO_GUARD(Rt.m_M * TargetPdf(Rt.m_Sample));
 #else // Merge
-    Ri.Merge(Rt, TargetPdf(Rt.m_Sample), Random(sampleIdx * g_GlobalConstants.m_FrameNumber),10);
+    Ri.Merge(Rt, TargetPdf(Rt.m_Sample), Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 10);
     Ri.m_W = Ri.m_w / max(0.01, Ri.m_M * TargetPdf(Ri.m_Sample));
     Rt = Ri;
 #endif
@@ -451,7 +451,7 @@ void RayGeneration()
     Rs.m_M = 0;
 
     //const int numSpatialIterations = Rs.m_M > 10 ? 3 : 10;
-    const int numSpatialIterations = 3;
+    const int numSpatialIterations = 5;
 
     //Reservoir Rn[10];
     //uint Q[10];
@@ -514,6 +514,9 @@ void RayGeneration()
     //}
 
     Rs.m_W = Rs.m_w / ZERO_GUARD(Z * TargetPdf(Rs.m_Sample));
+
+    if (Z == 0)
+        Rs = Rt;
 
     Reservoir finalReservoir = Rs;
     ReservoirSample finalSample = finalReservoir.m_Sample;
