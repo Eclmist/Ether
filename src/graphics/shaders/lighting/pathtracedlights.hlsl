@@ -27,9 +27,9 @@
 
 #define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 120000
-#define SKYLIGHT_SCALE 2000
+#define SKYLIGHT_SCALE 0
 #define POINTLIGHT_SCALE 2000
-#define MAX_RAY_DEPTH 1
+#define MAX_RAY_DEPTH 2
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -82,7 +82,7 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
 
 }
 
-float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
@@ -107,7 +107,7 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
 // 2 -> Importance sample Hemisphere
 #define IMPORTANCE_SAMPLING 0
 
-float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
+float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -162,7 +162,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 
     RayDesc indirectRay;
     indirectRay.Direction = wi;
-    indirectRay.Origin = position + (normal * 0.01);
+    indirectRay.Origin = position;
     indirectRay.TMax = 128;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
@@ -220,9 +220,9 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal; 
 
     const float3 wo = normalize(-WorldRayDirection());
-    const float3 direct = GetDirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirectSpecular = GetIndirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
-    return emission.xyz + direct + indirectSpecular;
+    const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
+    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
+    return emission.xyz + direct + indirect;
 }
 
 [shader("raygeneration")]
@@ -255,11 +255,10 @@ void RayGeneration()
          accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
 
-    const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
+    const float3 direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
+    const float3 indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
 
-    const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
-    //const float a = 1;
+    float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;

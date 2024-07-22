@@ -131,7 +131,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
 
     ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2)), sizeof(Shader::GeometryInfo) * visuals.size(), 0, 0);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
-    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)), *rc.GetResource(ACCESS_GFX_UA(ReSTIR_TemporalReservoir)));
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_SpatialReservoir)), *rc.GetResource(ACCESS_GFX_UA(ReSTIR_TemporalReservoir)));
     ctx.PopMarker();
 }
 

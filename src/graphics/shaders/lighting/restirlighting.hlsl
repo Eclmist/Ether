@@ -26,10 +26,10 @@
 #include "lighting/brdf.hlsl"
 
 // TODO: Make lightingcommon.h
-#define EMISSION_SCALE 10000
+#define EMISSION_SCALE 1000000
 #define SUNLIGHT_SCALE 120000
-#define SKYLIGHT_SCALE 2000
-#define POINTLIGHT_SCALE 0
+#define SKYLIGHT_SCALE 0
+#define POINTLIGHT_SCALE 2000
 #define MAX_RAY_DEPTH 1
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants           : register(b0);
@@ -133,7 +133,7 @@ void SampleDirectionBrdf(
     const float nDotV = saturate(dot(normal, wo));
     const float vDotH = saturate(dot(wo, H));
     const float cosTheta = saturate(dot(wi, normal));
-    pdf = max(UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness), 0.001);
+    pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
 }
 
 float TargetPdf(ReservoirSample rs)
@@ -142,9 +142,8 @@ float TargetPdf(ReservoirSample rs)
     const float3 wi = normalize(rs.m_SamplePosition - rs.m_VisiblePosition);
     const float3 f = BRDF_UE4(rs.m_Wi, rs.m_Wo, rs.m_VisibleNormal, rs.m_Albedo, rs.m_Roughness, rs.m_Metalness);
 
-    const float cosTheta = saturate(dot(normal, wi));
+    const float cosTheta = saturate(dot(normalize(normal), normalize(-wi)));
     //const float3 H = normalize(rs.m_Wi + rs.m_Wo);
-RWStructuredBuffer<Reservoir> g_ReSTIR_StagingReservoir : register(u2);
     //const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
     //const float vDotH = saturate(dot(rs.m_Wo, H));
     //const float diffuseWeight = lerp(lerp(0.5, 1.0, rs.m_Roughness), 0.0, rs.m_Metalness);
@@ -208,7 +207,7 @@ void TraceHitSurface(
 }
 
 
-float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
@@ -233,7 +232,7 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
 // 2 -> Importance sample Hemisphere
 #define IMPORTANCE_SAMPLING 0
 
-float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
+float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -282,7 +281,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 
     RayDesc indirectRay;
     indirectRay.Direction = wi;
-    indirectRay.Origin = position + (normal * 0.01);
+    indirectRay.Origin = position;
     indirectRay.TMax = 128;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
@@ -340,8 +339,8 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal;
 
     const float3 wo = normalize(-WorldRayDirection());
-    const float3 direct = GetDirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirect = GetIndirectRadiance(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
+    const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
+    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
     return emission.xyz + direct + indirect;
 }
 
@@ -369,10 +368,8 @@ void RayGeneration()
     const float metalness = gbuffer0.w;
     const float roughness = gbuffer1.w;
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
-    uint2 launchIndexPrev = ((float2)launchIndex.xy + 0.5f) - (velocity * launchDim.xy); 
-
-    uint sampleIdxPrev = launchIndexPrev.y * launchDim.x + launchIndexPrev.x;
-    sampleIdxPrev = launchIndexPrev.y * launchDim.x + launchIndexPrev.x;
+    const int2 launchIndexPrev = ((float2)launchIndex.xy + 0.5f) - (velocity * launchDim.xy); 
+    const uint sampleIdxPrev = clamp(launchIndexPrev.y * launchDim.x + launchIndexPrev.x, 0, launchDim.x * launchDim.y);
     float3 wi;
     float proposalPdf;
     float initialSamplePdf;
@@ -383,7 +380,7 @@ void RayGeneration()
     // This can cause firefly. Since RIS proposal sample is not that important
     // the tradeoff is made here for SLIGHTLY worse convergence in exchange for no firefly.
     SampleDirectionUniform(normal, wi, proposalPdf);
-    // SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf, isSpecular);
+    //SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf, isSpecular);
 
     float3 hitPosition, hitNormal, radiance;
     TraceHitSurface(position, wi, MAX_RAY_DEPTH, hitPosition, hitNormal, radiance);
@@ -403,7 +400,7 @@ void RayGeneration()
 
     Reservoir Ri;
     Ri.m_Sample = initialSample;
-    Ri.m_w = TargetPdf(initialSample) / proposalPdf;
+    Ri.m_w = TargetPdf(initialSample) / ZERO_GUARD(proposalPdf);
     Ri.m_M = 1;
     Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
 
@@ -413,9 +410,11 @@ void RayGeneration()
     DeviceMemoryBarrier();
 
     if (!AreSamplesSimilar(Rt.m_Sample, Ri.m_Sample))
-    {
         Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
-    }
+
+    if (launchIndexPrev.x < 0 && launchIndexPrev.x >= launchDim.x && launchIndexPrev.y < 0 && launchIndexPrev.y >= launchDim.y)
+        Rt.Reset();
+
 
     //if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
     //    Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
@@ -427,25 +426,27 @@ void RayGeneration()
 #if 0 // Update
     const float w = TargetPdf(initialSample) / ZERO_GUARD(proposalPdf);
     Rt.Update(initialSample, w, rand);
-    Rt.m_W = Rt.m_w / ZERO_GUARD(Rt.m_M * TargetPdf(Rt.m_Sample));
 #else // Merge
+    Reservoir temp = Ri;
     Ri.Merge(Rt, TargetPdf(Rt.m_Sample), rand, 30);
-    Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
     Rt = Ri;
+    Ri = temp;
 #endif
+    Rt.m_W = Rt.m_w / ZERO_GUARD(Rt.m_M * TargetPdf(Rt.m_Sample));
+
     g_ReSTIR_StagingReservoir[sampleIdx] = Rt;
     DeviceMemoryBarrier();
 
     // Spatial Resampling
-    Reservoir Rs = Rt;
+    Reservoir Rs = g_ReSTIR_StagingReservoir[sampleIdx];
 
-    //const int numSpatialIterations = Rs.m_M > 10 ? 3 : 10;
-    const int numSpatialIterations = 5;
+    const int numSpatialIterations = Rs.m_M > 10 ? 3 : 10;
+    //const int numSpatialIterations = 3;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
-        const uint3 neighbourCoords = launchIndex + float3(SquareToConcentricDiskMapping(rand2D) * 10, 0);
+        const uint3 neighbourCoords = clamp(launchIndex + float3(SquareToConcentricDiskMapping(rand2D) * 20, 0), 0, launchDim);
         const uint neighbourIdx = neighbourCoords.y * launchDim.x + neighbourCoords.x;
 
         Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
@@ -460,23 +461,6 @@ void RayGeneration()
             continue;
         if (abs(viewDepth - RnViewDepth) > 0.3)
             continue;
-
-        // Jacobian. Disable for now.
-        //const float3 xq1 = neighbour.m_Sample.m_VisiblePosition;
-        //const float3 xq2 = neighbour.m_Sample.m_SamplePosition;
-        //const float3 xr1 = Rt.m_Sample.m_VisiblePosition;
-        //const float3 xq1Subxq2 = xq1 - xq2; // offset B
-        //const float3 xr1Subxq2 = xr1 - xq2; // offset A
-        //const float rb2 = dot(xq1Subxq2, xq1Subxq2);
-        //const float ra2 = dot(xr1Subxq2, xr1Subxq2);
-
-        //const float cosPq2 = dot(normalize(xq1Subxq2), neighbour.m_Sample.m_SampleNormal); // cosPhiB^2
-        //const float cosPr2 = dot(normalize(xr1Subxq2), neighbour.m_Sample.m_SampleNormal); // cosPhiA^2
-
-        //const float jacobian = rb2 * cosPr2 / (ra2 * cosPq2);
-
-        //if (!TraceVisibility(neighbour.m_Sample.m_SamplePosition, Rt.m_Sample.m_VisiblePosition))
-        //    targetPdf = 0;
 
         Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), rand, 500);
     }
@@ -496,8 +480,8 @@ void RayGeneration()
         finalSample.m_Roughness,
         finalSample.m_Metalness);
 
-    const float3 indirect = finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(finalSample.m_VisibleNormal, finalSample.m_Wi));
-    const float3 direct = GetDirectRadiance(position, wo, normal, albedo, roughness, metalness);
+    const float3 indirect = min(10000.0f, finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(finalSample.m_VisibleNormal, finalSample.m_Wi)));
+    const float3 direct = TraceShadow(position, wo, normal, albedo, roughness, metalness);
 
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + indirect;
 }
