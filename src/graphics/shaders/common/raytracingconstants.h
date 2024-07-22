@@ -37,6 +37,59 @@ struct RayPayload
     bool m_IsShadowRay;
     uint32_t m_Depth;
     ethVector3 m_Radiance;
+    ethVector3 m_HitPosition;
+    ethVector3 m_HitNormal;
+};
+
+struct ReservoirSample
+{
+    ethVector3 m_Wo;
+    ethVector3 m_Wi;
+    ethVector3 m_Albedo;
+    float m_Roughness;
+    float m_Metalness;
+
+    ethVector3 m_VisiblePosition;
+    ethVector3 m_VisibleNormal;
+    ethVector3 m_SamplePosition;
+    ethVector3 m_SampleNormal;
+    ethVector3 m_Radiance;
+
+    uint32_t m_FrameNumber;
+};
+
+struct Reservoir
+{
+    ReservoirSample m_Sample;
+    float m_w;
+    float m_W;
+    uint32_t m_M;
+
+#ifdef __HLSL__
+    void Reset()
+    {
+        m_w = 0;
+        m_W = 0;
+        m_M = 0;
+    }
+
+    void Update(ReservoirSample s, float w, float rand)
+    {
+        m_M++;
+        m_w += w;
+
+        if (rand < w / m_w)
+            m_Sample = s;
+    }
+
+    void Merge(Reservoir r, float targetPdf, float rand, uint32_t maxSamples)
+    {
+        float M0 = m_M;
+        uint32_t incomingM = min(maxSamples, r.m_M);
+        Update(r.m_Sample, targetPdf * r.m_W * incomingM, rand);
+        m_M = M0 + incomingM;
+    }
+#endif
 };
 
 ETH_END_SHADER_NAMESPACE

@@ -23,6 +23,12 @@
 
 namespace Ether::Graphics
 {
+enum RaytracingMode : int32_t
+{
+    Pathtrace,
+    ReSTIR
+};
+
 class ETH_GRAPHIC_DLL GraphicConfig
 {
 public:
@@ -52,6 +58,7 @@ public:
     // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
+    int32_t m_RaytracingMode = RaytracingMode::Pathtrace;
     float m_RaytracedAOIntensity = 10.0f;
 
     // TAA

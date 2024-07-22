@@ -117,7 +117,6 @@ float SampleDirectionCosineHemisphere_Pdf(float cosTheta)
     return cosTheta / Pi;
 }
 
-
 float CMJ_Random_Internal(uint i, uint p)
 {
     i ^= p;

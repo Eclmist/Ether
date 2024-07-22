@@ -29,6 +29,7 @@
 #define SUNLIGHT_SCALE 120000
 #define SKYLIGHT_SCALE 2000
 #define POINTLIGHT_SCALE 0
+#define MAX_RAY_DEPTH 1
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -93,34 +94,17 @@ float3 GetDirectRadiance(float3 position, float3 wo, float3 normal, float3 albed
     shadowRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
-
-    const float3 pointLightColor = float3(238/255.0, 129/255.0, 57/255.0) * POINTLIGHT_SCALE;
-    const float3 pointLightPositions[4] = {
-        float3(2.1315, 2.2852, -4.665),
-        float3(-5.8484, 2.2852, -4.665),
-        float3(2.1315, 2.2852, 4.665),
-        float3(-5.8484, 2.2852, 4.665),
-    };
-
-    float3 pointLightContribution = 0;
-    
-
-    for (int i = 0; i < 3; ++i)
-    {
-        const float3 wi = pointLightPositions[i] - float3(0.2, 0., 0) - position;
-        pointLightContribution += (pointLightColor / pow(length(wi), 2.8)) *
-                                  BRDF_UE4(normalize(wi), wo, normal, albedo, roughness, metalness) *
-                                  saturate(dot(wi, normal));
-    }
-
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
     const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
     const float cosTheta = saturate(dot(wi, normal));
     const float3 Lo = Li * f * cosTheta;
-    return Lo + pointLightContribution;
+    return Lo;
 }
 
+// 0 -> Importance sample BRDF
+// 1 -> Importance sample Cosine Hemisphere
+// 2 -> Importance sample Hemisphere
 #define IMPORTANCE_SAMPLING 0
 
 float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
@@ -169,7 +153,7 @@ float3 GetIndirectRadiance(float3 position, float3 wo, float3 normal, float3 alb
 #endif
 
     if (depth <= 0)
-        return 0;
+        return ComputeSkyHdri(wo) * 0.2f;
 
 
     RayPayload payload;
@@ -267,10 +251,10 @@ void RayGeneration()
     const float2 uvPrev = uv - velocity;
     const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, 1) * g_GlobalConstants.m_RaytracedAOIntensity;
+    const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
 
     //const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
-    const float a = 0.25;
+    float a = 0.1;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;

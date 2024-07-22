@@ -97,7 +97,13 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             if (ImGui::TreeNode("Raytracing"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsRaytracingEnabled);
-                ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 10);
+
+                if (gfxConfig.m_IsRaytracingEnabled)
+                {
+                    const char* items[] = { "Pathtracer", "ReSTIR GI" };
+                    ImGui::Combo("Raytracing Mode", &gfxConfig.m_RaytracingMode, items, IM_ARRAYSIZE(items));
+                    ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 10);
+                }
                 ImGui::TreePop();
             }
 

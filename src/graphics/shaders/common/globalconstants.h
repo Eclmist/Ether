@@ -77,7 +77,7 @@ struct GlobalConstants
 
     // ============ Padding ============= //
     ethVector4 m_Padding0;
-    float m_Padding1;
+    uint32_t m_Padding1;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");

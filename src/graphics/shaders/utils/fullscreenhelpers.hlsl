@@ -53,7 +53,3 @@ float2 ScreenToTextureSpace(float4 screen, float2 resolution)
     return uv;
 }
 
-float InterleavedGradientNoise(float2 pos)
-{
-    return frac(52.9829189 * frac(0.06711056 * pos.x + 0.00583715 * pos.y));
-}

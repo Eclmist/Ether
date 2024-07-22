@@ -30,7 +30,7 @@ DECLARE_GFX_SR(GBufferTexture0)
 DECLARE_GFX_SR(GBufferTexture1)
 DECLARE_GFX_SR(GBufferTexture2)
 DECLARE_GFX_SR(GBufferTexture3)
-DECLARE_GFX_SR(RTLightingTexture)
+DECLARE_GFX_SR(LightingTexture)
 DECLARE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
@@ -49,7 +49,7 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture3));
-    schedule.Read(ACCESS_GFX_SR(RTLightingTexture));
+    schedule.Read(ACCESS_GFX_SR(LightingTexture));
     schedule.Read(ACCESS_GFX_SR(ProceduralSkyTexture));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
@@ -62,7 +62,7 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture1)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture2)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture3)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTLightingTexture)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(ProceduralSkyTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(LightingCompositeTexture)), RhiResourceState::RenderTarget);
 
@@ -70,7 +70,7 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.SetGraphicsRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(RTLightingTexture)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(LightingTexture)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(6, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
 
     ctx.SetRenderTarget(*ACCESS_GFX_RT(LightingCompositeTexture).Get());
@@ -91,7 +91,7 @@ void Ether::Graphics::LightingCompositeProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3); // (t3) GBufferTexture3
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4); // (t4) RTLightingTexture
+    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4); // (t4) LightingTexture
     rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 5); // (t5) ProceduralSkyTexture
 

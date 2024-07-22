@@ -25,11 +25,11 @@
 
 namespace Ether::Graphics
 {
-class RaytracedLightingProducer : public GraphicProducer
+class LightingProducer : public GraphicProducer
 {
 public:
-    RaytracedLightingProducer();
-    ~RaytracedLightingProducer() override = default;
+    LightingProducer();
+    ~LightingProducer() override = default;
 
 public:
     void Initialize(ResourceContext& rc) override;

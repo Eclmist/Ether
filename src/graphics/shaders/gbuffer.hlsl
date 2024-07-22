@@ -22,6 +22,7 @@
 #include "common/instanceparams.h"
 #include "utils/fullscreenhelpers.hlsl"
 #include "utils/encoding.hlsl"
+#include "utils/noise.hlsl"
 
 struct VS_INPUT
 {
@@ -91,7 +92,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float3 normal = IN.Normal.xyz;
     float roughness = 0.5;
     float metalness = 0;
-    float2 velocity = texSpaceCurr - texSpacePrev;
+    float2 velocity = (texSpaceCurr - texSpacePrev);
 
     if (material.m_AlbedoTextureIndex != 0)
     {
