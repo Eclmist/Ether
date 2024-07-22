@@ -249,12 +249,16 @@ void RayGeneration()
     const float roughness = gbuffer1.w;
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
     const float2 uvPrev = uv - velocity;
-    const float4 accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+    float4 accumulation = 0;
+
+    if (uvPrev.x >= 0 && uvPrev.x < 1 && uvPrev.y >= 0 && uvPrev.y < 1)
+         accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+
+
     const float3 direct = GetDirectRadiance(position, viewDir, normal, color, roughness, metalness);
     const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
 
-    //const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
-    float a = 0.1;
+    const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
