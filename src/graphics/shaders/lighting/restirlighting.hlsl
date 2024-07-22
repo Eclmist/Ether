@@ -43,9 +43,9 @@ Texture2D<float4> g_GBufferOutput3                          : register(t6);
 RWTexture2D<float4> g_LightingOutput                        : register(u0);
 
 /* ReSTIR GI Implementation */
-RWStructuredBuffer<Reservoir> g_ReSTIR_InitialReservoir : register(u1);
-RWStructuredBuffer<Reservoir> g_ReSTIR_TemporalReservoir : register(u2);
-RWStructuredBuffer<Reservoir> g_ReSTIR_SpatialReservoir : register(u3);
+RWStructuredBuffer<Reservoir> g_ReSTIR_StagingReservoir     : register(u1);
+RWStructuredBuffer<Reservoir> g_ReSTIR_TemporalReservoir    : register(u2);
+RWStructuredBuffer<Reservoir> g_ReSTIR_SpatialReservoir     : register(u3);
 
 float3 ComputeSkyHdri(float3 wi)
 {
@@ -144,6 +144,7 @@ float TargetPdf(ReservoirSample rs)
 
     const float cosTheta = saturate(dot(normal, wi));
     //const float3 H = normalize(rs.m_Wi + rs.m_Wo);
+RWStructuredBuffer<Reservoir> g_ReSTIR_StagingReservoir : register(u2);
     //const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
     //const float vDotH = saturate(dot(rs.m_Wo, H));
     //const float diffuseWeight = lerp(lerp(0.5, 1.0, rs.m_Roughness), 0.0, rs.m_Metalness);
@@ -404,14 +405,10 @@ void RayGeneration()
     Ri.m_Sample = initialSample;
     Ri.m_w = TargetPdf(initialSample) / proposalPdf;
     Ri.m_M = 1;
-    Ri.m_W = Ri.m_w / max(0.01, Ri.m_M * TargetPdf(Ri.m_Sample));
+    Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
 
     Reservoir Rt;
-
-    if (g_GlobalConstants.m_FrameNumber % 2 == 0)
-        Rt = g_ReSTIR_TemporalReservoir[sampleIdxPrev]; // TODO: Fix reprojection
-    else
-        Rt = g_ReSTIR_InitialReservoir[sampleIdxPrev]; // TODO: Fix reprojection
+    Rt = g_ReSTIR_TemporalReservoir[sampleIdxPrev];
 
     DeviceMemoryBarrier();
 
@@ -424,39 +421,26 @@ void RayGeneration()
     //    Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
 
 
+    // Apparently, we don't need rand here?
+    const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
 
 #if 0 // Update
     const float w = TargetPdf(initialSample) / ZERO_GUARD(proposalPdf);
-    const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
     Rt.Update(initialSample, w, rand);
     Rt.m_W = Rt.m_w / ZERO_GUARD(Rt.m_M * TargetPdf(Rt.m_Sample));
 #else // Merge
-    Ri.Merge(Rt, TargetPdf(Rt.m_Sample), Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 10);
-    Ri.m_W = Ri.m_w / max(0.01, Ri.m_M * TargetPdf(Ri.m_Sample));
+    Ri.Merge(Rt, TargetPdf(Rt.m_Sample), rand, 30);
+    Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
     Rt = Ri;
 #endif
-
-    if (g_GlobalConstants.m_FrameNumber % 2 == 0)
-        g_ReSTIR_InitialReservoir[sampleIdx] = Rt;
-    else
-        g_ReSTIR_TemporalReservoir[sampleIdx] = Rt;
-
+    g_ReSTIR_StagingReservoir[sampleIdx] = Rt;
     DeviceMemoryBarrier();
 
-
     // Spatial Resampling
-    Reservoir Rs;
-    Rs.Reset(); // TODO: No temporal use of spatial buffers.. right?
-    //Rs.m_Sample.m_Radiance = 0.001;
-    Rs.m_M = 0;
+    Reservoir Rs = Rt;
 
     //const int numSpatialIterations = Rs.m_M > 10 ? 3 : 10;
     const int numSpatialIterations = 5;
-
-    //Reservoir Rn[10];
-    //uint Q[10];
-    //uint numQ = 0;
-    float Z = 0;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
@@ -464,28 +448,20 @@ void RayGeneration()
         const uint3 neighbourCoords = launchIndex + float3(SquareToConcentricDiskMapping(rand2D) * 10, 0);
         const uint neighbourIdx = neighbourCoords.y * launchDim.x + neighbourCoords.x;
 
-        Reservoir neighbour = g_ReSTIR_TemporalReservoir[neighbourIdx];
-
-        // TODO: Should not compare samples, those are not visible points!
-        // Compare neighbour pixels directly
-        //if (!AreSamplesSimilar(neighbour.m_Sample, Rt.m_Sample))
-        //    continue;
+        Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
 
         const float4 gbufferNeighbour1 = g_GBufferOutput1.Load(neighbourCoords);
         const float4 gbufferNeighbour2 = g_GBufferOutput2.Load(neighbourCoords);
-
-        //const float3 albedo = gbuffer0.xyz;
-        //const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
         const float3 RnPosition = gbufferNeighbour1.xyz;
         const float RnViewDepth = length(RnPosition - g_GlobalConstants.m_CameraPosition.xyz);
         const float3 RnNormal = normalize(DecodeNormals(gbufferNeighbour2.xy));
+
         if (dot(RnNormal, normal) < 0.9)
             continue;
         if (abs(viewDepth - RnViewDepth) > 0.3)
             continue;
 
-
-
+        // Jacobian. Disable for now.
         //const float3 xq1 = neighbour.m_Sample.m_VisiblePosition;
         //const float3 xq2 = neighbour.m_Sample.m_SamplePosition;
         //const float3 xr1 = Rt.m_Sample.m_VisiblePosition;
@@ -502,21 +478,12 @@ void RayGeneration()
         //if (!TraceVisibility(neighbour.m_Sample.m_SamplePosition, Rt.m_Sample.m_VisiblePosition))
         //    targetPdf = 0;
 
-        Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), Random(sampleIdx * g_GlobalConstants.m_FrameNumber), 500);
-        //Rn[numQ] = neighbour;
-        Z += neighbour.m_M;
+        Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), rand, 500);
     }
     
-    //for (uint j = 0; j < numQ; ++j)
-    //{
-    //    // TODO: Why does this check does nothing?
-    //    //if (TargetPdf(g_ReSTIR_SpatialReservoir[Q[j]].m_Sample) > 0)
-    //}
-
-    Rs.m_W = Rs.m_w / ZERO_GUARD(Z * TargetPdf(Rs.m_Sample));
-
-    if (Z == 0)
-        Rs = Rt;
+    Rs.m_W = Rs.m_w / ZERO_GUARD(Rs.m_M * TargetPdf(Rs.m_Sample));
+    g_ReSTIR_SpatialReservoir[sampleIdx] = Rs;
+    DeviceMemoryBarrier();
 
     Reservoir finalReservoir = Rs;
     ReservoirSample finalSample = finalReservoir.m_Sample;

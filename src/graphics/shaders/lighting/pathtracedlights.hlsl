@@ -28,7 +28,7 @@
 #define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 120000
 #define SKYLIGHT_SCALE 2000
-#define POINTLIGHT_SCALE 0
+#define POINTLIGHT_SCALE 2000
 #define MAX_RAY_DEPTH 1
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
@@ -259,6 +259,7 @@ void RayGeneration()
     const float3 indirect = GetIndirectRadiance(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
 
     const float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    //const float a = 1;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;

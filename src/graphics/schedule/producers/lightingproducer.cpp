@@ -41,7 +41,7 @@ DECLARE_GFX_SR(GBufferTexture3)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
-DEFINE_GFX_UA(ReSTIR_InitialReservoir)
+DEFINE_GFX_UA(ReSTIR_StagingReservoir)
 DEFINE_GFX_UA(ReSTIR_TemporalReservoir)
 DEFINE_GFX_UA(ReSTIR_SpatialReservoir)
 
@@ -82,7 +82,7 @@ void Ether::Graphics::LightingProducer::GetInputOutput(ScheduleContext& schedule
 
     /* ReSTIR GI Implementation */
     const uint32_t reservoirSize = resolution.x * resolution.y;
-    schedule.NewUA(ACCESS_GFX_UA(ReSTIR_InitialReservoir), sizeof(Shader::Reservoir) * reservoirSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::Reservoir));
+    schedule.NewUA(ACCESS_GFX_UA(ReSTIR_StagingReservoir), sizeof(Shader::Reservoir) * reservoirSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::Reservoir));
     schedule.NewUA(ACCESS_GFX_UA(ReSTIR_TemporalReservoir), sizeof(Shader::Reservoir) * reservoirSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::Reservoir));
     schedule.NewUA(ACCESS_GFX_UA(ReSTIR_SpatialReservoir), sizeof(Shader::Reservoir) * reservoirSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::Reservoir));
 
@@ -114,8 +114,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
 
-    // TODO: Don't need initial and spatial?
-    ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_InitialReservoir)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_TemporalReservoir)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(11, ACCESS_GFX_UA(ReSTIR_SpatialReservoir)->GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
@@ -130,14 +129,9 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         geometryInfos[i].m_MaterialIndex = visuals[i].m_Material->GetTransientMaterialIdx();
     }
 
-    ctx.CopyBufferRegion(
-        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
-        *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2)),
-        sizeof(Shader::GeometryInfo) * visuals.size(),
-        0,
-        0);
-
+    ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2)), sizeof(Shader::GeometryInfo) * visuals.size(), 0, 0);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)), *rc.GetResource(ACCESS_GFX_UA(ReSTIR_TemporalReservoir)));
     ctx.PopMarker();
 }
 
