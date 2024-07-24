@@ -25,27 +25,40 @@
 #include "common/material.h"
 #include "lighting/brdf.hlsl"
 
-// TODO: Make lightingcommon.h
-#define EMISSION_SCALE 1000000
-#define SUNLIGHT_SCALE 120000
-#define SKYLIGHT_SCALE 0
-#define POINTLIGHT_SCALE 2000
-#define MAX_RAY_DEPTH 1
+#define USE_TEMPORAL_GATHER         1
+#define USE_SPATIAL_GATHER          1
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants           : register(b0);
-RaytracingAccelerationStructure g_RaytracingTlas            : register(t0);
-StructuredBuffer<GeometryInfo> g_GeometryInfo               : register(t1);
-StructuredBuffer<Material> g_MaterialTable                  : register(t2);
-Texture2D<float4> g_GBufferOutput0                          : register(t3);
-Texture2D<float4> g_GBufferOutput1                          : register(t4);
-Texture2D<float4> g_GBufferOutput2                          : register(t5);
-Texture2D<float4> g_GBufferOutput3                          : register(t6);
-RWTexture2D<float4> g_LightingOutput                        : register(u0);
+#define TEMPORAL_HISTORY            30
+#define SPATIAL_HISTORY             500
+#define SPATIAL_RADIUS              20
+
+// TODO: Make lightingcommon.h
+#define EMISSION_SCALE              000000
+#define SUNLIGHT_SCALE              120000
+#define SKYLIGHT_SCALE              0
+#define POINTLIGHT_SCALE            2000
+#define MAX_RAY_DEPTH               1
+
+struct RootConstants
+{
+    uint m_PassIndex;
+};
+
+ConstantBuffer<GlobalConstants> g_GlobalConstants       : register(b0);
+ConstantBuffer<RootConstants> g_RootConstants           : register(b1);
+
+RaytracingAccelerationStructure g_RaytracingTlas        : register(t0);
+StructuredBuffer<GeometryInfo> g_GeometryInfo           : register(t1);
+StructuredBuffer<Material> g_MaterialTable              : register(t2);
+Texture2D<float4> g_GBufferOutput0                      : register(t3);
+Texture2D<float4> g_GBufferOutput1                      : register(t4);
+Texture2D<float4> g_GBufferOutput2                      : register(t5);
+Texture2D<float4> g_GBufferOutput3                      : register(t6);
+RWTexture2D<float4> g_LightingOutput                    : register(u0);
 
 /* ReSTIR GI Implementation */
-RWStructuredBuffer<Reservoir> g_ReSTIR_StagingReservoir     : register(u1);
-RWStructuredBuffer<Reservoir> g_ReSTIR_TemporalReservoir    : register(u2);
-RWStructuredBuffer<Reservoir> g_ReSTIR_SpatialReservoir     : register(u3);
+RWStructuredBuffer<Reservoir> g_ReSTIR_GIReservoir      : register(u1);
+RWStructuredBuffer<Reservoir> g_ReSTIR_StagingReservoir : register(u2);
 
 float3 ComputeSkyHdri(float3 wi)
 {
@@ -83,7 +96,6 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
     const MeshVertex v2 = vtxBuffer[idx2];
 
     return BarycentricLerp(v0, v1, v2, barycentrics);
-
 }
 
 void SampleDirectionCosine(float3 normal, out float3 wi, out float pdf)
@@ -142,15 +154,15 @@ float TargetPdf(ReservoirSample rs)
     const float3 wi = normalize(rs.m_SamplePosition - rs.m_VisiblePosition);
     const float3 f = BRDF_UE4(rs.m_Wi, rs.m_Wo, rs.m_VisibleNormal, rs.m_Albedo, rs.m_Roughness, rs.m_Metalness);
 
-    const float cosTheta = saturate(dot(normalize(normal), normalize(-wi)));
-    //const float3 H = normalize(rs.m_Wi + rs.m_Wo);
-    //const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
-    //const float vDotH = saturate(dot(rs.m_Wo, H));
-    //const float diffuseWeight = lerp(lerp(0.5, 1.0, rs.m_Roughness), 0.0, rs.m_Metalness);
-    //const float specularWeight = 1.0 - diffuseWeight;
-    //const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, rs.m_Roughness);
+    const float cosTheta = saturate(dot(normal, wi));
+    // const float3 H = normalize(rs.m_Wi + rs.m_Wo);
+    // const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
+    // const float vDotH = saturate(dot(rs.m_Wo, H));
+    // const float diffuseWeight = lerp(lerp(0.5, 1.0, rs.m_Roughness), 0.0, rs.m_Metalness);
+    // const float specularWeight = 1.0 - diffuseWeight;
+    // const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, rs.m_Roughness);
 
-    return dot(1, rs.m_Radiance);
+    return dot(1, rs.m_Radiance) * f;
 }
 
 bool AreDepthSimilar(float3 a, float3 b)
@@ -162,7 +174,7 @@ bool AreDepthSimilar(float3 a, float3 b)
 
 bool AreSamplesSimilar(ReservoirSample a, ReservoirSample b)
 {
-    if (dot(a.m_VisibleNormal, b.m_VisibleNormal) < 0.9)
+    if (abs(dot(a.m_VisibleNormal, b.m_VisibleNormal)) < 0.5)
         return false;
 
     if (!AreDepthSimilar(a.m_VisiblePosition, b.m_VisiblePosition))
@@ -202,10 +214,8 @@ void TraceHitSurface(
         hitNormal = 0;
     }
 
-
     radiance = payload.m_Radiance;
 }
-
 
 float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
@@ -217,7 +227,15 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     shadowRay.Origin = position + (normal * 0.01);
     shadowRay.TMax = 128;
     shadowRay.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
+    TraceRay(
+        g_RaytracingTlas,
+        RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
+        0xFF,
+        0,
+        0,
+        0,
+        shadowRay,
+        payload);
 
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
@@ -232,7 +250,14 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
 // 2 -> Importance sample Hemisphere
 #define IMPORTANCE_SAMPLING 0
 
-float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
+float3 TraceRecursively(
+    float3 position,
+    float3 wo,
+    float3 normal,
+    float3 albedo,
+    float roughness,
+    float metalness,
+    uint depth)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -273,7 +298,6 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
 
     if (depth <= 0)
         return ComputeSkyHdri(wo) * 0.2f;
-
 
     RayPayload payload;
     payload.m_IsShadowRay = false;
@@ -340,15 +364,20 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
 
     const float3 wo = normalize(-WorldRayDirection());
     const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
+    const float3 indirect = TraceRecursively(
+        hitSurface.m_Position,
+        wo,
+        normal,
+        albedo.xyz,
+        roughness,
+        metalness,
+        payload.m_Depth - 1);
     return emission.xyz + direct + indirect;
 }
 
-[shader("raygeneration")]
-void RayGeneration()
+void GenerateInitialSamples()
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
@@ -358,18 +387,15 @@ void RayGeneration()
     const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
     const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
 
-    const float3 albedo = gbuffer0.xyz;
-    const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
+    const float3 albedo = gbuffer0.rgb;
+    const float3 emission = gbuffer3.rgb * EMISSION_SCALE;
     const float3 position = gbuffer1.xyz;
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float viewDepth = length(position - g_GlobalConstants.m_CameraPosition.xyz);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
-    const float2 velocity = gbuffer2.zw;
     const float metalness = gbuffer0.w;
     const float roughness = gbuffer1.w;
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
-    const int2 launchIndexPrev = ((float2)launchIndex.xy + 0.5f) - (velocity * launchDim.xy); 
-    const uint sampleIdxPrev = clamp(launchIndexPrev.y * launchDim.x + launchIndexPrev.x, 0, launchDim.x * launchDim.y);
     float3 wi;
     float proposalPdf;
     float initialSamplePdf;
@@ -395,7 +421,7 @@ void RayGeneration()
     initialSample.m_VisibleNormal = normal;
     initialSample.m_SamplePosition = hitPosition;
     initialSample.m_SampleNormal = hitNormal;
-    initialSample.m_Radiance = min(10000.0f, radiance);
+    initialSample.m_Radiance = min(10000, radiance);
     initialSample.m_FrameNumber = g_GlobalConstants.m_FrameNumber;
 
     Reservoir Ri;
@@ -404,72 +430,116 @@ void RayGeneration()
     Ri.m_M = 1;
     Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
 
-    Reservoir Rt;
-    Rt = g_ReSTIR_TemporalReservoir[sampleIdxPrev];
+    g_ReSTIR_StagingReservoir[sampleIdx] = Ri;
+}
 
-    DeviceMemoryBarrier();
+void ApplyTemporalResampling()
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
-    if (!AreSamplesSimilar(Rt.m_Sample, Ri.m_Sample))
-        Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
+    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
+    const float2 velocity = gbuffer2.zw;
+    const int2 launchIndexPrev = ((float2)launchIndex.xy + 0.5) - (velocity * launchDim.xy);
 
-    if (launchIndexPrev.x < 0 && launchIndexPrev.x >= launchDim.x && launchIndexPrev.y < 0 && launchIndexPrev.y >= launchDim.y)
-        Rt.Reset();
+    const uint sampleIdxPrev = clamp(launchIndexPrev.y * launchDim.x + launchIndexPrev.x, 0, launchDim.x * launchDim.y);
 
+    Reservoir Ri = g_ReSTIR_StagingReservoir[sampleIdx];
+    Reservoir Rt = g_ReSTIR_GIReservoir[sampleIdxPrev];
 
-    //if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
-    //    Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
+     if (!AreSamplesSimilar(Rt.m_Sample, Ri.m_Sample))
+         Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
 
+     if (launchIndexPrev.x < 0 || launchIndexPrev.x >= launchDim.x || 
+         launchIndexPrev.y < 0 || launchIndexPrev.y >= launchDim.y)
+         Rt.Reset();
+
+    // if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
+    //     Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
 
     // Apparently, we don't need rand here?
     const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
+    Ri.Merge(Rt, TargetPdf(Rt.m_Sample), rand, TEMPORAL_HISTORY);
+    Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
 
-#if 0 // Update
-    const float w = TargetPdf(initialSample) / ZERO_GUARD(proposalPdf);
-    Rt.Update(initialSample, w, rand);
-#else // Merge
-    Reservoir temp = Ri;
-    Ri.Merge(Rt, TargetPdf(Rt.m_Sample), rand, 30);
-    Rt = Ri;
-    Ri = temp;
-#endif
-    Rt.m_W = Rt.m_w / ZERO_GUARD(Rt.m_M * TargetPdf(Rt.m_Sample));
+    g_ReSTIR_StagingReservoir[sampleIdx] = Ri;
+}
 
-    g_ReSTIR_StagingReservoir[sampleIdx] = Rt;
-    DeviceMemoryBarrier();
+void ApplySpatialResampling()
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
-    // Spatial Resampling
+    const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
+    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
+
+    const float3 position = gbuffer1.xyz;
+    const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
+    const float viewDepth = length(position - g_GlobalConstants.m_CameraPosition.xyz);
+
     Reservoir Rs = g_ReSTIR_StagingReservoir[sampleIdx];
 
-    const int numSpatialIterations = Rs.m_M > 10 ? 3 : 10;
-    //const int numSpatialIterations = 3;
+    //const int numSpatialIterations = Rs.m_M < 30 ? 10 : 3;
+    const int numSpatialIterations = 3;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
-        const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
-        const uint3 neighbourCoords = clamp(launchIndex + float3(SquareToConcentricDiskMapping(rand2D) * 20, 0), 0, launchDim);
-        const uint neighbourIdx = neighbourCoords.y * launchDim.x + neighbourCoords.x;
+         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
+         const int2 neighbourCoords = (launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * SPATIAL_RADIUS;
+         const uint neighbourIdx = clamp(neighbourCoords.y * launchDim.x + neighbourCoords.x, 0, launchDim.x * launchDim.y);
+         Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
 
-        Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
+         if (neighbourCoords.x < 0 || neighbourCoords.x >= launchDim.x ||
+             neighbourCoords.y < 0 || neighbourCoords.y >= launchDim.y)
+             continue;
 
-        const float4 gbufferNeighbour1 = g_GBufferOutput1.Load(neighbourCoords);
-        const float4 gbufferNeighbour2 = g_GBufferOutput2.Load(neighbourCoords);
-        const float3 RnPosition = gbufferNeighbour1.xyz;
-        const float RnViewDepth = length(RnPosition - g_GlobalConstants.m_CameraPosition.xyz);
-        const float3 RnNormal = normalize(DecodeNormals(gbufferNeighbour2.xy));
+         const float4 gbufferNeighbour1 = g_GBufferOutput1.Load(int3(neighbourCoords, 0));
+         const float4 gbufferNeighbour2 = g_GBufferOutput2.Load(int3(neighbourCoords, 0));
+         const float3 RnPosition = gbufferNeighbour1.xyz;
+         const float RnViewDepth = length(RnPosition - g_GlobalConstants.m_CameraPosition.xyz);
+         const float3 RnNormal = normalize(DecodeNormals(gbufferNeighbour2.xy));
 
-        if (dot(RnNormal, normal) < 0.9)
-            continue;
-        if (abs(viewDepth - RnViewDepth) > 0.3)
-            continue;
+         if (dot(RnNormal, normal) < 0.9)
+             continue;
+         if (abs(viewDepth - RnViewDepth) > 0.5)
+             continue;
 
-        Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), rand, 500);
+         // Apparently, we don't need rand here?
+         const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
+         Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), rand, SPATIAL_HISTORY);
     }
-    
-    Rs.m_W = Rs.m_w / ZERO_GUARD(Rs.m_M * TargetPdf(Rs.m_Sample));
-    g_ReSTIR_SpatialReservoir[sampleIdx] = Rs;
-    DeviceMemoryBarrier();
 
-    Reservoir finalReservoir = Rs;
+    Rs.m_W = Rs.m_w / ZERO_GUARD(Rs.m_M * TargetPdf(Rs.m_Sample));
+    g_ReSTIR_GIReservoir[sampleIdx] = Rs;
+}
+
+void EvaluateFinalLighting()
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+
+    const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
+    const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
+    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
+    const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
+
+    const float3 albedo = gbuffer0.rgb;
+    const float3 position = gbuffer1.xyz;
+    const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
+    const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
+    const float roughness = gbuffer1.w;
+    const float metalness = gbuffer0.w;
+
+#if USE_SPATIAL_GATHER
+    Reservoir finalReservoir = g_ReSTIR_GIReservoir[sampleIdx];
+#else
+    Reservoir finalReservoir = g_ReSTIR_StagingReservoir[sampleIdx];
+#endif
+
     ReservoirSample finalSample = finalReservoir.m_Sample;
 
     const float3 f = BRDF_UE4(
@@ -480,13 +550,37 @@ void RayGeneration()
         finalSample.m_Roughness,
         finalSample.m_Metalness);
 
-    const float3 indirect = min(10000.0f, finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(finalSample.m_VisibleNormal, finalSample.m_Wi)));
+    const float3 indirect = min(10000, finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(finalSample.m_VisibleNormal, finalSample.m_Wi)));
     const float3 direct = TraceShadow(position, wo, normal, albedo, roughness, metalness);
 
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + indirect;
+
+#if USE_TEMPORAL_GATHER && !USE_SPATIAL_GATHER
+    g_ReSTIR_GIReservoir[sampleIdx] = finalReservoir;
+#endif
 }
 
-[shader("miss")]
+[shader("raygeneration")]
+void RayGeneration()
+{
+    if (g_RootConstants.m_PassIndex == RESTIR_INITIAL_PASS)
+        GenerateInitialSamples();
+    
+#if USE_TEMPORAL_GATHER
+    if (g_RootConstants.m_PassIndex == RESTIR_TEMPORAL_PASS)
+        ApplyTemporalResampling();
+#endif
+
+#if USE_SPATIAL_GATHER
+    if (g_RootConstants.m_PassIndex == RESTIR_SPATIAL_PASS)
+        ApplySpatialResampling();
+#endif
+
+    if (g_RootConstants.m_PassIndex == RESTIR_EVALUATION_PASS)
+        EvaluateFinalLighting();
+}
+
+[shader("miss")] 
 void Miss(inout RayPayload payload)
 {
     payload.m_Hit = false;
@@ -495,7 +589,11 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(400.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz *
+                             lerp(
+                                 400.0f,
+                                 SUNLIGHT_SCALE,
+                                 saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     }
     else
     {

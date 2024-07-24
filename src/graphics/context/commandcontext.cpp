@@ -108,7 +108,6 @@ void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytra
 
 void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
 {
-    m_CommandList->InsertUavBarrier(src);
     m_CommandList->CopyResource(src, dest);
 }
 

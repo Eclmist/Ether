@@ -23,6 +23,11 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
+#define RESTIR_INITIAL_PASS     0
+#define RESTIR_TEMPORAL_PASS    1
+#define RESTIR_SPATIAL_PASS     2
+#define RESTIR_EVALUATION_PASS  3
+
 struct GeometryInfo
 {
     uint32_t m_VBDescriptorIndex;
@@ -56,6 +61,23 @@ struct ReservoirSample
     ethVector3 m_Radiance;
 
     uint32_t m_FrameNumber;
+
+#ifdef __HLSL__
+    void Reset()
+    {
+        m_Wo = 0;
+        m_Wi = 0;
+        m_Albedo = 0;
+        m_Roughness = 0;
+        m_Metalness = 0;
+        m_VisiblePosition = 0;
+        m_VisibleNormal = 0;
+        m_SamplePosition = 0;
+        m_SampleNormal = 0;
+        m_Radiance = 0;
+        m_FrameNumber = 0;
+    }
+#endif
 };
 
 struct Reservoir
@@ -71,6 +93,7 @@ struct Reservoir
         m_w = 0;
         m_W = 0;
         m_M = 0;
+        m_Sample.Reset();
     }
 
     void Update(ReservoirSample s, float w, float rand)
