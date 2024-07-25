@@ -33,7 +33,7 @@
 #define SPATIAL_RADIUS              20
 
 // TODO: Make lightingcommon.h
-#define EMISSION_SCALE              000000
+#define EMISSION_SCALE              100000
 #define SUNLIGHT_SCALE              120000
 #define SKYLIGHT_SCALE              0
 #define POINTLIGHT_SCALE            2000
@@ -174,7 +174,7 @@ bool AreDepthSimilar(float3 a, float3 b)
 
 bool AreSamplesSimilar(ReservoirSample a, ReservoirSample b)
 {
-    if (abs(dot(a.m_VisibleNormal, b.m_VisibleNormal)) < 0.5)
+    if (dot(a.m_VisibleNormal, b.m_VisibleNormal) < 0.9)
         return false;
 
     if (!AreDepthSimilar(a.m_VisiblePosition, b.m_VisiblePosition))
@@ -479,10 +479,12 @@ void ApplySpatialResampling()
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float viewDepth = length(position - g_GlobalConstants.m_CameraPosition.xyz);
 
-    Reservoir Rs = g_ReSTIR_StagingReservoir[sampleIdx];
+    Reservoir Rt = g_ReSTIR_StagingReservoir[sampleIdx];
+    Reservoir Rs = Rt;
+    g_ReSTIR_GIReservoir[sampleIdx] = Rt;
 
-    //const int numSpatialIterations = Rs.m_M < 30 ? 10 : 3;
-    const int numSpatialIterations = 3;
+    const int numSpatialIterations = Rs.m_M < 30 ? 10 : 3;
+    //const int numSpatialIterations = 3;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
@@ -512,32 +514,20 @@ void ApplySpatialResampling()
     }
 
     Rs.m_W = Rs.m_w / ZERO_GUARD(Rs.m_M * TargetPdf(Rs.m_Sample));
-    g_ReSTIR_GIReservoir[sampleIdx] = Rs;
-}
-
-void EvaluateFinalLighting()
-{
-    const uint3 launchIndex = DispatchRaysIndex();
-    const uint3 launchDim = DispatchRaysDimensions();
-    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
     const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
-    const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
-    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
     const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
 
     const float3 albedo = gbuffer0.rgb;
-    const float3 position = gbuffer1.xyz;
-    const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
     const float roughness = gbuffer1.w;
     const float metalness = gbuffer0.w;
 
 #if USE_SPATIAL_GATHER
-    Reservoir finalReservoir = g_ReSTIR_GIReservoir[sampleIdx];
+    Reservoir finalReservoir = Rs;
 #else
-    Reservoir finalReservoir = g_ReSTIR_StagingReservoir[sampleIdx];
+    Reservoir finalReservoir = Rt;
 #endif
 
     ReservoirSample finalSample = finalReservoir.m_Sample;
@@ -554,10 +544,10 @@ void EvaluateFinalLighting()
     const float3 direct = TraceShadow(position, wo, normal, albedo, roughness, metalness);
 
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + indirect;
+}
 
-#if USE_TEMPORAL_GATHER && !USE_SPATIAL_GATHER
-    g_ReSTIR_GIReservoir[sampleIdx] = finalReservoir;
-#endif
+void EvaluateFinalLighting()
+{
 }
 
 [shader("raygeneration")]
@@ -566,18 +556,11 @@ void RayGeneration()
     if (g_RootConstants.m_PassIndex == RESTIR_INITIAL_PASS)
         GenerateInitialSamples();
     
-#if USE_TEMPORAL_GATHER
     if (g_RootConstants.m_PassIndex == RESTIR_TEMPORAL_PASS)
         ApplyTemporalResampling();
-#endif
 
-#if USE_SPATIAL_GATHER
     if (g_RootConstants.m_PassIndex == RESTIR_SPATIAL_PASS)
         ApplySpatialResampling();
-#endif
-
-    if (g_RootConstants.m_PassIndex == RESTIR_EVALUATION_PASS)
-        EvaluateFinalLighting();
 }
 
 [shader("miss")] 

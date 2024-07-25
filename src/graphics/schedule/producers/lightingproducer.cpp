@@ -182,30 +182,30 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         ctx.PopMarker();
     }
 
-    {
-        // Evaluation Pass
-        ctx.PushMarker("ReSTIR - Final Lighting Evaluation");
-        ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-        ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-        ctx.SetComputeRootSignature(*m_GlobalRootSignature);
-        ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(LightingTexture)), RhiResourceState::UnorderedAccess);
-        ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
-        ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
-        ctx.SetComputeRootConstant(11, RESTIR_EVALUATION_PASS, 0);
-        ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
-        ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));
-        ctx.DispatchRays(resolution.x, resolution.y, 1);
-        ctx.PopMarker();
-    }
+    //{
+    //    // Evaluation Pass
+    //    ctx.PushMarker("ReSTIR - Final Lighting Evaluation");
+    //    ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    //    ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
+    //    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
+    //    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(LightingTexture)), RhiResourceState::UnorderedAccess);
+    //    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    //    ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
+    //    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
+    //    ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
+    //    ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
+    //    ctx.SetComputeRootConstant(11, RESTIR_EVALUATION_PASS, 0);
+    //    ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
+    //    ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));
+    //    ctx.DispatchRays(resolution.x, resolution.y, 1);
+    //    ctx.PopMarker();
+    //}
 
     ctx.PopMarker();
 }
