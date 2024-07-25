@@ -448,12 +448,12 @@ void ApplyTemporalResampling()
     Reservoir Ri = g_ReSTIR_StagingReservoir[sampleIdx];
     Reservoir Rt = g_ReSTIR_GIReservoir[sampleIdxPrev];
 
-     if (!AreSamplesSimilar(Rt.m_Sample, Ri.m_Sample))
-         Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
+    if (!AreSamplesSimilar(Rt.m_Sample, Ri.m_Sample))
+        Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
 
-     if (launchIndexPrev.x < 0 || launchIndexPrev.x >= launchDim.x || 
-         launchIndexPrev.y < 0 || launchIndexPrev.y >= launchDim.y)
-         Rt.Reset();
+    if (launchIndexPrev.x < 0 || launchIndexPrev.x >= launchDim.x || 
+        launchIndexPrev.y < 0 || launchIndexPrev.y >= launchDim.y)
+        Rt.Reset();
 
     // if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
     //     Rt.Reset(); // DEBUG! Reprojection is broken (velocity is not 0 even when not moving? wtf?)
