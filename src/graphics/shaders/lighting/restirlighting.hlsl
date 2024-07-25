@@ -25,8 +25,11 @@
 #include "common/material.h"
 #include "lighting/brdf.hlsl"
 
-#define USE_TEMPORAL_GATHER         1
-#define USE_SPATIAL_GATHER          1
+#define USE_TEMPORAL_RESAMPLING     1
+#define USE_SPATIAL_RESAMPLING      1
+#define USE_SPATIAL_ACCUMULATION    0
+#define USE_IMPORTANCE_SAMPLING     0
+#define USE_BRDF_TARGET_FUNCTION    1
 
 #define TEMPORAL_HISTORY            30
 #define SPATIAL_HISTORY             500
@@ -124,8 +127,7 @@ void SampleDirectionBrdf(
     float roughness,
     float metalness,
     out float3 wi,
-    out float pdf,
-    out bool isSpecular)
+    out float pdf)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -135,8 +137,10 @@ void SampleDirectionBrdf(
     const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
     const float specularWeight = 1.0 - diffuseWeight;
 
-    if (Random(rand2D.x) <= specularWeight)
-        wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
+    const bool importanceSampleBrdf = Random(rand2D.x) <= specularWeight;
+
+    if (importanceSampleBrdf)
+        wi = normalize(ImportanceSampleGGX(rand2D, wo, normal, roughness));
     else
         wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
 
@@ -145,7 +149,11 @@ void SampleDirectionBrdf(
     const float nDotV = saturate(dot(normal, wo));
     const float vDotH = saturate(dot(wo, H));
     const float cosTheta = saturate(dot(wi, normal));
-    pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+
+    if (importanceSampleBrdf)
+        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+    else
+        pdf = SampleDirectionHemisphere_Pdf();
 }
 
 float TargetPdf(ReservoirSample rs)
@@ -162,7 +170,11 @@ float TargetPdf(ReservoirSample rs)
     // const float specularWeight = 1.0 - diffuseWeight;
     // const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, rs.m_Roughness);
 
+#if USE_BRDF_TARGET_FUNCTION
     return dot(1, rs.m_Radiance) * f;
+#else
+    return dot(1, rs.m_Radiance);
+#endif
 }
 
 bool AreDepthSimilar(float3 a, float3 b)
@@ -217,7 +229,7 @@ void TraceHitSurface(
     radiance = payload.m_Radiance;
 }
 
-float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 TraceDirectLighting(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
@@ -227,19 +239,11 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     shadowRay.Origin = position + (normal * 0.01);
     shadowRay.TMax = 128;
     shadowRay.TMin = 0.01;
-    TraceRay(
-        g_RaytracingTlas,
-        RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
-        0xFF,
-        0,
-        0,
-        0,
-        shadowRay,
-        payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
-    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
+    const float3 f = ZERO_GUARD(BRDF_UE4(wi, wo, normal, albedo, roughness, metalness));
     const float cosTheta = saturate(dot(wi, normal));
     const float3 Lo = Li * f * cosTheta;
     return Lo;
@@ -363,15 +367,8 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
     normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal;
 
     const float3 wo = normalize(-WorldRayDirection());
-    const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirect = TraceRecursively(
-        hitSurface.m_Position,
-        wo,
-        normal,
-        albedo.xyz,
-        roughness,
-        metalness,
-        payload.m_Depth - 1);
+    const float3 direct = TraceDirectLighting(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, 0);
+    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
     return emission.xyz + direct + indirect;
 }
 
@@ -399,14 +396,17 @@ void GenerateInitialSamples()
     float3 wi;
     float proposalPdf;
     float initialSamplePdf;
-    bool isSpecular = false;
 
     // [NOTE]
     // Non-uniform sampling have possiblity that the PDF of the sample is very small
     // This can cause firefly. Since RIS proposal sample is not that important
     // the tradeoff is made here for SLIGHTLY worse convergence in exchange for no firefly.
+
+#if USE_IMPORTANCE_SAMPLING
+    SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf);
+#else
     SampleDirectionUniform(normal, wi, proposalPdf);
-    //SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf, isSpecular);
+#endif
 
     float3 hitPosition, hitNormal, radiance;
     TraceHitSurface(position, wi, MAX_RAY_DEPTH, hitPosition, hitNormal, radiance);
@@ -460,8 +460,11 @@ void ApplyTemporalResampling()
 
     // Apparently, we don't need rand here?
     const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
+
+#if USE_TEMPORAL_RESAMPLING
     Ri.Merge(Rt, TargetPdf(Rt.m_Sample), rand, TEMPORAL_HISTORY);
     Ri.m_W = Ri.m_w / ZERO_GUARD(Ri.m_M * TargetPdf(Ri.m_Sample));
+#endif
 
     g_ReSTIR_StagingReservoir[sampleIdx] = Ri;
 }
@@ -481,36 +484,34 @@ void ApplySpatialResampling()
 
     Reservoir Rt = g_ReSTIR_StagingReservoir[sampleIdx];
     Reservoir Rs = Rt;
-    g_ReSTIR_GIReservoir[sampleIdx] = Rt;
-
     const int numSpatialIterations = Rs.m_M < 30 ? 10 : 3;
     //const int numSpatialIterations = 3;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
-         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
-         const int2 neighbourCoords = (launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * SPATIAL_RADIUS;
-         const uint neighbourIdx = clamp(neighbourCoords.y * launchDim.x + neighbourCoords.x, 0, launchDim.x * launchDim.y);
-         Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
+        const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
+        const int2 neighbourCoords = (launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * SPATIAL_RADIUS;
+        const uint neighbourIdx = clamp(neighbourCoords.y * launchDim.x + neighbourCoords.x, 0, launchDim.x * launchDim.y);
+        Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
 
-         if (neighbourCoords.x < 0 || neighbourCoords.x >= launchDim.x ||
-             neighbourCoords.y < 0 || neighbourCoords.y >= launchDim.y)
-             continue;
+        if (neighbourCoords.x < 0 || neighbourCoords.x >= launchDim.x ||
+            neighbourCoords.y < 0 || neighbourCoords.y >= launchDim.y)
+            continue;
 
-         const float4 gbufferNeighbour1 = g_GBufferOutput1.Load(int3(neighbourCoords, 0));
-         const float4 gbufferNeighbour2 = g_GBufferOutput2.Load(int3(neighbourCoords, 0));
-         const float3 RnPosition = gbufferNeighbour1.xyz;
-         const float RnViewDepth = length(RnPosition - g_GlobalConstants.m_CameraPosition.xyz);
-         const float3 RnNormal = normalize(DecodeNormals(gbufferNeighbour2.xy));
+        const float4 gbufferNeighbour1 = g_GBufferOutput1.Load(int3(neighbourCoords, 0));
+        const float4 gbufferNeighbour2 = g_GBufferOutput2.Load(int3(neighbourCoords, 0));
+        const float3 RnPosition = gbufferNeighbour1.xyz;
+        const float RnViewDepth = length(RnPosition - g_GlobalConstants.m_CameraPosition.xyz);
+        const float3 RnNormal = normalize(DecodeNormals(gbufferNeighbour2.xy));
 
-         if (dot(RnNormal, normal) < 0.9)
-             continue;
-         if (abs(viewDepth - RnViewDepth) > 0.5)
-             continue;
+        if (dot(RnNormal, normal) < 0.5)
+            continue;
+        if (abs(viewDepth - RnViewDepth) > 0.5)
+            continue;
 
-         // Apparently, we don't need rand here?
-         const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
-         Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), rand, SPATIAL_HISTORY);
+        // Apparently, we don't need rand here?
+        const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
+        Rs.Merge(neighbour, TargetPdf(neighbour.m_Sample), rand, SPATIAL_HISTORY);
     }
 
     Rs.m_W = Rs.m_w / ZERO_GUARD(Rs.m_M * TargetPdf(Rs.m_Sample));
@@ -524,7 +525,7 @@ void ApplySpatialResampling()
     const float roughness = gbuffer1.w;
     const float metalness = gbuffer0.w;
 
-#if USE_SPATIAL_GATHER
+#if USE_SPATIAL_RESAMPLING
     Reservoir finalReservoir = Rs;
 #else
     Reservoir finalReservoir = Rt;
@@ -532,18 +533,18 @@ void ApplySpatialResampling()
 
     ReservoirSample finalSample = finalReservoir.m_Sample;
 
-    const float3 f = BRDF_UE4(
-        finalSample.m_Wi,
-        finalSample.m_Wo,
-        finalSample.m_VisibleNormal,
-        albedo,
-        finalSample.m_Roughness,
-        finalSample.m_Metalness);
-
+    const float3 f = BRDF_UE4(finalSample.m_Wi, finalSample.m_Wo, finalSample.m_VisibleNormal, albedo, finalSample.m_Roughness, finalSample.m_Metalness);
     const float3 indirect = min(10000, finalSample.m_Radiance * finalReservoir.m_W * f * saturate(dot(finalSample.m_VisibleNormal, finalSample.m_Wi)));
-    const float3 direct = TraceShadow(position, wo, normal, albedo, roughness, metalness);
+    const float3 direct = TraceDirectLighting(position, wo, normal, albedo, roughness, metalness);
+    finalSample.m_Radiance = indirect;
 
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + indirect;
+
+#if USE_SPATIAL_ACCUMULATION && USE_SPATIAL_RESAMPLING
+    g_ReSTIR_GIReservoir[sampleIdx] = Rs;
+#else
+    g_ReSTIR_GIReservoir[sampleIdx] = Rt;
+#endif
 }
 
 void EvaluateFinalLighting()
@@ -572,11 +573,7 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz *
-                             lerp(
-                                 400.0f,
-                                 SUNLIGHT_SCALE,
-                                 saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(0.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     }
     else
     {
@@ -591,12 +588,12 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Hit = true;
     payload.m_Radiance = 0;
 
-    if (payload.m_IsShadowRay)
-        return;
+    if (!payload.m_IsShadowRay)
+    {
+        const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+        const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
+        const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
-    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-
-    payload.m_Radiance = PathTrace(vertex, material, payload);
+        payload.m_Radiance = PathTrace(vertex, material, payload);
+    }
 }

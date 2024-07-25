@@ -92,7 +92,7 @@ float3 ImportanceSampleGGX(float2 Xi, float3 wo, float3 N, float roughness)
 {
     const float a = roughness * roughness;
     const float phi = 2 * Pi * Xi.x;
-    const float cosTheta = sqrt((1 - Xi.y) / max(0.001, (1 + (a * a - 1) * Xi.y)));
+    const float cosTheta = sqrt((1 - Xi.y) / ZERO_GUARD((1 + (a * a - 1) * Xi.y)));
     const float sinTheta = sqrt(max(0, 1 - cosTheta * cosTheta));
     float3 H;
     H.x = sinTheta * cos(phi);
