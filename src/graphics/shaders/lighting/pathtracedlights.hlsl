@@ -27,7 +27,7 @@
 
 #define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 120000
-#define SKYLIGHT_SCALE 0
+#define SKYLIGHT_SCALE 10000
 #define POINTLIGHT_SCALE 2000
 #define MAX_RAY_DEPTH 1
 
@@ -118,8 +118,10 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
     const float specularWeight = 1.0 - diffuseWeight;
     float3 wi = 0;
-    if (Random(rand2D.x) <= specularWeight)
-        wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
+    const bool importanceSampleBrdf = Random(rand2D.x) <= specularWeight;
+
+    if (importanceSampleBrdf)
+        wi = normalize(ImportanceSampleGGX(rand2D, wo, normal, roughness));
     else
         wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
 
@@ -128,7 +130,12 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     const float nDotV = saturate(dot(normal, wo));
     const float vDotH = saturate(dot(wo, H));
     const float cosTheta = saturate(dot(wi, normal));
-    const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+    float pdf;
+
+    if (importanceSampleBrdf)
+        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+    else
+        pdf = SampleDirectionHemisphere_Pdf();
 
     float3 f = 0;
     if (cosTheta > 0)
@@ -153,7 +160,7 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
 #endif
 
     if (depth <= 0)
-        return ComputeSkyHdri(wo) * 0.2f;
+        return 0;
 
 
     RayPayload payload;
@@ -254,12 +261,10 @@ void RayGeneration()
     if (uvPrev.x >= 0 && uvPrev.x < 1 && uvPrev.y >= 0 && uvPrev.y < 1)
          accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
-
     const float3 direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
     const float3 indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
 
     float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
-    a = 1;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
@@ -274,7 +279,7 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(400.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(0.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     }
     else
     {

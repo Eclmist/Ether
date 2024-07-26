@@ -55,4 +55,3 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
 
     return vtx;
 }
-

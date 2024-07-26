@@ -95,10 +95,12 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
 
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    ctx.PushMarker("Raytrace");
+    ctx.PushMarker("Render Direct & Indirect Lighting");
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * visuals.size(), 256 });
+    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
     Shader::GeometryInfo* geometryInfos = (Shader::GeometryInfo*)alloc->GetCpuHandle();
+
     for (uint32_t i = 0; i < visuals.size(); ++i)
     {
         geometryInfos[i].m_VBDescriptorIndex = visuals[i].m_Mesh->GetVertexBufferSrvIndex();
@@ -108,28 +110,25 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2)), sizeof(Shader::GeometryInfo) * visuals.size(), 0, 0);
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
+    ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
+    ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
+    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
+    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
+    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
+    ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
 
     {
         // Initial Reservoir Generation
         ctx.PushMarker("ReSTIR - Initial Reservoir Generation");
-        ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-        ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-        ctx.SetComputeRootSignature(*m_GlobalRootSignature);
-        ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
-        ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
         ctx.SetComputeRootConstant(11, RESTIR_INITIAL_PASS, 0);
-        ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
-        ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();
     }
@@ -137,20 +136,6 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     {
         // Temporal Resampling Pass
         ctx.PushMarker("ReSTIR - Temporal Resampling");
-        ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-        ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-        ctx.SetComputeRootSignature(*m_GlobalRootSignature);
-        ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
-        ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
         ctx.SetComputeRootConstant(11, RESTIR_TEMPORAL_PASS, 0);
         ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
         ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));
@@ -161,20 +146,6 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     {
         // Spatial Resampling Pass
         ctx.PushMarker("ReSTIR - Spatial Resampling");
-        ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-        ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-        ctx.SetComputeRootSignature(*m_GlobalRootSignature);
-        ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
-        ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
-        ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
         ctx.SetComputeRootConstant(11, RESTIR_SPATIAL_PASS, 0);
         ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
         ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));

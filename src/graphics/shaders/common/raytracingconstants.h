@@ -60,8 +60,6 @@ struct ReservoirSample
     ethVector3 m_SampleNormal;
     ethVector3 m_Radiance;
 
-    uint32_t m_FrameNumber;
-
 #ifdef __HLSL__
     void Reset()
     {
@@ -75,7 +73,6 @@ struct ReservoirSample
         m_SamplePosition = 0;
         m_SampleNormal = 0;
         m_Radiance = 0;
-        m_FrameNumber = 0;
     }
 #endif
 };
@@ -83,34 +80,34 @@ struct ReservoirSample
 struct Reservoir
 {
     ReservoirSample m_Sample;
-    float m_w;
-    float m_W;
-    uint32_t m_M;
+    float m_TotalWeight;
+    float m_ContributionWeight;
+    uint32_t m_NumSamples;
 
 #ifdef __HLSL__
     void Reset()
     {
-        m_w = 0;
-        m_W = 0;
-        m_M = 0;
+        m_TotalWeight = 0;
+        m_ContributionWeight = 0;
+        m_NumSamples = 0;
         m_Sample.Reset();
     }
 
     void Update(ReservoirSample s, float w, float rand)
     {
-        m_M++;
-        m_w += w;
+        m_NumSamples++;
+        m_TotalWeight += w;
 
-        if (rand < w / m_w)
+        if (rand < w / m_TotalWeight)
             m_Sample = s;
     }
 
-    void Merge(Reservoir r, float targetPdf, float rand, uint32_t maxSamples)
+    void Merge(Reservoir r, float targetFunc, float rand, uint32_t maxHistory)
     {
-        float M0 = m_M;
-        uint32_t incomingM = min(maxSamples, r.m_M);
-        Update(r.m_Sample, targetPdf * r.m_W * incomingM, rand);
-        m_M = M0 + incomingM;
+        float M0 = m_NumSamples;
+        uint32_t incomingM = min(maxHistory, r.m_NumSamples);
+        Update(r.m_Sample, targetFunc * r.m_ContributionWeight * incomingM, rand);
+        m_NumSamples = M0 + incomingM;
     }
 #endif
 };

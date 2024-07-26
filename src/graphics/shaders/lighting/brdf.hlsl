@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define ZERO_GUARD(f) (max(0.000000001, f))
+#define ZERO_GUARD(f) (max(0.000001, f))
 
 float Sqr(float v)
 {
