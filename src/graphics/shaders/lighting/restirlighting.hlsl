@@ -44,6 +44,10 @@
 #define POINTLIGHT_SCALE            2000
 #define MAX_BOUNCES                 0
 
+#ifdef ZERO_GUARD
+#undef ZERO_GUARD
+#endif
+
 #define ZERO_GUARD(f) (max(0.001, f))
 
 struct RootConstants
@@ -185,7 +189,7 @@ float TargetFunction(ReservoirSample rs)
     const float3 wi = normalize(rs.m_SamplePosition - rs.m_VisiblePosition);
     const float3 f = BRDF_UE4(rs.m_Wi, rs.m_Wo, rs.m_VisibleNormal, rs.m_Albedo, rs.m_Roughness, rs.m_Metalness);
 
-    //const float cosTheta = saturate(dot(normal, wi));
+    const float cosTheta = abs(dot(normal, wi));
     // const float3 H = normalize(rs.m_Wi + rs.m_Wo);
     // const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
     // const float vDotH = saturate(dot(rs.m_Wo, H));
@@ -227,7 +231,6 @@ float ComputeJacobianDeterminant(float3 newPoint, float3 oldPoint, float3 shared
     float oldCosAngle = ZERO_GUARD(saturate(dot(normalize(oldPath), sharedNormal)));
     float newCosAngle = ZERO_GUARD(saturate(dot(normalize(newPath), sharedNormal)));
 
-    //return ZERO_GUARD(newCosAngle * oldLengthSqr) / ZERO_GUARD(oldCosAngle * newLengthSqr);
     return (newCosAngle / oldCosAngle) * (oldLengthSqr / newLengthSqr);
 }
 
@@ -425,6 +428,9 @@ void GenerateInitialSamples()
 #endif
 
     float3 hitPosition, hitNormal, radiance;
+    hitPosition = 0;
+    hitNormal = 0;
+    radiance = 0;
     TraceInitialSample(position, wi, MAX_BOUNCES, hitPosition, hitNormal, radiance);
 
     ReservoirSample initialSample;
@@ -507,7 +513,7 @@ void ApplySpatialResampling()
     const float viewDepth = length(position - g_GlobalConstants.m_CameraPosition.xyz);
 
     //const int numSpatialIterations = Rs.m_NumSamples < 30 ? 10 : 3;
-    const int numSpatialIterations = 10;
+    const int numSpatialIterations = 3;
 
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
@@ -532,7 +538,7 @@ void ApplySpatialResampling()
 
 #if USE_JACOBIAN
         float jacobian = ComputeJacobianDeterminant(position, nSample.m_VisiblePosition, nSample.m_SamplePosition, nSample.m_SampleNormal);
-        float targetFunction = TargetFunction(neighbour.m_Sample) / ZERO_GUARD(jacobian);
+        float targetFunction = TargetFunction(neighbour.m_Sample) * jacobian;
 #else
         float targetFunction = TargetFunction(neighbour.m_Sample);
 #endif
@@ -546,9 +552,6 @@ void ApplySpatialResampling()
 
     Rs.m_ContributionWeight = Rs.m_TotalWeight / ZERO_GUARD(Rs.m_NumSamples * TargetFunction(Rs.m_Sample));
 
-    {
-    
-    }
     const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
     const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
     const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
@@ -586,8 +589,8 @@ void ApplySpatialResampling()
 
         const float3 wi = normalize(shadowRay.Direction);
         const float3 Li = payload.m_Radiance;
-        const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
-        const float cosTheta = saturate(dot(wi, normal));
+        const float3 f = BRDF_UE4(wi, wo, DecodeNormals(gbuffer2.xy), albedo, roughness, metalness);
+        const float cosTheta = saturate(dot(wi, DecodeNormals(gbuffer2.xy)));
         Lo_direct = Li * f * cosTheta;
     }
 
