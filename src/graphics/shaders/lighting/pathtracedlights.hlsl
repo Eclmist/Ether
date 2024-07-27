@@ -29,7 +29,7 @@
 #define SUNLIGHT_SCALE 120000
 #define SKYLIGHT_SCALE 10000
 #define POINTLIGHT_SCALE 2000
-#define MAX_RAY_DEPTH 1
+#define MAX_RAY_DEPTH 2
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -107,7 +107,7 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
 // 2 -> Importance sample Hemisphere
 #define IMPORTANCE_SAMPLING 0
 
-float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
+float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth, float isPortal)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -125,6 +125,9 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     else
         wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
 
+    if (isPortal)
+        wi = -wo;
+
     const float3 H = normalize(wi + wo);
     const float nDotH = saturate(dot(normal, H));
     const float nDotV = saturate(dot(normal, wo));
@@ -136,6 +139,9 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
         pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
     else
         pdf = SampleDirectionHemisphere_Pdf();
+
+    if (isPortal)
+        pdf = 1;
 
     float3 f = 0;
     if (cosTheta > 0)
@@ -175,13 +181,24 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
     float3 Li = min(10000.0f, payload.m_Radiance);
     const float3 Lo = Li * f * cosTheta;
+
+    if (isPortal)
+        return Li;
+
     return Lo;
 }
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
 {
+    if (hitSurface.m_Position.x <= -1.63 && hitSurface.m_Position.x >= -1.64 && hitSurface.m_Position.z <= 1 &&
+        hitSurface.m_Position.z >= -1 && hitSurface.m_Position.y <= 3 && hitSurface.m_Normal.x >= 0.98)
+    {
+        return ComputeSkyHdri(WorldRayDirection()) * 10;
+    }
+
+
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    const uint mipLevelToSample = 8;
+    const uint mipLevelToSample = 5;
 
     float4 albedo = material.m_BaseColor;
     float4 emission = material.m_EmissiveColor * EMISSION_SCALE;
@@ -228,7 +245,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
 
     const float3 wo = normalize(-WorldRayDirection());
     const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
+    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1, 0.0);
     return emission.xyz + direct + indirect;
 }
 
@@ -248,7 +265,7 @@ void RayGeneration()
 
     const float3 color = gbuffer0.xyz;
     const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
-    const float3 position = gbuffer1.xyz;
+    float3 position = gbuffer1.xyz;
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float2 velocity = gbuffer2.zw;
@@ -261,8 +278,22 @@ void RayGeneration()
     if (uvPrev.x >= 0 && uvPrev.x < 1 && uvPrev.y >= 0 && uvPrev.y < 1)
          accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
-    const float3 direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
+    float3 direct = 0;
+    float3 indirect = 0;
+
+    float isPortal = gbuffer3.w;
+
+    if (!isPortal)
+        direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
+
+    if (isPortal)
+    {
+        position.y += 17.0;
+        position.x += -7;
+        position.z += -3.3;
+    }
+
+    indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH, isPortal);
 
     float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
@@ -294,12 +325,21 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Hit = true;
     payload.m_Radiance = 0;
 
-    if (payload.m_IsShadowRay)
-        return;
-
     const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+
+    if (vertex.m_Position.x <= -1.63 && vertex.m_Position.x >= -1.64 && vertex.m_Position.z <= 1 &&
+        vertex.m_Position.z >= -1 && vertex.m_Position.y <= 3 && vertex.m_Normal.x >= 0.98 &&
+        payload.m_IsShadowRay)
+    {
+        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(0.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        return;
+    }
+
+    if (payload.m_IsShadowRay)
+        return;
+
 
     payload.m_Radiance = PathTrace(vertex, material, payload);
 }
