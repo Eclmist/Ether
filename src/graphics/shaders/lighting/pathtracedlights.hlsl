@@ -92,7 +92,7 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     shadowRay.Origin = position + (normal * 0.01);
     shadowRay.TMax = 128;
     shadowRay.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, shadowRay, payload);
 
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
