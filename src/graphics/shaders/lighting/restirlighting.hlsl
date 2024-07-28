@@ -25,19 +25,6 @@
 #include "common/material.h"
 #include "lighting/brdf.hlsl"
 
-#define USE_TEMPORAL_RESAMPLING     1
-#define USE_SPATIAL_RESAMPLING      1
-#define USE_SPATIAL_ACCUMULATION    0
-#define USE_IMPORTANCE_SAMPLING     1
-#define USE_BRDF_TARGET_FUNCTION    1
-#define USE_JACOBIAN                0
-#define USE_WEIRD_HISTORY_CLAMP     1
-
-#define TEMPORAL_HISTORY            30
-#define SPATIAL_HISTORY             500
-#define SPATIAL_RADIUS              20
-
-// TODO: Make lightingcommon.h
 #define EMISSION_SCALE              10000
 #define SUNLIGHT_SCALE              120000
 #define SKYLIGHT_SCALE              10000
@@ -185,6 +172,8 @@ void SampleDirectionBrdf(
 
 float TargetFunction(ReservoirSample rs)
 {
+    ReSTIRConstants config = g_GlobalConstants.m_ReSTIRConstants;
+
     const float3 normal = normalize(rs.m_VisibleNormal);
     const float3 wi = normalize(rs.m_SamplePosition - rs.m_VisiblePosition);
     const float3 f = BRDF_UE4(rs.m_Wi, rs.m_Wo, rs.m_VisibleNormal, rs.m_Albedo, rs.m_Roughness, rs.m_Metalness);
@@ -197,11 +186,10 @@ float TargetFunction(ReservoirSample rs)
     // const float specularWeight = 1.0 - diffuseWeight;
     // const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, rs.m_Roughness);
 
-#if USE_BRDF_TARGET_FUNCTION
-    return dot(1, rs.m_Radiance * f);
-#else
-    return dot(1, rs.m_Radiance);
-#endif
+    if (config.m_UseBrdfInTargetFunction)
+        return dot(1, rs.m_Radiance * f);
+    else
+        return dot(1, rs.m_Radiance);
 }
 
 bool AreDepthSimilar(float3 a, float3 b)
@@ -236,6 +224,7 @@ float ComputeJacobianDeterminant(float3 newPoint, float3 oldPoint, float3 shared
 
 void PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayload payload)
 {
+    ReSTIRConstants config = g_GlobalConstants.m_ReSTIRConstants;
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     const uint mipLevelToSample = 8;
 
@@ -304,49 +293,53 @@ void PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayload 
     }
 
     // Indirect / recursive ray
-    if (payload.m_Depth < MAX_BOUNCES)
+    if (payload.m_Depth < config.m_MaxNumBounces)
     {
         const uint3 launchIndex = DispatchRaysIndex();
         const uint3 launchDim = DispatchRaysDimensions();
         const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
 
-// 0 -> Importance sample BRDF
-// 1 -> Importance sample Cosine Hemisphere
-// 2 -> Importance sample Hemisphere
-#define IMPORTANCE_SAMPLING 2
-
-#if IMPORTANCE_SAMPLING == 0
-        const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
-        const float specularWeight = 1.0 - diffuseWeight;
+        float pdf = 0;
+        float cosTheta = 0;
         float3 wi = 0;
-        if (Random(rand2D.x) <= specularWeight)
-            wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
-        else
+        float3 f = 0;
+
+        // 0 -> Importance sample Hemisphere
+        // 1 -> Importance sample Cosine Hemisphere
+        // 2 -> Importance sample BRDF
+        if (config.m_UseBounceImportanceSampling == 0)
+        {
+            wi = TangentToWorld(SampleDirectionHemisphere(rand2D), normal);
+            cosTheta = saturate(dot(wi, normal));
+            pdf = 1 / Pi2;
+            f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+        }
+        else if (config.m_UseBounceImportanceSampling == 1)
+        {
             wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
+            cosTheta = saturate(dot(wi, normal));
+            pdf = cosTheta / Pi;
+            f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+        }
+        else if (config.m_UseBounceImportanceSampling == 2)
+        {
+            const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
+            const float specularWeight = 1.0 - diffuseWeight;
+            if (Random(rand2D.x) <= specularWeight)
+                wi = ImportanceSampleGGX(rand2D, wo, normal, roughness);
+            else
+                wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
 
-        const float3 H = normalize(wi + wo);
-        const float nDotH = saturate(dot(normal, H));
-        const float nDotV = saturate(dot(normal, wo));
-        const float vDotH = saturate(dot(wo, H));
-        const float cosTheta = saturate(dot(wi, normal));
-        const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+            const float3 H = normalize(wi + wo);
+            const float nDotH = saturate(dot(normal, H));
+            const float nDotV = saturate(dot(normal, wo));
+            const float vDotH = saturate(dot(wo, H));
 
-        const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
-
-#elif IMPORTANCE_SAMPLING == 1
-        float3 wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
-        const float cosTheta = saturate(dot(wi, normal));
-        const float pdf = cosTheta / Pi;
-
-        const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
-#else
-        float3 wi = TangentToWorld(SampleDirectionHemisphere(rand2D), normal);
-        const float cosTheta = saturate(dot(wi, normal));
-        const float pdf = 1 / Pi2;
-
-        const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
-#endif
+            cosTheta = saturate(dot(wi, normal));
+            pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+            f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+        }
 
         RayPayload indirectPayload;
         indirectPayload.m_IsShadowRay = false;
@@ -398,6 +391,8 @@ void TraceInitialSample(
 
 void GenerateInitialSamples()
 {
+    ReSTIRConstants config = g_GlobalConstants.m_ReSTIRConstants;
+
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -421,11 +416,10 @@ void GenerateInitialSamples()
     float proposalPdf;
     float initialSamplePdf;
 
-#if USE_IMPORTANCE_SAMPLING
-    SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf);
-#else
-    SampleDirectionUniform(normal, wi, proposalPdf);
-#endif
+    if (config.m_UseInitialImportanceSampling)
+        SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf);
+    else
+        SampleDirectionUniform(normal, wi, proposalPdf);
 
     float3 hitPosition, hitNormal, radiance;
     hitPosition = 0;
@@ -456,6 +450,7 @@ void GenerateInitialSamples()
 
 void ApplyTemporalResampling()
 {
+    ReSTIRConstants config = g_GlobalConstants.m_ReSTIRConstants;
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
@@ -477,30 +472,38 @@ void ApplyTemporalResampling()
         launchIndexPrev.y < 0 || launchIndexPrev.y >= launchDim.y)
         Rt.Reset();
 
-    // Reset on move (DEBUG)
-    //if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
-    //     Rt.Reset();
+    if (config.m_ClearHistoryOnMovement)
+    {
+        if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
+            Rt.Reset();
+    }
 
     const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
 
-#if USE_TEMPORAL_RESAMPLING
-
-#if USE_WEIRD_HISTORY_CLAMP
-    Ri.Merge(Rt, TargetFunction(Rt.m_Sample), rand, TEMPORAL_HISTORY);
-#else
-    Rt.Update(Ri.m_Sample, Ri.m_TotalWeight, rand);
-    Ri = Rt;
-#endif
-
-    Ri.m_ContributionWeight = Ri.m_TotalWeight / ZERO_GUARD(Ri.m_NumSamples * TargetFunction(Ri.m_Sample));
-#endif
+    if (config.m_UseTemporalResampling)
+    {
+        if (config.m_UseReservoirLengthClamping)
+        {
+            Ri.Merge(Rt, TargetFunction(Rt.m_Sample), rand, config.m_TemporalHistoryLength);
+        }
+        else
+        {
+            Rt.Update(Ri.m_Sample, Ri.m_TotalWeight, rand);
+            Ri = Rt;
+        }
+    }
+    else
+    {
+        Ri.m_ContributionWeight = Ri.m_TotalWeight / ZERO_GUARD(Ri.m_NumSamples * TargetFunction(Ri.m_Sample));
+    }
 
     g_ReSTIR_StagingReservoir[sampleIdx] = Ri;
 }
 
 void ApplySpatialResampling()
 {
-    
+    ReSTIRConstants config = g_GlobalConstants.m_ReSTIRConstants;
+
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
@@ -518,7 +521,7 @@ void ApplySpatialResampling()
     for (uint i = 0; i < numSpatialIterations; ++i)
     {
         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
-        const int2 neighbourCoords = (launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * (SPATIAL_RADIUS / numSpatialIterations * i);
+        const int2 neighbourCoords = (launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * (config.m_SpatialResamplingRadius / numSpatialIterations * i);
         const uint neighbourIdx = clamp(neighbourCoords.y * launchDim.x + neighbourCoords.x, 0, launchDim.x * launchDim.y);
         Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
         ReservoirSample nSample = neighbour.m_Sample;
@@ -536,18 +539,17 @@ void ApplySpatialResampling()
         if (abs(viewDepth - RnViewDepth) > 0.5)
             continue;
 
-#if USE_JACOBIAN
-        float jacobian = ComputeJacobianDeterminant(position, nSample.m_VisiblePosition, nSample.m_SamplePosition, nSample.m_SampleNormal);
+        float jacobian = 1;
+        if (config.m_UseJacobianDeterminant)
+            jacobian = ComputeJacobianDeterminant(position, nSample.m_VisiblePosition, nSample.m_SamplePosition, nSample.m_SampleNormal);
+
         float targetFunction = TargetFunction(neighbour.m_Sample) * jacobian;
-#else
-        float targetFunction = TargetFunction(neighbour.m_Sample);
-#endif
 
         //if (!TraceVisibility(nSample.m_SamplePosition, Rs.m_Sample.m_VisiblePosition))
         //    targetFunction = 0;
 
         const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
-        Rs.Merge(neighbour, targetFunction, rand, SPATIAL_HISTORY);
+        Rs.Merge(neighbour, targetFunction, rand, config.m_SpatialHistoryLength);
     }
 
     Rs.m_ContributionWeight = Rs.m_TotalWeight / ZERO_GUARD(Rs.m_NumSamples * TargetFunction(Rs.m_Sample));
@@ -563,11 +565,13 @@ void ApplySpatialResampling()
     const float roughness = gbuffer1.w;
     const float metalness = gbuffer0.w;
 
-#if USE_SPATIAL_RESAMPLING
-    Reservoir finalReservoir = Rs;
-#else
-    Reservoir finalReservoir = Rt;
-#endif
+
+    Reservoir finalReservoir;
+
+    if (config.m_UseSpatialResampling)
+        finalReservoir = Rs;
+    else
+        finalReservoir = Rt;
 
     ReservoirSample finalSample = finalReservoir.m_Sample;
 
@@ -597,11 +601,10 @@ void ApplySpatialResampling()
     Lo_indirect = finalSample.m_Radiance * finalReservoir.m_ContributionWeight * f * saturate(dot(normalize(finalSample.m_Wi), normal));
     g_LightingOutput[launchIndex.xy].xyz = emission + Lo_direct + Lo_indirect;
 
-#if USE_SPATIAL_ACCUMULATION && USE_SPATIAL_RESAMPLING
-    g_ReSTIR_GIReservoir[sampleIdx] = Rs;
-#else
-    g_ReSTIR_GIReservoir[sampleIdx] = Rt;
-#endif
+    if (config.m_UseSpatialResampling && config.m_UseSpatialAccumulation)
+        g_ReSTIR_GIReservoir[sampleIdx] = Rs;
+    else
+        g_ReSTIR_GIReservoir[sampleIdx] = Rt;
 }
 
 void EvaluateFinalLighting()

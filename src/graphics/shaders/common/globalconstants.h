@@ -23,6 +23,48 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
+struct ReSTIRConstants
+{
+#ifndef __HLSL__
+    ReSTIRConstants()
+    {
+        m_UseTemporalResampling = 1;
+        m_UseSpatialResampling = 1;
+        m_UseSpatialAccumulation = 0;
+        m_UseInitialImportanceSampling = 1;
+        m_UseBounceImportanceSampling = 0;
+        m_UseBrdfInTargetFunction = 1;
+        m_UseJacobianDeterminant = 0;
+        m_UseReservoirLengthClamping = 1;
+
+        m_TemporalHistoryLength = 30;
+        m_SpatialHistoryLength = 500;
+        m_SpatialResamplingRadius = 20;
+
+        m_MaxNumBounces = 0;
+        m_ClearHistoryOnMovement = 0;
+    }
+#endif
+
+    uint32_t m_UseTemporalResampling;
+    uint32_t m_UseSpatialResampling;
+    uint32_t m_UseSpatialAccumulation;
+    uint32_t m_UseInitialImportanceSampling;
+    uint32_t m_UseBounceImportanceSampling;
+    uint32_t m_UseBrdfInTargetFunction;
+    uint32_t m_UseJacobianDeterminant;
+    uint32_t m_UseReservoirLengthClamping;
+
+    uint32_t m_TemporalHistoryLength;
+    uint32_t m_SpatialHistoryLength;
+    uint32_t m_SpatialResamplingRadius;
+
+    uint32_t m_MaxNumBounces;
+
+    // Debug
+    uint32_t m_ClearHistoryOnMovement;
+};
+
 struct GlobalConstants
 {
     // ============= Common ============= //
@@ -63,11 +105,15 @@ struct GlobalConstants
     float m_TonemapperParamE;
     float m_TonemapperParamF;
 
-    // ============= Debug ============== //
-    uint32_t m_RaytracedLightingDebug;
-    float m_RaytracedAOIntensity;
+    // =========== RAYTRACING ============ //
+    float m_RaytracedLightingDebug;
+    float m_EmissiveScale;
+    float m_SunlightScale;
+    float m_SkylightScale;
+    float m_LocallightScale;
+    uint32_t m_MaxNumBounces;
 
-    // ============ Samplers ============ //
+    // ============ SAMPLERS ============ //
     uint32_t m_SamplerIndex_Point_Clamp;
     uint32_t m_SamplerIndex_Point_Wrap;
     uint32_t m_SamplerIndex_Point_Border;
@@ -75,9 +121,23 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Wrap;
     uint32_t m_SamplerIndex_Linear_Border;
 
+    // ReSTIR
+    ReSTIRConstants m_ReSTIRConstants;
+
     // ============ Padding ============= //
-    ethVector4 m_Padding0;
-    uint32_t m_Padding1;
+    ethVector4 m_Padding1;
+    ethVector4 m_Padding2;
+    ethVector4 m_Padding3;
+    ethVector4 m_Padding4;
+    ethVector4 m_Padding5;
+    ethVector4 m_Padding6;
+    ethVector4 m_Padding7;
+    ethVector4 m_Padding8;
+    ethVector4 m_Padding9;
+    ethVector4 m_Padding10;
+    ethVector4 m_Padding11;
+    ethVector4 m_Padding12;
+    ethVector4 m_Padding13;
 };
 
 ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");

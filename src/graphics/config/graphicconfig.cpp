@@ -28,6 +28,7 @@ Ether::Graphics::GraphicConfig::GraphicConfig()
     , m_IsValidationLayerEnabled(false)
     , m_IsDebugGuiEnabled(false)
     , m_WindowHandle(nullptr)
+    , m_ReSTIRConfigs()
 {
 }
 

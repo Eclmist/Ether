@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/shaders/common/globalconstants.h"
 
 namespace Ether::Graphics
 {
@@ -45,6 +46,7 @@ public:
     inline void* GetWindowHandle() const { return m_WindowHandle; }
     inline ethVector4 GetClearColor() const { return m_ClearColor; }
 
+public:
     void SetResolution(const ethVector2u& resolution);
     inline void SetShaderSourceDir(const std::string& dir) { m_ShaderPath = dir; }
     inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
@@ -55,11 +57,13 @@ public:
     inline void SetClearColor(const ethVector4& clearColor) { m_ClearColor = clearColor; }
 
 public:
+    inline Shader::ReSTIRConstants GetReSTIRConstants() const { return m_ReSTIRConfigs; }
+
+public:
     // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
     int32_t m_RaytracingMode = RaytracingMode::ReSTIR;
-    float m_RaytracedAOIntensity = 10.0f;
 
     // TAA
     bool m_IsTemporalAAEnabled = true;
@@ -94,5 +98,9 @@ private:
     bool m_IsValidationLayerEnabled;
     bool m_IsDebugGuiEnabled;
     void* m_WindowHandle;
+
+private:
+    friend class RhiImguiWrapper;
+    Shader::ReSTIRConstants m_ReSTIRConfigs;
 };
 } // namespace Ether::Graphics

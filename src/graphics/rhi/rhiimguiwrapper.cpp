@@ -98,11 +98,40 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsRaytracingEnabled);
 
+
+
                 if (gfxConfig.m_IsRaytracingEnabled)
                 {
                     const char* items[] = { "Pathtracer", "ReSTIR GI" };
                     ImGui::Combo("Raytracing Mode", &gfxConfig.m_RaytracingMode, items, IM_ARRAYSIZE(items));
-                    ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 10);
+
+                    if (gfxConfig.m_RaytracingMode == RaytracingMode::ReSTIR)
+                    {
+                        auto& restirConfigs = gfxConfig.m_ReSTIRConfigs;
+
+                        ImGui::Checkbox("Importance Sample Initial Ray", (bool*)&restirConfigs.m_UseInitialImportanceSampling);
+                        ImGui::Checkbox("Importance Sample Bounce Ray", (bool*)&restirConfigs.m_UseBounceImportanceSampling);
+                        ImGui::Checkbox("Use BRDF in Target Function", (bool*)&restirConfigs.m_UseBrdfInTargetFunction);
+                        ImGui::Checkbox("Use Jacobian Determinant", (bool*)&restirConfigs.m_UseJacobianDeterminant);
+                        ImGui::Checkbox("Clamp Reservoir Length", (bool*)&restirConfigs.m_UseReservoirLengthClamping);
+                        ImGui::InputInt("Maximum Bounces", (int*)&restirConfigs.m_MaxNumBounces);
+
+                        ImGui::Checkbox("Use Temporal Resampling", (bool*)&restirConfigs.m_UseTemporalResampling);
+                        if (restirConfigs.m_UseTemporalResampling && restirConfigs.m_UseReservoirLengthClamping)
+                            ImGui::InputInt("Temporal History Length", (int*)&restirConfigs.m_TemporalHistoryLength);
+
+                        ImGui::Checkbox("Use Spatial Resampling", (bool*)&restirConfigs.m_UseSpatialResampling);
+                        if (restirConfigs.m_UseSpatialResampling)
+                        {
+                            ImGui::InputInt("Spatial Resampling Radius", (int*)&restirConfigs.m_SpatialResamplingRadius);
+                            ImGui::Checkbox("Use Spatial Accumulation", (bool*)&restirConfigs.m_UseSpatialAccumulation);
+
+                            if (restirConfigs.m_UseReservoirLengthClamping)
+                                ImGui::InputInt("Temporal History Length", (int*)&restirConfigs.m_SpatialHistoryLength);
+                        }
+
+                        ImGui::Checkbox("Reset History on Movement", (bool*)&restirConfigs.m_ClearHistoryOnMovement);
+                    }
                 }
                 ImGui::TreePop();
             }

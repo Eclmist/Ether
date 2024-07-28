@@ -50,7 +50,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     if (renderData.m_ViewMatrix != viewMatrixPrev)
         lastMovedFrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
 
-    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
+    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 512 });
     Shader::GlobalConstants* globalConstants = (Shader::GlobalConstants*)alloc->GetCpuHandle();
     globalConstants->m_ViewMatrix = renderData.m_ViewMatrix;
     globalConstants->m_ViewMatrixInv = renderData.m_ViewMatrix.Inversed();
@@ -85,7 +85,14 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_TonemapperParamF = GraphicCore::GetGraphicConfig().m_TonemapperParamF;
 
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
-    globalConstants->m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
+
+    globalConstants->m_EmissiveScale = 10000.0f; 
+    globalConstants->m_SunlightScale = 120000.0f; 
+    globalConstants->m_SkylightScale = 10000.0f; 
+    globalConstants->m_LocallightScale = 2000.0f; 
+    globalConstants->m_MaxNumBounces = 0;  // TODO: Set this up
+    globalConstants->m_ReSTIRConstants = GraphicCore::GetGraphicConfig().GetReSTIRConstants();
+
     globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
     globalConstants->m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
     globalConstants->m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;
