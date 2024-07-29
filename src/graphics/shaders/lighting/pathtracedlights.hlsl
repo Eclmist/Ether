@@ -20,6 +20,7 @@
 #include "common/globalconstants.h"
 #include "common/raytracingconstants.h"
 #include "common/material.h"
+#include "utils/helpers.hlsl"
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 #include "utils/encoding.hlsl"

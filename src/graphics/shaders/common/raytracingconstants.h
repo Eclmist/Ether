@@ -48,12 +48,6 @@ struct RayPayload
 
 struct ReservoirSample
 {
-    ethVector3 m_Wo;
-    ethVector3 m_Wi;
-    ethVector3 m_Albedo;
-    float m_Roughness;
-    float m_Metalness;
-
     ethVector3 m_VisiblePosition;
     ethVector3 m_VisibleNormal;
     ethVector3 m_SamplePosition;
@@ -63,11 +57,6 @@ struct ReservoirSample
 #ifdef __HLSL__
     void Reset()
     {
-        m_Wo = 0;
-        m_Wi = 0;
-        m_Albedo = 0;
-        m_Roughness = 0;
-        m_Metalness = 0;
         m_VisiblePosition = 0;
         m_VisibleNormal = 0;
         m_SamplePosition = 0;
@@ -81,14 +70,14 @@ struct Reservoir
 {
     ReservoirSample m_Sample;
     float m_TotalWeight;
-    float m_ContributionWeight;
-    uint32_t m_NumSamples;
+    float m_UnbiasedContributionWeight;
+    float m_NumSamples;
 
 #ifdef __HLSL__
     void Reset()
     {
         m_TotalWeight = 0;
-        m_ContributionWeight = 0;
+        m_UnbiasedContributionWeight = 0;
         m_NumSamples = 0;
         m_Sample.Reset();
     }
@@ -98,17 +87,42 @@ struct Reservoir
         m_NumSamples++;
         m_TotalWeight += w;
 
-        if (rand < w / m_TotalWeight)
+        if (rand <= w / m_TotalWeight)
             m_Sample = s;
     }
 
     void Merge(Reservoir r, float targetFunc, float rand, uint32_t maxHistory)
     {
         float M0 = m_NumSamples;
-        uint32_t incomingM = min(maxHistory, r.m_NumSamples);
-        Update(r.m_Sample, targetFunc * r.m_ContributionWeight * incomingM, rand);
-        m_NumSamples = M0 + incomingM;
+        float clampedM = min(maxHistory, r.m_NumSamples);
+        Update(r.m_Sample, targetFunc * r.m_UnbiasedContributionWeight * clampedM, rand);
+        m_NumSamples = M0 + clampedM;
     }
+
+    //bool InternalResample(Reservoir r, float newTargetPdf, float rand, float sampleNormalization)
+    //{
+    //    // p^ * r.W * r.M
+    //    float risWeight = newTargetPdf * sampleNormalization;
+    //    m_NumSamples += r.m_NumSamples;
+    //    m_TotalWeight += risWeight;
+
+    //    const bool shouldReplaceSample = rand < risWeight / m_TotalWeight;
+
+    //    if (shouldReplaceSample)
+    //    {
+    //        m_Sample = r.m_Sample;
+    //        m_TargetPdf = newTargetPdf;
+    //    }
+
+    //    return shouldReplaceSample;
+    //}
+
+
+    //bool Combine(Reservoir r, float newTargetPdf, float rand, uint32_t maxHistory)
+    //{
+    //    //r.m_NumSamples = min(maxHistory, r.m_NumSamples);
+    //    return InternalResample(r, newTargetPdf, rand, r.m_TotalWeight / r.m_NumSamples);
+    //}
 #endif
 };
 

@@ -20,6 +20,7 @@
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 #include "utils/encoding.hlsl"
+#include "utils/helpers.hlsl"
 #include "common/globalconstants.h"
 #include "common/raytracingconstants.h"
 #include "common/material.h"
@@ -29,13 +30,14 @@
 #define USE_SPATIAL_RESAMPLING      1
 #define USE_SPATIAL_ACCUMULATION    0
 #define USE_IMPORTANCE_SAMPLING     1
-#define USE_BRDF_TARGET_FUNCTION    1
-#define USE_JACOBIAN                0
-#define USE_WEIRD_HISTORY_CLAMP     1
+#define USE_JACOBIAN                1
 
 #define TEMPORAL_HISTORY            30
 #define SPATIAL_HISTORY             500
-#define SPATIAL_RADIUS              20
+#define SPATIAL_RADIUS              50
+
+#define DEBUG_GREYSCALE_OUTPUT      0
+#define DEBUG_RESET_HISTORY         0
 
 // TODO: Make lightingcommon.h
 #define EMISSION_SCALE              10000
@@ -49,6 +51,17 @@
 #endif
 
 #define ZERO_GUARD(f) (max(0.001, f))
+
+struct GBufferSurface
+{
+    float3 m_Position;
+    float3 m_Normal;
+    float3 m_Albedo;
+    float3 m_Emission;
+    float m_Roughness;
+    float m_Metalness;
+    float2 m_Velocity;
+};
 
 struct RootConstants
 {
@@ -126,82 +139,86 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
     return BarycentricLerp(v0, v1, v2, barycentrics);
 }
 
-void SampleDirectionCosine(float3 normal, out float3 wi, out float pdf)
+void SampleDirectionCosine(GBufferSurface surface, out float3 wi, out float pdf)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
-    wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
-    pdf = SampleDirectionCosineHemisphere_Pdf(saturate(dot(wi, normal)));
+    wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), surface.m_Normal);
+    pdf = SampleDirectionCosineHemisphere_Pdf(saturate(dot(wi, surface.m_Normal)));
 }
 
-void SampleDirectionUniform(float3 normal, out float3 wi, out float pdf)
+void SampleDirectionUniform(GBufferSurface surface, out float3 wi, out float pdf)
 {
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
-    wi = TangentToWorld(SampleDirectionHemisphere(rand2D), normal);
+    wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
     pdf = SampleDirectionHemisphere_Pdf();
 }
 
-void SampleDirectionBrdf(
-    float3 normal,
-    float3 wo,
-    float roughness,
-    float metalness,
-    out float3 wi,
-    out float pdf)
+void SampleDirectionBrdf(GBufferSurface surface, out float3 wi, out float pdf)
 {
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
 
-    const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
+    const float diffuseWeight = lerp(lerp(0.5, 1.0, surface.m_Roughness), 0.0, surface.m_Metalness);
     const float specularWeight = 1.0 - diffuseWeight;
 
     const bool importanceSampleBrdf = Random(rand2D.x) <= specularWeight;
 
     if (importanceSampleBrdf)
-        wi = normalize(ImportanceSampleGGX(rand2D, wo, normal, roughness));
+        wi = normalize(ImportanceSampleGGX(rand2D, wo, surface.m_Normal, surface.m_Roughness));
     else
-        wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal));
+        wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), surface.m_Normal));
 
     const float3 H = normalize(wi + wo);
-    const float nDotH = saturate(dot(normal, H));
-    const float nDotV = saturate(dot(normal, wo));
+    const float nDotH = saturate(dot(surface.m_Normal, H));
+    const float nDotV = saturate(dot(surface.m_Normal, wo));
     const float vDotH = saturate(dot(wo, H));
 
     // TODO: Abs is also wrong here. Why does it work?
-    const float cosTheta = abs(dot(-wi, normal));
+    const float cosTheta = abs(dot(-wi, surface.m_Normal));
 
     if (importanceSampleBrdf)
-        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, roughness);
+        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, surface.m_Roughness);
     else
         pdf = SampleDirectionHemisphere_Pdf();
 }
 
-float TargetFunction(ReservoirSample rs)
+
+GBufferSurface GetGBufferSurfaceFromTextures(float2 pixelCoord)
 {
-    const float3 normal = normalize(rs.m_VisibleNormal);
-    const float3 wi = normalize(rs.m_SamplePosition - rs.m_VisiblePosition);
-    const float3 f = BRDF_UE4(rs.m_Wi, rs.m_Wo, rs.m_VisibleNormal, rs.m_Albedo, rs.m_Roughness, rs.m_Metalness);
+    const float4 gbuffer0 = g_GBufferOutput0.Load(int3(pixelCoord, 0));
+    const float4 gbuffer1 = g_GBufferOutput1.Load(int3(pixelCoord, 0));
+    const float4 gbuffer2 = g_GBufferOutput2.Load(int3(pixelCoord, 0));
+    const float4 gbuffer3 = g_GBufferOutput3.Load(int3(pixelCoord, 0));
 
-    const float cosTheta = abs(dot(normal, wi));
-    // const float3 H = normalize(rs.m_Wi + rs.m_Wo);
-    // const float nDotH = saturate(dot(rs.m_VisibleNormal, H));
-    // const float vDotH = saturate(dot(rs.m_Wo, H));
-    // const float diffuseWeight = lerp(lerp(0.5, 1.0, rs.m_Roughness), 0.0, rs.m_Metalness);
-    // const float specularWeight = 1.0 - diffuseWeight;
-    // const float pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, rs.m_Roughness);
+    GBufferSurface surface;
+    surface.m_Position = gbuffer1.xyz;
+    surface.m_Normal = DecodeNormals(gbuffer2.xy);
+    surface.m_Albedo = gbuffer0.rgb;
+    surface.m_Emission = gbuffer3.rgb * EMISSION_SCALE;
+    surface.m_Roughness = gbuffer1.w;
+    surface.m_Metalness = gbuffer0.w;
+    surface.m_Velocity = gbuffer2.zw;
 
-#if USE_BRDF_TARGET_FUNCTION
-    return dot(1, rs.m_Radiance * f);
-#else
-    return dot(1, rs.m_Radiance);
-#endif
+    return surface;
+}
+
+float EvaluateTargetFunctionForSurface(ReservoirSample rs, GBufferSurface surface)
+{
+    const float3 wi = normalize(rs.m_SamplePosition - surface.m_Position);
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+    const float cosTheta = max(0.1, saturate(dot(surface.m_Normal, wi)));
+    return GetLuminanceFromRGB(rs.m_Radiance * f * cosTheta);
 }
 
 bool AreDepthSimilar(float3 a, float3 b)
@@ -226,12 +243,17 @@ float ComputeJacobianDeterminant(float3 newPoint, float3 oldPoint, float3 shared
 {
     float3 oldPath = oldPoint - sharedPoint; 
     float3 newPath = newPoint - sharedPoint; 
-    float oldLengthSqr = ZERO_GUARD(abs(dot(oldPath, oldPath)));
-    float newLengthSqr = ZERO_GUARD(abs(dot(newPath, newPath)));
-    float oldCosAngle = ZERO_GUARD(saturate(dot(normalize(oldPath), sharedNormal)));
-    float newCosAngle = ZERO_GUARD(saturate(dot(normalize(newPath), sharedNormal)));
+    float oldLengthSqr = ZERO_GUARD(dot(oldPath, oldPath));
+    float newLengthSqr = ZERO_GUARD(dot(newPath, newPath));
+    float oldCosAngle = ZERO_GUARD(saturate(dot(oldPath * rsqrt(oldLengthSqr), sharedNormal)));
+    float newCosAngle = ZERO_GUARD(saturate(dot(newPath * rsqrt(newLengthSqr), sharedNormal)));
 
-    return (newCosAngle / oldCosAngle) * (oldLengthSqr / newLengthSqr);
+    float jacobian = (newCosAngle * oldLengthSqr) / (oldCosAngle * newLengthSqr);
+
+	if (isinf(jacobian) || isnan(jacobian))
+		jacobian = 0;
+
+	return jacobian;
 }
 
 void PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayload payload)
@@ -364,36 +386,31 @@ void PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayload 
     payload.m_Radiance = emission.xyz + Lo_direct + Lo_indirect;
 }
 
-void TraceInitialSample(
-    float3 position,
-    float3 direction,
-    uint depth,
-    out float3 hitPosition,
-    out float3 hitNormal,
-    out float3 radiance)
+ReservoirSample TraceInitialSample(GBufferSurface surface, float3 wi)
 {
     RayPayload payload;
     payload.m_IsShadowRay = false;
-    payload.m_Depth = 0;
+    payload.m_Depth = MAX_BOUNCES;
     payload.m_Hit = false;
     payload.m_Radiance = 0;
-    payload.m_HitPosition = 0;
+    payload.m_HitPosition = surface.m_Position + wi;
     payload.m_HitNormal = 0;
 
     RayDesc ray;
-    ray.Direction = direction;
-    ray.Origin = position;
+    ray.Direction = wi;
+    ray.Origin = surface.m_Position;
     ray.TMax = 128;
     ray.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
 
-    if (payload.m_Hit)
-    {
-        hitPosition = payload.m_HitPosition;
-        hitNormal = payload.m_HitNormal;
-    }
+    ReservoirSample initialSample;
+    initialSample.m_VisiblePosition = surface.m_Position;
+    initialSample.m_VisibleNormal = surface.m_Normal;
+    initialSample.m_SamplePosition = payload.m_HitPosition;
+    initialSample.m_SampleNormal = payload.m_HitNormal;
+    initialSample.m_Radiance = min(10000, payload.m_Radiance);
 
-    radiance = payload.m_Radiance;
+    return initialSample;
 }
 
 void GenerateInitialSamples()
@@ -403,53 +420,26 @@ void GenerateInitialSamples()
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
-    const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
-    const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
-    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
-    const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
-
-    const float3 albedo = gbuffer0.rgb;
-    const float3 emission = gbuffer3.rgb * EMISSION_SCALE;
-    const float3 position = gbuffer1.xyz;
-    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
-    const float viewDepth = length(position - g_GlobalConstants.m_CameraPosition.xyz);
-    const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
-    const float metalness = gbuffer0.w;
-    const float roughness = gbuffer1.w;
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
+    const GBufferSurface surface = GetGBufferSurfaceFromTextures(launchIndex.xy);
+    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float viewDepth = length(surface.m_Position - g_GlobalConstants.m_CameraPosition.xyz);
     float3 wi;
     float proposalPdf;
-    float initialSamplePdf;
 
 #if USE_IMPORTANCE_SAMPLING
-    SampleDirectionBrdf(normal, wo, roughness, metalness, wi, proposalPdf);
+    SampleDirectionBrdf(surface, wi, proposalPdf);
 #else
-    SampleDirectionUniform(normal, wi, proposalPdf);
+    SampleDirectionUniform(surface, wi, proposalPdf);
 #endif
 
-    float3 hitPosition, hitNormal, radiance;
-    hitPosition = 0;
-    hitNormal = 0;
-    radiance = 0;
-    TraceInitialSample(position, wi, MAX_BOUNCES, hitPosition, hitNormal, radiance);
-
-    ReservoirSample initialSample;
-    initialSample.m_Wo = wo;
-    initialSample.m_Wi = wi;
-    initialSample.m_Albedo = albedo;
-    initialSample.m_Roughness = roughness;
-    initialSample.m_Metalness = metalness;
-    initialSample.m_VisiblePosition = position;
-    initialSample.m_VisibleNormal = normal;
-    initialSample.m_SamplePosition = hitPosition;
-    initialSample.m_SampleNormal = hitNormal;
-    initialSample.m_Radiance = min(10000, radiance);
+    ReservoirSample initialSample = TraceInitialSample(surface, wi);
+    float targetPdf = EvaluateTargetFunctionForSurface(initialSample, surface);
 
     Reservoir Ri;
     Ri.m_Sample = initialSample;
-    Ri.m_TotalWeight = TargetFunction(initialSample) / ZERO_GUARD(proposalPdf);
     Ri.m_NumSamples = 1;
-    Ri.m_ContributionWeight = Ri.m_TotalWeight / ZERO_GUARD(Ri.m_NumSamples * TargetFunction(Ri.m_Sample));
+    Ri.m_TotalWeight = targetPdf / ZERO_GUARD(proposalPdf * Ri.m_NumSamples);
+    Ri.m_UnbiasedContributionWeight = Ri.m_TotalWeight / ZERO_GUARD(Ri.m_NumSamples * targetPdf);
 
     g_ReSTIR_StagingReservoir[sampleIdx] = Ri;
 }
@@ -460,39 +450,48 @@ void ApplyTemporalResampling()
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
 
-    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
-    const float2 velocity = gbuffer2.zw;
-    const int2 launchIndexPrev = ((float2)launchIndex.xy + 0.5) - (velocity * launchDim.xy);
+    const GBufferSurface surface = GetGBufferSurfaceFromTextures(launchIndex.xy);
+    int2 launchIndexPrev = ((float2)launchIndex.xy + 0.5) - (surface.m_Velocity * launchDim.xy);
+
+    //// Stochastic Bilinear Sampling
+    //const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+    //launchIndexPrev.x = (rand2D.x >= frac(launchIndexPrev.x)) ? int(launchIndexPrev.x) : int(launchIndexPrev.x + 1);
+    //launchIndexPrev.y = (rand2D.y >= frac(launchIndexPrev.y)) ? int(launchIndexPrev.y) : int(launchIndexPrev.y + 1);
 
     const uint sampleIdxPrev = clamp(launchIndexPrev.y * launchDim.x + launchIndexPrev.x, 0, launchDim.x * launchDim.y);
 
     Reservoir Ri = g_ReSTIR_StagingReservoir[sampleIdx];
     Reservoir Rt = g_ReSTIR_GIReservoir[sampleIdxPrev];
-    DeviceMemoryBarrier();
 
     if (!AreSamplesSimilar(Rt.m_Sample, Ri.m_Sample))
-        Rt.Reset();
+    {
+        Rt.m_TotalWeight = 0;
+    }
 
     if (launchIndexPrev.x < 0 || launchIndexPrev.x >= launchDim.x || 
         launchIndexPrev.y < 0 || launchIndexPrev.y >= launchDim.y)
         Rt.Reset();
 
+#if DEBUG_RESET_HISTORY
     // Reset on move (DEBUG)
-    //if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
-    //     Rt.Reset();
+    if (g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement)
+        Rt.Reset();
+#endif
 
     const float rand = Random(sampleIdx * g_GlobalConstants.m_FrameNumber);
 
 #if USE_TEMPORAL_RESAMPLING
 
-#if USE_WEIRD_HISTORY_CLAMP
-    Ri.Merge(Rt, TargetFunction(Rt.m_Sample), rand, TEMPORAL_HISTORY);
+#if USE_JACOBIAN
+    float jacobian = ComputeJacobianDeterminant(surface.m_Position, Rt.m_Sample.m_VisiblePosition, Rt.m_Sample.m_SamplePosition, Rt.m_Sample.m_SampleNormal);
+    float targetFunction = EvaluateTargetFunctionForSurface(Rt.m_Sample, surface) * saturate(jacobian);
 #else
-    Rt.Update(Ri.m_Sample, Ri.m_TotalWeight, rand);
-    Ri = Rt;
+    float targetFunction = EvaluateTargetFunctionForSurface(Rt.m_Sample, surface);
 #endif
 
-    Ri.m_ContributionWeight = Ri.m_TotalWeight / ZERO_GUARD(Ri.m_NumSamples * TargetFunction(Ri.m_Sample));
+    Ri.Merge(Rt, targetFunction, rand, TEMPORAL_HISTORY);
+    Ri.m_UnbiasedContributionWeight =  Ri.m_TotalWeight / ZERO_GUARD(Ri.m_NumSamples * EvaluateTargetFunctionForSurface(Ri.m_Sample, surface));
+    //Ri.Combine(Rt, targetPdf, rand, TEMPORAL_HISTORY);
 #endif
 
     g_ReSTIR_StagingReservoir[sampleIdx] = Ri;
@@ -500,17 +499,15 @@ void ApplyTemporalResampling()
 
 void ApplySpatialResampling()
 {
-    
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const GBufferSurface surface = GetGBufferSurfaceFromTextures(launchIndex.xy);
 
     Reservoir Rt = g_ReSTIR_StagingReservoir[sampleIdx];
     Reservoir Rs = Rt;
 
-    const float3 position = Rs.m_Sample.m_VisiblePosition;
-    const float3 normal = Rs.m_Sample.m_VisibleNormal;
-    const float viewDepth = length(position - g_GlobalConstants.m_CameraPosition.xyz);
+    const float viewDepth = length(surface.m_Position - g_GlobalConstants.m_CameraPosition.xyz);
 
     //const int numSpatialIterations = Rs.m_NumSamples < 30 ? 10 : 3;
     const int numSpatialIterations = 3;
@@ -531,16 +528,16 @@ void ApplySpatialResampling()
         const float3 RnNormal = nSample.m_VisibleNormal;
         const float RnViewDepth = length(RnPosition - g_GlobalConstants.m_CameraPosition.xyz);
 
-        if (dot(RnNormal, normal) < 0.5)
+        if (dot(RnNormal, surface.m_Normal) < 0.5)
             continue;
         if (abs(viewDepth - RnViewDepth) > 0.5)
             continue;
 
 #if USE_JACOBIAN
-        float jacobian = ComputeJacobianDeterminant(position, nSample.m_VisiblePosition, nSample.m_SamplePosition, nSample.m_SampleNormal);
-        float targetFunction = TargetFunction(neighbour.m_Sample) * jacobian;
+        float jacobian = ComputeJacobianDeterminant(surface.m_Position, nSample.m_VisiblePosition, nSample.m_SamplePosition, nSample.m_SampleNormal);
+        float targetFunction = EvaluateTargetFunctionForSurface(neighbour.m_Sample, surface) * saturate(jacobian);
 #else
-        float targetFunction = TargetFunction(neighbour.m_Sample);
+        float targetFunction = EvaluateTargetFunctionForSurface(neighbour.m_Sample, surface);
 #endif
 
         //if (!TraceVisibility(nSample.m_SamplePosition, Rs.m_Sample.m_VisiblePosition))
@@ -550,18 +547,8 @@ void ApplySpatialResampling()
         Rs.Merge(neighbour, targetFunction, rand, SPATIAL_HISTORY);
     }
 
-    Rs.m_ContributionWeight = Rs.m_TotalWeight / ZERO_GUARD(Rs.m_NumSamples * TargetFunction(Rs.m_Sample));
+    Rs.m_UnbiasedContributionWeight = Rs.m_TotalWeight / ZERO_GUARD(Rs.m_NumSamples * EvaluateTargetFunctionForSurface(Rs.m_Sample, surface));
 
-    const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
-    const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
-    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
-    const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
-
-    const float3 albedo = gbuffer0.rgb;
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
-    const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
-    const float roughness = gbuffer1.w;
-    const float metalness = gbuffer0.w;
 
 #if USE_SPATIAL_RESAMPLING
     Reservoir finalReservoir = Rs;
@@ -570,8 +557,6 @@ void ApplySpatialResampling()
 #endif
 
     ReservoirSample finalSample = finalReservoir.m_Sample;
-
-    const float3 f = BRDF_UE4(finalSample.m_Wi, finalSample.m_Wo, finalSample.m_VisibleNormal, albedo, finalSample.m_Roughness, finalSample.m_Metalness);
 
     float3 Lo_direct = 0;
     float3 Lo_indirect = 0;
@@ -582,20 +567,31 @@ void ApplySpatialResampling()
 
         RayDesc shadowRay;
         shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-        shadowRay.Origin = gbuffer1.xyz + (DecodeNormals(gbuffer2.xy) * 0.01);
+        shadowRay.Origin = surface.m_Position + surface.m_Normal * 0.01;
         shadowRay.TMax = 128;
         shadowRay.TMin = 0.01;
         TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
         const float3 wi = normalize(shadowRay.Direction);
+        const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
         const float3 Li = payload.m_Radiance;
-        const float3 f = BRDF_UE4(wi, wo, DecodeNormals(gbuffer2.xy), albedo, roughness, metalness);
-        const float cosTheta = saturate(dot(wi, DecodeNormals(gbuffer2.xy)));
+        const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+        const float cosTheta = saturate(dot(wi, surface.m_Normal));
         Lo_direct = Li * f * cosTheta;
     }
 
-    Lo_indirect = finalSample.m_Radiance * finalReservoir.m_ContributionWeight * f * saturate(dot(normalize(finalSample.m_Wi), normal));
-    g_LightingOutput[launchIndex.xy].xyz = emission + Lo_direct + Lo_indirect;
+    const float3 finalWi = normalize(finalSample.m_SamplePosition - surface.m_Position);
+    const float3 finalWo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float cosTheta = saturate(dot(finalWi, surface.m_Normal));
+    const float3 f = BRDF_UE4(finalWi, finalWo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+
+    Lo_indirect = finalSample.m_Radiance * finalReservoir.m_UnbiasedContributionWeight * f * cosTheta;
+
+#if DEBUG_GREYSCALE_OUTPUT
+    Lo_indirect = GetLuminanceFromRGB(Lo_indirect);
+#endif
+
+    g_LightingOutput[launchIndex.xy].xyz = surface.m_Emission + Lo_direct + Lo_indirect;
 
 #if USE_SPATIAL_ACCUMULATION && USE_SPATIAL_RESAMPLING
     g_ReSTIR_GIReservoir[sampleIdx] = Rs;
