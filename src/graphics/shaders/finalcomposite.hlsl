@@ -95,7 +95,7 @@ float GTTonemap_Internal(float x)
     float m = g_GlobalConstants.m_TonemapperParamC; // linear section start
     float l = g_GlobalConstants.m_TonemapperParamD; // linear section length
     float c = g_GlobalConstants.m_TonemapperParamE; // black tightness
-    float b = g_GlobalConstants.m_TonemapperParamF; // dummy?
+    float b = 0; // dummy?
     float l0 = (P - m) * l / a;
     float L0 = m - m / a;
     float L1 = m + (1 - m) / a;

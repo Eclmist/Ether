@@ -36,7 +36,7 @@ void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    schedule.NewCB(ACCESS_GFX_CB(GlobalRingBuffer), sizeof(Shader::GlobalConstants) * 3);
+    schedule.NewCB(ACCESS_GFX_CB(GlobalRingBuffer), AlignUp(sizeof(Shader::GlobalConstants), 256) * 3);
 }
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -45,6 +45,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
 
     static ethMatrix4x4 viewMatrixPrev = renderData.m_ViewMatrix;
     static ethMatrix4x4 projMatrixPrev = renderData.m_ProjectionMatrix;
+    static ethVector2 cameraJitterPrev = renderData.m_CameraJitter;
     static uint32_t lastMovedFrameNumber = 0;
 
     if (renderData.m_ViewMatrix != viewMatrixPrev)
@@ -74,6 +75,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_FrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
     globalConstants->m_TaaAccumulationFactor = GraphicCore::GetGraphicConfig().m_TemporalAAAcumulationFactor;
     globalConstants->m_CameraJitter = renderData.m_CameraJitter;
+    globalConstants->m_CameraJitterPrev = cameraJitterPrev;
     globalConstants->m_FrameSinceLastMovement = lastMovedFrameNumber;
 
     globalConstants->m_TonemapperType = GraphicCore::GetGraphicConfig().m_TonemapperType;
@@ -82,10 +84,8 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_TonemapperParamC = GraphicCore::GetGraphicConfig().m_TonemapperParamC;
     globalConstants->m_TonemapperParamD = GraphicCore::GetGraphicConfig().m_TonemapperParamD;
     globalConstants->m_TonemapperParamE = GraphicCore::GetGraphicConfig().m_TonemapperParamE;
-    globalConstants->m_TonemapperParamF = GraphicCore::GetGraphicConfig().m_TonemapperParamF;
 
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
-    globalConstants->m_RaytracedAOIntensity = GraphicCore::GetGraphicConfig().m_RaytracedAOIntensity;
     globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
     globalConstants->m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
     globalConstants->m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;
@@ -99,9 +99,9 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     ctx.CopyBufferRegion(
         dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
         *rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer)),
-        sizeof(Shader::GlobalConstants),
+        alloc->GetSize(),
         0,
-        sizeof(Shader::GlobalConstants) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex()
+        alloc->GetSize() * GraphicCore::GetGraphicDisplay().GetBackBufferIndex()
     );
 
     // For velocity vector calculations
@@ -109,5 +109,6 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     projMatrixPrev = globalConstants->m_ProjectionMatrix;
     projMatrixPrev.m_13 -= globalConstants->m_CameraJitter.x;
     projMatrixPrev.m_23 -= globalConstants->m_CameraJitter.y;
+    cameraJitterPrev = globalConstants->m_CameraJitter;
 }
 

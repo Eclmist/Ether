@@ -98,7 +98,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     ctx.PushMarker("Render Direct & Indirect Lighting");
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * visuals.size(), 256 });
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
+    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
     Shader::GeometryInfo* geometryInfos = (Shader::GeometryInfo*)alloc->GetCpuHandle();
 
     for (uint32_t i = 0; i < visuals.size(); ++i)

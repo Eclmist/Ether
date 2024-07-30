@@ -29,9 +29,9 @@ struct ETH_GRAPHIC_DLL RenderData
 public:
     ethMatrix4x4 m_ViewMatrix;
     ethMatrix4x4 m_ProjectionMatrix;
-    ethVector2 m_CameraJitter;
     ethVector3 m_CameraDirection;
     ethVector3 m_CameraPosition;
+    ethVector2 m_CameraJitter;
 
     StringID m_HdriTextureID;
 

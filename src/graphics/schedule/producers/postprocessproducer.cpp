@@ -49,7 +49,7 @@ void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_ComputePsoDesc));
 
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * sizeof(Shader::GlobalConstants);
+    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
 }
 

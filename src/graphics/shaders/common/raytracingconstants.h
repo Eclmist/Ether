@@ -69,60 +69,47 @@ struct ReservoirSample
 struct Reservoir
 {
     ReservoirSample m_Sample;
-    float m_TotalWeight;
-    float m_UnbiasedContributionWeight;
+    float m_TargetFunction;
     float m_NumSamples;
+    float m_WeightSum;              
 
 #ifdef __HLSL__
     void Reset()
     {
-        m_TotalWeight = 0;
-        m_UnbiasedContributionWeight = 0;
+        m_WeightSum = 0;
+        m_TargetFunction = 0;
         m_NumSamples = 0;
         m_Sample.Reset();
     }
 
-    void Update(ReservoirSample s, float w, float rand)
+    void InternalResample(Reservoir r, float newTargetPdf, float risWeight, float rand)
     {
-        m_NumSamples++;
-        m_TotalWeight += w;
+        m_NumSamples += r.m_NumSamples;
+        m_WeightSum += risWeight;
 
-        if (rand <= w / m_TotalWeight)
-            m_Sample = s;
+        if (rand < risWeight / m_WeightSum)
+        {
+            m_Sample = r.m_Sample;
+            m_TargetFunction = newTargetPdf;
+        }
     }
 
-    void Merge(Reservoir r, float targetFunc, float rand, uint32_t maxHistory)
+    void Combine(Reservoir r, float newTargetPdf, float rand)
     {
-        float M0 = m_NumSamples;
-        float clampedM = min(maxHistory, r.m_NumSamples);
-        Update(r.m_Sample, targetFunc * r.m_UnbiasedContributionWeight * clampedM, rand);
-        m_NumSamples = M0 + clampedM;
+        const float sourcePdf = r.m_WeightSum;
+        const float misWeight = r.m_NumSamples;
+        const float risWeight = newTargetPdf * sourcePdf * misWeight;
+        InternalResample(r, newTargetPdf, risWeight, rand);
     }
 
-    //bool InternalResample(Reservoir r, float newTargetPdf, float rand, float sampleNormalization)
-    //{
-    //    // p^ * r.W * r.M
-    //    float risWeight = newTargetPdf * sampleNormalization;
-    //    m_NumSamples += r.m_NumSamples;
-    //    m_TotalWeight += risWeight;
+    void FinalizeReservoir()
+    {
+        // M is multiplied in the denominator to normalize MIS weights to 1 at the end
+        const float denom = m_TargetFunction * m_NumSamples;
 
-    //    const bool shouldReplaceSample = rand < risWeight / m_TotalWeight;
-
-    //    if (shouldReplaceSample)
-    //    {
-    //        m_Sample = r.m_Sample;
-    //        m_TargetPdf = newTargetPdf;
-    //    }
-
-    //    return shouldReplaceSample;
-    //}
-
-
-    //bool Combine(Reservoir r, float newTargetPdf, float rand, uint32_t maxHistory)
-    //{
-    //    //r.m_NumSamples = min(maxHistory, r.m_NumSamples);
-    //    return InternalResample(r, newTargetPdf, rand, r.m_TotalWeight / r.m_NumSamples);
-    //}
+        // converts w(x) -> W(x) by dividing by p^
+        m_WeightSum = denom <= 0.0f ? 0.0f : m_WeightSum / denom;
+    }
 #endif
 };
 

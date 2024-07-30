@@ -59,7 +59,6 @@ public:
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
     int32_t m_RaytracingMode = RaytracingMode::ReSTIR;
-    float m_RaytracedAOIntensity = 10.0f;
 
     // TAA
     bool m_IsTemporalAAEnabled = true;

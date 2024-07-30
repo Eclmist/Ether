@@ -61,11 +61,9 @@ struct GlobalConstants
     float m_TonemapperParamC;
     float m_TonemapperParamD;
     float m_TonemapperParamE;
-    float m_TonemapperParamF;
 
     // ============= Debug ============== //
     uint32_t m_RaytracedLightingDebug;
-    float m_RaytracedAOIntensity;
 
     // ============ Samplers ============ //
     uint32_t m_SamplerIndex_Point_Clamp;
@@ -75,11 +73,7 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Wrap;
     uint32_t m_SamplerIndex_Linear_Border;
 
-    // ============ Padding ============= //
-    ethVector4 m_Padding0;
-    uint32_t m_Padding1;
+    ethVector2 m_CameraJitterPrev;
 };
-
-ETH_SHADER_STATIC_ASSERT(sizeof(GlobalConstants) % 256 == 0 && "CBV must be 256byte aligned");
 
 ETH_END_SHADER_NAMESPACE

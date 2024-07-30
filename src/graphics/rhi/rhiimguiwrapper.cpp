@@ -102,7 +102,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 {
                     const char* items[] = { "Pathtracer", "ReSTIR GI" };
                     ImGui::Combo("Raytracing Mode", &gfxConfig.m_RaytracingMode, items, IM_ARRAYSIZE(items));
-                    ImGui::SliderFloat("Indirect Intensity", &gfxConfig.m_RaytracedAOIntensity, 0, 10);
                 }
                 ImGui::TreePop();
             }
