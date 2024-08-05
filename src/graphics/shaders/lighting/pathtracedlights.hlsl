@@ -29,8 +29,14 @@
 #define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 120000
 #define SKYLIGHT_SCALE 10000
-#define POINTLIGHT_SCALE 2000
+#define POINTLIGHT_SCALE 200
 #define MAX_RAY_DEPTH 1
+
+// 0 -> Importance sample BRDF
+// 1 -> Importance sample Cosine Hemisphere
+// 2 -> Sample Hemisphere
+#define IMPORTANCE_SAMPLING 0
+
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -44,14 +50,14 @@ Texture2D<float4> g_GBufferOutput3                  : register(t7);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 RWTexture2D<float4> g_IndirectOutput                : register(u1);
 
-float3 ComputeSkyHdri(float3 wi)
+float3 EvaluateSkyLighting(float3 wi)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
     const float exposure = SKYLIGHT_SCALE;
 
     const float2 hdriUv = SampleSphericalMap(wi);
-    const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 0);
+    const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 4);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
 
@@ -88,6 +94,9 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     RayPayload payload;
     payload.m_IsShadowRay = true;
 
+    // Flip normal if backface. This fixes a lot of light leakage
+    normal = dot(wo, normal) < 0 ? -normal : normal; 
+
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
     shadowRay.Origin = position + (normal * 0.01);
@@ -103,17 +112,18 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     return Lo;
 }
 
-// 0 -> Importance sample BRDF
-// 1 -> Importance sample Cosine Hemisphere
-// 2 -> Importance sample Hemisphere
-#define IMPORTANCE_SAMPLING 0
-
 float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
 {
+    if (depth <= 0)
+        return 0;
+
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+
+    // Flip normal if backface. This fixes a lot of light leakage
+    normal = dot(wo, normal) < 0 ? -normal : normal; 
 
 #if IMPORTANCE_SAMPLING == 0
     const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
@@ -139,8 +149,8 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
         pdf = SampleDirectionHemisphere_Pdf();
 
     float3 f = 0;
-    if (cosTheta > 0)
-        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+    if (cosTheta > 0 && pdf > 0)
+        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / pdf;
 
 #elif IMPORTANCE_SAMPLING == 1
     float3 wi = TangentToWorld(SampleDirectionCosineHemisphere(rand2D), normal);
@@ -148,21 +158,17 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     const float pdf = cosTheta / Pi;
 
     float3 f = 0;
-    if (cosTheta > 0)
-        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+    if (cosTheta > 0 && pdf > 0)
+        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / pdf;
 #else
     float3 wi = TangentToWorld(SampleDirectionHemisphere(rand2D), normal);
     const float cosTheta = saturate(dot(wi, normal));
     const float pdf = 1 / Pi2;
 
     float3 f = 0;
-    if (cosTheta > 0)
-        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / ZERO_GUARD(pdf);
+    if (cosTheta > 0 && pdf > 0)
+        f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness) / pdf;
 #endif
-
-    if (depth <= 0)
-        return 0;
-
 
     RayPayload payload;
     payload.m_IsShadowRay = false;
@@ -174,9 +180,9 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     indirectRay.TMax = 128;
     indirectRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
-    float3 Li = min(10000.0f, payload.m_Radiance);
-    const float3 Lo = Li * f * cosTheta;
-    return Lo;
+    const float3 Li = min(10000.0f, payload.m_Radiance);
+
+    return Li * f * cosTheta;
 }
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
@@ -223,9 +229,6 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload p
         Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
         emission *= emissiveTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample);
     }
-
-    // Flip normal if backface. This fixes a lot of light leakage
-    normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal; 
 
     const float3 wo = normalize(-WorldRayDirection());
     const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
@@ -285,7 +288,7 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample sky color
-        payload.m_Radiance = ComputeSkyHdri(WorldRayDirection());
+        payload.m_Radiance = EvaluateSkyLighting(WorldRayDirection());
     }
 }
 

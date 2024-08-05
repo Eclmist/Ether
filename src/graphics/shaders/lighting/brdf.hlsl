@@ -17,8 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define ZERO_GUARD(f) (max(0.000001, f))
-
 float Sqr(float v)
 {
     return v * v;
@@ -31,14 +29,15 @@ float3 Lambert(float3 albedo)
 
 float DistributionGGX(float alphaSqr, float nDotH)
 {
-    return alphaSqr / ZERO_GUARD(Pi * Sqr(Sqr(nDotH) * (alphaSqr - 1) + 1));
+    alphaSqr = max(0.0001, alphaSqr);
+    return alphaSqr / (Pi * Sqr(Sqr(nDotH) * (alphaSqr - 1) + 1));
 }
 
 float GeometrySchlick(float alpha, float nDotL, float nDotV)
 {
     const float k = alpha / 2.0f;
-    const float G1_L = nDotL / ZERO_GUARD((nDotL * (1 - k) + k));
-    const float G2_V = nDotV / ZERO_GUARD((nDotV * (1 - k) + k));
+    const float G1_L = nDotL / ((nDotL * (1 - k) + k));
+    const float G2_V = nDotV / ((nDotV * (1 - k) + k));
     return G1_L * G2_V;
 }
 
@@ -58,30 +57,29 @@ float3 Microfacet(float roughness, float3 f0, float nDotL, float nDotV, float nD
     const float alpha = Sqr(roughness);
     const float alphaSqr = Sqr(alpha);
 
-    const float3 D = DistributionGGX(alphaSqr, nDotH);
+    const float D = DistributionGGX(alphaSqr, nDotH);
+    const float G = GeometrySchlick(alpha, nDotL, nDotV);
     const float3 F = FresnelSchlick(f0, vDotH);
-    const float3 G = GeometrySchlick(alpha, nDotL, nDotV);
 
-    return (D * F * G) / ZERO_GUARD(4 * nDotL * nDotV);
+    return (D * F * G) / max(0.001, (4 * nDotL * nDotV));
 }
 
 float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
-    // Preserve specular highlight even for mirror surfaces
-    roughness = max(0.01, roughness);
-
     const float3 l = normalize(wi);
     const float3 v = normalize(wo);
     const float3 n = normalize(normal);
     const float3 h = normalize(l + v);
 
-    const float nDotL = saturate(dot(n, l));
     const float nDotV = saturate(dot(n, v));
+    const float nDotL = saturate(dot(n, l));
     const float nDotH = saturate(dot(n, h));
     const float vDotH = saturate(dot(v, h));
 
-    const float specularConstant = 0.5;
+    if (nDotL <= 0 || nDotV <= 0 || nDotH <= 0 || vDotH <= 0)
+        return 0;
 
+    const float specularConstant = 0.5;
     const float3 f0 = lerp(0.08 * specularConstant, albedo, metalness);
     const float3 diffuse = Lambert(albedo);
     const float3 specular = Microfacet(roughness, f0, nDotL, nDotV, nDotH, vDotH);
@@ -92,7 +90,7 @@ float3 ImportanceSampleGGX(float2 Xi, float3 wo, float3 N, float roughness)
 {
     const float a = roughness * roughness;
     const float phi = 2 * Pi * Xi.x;
-    const float cosTheta = sqrt((1 - Xi.y) / ZERO_GUARD((1 + (a * a - 1) * Xi.y)));
+    const float cosTheta = sqrt((1 - Xi.y) / (1 + (a * a - 1) * Xi.y));
     const float sinTheta = sqrt(max(0, 1 - cosTheta * cosTheta));
     float3 H;
     H.x = sinTheta * cos(phi);
@@ -109,7 +107,7 @@ inline float DistributionGGX_Pdf(float nDotH, float vDotH, float roughness)
 {
     const float alpha = Sqr(roughness);
     const float alphaSqr = Sqr(alpha);
-    return (DistributionGGX(alphaSqr, nDotH) * nDotH) / ZERO_GUARD(4 * vDotH);
+    return vDotH <= 0 ? 0 : (DistributionGGX(alphaSqr, nDotH) * nDotH) / (4 * vDotH);
 }
 
 // Pdf of sampling both diffuse and specular terms of a joint BRDF like
@@ -119,9 +117,6 @@ inline float DistributionGGX_Pdf(float nDotH, float vDotH, float roughness)
 //    This maps to "specularWeight" in raytracedlights.hlsl
 inline float UE4JointPdf(float t, float nDotH, float nDotL, float vDotH, float roughness)
 {
-    // Preserve specular highlight even for mirror surfaces
-    roughness = max(0.01, roughness);
-
     const float pdf_d = nDotL / Pi;
     const float pdf_s = DistributionGGX_Pdf(nDotH, vDotH, roughness);
     return ((1 - t) * pdf_d) + (t * pdf_s);

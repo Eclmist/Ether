@@ -48,8 +48,6 @@ struct RayPayload
 
 struct ReservoirSample
 {
-    ethVector3 m_VisiblePosition;
-    ethVector3 m_VisibleNormal;
     ethVector3 m_SamplePosition;
     ethVector3 m_SampleNormal;
     ethVector3 m_Radiance;
@@ -57,8 +55,6 @@ struct ReservoirSample
 #ifdef __HLSL__
     void Reset()
     {
-        m_VisiblePosition = 0;
-        m_VisibleNormal = 0;
         m_SamplePosition = 0;
         m_SampleNormal = 0;
         m_Radiance = 0;
@@ -82,24 +78,24 @@ struct Reservoir
         m_Sample.Reset();
     }
 
-    void InternalResample(Reservoir r, float newTargetPdf, float risWeight, float rand)
+    void InternalResample(Reservoir r, float newTargetFunction, float risWeight, float rand)
     {
         m_NumSamples += r.m_NumSamples;
         m_WeightSum += risWeight;
 
-        if (rand < risWeight / m_WeightSum)
+        if (rand * m_WeightSum < risWeight)
         {
             m_Sample = r.m_Sample;
-            m_TargetFunction = newTargetPdf;
+            m_TargetFunction = newTargetFunction;
         }
     }
 
-    void Combine(Reservoir r, float newTargetPdf, float rand)
+    void Combine(Reservoir r, float newTargetFunction, float rand)
     {
-        const float sourcePdf = r.m_WeightSum;
-        const float misWeight = r.m_NumSamples;
-        const float risWeight = newTargetPdf * sourcePdf * misWeight;
-        InternalResample(r, newTargetPdf, risWeight, rand);
+        const float ucw = r.m_WeightSum;
+        const float misScalingFactor = r.m_NumSamples;
+        const float risWeight = newTargetFunction * ucw * misScalingFactor;
+        InternalResample(r, newTargetFunction, risWeight, rand);
     }
 
     void FinalizeReservoir()

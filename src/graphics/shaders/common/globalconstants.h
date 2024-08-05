@@ -23,6 +23,12 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
+
+// IMPORTANT:
+// Make sure everything is padding accordingly!
+// https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
+// https://maraneshi.github.io/HLSL-ConstantBufferLayoutVisualizer/
+// It is possible that HLSL side generate padding that isn't visible on CPU side.
 struct GlobalConstants
 {
     // ============= Common ============= //
@@ -51,7 +57,10 @@ struct GlobalConstants
 
     // ============== TAA =============== //
     float m_TaaAccumulationFactor;
+
+    uint32_t m_Padding0;
     ethVector2 m_CameraJitter;
+    ethVector2 m_CameraJitterPrev;
     uint32_t m_FrameSinceLastMovement;
 
     // =========== TONEMAPPER =========== //
@@ -72,8 +81,6 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Clamp;
     uint32_t m_SamplerIndex_Linear_Wrap;
     uint32_t m_SamplerIndex_Linear_Border;
-
-    ethVector2 m_CameraJitterPrev;
 };
 
 ETH_END_SHADER_NAMESPACE
