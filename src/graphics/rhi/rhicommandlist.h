@@ -81,6 +81,7 @@ public:
     virtual void CopyResource(const RhiResource& src, RhiResource& dest) = 0;
     virtual void CopyBufferRegion(const RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset, uint32_t destOffset) = 0;
     virtual void CopyTexture(RhiResource& scratch, RhiResource& dest, void** data, uint32_t numMips, uint32_t width, uint32_t height, uint32_t bytesPerPixel) = 0;
+    virtual void RtCampCopyForExport(RhiResource& src, RhiResource& dest, uint32_t width, uint32_t height) = 0;
 
     // Dispatches
     virtual void ClearRenderTargetView(const RhiRenderTargetView rtv, const ethVector4& clearColor) = 0;

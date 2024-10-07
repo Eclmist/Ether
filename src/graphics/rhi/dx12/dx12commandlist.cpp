@@ -338,6 +338,41 @@ void Ether::Graphics::Dx12CommandList::CopyTexture(
         allMipsData.data());
 }
 
+void Ether::Graphics::Dx12CommandList::RtCampCopyForExport(
+    RhiResource& src,
+    RhiResource& dest,
+    uint32_t width,
+    uint32_t height)
+{
+
+    const auto dx12SrcResource = (Dx12Resource*)&src;
+    const auto dx12DstResource = (Dx12Resource*)&dest;
+
+    D3D12_SUBRESOURCE_FOOTPRINT subresourceFootprint = {};
+    subresourceFootprint.Depth = 1;
+    subresourceFootprint.Width = width;
+    subresourceFootprint.Height = height;
+    subresourceFootprint.RowPitch = width * 4;
+    subresourceFootprint.Format = DXGI_FORMAT_R8G8B8A8_TYPELESS;
+
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT destFootprint = {};
+    destFootprint.Footprint = subresourceFootprint;
+    destFootprint.Offset = 0;
+
+    D3D12_TEXTURE_COPY_LOCATION copyDestLocation = {};
+    copyDestLocation.pResource = dx12DstResource->m_Resource.Get();
+    copyDestLocation.Type = D3D12_TEXTURE_COPY_TYPE::D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    copyDestLocation.PlacedFootprint = destFootprint;
+
+    D3D12_TEXTURE_COPY_LOCATION copySrcLocation = {};
+    copySrcLocation.pResource = dx12SrcResource->m_Resource.Get();
+    copySrcLocation.Type = D3D12_TEXTURE_COPY_TYPE::D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    copySrcLocation.SubresourceIndex = 0;
+
+    // TODO: Actually specify region
+    m_CommandList->CopyTextureRegion(&copyDestLocation, 0, 0, 0, &copySrcLocation, nullptr);
+}
+
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(
     const RhiRenderTargetView rtv,
     const ethVector4& clearColor)
@@ -403,3 +438,4 @@ void Ether::Graphics::Dx12CommandList::DispatchRays(uint32_t x, uint32_t y, uint
 }
 
 #endif // ETH_GRAPHICS_DX12
+

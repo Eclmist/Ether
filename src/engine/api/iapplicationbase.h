@@ -35,6 +35,7 @@ public:
 public:
     virtual void OnUpdate(const UpdateEventArgs& e) = 0;
     virtual void OnRender(const RenderEventArgs& e) = 0;
+    virtual void OnPostRender() = 0;
     virtual void OnShutdown() = 0;
 };
 } // namespace Ether

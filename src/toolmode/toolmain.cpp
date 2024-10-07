@@ -264,3 +264,7 @@ void Ether::Toolmode::EtherHeadless::UpdateCamera() const
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +
                                            rightVec * Time::GetDeltaTime() * moveSpeed;
 }
+
+void Ether::Toolmode::EtherHeadless::OnPostRender()
+{
+}

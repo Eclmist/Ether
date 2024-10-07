@@ -71,6 +71,8 @@ public:
 public:
     static void Main();
     static void FlushGpu();
+    static void Export(void** targetAddr);
+    static void Present();
 
 private:
     bool m_IsInitialized;

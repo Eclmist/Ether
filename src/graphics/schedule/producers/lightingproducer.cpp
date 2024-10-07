@@ -46,9 +46,10 @@ DEFINE_GFX_UA(ReSTIR_StagingReservoir)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
+static const wchar_t* k_AnyHitShader = L"AnyHit";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
-static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader };
+static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_AnyHitShader, k_ClosestHitShader };
 
 Ether::Graphics::LightingProducer::LightingProducer()
     : GraphicProducer("LightingProducer")
@@ -237,6 +238,7 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_RTPsoDesc->SetLibraryShader(*m_Shader);
     m_RTPsoDesc->SetHitGroupName(k_HitGroupName);
     m_RTPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
+    m_RTPsoDesc->SetAnyHitShaderName(k_AnyHitShader);
     m_RTPsoDesc->SetMissShaderName(k_MissShader);
     m_RTPsoDesc->SetRayGenShaderName(k_RayGenShader);
     m_RTPsoDesc->SetMaxRecursionDepth(4);

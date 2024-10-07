@@ -58,7 +58,7 @@ public:
     // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
-    int32_t m_RaytracingMode = RaytracingMode::ReSTIR;
+    int32_t m_RaytracingMode = RaytracingMode::Pathtrace;
 
     // TAA
     bool m_IsTemporalAAEnabled = true;

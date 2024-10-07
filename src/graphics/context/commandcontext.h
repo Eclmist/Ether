@@ -83,6 +83,7 @@ public:
     void InitializeTexture(RhiResource& dest, void** data, uint32_t numMips, uint32_t width, uint32_t height, uint32_t bytesPerPixel);
     void CopyResource(RhiResource& src, RhiResource& dest);
     void CopyBufferRegion(RhiResource& src, RhiResource& dest, uint32_t size, uint32_t srcOffset = 0, uint32_t destOffset = 0);
+    void RtCampCopyForExport(RhiResource& src, RhiResource& dest, uint32_t width, uint32_t height);
     void Dispatch(uint32_t x, uint32_t y, uint32_t z);
     void DispatchRays(uint32_t x, uint32_t y, uint32_t z);
 

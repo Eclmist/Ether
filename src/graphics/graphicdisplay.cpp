@@ -31,6 +31,7 @@ Ether::Graphics::GraphicDisplay::GraphicDisplay()
     ResizeViewport(GraphicCore::GetGraphicConfig().GetResolution());
     CreateSwapChain(GraphicCore::GetGraphicConfig().GetWindowHandle());
     CreateResourcesFromSwapChain();
+    CreateResourceForExport();
     CreateViewsFromSwapChain();
     InitializeFences();
 }
@@ -95,6 +96,20 @@ void Ether::Graphics::GraphicDisplay::CreateResourcesFromSwapChain()
         m_RenderTargets[i] = &m_SwapChain->GetBuffer(i);
 }
 
+void Ether::Graphics::GraphicDisplay::CreateResourceForExport()
+{
+    Graphics::CommandContext ctx("Export Readback Heap Creation", Graphics::RhiCommandType::Graphic, _16MiB);
+
+    RhiCommitedResourceDesc desc = {};
+    desc.m_ClearValue = {};
+    desc.m_HeapType = RhiHeapType::Readback;
+    desc.m_Name = "Export Buffer";
+    desc.m_State = RhiResourceState::CopyDest;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(m_Viewport.m_Width * m_Viewport.m_Height * 4);
+
+    m_ExportResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
+}
+
 void Ether::Graphics::GraphicDisplay::CreateViewsFromSwapChain()
 {
     m_SwapChainDescriptors.clear();
@@ -138,3 +153,4 @@ void Ether::Graphics::GraphicDisplay::UpdateBackBufferIndex()
     ETH_MARKER_EVENT("SwapChain - Get Current Back Buffer Index");
     m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 }
+

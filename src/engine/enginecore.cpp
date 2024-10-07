@@ -41,7 +41,10 @@ void Ether::EngineCore::LoadApplication(IApplicationBase& app)
 
 void Ether::EngineCore::RunEngineLoop()
 {
-    while (true)
+    // RtCamp10
+    int frameNumber = 0;
+
+    while (m_IsInitialized)
     {
         ETH_MARKER_FRAME("Engine Frame");
 
@@ -52,11 +55,26 @@ void Ether::EngineCore::RunEngineLoop()
             break;
 
         m_MainApplication->OnUpdate({});
+
+        // Shutdown called
+        if (!m_IsInitialized)
+            return;
+
         m_ActiveWorld->Update();
 
         Graphics::GraphicCore::GetGraphicConfig().SetResolution(m_EngineConfig.GetClientSize());
         Graphics::GraphicCore::Main();
+
+        // RtCamp10
+        m_MainApplication->OnPostRender();
+
+        Graphics::GraphicCore::Present();
     }
+}
+
+void Ether::EngineCore::QueueShutdown()
+{
+    m_IsInitialized = false;
 }
 
 void Ether::EngineCore::Shutdown()

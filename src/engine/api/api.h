@@ -39,7 +39,8 @@ ETH_ENGINE_DLL World& GetActiveWorld();
 namespace Ether::Graphics
 {
 ETH_ENGINE_DLL GraphicConfig& GetGraphicConfig();
-}
+ETH_ENGINE_DLL void Export(void** address);
+} // namespace Ether::Graphics
 
 namespace Ether::Client
 {

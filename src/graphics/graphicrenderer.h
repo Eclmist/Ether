@@ -40,6 +40,7 @@ public:
     void WaitForPresent();
     void Render();
     void Present();
+    void Export(void** targetAddr);
 
 private:
     uint64_t m_FrameNumber;

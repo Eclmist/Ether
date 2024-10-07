@@ -42,6 +42,10 @@ public:
     ETH_TOOLONLY(inline const float GetImportScale() const { return m_ImportScale; })
     ETH_TOOLONLY(inline const std::vector<std::string>& GetImportPaths() const { return m_ImportPaths; })
 
+public:
+    bool m_RTCampMode;
+    bool m_RTCampDebugMode;
+
 private:
     void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
 

@@ -71,5 +71,17 @@ void Ether::Graphics::GraphicCore::Main()
 
     s_Instance->m_GraphicRenderer->WaitForPresent();
     s_Instance->m_GraphicRenderer->Render();
+}
+
+
+void Ether::Graphics::GraphicCore::Export(void** targetAddr)
+{
+    ETH_MARKER_EVENT("Export Final Frame");
+    s_Instance->m_GraphicRenderer->Export(targetAddr);
+}
+
+void Ether::Graphics::GraphicCore::Present()
+{
+    ETH_MARKER_EVENT("Present");
     s_Instance->m_GraphicRenderer->Present();
 }

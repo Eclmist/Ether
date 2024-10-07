@@ -31,6 +31,8 @@ Ether::CommandLineOptions::CommandLineOptions()
     , m_UseValidationLayer(false)
     , m_WorldName("")
     , m_ShaderSourcePath(".\\Data\\shaders\\")
+    , m_RTCampMode(false)
+    , m_RTCampDebugMode(false)
 #if defined(ETH_TOOLMODE)
     , m_WorkspacePath("")
     , m_ToolmodePort(2134)
@@ -59,6 +61,10 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseValidationLayer = true;
     else if (flag == "-world")
         m_WorldName = arg;
+    else if (flag == "-rtcamp")
+        m_RTCampMode = true;
+    else if (flag == "-rtcampdebug")
+        m_RTCampDebugMode = true;
 #if defined(ETH_TOOLMODE)
     else if (flag == "-workspace")
         m_WorkspacePath = arg;

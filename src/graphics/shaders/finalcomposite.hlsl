@@ -23,6 +23,7 @@
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_LightingCompositeTexture        : register(t0);
 
+
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;

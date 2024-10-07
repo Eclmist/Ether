@@ -37,7 +37,7 @@
 #define SPATIAL_RADIUS              50
 
 #define DEBUG_GREYSCALE_OUTPUT      0
-#define DEBUG_RESET_HISTORY         0
+#define DEBUG_RESET_HISTORY         1
 #define DEBUG_SPLIT_SCREEN_PASSES   0
 
 // TODO: Make lightingcommon.h
@@ -93,7 +93,7 @@ bool TraceVisibility(float3 a, float3 b)
     ray.Origin = a;
     ray.TMax = length(b - a) - 0.01;
     ray.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
     return !payload.m_Hit;
 }
@@ -287,7 +287,7 @@ float3 TraceDirectLighting(GBufferSurface surface, float3 wo)
     shadowRay.Origin = surface.m_Position + surface.m_Normal * 0.01;
     shadowRay.TMax = 128;
     shadowRay.TMin = 0.01;
-    uint flags = RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
+    uint flags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
     TraceRay(g_RaytracingTlas, flags, 0xFF, 0, 0, 0, shadowRay, payload);
 
     const float3 wi = normalize(shadowRay.Direction);
@@ -356,7 +356,7 @@ float3 TraceLightingRecursively(GBufferSurface surface, uint depth)
         indirectRay.Origin = surface.m_Position;
         indirectRay.TMax = 128;
         indirectRay.TMin = 0.01;
-        TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, indirectPayload);
+        TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, indirectRay, indirectPayload);
         Li = indirectPayload.m_Radiance;
     }
 
@@ -378,7 +378,7 @@ ReservoirSample TraceInitialSample(GBufferSurface surface, float3 wi, float3 wo)
     ray.Origin = surface.m_Position;
     ray.TMax = 128;
     ray.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
     ReservoirSample initialSample;
     initialSample.m_SamplePosition = payload.m_HitPosition;
@@ -671,3 +671,28 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         PathTrace(vertex, material, payload);
     }
 }
+
+[shader("anyhit")]
+void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+
+    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
+    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+
+    const uint mipLevelToSample = 0;
+
+    if (material.m_AlbedoTextureIndex != 0)
+    {
+        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
+        float4 albedo = albedoTex.SampleLevel(linearSampler, vertex.m_TexCoord, mipLevelToSample);
+
+
+        if (albedo.w <= 0.5)
+            IgnoreHit(); // aborts function
+    }
+}
+
+

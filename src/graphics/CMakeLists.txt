@@ -63,7 +63,6 @@ target_link_libraries(${ETHER_GRAPHICS}
     "${CMAKE_SOURCE_DIR}/include/dxc/dxcompiler.lib"
     "${CMAKE_SOURCE_DIR}/include/pix/WinPixEventRuntime.lib"
     "${CMAKE_SOURCE_DIR}/include/optick/OptickCore.lib"
-    "${CMAKE_SOURCE_DIR}/include/denoiser/nrd/NRD.lib"
 )
 
 

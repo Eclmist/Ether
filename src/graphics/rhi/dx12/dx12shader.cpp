@@ -74,7 +74,7 @@ void Ether::Graphics::Dx12Shader::Compile()
 #ifdef _DEBUG
     // Disable optimization for renderdoc pixel debugging
     arguments.push_back(L"-Od");
-    arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS); //-WX
+    //arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS); //-WX
 
     // Strip reflection data and pdbs
     arguments.push_back(DXC_ARG_DEBUG);

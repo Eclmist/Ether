@@ -54,3 +54,25 @@ void Ether::Graphics::GraphicRenderer::Present()
     gfxDisplay.SetCurrentBackBufferFence(GraphicCore::GetCommandManager().GetGraphicQueue().GetFinalFenceValue());
     gfxDisplay.Present();
 }
+
+void Ether::Graphics::GraphicRenderer::Export(void** targetAddr)
+{
+    ETH_MARKER_EVENT("Renderer - Export");
+
+    GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+
+    GraphicContext gfxContext("GraphicRenderer - Export Context");
+    gfxContext.Reset();
+
+    gfxContext.RtCampCopyForExport(
+        GraphicCore::GetGraphicDisplay().GetBackBuffer(),
+        GraphicCore::GetGraphicDisplay().GetExportBuffer(),
+        GraphicCore::GetGraphicConfig().GetResolution().x,
+        GraphicCore::GetGraphicConfig().GetResolution().y);
+
+    gfxContext.FinalizeAndExecute();
+
+    GraphicCore::FlushGpu();
+
+    gfxDisplay.GetExportBuffer().Map(targetAddr);
+}

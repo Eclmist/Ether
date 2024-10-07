@@ -35,6 +35,7 @@ namespace Ether::Toolmode
     public:
         void OnUpdate(const Ether::UpdateEventArgs& e) override;
         void OnRender(const Ether::RenderEventArgs& e) override;
+        void OnPostRender() override;
         void OnShutdown() override;
 
     private:

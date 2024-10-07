@@ -27,6 +27,7 @@ DEFINE_GFX_PA(FinalCompositeProducer)
 DECLARE_GFX_SR(PostFxSourceTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
+
 Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
     : FullScreenProducer("FinalCompositeProducer", "finalcomposite.hlsl")
 {
@@ -34,6 +35,7 @@ Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
 
 void Ether::Graphics::FinalCompositeProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
+    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
@@ -45,6 +47,7 @@ void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, R
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(PostFxSourceTexture)), RhiResourceState::Common);
     ctx.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
     ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
+
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     ctx.DrawInstanced(3, 1);
 }

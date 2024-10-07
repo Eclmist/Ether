@@ -118,9 +118,20 @@ void Ether::Graphics::CommandContext::CopyBufferRegion(
     uint32_t srcOffset,
     uint32_t destOffset)
 {
+    TransitionResource(src, RhiResourceState::CopySrc);
     TransitionResource(dest, RhiResourceState::CopyDest);
     m_CommandList->CopyBufferRegion(src, dest, size, srcOffset, destOffset);
 }
+
+void Ether::Graphics::CommandContext::RtCampCopyForExport(
+    RhiResource& src,
+    RhiResource& dest, uint32_t width, uint32_t height)
+{
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    TransitionResource(src, RhiResourceState::CopySrc);
+    m_CommandList->RtCampCopyForExport(src, dest, width, height);
+}
+
 
 void Ether::Graphics::CommandContext::InitializeBufferRegion(
     RhiResource& dest,

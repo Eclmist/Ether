@@ -44,6 +44,7 @@ int Ether::Start(IApplicationBase& app)
 
 void Ether::Shutdown()
 {
+    EngineCore::Instance().QueueShutdown();
 }
 
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()
@@ -59,6 +60,11 @@ Ether::World& Ether::GetActiveWorld()
 Ether::Graphics::GraphicConfig& Ether::Graphics::GetGraphicConfig()
 {
     return GraphicCore::GetGraphicConfig();
+}
+
+void Ether::Graphics::Export(void** address)
+{
+    GraphicCore::Export(address);
 }
 
 void Ether::Client::SetClientTitle(const std::string& title)

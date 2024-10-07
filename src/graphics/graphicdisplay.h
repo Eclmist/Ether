@@ -46,6 +46,7 @@ namespace Ether::Graphics
         inline uint32_t GetBackBufferIndex() const { return m_CurrentBackBufferIndex; }
         inline uint64_t GetBackBufferFence() const { return m_FrameBufferFences[GetBackBufferIndex()]; }
         inline RhiResource& GetBackBuffer() const { return *m_RenderTargets[GetBackBufferIndex()]; }
+        inline RhiResource& GetExportBuffer() const { return *m_ExportResource; }
         inline RhiRenderTargetView GetBackBufferRtv() const { return m_RenderTargetRtv[GetBackBufferIndex()]; }
         inline RhiShaderResourceView GetBackBufferSrv() const { return m_RenderTargetSrv[GetBackBufferIndex()]; }
         inline const RhiViewportDesc& GetViewport() const { return m_Viewport; }
@@ -61,6 +62,7 @@ namespace Ether::Graphics
         void ResizeViewport(const ethVector2u& size);
         void CreateSwapChain(void* hwnd);
         void CreateResourcesFromSwapChain();
+        void CreateResourceForExport();
         void CreateViewsFromSwapChain();
         void UpdateBackBufferIndex();
 
@@ -81,6 +83,9 @@ namespace Ether::Graphics
 
         bool m_VSyncEnabled;
         uint8_t m_VSyncVBlanks;
+
+        // RtCamp
+        std::unique_ptr<RhiResource> m_ExportResource;
     };
 }
 

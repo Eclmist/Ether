@@ -41,6 +41,7 @@ public:
     void Initialize();
     void LoadApplication(IApplicationBase& app);
     void RunEngineLoop();
+    void QueueShutdown();
     void Shutdown();
 
 public:

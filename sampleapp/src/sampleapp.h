@@ -34,6 +34,7 @@ public:
 public:
     void OnUpdate(const Ether::UpdateEventArgs& e) override;
     void OnRender(const Ether::RenderEventArgs& e) override;
+    void OnPostRender() override;
     void OnShutdown() override;
 
 private:
@@ -42,4 +43,10 @@ private:
 
 private:
     Ether::Ecs::EcsTransformComponent* m_CameraTransform;
+
+    uint32_t m_LocalFrameNumber = 0;
+    uint32_t m_OutputFrameNumber = 0;
+    std::vector<char> m_OutImage;
+
+    Ether::CommandLineOptions m_CommandLineOptions;
 };
