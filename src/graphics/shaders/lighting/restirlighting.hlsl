@@ -43,7 +43,7 @@
 // TODO: Make lightingcommon.h
 #define EMISSION_SCALE              10000
 #define SUNLIGHT_SCALE              120000
-#define SKYLIGHT_SCALE              10000
+#define SKYLIGHT_SCALE              800
 #define POINTLIGHT_SCALE            2000
 #define MAX_BOUNCES                 0
 
@@ -233,7 +233,7 @@ GBufferSurface GetGBufferSurfaceFromTextures(float2 pixelCoord)
     surface.m_Velocity = gbuffer2.zw;
 
     // Flip normal if backface. This fixes a lot of light leakage
-    if (dot(surface.m_Normal, normalize(g_GlobalConstants.m_CameraPosition - surface.m_Position)) < 0)
+    if (dot(surface.m_Normal, normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position.xyz)) < 0)
         surface.m_Normal = -surface.m_Normal;
 
     return surface;
@@ -343,7 +343,7 @@ float3 TraceLightingRecursively(GBufferSurface surface, uint depth)
     float3 Li = 0;
     if (depth >= MAX_BOUNCES)
     {
-        return 0;
+        return EvaluateSkyLighting(WorldRayDirection());
     }
     else
     {
@@ -458,7 +458,7 @@ void ApplyTemporalResampling()
         const int2 offset = (SquareToConcentricDiskMapping(rand2D) - 0.5f) * 4 * (i / (float)numReprojections);
 
         launchIndexPrev += offset;
-        launchIndexPrev = clamp(launchIndexPrev, 0, launchDim);
+        launchIndexPrev = clamp(launchIndexPrev, 0, launchDim.xy);
         const uint sampleIdxPrev = clamp(launchIndexPrev.y * launchDim.x + launchIndexPrev.x, 0, launchDim.x * launchDim.y);
     
         Reservoir reprojectedReservoir = g_ReSTIR_GIReservoir[sampleIdxPrev];
@@ -513,7 +513,7 @@ void ApplySpatialResampling()
     {
         // Review: do random context with seed
         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
-        const int2 neighbourCoords = clamp((launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * (SPATIAL_RADIUS / numSpatialIterations * i), 0, launchDim);
+        const int2 neighbourCoords = clamp((launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * (SPATIAL_RADIUS / numSpatialIterations * i), 0, launchDim.xy);
         const uint neighbourIdx = clamp(neighbourCoords.y * launchDim.x + neighbourCoords.x, 0, launchDim.x * launchDim.y);
         Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
         ReservoirSample nSample = neighbour.m_Sample;

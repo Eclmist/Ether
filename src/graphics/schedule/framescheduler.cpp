@@ -50,7 +50,6 @@ DECLARE_GFX_PA(BloomProducer)
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
     Register(ACCESS_GFX_PA(FinalCompositeProducer), new FinalCompositeProducer());
-    Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
     Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
     Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
     Register(ACCESS_GFX_PA(MaterialTableProducer), new MaterialTableProducer());
@@ -60,6 +59,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(LightingProducer), new LightingProducer());
     Register(ACCESS_GFX_PA(BloomProducer), new BloomProducer());
     Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
+    Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();

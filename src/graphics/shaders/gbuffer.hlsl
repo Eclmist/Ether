@@ -126,7 +126,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (material.m_EmissiveTextureIndex != 0)
     {
         Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
-        emissive *= emissiveTex.Sample(linearSampler, IN.TexCoord);
+        emissive *= pow(emissiveTex.Sample(linearSampler, IN.TexCoord), 4.0);
     }
 
     // Don't support alpha yet
@@ -135,8 +135,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
 
 
     float isPortal = 0;
-    if (worldPos.x <= 1.369 && worldPos.x >= 1.367 &&
-        normal.x >= 0.999)
+    if (worldPos.z >= 0.187 && worldPos.z <= 0.188 && abs(normal.z) >= 0.99)
     {
         //albedo = float4(1, 0, 1, 0) * 100;
         //worldPos.y += 5;
@@ -145,7 +144,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         metalness = 1;
         albedo = 0;
         emissive = 0;
-        //normal = normalize(g_GlobalConstants.m_CameraPosition - worldPos).xyz;
     }
 
     float2 octNormals = EncodeNormals(normal);

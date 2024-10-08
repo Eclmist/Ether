@@ -53,6 +53,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
 
     float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
+    float4 misc = g_GBufferTexture3[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 normals = g_GBufferTexture2[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 position = g_GBufferTexture1[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 albedo = g_GBufferTexture0[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
@@ -61,11 +62,13 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     if (normals.x == 0 && normals.y == 0)
         return sky;
 
-    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-    //    return albedo * 1000.0;
+/*
+    if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+        return albedo * 1000.0;
+        */
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(DecodeNormals(normals.xy), 0) * 10000.0;
+        return float4(misc.w, 0, 0, 0) * 10000;
 
     float4 finalColor = lighting;
     return finalColor;

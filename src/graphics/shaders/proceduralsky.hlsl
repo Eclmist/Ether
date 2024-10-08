@@ -296,10 +296,10 @@ float4 SampleHdri(float2 uv)
 
     const float2 distortion = float2(-0.05, 0);
 
-    const float4 hdri1 = hdriTexture.SampleLevel(linearSampler, uv, 0);
+    const float4 hdri1 = hdriTexture.SampleLevel(linearSampler, uv + flow1 * distortion, 0);
     const float4 hdri2 = hdriTexture.SampleLevel(linearSampler, uv + flow2 * distortion, 0);
 
-    return hdri1;
+    return lerp(hdri1, hdri2, alt);
 }
 
 float4 GetHdriSkyColor(float2 uv)

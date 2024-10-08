@@ -27,7 +27,7 @@
 namespace Ether::Graphics
 {
 
-static constexpr uint32_t MaxNumMips = 11;
+static constexpr uint32_t MaxNumMips = 12;
 static constexpr uint32_t MaxTextureSize = 1 << MaxNumMips;
 
 class ETH_GRAPHIC_DLL Texture : public Serializable

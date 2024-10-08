@@ -608,8 +608,45 @@ std::unique_ptr<Ether::Graphics::RhiPipelineState> Ether::Graphics::Dx12Device::
         IID_PPV_ARGS(&dx12Obj->m_PipelineState));
 
     if (FAILED(hr))
-        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object");
+    {
+#if defined(_DEBUG)
+        Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue;
+        if (SUCCEEDED(m_Device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
+        {
+            infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+            infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+            infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
 
+            for (int i = 0; i < infoQueue->GetNumStoredMessages(); ++i)
+            {
+                D3D12_MESSAGE message;
+                infoQueue->GetMessageA(i, &message, 0);
+
+                LogGraphicsError("Validation Layer: %s", message.pDescription);
+            }
+        }
+        else
+        {
+            LogGraphicsError("Failed to query info queue, debug logs may be limited");
+        }
+
+#endif
+        
+
+        // Get the error description
+        char errorMsg[512];
+        FormatMessageA(
+            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            hr,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            errorMsg,
+            sizeof(errorMsg),
+            nullptr);
+
+        // Log the error with detailed information
+        LogGraphicsFatal("Failed to create DirectX12 Pipeline State Object. HRESULT: 0x%08X. Error: %s", hr, errorMsg);
+    }
     dx12Obj->m_PipelineState->SetName(ToWideString(name).c_str());
     return dx12Obj;
 }

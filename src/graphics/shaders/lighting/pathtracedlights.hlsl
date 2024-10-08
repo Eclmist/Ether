@@ -26,9 +26,9 @@
 #include "utils/encoding.hlsl"
 #include "lighting/brdf.hlsl"
 
-#define EMISSION_SCALE              10000
-#define SUNLIGHT_SCALE              120000
-#define SKYLIGHT_SCALE              10000
+#define EMISSION_SCALE              8000
+#define SUNLIGHT_SCALE              100000
+#define SKYLIGHT_SCALE              3000
 #define POINTLIGHT_SCALE            2000
 #define MAX_RAY_DEPTH 2
 
@@ -88,7 +88,7 @@ MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in Ge
 
 }
 
-float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, float isPortal)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
@@ -98,7 +98,7 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
 
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-    shadowRay.Origin = position;
+    shadowRay.Origin = position + normal * 0.01;
     shadowRay.TMax = 40;
     shadowRay.TMin = 0.01;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
@@ -108,7 +108,22 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
     const float cosTheta = saturate(dot(wi, normal));
     const float3 Lo = Li * f * cosTheta;
-    return Lo;
+
+
+    const float3 portalColor = float3(0, 0.3, 1) * POINTLIGHT_SCALE;
+    const float3 portalPosition1 = float3(0, 0.85, 0.18792);
+    const float portalDistance1 = abs(length(portalPosition1 - position));
+    const float3 portalWi1 = normalize(portalPosition1 - position);
+    const float portalNoL1 = dot(normal, portalWi1);
+    const float3 portalLi1 = (portalNoL1 * BRDF_UE4(portalWi1, wo, normal, albedo, roughness, metalness) * portalColor) / pow(portalDistance1, 2.5);
+
+    const float3 portalPosition2 = float3(0, 0.85 - 20, 0.18792);
+    const float portalDistance2 = abs(length(portalPosition2 - position));
+    const float3 portalWi2 = normalize(portalPosition2 - position);
+    const float portalNoL2 = dot(normal, portalWi2);
+    const float3 portalLi2 = (portalNoL2 * BRDF_UE4(portalWi2, wo, normal, albedo, roughness, metalness) * portalColor) / pow(portalDistance2, 2.5);
+
+    return Lo + portalLi1 + portalLi2;
 }
 
 // 0 -> Importance sample BRDF
@@ -119,7 +134,9 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
 float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth, float isPortal)
 {
     if (depth <= 0)
-        return 0;
+    {
+        return EvaluateSkyLighting(WorldRayDirection());
+    }
 
     const uint3 launchIndex = DispatchRaysIndex();
     const uint3 launchDim = DispatchRaysDimensions();
@@ -189,8 +206,8 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     indirectRay.Direction = wi;
     indirectRay.Origin = position;
     indirectRay.TMax = 40;
-    indirectRay.TMin = 0.01;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, indirectRay, payload);
+    indirectRay.TMin = isPortal ? 0.0001 : 0.01;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
     float3 Li = min(10000, payload.m_Radiance);
     const float3 Lo = Li * f * cosTheta;
 
@@ -202,13 +219,9 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayload payload)
 {
-    if (hitSurface.m_Position.x <= 1.369 && hitSurface.m_Position.x >= 1.367 && hitSurface.m_Normal.x >= 0.99)
-    {
-        return 0;// TraceRecursively(hitSurface.m_Position, normalize(-WorldRayDirection()), normalize(-WorldRayDirection()), 1, 0, 0, payload.m_Depth - 1, true);
-    }
 
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    const uint mipLevelToSample = 5;
+    const uint mipLevelToSample = 0;
 
     float4 albedo = material.m_BaseColor;
     float4 emission = material.m_EmissiveColor * EMISSION_SCALE;
@@ -235,7 +248,7 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayloa
     if (material.m_RoughnessTextureIndex != 0)
     {
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
-        roughness = 1 - roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).g;
+        roughness = roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).g;
     }
 
     if (material.m_MetalnessTextureIndex != 0)
@@ -247,14 +260,14 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayloa
     if (material.m_EmissiveTextureIndex != 0)
     {
         Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
-        emission *= emissiveTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample);
+        emission *= pow(emissiveTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample), 4.0);
     }
 
     // Flip normal if backface. This fixes a lot of light leakage
     normal = dot(WorldRayDirection(), hitSurface.m_Normal) > 0 ? -normal : normal;
 
     const float3 wo = normalize(-WorldRayDirection());
-    const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
+    const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, 0.0);
     const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1, 0.0);
     return emission.xyz + direct + indirect;
 }
@@ -294,11 +307,11 @@ void RayGeneration()
     float isPortal = gbuffer3.w;
 
     if (!isPortal)
-        direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
+        direct = TraceShadow(position, viewDir, normal, color, roughness, metalness, isPortal);
 
     if (isPortal)
     {
-        if (viewDir.x >= 0)
+        if (viewDir.z >= 0)
             position.y += 20.0;
         else
             position.y -= 20.0;
@@ -306,7 +319,7 @@ void RayGeneration()
 
     indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH, isPortal);
 
-    float a = 0.05;// max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    float a = 0.025;//max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
@@ -326,7 +339,7 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample sky color
-        payload.m_Radiance = EvaluateSkyLighting(WorldRayDirection());
+        payload.m_Radiance = 0;// EvaluateSkyLighting(WorldRayDirection());
     }
 }
 
@@ -340,10 +353,11 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
-    if (vertex.m_Position.x <= 1.369 &&vertex.m_Position.x >= 1.367 && vertex.m_Normal.x >= 0.99 &&
-        payload.m_IsShadowRay)
+
+    // [PORTAL]
+    if (vertex.m_Position.z >= 0.187 && vertex.m_Position.z <= 0.188 && vertex.m_Normal.z >= 0.99)
     {
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(0.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        payload.m_Radiance = 0;// TraceRecursively(hitSurface.m_Position, normalize(-WorldRayDirection()), normalize(-WorldRayDirection()), 1, 0, 0, payload.m_Depth - 1, true);
         return;
     }
 

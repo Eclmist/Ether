@@ -180,7 +180,7 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentTexcoord::s_NumElements);
-    m_PsoDesc->SetDepthTargetFormat(DepthBufferFormat);
+    m_PsoDesc->SetDepthTargetFormat(RhiFormat::D24UnormS8Uint);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }

@@ -24,6 +24,10 @@
 
 #ifdef ETH_GRAPHICS_DX12
 
+#ifdef _DEBUG
+static DWORD s_CallbackCookie;
+#endif
+
 Ether::Graphics::Dx12Module::Dx12Module()
 {
     LogGraphicsInfo("Initializing DirectX 12");
@@ -39,6 +43,37 @@ Ether::Graphics::Dx12Module::~Dx12Module()
 {
     if (GraphicCore::GetGraphicConfig().IsValidationLayerEnabled())
         ReportLiveObjects();
+}
+
+
+static void __stdcall DebugMessageCallback(
+    D3D12_MESSAGE_CATEGORY cat,
+    D3D12_MESSAGE_SEVERITY sev,
+    D3D12_MESSAGE_ID id,
+    LPCSTR message,
+    void* context)
+{
+
+    auto logger = (Ether::LoggingManager*)context;
+
+    switch (sev)
+    {
+    case D3D12_MESSAGE_SEVERITY_INFO:
+    case D3D12_MESSAGE_SEVERITY_MESSAGE:
+        logger->Log(Ether::LogLevel::Info, Ether::LogType::Graphics, message);
+        break;
+    case D3D12_MESSAGE_SEVERITY_WARNING:
+        logger->Log(Ether::LogLevel::Warning, Ether::LogType::Graphics, message);
+        break;
+    case D3D12_MESSAGE_SEVERITY_ERROR:
+        logger->Log(Ether::LogLevel::Error, Ether::LogType::Graphics, message);
+        break;
+    case D3D12_MESSAGE_SEVERITY_CORRUPTION:
+        logger->Log(Ether::LogLevel::Fatal, Ether::LogType::Graphics, message);
+        break;
+    default:
+        logger->Log(Ether::LogLevel::Info, Ether::LogType::Graphics, message);
+    }
 }
 
 std::unique_ptr<Ether::Graphics::RhiDevice> Ether::Graphics::Dx12Module::CreateDevice() const
@@ -60,6 +95,36 @@ std::unique_ptr<Ether::Graphics::RhiDevice> Ether::Graphics::Dx12Module::CreateD
             "Raytracing is not supported on this device. Make sure your GPU supports DXR (such as Nvidia's Volta or "
             "Turing RTX) and you're on the latest drivers. The DXR fallback layer is not supported.");
     }
+
+#if defined(_DEBUG)
+    Microsoft::WRL::ComPtr<ID3D12InfoQueue1> infoQueue;
+    if (SUCCEEDED(dx12Device->m_Device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
+    {
+        hr = infoQueue->RegisterMessageCallback(
+            DebugMessageCallback,
+            D3D12_MESSAGE_CALLBACK_FLAG_NONE,
+            &Ether::LoggingManager::Instance(),
+            &s_CallbackCookie);
+
+        if (FAILED(hr))
+        {
+
+            // Get the error description
+            char errorMsg[512];
+            FormatMessageA(
+                FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr,
+                hr,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                errorMsg,
+                sizeof(errorMsg),
+                nullptr);
+
+            LogGraphicsWarning("Failed to register debug layer message callback. Debug output may be limited. HRESULT: 0x%08X. Error: %s", hr, errorMsg);
+        }
+    }
+
+#endif
 
     return dx12Device;
 }
@@ -107,9 +172,26 @@ void Ether::Graphics::Dx12Module::InitializeDebugLayer()
     wrl::ComPtr<ID3D12Debug> debugInterface;
     HRESULT hr = D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface));
     if (FAILED(hr))
-        LogGraphicsWarning("Failed to create DirectX12 debug interface");
+    {
+        // Get the error description
+        char errorMsg[512];
+        FormatMessageA(
+            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            hr,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            errorMsg,
+            sizeof(errorMsg),
+            nullptr);
+
+        // Log the error with detailed information
+        LogGraphicsFatal("Failed to create DirectX12 Debug Interface. HRESULT: 0x%08X. Error: %s", hr, errorMsg);
+    }
     else
+    {
+
         debugInterface->EnableDebugLayer();
+    }
 #endif
 }
 
