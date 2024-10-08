@@ -64,7 +64,7 @@ public:
     bool m_IsTemporalAAEnabled = true;
     int32_t m_TemporalAAJitterMode = 2;
     float m_DebugJitterScale = 1;
-    float m_TemporalAAAcumulationFactor = 0.1;
+    float m_TemporalAAAcumulationFactor = 0.003;
 
     // Bloom
     bool m_IsBloomEnabled = true;

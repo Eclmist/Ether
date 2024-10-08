@@ -62,10 +62,9 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     if (normals.x == 0 && normals.y == 0)
         return sky;
 
-/*
+
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return albedo * 1000.0;
-        */
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return float4(misc.w, 0, 0, 0) * 10000;

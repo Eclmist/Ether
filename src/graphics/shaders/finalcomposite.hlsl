@@ -163,7 +163,7 @@ float3 aces_approx(float3 v)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    const float manualExposure = 0.0005;
+    const float manualExposure = 0.0020;
 
     float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
     col = col * manualExposure;

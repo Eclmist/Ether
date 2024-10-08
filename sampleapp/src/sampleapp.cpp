@@ -38,25 +38,22 @@ static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode
 static constexpr uint32_t ResolutionWidth = 1280;
 static constexpr uint32_t ResolutionHeight = 720;
 static constexpr uint32_t RtCampMaxFrames = 300;
-static constexpr uint32_t RtCampNumAccumulationFrames = 180;
+static constexpr uint32_t RtCampNumAccumulationFrames = 110;
 
 // RTCamp Camera Waypoints
-static const int32_t numPoints = 15;
+static const int32_t numPoints = 8;
 
 static Ether::ethVector3 positions[numPoints] = {
-    { 0.774253, 0.136848, -1.317562 },  { 0.561229, 0.151479, -1.376745 },  { 0.245344, 0.204299, -1.260417 },
-    { -0.066522, 0.324728, -0.727548 }, { -0.042222, 0.478083, -0.107213 }, { 0.242863, 0.903185, 1.566718 },
-    { 0.731789, 1.301521, 2.858444 },   { 1.973294, 1.697622, 5.045119 },   { 1.695005, 1.611027, 6.421093 },
-    { 0.367149, 1.383249, 6.929018 },   { 0.106207, 1.239281, 6.519328 },   { 0.106207, 1.239281, 6.519328 },
-    { 0.051574, 1.205059, 5.988041 },   { -0.095355, 1.247614, 5.974273 },  { -0.139254, 1.266647, 6.038291 }
+    { 1.344803, 1.848856, -1.845555 }, { 0.151518, 0.250164, -1.220546 },  { -0.431194, 1.497307, 2.662711 },
+    { -4.060750, 3.360020, 7.859583 }, { -0.434398, 3.929596, 12.802628 }, { 1.415874, 3.078491, 11.476102 },
+    { 0.761534, 2.544188, 10.742492 }, { 0.066500, 2.417625, 10.189259 },
 };
 
 static Ether::ethVector3 rotations[numPoints] = {
-    { -0.160000, -0.689999, 0.000000 }, { -0.184000, -0.628000, 0.000000 }, { -0.196000, -0.450001, 0.000000 },
-    { -0.242000, 0.037999, 0.000000 },  { -0.244000, 0.055999, 0.000000 },  { -0.236000, 0.288000, 0.000000 },
-    { -0.276000, 0.386000, 0.000000 },  { -0.096000, -0.488001, 0.000000 }, { 0.158000, -1.413996, 0.000000 },
-    { 0.282000, -2.782002, 0.000000 },  { 0.282000, -3.012006, 0.000000 },  { 0.282000, -3.012006, 0.000000 },
-    { -0.256000, -1.484007, 0.000000 }, { -0.294000, -1.210009, 0.000000 }, { -0.322000, -1.428006, 0.000000 }
+
+    { 0.517994, -0.894012, 0.000000 }, { -0.110007, -0.128012, 0.000000 }, { -0.426008, -0.240013, 0.000000 },
+    { -0.292008, 0.783985, 0.000000 }, { 0.111993, 2.225976, 0.000000 },   { 0.551993, 3.539979, 0.000000 },
+    { 0.369993, 4.045979, 0.000000 },  { -0.262007, 3.987983, 0.000000 },
 };
 
 
@@ -99,6 +96,16 @@ void SampleApp::UnloadContent()
 void SampleApp::Shutdown()
 {
 }
+
+float smoothstep(float edge0, float edge1, float x)
+{
+    // Clamp x to the range [0, 1]
+    x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+
+    // Perform the smoothstep interpolation
+    return x * x * (3 - 2 * x);
+}
+
 
 void SampleApp::OnUpdate(const UpdateEventArgs& e)
 {
@@ -240,6 +247,8 @@ void GetPositionAndRotation(
     ethVector3& outPosition,
     ethVector3& outRotation)
 {
+
+    t = smoothstep(0, 1, t);
     // Calculate segment index based on t
     float segmentFloat = t * (numPoints - 1);          // Normalized time
     int segmentIndex = static_cast<int>(segmentFloat); // Integer index for points
@@ -349,11 +358,11 @@ void SampleApp::UpdateCamera() const
                                                rightVec * Time::GetDeltaTime() * moveSpeed;
         float yOffset = 0;
 
-        if (m_CameraTransform->m_Translation.z >= 0.188 && m_CameraTransform->m_Translation.y > -10)
+        if (m_CameraTransform->m_Translation.z >= 0.175 && m_CameraTransform->m_Translation.y > -10)
         {
             yOffset = -20;
         }
-        else if (m_CameraTransform->m_Translation.z <= 0.189 && m_CameraTransform->m_Translation.y <= -10)
+        else if (m_CameraTransform->m_Translation.z < 0.175 && m_CameraTransform->m_Translation.y <= -10)
         {
             yOffset = 20;
         }

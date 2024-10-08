@@ -672,27 +672,3 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     }
 }
 
-[shader("anyhit")]
-void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
-{
-
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
-    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-
-    const uint mipLevelToSample = 0;
-
-    if (material.m_AlbedoTextureIndex != 0)
-    {
-        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
-        float4 albedo = albedoTex.SampleLevel(linearSampler, vertex.m_TexCoord, mipLevelToSample);
-
-
-        if (albedo.w <= 0.5)
-            IgnoreHit(); // aborts function
-    }
-}
-
-

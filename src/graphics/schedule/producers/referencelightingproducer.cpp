@@ -44,10 +44,9 @@ DECLARE_GFX_SR(MaterialTable)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
-static const wchar_t* k_AnyHitShader = L"AnyHit";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
-static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_AnyHitShader, k_ClosestHitShader };
+static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader };
 
 Ether::Graphics::ReferenceLightingProducer::ReferenceLightingProducer()
     : GraphicProducer("RaytracedLightingProducer")
@@ -189,7 +188,6 @@ void Ether::Graphics::ReferenceLightingProducer::CreatePipelineState(ResourceCon
     m_RTPsoDesc = GraphicCore::GetDevice().CreateRaytracingPipelineStateDesc();
     m_RTPsoDesc->SetLibraryShader(*m_Shader);
     m_RTPsoDesc->SetHitGroupName(k_HitGroupName);
-    m_RTPsoDesc->SetAnyHitShaderName(k_AnyHitShader);
     m_RTPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_RTPsoDesc->SetMissShaderName(k_MissShader);
     m_RTPsoDesc->SetRayGenShaderName(k_RayGenShader);

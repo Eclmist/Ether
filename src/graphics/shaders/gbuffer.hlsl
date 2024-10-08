@@ -133,9 +133,13 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (InterleavedGradientNoise(IN.TexCoord.xy) > albedo.a)
         discard;
 
+    roughness = 1;
 
     float isPortal = 0;
-    if (worldPos.z >= 0.187 && worldPos.z <= 0.188 && abs(normal.z) >= 0.99)
+    if ((worldPos.z >= 0.187 && worldPos.z <= 0.188 && abs(normal.z) >= 0.99) ||
+        (worldPos.x >= -0.3175 && worldPos.x <= -0.3165 && worldPos.z > 9.5 && worldPos.z < 10.2 && abs(normal.x) >= 0.99)
+
+)
     {
         //albedo = float4(1, 0, 1, 0) * 100;
         //worldPos.y += 5;
@@ -144,7 +148,21 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         metalness = 1;
         albedo = 0;
         emissive = 0;
+        velocity = 0;
     }
+
+    if (worldPos.x >= -0.3175 && worldPos.x <= -0.3165 && worldPos.z > 9.5 && worldPos.z < 10.2 && abs(normal.x) >= 0.99)
+        isPortal = 0.5;
+    
+
+    if (worldPos.y <= -20.1)
+    {
+         roughness = 0.1;
+         metalness = 1;
+         albedo *= 1;
+    }
+
+
 
     float2 octNormals = EncodeNormals(normal);
 
