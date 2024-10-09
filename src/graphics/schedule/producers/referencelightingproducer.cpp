@@ -42,6 +42,8 @@ DECLARE_GFX_SR(GBufferTexture3)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
+
+
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
@@ -169,7 +171,7 @@ void Ether::Graphics::ReferenceLightingProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);      
     rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4);    // (t4) GBuffer0
     rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);      
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 5);    // (t5) GBuffer1
+    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 5);    // (t5) DS
     rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Srv, 1, 0, 6);    // (t6) GBuffer2
     rsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);

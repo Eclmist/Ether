@@ -65,7 +65,11 @@ void UpsamplePass(uint3 threadID)
     const float2 uv = threadID.xy / resolution + halfTexelSize;
     float4 upsampled = UpsampleSource(threadID);
     float4 original = g_DestinationTexture.Sample(linearSampler, uv);
-    g_DestinationTextureUav[threadID.xy] = lerp(original, upsampled, g_BloomParams.m_Scatter);
+
+    float time = g_GlobalConstants.m_Time.y;
+    float scatter = lerp(0.776, 0.81f, smoothstep(6, 9, time));
+
+    g_DestinationTextureUav[threadID.xy] = lerp(original, upsampled, scatter);
 }
 
 void DownsamplePass(uint3 threadID)
@@ -82,7 +86,7 @@ void DownsamplePass(uint3 threadID)
     col += g_SourceTexture.Sample(linearSampler, uv + offset.zy);
     col += g_SourceTexture.Sample(linearSampler, uv + offset.zw);
 
-    g_DestinationTextureUav[threadID.xy] = col / 8.0f;
+    g_DestinationTextureUav[threadID.xy] = min(10000, col) / 8.0f;
 }
 
 void CompositePass(uint3 threadID)
@@ -94,7 +98,11 @@ void CompositePass(uint3 threadID)
     float4 upsampled = UpsampleSource(threadID);
 
     const float4 bloom = g_SourceTexture.Sample(linearSampler, uv);
-    g_DestinationTextureUav[threadID.xy] = lerp(g_DestinationTextureUav[threadID.xy], upsampled, g_BloomParams.m_Intensity);
+
+    float time = g_GlobalConstants.m_Time.y;
+    float intensity = lerp(0.405, 0.49f, smoothstep(6, 9, time));
+
+    g_DestinationTextureUav[threadID.xy] = lerp(g_DestinationTextureUav[threadID.xy], upsampled, intensity);
 }
 
 [numthreads(BLOOM_KERNEL_GROUP_SIZE_X, BLOOM_KERNEL_GROUP_SIZE_Y, 1)]

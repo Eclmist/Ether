@@ -63,8 +63,31 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
         return sky;
 
 
+
+
+
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return abs(position) * 10;
+    {
+
+// Step 2: Reconstruct world position in post-process
+float2 ndc = float2(
+    (IN.Position.x / g_GlobalConstants.m_ScreenResolution.x) * 2.0f - 1.0f, // NDC x
+    1.0f - (IN.Position.y / g_GlobalConstants.m_ScreenResolution.y) * 2.0f  // NDC y, inverted
+);
+
+    float depth = position.x;
+
+float4 clipPos = float4(ndc.x, ndc.y, depth, 1.0);
+
+// Use inverse view-projection matrix to transform to world space
+float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clipPos);
+
+// Perform perspective divide
+worldPos /= worldPos.w;
+
+    return worldPos * 1000;  // For demonstration purposes, return the world position as color
+
+}
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return float4(misc.w, 0, 0, 0) * 10000;

@@ -110,7 +110,7 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     const float3 Lo = Li * f * cosTheta;
 
 
-    const float3 portalColor = float3(0, 0.3, 1) * POINTLIGHT_SCALE;
+    const float3 portalColor = float3(0.2, 0.3, 1)  *  3 * POINTLIGHT_SCALE;
     const float3 portalPosition1 = float3(0, 0.85, 0.18792);
     const float portalDistance1 = abs(length(portalPosition1 - position));
     const float3 portalWi1 = normalize(portalPosition1 - position);
@@ -206,13 +206,13 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     indirectRay.Direction = wi;
     indirectRay.Origin = position;
     indirectRay.TMax = 40;
-    indirectRay.TMin = isPortal ? 0.0001 : 0.1;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, indirectRay, payload);
+    indirectRay.TMin = isPortal ? 0.0 : 0.1;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
     float3 Li = min(20000, payload.m_Radiance);
     const float3 Lo = Li * f * cosTheta;
 
     if (isPortal)
-        return payload.m_Radiance;
+        return payload.m_Radiance * (payload.m_Hit ? 1.0f : 2.0f);
 
     return Lo;
 }
@@ -250,8 +250,6 @@ float3 PathTrace(in MeshVertex hitSurface, in Material material, inout RayPayloa
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
         roughness = roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).g;
     }
-
-    roughness = 1;
 
     if (material.m_MetalnessTextureIndex != 0)
     {
@@ -304,12 +302,30 @@ void RayGeneration()
 
     const float3 color = gbuffer0.xyz;
     const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
-    float3 position = gbuffer1.xyz;
+    
+    float depth = gbuffer1.x;
+
+    // Reconstruct the screen space position (normalized device coordinates - NDC)
+    float2 ndc = float2(
+        (float(launchIndex.x) / float(launchDim.x)) * 2.0f - 1.0f,  // Convert to [-1, 1] range
+        1.0f - (float(launchIndex.y) / float(launchDim.y)) * 2.0f  // Y is inverted in many systems
+    );
+
+float4 clipPos = float4(ndc.x, ndc.y, depth, 1.0);
+
+// Use inverse view-projection matrix to transform to world space
+float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clipPos);
+
+// Perform perspective divide
+worldPos /= worldPos.w;
+
+    // Perform the perspective divide to get world space position
+    float3 position = worldPos.xyz;
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
     const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
     const float2 velocity = gbuffer2.zw;
     const float metalness = gbuffer0.w;
-    const float roughness = gbuffer1.w;
+    const float roughness = gbuffer1.y;
     const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
     const float2 uvPrev = uv - velocity;
     float4 accumulation = 0;

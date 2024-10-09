@@ -38,10 +38,11 @@ static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode
 static constexpr uint32_t ResolutionWidth = 1280;
 static constexpr uint32_t ResolutionHeight = 720;
 static constexpr uint32_t RtCampMaxFrames = 300;
-static constexpr uint32_t RtCampNumAccumulationFrames = 110;
+static constexpr uint32_t RtCampNumAccumulationFrames = 120;
 
 // RTCamp Camera Waypoints
 static const int32_t numPoints = 13;
+bool cameraCut = false;
 
 static Ether::ethVector3 positions[numPoints] = {
     { 2.007078, 1.037681, 0.129103 },  { 1.713656, 0.844614, -0.597515 }, { 1.002630, 0.509382, -1.433886 },
@@ -174,11 +175,16 @@ void SampleApp::OnPostRender()
         return;
 
     m_LocalFrameNumber++;
+    static bool hasDoneCameraCut = false;
 
-    if (m_LocalFrameNumber % RtCampNumAccumulationFrames == 0)
+
+    if (m_LocalFrameNumber % ((!hasDoneCameraCut && cameraCut) ? uint32_t(RtCampNumAccumulationFrames * 1.5f) : RtCampNumAccumulationFrames) == 0)
     {
         if (m_OutputFrameNumber >= RtCampMaxFrames)
             return;
+
+        if (cameraCut)
+            hasDoneCameraCut = true;
 
         void* pReadbackBufferData{};
 
@@ -269,7 +275,7 @@ void GetPositionAndRotation(
     ethVector3& outRotation)
 {
 
-    t = smoothstep(0.0, 1.0f, t);
+    t = smoothstep(0.0, 0.95, t);
     // Calculate segment index based on t
     float segmentFloat = t * (numPoints - 1);          // Normalized time
     int segmentIndex = static_cast<int>(segmentFloat); // Integer index for points
@@ -314,7 +320,7 @@ void SampleApp::UpdateCamera() const
             time += Time::GetDeltaTime();
 
             if (time >= 10000.0f)
-                time -= 3000.0f;
+                time -= 10000.0f;
         }
         else
             time = m_OutputFrameNumber / (float)RtCampMaxFrames;
@@ -329,6 +335,9 @@ void SampleApp::UpdateCamera() const
 
         if (m_CameraTransform->m_Translation.z >= 0.188 && m_CameraTransform->m_Translation.y > -10)
         {
+            if (!cameraCut)
+                cameraCut = true;
+
             m_CameraTransform->m_Translation.y -= 20;
         }
 

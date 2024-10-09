@@ -140,7 +140,9 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     if (InterleavedGradientNoise(IN.TexCoord.xy) > albedo.a)
         discard;
 
-    roughness = 1;
+    float time = g_GlobalConstants.m_Time.y;
+    roughness = lerp(1, roughness, smoothstep(4, 4.5, time));
+
 
     float isPortal = 0;
     if ((worldPos.z >= 0.187 && worldPos.z <= 0.188 && abs(normal.z) >= 0.99) ||
@@ -169,19 +171,17 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
          albedo *= 1;
     }
 
-    float time = g_GlobalConstants.m_Time.y % 10;
-
     if (emissive.r >= 0.99 && emissive.g <= 0.01 && emissive.b >= 0.99)
     {
         albedo = 0;
 
-        if (time <= 8.0)
+        if (time <= 5.0)
             emissive = 0;
         else if (time >= 9.0)
             emissive = float4(0.8, 0.3 , 0.03, 0) * 5;
         else
         {
-            bool on =  random(float2(sin(time * 0.4), cos(time * 5))) > 0.975;
+            bool on =  random(float2(sin(time * 0.4), cos(time * 5))) > 0.905;
             emissive = on ? float4(0.0, 0.3 , 0.9, 0) * 10 : 0;
         }
     }
@@ -190,7 +190,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
 
     PS_OUTPUT o;
     o.Output0 = float4(albedo.x,     albedo.y,      albedo.z,   metalness);
-    o.Output1 = float4(worldPos.x,   worldPos.y,    worldPos.z, roughness);
+    o.Output1 = float4(clipPos.z / clipPos.w,    roughness,     0,      0);
     o.Output2 = float4(octNormals.x, octNormals.y,  velocity.x, velocity.y);
     o.Output3 = float4(emissive.x,   emissive.y,    emissive.z, isPortal);
     return o;

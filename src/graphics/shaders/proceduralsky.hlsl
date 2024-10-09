@@ -290,8 +290,8 @@ float4 SampleHdri(float2 uv)
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
 
-    const float flow1 = frac(g_GlobalConstants.m_Time.w / 20.0f);
-    const float flow2 = frac(g_GlobalConstants.m_Time.w / 20.0f + 0.5f);
+    const float flow1 = frac(g_GlobalConstants.m_Time.w / 5.0f);
+    const float flow2 = frac(g_GlobalConstants.m_Time.w / 5.0f + 0.5f);
     const float alt = abs((flow1 - 0.5) * 2.0);
 
     const float2 distortion = float2(-0.05, 0);

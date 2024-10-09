@@ -63,13 +63,13 @@ public:
     // TAA
     bool m_IsTemporalAAEnabled = true;
     int32_t m_TemporalAAJitterMode = 2;
-    float m_DebugJitterScale = 1;
+    float m_DebugJitterScale = 2.0f;
     float m_TemporalAAAcumulationFactor = 0.003;
 
     // Bloom
     bool m_IsBloomEnabled = true;
-    float m_BloomIntensity = 0.676f;
-    float m_BloomScatter = 0.791f;
+    float m_BloomIntensity = 0.49f;
+    float m_BloomScatter = 0.81f;
     float m_BloomAnamorphic = 0.0f;
 
     // Tonemapping

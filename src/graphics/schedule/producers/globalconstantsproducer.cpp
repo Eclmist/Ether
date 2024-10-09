@@ -69,7 +69,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_Time = ethVector4(Time::GetTimeSinceStartup()) / 1000.0f;
     globalConstants->m_Time.x *= 20;
     globalConstants->m_Time.y = GraphicCore::GetGraphicConfig().m_IsRTCampMode
-                                    ? GraphicCore::GetGraphicRenderer().GetFrameNumber() / 110.0f / 300.0f * 10.0f
+                                    ? (GraphicCore::GetGraphicRenderer().GetFrameNumber() / 110) / 300.0f * 10.0f
                                     : globalConstants->m_Time.y;
     globalConstants->m_Time.z *= 0.5;
     globalConstants->m_Time.w *= 0.025;
