@@ -64,7 +64,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
                 SMath::DegToRad(camera.m_FieldOfView),
                 aspect,
                 camera.m_NearPlane,
-                camera.m_FarPlane);
+                transform.m_Translation.y <= -1 ? camera.m_FarPlane : 10.0f);
             break;
         }
 
@@ -86,7 +86,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
         Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
         renderData.m_ViewMatrix = viewMatrix;
         renderData.m_ProjectionMatrix = projectionMatrix;
-        renderData.m_CameraDirection = forward.Resize<3>();
+        renderData.m_CameraDirection = forward.Resize<3>().Normalized();
         renderData.m_CameraPosition = transform.m_Translation;
         renderData.m_CameraJitter = cameraJitter;
         renderData.m_HdriTextureID = camera.GetHdriTextureID();

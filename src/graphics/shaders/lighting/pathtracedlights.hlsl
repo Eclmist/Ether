@@ -207,7 +207,7 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     indirectRay.Origin = position;
     indirectRay.TMax = 40;
     indirectRay.TMin = isPortal ? 0.0001 : 0.1;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_CULL_BACK_FACING_TRIANGLES, 0xFF, 0, 0, 0, indirectRay, payload);
     float3 Li = min(20000, payload.m_Radiance);
     const float3 Lo = Li * f * cosTheta;
 
@@ -343,7 +343,7 @@ void RayGeneration()
 
     indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH, isPortal);
 
-    float a = 0.05;// max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
     g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;

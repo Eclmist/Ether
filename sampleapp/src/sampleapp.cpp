@@ -41,25 +41,40 @@ static constexpr uint32_t RtCampMaxFrames = 300;
 static constexpr uint32_t RtCampNumAccumulationFrames = 110;
 
 // RTCamp Camera Waypoints
-static const int32_t numPoints = 8;
+static const int32_t numPoints = 13;
 
 static Ether::ethVector3 positions[numPoints] = {
-    { 1.344803, 1.848856, -1.845555 }, { 0.151518, 0.250164, -1.220546 },  { -0.431194, 1.497307, 2.662711 },
-    { -4.060750, 3.360020, 7.859583 }, { -0.434398, 3.929596, 12.802628 }, { 1.415874, 3.078491, 11.476102 },
-    { 0.761534, 2.544188, 10.742492 }, { 0.066500, 2.417625, 10.189259 },
+    { 2.007078, 1.037681, 0.129103 },  { 1.713656, 0.844614, -0.597515 }, { 1.002630, 0.509382, -1.433886 },
+    { 0.181064, 0.345588, -1.410437 }, { 0.055824, 0.396123, -0.869116 }, { -0.331367, 1.152815, 1.894191 },
+    { -3.914166, 2.122833, 4.716497 }, { -4.136668, 3.151175, 9.483077 }, { -0.965950, 3.877743, 14.467319 },
+    { 1.858914, 3.764206, 12.546110 }, { 1.546445, 2.825924, 11.076582 }, { 0.879875, 2.543278, 10.676494 },
+    { 0.041314, 2.411531, 10.197626 }
 };
 
 static Ether::ethVector3 rotations[numPoints] = {
 
-    { 0.517994, -0.894012, 0.000000 }, { -0.110007, -0.128012, 0.000000 }, { -0.426008, -0.240013, 0.000000 },
-    { -0.292008, 0.783985, 0.000000 }, { 0.111993, 2.225976, 0.000000 },   { 0.551993, 3.539979, 0.000000 },
-    { 0.369993, 4.045979, 0.000000 },  { -0.262007, 3.987983, 0.000000 },
+    { 0.196002, 4.201878, 0.000000 },   { 0.122002, 4.761869, 0.000000 },  { -0.230002, 5.669852, 0.000000 },
+    { -0.319998, 5.959826, 0.000000 },  { -0.269998, 6.111815, 0.000000 }, { -0.407999, 6.045814, 0.000000 },
+    { -0.321999, 6.653790, 0.000000 },  { -0.281998, 7.543744, 0.000000 }, { -0.189998, 8.717667, 0.000000 },
+    { 0.540002, 9.583604, 0.000000 },   { 0.472003, 10.407546, 0.000000 }, { 0.158002, 10.407546, 0.000000 },
+    { -0.406000, 10.107546, 0.000000 }
 };
+void SmoothPath()
+{
+    for (int i = 1; i < 3; ++i)
+    {
+        positions[i] = (positions[i - 1] + positions[i] * 2 + positions[i + 1]) / 4.0f;
+        rotations[i] = (rotations[i - 1] + rotations[i] * 2 + rotations[i + 1]) / 4.0f;
+    }
 
+    for (int i = 6; i < numPoints - 1; ++i)
+    {
+        positions[i] = (positions[i - 1] + positions[i] * 2 + positions[i + 1]) / 4.0f;
+        rotations[i] = (rotations[i - 1] + rotations[i] * 2 + rotations[i + 1]) / 4.0f;
+    }
+}
 
-
-
-    void SampleApp::Initialize()
+void SampleApp::Initialize()
 {
     LogInfo("Initializing Application: Sample App");
     Client::SetClientTitle("Ether Sample App");
@@ -68,6 +83,7 @@ static Ether::ethVector3 rotations[numPoints] = {
     m_OutImage.resize(4 * ResolutionWidth * ResolutionHeight);
 
     m_CommandLineOptions = Ether::GetCommandLineOptions();
+
 }
 
 void SampleApp::LoadContent()
@@ -87,6 +103,9 @@ void SampleApp::LoadContent()
     Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
     graphicConfig.m_SunDirection = { 0.713, 0.517, -0.473, 0.0f };
     graphicConfig.m_SunColor = { 255 / 255.0f,  130 / 255.0f, 56 / 255.0f, 0.0f };
+
+    SmoothPath();
+    SmoothPath();
 }
 
 void SampleApp::UnloadContent()
@@ -165,7 +184,7 @@ void SampleApp::OnPostRender()
 
         std::ostringstream filename;
         filename << std::setw(3) << std::setfill('0') << m_OutputFrameNumber << ".png";
-
+ 
         LogInfo("Exporting frame number %u", m_OutputFrameNumber);
         Ether::Graphics::Export(&pReadbackBufferData);
 
@@ -221,6 +240,8 @@ void SampleApp::UpdateGraphicConfig() const
     if (Input::GetKey((KeyCode)Win32::KeyCode::O))
         graphicConfig.m_SunDirection =
             (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.0002);
+
+    graphicConfig.m_IsRTCampMode = m_CommandLineOptions.m_RTCampMode;
 }
 
 ethVector3 CatmullRomChordal(
@@ -248,7 +269,7 @@ void GetPositionAndRotation(
     ethVector3& outRotation)
 {
 
-    t = smoothstep(0, 1, t);
+    t = smoothstep(0.0, 1.0f, t);
     // Calculate segment index based on t
     float segmentFloat = t * (numPoints - 1);          // Normalized time
     int segmentIndex = static_cast<int>(segmentFloat); // Integer index for points
@@ -293,7 +314,7 @@ void SampleApp::UpdateCamera() const
             time += Time::GetDeltaTime();
 
             if (time >= 10000.0f)
-                time -= 10000.0f;
+                time -= 3000.0f;
         }
         else
             time = m_OutputFrameNumber / (float)RtCampMaxFrames;
@@ -316,12 +337,12 @@ void SampleApp::UpdateCamera() const
     {
 
         static ethVector3 cameraRotation;
-        static float moveSpeed = 0.001f;
+        static float moveSpeed = 0.0001;
 
         if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
             moveSpeed = 0.002f;
         else
-            moveSpeed = 0.001f;
+            moveSpeed = 0.0001f;
 
         if (Input::GetMouseButton(2))
         {

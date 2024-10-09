@@ -64,7 +64,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return albedo * 1000.0;
+        return abs(position) * 10;
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
         return float4(misc.w, 0, 0, 0) * 10000;

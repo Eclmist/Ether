@@ -75,6 +75,13 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     return o;
 }
 
+float random(float2 st) {
+    return frac(sin(dot(st.xy,
+                         float2(12.9898,78.233)))
+                 * 43758.5453123);
+}
+
+
 PS_OUTPUT PS_Main(VS_OUTPUT IN)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
@@ -162,7 +169,22 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
          albedo *= 1;
     }
 
+    float time = g_GlobalConstants.m_Time.y % 10;
 
+    if (emissive.r >= 0.99 && emissive.g <= 0.01 && emissive.b >= 0.99)
+    {
+        albedo = 0;
+
+        if (time <= 8.0)
+            emissive = 0;
+        else if (time >= 9.0)
+            emissive = float4(0.8, 0.3 , 0.03, 0) * 5;
+        else
+        {
+            bool on =  random(float2(sin(time * 0.4), cos(time * 5))) > 0.975;
+            emissive = on ? float4(0.0, 0.3 , 0.9, 0) * 10 : 0;
+        }
+    }
 
     float2 octNormals = EncodeNormals(normal);
 
