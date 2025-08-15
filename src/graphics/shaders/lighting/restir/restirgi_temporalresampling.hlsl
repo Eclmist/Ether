@@ -33,7 +33,7 @@ bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
 
-    if (distance(surface.m_Position, surface.m_Position) > 1.0f)
+    if (distance(surface.m_Position, surface.m_Position) > 0.5f)
         return false;
 
     return true;
@@ -60,7 +60,7 @@ void CS_Main(
         {
             GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
 
-            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.9f, historyReservoir.m_WeightSum);
+            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.5f, historyReservoir.m_WeightSum);
 
             if (historyReservoir.IsValid() && boilingFilter)
             {

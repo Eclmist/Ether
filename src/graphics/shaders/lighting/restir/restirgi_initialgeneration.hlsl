@@ -19,6 +19,50 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
+#define USE_IMPORTANCE_SAMPLING 1
+
+void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float diffuseWeight = lerp(lerp(0.5, 1.0, surface.m_Roughness), 0.0, surface.m_Metalness);
+    const float specularWeight = 1.0 - diffuseWeight;
+
+    const bool importanceSampleBrdf = Random(rand2D.x) <= specularWeight;
+
+    if (importanceSampleBrdf)
+        wi = normalize(ImportanceSampleGGX(rand2D, wo, surface.m_Normal, surface.m_Roughness));
+    else
+        wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), surface.m_Normal));
+
+    const float3 H = normalize(wi + wo);
+    const float nDotH = saturate(dot(surface.m_Normal, H));
+    const float nDotV = saturate(dot(surface.m_Normal, wo));
+    const float vDotH = saturate(dot(wo, H));
+
+    // TODO: Abs is also wrong here. Why does it work?
+    const float cosTheta = abs(dot(-wi, surface.m_Normal));
+
+    if (importanceSampleBrdf)
+        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, surface.m_Roughness);
+    else
+        pdf = SampleDirectionHemisphere_Pdf();
+}
+
+void SampleDirectionUniform(ShadingSurface surface, out float3 wi, out float pdf)
+{
+    const uint3 launchIndex = DispatchRaysIndex();
+    const uint3 launchDim = DispatchRaysDimensions();
+    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+    wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
+    pdf = SampleDirectionHemisphere_Pdf();
+}
+
 [shader("raygeneration")]
 void RayGeneration()
 {
@@ -29,8 +73,14 @@ void RayGeneration()
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-    const float3 wi = TangentToWorld(SampleDirectionHemisphere(CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber + 100)), surface.m_Normal);
-    const float pdf = SampleDirectionHemisphere_Pdf();
+    float3 wi;
+    float pdf;
+
+#if USE_IMPORTANCE_SAMPLING
+    SampleDirectionBrdf(surface, wi, pdf);
+#else
+    SampleDirectionUniform(surface, wi, pdf);
+#endif
 
     const RayPayload payload = TraceShadingRay(surface.m_Position, wi, MAX_DEPTH);
     GIReservoirSample initialSample = GIReservoirSample::Empty();
@@ -62,7 +112,7 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample environment color
-        payload.m_Radiance = 0;// SampleEnvironmentLighting(WorldRayDirection());
+        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
     }
 }
 

@@ -31,10 +31,42 @@ bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
 
-    if (distance(surface.m_Position, surface.m_Position) > 1.0f)
+    if (distance(surface.m_Position, surface.m_Position) > 0.5f)
+        return false;
+
+    if (abs(surface.m_Metalness - prevSurface.m_Metalness) > 0.1f)
+        return false;
+
+    if (abs(surface.m_Roughness - prevSurface.m_Roughness) > 0.1f)
         return false;
 
     return true;
+}
+
+void CalculatePartialJacobian(const float3 RecieverPos, const float3 SamplePos, const float3 SampleNormal,
+	out float DistanceToSurfaceSqr, out float CosineEmissionAngle)
+{
+	const float3 Vec = RecieverPos - SamplePos;
+
+	DistanceToSurfaceSqr = dot(Vec, Vec);
+	CosineEmissionAngle = saturate(dot(SampleNormal, Vec * rsqrt(DistanceToSurfaceSqr)));
+}
+
+float CalculateJacobian(float3 RecieverPos, float3 NeighborReceiverPos, const GIReservoir NeighborReservoir)
+{
+	// Calculate Jacobian determinant to adjust weight.
+	// See Equation (11) in the ReSTIR GI paper.
+	float OriginalDistanceSqr, OriginalCosine;
+	float NewDistanceSqr, NewCosine;
+	CalculatePartialJacobian(RecieverPos, NeighborReservoir.m_Sample.m_Position, NeighborReservoir.m_Sample.m_Normal, NewDistanceSqr, NewCosine);
+	CalculatePartialJacobian(NeighborReceiverPos, NeighborReservoir.m_Sample.m_Position, NeighborReservoir.m_Sample.m_Normal, OriginalDistanceSqr, OriginalCosine);
+
+	float Jacobian = (NewCosine * OriginalDistanceSqr) / (OriginalCosine * NewDistanceSqr);
+
+	if (isinf(Jacobian) || isnan(Jacobian))
+		Jacobian = 0;
+
+	return saturate(Jacobian);
 }
 
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, 1)]
@@ -55,6 +87,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         const float2 offset = float2(cos(angle), sin(angle)) * radius;
         const int2 neighbourScreenCoords = screenCoords + offset * SPATIAL_KERNEL_RADIUS;
         const uint neighbourSampleIdx = neighbourScreenCoords.y * screenDims.x + neighbourScreenCoords.x;
+        const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
         if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenDims))
             continue;
@@ -62,13 +95,16 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         if (AreSurfacesSimilar(screenCoords, neighbourScreenCoords))
         {
             GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
+            const float jacobian = CalculateJacobian(surface.m_Position, neighbourSurface.m_Position, neighbourReservoir);
+            neighbourReservoir.m_WeightSum *= jacobian;
 
             if (neighbourReservoir.IsValid())
             {
                 const float targetFunction = EvaluateTargetFunction(surface, neighbourReservoir.m_Sample);
 
                 neighbourReservoir.FinalizeResampling();
-                initialReservoir.Combine(neighbourReservoir, Random(sampleIdx * g_GlobalConstants.m_FrameNumber + 200), targetFunction);
+                neighbourReservoir.M = min(neighbourReservoir.M, 500);
+                initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200), targetFunction);
             }
         }
     }

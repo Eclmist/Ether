@@ -32,7 +32,7 @@ enum RaytracingMode : int32_t
 struct ReSTIRGIConfig
 {
     bool m_TemporalResampling = true;
-    bool m_SpatialResampling = false;
+    bool m_SpatialResampling = true;
     bool m_SpatialFeedback = false;
     bool m_ClearTemporalHistory = false;
 };

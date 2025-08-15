@@ -135,6 +135,12 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
 
     if (spatialResampling && temporalResampling)
     {
+        if (!spatialFeedback && GraphicCore::GetGraphicRenderer().GetFrameNumber() % 2 == 0)
+        {
+            historyReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
+            stagingReservoir = ACCESS_GFX_UA(GIReservoir_History);
+        }
+
         finalReservoir = historyReservoir;
     }
     else if (spatialResampling || temporalResampling)
@@ -199,6 +205,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         ctx.SetRaytracingShaderBindingTable(m_LightingEvaluationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_LightingEvaluationPsoDesc));
         ctx.SetComputeRootDescriptorTable(8, finalReservoir->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(10, finalReservoir->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(11, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();
@@ -292,7 +299,7 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_LightingEvaluationPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_LightingEvaluationPsoDesc->SetMissShaderName(k_MissShader);
     m_LightingEvaluationPsoDesc->SetRayGenShaderName(k_RayGenShader);
-    m_LightingEvaluationPsoDesc->SetMaxRecursionDepth(1);
+    m_LightingEvaluationPsoDesc->SetMaxRecursionDepth(4);
     m_LightingEvaluationPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_LightingEvaluationPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload) + 4);
     m_LightingEvaluationPsoDesc->SetRootSignature(*m_RootSignature);
