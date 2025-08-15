@@ -36,13 +36,13 @@ void RayGeneration()
     GIReservoirSample initialSample = GIReservoirSample::Empty();
     initialSample.m_Position = payload.m_HitPosition;
     initialSample.m_Normal = payload.m_HitNormal;
-    initialSample.m_Radiance = ComputeRadiance(surface, payload.m_Radiance, wi, wo);
+    initialSample.m_Radiance = payload.m_Radiance;
 
-    const float targetFunction = log2(GetLuminanceFromRGB(initialSample.m_Radiance));
+    const float targetFunction = EvaluateTargetFunction(surface, initialSample);
     const float risWeight = targetFunction / pdf;
 
     GIReservoir initialReservoir = GIReservoir::Empty();
-    initialReservoir.Resample(initialSample, 1.0f, targetFunction, risWeight);
+    initialReservoir.Resample(initialSample, 0.0f, targetFunction, risWeight);
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
 
@@ -62,7 +62,7 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample environment color
-        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
+        payload.m_Radiance = 0;// SampleEnvironmentLighting(WorldRayDirection());
     }
 }
 

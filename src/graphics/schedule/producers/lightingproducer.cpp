@@ -114,7 +114,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2)), sizeof(Shader::GeometryInfo) * visuals.size(), 0, 0);
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-    ctx.SetComputeRootSignature(*m_RayGenRootSignature);
+    ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
@@ -127,15 +127,25 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;
     const bool spatialFeedback = config.m_ReSTIRGIConfig.m_SpatialFeedback;
- 
-    auto finalReservoir = ACCESS_GFX_UA(GIReservoir_Initial);
+
+    auto initialReservoir = ACCESS_GFX_UA(GIReservoir_Initial);
+    auto historyReservoir = ACCESS_GFX_UA(GIReservoir_History);
+    auto stagingReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
+    auto finalReservoir = initialReservoir;
+
     if (spatialResampling && temporalResampling)
     {
-        finalReservoir = ACCESS_GFX_UA(GIReservoir_History);
+        finalReservoir = historyReservoir;
     }
     else if (spatialResampling || temporalResampling)
     {
-        finalReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
+        if (temporalResampling && GraphicCore::GetGraphicRenderer().GetFrameNumber() % 2 == 0)
+        {
+            historyReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
+            stagingReservoir = ACCESS_GFX_UA(GIReservoir_History);
+        }
+
+        finalReservoir = stagingReservoir;
     }
 
     // Initial Reservoir Generation
@@ -143,73 +153,35 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         ctx.PushMarker("ReSTIR - Initial Reservoir Generation");
         ctx.SetRaytracingShaderBindingTable(m_InitialGenerationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_InitialGenerationPsoDesc));
-        ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(GIReservoir_Initial)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(10, initialReservoir->GetGpuAddress());
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();
     }
 
-    /*
+    // Temporal Resampling Pass
     if (temporalResampling)
     {
-        // Temporal Resampling Pass
         ctx.PushMarker("ReSTIR - Temporal Resampling");
-
         ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(GIReservoir_Initial)));
-        ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(GIReservoir_Initial)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(GIReservoir_History)->GetGpuAddress());
-        ctx.DispatchRays(resolution.x, resolution.y, 1);
+        ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_TemporalResamplingPsoDesc));
+        ctx.SetComputeRootDescriptorTable(8, initialReservoir->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(9, historyReservoir->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(10, stagingReservoir->GetGpuAddress());
+        ctx.Dispatch(std::ceil(resolution.x / 32.0), std::ceil(resolution.y / 32.0), 1);
         ctx.PopMarker();
     }
-    */
 
-    /*
+    // Final shading pass
     {
-        // Spatial Resampling Pass
-        ctx.PushMarker("ReSTIR - Spatial Resampling");
-        ctx.SetComputeRootConstant(11, RESTIR_SPATIAL_PASS, 0);
-        ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
-        ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));
-        ctx.DispatchRays(resolution.x, resolution.y, 1);
-        ctx.PopMarker();
-    }
-    */
-
-    {
-        // Final shading pass
         ctx.PushMarker("ReSTIR - Final Lighting Evaluation");
         ctx.InsertUavBarrier(*rc.GetResource(finalReservoir));
         ctx.SetRaytracingShaderBindingTable(m_LightingEvaluationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_LightingEvaluationPsoDesc));
         ctx.SetComputeRootDescriptorTable(8, finalReservoir->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(11, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();
     }
-
-    //{
-    //    // Evaluation Pass
-    //    ctx.PushMarker("ReSTIR - Final Lighting Evaluation");
-    //    ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
-    //    ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-    //    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
-    //    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(LightingTexture)), RhiResourceState::UnorderedAccess);
-    //    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
-    //    ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure2))->GetGpuAddress());
-    //    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo2))->GetGpuAddress());
-    //    ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(ReSTIR_GIReservoir)->GetGpuAddress());
-    //    ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(ReSTIR_StagingReservoir)->GetGpuAddress());
-    //    ctx.SetComputeRootConstant(11, RESTIR_EVALUATION_PASS, 0);
-    //    ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_StagingReservoir)));
-    //    ctx.InsertUavBarrier(*rc.GetResource(ACCESS_GFX_UA(ReSTIR_GIReservoir)));
-    //    ctx.DispatchRays(resolution.x, resolution.y, 1);
-    //    ctx.PopMarker();
-    //}
 
     ctx.PopMarker();
 }
@@ -229,19 +201,22 @@ void Ether::Graphics::LightingProducer::CreateShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_InitialGenerationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_initialgeneration.hlsl", "", RhiShaderType::Library });
+    m_TemporalResamplingShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_temporalresampling.hlsl", "CS_Main", RhiShaderType::Compute });
     m_LightingEvaluationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_shadereservoir.hlsl", "", RhiShaderType::Library });
 
     // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_InitialGenerationShader->Compile();
+    m_TemporalResamplingShader->Compile();
     m_LightingEvaluationShader->Compile();
 
     GraphicCore::GetShaderDaemon().RegisterShader(*m_InitialGenerationShader);
+    GraphicCore::GetShaderDaemon().RegisterShader(*m_TemporalResamplingShader);
     GraphicCore::GetShaderDaemon().RegisterShader(*m_LightingEvaluationShader);
 }
 
 void Ether::Graphics::LightingProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> raygenRsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(11, 0);
+    std::unique_ptr<RhiRootSignatureDesc> raygenRsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(12, 0);
     raygenRsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
     raygenRsDesc->SetAsShaderResourceView(1, 0, RhiShaderVisibility::All);        // (t0) TLAS
     raygenRsDesc->SetAsShaderResourceView(2, 1, RhiShaderVisibility::All);        // (t1) RTGeometryInfo2
@@ -257,28 +232,13 @@ void Ether::Graphics::LightingProducer::CreateRootSignature()
     raygenRsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);
     raygenRsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) GIReservoir_Input
     raygenRsDesc->SetAsDescriptorTable(9, 1, RhiShaderVisibility::All);
-    raygenRsDesc->SetDescriptorTableRange(9, RhiDescriptorType::Uav, 1, 0, 1);    // (u1) GIReservoir_Output
+    raygenRsDesc->SetDescriptorTableRange(9, RhiDescriptorType::Uav, 1, 0, 1);    // (u1) GIReservoir_History
     raygenRsDesc->SetAsDescriptorTable(10, 1, RhiShaderVisibility::All);
-    raygenRsDesc->SetDescriptorTableRange(10, RhiDescriptorType::Uav, 1, 0, 2);    // (u2) LightingOutput
+    raygenRsDesc->SetDescriptorTableRange(10, RhiDescriptorType::Uav, 1, 0, 2);   // (u2) GIReservoir_Output
+    raygenRsDesc->SetAsDescriptorTable(11, 1, RhiShaderVisibility::All);
+    raygenRsDesc->SetDescriptorTableRange(11, RhiDescriptorType::Uav, 1, 0, 3);   // (u3) LightingOutput
     raygenRsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RayGenRootSignature = raygenRsDesc->Compile((GetName() + " Root Signature (RayGen)").c_str());
-
-    std::unique_ptr<RhiRootSignatureDesc> computeRsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(7, 0);
-    computeRsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) Global Constants    
-    computeRsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    computeRsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 3);    // (t3) GBuffer0
-    computeRsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);      
-    computeRsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 4);    // (t4) GBuffer1
-    computeRsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    computeRsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 5);    // (t5) GBuffer2
-    computeRsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    computeRsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 6);    // (t6) GBuffer3
-    computeRsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    computeRsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) GIReservoir_Input
-    computeRsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);
-    computeRsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Uav, 1, 0, 1);    // (u1) GIReservoir_Output
-    computeRsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_ComputeRootSignature = computeRsDesc->Compile((GetName() + " Root Signature (Compute)").c_str());
+    m_RootSignature = raygenRsDesc->Compile((GetName() + " Root Signature (RayGen)").c_str());
 }
 
 void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
@@ -293,7 +253,7 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_InitialGenerationPsoDesc->SetMaxRecursionDepth(4);
     m_InitialGenerationPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_InitialGenerationPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload) + 4);
-    m_InitialGenerationPsoDesc->SetRootSignature(*m_RayGenRootSignature);
+    m_InitialGenerationPsoDesc->SetRootSignature(*m_RootSignature);
     m_InitialGenerationPsoDesc->PushLibrary(s_EntryPoints, numExports);
     m_InitialGenerationPsoDesc->PushHitProgram();
     m_InitialGenerationPsoDesc->PushShaderConfig();
@@ -311,7 +271,7 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_LightingEvaluationPsoDesc->SetMaxRecursionDepth(1);
     m_LightingEvaluationPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_LightingEvaluationPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload) + 4);
-    m_LightingEvaluationPsoDesc->SetRootSignature(*m_RayGenRootSignature);
+    m_LightingEvaluationPsoDesc->SetRootSignature(*m_RootSignature);
     m_LightingEvaluationPsoDesc->PushLibrary(s_EntryPoints, numExports);
     m_LightingEvaluationPsoDesc->PushHitProgram();
     m_LightingEvaluationPsoDesc->PushShaderConfig();
@@ -319,6 +279,11 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_LightingEvaluationPsoDesc->PushPipelineConfig();
     m_LightingEvaluationPsoDesc->PushGlobalRootSignature();
     rc.RegisterPipelineState((GetName() + " Lighting Evaluation Raytracing Pipeline State").c_str(), *m_LightingEvaluationPsoDesc);
+
+    m_TemporalResamplingPsoDesc = GraphicCore::GetDevice().CreateComputePipelineStateDesc();
+    m_TemporalResamplingPsoDesc->SetComputeShader(*m_TemporalResamplingShader);
+    m_TemporalResamplingPsoDesc->SetRootSignature(*m_RootSignature);
+    rc.RegisterPipelineState((GetName() + " Temporal Resampling Pipeline State").c_str(), *m_TemporalResamplingPsoDesc);
 }
 
 void Ether::Graphics::LightingProducer::InitializeShaderBindingTable(ResourceContext& rc)

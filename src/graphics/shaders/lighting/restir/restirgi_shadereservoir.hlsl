@@ -19,7 +19,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-RWTexture2D<float4> g_LightingOutput                        : register(u2);
+RWTexture2D<float4> g_LightingOutput                        : register(u3);
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -40,7 +40,7 @@ void RayGeneration()
     const float3 directLighting = f * Li * cosTheta;
 
     finalReservoir.FinalizeResampling();
-    g_LightingOutput[screenCoords].xyz = directLighting + finalReservoir.m_Sample.m_Radiance * finalReservoir.m_WeightSum;
+    g_LightingOutput[screenCoords].xyz = directLighting + ComputeRadiance(surface, finalReservoir.m_Sample.m_Radiance, wi, wo) * finalReservoir.m_WeightSum;
     g_LightingOutput[screenCoords].a = 0;
 }
 

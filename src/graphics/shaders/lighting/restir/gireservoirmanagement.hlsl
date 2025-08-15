@@ -99,8 +99,11 @@ struct GIReservoir
 
     bool IsValid()
     {
-        return m_Sample.IsValid() && M > 0.0f && m_TargetPdf > 0.0f && m_WeightSum > 0.0f && !isinf(m_WeightSum) &&
-               !isnan(m_WeightSum);
+        return m_Sample.IsValid() 
+            && M > 0.0f 
+            && m_TargetPdf > 0.0f 
+            && m_WeightSum > 0.0f 
+            && !isinf(m_WeightSum) && !isnan(m_WeightSum);
     }
 
     // Streaming RIS using weighted reservoir sampling

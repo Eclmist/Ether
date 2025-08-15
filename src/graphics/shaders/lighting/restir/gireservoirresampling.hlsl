@@ -40,7 +40,8 @@ Texture2D<float4> g_GBufferC                                : register(t5);
 Texture2D<float4> g_GBufferD                                : register(t6);
 
 RWStructuredBuffer<GIPackedReservoir> g_InputReservoir      : register(u0);
-RWStructuredBuffer<GIPackedReservoir> g_RWOutputReservoir   : register(u1);
+RWStructuredBuffer<GIPackedReservoir> g_HistoryReservoir    : register(u1);
+RWStructuredBuffer<GIPackedReservoir> g_RWOutputReservoir   : register(u2);
 
 float3 SampleEnvironmentLighting(float3 wi)
 {
@@ -63,6 +64,19 @@ float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
     const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     return surface.m_Emission + f * Li * cosTheta;
+}
+
+float3 ComputeRadiance(ShadingSurface surface, GIReservoirSample sample)
+{
+    const float3 wi = normalize(sample.m_Position - surface.m_Position);
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    return ComputeRadiance(surface, sample.m_Radiance, wi, wo);
+}
+
+float EvaluateTargetFunction(ShadingSurface surface, GIReservoirSample sample)
+{
+    const float3 L = ComputeRadiance(surface, sample);
+    return log2(GetLuminanceFromRGB(L));
 }
 
 RayPayload TraceShadowRay(ShadingSurface surface)
@@ -89,7 +103,7 @@ RayPayload TraceShadingRay(float3 position, float3 direction, uint depth = 0)
 
     RayDesc ray;
     ray.Direction = direction;
-    ray.Origin = position;
+    ray.Origin = position + direction * 0.01;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
