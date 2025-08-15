@@ -39,8 +39,9 @@ void RayGeneration()
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     const float3 directLighting = f * Li * cosTheta;
 
+
     finalReservoir.FinalizeResampling();
-    g_LightingOutput[screenCoords].xyz = directLighting + ComputeRadiance(surface, finalReservoir.m_Sample.m_Radiance, wi, wo) * finalReservoir.m_WeightSum;
+    g_LightingOutput[screenCoords].xyz = directLighting + ComputeRadiance(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
     g_LightingOutput[screenCoords].a = 0;
 }
 

@@ -18,17 +18,15 @@
 */
 
 #include "lighting/restir/gireservoirresampling.hlsl"
-#include "lighting/restir/boilingfilter.hlsl"
 
-#define MAX_TEMPORAL_HISTORY 30
+// TODO: Make into cvar
+#define NUM_SPATIAL_SAMPLES 8
+#define SPATIAL_KERNEL_RADIUS 8
 
-bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
+bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
 {
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-
-    if (any(prevScreenCoords < 0) || any(prevScreenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
-        return false;
 
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
@@ -40,35 +38,37 @@ bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
 }
 
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, 1)]
-void CS_Main(
-    uint3 threadID : SV_DispatchThreadID,
-    uint3 groupThreadID : SV_GroupThreadID)
+void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
     const uint2 screenCoords = threadID.xy;
     const uint2 screenDims = g_GlobalConstants.m_ScreenResolution.xy;
     const uint sampleIdx = screenCoords.y * screenDims.x + screenCoords.x;
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    const int2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenDims);
-    const uint prevSampleIdx = prevScreenCoords.y * screenDims.x + prevScreenCoords.x;
-
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
 
-    if (initialReservoir.IsValid())
+    for (int i = 0; i < NUM_SPATIAL_SAMPLES; ++i)
     {
-        if (IsValidReprojection(screenCoords, prevScreenCoords))
+        const float goldenAngle = 2.3999632f;
+        const float angle = (i + Random(screenCoords * g_GlobalConstants.m_FrameNumber) + 0.3f) * goldenAngle;
+        const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float)NUM_SPATIAL_SAMPLES;
+        const float2 offset = float2(cos(angle), sin(angle)) * radius;
+        const int2 neighbourScreenCoords = screenCoords + offset * SPATIAL_KERNEL_RADIUS;
+        const uint neighbourSampleIdx = neighbourScreenCoords.y * screenDims.x + neighbourScreenCoords.x;
+
+        if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenDims))
+            continue;
+
+        if (AreSurfacesSimilar(screenCoords, neighbourScreenCoords))
         {
-            GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
+            GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
 
-            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.9f, historyReservoir.m_WeightSum);
-
-            if (historyReservoir.IsValid() && boilingFilter)
+            if (neighbourReservoir.IsValid())
             {
-                const float targetFunction = EvaluateTargetFunction(surface, historyReservoir.m_Sample);
+                const float targetFunction = EvaluateTargetFunction(surface, neighbourReservoir.m_Sample);
 
-                historyReservoir.FinalizeResampling();
-                historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), targetFunction);
+                neighbourReservoir.FinalizeResampling();
+                initialReservoir.Combine(neighbourReservoir, Random(sampleIdx * g_GlobalConstants.m_FrameNumber + 200), targetFunction);
             }
         }
     }

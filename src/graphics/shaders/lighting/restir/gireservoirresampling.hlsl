@@ -28,6 +28,8 @@
 #include "lighting/brdf.hlsl"
 #include "lighting/restir/gireservoirmanagement.hlsl"
 
+#define THREADGROUP_SIZE 8
+
 ConstantBuffer<GlobalConstants> g_GlobalConstants           : register(b0);
 
 RaytracingAccelerationStructure g_RaytracingTlas            : register(t0);
@@ -76,7 +78,7 @@ float3 ComputeRadiance(ShadingSurface surface, GIReservoirSample sample)
 float EvaluateTargetFunction(ShadingSurface surface, GIReservoirSample sample)
 {
     const float3 L = ComputeRadiance(surface, sample);
-    return log2(GetLuminanceFromRGB(L));
+    return GetLuminanceFromRGB(L);
 }
 
 RayPayload TraceShadowRay(ShadingSurface surface)

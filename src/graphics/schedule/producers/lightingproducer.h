@@ -55,6 +55,7 @@ protected:
 
     std::unique_ptr<RhiRaytracingPipelineStateDesc> m_InitialGenerationPsoDesc;
     std::unique_ptr<RhiComputePipelineStateDesc> m_TemporalResamplingPsoDesc;
+    std::unique_ptr<RhiComputePipelineStateDesc> m_SpatialResamplingPsoDesc;
     std::unique_ptr<RhiRaytracingPipelineStateDesc> m_LightingEvaluationPsoDesc;
 
 protected:
