@@ -35,16 +35,11 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     const float2 velocity = g_GBufferTexture2.Load(threadID).zw;
     const float2 uv = threadID.xy / resolution + 0.5 / resolution;
     const float2 uvPrev = uv - velocity;
-    float4 colorPrev = 0;
-
-    if (uvPrev.x >= 0 && uvPrev.x < 1 &&
-        uvPrev.y >= 0 && uvPrev.y < 1)
-        colorPrev = g_AccumulationTextureIn.SampleLevel(linearSampler, uvPrev, 0);
-
+    const float4 colorPrev = g_AccumulationTextureIn.SampleLevel(linearSampler, uvPrev, 0);
     const float4 colorCurr = g_TargetTexture[threadID.xy];
 
     // Variance Clipping
-    float4 minColor = 999999.0, maxColor = -999999.0;
+    float4 minColor = 9999999.0, maxColor = -9999999.0;
     const int kernelSize = 1;
     for (int x = -kernelSize; x <= kernelSize; ++x)
     {

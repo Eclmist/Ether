@@ -66,29 +66,6 @@ float3 EvaluateSkyLighting(float3 wi)
     return (exposure * hdri * color).xyz;
 }
 
-MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
-{
-    float3 barycentrics;
-    barycentrics.x = 1 - attribs.barycentrics.x - attribs.barycentrics.y;
-    barycentrics.y = attribs.barycentrics.x;
-    barycentrics.z = attribs.barycentrics.y;
-
-    StructuredBuffer<MeshVertex> vtxBuffer = ResourceDescriptorHeap[geoInfo.m_VBDescriptorIndex];
-    Buffer<uint> idxBuffer = ResourceDescriptorHeap[geoInfo.m_IBDescriptorIndex];
-
-    const uint primIdx = PrimitiveIndex();
-    const uint idx0 = idxBuffer[primIdx * 3 + 0];
-    const uint idx1 = idxBuffer[primIdx * 3 + 1];
-    const uint idx2 = idxBuffer[primIdx * 3 + 2];
-
-    const MeshVertex v0 = vtxBuffer[idx0];
-    const MeshVertex v1 = vtxBuffer[idx1];
-    const MeshVertex v2 = vtxBuffer[idx2];
-
-    return BarycentricLerp(v0, v1, v2, barycentrics);
-
-}
-
 float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
     RayPayload payload;

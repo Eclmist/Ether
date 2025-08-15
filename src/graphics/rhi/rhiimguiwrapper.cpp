@@ -103,6 +103,14 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                     const char* items[] = { "Pathtracer", "ReSTIR GI" };
                     ImGui::Combo("Raytracing Mode", &gfxConfig.m_RaytracingMode, items, IM_ARRAYSIZE(items));
                 }
+
+                if (gfxConfig.m_RaytracingMode == RaytracingMode::ReSTIR)
+                {
+                    ImGui::Checkbox("Temporal Resampling", &gfxConfig.m_ReSTIRGIConfig.m_TemporalResampling);
+                    ImGui::Checkbox("Spatial Resampling", &gfxConfig.m_ReSTIRGIConfig.m_SpatialResampling);
+                    ImGui::Checkbox("Spatial Feedback", &gfxConfig.m_ReSTIRGIConfig.m_SpatialFeedback);
+                }
+
                 ImGui::TreePop();
             }
 
@@ -129,6 +137,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 static ethVector4& sunDirection = gfxConfig.m_SunDirection;
                 ImGui::ColorEdit3("Sun Color", gfxConfig.m_SunColor.m_Data);
                 ImGui::SliderFloat3("Sun Direction", gfxConfig.m_SunDirection.m_Data, -1, 1);
+                ImGui::InputFloat("Sun Intensity", &gfxConfig.m_SunIntensity);
                 sunDirection.Normalize();
                 ImGui::TreePop();
             }

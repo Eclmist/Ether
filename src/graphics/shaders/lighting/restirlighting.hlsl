@@ -27,13 +27,13 @@
 #include "lighting/brdf.hlsl"
 
 #define USE_TEMPORAL_RESAMPLING     1
-#define USE_SPATIAL_RESAMPLING      1
+#define USE_SPATIAL_RESAMPLING      0
 #define USE_SPATIAL_ACCUMULATION    0
-#define USE_IMPORTANCE_SAMPLING     1
+#define USE_IMPORTANCE_SAMPLING     0
 #define USE_JACOBIAN                0
 
-#define MAX_TEMPORAL_HISTORY        30
-#define MAX_SPATIAL_HISTORY         500
+#define MAX_TEMPORAL_HISTORY        6
+#define MAX_SPATIAL_HISTORY         6
 #define SPATIAL_RADIUS              50
 
 #define DEBUG_GREYSCALE_OUTPUT      0
@@ -142,28 +142,6 @@ float3 EvaluateFinalIndirect(Reservoir finalReservoir, GBufferSurface surface)
     return finalSample.m_Radiance * ucw * f * cosTheta;
 }
 
-MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
-{
-    float3 barycentrics;
-    barycentrics.x = 1 - attribs.barycentrics.x - attribs.barycentrics.y;
-    barycentrics.y = attribs.barycentrics.x;
-    barycentrics.z = attribs.barycentrics.y;
-
-    StructuredBuffer<MeshVertex> vtxBuffer = ResourceDescriptorHeap[geoInfo.m_VBDescriptorIndex];
-    Buffer<uint> idxBuffer = ResourceDescriptorHeap[geoInfo.m_IBDescriptorIndex];
-
-    const uint primIdx = PrimitiveIndex();
-    const uint idx0 = idxBuffer[primIdx * 3 + 0];
-    const uint idx1 = idxBuffer[primIdx * 3 + 1];
-    const uint idx2 = idxBuffer[primIdx * 3 + 2];
-
-    const MeshVertex v0 = vtxBuffer[idx0];
-    const MeshVertex v1 = vtxBuffer[idx1];
-    const MeshVertex v2 = vtxBuffer[idx2];
-
-    return BarycentricLerp(v0, v1, v2, barycentrics);
-}
-
 void SampleDirectionCosine(GBufferSurface surface, out float3 wi, out float pdf)
 {
     const uint3 launchIndex = DispatchRaysIndex();
@@ -233,7 +211,7 @@ GBufferSurface GetGBufferSurfaceFromTextures(float2 pixelCoord)
     surface.m_Velocity = gbuffer2.zw;
 
     // Flip normal if backface. This fixes a lot of light leakage
-    if (dot(surface.m_Normal, normalize(g_GlobalConstants.m_CameraPosition - surface.m_Position)) < 0)
+    if (dot(surface.m_Normal, normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position)) < 0)
         surface.m_Normal = -surface.m_Normal;
 
     return surface;
@@ -458,7 +436,7 @@ void ApplyTemporalResampling()
         const int2 offset = (SquareToConcentricDiskMapping(rand2D) - 0.5f) * 4 * (i / (float)numReprojections);
 
         launchIndexPrev += offset;
-        launchIndexPrev = clamp(launchIndexPrev, 0, launchDim);
+        launchIndexPrev = clamp(launchIndexPrev, 0, launchDim.xy);
         const uint sampleIdxPrev = clamp(launchIndexPrev.y * launchDim.x + launchIndexPrev.x, 0, launchDim.x * launchDim.y);
     
         Reservoir reprojectedReservoir = g_ReSTIR_GIReservoir[sampleIdxPrev];
@@ -513,7 +491,7 @@ void ApplySpatialResampling()
     {
         // Review: do random context with seed
         const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber * i);
-        const int2 neighbourCoords = clamp((launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * (SPATIAL_RADIUS / numSpatialIterations * i), 0, launchDim);
+        const int2 neighbourCoords = clamp((launchIndex.xy + 0.5f) + SquareToConcentricDiskMapping(rand2D) * (SPATIAL_RADIUS / numSpatialIterations * i), 0, launchDim.xy);
         const uint neighbourIdx = clamp(neighbourCoords.y * launchDim.x + neighbourCoords.x, 0, launchDim.x * launchDim.y);
         Reservoir neighbour = g_ReSTIR_StagingReservoir[neighbourIdx];
         ReservoirSample nSample = neighbour.m_Sample;

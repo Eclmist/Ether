@@ -17,6 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/raytracingconstants.h"
+
 struct MeshVertex
 {
     float3 m_Position;
@@ -55,3 +57,26 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
 
     return vtx;
 }
+
+MeshVertex GetHitSurface(in BuiltInTriangleIntersectionAttributes attribs, in GeometryInfo geoInfo)
+{
+    float3 barycentrics;
+    barycentrics.x = 1 - attribs.barycentrics.x - attribs.barycentrics.y;
+    barycentrics.y = attribs.barycentrics.x;
+    barycentrics.z = attribs.barycentrics.y;
+
+    StructuredBuffer<MeshVertex> vtxBuffer = ResourceDescriptorHeap[geoInfo.m_VBDescriptorIndex];
+    Buffer<uint> idxBuffer = ResourceDescriptorHeap[geoInfo.m_IBDescriptorIndex];
+
+    const uint primIdx = PrimitiveIndex();
+    const uint idx0 = idxBuffer[primIdx * 3 + 0];
+    const uint idx1 = idxBuffer[primIdx * 3 + 1];
+    const uint idx2 = idxBuffer[primIdx * 3 + 2];
+
+    const MeshVertex v0 = vtxBuffer[idx0];
+    const MeshVertex v1 = vtxBuffer[idx1];
+    const MeshVertex v2 = vtxBuffer[idx2];
+
+    return BarycentricLerp(v0, v1, v2, barycentrics);
+}
+

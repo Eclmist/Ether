@@ -29,6 +29,14 @@ enum RaytracingMode : int32_t
     ReSTIR
 };
 
+struct ReSTIRGIConfig
+{
+    bool m_TemporalResampling = true;
+    bool m_SpatialResampling = true;
+    bool m_SpatialFeedback = true;
+    bool m_ClearTemporalHistory = false;
+};
+
 class ETH_GRAPHIC_DLL GraphicConfig
 {
 public:
@@ -81,8 +89,12 @@ public:
     float m_TonemapperParamE = 1.33;
     float m_TonemapperParamF = 0;
 
+    // ReSTIR
+    ReSTIRGIConfig m_ReSTIRGIConfig;
+
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
+    float m_SunIntensity = 120000.0f;
 
 private:
     ethVector4 m_ClearColor;

@@ -23,10 +23,12 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
-#define RESTIR_INITIAL_PASS     0
-#define RESTIR_TEMPORAL_PASS    1
-#define RESTIR_SPATIAL_PASS     2
-#define RESTIR_EVALUATION_PASS  3
+#define INDIRECT_MIP_LEVEL  8
+#define MAX_DEPTH           1
+
+// TODO: implement various biases (pullback, surface, etc.)
+#define RAY_TMAX            128
+#define RAY_TMIN            0.1
 
 struct GeometryInfo
 {
@@ -46,67 +48,10 @@ struct RayPayload
     ethVector3 m_HitNormal;
 };
 
-struct ReservoirSample
+struct GIPackedReservoir
 {
-    ethVector3 m_SamplePosition;
-    ethVector3 m_SampleNormal;
-    ethVector3 m_Radiance;
-
-#ifdef __HLSL__
-    void Reset()
-    {
-        m_SamplePosition = 0;
-        m_SampleNormal = 0;
-        m_Radiance = 0;
-    }
-#endif
-};
-
-struct Reservoir
-{
-    ReservoirSample m_Sample;
-    float m_TargetFunction;
-    float m_NumSamples;
-    float m_WeightSum;              
-
-#ifdef __HLSL__
-    void Reset()
-    {
-        m_WeightSum = 0;
-        m_TargetFunction = 0;
-        m_NumSamples = 0;
-        m_Sample.Reset();
-    }
-
-    void InternalResample(Reservoir r, float newTargetFunction, float risWeight, float rand)
-    {
-        m_NumSamples += r.m_NumSamples;
-        m_WeightSum += risWeight;
-
-        if (rand * m_WeightSum < risWeight)
-        {
-            m_Sample = r.m_Sample;
-            m_TargetFunction = newTargetFunction;
-        }
-    }
-
-    void Combine(Reservoir r, float newTargetFunction, float rand)
-    {
-        const float ucw = r.m_WeightSum;
-        const float misScalingFactor = r.m_NumSamples;
-        const float risWeight = newTargetFunction * ucw * misScalingFactor;
-        InternalResample(r, newTargetFunction, risWeight, rand);
-    }
-
-    void FinalizeReservoir()
-    {
-        // M is multiplied in the denominator to normalize MIS weights to 1 at the end
-        const float denom = m_TargetFunction * m_NumSamples;
-
-        // converts w(x) -> W(x) by dividing by p^
-        m_WeightSum = denom <= 0.0f ? 0.0f : m_WeightSum / denom;
-    }
-#endif
+    ethVector4u m_PackedData1;
+    ethVector4 m_PackedData2;
 };
 
 ETH_END_SHADER_NAMESPACE

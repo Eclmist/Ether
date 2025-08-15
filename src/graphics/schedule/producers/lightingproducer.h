@@ -46,11 +46,18 @@ protected:
     void InitializeShaderBindingTable(ResourceContext& rc);
 
 protected:
-    std::unique_ptr<RhiShader> m_Shader;
-    std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
-    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_RTPsoDesc;
+    std::unique_ptr<RhiShader> m_InitialGenerationShader;
+    std::unique_ptr<RhiShader> m_TemporalResamplingShader;
+    std::unique_ptr<RhiShader> m_SpatialResamplingShader;
+    std::unique_ptr<RhiShader> m_LightingEvaluationShader;
+    std::unique_ptr<RhiRootSignature> m_RayGenRootSignature;
+    std::unique_ptr<RhiRootSignature> m_ComputeRootSignature;
+
+    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_InitialGenerationPsoDesc;
+    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_LightingEvaluationPsoDesc;
 
 protected:
-    RhiResource* m_RaytracingShaderBindingTable;
+    RhiResource* m_InitialGenerationSBT;
+    RhiResource* m_LightingEvaluationSBT;
 };
 } // namespace Ether::Graphics
