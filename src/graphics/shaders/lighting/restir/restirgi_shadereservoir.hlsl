@@ -66,24 +66,37 @@ void RayGeneration()
     sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, screenSize / (float)DOWNSAMPLE_FACTOR);
 #endif
 
-    const ShadingSurface diffuseSurface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD, false);
+    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     GIReservoir finalReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
+    DeviceMemoryBarrier();
 
     const RayPayload shadowRay = TraceShadowRay(surface);
     const float3 Li = shadowRay.m_Radiance;
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-    const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float3 f = BRDF_UE4(wi, wo, dot(wo, surface.m_Normal) < 0 ? -surface.m_Normal : surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     const float3 directLighting = f * Li * cosTheta;
-    const RayPayload validationRay = TraceValidationRay(diffuseSurface, finalReservoir.m_Sample);
-    
-    if (validationRay.m_Hit)
-        finalReservoir = GIReservoir::Empty();
+    float3 indirectLighting = 0;
 
-    finalReservoir.FinalizeResampling();
-    g_LightingOutput[screenCoords].xyz = directLighting + ComputeRadiance(diffuseSurface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
+    if (finalReservoir.IsValid())
+    {
+        const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
+        
+        if (validationRay.m_Hit)
+        {
+            finalReservoir = GIReservoir::Empty();
+            g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
+        }
+
+        const float targetFunction = EvaluateTargetFunction(surface, finalReservoir.m_Sample);
+
+
+        finalReservoir.FinalizeResampling();
+        indirectLighting = ComputeRadiance(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
+    }
+
+    g_LightingOutput[screenCoords].xyz = directLighting + indirectLighting;
     g_LightingOutput[screenCoords].a = 0;
 
 }
@@ -121,16 +134,14 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Hit = true;
     payload.m_HitPosition = surface.m_Position;
     payload.m_HitNormal = surface.m_Normal;
+    payload.m_Depth = max(0, (int)payload.m_Depth - 1);
+    payload.m_Radiance = 0;
 
-    if (payload.m_Depth <= 0)
-    {
-        payload.m_Radiance = surface.m_Emission;
-    }
-    else
-    {
-        const RayPayload shadowRay = TraceShadowRay(surface);
-        const float3 wo = normalize(-WorldRayDirection());
-        const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-        payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
-    }
+    if (payload.m_IsShadowRay)
+        return;
+
+    const RayPayload shadowRay = TraceShadowRay(surface);
+    const float3 wo = normalize(-WorldRayDirection());
+    const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
+    payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
 }

@@ -83,7 +83,9 @@ void SampleApp::UpdateGraphicConfig() const
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
 
     if (Input::GetKeyDown(KeyCode_ToggleRaytracingDebug))
-        graphicConfig.m_IsRaytracingDebugEnabled = !graphicConfig.m_IsRaytracingDebugEnabled;
+        graphicConfig.m_RaytracingMode = (graphicConfig.m_RaytracingMode == Ether::Graphics::RaytracingMode::ReSTIR) 
+            ? Ether::Graphics::RaytracingMode::Pathtrace 
+            : Ether::Graphics::RaytracingMode::ReSTIR;
 
     if (Input::GetKeyDown(KeyCode_ToggleDebugGui))
         graphicConfig.SetDebugGuiEnabled(!graphicConfig.IsDebugGuiEnabled());

@@ -27,10 +27,9 @@
 #include "lighting/brdf.hlsl"
 
 #define EMISSION_SCALE 10000
-#define SUNLIGHT_SCALE 120000
+#define SUNLIGHT_SCALE 1
 #define SKYLIGHT_SCALE 10000
 #define POINTLIGHT_SCALE 200
-#define MAX_RAY_DEPTH 1
 
 // 0 -> Importance sample BRDF
 // 1 -> Importance sample Cosine Hemisphere
@@ -71,14 +70,11 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     RayPayload payload;
     payload.m_IsShadowRay = true;
 
-    // Flip normal if backface. This fixes a lot of light leakage
-    normal = dot(wo, normal) < 0 ? -normal : normal; 
-
     RayDesc shadowRay;
     shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
     shadowRay.Origin = position + (normal * 0.01);
-    shadowRay.TMax = 128;
-    shadowRay.TMin = 0.01;
+    shadowRay.TMax = RAY_TMAX;
+    shadowRay.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
     const float3 wi = normalize(shadowRay.Direction);
@@ -98,9 +94,6 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     const uint3 launchDim = DispatchRaysDimensions();
     const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
-
-    // Flip normal if backface. This fixes a lot of light leakage
-    normal = dot(wo, normal) < 0 ? -normal : normal; 
 
 #if IMPORTANCE_SAMPLING == 0
     const float diffuseWeight = lerp(lerp(0.5, 1.0, roughness), 0.0, metalness);
@@ -154,8 +147,8 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     RayDesc indirectRay;
     indirectRay.Direction = wi;
     indirectRay.Origin = position;
-    indirectRay.TMax = 128;
-    indirectRay.TMin = 0.01;
+    indirectRay.TMax = RAY_TMAX;
+    indirectRay.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, indirectRay, payload);
     const float3 Li = min(10000.0f, payload.m_Radiance);
 
@@ -243,7 +236,7 @@ void RayGeneration()
          accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
     const float3 direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_RAY_DEPTH);
+    const float3 indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_DEPTH);
 
     float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
@@ -260,7 +253,8 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        payload.m_Radiance = g_GlobalConstants.m_SunColor.xyz * lerp(0.0f, SUNLIGHT_SCALE, saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+        const float lerpFactor = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
+        payload.m_Radiance = lerp(0.0f, g_GlobalConstants.m_SunColor.xyz, lerpFactor);
     }
     else
     {

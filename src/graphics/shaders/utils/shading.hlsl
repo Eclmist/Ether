@@ -35,8 +35,7 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     Texture2D gbufferA,
     Texture2D gbufferB,
     Texture2D gbufferC,
-    Texture2D gbufferD,
-    bool diffuseOnly = false
+    Texture2D gbufferD
 )
 {
     const float4 gbuffer0 = gbufferA.Load(int3(screenCoord, 0));
@@ -52,12 +51,6 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     surface.m_Roughness = gbuffer1.w;
     surface.m_Metalness = gbuffer0.w;
     surface.m_Velocity = gbuffer2.zw;
-
-    if (diffuseOnly)
-    {
-        surface.m_Roughness = 1;
-        surface.m_Metalness = 0;
-    }
     return surface;
 }
 
@@ -84,6 +77,16 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
         float3 bitangent = cross(hitSurface.m_Tangent, hitSurface.m_Normal);
         float3x3 TBN = float3x3(hitSurface.m_Tangent, bitangent, hitSurface.m_Normal.xyz);
         normal = normalize(mul(normal, TBN));
+    }
+    if (material.m_RoughnessTextureIndex != 0)
+    {
+        Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
+        roughness = 1 - roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevel).g;
+    }
+    if (material.m_MetalnessTextureIndex != 0)
+    {
+        Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];
+        metalness = metalnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevel).b;
     }
     if (material.m_EmissiveTextureIndex != 0)
     {

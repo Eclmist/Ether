@@ -107,7 +107,7 @@ RayPayload TraceShadowRay(ShadingSurface surface)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
-    payload.m_Depth = 0;
+    payload.m_Depth = 1;
 
     RayDesc ray;
     ray.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
@@ -119,11 +119,15 @@ RayPayload TraceShadowRay(ShadingSurface surface)
     return payload;
 }
 
-RayPayload TraceShadingRay(float3 position, float3 direction, uint depth = 0)
+RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
 {
+
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
+
+    if (depth <= 0)
+        return payload;
 
     RayDesc ray;
     ray.Direction = direction;
@@ -139,12 +143,12 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
-    payload.m_Depth = 0;
+    payload.m_Depth = 1;
 
     RayDesc ray;
     ray.Direction = normalize(sample.m_Position - surface.m_Position);
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
-    ray.TMax = length(sample.m_Position - surface.m_Position) * 0.95f;
+    ray.TMax = length(sample.m_Position - ray.Origin) * 0.9f;
     ray.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 

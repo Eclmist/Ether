@@ -19,7 +19,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-#define USE_IMPORTANCE_SAMPLING 1
+#define USE_IMPORTANCE_SAMPLING 0
 
 void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
 {
@@ -71,9 +71,11 @@ void RayGeneration()
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
 
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-
+    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+
+    //surface.m_Normal = dot(wo, surface.m_Normal) < 0 ? -surface.m_Normal : surface.m_Normal;
+
     float3 wi;
     float pdf;
 
@@ -128,16 +130,14 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Hit = true;
     payload.m_HitPosition = surface.m_Position;
     payload.m_HitNormal = surface.m_Normal;
+    payload.m_Depth = max(0, (int)payload.m_Depth - 1);
+    payload.m_Radiance = 0;
 
-    if (payload.m_Depth <= 0)
-    {
-        payload.m_Radiance = surface.m_Emission;
-    }
-    else
-    {
-        const RayPayload shadowRay = TraceShadowRay(surface);
-        const float3 wo = normalize(-WorldRayDirection());
-        const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-        payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
-    }
+    if (payload.m_IsShadowRay)
+        return;
+
+    const RayPayload shadowRay = TraceShadowRay(surface);
+    const float3 wo = normalize(-WorldRayDirection());
+    const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
+    payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
 }

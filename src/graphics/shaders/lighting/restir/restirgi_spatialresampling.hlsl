@@ -62,9 +62,9 @@ float CalculateJacobian(float3 RecieverPos, float3 NeighborReceiverPos, const GI
 	float Jacobian = (NewCosine * OriginalDistanceSqr) / (OriginalCosine * NewDistanceSqr);
 
 	if (isinf(Jacobian) || isnan(Jacobian))
-		Jacobian = 0;
+		Jacobian = 1;
 
-	return Jacobian;
+	return saturate(Jacobian);
 }
 
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, 1)]
@@ -92,21 +92,20 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenSize))
             continue;
 
-        if (AreSurfacesSimilar(screenCoords, neighbourScreenCoords))
-        {
-            GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
-            const float jacobian = CalculateJacobian(surface.m_Position, neighbourSurface.m_Position, neighbourReservoir);
-            //neighbourReservoir.m_WeightSum *= jacobian;
+        if (!AreSurfacesSimilar(screenCoords, neighbourScreenCoords))
+            continue;
 
-            if (neighbourReservoir.IsValid())
-            {
-                const float targetFunction = EvaluateTargetFunction(surface, neighbourReservoir.m_Sample);
+        GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
+        const float jacobian = CalculateJacobian(surface.m_Position, neighbourSurface.m_Position, neighbourReservoir);
+        neighbourReservoir.m_WeightSum *= jacobian;
 
-                neighbourReservoir.FinalizeResampling();
-                neighbourReservoir.M = min(neighbourReservoir.M, 500);
-                initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200), targetFunction);
-            }
-        }
+        if (!neighbourReservoir.IsValid())
+            continue;
+
+        const float targetFunction = EvaluateTargetFunction(surface, neighbourReservoir.m_Sample);
+        neighbourReservoir.FinalizeResampling();
+        neighbourReservoir.M = min(neighbourReservoir.M, 200);
+        initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200), targetFunction);
     }
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);

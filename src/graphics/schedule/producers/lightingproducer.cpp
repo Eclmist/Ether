@@ -136,6 +136,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     auto historyReservoir = ACCESS_GFX_UA(GIReservoir_History);
     auto stagingReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
     auto finalReservoir = initialReservoir;
+    auto fallbackReservoir = initialReservoir;
 
     if (spatialResampling && temporalResampling)
     {
@@ -146,6 +147,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         }
 
         finalReservoir = historyReservoir;
+        fallbackReservoir = stagingReservoir;
     }
     else if (spatialResampling || temporalResampling)
     {
@@ -156,14 +158,12 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         }
 
         finalReservoir = stagingReservoir;
+        fallbackReservoir = historyReservoir;
     }
 
     // Initial Reservoir Generation
     {
         ctx.PushMarker("ReSTIR - Initial Reservoir Generation");
-        ctx.InsertUavBarrier(*rc.GetResource(initialReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
         ctx.SetRaytracingShaderBindingTable(m_InitialGenerationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_InitialGenerationPsoDesc));
         ctx.SetComputeRootDescriptorTable(10, initialReservoir->GetGpuAddress());
@@ -204,11 +204,11 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     {
         ctx.PushMarker("ReSTIR - Final Lighting Evaluation");
         ctx.InsertUavBarrier(*rc.GetResource(finalReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
+        ctx.InsertUavBarrier(*rc.GetResource(fallbackReservoir));
         ctx.SetRaytracingShaderBindingTable(m_LightingEvaluationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_LightingEvaluationPsoDesc));
         ctx.SetComputeRootDescriptorTable(8, finalReservoir->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(9, fallbackReservoir->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(10, finalReservoir->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(11, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
         ctx.DispatchRays(resolution.x, resolution.y, 1);
