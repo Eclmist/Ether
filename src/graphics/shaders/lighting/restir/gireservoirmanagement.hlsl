@@ -19,15 +19,18 @@
 
 #include "common/raytracingconstants.h"
 
-// Packing Format - Aggressively pack everything since bandwidth is one of the main bottlenecks
-// reservoir.m_PackedData1.x: [ Position.x (fp16)       Position.y (fp16) ]
-// reservoir.m_PackedData1.y: [ Position.z (fp16)       M (fp16)          ]
-// reservoir.m_PackedData1.z: [ OctNormal.x (fp16)      OctNormal.y (fp16)]
+// reservoir.m_PackedData1.x: [ Position.x (fp32) ]
+// reservoir.m_PackedData1.y: [ Position.y (fp32) ]
+// reservoir.m_PackedData1.z: [ Position.z (fp32) ]
 // reservoir.m_PackedData1.w: [ TargetPdf  (fp32) ]
-// reservoir.m_PackedData2.x: [ Radiance.x (fp32) ]
-// reservoir.m_PackedData2.y: [ Radiance.y (fp32) ]
-// reservoir.m_PackedData2.z: [ Radiance.z (fp32) ]
+// reservoir.m_PackedData2.x: [ Normal.x   (fp32) ]
+// reservoir.m_PackedData2.y: [ Normal.y   (fp32) ]
+// reservoir.m_PackedData2.z: [ Normal.z   (fp32) ]
 // reservoir.m_PackedData2.w: [ WeightSum  (fp32) ]
+// reservoir.m_PackedData3.x: [ Radiance.x (fp32) ]
+// reservoir.m_PackedData3.y: [ Radiance.y (fp32) ]
+// reservoir.m_PackedData3.z: [ Radiance.z (fp32) ]
+// reservoir.m_PackedData3.w: [ M          (fp32) ]
 
 struct GIReservoirSample
 {
@@ -65,15 +68,12 @@ struct GIReservoir
     static GIReservoir Unpack(GIPackedReservoir packedReservoir)
     {
         GIReservoir reservoir;
-        reservoir.m_Sample.m_Position.x = f16tof32(packedReservoir.m_PackedData1.x >> 16);
-        reservoir.m_Sample.m_Position.y = f16tof32(packedReservoir.m_PackedData1.x & 0xFFFF);
-        reservoir.m_Sample.m_Position.z = f16tof32(packedReservoir.m_PackedData1.y >> 16);
-        reservoir.m_Sample.m_Normal = DecodeNormals(float2(f16tof32(packedReservoir.m_PackedData1.z >> 16), f16tof32(packedReservoir.m_PackedData1.z & 0xFFFF)));
-        reservoir.m_Sample.m_Radiance = asfloat(packedReservoir.m_PackedData2.xyz);
-
-        reservoir.M = uint(packedReservoir.m_PackedData1.y & 0xFFFF);
-        reservoir.m_TargetPdf = asfloat(packedReservoir.m_PackedData1.w);
-        reservoir.m_WeightSum = asfloat(packedReservoir.m_PackedData2.w);
+        reservoir.m_Sample.m_Position = packedReservoir.m_PackedData1.xyz;
+        reservoir.m_Sample.m_Normal = packedReservoir.m_PackedData2.xyz;
+        reservoir.m_Sample.m_Radiance = packedReservoir.m_PackedData3.xyz;
+        reservoir.m_TargetPdf = packedReservoir.m_PackedData1.w;
+        reservoir.m_WeightSum = packedReservoir.m_PackedData2.w;
+        reservoir.M = packedReservoir.m_PackedData3.w;
 
         if (isinf(reservoir.m_WeightSum) || isnan(reservoir.m_WeightSum))
             return Empty();
@@ -84,12 +84,12 @@ struct GIReservoir
     static GIPackedReservoir Pack(GIReservoir reservoir)
     {
         GIPackedReservoir packedReservoir;
-        packedReservoir.m_PackedData1.x = f32tof16(reservoir.m_Sample.m_Position.x) << 16 | f32tof16(reservoir.m_Sample.m_Position.y);
-        packedReservoir.m_PackedData1.y = f32tof16(reservoir.m_Sample.m_Position.z) << 16 | (clamp(reservoir.M, 0, 65535) & 0xFFFF);
-        packedReservoir.m_PackedData1.z = f32tof16(EncodeNormals(reservoir.m_Sample.m_Normal).x) << 16 | f32tof16(EncodeNormals(reservoir.m_Sample.m_Normal).y);
-        packedReservoir.m_PackedData1.w = asuint(reservoir.m_TargetPdf);
-        packedReservoir.m_PackedData2.xyz = asuint(reservoir.m_Sample.m_Radiance.xyz);
-        packedReservoir.m_PackedData2.w = asuint(reservoir.m_WeightSum);
+        packedReservoir.m_PackedData1.xyz = reservoir.m_Sample.m_Position;
+        packedReservoir.m_PackedData2.xyz = reservoir.m_Sample.m_Normal;
+        packedReservoir.m_PackedData3.xyz = reservoir.m_Sample.m_Radiance;
+        packedReservoir.m_PackedData1.w = reservoir.m_TargetPdf;
+        packedReservoir.m_PackedData2.w = reservoir.m_WeightSum;
+        packedReservoir.m_PackedData3.w = reservoir.M;
         return packedReservoir;
     }
 

@@ -19,7 +19,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-#define USE_IMPORTANCE_SAMPLING 1
+#define USE_IMPORTANCE_SAMPLING 0
 
 void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
 {

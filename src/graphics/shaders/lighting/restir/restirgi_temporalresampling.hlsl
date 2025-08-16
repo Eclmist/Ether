@@ -20,7 +20,7 @@
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
 
-#define MAX_TEMPORAL_HISTORY 30
+#define MAX_TEMPORAL_HISTORY 6
 
 bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
 {
@@ -49,7 +49,7 @@ void CS_Main(
     const uint sampleIdx = screenCoords.y * screenDims.x + screenCoords.x;
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    const int2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenDims);
+    const uint2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenDims);
     const uint prevSampleIdx = prevScreenCoords.y * screenDims.x + prevScreenCoords.x;
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
@@ -65,7 +65,6 @@ void CS_Main(
             if (historyReservoir.IsValid() && boilingFilter)
             {
                 const float targetFunction = EvaluateTargetFunction(surface, historyReservoir.m_Sample);
-
                 historyReservoir.FinalizeResampling();
                 historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
                 initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), targetFunction);
