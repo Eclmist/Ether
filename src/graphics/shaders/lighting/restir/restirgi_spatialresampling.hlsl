@@ -18,10 +18,7 @@
 */
 
 #include "lighting/restir/gireservoirresampling.hlsl"
-
-// TODO: Make into cvar
-#define NUM_SPATIAL_SAMPLES 32
-#define SPATIAL_KERNEL_RADIUS 64
+#include "lighting/restir/boilingfilter.hlsl"
 
 bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
 {
@@ -31,13 +28,10 @@ bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
 
-    if (distance(surface.m_Position, prevSurface.m_Position) > 0.5f)
-        return false;
+    const float depthA = distance(surface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+    const float depthB = distance(prevSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
 
-    if (abs(surface.m_Metalness - prevSurface.m_Metalness) > 0.1f)
-        return false;
-
-    if (abs(surface.m_Roughness - prevSurface.m_Roughness) > 0.1f)
+    if (abs(depthA - depthB) / depthA > 0.05f)
         return false;
 
     return true;
@@ -68,7 +62,9 @@ float CalculateJacobian(float3 RecieverPos, float3 NeighborReceiverPos, const GI
 }
 
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, 1)]
-void CS_Main(uint3 threadID : SV_DispatchThreadID)
+void CS_Main(
+    uint3 threadID : SV_DispatchThreadID,
+    uint3 groupThreadID : SV_GroupThreadID)
 {
     const uint2 sampleCoords = threadID.xy;
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
@@ -78,11 +74,15 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
 
-    for (int i = 0; i < NUM_SPATIAL_SAMPLES; ++i)
+    const uint numSamples = initialReservoir.M < 5 ? NUM_SPATIAL_SAMPLES * 2.0f : NUM_SPATIAL_SAMPLES;
+    const float lowHistorySampleMultiplier = 1.5f;
+    const uint historyAwareSpatialSampleCount = NUM_SPATIAL_SAMPLES * max(1, lowHistorySampleMultiplier - (initialReservoir.M / (MAX_TEMPORAL_HISTORY / lowHistorySampleMultiplier)));
+
+    for (int i = 0; i < numSamples; ++i)
     {
         const float goldenAngle = 2.3999632f;
         const float angle = (i + Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200) * 3.1415) * goldenAngle;
-        const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float)NUM_SPATIAL_SAMPLES;
+        const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float)numSamples;
         const float2 offset = float2(cos(angle), sin(angle)) * radius;
         const int2 neighbourScreenCoords = screenCoords + offset;
         const uint neighbourSampleIdx = GetSampleIndexFromScreenCoords(neighbourScreenCoords, screenSize);
@@ -100,6 +100,10 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         neighbourReservoir.m_WeightSum *= jacobian;
 
         if (!neighbourReservoir.IsValid())
+            continue;
+
+        const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.8f, neighbourReservoir.m_WeightSum);
+        if (!boilingFilter)
             continue;
 
         const float targetFunction = EvaluateTargetFunction(surface, neighbourReservoir.m_Sample);

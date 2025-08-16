@@ -31,6 +31,12 @@
 #define THREADGROUP_SIZE 8
 #define DOWNSAMPLE_FACTOR 1
 
+// TODO: Make into cvar
+#define MAX_TEMPORAL_HISTORY 30
+#define NUM_SPATIAL_SAMPLES 4
+#define SPATIAL_KERNEL_RADIUS 32
+
+
 ConstantBuffer<GlobalConstants> g_GlobalConstants           : register(b0);
 
 RaytracingAccelerationStructure g_RaytracingTlas            : register(t0);

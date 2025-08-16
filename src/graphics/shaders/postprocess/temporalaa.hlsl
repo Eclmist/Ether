@@ -35,6 +35,13 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     const float2 velocity = g_GBufferTexture2.Load(threadID).zw;
     const float2 uv = threadID.xy / resolution + 0.5 / resolution;
     const float2 uvPrev = uv - velocity;
+
+    if (any(threadID.xy < 0) || any(threadID.xy >= g_GlobalConstants.m_ScreenResolution.xy))
+        return;
+
+    if (uvPrev.x < 0 || uvPrev.y < 0 || uvPrev.x >= 1.0f || uvPrev.y >= 1.0f)
+        return;
+
     const float4 colorPrev = g_AccumulationTextureIn.SampleLevel(linearSampler, uvPrev, 0);
     const float4 colorCurr = g_TargetTexture[threadID.xy];
 
@@ -50,10 +57,10 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
             maxColor = max(maxColor, color);
         }
     }
-    float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
 
-    float a = g_GlobalConstants.m_TaaAccumulationFactor;
-    float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
+    const float a = g_GlobalConstants.m_TaaAccumulationFactor;
+    const float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
+    const float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
 
     g_TargetTexture[threadID.xy] = newColor;
 }

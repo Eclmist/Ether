@@ -20,9 +20,7 @@
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
 
-#define MAX_TEMPORAL_HISTORY 30
-
-bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
+bool IsValidReprojection(uint2 screenCoords, int2 prevScreenCoords)
 {
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
@@ -33,7 +31,10 @@ bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
 
-    if (distance(surface.m_Position, surface.m_Position) > 0.5f)
+    const float depthA = distance(surface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+    const float depthB = distance(prevSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+
+    if (abs(depthA - depthB) / depthA > 0.15f)
         return false;
 
     return true;
@@ -50,7 +51,7 @@ void CS_Main(
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    const uint2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenSize);
+    const int2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenSize);
     const uint prevSampleIdx = GetSampleIndexFromScreenCoords(prevScreenCoords, screenSize);
 
     if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
@@ -64,7 +65,7 @@ void CS_Main(
         {
             GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
 
-            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.5f, historyReservoir.m_WeightSum);
+            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.8f, historyReservoir.m_WeightSum);
 
             if (historyReservoir.IsValid() && boilingFilter)
             {
