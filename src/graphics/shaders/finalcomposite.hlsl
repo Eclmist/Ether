@@ -160,12 +160,37 @@ float3 aces_approx(float3 v)
     return clamp((v * (a * v + b)) / (v * (c * v + d) + e), 0.0f, 1.0f);
 }
 
+float3 ColorGrade(float3 color, float temperature = 0.1, float tint = 0.05, float contrast = 1.05, float saturation = 1.1)
+{
+    float3 warmShift = float3(0.1, -0.05, -0.1);  // bias per channel
+    color += temperature * warmShift;
+
+    float3 tintShift = float3(-0.05, 0.1, -0.05);
+    color += tint * tintShift;
+
+    float luminance = dot(color, float3(0.299, 0.587, 0.114));
+    color = lerp(luminance.xxx, color, saturation);
+
+    color = (color - 0.5) * contrast + 0.5;
+
+    return saturate(color);
+}
+
+
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     const float manualExposure = 0.0005;
 
     float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
     col = col * manualExposure;
+
+    col = ColorGrade(
+        col,
+        g_GlobalConstants.m_ColorGrading_Temperature,
+        g_GlobalConstants.m_ColorGrading_Tint,
+        g_GlobalConstants.m_ColorGrading_Contrast,
+        g_GlobalConstants.m_ColorGrading_Saturation
+    );
 
     if (g_GlobalConstants.m_TonemapperType == 1)
         col = ACESFitted(col);

@@ -71,6 +71,12 @@ struct GlobalConstants
     float m_TonemapperParamD;
     float m_TonemapperParamE;
 
+    // =========== COLOR GRADING =========== //
+    float m_ColorGrading_Temperature;
+    float m_ColorGrading_Tint;
+    float m_ColorGrading_Contrast;
+    float m_ColorGrading_Saturation;
+
     // ============= Debug ============== //
     uint32_t m_RaytracedLightingDebug;
 

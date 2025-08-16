@@ -91,6 +91,12 @@ public:
     float m_TonemapperParamE = 1.33;
     float m_TonemapperParamF = 0;
 
+    // Color grading
+    float m_ColorGrading_Temperature = 0.0f;
+    float m_ColorGrading_Tint = 0.0f;
+    float m_ColorGrading_Contrast = 1.0f;
+    float m_ColorGrading_Saturation = 1.0f;
+
     // ReSTIR
     ReSTIRGIConfig m_ReSTIRGIConfig;
 

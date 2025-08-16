@@ -132,6 +132,15 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Color Grading"))
+            {
+                ImGui::SliderFloat("Temperature", &gfxConfig.m_ColorGrading_Temperature, -1, 1);
+                ImGui::SliderFloat("Tint", &gfxConfig.m_ColorGrading_Tint, -1, 1);
+                ImGui::SliderFloat("Contrast", &gfxConfig.m_ColorGrading_Contrast, 0, 2);
+                ImGui::SliderFloat("Saturation", &gfxConfig.m_ColorGrading_Saturation, 0, 2);
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Debug Sun"))
             {
                 static ethVector4& sunDirection = gfxConfig.m_SunDirection;

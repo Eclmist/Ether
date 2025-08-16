@@ -85,6 +85,11 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_TonemapperParamD = GraphicCore::GetGraphicConfig().m_TonemapperParamD;
     globalConstants->m_TonemapperParamE = GraphicCore::GetGraphicConfig().m_TonemapperParamE;
 
+    globalConstants->m_ColorGrading_Temperature = GraphicCore::GetGraphicConfig().m_ColorGrading_Temperature;
+    globalConstants->m_ColorGrading_Tint = GraphicCore::GetGraphicConfig().m_ColorGrading_Tint;
+    globalConstants->m_ColorGrading_Contrast = GraphicCore::GetGraphicConfig().m_ColorGrading_Contrast;
+    globalConstants->m_ColorGrading_Saturation = GraphicCore::GetGraphicConfig().m_ColorGrading_Saturation;
+
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
     globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
     globalConstants->m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
