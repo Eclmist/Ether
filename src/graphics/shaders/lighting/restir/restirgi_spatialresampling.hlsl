@@ -20,8 +20,8 @@
 #include "lighting/restir/gireservoirresampling.hlsl"
 
 // TODO: Make into cvar
-#define NUM_SPATIAL_SAMPLES 8
-#define SPATIAL_KERNEL_RADIUS 32
+#define NUM_SPATIAL_SAMPLES 32
+#define SPATIAL_KERNEL_RADIUS 64
 
 bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
 {
@@ -31,7 +31,7 @@ bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
 
-    if (distance(surface.m_Position, surface.m_Position) > 0.5f)
+    if (distance(surface.m_Position, prevSurface.m_Position) > 0.5f)
         return false;
 
     if (abs(surface.m_Metalness - prevSurface.m_Metalness) > 0.1f)

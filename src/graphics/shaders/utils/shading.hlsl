@@ -19,6 +19,8 @@
 
 #include "common/material.h"
 
+#define EMISSION_SCALE 10000.0f
+
 struct ShadingSurface
 {
     float3 m_Position;
@@ -47,7 +49,7 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     surface.m_Position = gbuffer1.xyz;
     surface.m_Normal = DecodeNormals(gbuffer2.xy);
     surface.m_Albedo = gbuffer0.rgb;
-    surface.m_Emission = gbuffer3.rgb;
+    surface.m_Emission = gbuffer3.rgb * EMISSION_SCALE;
     surface.m_Roughness = gbuffer1.w;
     surface.m_Metalness = gbuffer0.w;
     surface.m_Velocity = gbuffer2.zw;
@@ -59,7 +61,7 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
     sampler linearSampler = SamplerDescriptorHeap[samplerIndex];
 
     float3 albedo = material.m_BaseColor.rgb;
-    float3 emission = material.m_EmissiveColor.rgb;
+    float3 emission = material.m_EmissiveColor.rgb * EMISSION_SCALE;
     float3 normal = hitSurface.m_Normal;
     float roughness = 1;
     float metalness = 0;

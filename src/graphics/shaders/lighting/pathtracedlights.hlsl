@@ -29,13 +29,11 @@
 #define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 1
 #define SKYLIGHT_SCALE 10000
-#define POINTLIGHT_SCALE 200
 
 // 0 -> Importance sample BRDF
 // 1 -> Importance sample Cosine Hemisphere
 // 2 -> Sample Hemisphere
-#define IMPORTANCE_SAMPLING 0
-
+#define IMPORTANCE_SAMPLING 2
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);

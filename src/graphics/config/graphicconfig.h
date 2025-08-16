@@ -33,7 +33,7 @@ struct ReSTIRGIConfig
 {
     bool m_TemporalResampling = true;
     bool m_SpatialResampling = true;
-    bool m_SpatialFeedback = true;
+    bool m_SpatialFeedback = false;
     bool m_ClearTemporalHistory = false;
 
     uint32_t m_DownsampleFactor = 1;

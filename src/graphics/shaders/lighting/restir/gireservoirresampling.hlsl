@@ -87,7 +87,7 @@ float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
 {
     const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
-    return surface.m_Emission + f * Li * cosTheta;
+    return f * Li * cosTheta;
 }
 
 float3 ComputeRadiance(ShadingSurface surface, GIReservoirSample sample)

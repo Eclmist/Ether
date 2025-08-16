@@ -139,5 +139,5 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     const RayPayload shadowRay = TraceShadowRay(surface);
     const float3 wo = normalize(-WorldRayDirection());
     const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-    payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
+    payload.m_Radiance = surface.m_Emission + ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
 }
