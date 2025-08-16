@@ -70,9 +70,10 @@ float CalculateJacobian(float3 RecieverPos, float3 NeighborReceiverPos, const GI
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    const uint2 screenCoords = threadID.xy;
-    const uint2 screenDims = g_GlobalConstants.m_ScreenResolution.xy;
-    const uint sampleIdx = screenCoords.y * screenDims.x + screenCoords.x;
+    const uint2 sampleCoords = threadID.xy;
+    const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
+    const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
+    const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
@@ -84,11 +85,11 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float)NUM_SPATIAL_SAMPLES;
         const float2 offset = float2(cos(angle), sin(angle)) * radius;
         const int2 neighbourScreenCoords = screenCoords + offset;
-        const uint neighbourSampleIdx = neighbourScreenCoords.y * screenDims.x + neighbourScreenCoords.x;
+        const uint neighbourSampleIdx = GetSampleIndexFromScreenCoords(neighbourScreenCoords, screenSize);
 
         const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-        if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenDims))
+        if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenSize))
             continue;
 
         if (AreSurfacesSimilar(screenCoords, neighbourScreenCoords))

@@ -27,6 +27,9 @@ bool IsValidReprojection(uint2 screenCoords, uint2 prevScreenCoords)
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
+    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+        return false;
+
     if (any(prevScreenCoords < 0) || any(prevScreenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return false;
 
@@ -44,13 +47,14 @@ void CS_Main(
     uint3 threadID : SV_DispatchThreadID,
     uint3 groupThreadID : SV_GroupThreadID)
 {
-    const uint2 screenCoords = threadID.xy;
-    const uint2 screenDims = g_GlobalConstants.m_ScreenResolution.xy;
-    const uint sampleIdx = screenCoords.y * screenDims.x + screenCoords.x;
+    const uint2 sampleCoords = threadID.xy;
+    const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
+    const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
+    const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    const uint2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenDims);
-    const uint prevSampleIdx = prevScreenCoords.y * screenDims.x + prevScreenCoords.x;
+    const uint2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenSize);
+    const uint prevSampleIdx = GetSampleIndexFromScreenCoords(prevScreenCoords, screenSize);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
 

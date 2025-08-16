@@ -35,6 +35,8 @@ struct ReSTIRGIConfig
     bool m_SpatialResampling = true;
     bool m_SpatialFeedback = true;
     bool m_ClearTemporalHistory = false;
+
+    uint32_t m_DownsampleFactor = 1;
 };
 
 class ETH_GRAPHIC_DLL GraphicConfig

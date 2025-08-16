@@ -67,8 +67,8 @@ void Ether::Graphics::LightingProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::LightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint32_t numVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.size();
+    const ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    const uint32_t numVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.size();
 
     schedule.NewUA(ACCESS_GFX_UA(LightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(LightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
@@ -83,7 +83,9 @@ void Ether::Graphics::LightingProducer::GetInputOutput(ScheduleContext& schedule
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
     /* ReSTIR GI Implementation */
-    const uint32_t sampleSize = resolution.x * resolution.y;
+    const uint32_t downsampleFactor = GraphicCore::GetGraphicConfig().m_ReSTIRGIConfig.m_DownsampleFactor;
+    const ethVector2u sampleResolution = resolution / downsampleFactor;
+    const uint32_t sampleSize = sampleResolution.x * sampleResolution.y;
     schedule.NewUA(ACCESS_GFX_UA(GIReservoir_Initial), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
     schedule.NewUA(ACCESS_GFX_UA(GIReservoir_History), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
     schedule.NewUA(ACCESS_GFX_UA(GIReservoir_Staging), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
@@ -127,6 +129,8 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;
     const bool spatialFeedback = config.m_ReSTIRGIConfig.m_SpatialFeedback;
+    const uint32_t downsampleFactor = config.m_ReSTIRGIConfig.m_DownsampleFactor;
+    const ethVector2u sampleResolution = resolution / downsampleFactor;
 
     auto initialReservoir = ACCESS_GFX_UA(GIReservoir_Initial);
     auto historyReservoir = ACCESS_GFX_UA(GIReservoir_History);
@@ -163,7 +167,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         ctx.SetRaytracingShaderBindingTable(m_InitialGenerationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_InitialGenerationPsoDesc));
         ctx.SetComputeRootDescriptorTable(10, initialReservoir->GetGpuAddress());
-        ctx.DispatchRays(resolution.x, resolution.y, 1);
+        ctx.DispatchRays(sampleResolution.x, sampleResolution.y, 1);
         ctx.PopMarker();
     }
 
@@ -178,7 +182,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         ctx.SetComputeRootDescriptorTable(8, initialReservoir->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(9, historyReservoir->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(10, stagingReservoir->GetGpuAddress());
-        ctx.Dispatch(std::ceil(resolution.x / 8.0), std::ceil(resolution.y / 8.0), 1);
+        ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
         ctx.PopMarker();
     }
 
@@ -192,7 +196,7 @@ void Ether::Graphics::LightingProducer::RenderFrame(GraphicContext& ctx, Resourc
         ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_SpatialResamplingPsoDesc));
         ctx.SetComputeRootDescriptorTable(8, (temporalResampling ? stagingReservoir : initialReservoir)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(10, (temporalResampling ? historyReservoir : stagingReservoir)->GetGpuAddress());
-        ctx.Dispatch(std::ceil(resolution.x / 8.0), std::ceil(resolution.y / 8.0), 1);
+        ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
         ctx.PopMarker();
     }
 

@@ -57,8 +57,14 @@ void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
 void RayGeneration()
 {
     const uint2 screenCoords = DispatchRaysIndex().xy;
-    const uint3 screenDims = DispatchRaysDimensions();
-    const uint sampleIdx = screenCoords.y * screenDims.x + screenCoords.x;
+    const uint2 screenSize = DispatchRaysDimensions().xy;
+    uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
+
+#if DOWNSAMPLE_FACTOR != 1
+    const float2 stochasticOffsets = (CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber + 400.0f) - 0.5f) * 2.0f;
+    const uint2 sampleCoords = round( GetSampleCoordsFromScreenCoords(screenCoords) + stochasticOffsets);
+    sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, screenSize / (float)DOWNSAMPLE_FACTOR);
+#endif
 
     const ShadingSurface diffuseSurface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD, false);

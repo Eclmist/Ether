@@ -19,13 +19,13 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-#define USE_IMPORTANCE_SAMPLING 0
+#define USE_IMPORTANCE_SAMPLING 1
 
 void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
 {
-    const uint3 launchIndex = DispatchRaysIndex();
-    const uint3 launchDim = DispatchRaysDimensions();
-    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const uint2 sampleCoords = DispatchRaysIndex().xy;
+    const uint2 bufferSize = DispatchRaysDimensions().xy;
+    const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
 
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
@@ -55,9 +55,9 @@ void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
 
 void SampleDirectionUniform(ShadingSurface surface, out float3 wi, out float pdf)
 {
-    const uint3 launchIndex = DispatchRaysIndex();
-    const uint3 launchDim = DispatchRaysDimensions();
-    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
+    const uint2 sampleCoords = DispatchRaysIndex().xy;
+    const uint2 bufferSize = DispatchRaysDimensions().xy;
+    const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
     wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
     pdf = SampleDirectionHemisphere_Pdf();
@@ -66,9 +66,10 @@ void SampleDirectionUniform(ShadingSurface surface, out float3 wi, out float pdf
 [shader("raygeneration")]
 void RayGeneration()
 {
-    const uint2 screenCoords = DispatchRaysIndex().xy;
-    const uint3 screenDims = DispatchRaysDimensions();
-    const uint sampleIdx = screenCoords.y * screenDims.x + screenCoords.x;
+    const uint2 sampleCoords = DispatchRaysIndex().xy;
+    const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
+    const uint2 bufferSize = DispatchRaysDimensions().xy;
+    const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
 
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 

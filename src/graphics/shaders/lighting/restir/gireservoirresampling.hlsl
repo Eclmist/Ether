@@ -29,6 +29,7 @@
 #include "lighting/restir/gireservoirmanagement.hlsl"
 
 #define THREADGROUP_SIZE 8
+#define DOWNSAMPLE_FACTOR 1
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants           : register(b0);
 
@@ -44,6 +45,27 @@ Texture2D<float4> g_GBufferD                                : register(t6);
 RWStructuredBuffer<GIPackedReservoir> g_InputReservoir      : register(u0);
 RWStructuredBuffer<GIPackedReservoir> g_HistoryReservoir    : register(u1);
 RWStructuredBuffer<GIPackedReservoir> g_RWOutputReservoir   : register(u2);
+
+uint2 GetSampleCoordsFromScreenCoords(uint2 screenCoords)
+{
+    return screenCoords / (float)DOWNSAMPLE_FACTOR;
+}
+
+uint2 GetScreenCoordsFromSampleCoords(uint2 sampleCoords)
+{
+    return sampleCoords * (float)DOWNSAMPLE_FACTOR;
+}
+
+uint GetSampleIndexFromSampleCoords(uint2 sampleCoords, uint2 bufferSize)
+{
+    return sampleCoords.y * bufferSize.x + sampleCoords.x;
+}
+
+uint GetSampleIndexFromScreenCoords(uint2 screenCoords, uint2 screenSize)
+{
+    return GetSampleIndexFromSampleCoords(GetSampleCoordsFromScreenCoords(screenCoords), screenSize / (float)DOWNSAMPLE_FACTOR);
+}
+
 
 float3 SampleEnvironmentLighting(float3 wi)
 {
