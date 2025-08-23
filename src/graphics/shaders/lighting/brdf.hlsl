@@ -71,13 +71,10 @@ float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughn
     const float3 n = normalize(normal);
     const float3 h = normalize(l + v);
 
-    const float nDotV = saturate(dot(n, v));
-    const float nDotL = saturate(dot(n, l));
-    const float nDotH = saturate(dot(n, h));
-    const float vDotH = saturate(dot(v, h));
-
-    if (nDotL <= 0 || nDotV <= 0 || nDotH <= 0 || vDotH <= 0)
-        return 0;
+    const float nDotV = clamp(dot(n, v), 0.01f, 1);
+    const float nDotL = clamp(dot(n, l), 0.01f, 1);
+    const float nDotH = clamp(dot(n, h), 0.01f, 1);
+    const float vDotH = clamp(dot(v, h), 0.01f, 1);
 
     const float specularConstant = 0.5;
     const float3 f0 = lerp(0.08 * specularConstant, albedo, metalness);
