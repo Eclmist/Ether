@@ -102,7 +102,7 @@ public:
 
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
-    float m_SunIntensity = 120000.0f;
+    float m_SunIntensity = 50000.0f;
 
 private:
     ethVector4 m_ClearColor;

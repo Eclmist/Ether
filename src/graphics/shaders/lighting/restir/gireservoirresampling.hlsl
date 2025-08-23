@@ -32,7 +32,7 @@
 #define DOWNSAMPLE_FACTOR 1
 
 // TODO: Make into cvar
-#define MAX_TEMPORAL_HISTORY 30
+#define MAX_TEMPORAL_HISTORY 32
 #define NUM_SPATIAL_SAMPLES 4
 #define SPATIAL_KERNEL_RADIUS 32
 
@@ -103,12 +103,6 @@ float3 ComputeRadiance(ShadingSurface surface, GIReservoirSample sample)
     return ComputeRadiance(surface, sample.m_Radiance, wi, wo);
 }
 
-float EvaluateTargetFunction(ShadingSurface surface, GIReservoirSample sample)
-{
-    const float3 L = ComputeRadiance(surface, sample);
-    return GetLuminanceFromRGB(L);
-}
-
 RayPayload TraceShadowRay(ShadingSurface surface)
 {
     RayPayload payload;
@@ -136,8 +130,8 @@ RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
         return payload;
 
     RayDesc ray;
-    ray.Direction = direction;
     ray.Origin = position + direction * 0.01;
+    ray.Direction = direction;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
@@ -152,8 +146,8 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
     payload.m_Depth = 1;
 
     RayDesc ray;
-    ray.Direction = normalize(sample.m_Position - surface.m_Position);
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
+    ray.Direction = normalize(sample.m_Position - surface.m_Position);
     ray.TMax = length(sample.m_Position - ray.Origin) * 0.9f;
     ray.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);

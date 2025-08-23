@@ -56,8 +56,8 @@ void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
 [shader("raygeneration")]
 void RayGeneration()
 {
-    const uint2 screenCoords = DispatchRaysIndex().xy;
     const uint2 screenSize = DispatchRaysDimensions().xy;
+    const uint2 screenCoords = DispatchRaysIndex().xy;
     uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
 #if DOWNSAMPLE_FACTOR != 1
@@ -79,16 +79,14 @@ void RayGeneration()
 
     if (finalReservoir.IsValid())
     {
-        /*
         const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
-        
+
         if (validationRay.m_Hit)
         {
             finalReservoir = GIReservoir::Empty();
             g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
         }
-        */
-
+        
         finalReservoir.FinalizeResampling();
         indirectLighting = ComputeRadiance(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
     }

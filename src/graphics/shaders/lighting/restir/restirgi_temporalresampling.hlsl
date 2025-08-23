@@ -46,8 +46,8 @@ void CS_Main(
     uint3 groupThreadID : SV_GroupThreadID)
 {
     const uint2 sampleCoords = threadID.xy;
-    const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
+    const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
@@ -65,14 +65,14 @@ void CS_Main(
         {
             GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
 
-            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.8f, historyReservoir.m_WeightSum);
+            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(historyReservoir.m_WeightSum));
 
             if (historyReservoir.IsValid() && boilingFilter)
             {
-                const float targetFunction = EvaluateTargetFunction(surface, historyReservoir.m_Sample);
+                const float3 targetFunction = ComputeRadiance(surface, historyReservoir.m_Sample);
                 historyReservoir.FinalizeResampling();
                 historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), targetFunction);
+                initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), targetFunction);
             }
         }
     }

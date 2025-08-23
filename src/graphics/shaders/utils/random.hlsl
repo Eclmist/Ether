@@ -17,16 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-float Random(float2 uv)
-{
-    float a = 11.9898;
-    float b = 79.283;
-    float c = 49738.543;
-    float dt = dot(uv, float2(a, b));
-    float sn = dt % 3.14;
-    return frac(sin(sn) * c);
-}
-
 float CMJ_Random_Internal(uint i, uint p)
 {
     i ^= p;
@@ -83,4 +73,24 @@ float2 CMJ_Sample2D(uint idx, uint numSamplesX, uint numSamplesY, uint pattern)
     float jx = CMJ_Random_Internal(idx, pattern * 0x967a889b);
     float jy = CMJ_Random_Internal(idx, pattern * 0x368cc8b7);
     return float2((sx + (sy + jx) / numSamplesY) / numSamplesX, (idx + jy) / N);
+}
+
+float Random(float2 uv)
+{
+    float a = 11.9898;
+    float b = 79.283;
+    float c = 49738.543;
+    float dt = dot(uv, float2(a, b));
+    float sn = dt % 3.14;
+    return frac(sin(sn) * c);
+}
+
+float2 Random(float2 uv, uint index)
+{
+    return Random(uv * index);
+}
+
+float2 Random2D(float2 uv, uint index)
+{
+    return CMJ_Sample2D(uv.y * 1024 + uv.x, 1024, 1024, index);
 }

@@ -60,7 +60,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 {
     World& currentWorld = GetActiveWorld();
 
-    const std::string hdriPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Hdri\\kloofendal_48d_partly_cloudy_puresky_8k.hdr";
+    const std::string hdriPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\RtCamp11\\sky_26_2k.png";
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const bool hasImports = !m_ImportPaths.empty();

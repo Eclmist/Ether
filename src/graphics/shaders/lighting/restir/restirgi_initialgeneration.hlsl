@@ -91,11 +91,11 @@ void RayGeneration()
     initialSample.m_Normal = payload.m_HitNormal;
     initialSample.m_Radiance = payload.m_Radiance;
 
-    const float targetFunction = EvaluateTargetFunction(surface, initialSample);
-    const float risWeight = targetFunction / pdf;
+    const float3 targetFunction = ComputeRadiance(surface, initialSample);
+    const float3 risWeight = targetFunction / pdf;
 
     GIReservoir initialReservoir = GIReservoir::Empty();
-    initialReservoir.Resample(initialSample, 0.0f, targetFunction, risWeight);
+    initialReservoir.Resample(initialSample, Random(screenCoords, g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
 

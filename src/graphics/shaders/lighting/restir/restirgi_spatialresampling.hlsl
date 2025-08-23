@@ -22,14 +22,14 @@
 
 bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
 {
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-    const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const ShadingSurface thisSurface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const ShadingSurface otherSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
+    if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.8f)
         return false;
 
-    const float depthA = distance(surface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
-    const float depthB = distance(prevSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+    const float depthA = distance(thisSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+    const float depthB = distance(otherSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
 
     if (abs(depthA - depthB) / depthA > 0.05f)
         return false;
@@ -102,14 +102,16 @@ void CS_Main(
         if (!neighbourReservoir.IsValid())
             continue;
 
-        const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.8f, neighbourReservoir.m_WeightSum);
+        const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.8f, GetLuminanceFromRGB(neighbourReservoir.m_WeightSum));
         if (!boilingFilter)
             continue;
 
-        const float targetFunction = EvaluateTargetFunction(surface, neighbourReservoir.m_Sample);
-        neighbourReservoir.FinalizeResampling();
-        neighbourReservoir.M = min(neighbourReservoir.M, 200);
-        initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200), targetFunction);
+        {
+            const float3 targetFunction = ComputeRadiance(surface, neighbourReservoir.m_Sample);
+            neighbourReservoir.FinalizeResampling();
+            neighbourReservoir.M = min(neighbourReservoir.M, 200);
+            initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 200), targetFunction);
+        }
     }
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);

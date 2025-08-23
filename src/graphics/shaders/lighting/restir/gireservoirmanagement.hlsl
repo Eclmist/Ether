@@ -19,19 +19,6 @@
 
 #include "common/raytracingconstants.h"
 
-// reservoir.m_PackedData1.x: [ Position.x (fp32) ]
-// reservoir.m_PackedData1.y: [ Position.y (fp32) ]
-// reservoir.m_PackedData1.z: [ Position.z (fp32) ]
-// reservoir.m_PackedData1.w: [ TargetPdf  (fp32) ]
-// reservoir.m_PackedData2.x: [ Normal.x   (fp32) ]
-// reservoir.m_PackedData2.y: [ Normal.y   (fp32) ]
-// reservoir.m_PackedData2.z: [ Normal.z   (fp32) ]
-// reservoir.m_PackedData2.w: [ WeightSum  (fp32) ]
-// reservoir.m_PackedData3.x: [ Radiance.x (fp32) ]
-// reservoir.m_PackedData3.y: [ Radiance.y (fp32) ]
-// reservoir.m_PackedData3.z: [ Radiance.z (fp32) ]
-// reservoir.m_PackedData3.w: [ M          (fp32) ]
-
 struct GIReservoirSample
 {
     float3 m_Position;
@@ -51,9 +38,10 @@ struct GIReservoirSample
 struct GIReservoir
 {
     GIReservoirSample m_Sample;
-    float m_WeightSum;
-    float m_TargetPdf;
-    uint M;
+    float3 m_WeightSum;
+    float3 m_TargetPdf;
+    float M;
+
 
     static GIReservoir Empty()
     {
@@ -62,20 +50,21 @@ struct GIReservoir
         reservoir.m_WeightSum = 0;
         reservoir.m_TargetPdf = 0;
         reservoir.M = 0;
+
         return reservoir;
     }
 
     static GIReservoir Unpack(GIPackedReservoir packedReservoir)
     {
         GIReservoir reservoir;
-        reservoir.m_Sample.m_Position = packedReservoir.m_PackedData1.xyz;
-        reservoir.m_Sample.m_Normal = packedReservoir.m_PackedData2.xyz;
-        reservoir.m_Sample.m_Radiance = packedReservoir.m_PackedData3.xyz;
-        reservoir.m_TargetPdf = packedReservoir.m_PackedData1.w;
-        reservoir.m_WeightSum = packedReservoir.m_PackedData2.w;
-        reservoir.M = packedReservoir.m_PackedData3.w;
+        reservoir.m_Sample.m_Position = packedReservoir.m_Position;
+        reservoir.m_Sample.m_Normal = DecodeNormals(packedReservoir.m_PackedNormals);
+        reservoir.m_Sample.m_Radiance = packedReservoir.m_Radiance;
+        reservoir.m_WeightSum = packedReservoir.m_WeightSum;
+        reservoir.m_TargetPdf = packedReservoir.m_TargetPdf;
+        reservoir.M = packedReservoir.M;
 
-        if (isinf(reservoir.m_WeightSum) || isnan(reservoir.m_WeightSum))
+        if (any(isinf(reservoir.m_WeightSum)) || any(isnan(reservoir.m_WeightSum)))
             return Empty();
 
         return reservoir;
@@ -84,27 +73,28 @@ struct GIReservoir
     static GIPackedReservoir Pack(GIReservoir reservoir)
     {
         GIPackedReservoir packedReservoir;
-        packedReservoir.m_PackedData1.xyz = reservoir.m_Sample.m_Position;
-        packedReservoir.m_PackedData2.xyz = reservoir.m_Sample.m_Normal;
-        packedReservoir.m_PackedData3.xyz = reservoir.m_Sample.m_Radiance;
-        packedReservoir.m_PackedData1.w = reservoir.m_TargetPdf;
-        packedReservoir.m_PackedData2.w = reservoir.m_WeightSum;
-        packedReservoir.m_PackedData3.w = reservoir.M;
+        packedReservoir.m_Position = reservoir.m_Sample.m_Position;
+        packedReservoir.m_PackedNormals = EncodeNormals(reservoir.m_Sample.m_Normal);
+        packedReservoir.m_Radiance = reservoir.m_Sample.m_Radiance;
+        packedReservoir.m_WeightSum = reservoir.m_WeightSum;
+        packedReservoir.m_TargetPdf = reservoir.m_TargetPdf;
+        packedReservoir.M = reservoir.M;
+
         return packedReservoir;
     }
 
     bool IsValid()
     {
-        return M > 0 && !isinf(m_WeightSum) && !isnan(m_WeightSum);
+        return M > 0 && !any(isinf(m_WeightSum)) && !any(isnan(m_WeightSum));
     }
 
     // Streaming RIS using weighted reservoir sampling
-    bool Resample(GIReservoirSample newSample, float random, float newTargetPdf, float risWeight)
+    bool Resample(GIReservoirSample newSample, float2 random, float3 newTargetPdf, float3 risWeight)
     {
         M += 1;
         m_WeightSum += risWeight;
 
-        bool newSampleSelected = random * m_WeightSum <= risWeight;
+        const bool newSampleSelected = random.x * GetLuminanceFromRGB(m_WeightSum) <= GetLuminanceFromRGB(risWeight);
 
         if (newSampleSelected)
         {
@@ -115,17 +105,17 @@ struct GIReservoir
         return newSampleSelected;
     }
 
-    bool Combine(GIReservoir newReservoir, float random, float newTargetPdf)
+    bool Combine(GIReservoir newReservoir, float2 random, float3 newTargetPdf)
     {
         if (!newReservoir.IsValid())
             return false;
 
-        float risWeight = newTargetPdf * newReservoir.m_WeightSum * newReservoir.M;
+        float3 risWeight = newTargetPdf * newReservoir.m_WeightSum * newReservoir.M;
 
         M += newReservoir.M;
         m_WeightSum += risWeight;
 
-        bool newSampleSelected = random * m_WeightSum <= risWeight;
+        const bool newSampleSelected = random.x * GetLuminanceFromRGB(m_WeightSum) <= GetLuminanceFromRGB(risWeight);
 
         if (newSampleSelected)
         {
@@ -141,7 +131,7 @@ struct GIReservoir
     // reservoirs
     void FinalizeResampling()
     {
-        const float denom = m_TargetPdf * M;
+        const float3 denom = m_TargetPdf * M;
         m_WeightSum = (denom <= 0.0f) ? 0.0f : m_WeightSum / denom;
     }
 };
