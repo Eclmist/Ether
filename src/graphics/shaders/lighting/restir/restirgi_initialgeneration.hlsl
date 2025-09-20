@@ -71,10 +71,8 @@ void RayGeneration()
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
 
-    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-
-    //surface.m_Normal = dot(wo, surface.m_Normal) < 0 ? -surface.m_Normal : surface.m_Normal;
 
     float3 wi;
     float pdf;
@@ -125,7 +123,9 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-    const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+
+    ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+    surface.m_Normal = dot(-WorldRayDirection(), surface.m_Normal) < 0 ? -surface.m_Normal : surface.m_Normal;
 
     payload.m_Hit = true;
     payload.m_HitPosition = surface.m_Position;

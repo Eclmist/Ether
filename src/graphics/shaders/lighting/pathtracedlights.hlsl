@@ -75,6 +75,8 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     shadowRay.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
 
+    normal = dot(wo, normal) < 0 ? -normal : normal; 
+
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
     const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
