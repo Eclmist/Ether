@@ -25,6 +25,7 @@
 #include <unordered_set>
 
 constexpr uint32_t MaxMaterialsPerAsset = 256;
+constexpr uint32_t MaxSkeletonsPerAsset = 32;
 
 namespace Ether::Toolmode
 {
@@ -47,7 +48,7 @@ namespace Ether::Toolmode
 
     private:
         void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
-        void ProcessSkeletons(aiSkeleton** assimpSkeleton, uint32_t numSkeletons) const;
+        void ProcessSkeletons(const aiScene* assimpScene);
         void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const;
         void ProcessStaticMesh(const aiMesh* assimpMesh) const;
         void ProcessSkinnedMesh(const aiMesh* assimpMesh) const;
@@ -60,6 +61,7 @@ namespace Ether::Toolmode
         float m_MeshScale = 1.0f;
 
         StringID m_MaterialGuidTable[MaxMaterialsPerAsset];
+        std::unordered_map<StringID, StringID> m_BoneNameToSkeletonGuidMap;
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
 }

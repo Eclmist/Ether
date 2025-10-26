@@ -36,6 +36,7 @@ public:
     StringID m_HdriTextureID;
 
     std::vector<Visual> m_Visuals;
+    std::vector<SkinnedVisual> m_SkinnedVisuals;
     std::vector<VisualBatch> m_VisualBatches;
 };
 } // namespace Ether::Graphics

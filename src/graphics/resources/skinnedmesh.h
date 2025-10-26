@@ -32,6 +32,9 @@ public:
     ~SkinnedMesh() override = default;
 
 public:
+    inline StringID GetSkeletonGuid() const { return m_SkeletonGuid; }
+
+public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
 
@@ -41,8 +44,11 @@ public:
     uint32_t GetVertexStride() override { return sizeof(VertexFormats::PositionNormalTangentTexcoord_Skinned); }
 
 public:
-    void NextFrame();
     void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned>&& vertices);
+    void SetSkeletonGuid(StringID guid) { m_SkeletonGuid = guid; }
+
+public:
+    void NextFrame(const Skeleton& skeleton, const SkeletonPose& pose);
     void UpdateGpuResources(CommandContext& ctx);
 
 protected:
@@ -54,6 +60,8 @@ protected:
 
     // RtCamp11 Hack: Update skinning vertex buffer from CPU side (TODO)
     std::unique_ptr<RhiResource> m_StagingVertexBufferResource;
+
+    StringID m_SkeletonGuid;
 };
 
 } // namespace Ether::Graphics

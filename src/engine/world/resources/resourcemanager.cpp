@@ -32,6 +32,7 @@ void Ether::ResourceManager::Serialize(OStream& ostream) const
     Serializable::Serialize(ostream);
     SerializeResource<Graphics::StaticMesh>(ostream, m_StaticMeshes);
     SerializeResource<Graphics::SkinnedMesh>(ostream, m_SkinnedMeshes);
+    SerializeResource<Graphics::Skeleton>(ostream, m_Skeleton);
     SerializeResource<Graphics::Material>(ostream, m_Materials);
     SerializeResource<Graphics::Texture>(ostream, m_Textures);
 }
@@ -42,6 +43,7 @@ void Ether::ResourceManager::Deserialize(IStream& istream)
     Serializable::Deserialize(istream);
     DeserializeResource<Graphics::StaticMesh>(istream, m_StaticMeshes);
     DeserializeResource<Graphics::SkinnedMesh>(istream, m_SkinnedMeshes);
+    DeserializeResource<Graphics::Skeleton>(istream, m_Skeleton);
     DeserializeResource<Graphics::Material>(istream, m_Materials);
     DeserializeResource<Graphics::Texture>(istream, m_Textures);
     CreateGpuResources();
@@ -61,9 +63,16 @@ Ether::StringID Ether::ResourceManager::RegisterSkinnedMeshResource(std::unique_
     return sid;
 }
 
+Ether::StringID Ether::ResourceManager::RegisterSkeletonResource(std::unique_ptr<Graphics::Skeleton>&& skeleton)
+{
+    StringID sid = skeleton->GetGuid();
+    m_Skeleton[sid] = std::move(skeleton);
+    return sid;
+}
+
 Ether::StringID Ether::ResourceManager::RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material)
 {
-    StringID sid = material->GetGuid();0;// 
+    StringID sid = material->GetGuid();
     m_Materials[sid] = std::move(material);
     return sid;
 }
@@ -89,6 +98,14 @@ Ether::Graphics::SkinnedMesh* Ether::ResourceManager::GetSkinnedMeshResource(Str
         return nullptr;
 
     return m_SkinnedMeshes.at(guid).get();
+}
+
+Ether::Graphics::Skeleton* Ether::ResourceManager::GetSkeletonResource(StringID guid) const
+{
+    if (m_Skeleton.find(guid) == m_Skeleton.end())
+        return nullptr;
+
+    return m_Skeleton.at(guid).get();
 }
 
 Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID guid) const

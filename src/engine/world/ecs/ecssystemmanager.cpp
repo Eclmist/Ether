@@ -26,6 +26,7 @@ Ether::Ecs::EcsSystemManager::EcsSystemManager()
 {
     m_Systems.emplace_back(std::make_unique<EcsCameraSystem>());
     m_Systems.emplace_back(std::make_unique<EcsVisualSystem>());
+    m_Systems.emplace_back(std::make_unique<EcsSkinnedVisualSystem>());
 }
 
 void Ether::Ecs::EcsSystemManager::UpdateEntitySignature(EntityID entityID, EntitySignature newSignature)

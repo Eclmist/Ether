@@ -34,6 +34,8 @@ void Ether::Graphics::SkinnedMesh::Serialize(OStream& ostream) const
     ostream << m_NumVertices;
     for (int i = 0; i < m_PackedVertices.size(); ++i)
         m_PackedVertices[i].Serialize(ostream);
+
+    ostream << m_SkeletonGuid;
 }
 
 void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
@@ -46,6 +48,8 @@ void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
     m_PackedVertices.resize(m_NumVertices);
     for (int i = 0; i < m_PackedVertices.size(); ++i)
         m_PackedVertices[i].Deserialize(istream);
+
+    istream >> m_SkeletonGuid;
 }
 
 void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
@@ -72,21 +76,6 @@ void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
     }
 }
 
-void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
-{
-    const size_t vertexBufferSize = m_NumVertices * GetVertexStride();
-
-    // Copy CPU-skinned data into staging/upload buffer
-    void* mappedAddr;
-    m_StagingVertexBufferResource->Map(&mappedAddr);
-    memcpy(mappedAddr, m_PackedVertices.data(), vertexBufferSize);
-    m_StagingVertexBufferResource->Unmap();
-
-    ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::CopyDest);
-    ctx.CopyBufferRegion(*m_StagingVertexBufferResource, *m_VertexBufferResource, vertexBufferSize);
-    ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::Common);
-}
-
 void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned>&& vertices)
 {
     m_PackedVertices = std::move(vertices);
@@ -95,28 +84,12 @@ void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::
     ComputeBoundingBox();
 }
 
-void Ether::Graphics::SkinnedMesh::CreateStagingVertexBuffer()
+void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const SkeletonPose& pose)
 {
-    size_t bufferSize = m_NumVertices * GetVertexStride();
-    RhiCommitedResourceDesc desc = {};
-    desc.m_Name = "SkinnedMesh::StagingUploadBuffer";
-    desc.m_HeapType = RhiHeapType::Upload;
-    desc.m_State = RhiResourceState::GenericRead;
-    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
-    m_StagingVertexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
-}
-
-void Ether::Graphics::SkinnedMesh::RefitAccelerationStructure(CommandContext& ctx)
-{
-    LogWarning("BVH Refit - Not yet implemented");
-}
-
-void Ether::Graphics::SkinnedMesh::NextFrame()
-{
+    // DEBUG CODE!
     if (GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled &&
         GraphicCore::GetGraphicConfig().m_SkinningDebugBoneId != -1)
     {
-        // DEBUG CODE!
         for (uint32_t i = 0; i < m_NumVertices; ++i)
         {
             m_PackedVertices[i].m_Color = ethVector4(0, 0, 0, 0);
@@ -141,5 +114,36 @@ void Ether::Graphics::SkinnedMesh::NextFrame()
             m_PackedVertices[i].m_Color = ethVector4(1, 1, 1, 1);
         }
     }
+}
+
+void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
+{
+    const size_t vertexBufferSize = m_NumVertices * GetVertexStride();
+
+    // Copy CPU-skinned data into staging/upload buffer
+    void* mappedAddr;
+    m_StagingVertexBufferResource->Map(&mappedAddr);
+    memcpy(mappedAddr, m_PackedVertices.data(), vertexBufferSize);
+    m_StagingVertexBufferResource->Unmap();
+
+    ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::CopyDest);
+    ctx.CopyBufferRegion(*m_StagingVertexBufferResource, *m_VertexBufferResource, vertexBufferSize);
+    ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::Common);
+}
+
+void Ether::Graphics::SkinnedMesh::CreateStagingVertexBuffer()
+{
+    size_t bufferSize = m_NumVertices * GetVertexStride();
+    RhiCommitedResourceDesc desc = {};
+    desc.m_Name = "SkinnedMesh::StagingUploadBuffer";
+    desc.m_HeapType = RhiHeapType::Upload;
+    desc.m_State = RhiResourceState::GenericRead;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(bufferSize);
+    m_StagingVertexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
+}
+
+void Ether::Graphics::SkinnedMesh::RefitAccelerationStructure(CommandContext& ctx)
+{
+    LogWarning("BVH Refit - Not yet implemented");
 }
 

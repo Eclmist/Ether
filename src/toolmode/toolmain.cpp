@@ -106,6 +106,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
             static const StringID StaticMeshClassID = StringID(ETH_CLASS_ID_STATICMESH);
             static const StringID SkinnedMeshClassID = StringID(ETH_CLASS_ID_SKINNEDMESH);
+            static const StringID SkeletonClassID = StringID(ETH_CLASS_ID_SKELETON);
             static const StringID MaterialClassID = StringID(ETH_CLASS_ID_MATERIAL);
             static const StringID TextureClassID = StringID(ETH_CLASS_ID_TEXTURE);
 
@@ -119,6 +120,12 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             {
                 skinnedMeshes.emplace_back(std::make_unique<Graphics::SkinnedMesh>());
                 skinnedMeshes.back()->Deserialize(assetFileStream);
+            }
+            else if (classID == SkeletonClassID)
+            {
+                std::unique_ptr<Graphics::Skeleton> skeleton = std::make_unique<Graphics::Skeleton>();
+                skeleton->Deserialize(assetFileStream);
+                currentWorld.GetResourceManager().RegisterSkeletonResource(std::move(skeleton));
             }
             else if (classID == MaterialClassID)
             {
@@ -151,11 +158,11 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         for (auto& skinnedMesh : skinnedMeshes)
         {
             Entity& entity = currentWorld.CreateEntity("Entity (" + skinnedMesh->GetGuid() + ")");
-            entity.AddComponent<Ecs::EcsVisualComponent>();
-            Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
-            visual.m_IsSkinned = true;
+            entity.AddComponent<Ecs::EcsSkinnedVisualComponent>();
+            Ecs::EcsSkinnedVisualComponent& visual = entity.GetComponent<Ecs::EcsSkinnedVisualComponent>();
             visual.m_MeshGuid = skinnedMesh->GetGuid();
             visual.m_MaterialGuid = skinnedMesh->GetDefaultMaterialGuid();
+            visual.m_SkeletonGuid = skinnedMesh->GetSkeletonGuid();
             currentWorld.GetResourceManager().RegisterSkinnedMeshResource(std::move(skinnedMesh));
         }
 

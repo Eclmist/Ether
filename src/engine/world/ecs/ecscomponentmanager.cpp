@@ -34,6 +34,7 @@ Ether::Ecs::EcsComponentManager::EcsComponentManager()
     RegisterComponent<EcsMetadataComponent>();
     RegisterComponent<EcsTransformComponent>();
     RegisterComponent<EcsVisualComponent>();
+    RegisterComponent<EcsSkinnedVisualComponent>();
 }
 
 void Ether::Ecs::EcsComponentManager::Serialize(OStream& ostream) const

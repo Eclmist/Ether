@@ -40,7 +40,7 @@ public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
 
-private:
+public:
     std::string m_Name;
     uint32_t m_ParentIndex;
     ethMatrix4x4 m_InverseBindMatrix;
@@ -53,11 +53,13 @@ public:
     ~Skeleton() override = default;
 
 public:
-    inline uint32_t NumBones() const { return m_Bones.size(); }
-
-public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
+
+public:
+    inline uint32_t NumBones() const { return m_Bones.size(); }
+    inline SkeletonBone GetBone(uint32_t index) const { return m_Bones[index]; }
+    inline void AddBone(const SkeletonBone& bone) { m_Bones.push_back(bone); }
 
 private:
     std::vector<SkeletonBone> m_Bones;

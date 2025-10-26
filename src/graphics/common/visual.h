@@ -27,6 +27,7 @@ struct VisualBatch;
 class Mesh;
 class StaticMesh;
 class SkinnedMesh;
+class Skeleton;
 class Material;
 
 struct ETH_GRAPHIC_DLL Visual
@@ -40,6 +41,22 @@ struct ETH_GRAPHIC_DLL Visual
         if (m_Mesh != other.m_Mesh)
             return false;
         if (m_Material != other.m_Material)
+            return false;
+        return true;
+    }
+};
+
+struct ETH_GRAPHIC_DLL SkinnedVisual : public Visual
+{
+    Skeleton* m_Skeleton;
+
+    bool operator==(const SkinnedVisual& other) const
+    {
+        if (m_Mesh != other.m_Mesh)
+            return false;
+        if (m_Material != other.m_Material)
+            return false;
+        if (m_Skeleton != other.m_Skeleton)
             return false;
         return true;
     }
