@@ -179,7 +179,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
         Graphics::SkinnedMesh* skinnedMesh = resources.GetSkinnedMeshResource(data.m_MeshGuid);
         Graphics::Skeleton* skeleton = resources.GetSkeletonResource(data.m_SkeletonGuid);
-        Graphics::SkeletonPose tempPose;
+        Graphics::SkeletonPose tempPose = skeleton->GetBindPose();
 
         if (skinnedMesh == nullptr)
             continue;

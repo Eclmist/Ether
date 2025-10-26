@@ -78,6 +78,9 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
     // skeletons. Absolute insanity.
     ProcessSkeletons(assimpScene);
 
+    if (assimpScene->HasAnimations())
+        ProcessAnimations(assimpScene);
+
     if (assimpScene->HasMeshes())
         ProcessMeshs(assimpScene->mMeshes, assimpScene->mNumMeshes);
 }
@@ -86,10 +89,6 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
 {
     std::vector<Graphics::Skeleton> skeletons;
     std::unordered_map<std::string, aiBone*> boneNameToBoneMap;
-    /*
-    std::unordered_map<aiNode*, Graphics::Skeleton*> nodeToSkeletonMap;
-    std::unordered_map<Graphics::Skeleton*, aiNode*> skeletonToRootNodeMap;
-    */
 
     for (int i = 0; i < assimpScene->mNumMeshes; ++i)
     {
@@ -114,56 +113,16 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
         return (boneNameToBoneMap.find(node->mName.C_Str()) != boneNameToBoneMap.end()); 
     };
 
-    /*
-    std::function<const aiNode*(const aiNode*)> GetSkeletonRoot = [&](const aiNode* boneNode) -> const aiNode*
-    {
-        AssertToolmode(IsBone(boneNode), "Expected a bone as input");
-
-        if (boneNode->mParent == nullptr || !IsBone(boneNode->mParent))
-        {
-            return boneNode;
-        }
-        
-        return GetSkeletonRoot(boneNode->mParent);
-    };
-
-    // Depth first search entire node hierarchy to identify root bones (absolute insanity)
-    std::function<void(const aiNode*)> PopulateRootBones = [&](const aiNode* node) -> void
-    {
-        if (node == nullptr)
-            return;
-
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            const aiNode* childNode = node->mChildren[i];
-
-            if (IsBone(childNode))
-            {
-                // Since this is a DFS, the first time we encounter a bone, it should already be the root of the skeleton.
-                // However, for insurance, I will check again.
-                AssertToolmode(GetSkeletonRoot(childNode) == childNode, "Logic error (see comment)");
-
-                // Found a root skeleton node
-                skeletons.emplace_back();
-                Graphics::Skeleton* skeleton = &skeletons.back();
-                
-                nodeToSkeletonMap.emplace(childNode, skeleton);
-                skeletonToRootNodeMap.emplace(skeleton, childNode);
-            }
-            else
-            {
-                PopulateRootBones(childNode);
-            }
-        }
-    };
-    */
-
     // Depth first search each root bone to build skeleton hierarchy (again, absolute insanity)
-    std::function<void(Graphics::Skeleton*, const aiNode*, uint32_t)> GenerateSkeletonHierarchy = [&](Graphics::Skeleton* skeleton, const aiNode* node, uint32_t parentIndex) -> void 
+    std::function<void(Graphics::Skeleton*, const aiNode*, uint32_t, ethMatrix4x4)> GenerateSkeletonHierarchy =
+        [&](Graphics::Skeleton* skeleton,
+            const aiNode* node,
+            uint32_t parentBoneIndex,
+            const ethMatrix4x4& parentTransform) -> void
     {
         // If skeleton == nullptr, root bone node has not yet been found
-        // Alternatively, if node is not a bone but skeleton is not null, it could mean that node actually really was a bone, just that it had no vertex influence
-        // Again, absolute insanity on assimp's part.
+        // Alternatively, if node is not a bone but skeleton is not null, it could mean that node actually really was a
+        // bone, just that it had no vertex influence Again, absolute insanity on assimp's part.
 
         if (skeleton == nullptr)
         {
@@ -173,7 +132,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
                 skeletons.emplace_back();
                 Graphics::Skeleton* skeleton = &skeletons.back();
 
-                GenerateSkeletonHierarchy(skeleton, node, Graphics::InvalidBoneIndex);
+                GenerateSkeletonHierarchy(skeleton, node, Graphics::InvalidBoneIndex, {});
             }
             else
             {
@@ -181,106 +140,104 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
                 for (uint32_t i = 0; i < node->mNumChildren; ++i)
                 {
                     const aiNode* childNode = node->mChildren[i];
-                    GenerateSkeletonHierarchy(skeleton, childNode, Graphics::InvalidBoneIndex);
+                    GenerateSkeletonHierarchy(skeleton, childNode, Graphics::InvalidBoneIndex, {});
                 };
             }
 
             return;
         }
 
-        // If there's a skeleton but we reached a "non-bone" node, what this really means is that there is an intermediate bone with no
-        // vertex influence. However, it may still have valid child bones. Assimp's absolutely ridiculous design is, again, to blame.
-        // We'll just set this node to identity. May cause broken animations, but fuck it.
+        // If there's a skeleton but we reached a "non-bone" node, what this really means is that there is an
+        // intermediate bone with no vertex influence. However, it may still have valid child bones. Assimp's absolutely
+        // ridiculous design is, again, to blame. We'll just set this node to identity. May cause broken animations, but
+        // fuck it.
         const uint32_t currentBoneIndex = skeleton->NumBones();
         const std::string nodeName = node->mName.C_Str();
         const aiBone* currentBone = IsBone(node) ? boneNameToBoneMap.at(nodeName) : nullptr;
-        uint32_t parentBoneIndex = parentIndex;
 
-        // Crazy hack to turn aiMatrix to ethMatrix
-        ethMatrix4x4 inverseBindMatrix = currentBone 
-            ? *reinterpret_cast<const ethMatrix4x4*>(&currentBone->mOffsetMatrix)
-            : ethMatrix4x4();
+        const ethMatrix4x4 localTransformation = *reinterpret_cast<const ethMatrix4x4*>(&node->mTransformation);
+        const ethMatrix4x4 globalTransformation = parentTransform * localTransformation;
 
         if (IsBone(node))
         {
             m_BoneNameToSkeletonGuidMap.emplace(nodeName, skeleton->GetGuid());
+
+            Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, *reinterpret_cast<const ethMatrix4x4*>(&currentBone->mOffsetMatrix));
+            skeleton->AddBone(bone);
+
+            Graphics::SkeletonPose bindPose = skeleton->GetBindPose();
+            bindPose.m_GlobalBoneTransform.push_back(globalTransformation);
+            bindPose.m_LocalBoneTransform.push_back(localTransformation);
+            skeleton->SetBindPose(bindPose);
         }
-
-        AssertToolmode(currentBone != nullptr || inverseBindMatrix.IsIdentity(), "If the bone is not here, we need to set identity matrix")
-
-        Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, inverseBindMatrix);
-        skeleton->AddBone(bone);
 
         for (uint32_t i = 0; i < node->mNumChildren; ++i)
         {
             const aiNode* childNode = node->mChildren[i];
-            GenerateSkeletonHierarchy(skeleton, childNode, currentBoneIndex);
+            GenerateSkeletonHierarchy(skeleton, childNode, IsBone(node) ? currentBoneIndex : parentBoneIndex, globalTransformation);
         };
     };
 
-    /*
-    PopulateRootBones(assimpScene->mRootNode);
+    GenerateSkeletonHierarchy(nullptr, assimpScene->mRootNode, Graphics::InvalidBoneIndex, {});
 
-    for (uint32_t i = 0; i < skeletons.size(); ++i)
+    for (Graphics::Skeleton& skeleton : skeletons)
     {
-        GenerateSkeletonHierarchy(&skeletons[i], skeletonToRootNodeMap.at(&skeletons[i]), Graphics::InvalidBoneIndex);
+        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, skeleton.GetGuid()));
+        skeleton.Serialize(ofstream);
+        skeleton.DebugPrint();
     }
-    */
+}
 
-    GenerateSkeletonHierarchy(nullptr, assimpScene->mRootNode, Graphics::InvalidBoneIndex);
-
-    // Serialize out
-    for (uint32_t i = 0; i < skeletons.size(); ++i)
+void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScene)
+{
+    for (uint32_t i = 0; i < assimpScene->mNumAnimations; ++i)
     {
-        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, skeletons[i].GetGuid()));
-        skeletons[i].Serialize(ofstream);
-    }
+        aiAnimation* animation = assimpScene->mAnimations[i];
+        LogInfo("Found animation: %s", animation->mName.C_Str());
 
-    // Debug visualize tree:
-    /*
-    for (int i = 0; i < skeletons.size(); ++i)
-    {
-        Graphics::Skeleton* skeleton = &skeletons[i];
+        const std::string animName = animation->mName.C_Str();
+        const float animDuration = animation->mDuration;
+        std::vector<Graphics::SkeletonPose> m_Keyframes;
+        std::vector<float> m_KeyframeTimes;
 
-        if (!skeleton || skeleton->NumBones() == 0)
-            return;
 
-        const uint32_t ROOT_INDEX = UINT32_MAX; // assuming no parent
-
-        std::function<void(uint32_t, const std::string&, bool)> PrintBoneRecursive = [&](uint32_t parentIndex, const std::string& prefix, bool isLast)
+        for (uint32_t j = 0; j < animation->mNumChannels; ++j)
         {
-            // Count children for this parent
-            std::vector<uint32_t> children;
-            for (uint32_t i = 0; i < skeleton->NumBones(); ++i)
-            {
-                if (skeleton->GetBone(i).m_ParentIndex == parentIndex)
-                    children.push_back(i);
-            }
+            //aiNodeAnim* animatedBone = animation->mChannels[j];
+            //const std::string boneName = animatedBone->mNodeName.C_Str();
 
-            for (size_t i = 0; i < children.size(); ++i)
-            {
-                uint32_t idx = children[i];
-                bool childIsLast = (i == children.size() - 1);
+            //struct BoneKeyframes
+            //{
+            //    std::vector<float> times;
+            //    std::vector<ethVector3> positions;
+            //    std::vector<ethVector4> rotations;
+            //    std::vector<ethVector3> scales;
+            //} keyframes;
 
-                std::string connector = childIsLast ? "„¤„Ÿ " : "„¥„Ÿ ";
-                std::string line = prefix + connector + skeleton->GetBone(idx).m_Name;
-                LogInfo("%s", line.c_str());
+            //AssertToolmode(animatedBone->mNumPositionKeys == animatedBone->mNumRotationKeys, "Only support equal number of keyframes for whole transformation");
+            //AssertToolmode(animatedBone->mNumPositionKeys == animatedBone->mNumScalingKeys, "Only support equal number of keyframes for whole transformation");
 
-                // Prefix for next level
-                std::string childPrefix = prefix + (childIsLast ? "   " : "„   ");
-                PrintBoneRecursive(idx, childPrefix, childIsLast);
-            }
-        };
+            //for (uint32_t k = 0; k < animatedBone->mNumPositionKeys; ++k)
+            //{
+            //    keyframes.times.push_back(animatedBone->mPositionKeys[k].mTime);
+            //    keyframes.positions.push_back(*reinterpret_cast<ethVector3*>(&animatedBone->mPositionKeys[k].mValue));
+            //    keyframes.rotations.push_back(*reinterpret_cast<ethVector4*>(&animatedBone->mRotationKeys[k].mValue));
+            //    keyframes.scales.push_back(*reinterpret_cast<ethVector3*>(&animatedBone->mScalingKeys[k].mValue));
 
-        PrintBoneRecursive(ROOT_INDEX, "", true);
+            //    AssertToolmode(animatedBone->mPositionKeys[k].mTime == animatedBone->mRotationKeys[k].mTime, "Only support equally spaced out keyframes across transform properties");
+            //    AssertToolmode(animatedBone->mPositionKeys[k].mTime == animatedBone->mScalingKeys[k].mTime, "Only support equally spaced out keyframes across transform properties");
+            //}
+
+
+            // Rest of code goes here:
+        }
 
     }
-    */
 }
 
 void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const
 {
-    for (int i = 0; i < numMeshes; ++i)
+    for (uint32_t i = 0; i < numMeshes; ++i)
     {
         const aiMesh* mesh = assimpMesh[i];
 
@@ -412,6 +369,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
                 {
                     packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
                     packedSkinnedVertices[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
+                    break;
                 }
             }
         }

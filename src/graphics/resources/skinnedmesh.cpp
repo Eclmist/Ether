@@ -56,7 +56,9 @@ void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
 {
     Mesh::CreateGpuResources(ctx);
 
+    // RtCamp11 hacks (TODO)
     CreateStagingVertexBuffer();
+    m_PackedVerticesOriginal = m_PackedVertices;
 }
 
 void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
@@ -113,6 +115,33 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ske
         {
             m_PackedVertices[i].m_Color = ethVector4(1, 1, 1, 1);
         }
+    }
+
+    // --- CPU Skinning --- //
+    for (uint32_t i = 0; i < m_NumVertices; ++i)
+    {
+        ethVector4 skinnedPos(0, 0, 0, 0);
+        ethVector4 skinnedNormal(0, 0, 0, 0);
+
+        const VertexFormats::PositionNormalTangentTexcoord_Skinned& src = m_PackedVerticesOriginal[i];
+
+        for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
+        {
+            const uint32_t boneIndex = src.m_BoneIndices[j];
+            const float weight = src.m_BoneWeights[j];
+
+            if (weight <= 0.0f || boneIndex == Graphics::InvalidBoneIndex)
+                continue;
+
+            const SkeletonBone& bone = skeleton.GetBone(boneIndex);
+            const ethMatrix4x4 finalBoneMatrix = pose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
+
+            skinnedPos += (finalBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 1.0f)) * weight;
+            skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 0.0f)) * weight;
+        }
+
+        m_PackedVertices[i].m_Position = skinnedPos.Resize<3>();
+        m_PackedVertices[i].m_Normal = skinnedNormal.Resize<3>().Normalized();
     }
 }
 
