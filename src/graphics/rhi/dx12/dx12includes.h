@@ -38,15 +38,6 @@ namespace wrl = Microsoft::WRL;
 
 #include "pix/pix3.h"
 
-// Nvidia denoiser
-#include "denoiser/nrd/NRD.h"
-#include "denoiser/nrd/NRDDescs.h"
-#include "denoiser/nri/NRI.h"
-#include "denoiser/nri/Extensions/NRIDeviceCreation.h"
-#include "denoiser/nri/Extensions/NRIHelper.h"
-#include "denoiser/nri/Extensions/NRIWrapperD3D12.h"
-#include "denoiser/nrd/NRDIntegration.h"
-
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
