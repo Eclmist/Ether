@@ -84,6 +84,21 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
+    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
+
+    // Temporarily weave in skinned mesh update here for convenience. Really need a new render pass for this. (TODO)
+    for (const SkinnedVisual& skinnedVisual : skinnedVisuals)
+    {
+        ETH_MARKER_EVENT("Update skinned mesh VBs");
+        if (skinnedVisual.m_Culled)
+            continue;
+
+        SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(skinnedVisual.m_Mesh);
+        if (skinnedMesh != nullptr)
+        {
+            skinnedMesh->UpdateGpuResources(ctx);
+        }
+    }
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -126,14 +141,6 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
         if (visual.m_Culled)
             continue;
         
-        // Temporarily weave in skinned mesh update here for convenience. Really need a new render pass for this. (TODO)
-        SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(visual.m_Mesh);
-
-        if (skinnedMesh != nullptr)
-        {
-            skinnedMesh->UpdateGpuResources(ctx);
-        }
-
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
         instanceParams->m_MaterialIdx = visual.m_Material->GetTransientMaterialIdx();
@@ -149,6 +156,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
 
 bool Ether::Graphics::GBufferProducer::IsEnabled()
 {
+    // This will break because we have later passes dependent on this pass, and no frame graph is implemented yet
     //if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
     //    return false;
 

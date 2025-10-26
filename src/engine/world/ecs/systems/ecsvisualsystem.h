@@ -33,8 +33,22 @@ public:
 
 protected:
     friend class EcsManager;
-    void Update() override;
+    virtual void Update() override;
 
+protected:
+    bool IsVisualCulled(const Graphics::Visual& visual) const;
+};
+
+class EcsSkinnedVisualSystem : public EcsSystem
+{
+public:
+    EcsSkinnedVisualSystem();
+    ~EcsSkinnedVisualSystem() override = default;
+
+protected:
+    friend class EcsManager;
+    void Update() override;
+    
 protected:
     bool IsVisualCulled(const Graphics::Visual& visual) const;
 };

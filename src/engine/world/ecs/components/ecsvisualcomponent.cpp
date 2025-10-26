@@ -20,6 +20,7 @@
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 
 constexpr uint32_t EcsVisualComponentVersion = 1;
+constexpr uint32_t EcsSkinnedVisualComponentVersion = 1;
 
 Ether::Ecs::EcsVisualComponent::EcsVisualComponent()
     : EcsToggleComponent(EcsVisualComponentVersion, "Ecs::EcsVisualComponent")
@@ -31,15 +32,32 @@ void Ether::Ecs::EcsVisualComponent::Serialize(OStream& ostream) const
     EcsToggleComponent::Serialize(ostream);
     ostream << m_MeshGuid.GetString();
     ostream << m_MaterialGuid.GetString();
-    ostream << m_IsSkinned;
 }
 
 void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
 {
     EcsToggleComponent::Deserialize(istream);
-
-    std::string meshGuid, materialGuid;
     istream >> m_MeshGuid;
     istream >> m_MaterialGuid;
-    istream >> m_IsSkinned;
+}
+
+Ether::Ecs::EcsSkinnedVisualComponent::EcsSkinnedVisualComponent()
+    : EcsToggleComponent(EcsSkinnedVisualComponentVersion, "Ecs::EcsSkinnedVisualComponent")
+{
+}
+
+void Ether::Ecs::EcsSkinnedVisualComponent::Serialize(OStream& ostream) const
+{
+    EcsToggleComponent::Serialize(ostream);
+    ostream << m_MeshGuid.GetString();
+    ostream << m_MaterialGuid.GetString();
+    ostream << m_SkeletonGuid.GetString();
+}
+
+void Ether::Ecs::EcsSkinnedVisualComponent::Deserialize(IStream& istream)
+{
+    EcsToggleComponent::Deserialize(istream);
+    istream >> m_MeshGuid;
+    istream >> m_MaterialGuid;
+    istream >> m_SkeletonGuid;
 }

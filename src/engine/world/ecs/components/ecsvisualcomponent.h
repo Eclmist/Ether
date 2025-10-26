@@ -33,14 +33,28 @@ public:
     ~EcsVisualComponent() override = default;
 
 public:
+    virtual void Serialize(OStream& ostream) const override;
+    virtual void Deserialize(IStream& istream) override;
+
+public:
+    StringID m_MeshGuid;
+    StringID m_MaterialGuid;
+};
+
+class ETH_ENGINE_DLL EcsSkinnedVisualComponent : public EcsToggleComponent<EcsSkinnedVisualComponent>
+{
+public:
+    EcsSkinnedVisualComponent();
+    ~EcsSkinnedVisualComponent() override = default;
+
+public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
 
 public:
     StringID m_MeshGuid;
     StringID m_MaterialGuid;
-
-    // Hack for RTCamp11
-    bool m_IsSkinned = false;
+    StringID m_SkeletonGuid;
 };
+
 } // namespace Ether::Ecs
