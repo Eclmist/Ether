@@ -18,7 +18,7 @@
 */
 
 #include "toolmode/asset/assetimporter.h"
-#include "graphics/resources/mesh.h"
+#include "graphics/resources/staticmesh.h"
 #include "graphics/resources/texture.h"
 #include "graphics/common/vertexformats.h"
 #include "graphics/rhi/rhienums.h"
@@ -42,7 +42,6 @@ void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath)
         assetPath,
         aiProcess_ConvertToLeftHanded           | 
         aiProcessPreset_TargetRealtime_Quality  |
-        aiProcess_PreTransformVertices          |
         aiProcess_TransformUVCoords);
 
     if (scene == nullptr)
@@ -73,8 +72,20 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
     if (assimpScene->HasMaterials())
         ProcessMaterials(folderPath, assimpScene->mMaterials, assimpScene->mNumMaterials);
 
+    if (assimpScene->hasSkeletons())
+        ProcessSkeletons(assimpScene->mSkeletons, assimpScene->mNumSkeletons);
+
     if (assimpScene->HasMeshes())
         ProcessMeshs(assimpScene->mMeshes, assimpScene->mNumMeshes);
+}
+
+void Ether::Toolmode::AssetImporter::ProcessSkeletons(aiSkeleton** assimpSkeleton, uint32_t numSkeletons) const
+{
+    for (int i = 0; i < numSkeletons; ++i)
+    {
+        const aiSkeleton* skeleton = assimpSkeleton[i];
+        LogInfo("Skeleton %i: %s", i, skeleton->mName);
+    }
 }
 
 void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const
@@ -83,58 +94,173 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t 
     {
         const aiMesh* mesh = assimpMesh[i];
 
-        std::vector<Graphics::VertexFormats::PositionNormalTangentTexcoord> packedVertices;
-
-        AssertToolmode(mesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
-        packedVertices.resize(mesh->mNumVertices);
-
-        for (int j = 0; j < mesh->mNumVertices; ++j)
+        if (mesh->HasBones())
         {
-            // There might be a bug here if ethVector3 and aiVector3D's floating point precisions mismatch
-            // However, since we compile assimp ourselves and did not specify double precision, this should be fine
-            AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
-            AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
-
-            if (mesh->HasPositions())
-            {
-                packedVertices[j].m_Position = { mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z };
-                packedVertices[j].m_Position *= m_MeshScale;
-            }
-
-            if (mesh->HasNormals())
-                packedVertices[j].m_Normal = { mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z };
-
-            if (mesh->HasTangentsAndBitangents())
-                packedVertices[j].m_Tangent = { mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z };
-
-            if (mesh->HasTextureCoords(0))
-                packedVertices[j].m_TexCoord = { mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y };
+            ProcessSkinnedMesh(mesh);
         }
-
-        const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
-        std::vector<uint32_t> indices;
-        AssertToolmode(mesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
-        indices.reserve(mesh->mNumFaces * numVerticesPerFace);
-        for (int j = 0; j < mesh->mNumFaces; ++j)
+        else
         {
-            if (mesh->mFaces[j].mNumIndices != numVerticesPerFace)
-                break;
-
-            for (int k = 0; k < numVerticesPerFace; ++k)
-                indices.emplace_back(mesh->mFaces[j].mIndices[k]);
+            ProcessStaticMesh(mesh);
         }
-
-        if (indices.size() <= 0)
-            continue;
-
-        Graphics::Mesh gfxMesh;
-        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxMesh.GetGuid()));
-
-        gfxMesh.SetPackedVertices(std::move(packedVertices));
-        gfxMesh.SetIndices(std::move(indices));
-        gfxMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[mesh->mMaterialIndex]);
-        gfxMesh.Serialize(ofstream);
     }
+}
+
+void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh) const
+{
+    std::vector<Graphics::VertexFormats::PositionNormalTangentTexcoord> packedVertices;
+
+    AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
+    packedVertices.resize(assimpMesh->mNumVertices);
+
+    for (int j = 0; j < assimpMesh->mNumVertices; ++j)
+    {
+        // There might be a bug here if ethVector3 and aiVector3D's floating point precisions mismatch
+        // However, since we compile assimp ourselves and did not specify double precision, this should be fine
+        AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
+        AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
+
+        if (assimpMesh->HasVertexColors(0))
+        {
+            packedVertices[j].m_Color = { assimpMesh->mColors[j]->r,
+                                          assimpMesh->mColors[j]->g,
+                                          assimpMesh->mColors[j]->b,
+                                          assimpMesh->mColors[j]->a };
+        }
+
+        if (assimpMesh->HasPositions())
+        {
+            packedVertices[j].m_Position = { assimpMesh->mVertices[j].x, assimpMesh->mVertices[j].y, assimpMesh->mVertices[j].z };
+            packedVertices[j].m_Position *= m_MeshScale;
+        }
+
+        if (assimpMesh->HasNormals())
+            packedVertices[j].m_Normal = { assimpMesh->mNormals[j].x, assimpMesh->mNormals[j].y, assimpMesh->mNormals[j].z };
+
+        if (assimpMesh->HasTangentsAndBitangents())
+            packedVertices[j].m_Tangent = { assimpMesh->mTangents[j].x, assimpMesh->mTangents[j].y, assimpMesh->mTangents[j].z };
+
+        if (assimpMesh->HasTextureCoords(0))
+            packedVertices[j].m_TexCoord = { assimpMesh->mTextureCoords[0][j].x, assimpMesh->mTextureCoords[0][j].y };
+    }
+
+    const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
+    std::vector<uint32_t> indices;
+    AssertToolmode(assimpMesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
+    indices.reserve(assimpMesh->mNumFaces * numVerticesPerFace);
+    for (int j = 0; j < assimpMesh->mNumFaces; ++j)
+    {
+        if (assimpMesh->mFaces[j].mNumIndices != numVerticesPerFace)
+            break;
+
+        for (int k = 0; k < numVerticesPerFace; ++k)
+            indices.emplace_back(assimpMesh->mFaces[j].mIndices[k]);
+    }
+
+    if (indices.size() <= 0)
+    {
+        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
+        return;
+    }
+
+    Graphics::StaticMesh gfxStaticMesh;
+    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxStaticMesh.GetGuid()));
+
+    gfxStaticMesh.SetPackedVertices(std::move(packedVertices));
+    gfxStaticMesh.SetIndices(std::move(indices));
+    gfxStaticMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
+    gfxStaticMesh.Serialize(ofstream);
+}
+
+// TODO: Abstract this properly. Mostly copy-pasted from ProcessStaticMesh
+void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh) const
+{
+    std::vector<Graphics::VertexFormats::PositionNormalTangentTexcoord_Skinned> packedSkinnedVertices;
+
+    AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
+    packedSkinnedVertices.resize(assimpMesh->mNumVertices);
+
+    for (int j = 0; j < assimpMesh->mNumVertices; ++j)
+    {
+        // There might be a bug here if ethVector3 and aiVector3D's floating point precisions mismatch
+        // However, since we compile assimp ourselves and did not specify double precision, this should be fine
+        AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
+        AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
+
+        if (assimpMesh->HasPositions())
+        {
+            packedSkinnedVertices[j].m_Position = { assimpMesh->mVertices[j].x, assimpMesh->mVertices[j].y, assimpMesh->mVertices[j].z };
+            packedSkinnedVertices[j].m_Position *= m_MeshScale;
+        }
+
+        if (assimpMesh->HasNormals())
+            packedSkinnedVertices[j].m_Normal = { assimpMesh->mNormals[j].x, assimpMesh->mNormals[j].y, assimpMesh->mNormals[j].z };
+
+        if (assimpMesh->HasTangentsAndBitangents())
+            packedSkinnedVertices[j].m_Tangent = { assimpMesh->mTangents[j].x, assimpMesh->mTangents[j].y, assimpMesh->mTangents[j].z };
+
+        if (assimpMesh->HasTextureCoords(0))
+            packedSkinnedVertices[j].m_TexCoord = { assimpMesh->mTextureCoords[0][j].x, assimpMesh->mTextureCoords[0][j].y };
+    }
+
+    // Process Bones
+    AssertToolmode(assimpMesh->HasBones(), "Encountered skinned mesh without bones (illegal codepath)");
+
+    // each vertex has 0-4 bone influences. So each vertex needs to store up to 4 bone indices,
+    // as well as 4 corresponding weights
+
+    // The problem is that assimp's mesh structure is a structure of arrays (SoA) instead of
+    // our vertexformat type which is an array of structures (AoS). 
+    
+    // So, we need to iterate the bone array inside aimesh and figure out the vertex to bone mappings.
+
+    for (uint32_t boneIndex = 0; boneIndex < assimpMesh->mNumBones; ++boneIndex)
+    {
+        aiBone* bone = assimpMesh->mBones[boneIndex];
+
+        // iterate through each "vertex" that this bone influences
+        for (uint32_t vertexIndex = 0; vertexIndex < bone->mNumWeights; ++vertexIndex)
+        {
+            aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
+
+            // Find which weight slot is still available on the vertex
+            for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
+            {
+                if (packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex ||
+                    packedSkinnedVertices[vertexRef.mVertexId].m_BoneWeights[k] <= 0.0f)
+                {
+                    packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
+                    packedSkinnedVertices[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
+                }
+            }
+        }
+    }
+
+    const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
+    std::vector<uint32_t> indices;
+    AssertToolmode(assimpMesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
+    indices.reserve(assimpMesh->mNumFaces * numVerticesPerFace);
+    for (int j = 0; j < assimpMesh->mNumFaces; ++j)
+    {
+        if (assimpMesh->mFaces[j].mNumIndices != numVerticesPerFace)
+            break;
+
+        for (int k = 0; k < numVerticesPerFace; ++k)
+            indices.emplace_back(assimpMesh->mFaces[j].mIndices[k]);
+    }
+
+    if (indices.size() <= 0)
+    {
+        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
+        return;
+    }
+
+    Graphics::SkinnedMesh gfxSkinnedMesh;
+    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxSkinnedMesh.GetGuid()));
+
+    gfxSkinnedMesh.SetPackedVertices(std::move(packedSkinnedVertices));
+    gfxSkinnedMesh.SetIndices(std::move(indices));
+    gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
+    gfxSkinnedMesh.Serialize(ofstream);
 }
 
 void Ether::Toolmode::AssetImporter::ProcessMaterials(

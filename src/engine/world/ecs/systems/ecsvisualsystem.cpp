@@ -77,11 +77,18 @@ void Ether::Ecs::EcsVisualSystem::Update()
             gfxVisualBatch = &renderData.m_VisualBatches[materialToBatchMap.at(data.m_MaterialGuid)];
         }
 
-        if (gfxVisualBatch->m_Material->GetBaseColor().w < 1.0)
-            continue; // Don't support transparency
+        // TODO: Move to animation system
+        if (data.m_IsSkinned)
+        {
+            Graphics::SkinnedMesh* skinnedMesh = dynamic_cast<Graphics::SkinnedMesh*>(resources.GetSkinnedMeshResource(data.m_MeshGuid));
+            skinnedMesh->NextFrame();
+            gfxVisual.m_Mesh = skinnedMesh;
+        }
+        else
+        {
+            gfxVisual.m_Mesh = resources.GetStaticMeshResource(data.m_MeshGuid);
+        }
 
-
-        gfxVisual.m_Mesh = resources.GetMeshResource(data.m_MeshGuid);
         if (gfxVisual.m_Mesh == nullptr)
             continue;
 

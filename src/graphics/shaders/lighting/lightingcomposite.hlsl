@@ -64,7 +64,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     //    return albedo * 1000.0;
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(DecodeNormals(normals.xy), 0) * 10000.0;
+        return float4(albedo) * 10000.0;
 
     float4 finalColor = lighting;
     return finalColor;

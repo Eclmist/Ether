@@ -140,7 +140,10 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::SliderFloat("Saturation", &gfxConfig.m_ColorGrading_Saturation, 0, 2);
                 ImGui::TreePop();
             }
+        }
 
+        if (ImGui::CollapsingHeader("Debug"))
+        {
             if (ImGui::TreeNode("Debug Sun"))
             {
                 static ethVector4& sunDirection = gfxConfig.m_SunDirection;
@@ -151,6 +154,11 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Skinning"))
+            {
+                ImGui::InputInt("Skinned Mesh Debug Bone Index", &gfxConfig.m_SkinningDebugBoneId);
+                ImGui::TreePop();
+            }
         }
 
         static float fpsHistoryBuffer[128];

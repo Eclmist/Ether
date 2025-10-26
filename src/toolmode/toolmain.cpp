@@ -17,13 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <filesystem>
 #include "toolmode/toolmain.h"
 #include "toolmode/ipc/ipcmanager.h"
 #include "engine/platform/win32/ethwin.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
-#include "asset/assetimporter.h"
-#include <filesystem>
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include "asset/assetimporter.h"
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 {
@@ -93,7 +93,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         // Load from library files and serialize to world
         // This simulates user dragging resources from the editor resource browser into the scene,
         // then saving the world file.
-        std::vector<std::unique_ptr<Graphics::Mesh>> meshes;
+        std::vector<std::unique_ptr<Graphics::StaticMesh>> staticMeshes;
+        std::vector<std::unique_ptr<Graphics::SkinnedMesh>> skinnedMeshes;
+
         for (const auto& entry : std::filesystem::directory_iterator(libraryPath))
         {
             if (entry.path().extension().string() != ".eres")
@@ -102,40 +104,59 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             IFileStream classIdStream(entry.path().string());
             std::string classID = Serializable::DeserializeClassID(classIdStream);
 
-            static const StringID MeshClassID = StringID(ETH_CLASS_ID_MESH);
+            static const StringID StaticMeshClassID = StringID(ETH_CLASS_ID_STATICMESH);
+            static const StringID SkinnedMeshClassID = StringID(ETH_CLASS_ID_SKINNEDMESH);
             static const StringID MaterialClassID = StringID(ETH_CLASS_ID_MATERIAL);
             static const StringID TextureClassID = StringID(ETH_CLASS_ID_TEXTURE);
 
-            if (classID == MeshClassID)
+            IFileStream assetFileStream(entry.path().string());
+            if (classID == StaticMeshClassID)
             {
-                IFileStream assetFileStream(entry.path().string());
-                meshes.emplace_back(std::make_unique<Graphics::Mesh>());
-                meshes.back()->Deserialize(assetFileStream);
+                staticMeshes.emplace_back(std::make_unique<Graphics::StaticMesh>());
+                staticMeshes.back()->Deserialize(assetFileStream);
+            }
+            else if (classID == SkinnedMeshClassID)
+            {
+                skinnedMeshes.emplace_back(std::make_unique<Graphics::SkinnedMesh>());
+                skinnedMeshes.back()->Deserialize(assetFileStream);
             }
             else if (classID == MaterialClassID)
             {
-                IFileStream assetFileStream(entry.path().string());
                 std::unique_ptr<Graphics::Material> material = std::make_unique<Graphics::Material>();
                 material->Deserialize(assetFileStream);
                 currentWorld.GetResourceManager().RegisterMaterialResource(std::move(material));
             }
             else if (classID == TextureClassID)
             {
-                IFileStream assetFileStream(entry.path().string());
                 std::unique_ptr<Graphics::Texture> texture = std::make_unique<Graphics::Texture>();
                 texture->Deserialize(assetFileStream);
                 currentWorld.GetResourceManager().RegisterTextureResource(std::move(texture));
             }
+            else
+            {
+                LogWarning("Encountered unknown class ID during deserialization of engine types.");
+            }
         }
 
-        for (auto& mesh : meshes)
+        for (auto& staticMesh : staticMeshes)
         {
-            Entity& entity = currentWorld.CreateEntity("Entity (" + mesh->GetGuid() + ")");
+            Entity& entity = currentWorld.CreateEntity("Entity (" + staticMesh->GetGuid() + ")");
             entity.AddComponent<Ecs::EcsVisualComponent>();
             Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
-            visual.m_MeshGuid = mesh->GetGuid();
-            visual.m_MaterialGuid = mesh->GetDefaultMaterialGuid();
-            currentWorld.GetResourceManager().RegisterMeshResource(std::move(mesh));
+            visual.m_MeshGuid = staticMesh->GetGuid();
+            visual.m_MaterialGuid = staticMesh->GetDefaultMaterialGuid();
+            currentWorld.GetResourceManager().RegisterStaticMeshResource(std::move(staticMesh));
+        }
+
+        for (auto& skinnedMesh : skinnedMeshes)
+        {
+            Entity& entity = currentWorld.CreateEntity("Entity (" + skinnedMesh->GetGuid() + ")");
+            entity.AddComponent<Ecs::EcsVisualComponent>();
+            Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
+            visual.m_IsSkinned = true;
+            visual.m_MeshGuid = skinnedMesh->GetGuid();
+            visual.m_MaterialGuid = skinnedMesh->GetDefaultMaterialGuid();
+            currentWorld.GetResourceManager().RegisterSkinnedMeshResource(std::move(skinnedMesh));
         }
 
         Entity& cameraObj = currentWorld.CreateCamera();

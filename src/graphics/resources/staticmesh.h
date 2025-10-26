@@ -19,29 +19,31 @@
 
 #pragma once
 
-#include "graphics/pch.h"
+#include "graphics/resources/mesh.h"
+
+#define ETH_CLASS_ID_STATICMESH "Graphics::StaticMesh"
 
 namespace Ether::Graphics
 {
-struct VisualBatch;
-class Mesh;
-class StaticMesh;
-class SkinnedMesh;
-class Material;
-
-struct ETH_GRAPHIC_DLL Visual
+class ETH_GRAPHIC_DLL StaticMesh : public Mesh
 {
-    Mesh* m_Mesh;
-    Material* m_Material;
-    bool m_Culled;
+public:
+    StaticMesh();
+    ~StaticMesh() override = default;
 
-    bool operator==(const Visual& other) const
-    {
-        if (m_Mesh != other.m_Mesh)
-            return false;
-        if (m_Material != other.m_Material)
-            return false;
-        return true;
-    }
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
+
+    void CreateGpuResources(CommandContext& ctx) override;
+    void ComputeBoundingBox() override;
+    void* GetPackedVertexData() override { return m_PackedVertices.data(); }
+    uint32_t GetVertexStride() override { return sizeof(VertexFormats::PositionNormalTangentTexcoord); }
+
+public:
+    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices);
+
+protected:
+    std::vector<VertexFormats::PositionNormalTangentTexcoord> m_PackedVertices;
 };
 } // namespace Ether::Graphics

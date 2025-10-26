@@ -20,11 +20,11 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/resources/skeleton.h"
 
 namespace Ether::Graphics::VertexFormats
 {
-
-static constexpr uint32_t PositionNormalTangentTexcoord_NumElements = 4;
+static constexpr uint32_t PositionNormalTangentTexcoord_NumElements = 5;
 
 class ETH_GRAPHIC_DLL PositionNormalTangentTexcoord
 {
@@ -41,9 +41,26 @@ public:
     static uint32_t s_NumElements;
 
 public:
+    ethVector4 m_Color = { 1, 1, 1, 1 };
     ethVector3 m_Position;
     ethVector3 m_Normal;
     ethVector3 m_Tangent;
     ethVector2 m_TexCoord;
+};
+
+class ETH_GRAPHIC_DLL PositionNormalTangentTexcoord_Skinned : public PositionNormalTangentTexcoord
+{
+public:
+    PositionNormalTangentTexcoord_Skinned();
+    ~PositionNormalTangentTexcoord_Skinned() = default;
+
+public:
+    void Serialize(OStream& ostream) const;
+    void Deserialize(IStream& istream);
+
+public:
+    // CPU side data for skinning
+    uint32_t m_BoneIndices[MaxBonesPerVextex];  // 4 x u8 packed into u32 (or uint32[4])
+    ethVector4 m_BoneWeights;                   // 4 floats
 };
 } // namespace Ether::Graphics::VertexFormats

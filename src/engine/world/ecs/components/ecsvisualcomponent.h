@@ -20,7 +20,8 @@
 #pragma once
 
 #include "engine/world/ecs/components/ecstogglecomponent.h"
-#include "graphics/resources/mesh.h"
+#include "graphics/resources/staticmesh.h"
+#include "graphics/resources/skinnedmesh.h"
 #include "graphics/resources/material.h"
 
 namespace Ether::Ecs
@@ -38,5 +39,8 @@ public:
 public:
     StringID m_MeshGuid;
     StringID m_MaterialGuid;
+
+    // Hack for RTCamp11
+    bool m_IsSkinned = false;
 };
 } // namespace Ether::Ecs

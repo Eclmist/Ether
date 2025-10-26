@@ -20,10 +20,8 @@
 #include "graphics/resources/mesh.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t MeshVersion = 7;
-
-Ether::Graphics::Mesh::Mesh()
-    : Serializable(MeshVersion, ETH_CLASS_ID_MESH)
+Ether::Graphics::Mesh::Mesh(uint32_t version, const char* classID)
+    : Serializable(version, classID)
     , m_NumVertices(0)
     , m_NumIndices(0)
     , m_IndexBufferView({})
@@ -34,10 +32,6 @@ Ether::Graphics::Mesh::Mesh()
 void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
-
-    ostream << m_NumVertices;
-    for (int i = 0; i < m_PackedVertices.size(); ++i)
-        m_PackedVertices[i].Serialize(ostream);
 
     ostream << m_NumIndices;
     for (int i = 0; i < m_Indices.size(); ++i)
@@ -52,13 +46,6 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
 
-    istream >> m_NumVertices;
-    AssertGraphics(m_NumVertices <= MaxVerticesPerMesh, "Num vertices exceeds limit");
-
-    m_PackedVertices.resize(m_NumVertices);
-    for (int i = 0; i < m_PackedVertices.size(); ++i)
-        m_PackedVertices[i].Deserialize(istream);
-
     istream >> m_NumIndices;
     AssertGraphics(m_NumIndices <= MaxTrianglePerMesh * 3, "Num triangles exceeds limit");
 
@@ -71,51 +58,16 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
     istream >> (ethVector3&)m_BoundingBox.m_Max;
 }
 
-void Ether::Graphics::Mesh::SetPackedVertices(
-    std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices)
-{
-    m_PackedVertices = std::move(vertices);
-    m_NumVertices = m_PackedVertices.size();
-
-    m_BoundingBox.m_Min = 9999999;
-    m_BoundingBox.m_Max = -9999999;
-
-    for (auto& vertex : m_PackedVertices)
-    {
-        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Position.x);
-        m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Position.y);
-        m_BoundingBox.m_Min.z = std::min(m_BoundingBox.m_Min.z, vertex.m_Position.z);
-    
-        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Position.x);
-        m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Position.y);
-        m_BoundingBox.m_Max.z = std::max(m_BoundingBox.m_Max.z, vertex.m_Position.z);
-    }
-}
-
 void Ether::Graphics::Mesh::SetIndices(std::vector<uint32_t>&& indices)
 {
     m_Indices = indices;
     m_NumIndices = m_Indices.size();
 }
 
-void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
-{
-    CreateVertexBuffer(ctx);
-    CreateIndexBuffer(ctx);
-    CreateAccelerationStructure(ctx);
-
-#ifdef ETH_ENGINE
-    // Mesh data can be deallocated on the CPU. It's all in VRAM now.
-    // This might cause problems down the line, but if it is not deallocated the CPU memory usage is going to be crazy
-    m_PackedVertices.clear();
-    m_Indices.clear();
-#endif
-}
-
 void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)
 {
     m_VbName = "Mesh::VertexBuffer (" + GetGuid() + ")";
-    size_t bufferSize = m_PackedVertices.size() * sizeof(m_PackedVertices[0]);
+    size_t bufferSize = m_NumVertices * GetVertexStride();
     RhiCommitedResourceDesc desc = {};
     desc.m_Name = m_VbName.c_str();
     desc.m_HeapType = RhiHeapType::Default;
@@ -124,7 +76,7 @@ void Ether::Graphics::Mesh::CreateVertexBuffer(CommandContext& ctx)
 
     m_VertexBufferResource = GraphicCore::GetDevice().CreateCommittedResource(desc);
     ctx.PushMarker("Vertex Buffer Upload");
-    ctx.InitializeBufferRegion(*m_VertexBufferResource, m_PackedVertices.data(), bufferSize);
+    ctx.InitializeBufferRegion(*m_VertexBufferResource, GetPackedVertexData(), bufferSize);
     ctx.PopMarker();
 
     InitializeVertexBufferViews();
@@ -168,8 +120,8 @@ void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx)
 void Ether::Graphics::Mesh::InitializeVertexBufferViews()
 {
     m_VertexBufferView = {};
-    m_VertexBufferView.m_BufferSize = m_PackedVertices.size() * sizeof(m_PackedVertices[0]);
-    m_VertexBufferView.m_Stride = sizeof(m_PackedVertices[0]);
+    m_VertexBufferView.m_BufferSize = m_NumVertices * GetVertexStride();
+    m_VertexBufferView.m_Stride = GetVertexStride();
     m_VertexBufferView.m_TargetGpuAddress = m_VertexBufferResource->GetGpuAddress();
 
     m_VertexBufferSrvIndex = GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(
@@ -190,3 +142,11 @@ void Ether::Graphics::Mesh::InitializeIndexBufferViews()
         *m_IndexBufferResource,
         m_IndexBufferView);
 }
+
+void Ether::Graphics::Mesh::CreateGpuResources(CommandContext& ctx)
+{
+    CreateVertexBuffer(ctx);
+    CreateIndexBuffer(ctx);
+    CreateAccelerationStructure(ctx);
+}
+

@@ -20,7 +20,8 @@
 #pragma once
 
 #include "engine/pch.h"
-#include "graphics/resources/mesh.h"
+#include "graphics/resources/staticmesh.h"
+#include "graphics/resources/skinnedmesh.h"
 #include "graphics/resources/material.h"
 #include "graphics/resources/texture.h"
 
@@ -37,12 +38,14 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
-    ETH_ENGINE_DLL StringID RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh);
+    ETH_ENGINE_DLL StringID RegisterStaticMeshResource(std::unique_ptr<Graphics::StaticMesh>&& staticMesh);
+    ETH_ENGINE_DLL StringID RegisterSkinnedMeshResource(std::unique_ptr<Graphics::SkinnedMesh>&& skinnedMesh);
     ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
     ETH_ENGINE_DLL StringID RegisterTextureResource(std::unique_ptr<Graphics::Texture>&& texture);
     ETH_ENGINE_DLL void CreateGpuResources() const;
 
-    Graphics::Mesh* GetMeshResource(StringID guid) const;
+    Graphics::StaticMesh* GetStaticMeshResource(StringID guid) const;
+    Graphics::SkinnedMesh* GetSkinnedMeshResource(StringID guid) const;
     Graphics::Material* GetMaterialResource(StringID guid) const;
     Graphics::Texture* GetTextureResource(StringID guid) const;
 
@@ -54,7 +57,8 @@ private:
 
 private:
     friend class World;
-    std::unordered_map<StringID, std::unique_ptr<Graphics::Mesh>> m_Meshes;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::StaticMesh>> m_StaticMeshes;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::SkinnedMesh>> m_SkinnedMeshes;
     std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Materials;
     std::unordered_map<StringID, std::unique_ptr<Graphics::Texture>> m_Textures;
 };
