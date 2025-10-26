@@ -24,8 +24,6 @@
 #include "graphics/context/commandcontext.h"
 #include "graphics/rhi/rhiaccelerationstructure.h"
 
-#define ETH_CLASS_ID_MESH "Graphics::Mesh"
-
 namespace Ether::Graphics
 {
 constexpr uint32_t MaxVerticesPerMesh = 1 << 17;
@@ -34,7 +32,7 @@ constexpr uint32_t MaxTrianglePerMesh = 1 << 15;
 class ETH_GRAPHIC_DLL Mesh : public Serializable
 {
 public:
-    Mesh();
+    Mesh(uint32_t version, const char* classID);
     ~Mesh() override = default;
 
 public:
@@ -49,29 +47,34 @@ public:
     inline Aabb GetBoundingBox() const { return m_BoundingBox; }
 
 public:
-    void Serialize(OStream& ostream) const override;
-    void Deserialize(IStream& istream) override;
+    virtual void Serialize(OStream& ostream) const override;
+    virtual void Deserialize(IStream& istream) override;
+
+public:
+    virtual void CreateGpuResources(CommandContext& ctx);
+
+public:
+    virtual void ComputeBoundingBox() = 0;
+    virtual void* GetPackedVertexData() = 0;
+    virtual uint32_t GetVertexStride() = 0;
 
 public:
     void SetDefaultMaterialGuid(StringID guid) { m_DefaultMaterialGuid = guid; }
-    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices);
     void SetIndices(std::vector<uint32_t>&& indices);
-    void CreateGpuResources(CommandContext& ctx);
 
 public:
     static constexpr RhiFormat s_VertexBufferPositionFormat = RhiFormat::R32G32B32Float;
     static constexpr RhiFormat s_IndexBufferFormat = RhiFormat::R32Uint;
 
-private:
-    void CreateVertexBuffer(CommandContext& ctx);
+protected:
     void CreateIndexBuffer(CommandContext& ctx);
+    void CreateVertexBuffer(CommandContext& ctx);
     void CreateAccelerationStructure(CommandContext& ctx);
 
     void InitializeVertexBufferViews();
     void InitializeIndexBufferViews();
 
-private:
-    std::vector<VertexFormats::PositionNormalTangentTexcoord> m_PackedVertices;
+protected:
     std::vector<uint32_t> m_Indices;
     uint32_t m_NumVertices;
     uint32_t m_NumIndices;

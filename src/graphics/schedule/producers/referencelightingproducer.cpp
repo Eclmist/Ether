@@ -22,7 +22,7 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
-#include "graphics/resources/mesh.h"
+#include "graphics/resources/staticmesh.h"
 #include "graphics/resources/material.h"
 #include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"

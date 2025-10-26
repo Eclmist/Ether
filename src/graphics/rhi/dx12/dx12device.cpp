@@ -38,7 +38,7 @@
 #include "graphics/rhi/dx12/dx12raytracingshaderbindingtable.h"
 #include "graphics/rhi/dx12/dx12translation.h"
 
-#include "graphics/resources/mesh.h"
+#include "graphics/resources/staticmesh.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
@@ -316,16 +316,16 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
         "Only single mesh BLAS is supported for now. NumMeshes: %u",
         desc.m_NumMeshes);
 
-    Mesh* mesh = (reinterpret_cast<Mesh**>(desc.m_Meshes))[0];
+    StaticMesh* mesh = (reinterpret_cast<StaticMesh**>(desc.m_Meshes))[0];
 
     dx12Obj->m_GeometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
     dx12Obj->m_GeometryDesc.Triangles.VertexBuffer.StartAddress = mesh->GetVertexBufferView().m_TargetGpuAddress;
     dx12Obj->m_GeometryDesc.Triangles.VertexBuffer.StrideInBytes = mesh->GetVertexBufferView().m_Stride;
-    dx12Obj->m_GeometryDesc.Triangles.VertexFormat = Translate(Mesh::s_VertexBufferPositionFormat);
+    dx12Obj->m_GeometryDesc.Triangles.VertexFormat = Translate(StaticMesh::s_VertexBufferPositionFormat);
     dx12Obj->m_GeometryDesc.Triangles.VertexCount = mesh->GetNumVertices();
     dx12Obj->m_GeometryDesc.Triangles.IndexBuffer = mesh->GetIndexBufferView().m_TargetGpuAddress;
     dx12Obj->m_GeometryDesc.Triangles.IndexCount = mesh->GetNumIndices();
-    dx12Obj->m_GeometryDesc.Triangles.IndexFormat = Translate(Mesh::s_IndexBufferFormat);
+    dx12Obj->m_GeometryDesc.Triangles.IndexFormat = Translate(StaticMesh::s_IndexBufferFormat);
     dx12Obj->m_GeometryDesc.Flags = desc.m_IsOpaque ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE
                                                     : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
 

@@ -26,6 +26,7 @@
 
 struct VS_INPUT
 {
+    float4 Color        : COLOR;
     float3 Position     : POSITION;
     float3 Normal       : NORMAL;
     float3 Tangent      : TANGENT;
@@ -34,6 +35,7 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
+    float4 Color        : COLOR;
     float4 Position     : SV_POSITION;
     float3 Normal       : NORMAL;
     float2 TexCoord     : TEXCOORD0;
@@ -67,6 +69,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
+    o.Color = IN.Color;
     o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, float4(IN.Position, 1.0f));
     o.Normal = IN.Normal;
     o.TexCoord = IN.TexCoord;
@@ -132,6 +135,10 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     // Don't support alpha yet
     if (InterleavedGradientNoise(IN.TexCoord.xy) > albedo.a)
         discard;
+
+    // For skinning debug
+    if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+        albedo.xyz = IN.Color.x;
 
     float2 octNormals = EncodeNormals(normal);
 

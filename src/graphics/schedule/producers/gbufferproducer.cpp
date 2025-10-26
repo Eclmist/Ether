@@ -21,11 +21,13 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/config/graphicconfig.h"
-#include "graphics/resources/mesh.h"
+#include "graphics/resources/staticmesh.h"
+#include "graphics/resources/skinnedmesh.h"
 #include "graphics/resources/material.h"
 
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/instanceparams.h"
+
 
 //DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,    Albedo.y,    Albedo.z,   MaterialID] 8 bit per channel (0-255)
 //DEFINE_GFX_RT(GBufferTexture1) // [OctNormal.x, OctNormal.y, Velocity.x, Velocity.y] 16 bit per channel (half float)
@@ -116,12 +118,21 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(GBufferDepthStencil)));
 
+    // Actually do batching..? (TODO)
     for (const VisualBatch& batch : batches)
     for (const Visual& visual : batch.m_Visuals)
     {
         ETH_MARKER_EVENT("Draw Meshes");
         if (visual.m_Culled)
             continue;
+        
+        // Temporarily weave in skinned mesh update here for convenience. Really need a new render pass for this. (TODO)
+        SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(visual.m_Mesh);
+
+        if (skinnedMesh != nullptr)
+        {
+            skinnedMesh->UpdateGpuResources(ctx);
+        }
 
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();

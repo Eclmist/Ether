@@ -30,7 +30,8 @@ Ether::ResourceManager::ResourceManager()
 void Ether::ResourceManager::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
-    SerializeResource<Graphics::Mesh>(ostream, m_Meshes);
+    SerializeResource<Graphics::StaticMesh>(ostream, m_StaticMeshes);
+    SerializeResource<Graphics::SkinnedMesh>(ostream, m_SkinnedMeshes);
     SerializeResource<Graphics::Material>(ostream, m_Materials);
     SerializeResource<Graphics::Texture>(ostream, m_Textures);
 }
@@ -39,16 +40,24 @@ void Ether::ResourceManager::Serialize(OStream& ostream) const
 void Ether::ResourceManager::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
-    DeserializeResource<Graphics::Mesh>(istream, m_Meshes);
+    DeserializeResource<Graphics::StaticMesh>(istream, m_StaticMeshes);
+    DeserializeResource<Graphics::SkinnedMesh>(istream, m_SkinnedMeshes);
     DeserializeResource<Graphics::Material>(istream, m_Materials);
     DeserializeResource<Graphics::Texture>(istream, m_Textures);
     CreateGpuResources();
 }
 
-Ether::StringID Ether::ResourceManager::RegisterMeshResource(std::unique_ptr<Graphics::Mesh>&& mesh)
+Ether::StringID Ether::ResourceManager::RegisterStaticMeshResource(std::unique_ptr<Graphics::StaticMesh>&& mesh)
 {
     StringID sid = mesh->GetGuid();
-    m_Meshes[sid] = std::move(mesh);
+    m_StaticMeshes[sid] = std::move(mesh);
+    return sid;
+}
+
+Ether::StringID Ether::ResourceManager::RegisterSkinnedMeshResource(std::unique_ptr<Graphics::SkinnedMesh>&& skinnedMesh)
+{
+    StringID sid = skinnedMesh->GetGuid();
+    m_SkinnedMeshes[sid] = std::move(skinnedMesh);
     return sid;
 }
 
@@ -66,12 +75,20 @@ Ether::StringID Ether::ResourceManager::RegisterTextureResource(std::unique_ptr<
     return sid;
 }
 
-Ether::Graphics::Mesh* Ether::ResourceManager::GetMeshResource(StringID guid) const
+Ether::Graphics::StaticMesh* Ether::ResourceManager::GetStaticMeshResource(StringID guid) const
 {
-    if (m_Meshes.find(guid) == m_Meshes.end())
+    if (m_StaticMeshes.find(guid) == m_StaticMeshes.end())
         return nullptr;
 
-    return m_Meshes.at(guid).get();
+    return m_StaticMeshes.at(guid).get();
+}
+
+Ether::Graphics::SkinnedMesh* Ether::ResourceManager::GetSkinnedMeshResource(StringID guid) const
+{
+    if (m_SkinnedMeshes.find(guid) == m_SkinnedMeshes.end())
+        return nullptr;
+
+    return m_SkinnedMeshes.at(guid).get();
 }
 
 Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID guid) const
@@ -92,9 +109,17 @@ Ether::Graphics::Texture* Ether::ResourceManager::GetTextureResource(StringID gu
 
 void Ether::ResourceManager::CreateGpuResources() const 
 { 
-    for (auto& pair : m_Meshes)
+    for (auto& pair : m_StaticMeshes)
     {
-        Graphics::CommandContext ctx("CommandContext - Mesh Loading", Graphics::RhiCommandType::Graphic, _16MiB);
+        Graphics::CommandContext ctx("CommandContext - Static Mesh Loading", Graphics::RhiCommandType::Graphic, _16MiB);
+        ctx.Reset();
+        pair.second->CreateGpuResources(ctx);
+        ctx.FinalizeAndExecute(true);
+    }
+
+    for (auto& pair : m_SkinnedMeshes)
+    {
+        Graphics::CommandContext ctx("CommandContext - Skinned Mesh Loading", Graphics::RhiCommandType::Graphic, _16MiB);
         ctx.Reset();
         pair.second->CreateGpuResources(ctx);
         ctx.FinalizeAndExecute(true);
@@ -102,9 +127,9 @@ void Ether::ResourceManager::CreateGpuResources() const
 
     for (auto& pair : m_Textures)
     {
-        Graphics::CommandContext textureUploadCtx("CommandContext - Texture Loading", Graphics::RhiCommandType::Graphic, _128MiB);
-        textureUploadCtx.Reset();
-        pair.second->CreateGpuResource(textureUploadCtx);
-        textureUploadCtx.FinalizeAndExecute(true);
+        Graphics::CommandContext ctx("CommandContext - Texture Loading", Graphics::RhiCommandType::Graphic, _128MiB);
+        ctx.Reset();
+        pair.second->CreateGpuResource(ctx);
+        ctx.FinalizeAndExecute(true);
     }
 }

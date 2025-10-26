@@ -19,7 +19,7 @@
 
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 
-constexpr uint32_t EcsVisualComponentVersion = 0;
+constexpr uint32_t EcsVisualComponentVersion = 1;
 
 Ether::Ecs::EcsVisualComponent::EcsVisualComponent()
     : EcsToggleComponent(EcsVisualComponentVersion, "Ecs::EcsVisualComponent")
@@ -31,6 +31,7 @@ void Ether::Ecs::EcsVisualComponent::Serialize(OStream& ostream) const
     EcsToggleComponent::Serialize(ostream);
     ostream << m_MeshGuid.GetString();
     ostream << m_MaterialGuid.GetString();
+    ostream << m_IsSkinned;
 }
 
 void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
@@ -38,9 +39,7 @@ void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
     EcsToggleComponent::Deserialize(istream);
 
     std::string meshGuid, materialGuid;
-    istream >> meshGuid;
-    istream >> materialGuid;
-
-    m_MeshGuid = meshGuid;
-    m_MaterialGuid = materialGuid;
+    istream >> m_MeshGuid;
+    istream >> m_MaterialGuid;
+    istream >> m_IsSkinned;
 }
