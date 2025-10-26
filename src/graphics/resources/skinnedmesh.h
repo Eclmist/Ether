@@ -60,6 +60,7 @@ protected:
 
     // RtCamp11 Hack: Update skinning vertex buffer from CPU side (TODO)
     std::unique_ptr<RhiResource> m_StagingVertexBufferResource;
+    std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned> m_PackedVerticesOriginal;
 
     StringID m_SkeletonGuid;
 };

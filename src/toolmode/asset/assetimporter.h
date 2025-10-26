@@ -49,6 +49,7 @@ namespace Ether::Toolmode
     private:
         void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
         void ProcessSkeletons(const aiScene* assimpScene);
+        void ProcessAnimations(const aiScene* assimpScene);
         void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes) const;
         void ProcessStaticMesh(const aiMesh* assimpMesh) const;
         void ProcessSkinnedMesh(const aiMesh* assimpMesh) const;
