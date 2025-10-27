@@ -32,6 +32,34 @@
 #include "parser/image/stb_image.h"
 #include "parser/image/stb_image_resize.h"
 
+Ether::ethVector2 ToEthVector2(aiVector2D aiVec2)
+{
+    return { aiVec2.x, aiVec2.y };
+}
+
+Ether::ethVector3 ToEthVector3(aiVector3D aiVec3)
+{
+    return { aiVec3.x, aiVec3.y, aiVec3.z };
+}
+
+Ether::ethVector4 ToEthVector4(aiColor4D aiVec4)
+{
+    return { aiVec4.r, aiVec4.g, aiVec4.b, aiVec4.a };
+}
+
+Ether::ethVector4 ToEthVector4(aiQuaternion aiVec4)
+{
+    return { aiVec4.x, aiVec4.y, aiVec4.z, aiVec4.w };
+}
+
+Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
+{
+    return { aiMatrix.a1, aiMatrix.a2, aiMatrix.a3, aiMatrix.a4,
+             aiMatrix.b1, aiMatrix.b2, aiMatrix.b3, aiMatrix.b4,
+             aiMatrix.c1, aiMatrix.c2, aiMatrix.c3, aiMatrix.c4,
+             aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4 };
+}
+
 void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath)
 {
     LogToolmodeInfo("Importing asset %s", assetPath.c_str());
@@ -155,19 +183,23 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
         const std::string nodeName = node->mName.C_Str();
         const aiBone* currentBone = IsBone(node) ? boneNameToBoneMap.at(nodeName) : nullptr;
 
-        const ethMatrix4x4 localTransformation = *reinterpret_cast<const ethMatrix4x4*>(&node->mTransformation);
+        const ethMatrix4x4 localTransformation = ToEthMatrix4x4(node->mTransformation);
         const ethMatrix4x4 globalTransformation = parentTransform * localTransformation;
 
         if (IsBone(node))
         {
             m_BoneNameToSkeletonGuidMap.emplace(nodeName, skeleton->GetGuid());
 
-            Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, *reinterpret_cast<const ethMatrix4x4*>(&currentBone->mOffsetMatrix));
+            Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, ToEthMatrix4x4(currentBone->mOffsetMatrix));
             skeleton->AddBone(bone);
 
             Graphics::SkeletonPose bindPose = skeleton->GetBindPose();
             bindPose.m_GlobalBoneTransform.push_back(globalTransformation);
             bindPose.m_LocalBoneTransform.push_back(localTransformation);
+
+            if (parentBoneIndex == Graphics::InvalidBoneIndex)
+                bindPose.m_GlobalInverseTransform = localTransformation.Inversed();
+
             skeleton->SetBindPose(bindPose);
         }
 
@@ -197,41 +229,41 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
 
         const std::string animName = animation->mName.C_Str();
         const float animDuration = animation->mDuration;
-        std::vector<Graphics::SkeletonPose> m_Keyframes;
-        std::vector<float> m_KeyframeTimes;
-
+        Graphics::AnimationClip animationClip(animName, animDuration);
 
         for (uint32_t j = 0; j < animation->mNumChannels; ++j)
         {
-            //aiNodeAnim* animatedBone = animation->mChannels[j];
-            //const std::string boneName = animatedBone->mNodeName.C_Str();
+            aiNodeAnim* animatedBone = animation->mChannels[j];
+            const std::string boneName = animatedBone->mNodeName.C_Str();
 
-            //struct BoneKeyframes
-            //{
-            //    std::vector<float> times;
-            //    std::vector<ethVector3> positions;
-            //    std::vector<ethVector4> rotations;
-            //    std::vector<ethVector3> scales;
-            //} keyframes;
+            Graphics::AnimationClip::BoneKeyframes keyframe;
 
-            //AssertToolmode(animatedBone->mNumPositionKeys == animatedBone->mNumRotationKeys, "Only support equal number of keyframes for whole transformation");
-            //AssertToolmode(animatedBone->mNumPositionKeys == animatedBone->mNumScalingKeys, "Only support equal number of keyframes for whole transformation");
+            for (uint32_t k = 0; k < animatedBone->mNumPositionKeys; ++k)
+            {
+                keyframe.m_PositionKeyframes.emplace_back(
+                    (float)animatedBone->mPositionKeys[k].mTime,
+                    ToEthVector3(animatedBone->mPositionKeys[k].mValue) * m_MeshScale);
+            }
 
-            //for (uint32_t k = 0; k < animatedBone->mNumPositionKeys; ++k)
-            //{
-            //    keyframes.times.push_back(animatedBone->mPositionKeys[k].mTime);
-            //    keyframes.positions.push_back(*reinterpret_cast<ethVector3*>(&animatedBone->mPositionKeys[k].mValue));
-            //    keyframes.rotations.push_back(*reinterpret_cast<ethVector4*>(&animatedBone->mRotationKeys[k].mValue));
-            //    keyframes.scales.push_back(*reinterpret_cast<ethVector3*>(&animatedBone->mScalingKeys[k].mValue));
+            for (uint32_t k = 0; k < animatedBone->mNumRotationKeys; ++k)
+            {
+                keyframe.m_RotationKeyframes.emplace_back(
+                    (float)animatedBone->mRotationKeys[k].mTime,
+                    ToEthVector4(animatedBone->mRotationKeys[k].mValue));
+            }
 
-            //    AssertToolmode(animatedBone->mPositionKeys[k].mTime == animatedBone->mRotationKeys[k].mTime, "Only support equally spaced out keyframes across transform properties");
-            //    AssertToolmode(animatedBone->mPositionKeys[k].mTime == animatedBone->mScalingKeys[k].mTime, "Only support equally spaced out keyframes across transform properties");
-            //}
+            for (uint32_t k = 0; k < animatedBone->mNumScalingKeys; ++k)
+            {
+                keyframe.m_ScalingKeyframes.emplace_back(
+                    (float)animatedBone->mScalingKeys[k].mTime,
+                    ToEthVector3(animatedBone->mScalingKeys[k].mValue));
+            }
 
-
-            // Rest of code goes here:
+            animationClip.AddBoneKeyframes(boneName, keyframe);
         }
 
+        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, animationClip.GetGuid()));
+        animationClip.Serialize(ofstream);
     }
 }
 
@@ -267,27 +299,19 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
         AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
 
         if (assimpMesh->HasVertexColors(0))
-        {
-            packedVertices[j].m_Color = { assimpMesh->mColors[j]->r,
-                                          assimpMesh->mColors[j]->g,
-                                          assimpMesh->mColors[j]->b,
-                                          assimpMesh->mColors[j]->a };
-        }
+            packedVertices[j].m_Color = ToEthVector4(*assimpMesh->mColors[j]);
 
         if (assimpMesh->HasPositions())
-        {
-            packedVertices[j].m_Position = { assimpMesh->mVertices[j].x, assimpMesh->mVertices[j].y, assimpMesh->mVertices[j].z };
-            packedVertices[j].m_Position *= m_MeshScale;
-        }
+            packedVertices[j].m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
 
         if (assimpMesh->HasNormals())
-            packedVertices[j].m_Normal = { assimpMesh->mNormals[j].x, assimpMesh->mNormals[j].y, assimpMesh->mNormals[j].z };
+            packedVertices[j].m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
 
         if (assimpMesh->HasTangentsAndBitangents())
-            packedVertices[j].m_Tangent = { assimpMesh->mTangents[j].x, assimpMesh->mTangents[j].y, assimpMesh->mTangents[j].z };
+            packedVertices[j].m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
 
         if (assimpMesh->HasTextureCoords(0))
-            packedVertices[j].m_TexCoord = { assimpMesh->mTextureCoords[0][j].x, assimpMesh->mTextureCoords[0][j].y };
+            packedVertices[j].m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
     }
 
     const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
@@ -333,20 +357,20 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
         AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
         AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
 
+        if (assimpMesh->HasVertexColors(0))
+            packedSkinnedVertices[j].m_Color = ToEthVector4(*assimpMesh->mColors[j]);
+
         if (assimpMesh->HasPositions())
-        {
-            packedSkinnedVertices[j].m_Position = { assimpMesh->mVertices[j].x, assimpMesh->mVertices[j].y, assimpMesh->mVertices[j].z };
-            packedSkinnedVertices[j].m_Position *= m_MeshScale;
-        }
+            packedSkinnedVertices[j].m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
 
         if (assimpMesh->HasNormals())
-            packedSkinnedVertices[j].m_Normal = { assimpMesh->mNormals[j].x, assimpMesh->mNormals[j].y, assimpMesh->mNormals[j].z };
+            packedSkinnedVertices[j].m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
 
         if (assimpMesh->HasTangentsAndBitangents())
-            packedSkinnedVertices[j].m_Tangent = { assimpMesh->mTangents[j].x, assimpMesh->mTangents[j].y, assimpMesh->mTangents[j].z };
+            packedSkinnedVertices[j].m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
 
         if (assimpMesh->HasTextureCoords(0))
-            packedSkinnedVertices[j].m_TexCoord = { assimpMesh->mTextureCoords[0][j].x, assimpMesh->mTextureCoords[0][j].y };
+            packedSkinnedVertices[j].m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
     }
 
     // Process Bones

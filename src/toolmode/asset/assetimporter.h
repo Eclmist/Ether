@@ -26,6 +26,7 @@
 
 constexpr uint32_t MaxMaterialsPerAsset = 256;
 constexpr uint32_t MaxSkeletonsPerAsset = 32;
+constexpr uint32_t MaxAnimationsPerAsset = 32;
 
 namespace Ether::Toolmode
 {

@@ -120,6 +120,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).g;
     }
 
+roughness = max(0.9, roughness);
+
     if (material.m_MetalnessTextureIndex != 0)
     {
         Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];

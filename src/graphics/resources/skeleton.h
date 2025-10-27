@@ -20,10 +20,11 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include <unordered_set>
 
 #define ETH_CLASS_ID_SKELETON "Graphics::Skeleton"
 #define ETH_CLASS_ID_SKELETONBONE "Graphics::SkeletonBone"
-#define ETH_CLASS_ID_SKELETONANIMATIONCLIP "Graphics::SkeletonAnimationClip"
+#define ETH_CLASS_ID_ANIMATIONCLIP "Graphics::AnimationClip"
 
 namespace Ether::Graphics
 {
@@ -54,6 +55,48 @@ struct ETH_GRAPHIC_DLL SkeletonPose
 
     std::vector<ethMatrix4x4> m_LocalBoneTransform;
     std::vector<ethMatrix4x4> m_GlobalBoneTransform;
+    ethMatrix4x4 m_GlobalInverseTransform;
+};
+
+class ETH_GRAPHIC_DLL AnimationClip : public Serializable
+{
+public:
+    struct BoneKeyframes
+    {
+        void Serialize(OStream& ostream) const;
+        void Deserialize(IStream& istream);
+
+        ethVector3 GetInterpolatedPosition(float animTick) const;
+        ethVector4 GetInterpolatedRotation(float animTick) const;
+        ethVector3 GetInterpolatedScale(float animTick) const;
+
+        std::vector<std::pair<float, ethVector3>> m_PositionKeyframes;
+        std::vector<std::pair<float, ethVector4>> m_RotationKeyframes;
+        std::vector<std::pair<float, ethVector3>> m_ScalingKeyframes;
+    };
+
+public:
+    AnimationClip(const std::string& name = "Unnamed Animation Clip", float duration = 0);
+    ~AnimationClip() override = default;
+
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
+
+public:
+    inline const std::string& GetName() const { return m_Name; }
+    inline const float GetAnimDuration() const { return m_AnimDuration; }
+
+    inline bool HasBoneInfluence(const std::string& boneName) const { return m_Keyframes.find(boneName) != m_Keyframes.end();}
+    inline const BoneKeyframes& GetKeyframes(const std::string& boneName) const { return m_Keyframes.at(boneName); }
+
+public:
+    void AddBoneKeyframes(const std::string& boneName, const BoneKeyframes& keyframes);
+
+private:
+    std::string m_Name;
+    float m_AnimDuration;
+    std::unordered_map<std::string, BoneKeyframes> m_Keyframes;
 };
 
 class ETH_GRAPHIC_DLL Skeleton : public Serializable
@@ -73,6 +116,11 @@ public:
 
     inline void AddBone(const SkeletonBone& bone) { m_Bones.push_back(bone); }
     inline void SetBindPose(const SkeletonPose bindPose) { m_BindPose = bindPose; }
+    inline void SetCurrentPose(const SkeletonPose pose) { m_CurrentPose = pose; }
+
+public:
+    //TOOD: make static? This doesn't feel like the right place to put this
+    SkeletonPose CalculatePoseFromAnimation(const AnimationClip& animation, float animTimeTicks) const;
 
 public:
     void DebugPrint(uint32_t parentIndex = UINT32_MAX, const std::string& prefix = "", bool isLast = true) const;
@@ -80,34 +128,7 @@ public:
 private:
     std::vector<SkeletonBone> m_Bones;
     SkeletonPose m_BindPose;
-};
-
-class ETH_GRAPHIC_DLL SkeletonAnimationClip : public Serializable
-{
-public:
-    SkeletonAnimationClip(
-        const std::string& name,
-        float duration,
-        const std::vector<SkeletonPose>& keyframes,
-        const std::vector<float>& times);
-    ~SkeletonAnimationClip() override = default;
-
-public:
-    inline const std::string& GetName() const { return m_Name; }
-    inline const float GetAnimDuration() const { return m_AnimDuration; }
-    inline const std::vector<SkeletonPose>& GetKeyframes() const { return m_Keyframes; }
-    inline const std::vector<float>& GetKeyframeTimes() const { return m_KeyframeTimes; }
-
-public:
-    void Serialize(OStream& ostream) const override;
-    void Deserialize(IStream& istream) override;
-
-private:
-    std::string m_Name;
-    float m_AnimDuration;
-
-    std::vector<SkeletonPose> m_Keyframes;
-    std::vector<float> m_KeyframeTimes;
+    SkeletonPose m_CurrentPose;
 };
 
 } // namespace Ether::Graphics

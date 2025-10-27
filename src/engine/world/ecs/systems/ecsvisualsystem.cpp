@@ -179,14 +179,19 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
         Graphics::SkinnedMesh* skinnedMesh = resources.GetSkinnedMeshResource(data.m_MeshGuid);
         Graphics::Skeleton* skeleton = resources.GetSkeletonResource(data.m_SkeletonGuid);
-        Graphics::SkeletonPose tempPose = skeleton->GetBindPose();
+        Graphics::AnimationClip* animClip = resources.GetAnimationClipResource(data.m_AnimationGuid);
+
+        //TODO: Skeleton, Animation, Clips, should really all be their own ECS components.
+        // For now, just find the first availble clip that works with the skeleton.
 
         if (skinnedMesh == nullptr)
             continue;
         if (skeleton == nullptr)
             continue;
+        if (animClip == nullptr)
+            continue;
 
-        skinnedMesh->NextFrame(*skeleton, tempPose);
+        skinnedMesh->NextFrame(*skeleton, *animClip);
         gfxVisual.m_Mesh = skinnedMesh;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);

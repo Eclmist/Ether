@@ -41,15 +41,17 @@ public:
     ETH_ENGINE_DLL StringID RegisterStaticMeshResource(std::unique_ptr<Graphics::StaticMesh>&& staticMesh);
     ETH_ENGINE_DLL StringID RegisterSkinnedMeshResource(std::unique_ptr<Graphics::SkinnedMesh>&& skinnedMesh);
     ETH_ENGINE_DLL StringID RegisterSkeletonResource(std::unique_ptr<Graphics::Skeleton>&& skeleton);
+    ETH_ENGINE_DLL StringID RegisterAnimationClipResource(std::unique_ptr<Graphics::AnimationClip>&& animationClip);
     ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
     ETH_ENGINE_DLL StringID RegisterTextureResource(std::unique_ptr<Graphics::Texture>&& texture);
     ETH_ENGINE_DLL void CreateGpuResources() const;
 
-    Graphics::StaticMesh* GetStaticMeshResource(StringID guid) const;
-    Graphics::SkinnedMesh* GetSkinnedMeshResource(StringID guid) const;
-    Graphics::Skeleton* GetSkeletonResource(StringID guid) const;
-    Graphics::Material* GetMaterialResource(StringID guid) const;
-    Graphics::Texture* GetTextureResource(StringID guid) const;
+    ETH_ENGINE_DLL Graphics::StaticMesh* GetStaticMeshResource(StringID guid) const;
+    ETH_ENGINE_DLL Graphics::SkinnedMesh* GetSkinnedMeshResource(StringID guid) const;
+    ETH_ENGINE_DLL Graphics::Skeleton* GetSkeletonResource(StringID guid) const;
+    ETH_ENGINE_DLL Graphics::AnimationClip* GetAnimationClipResource(StringID guid) const;
+    ETH_ENGINE_DLL Graphics::Material* GetMaterialResource(StringID guid) const;
+    ETH_ENGINE_DLL Graphics::Texture* GetTextureResource(StringID guid) const;
 
 private:
     template <typename T>
@@ -61,7 +63,8 @@ private:
     friend class World;
     std::unordered_map<StringID, std::unique_ptr<Graphics::StaticMesh>> m_StaticMeshes;
     std::unordered_map<StringID, std::unique_ptr<Graphics::SkinnedMesh>> m_SkinnedMeshes;
-    std::unordered_map<StringID, std::unique_ptr<Graphics::Skeleton>> m_Skeleton;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::Skeleton>> m_Skeletons;
+    std::unordered_map<StringID, std::unique_ptr<Graphics::AnimationClip>> m_AnimationClips;
     std::unordered_map<StringID, std::unique_ptr<Graphics::Material>> m_Materials;
     std::unordered_map<StringID, std::unique_ptr<Graphics::Texture>> m_Textures;
 };
