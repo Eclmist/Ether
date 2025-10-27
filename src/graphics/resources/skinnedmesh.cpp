@@ -54,7 +54,9 @@ void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
 
 void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
 {
-    Mesh::CreateGpuResources(ctx);
+    CreateVertexBuffer(ctx);
+    CreateIndexBuffer(ctx);
+    CreateAccelerationStructure(ctx, true /* allow update */);
 
     // RtCamp11 hacks (TODO)
     CreateStagingVertexBuffer();
@@ -166,6 +168,9 @@ void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
     ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::CopyDest);
     ctx.CopyBufferRegion(*m_StagingVertexBufferResource, *m_VertexBufferResource, vertexBufferSize);
     ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::Common);
+
+    // Update BVH
+    RefitAccelerationStructure(ctx);
 }
 
 void Ether::Graphics::SkinnedMesh::CreateStagingVertexBuffer()
@@ -181,6 +186,11 @@ void Ether::Graphics::SkinnedMesh::CreateStagingVertexBuffer()
 
 void Ether::Graphics::SkinnedMesh::RefitAccelerationStructure(CommandContext& ctx)
 {
-    LogWarning("BVH Refit - Not yet implemented");
+    if (!m_AccelerationStructure)
+        return;
+
+    ctx.PushMarker("Refit BLAS");
+    ctx.RefitBottomLevelAccelerationStructure(*m_AccelerationStructure);
+    ctx.PopMarker();
 }
 

@@ -101,14 +101,14 @@ void Ether::Graphics::Mesh::CreateIndexBuffer(CommandContext& ctx)
     InitializeIndexBufferViews();
 }
 
-void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx)
+void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx, bool allowUpdate)
 {
     RhiBottomLevelAccelerationStructureDesc desc = {};
     Mesh* meshes[] = { this };
     desc.m_Meshes = (void**)meshes;
     desc.m_NumMeshes = 1;
     desc.m_IsOpaque = true;
-    desc.m_IsStatic = true;
+    desc.m_IsStatic = allowUpdate == false;
 
     m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
     ctx.PushMarker("Build BLAS");

@@ -69,7 +69,7 @@ public:
 protected:
     void CreateIndexBuffer(CommandContext& ctx);
     void CreateVertexBuffer(CommandContext& ctx);
-    void CreateAccelerationStructure(CommandContext& ctx);
+    void CreateAccelerationStructure(CommandContext& ctx, bool allowUpdate = false);
 
     void InitializeVertexBufferViews();
     void InitializeIndexBufferViews();

@@ -73,6 +73,7 @@ public:
 
     // Raytracing
     virtual void BuildAccelerationStructure(const RhiAccelerationStructure& as) = 0;
+    virtual void RefitAccelerationStructure(const RhiAccelerationStructure& as) = 0;
     virtual void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso) = 0;
 
     // Barriers

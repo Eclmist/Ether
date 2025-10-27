@@ -172,6 +172,12 @@ void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(
     m_CommandList->BuildAccelerationStructure(accelStructure);
 }
 
+void Ether::Graphics::CommandContext::RefitBottomLevelAccelerationStructure(
+    const RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->RefitAccelerationStructure(accelStructure);
+}
+
 void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);

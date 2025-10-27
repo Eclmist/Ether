@@ -72,6 +72,7 @@ public:
 
     // Raytracing
     void BuildAccelerationStructure(const RhiAccelerationStructure& as) override;
+    void RefitAccelerationStructure(const RhiAccelerationStructure& as) override;
     void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pso) override;
 
     // Barriers
