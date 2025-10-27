@@ -60,7 +60,7 @@ Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
              aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4 };
 }
 
-void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath)
+void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath, bool flattern)
 {
     LogToolmodeInfo("Importing asset %s", assetPath.c_str());
 
@@ -68,12 +68,16 @@ void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath)
     importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, Graphics::MaxVerticesPerMesh);
     importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, Graphics::MaxTrianglePerMesh);
 
-    auto scene = importer.ReadFile(
-        assetPath,
-        aiProcess_ConvertToLeftHanded           | 
-        aiProcessPreset_TargetRealtime_Quality  |
-        aiProcess_TransformUVCoords);
 
+    uint32_t importFlags = 0;
+    importFlags |= aiProcess_ConvertToLeftHanded;
+    importFlags |= aiProcessPreset_TargetRealtime_Quality;
+    importFlags |= aiProcess_TransformUVCoords;
+
+    if (flattern)
+        importFlags |= aiProcess_PreTransformVertices;
+
+    auto scene = importer.ReadFile(assetPath, importFlags);
     if (scene == nullptr)
     {
         LogToolmodeError("Failed to load asset %s", assetPath.c_str());

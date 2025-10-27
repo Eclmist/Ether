@@ -64,7 +64,8 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     const std::string hdriPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\RtCamp11\\sky_26_2k.png";
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
-    const bool hasImports = !m_ImportPaths.empty();
+    const std::vector<std::string>& m_FlatternedImportPaths = GetCommandLineOptions().GetFlatternedImportPaths();
+    const bool hasImports = !m_ImportPaths.empty() || !m_FlatternedImportPaths.empty();
 
     if (hasImports)
     {
@@ -88,6 +89,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
         for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
             AssetImporter::Instance().ImportMesh(m_ImportPaths[i]);
+
+        for (uint32_t i = 0; i < m_FlatternedImportPaths.size(); ++i)
+            AssetImporter::Instance().ImportMesh(m_FlatternedImportPaths[i], true);
 
         AssetImporter::Instance().ImportTexture(hdriPath);
 
