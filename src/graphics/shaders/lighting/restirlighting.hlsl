@@ -42,8 +42,8 @@
 
 // TODO: Make lightingcommon.h
 #define EMISSION_SCALE              10000
-#define SUNLIGHT_SCALE              120000
-#define SKYLIGHT_SCALE              10000
+#define SUNLIGHT_SCALE              0
+#define SKYLIGHT_SCALE              0
 #define POINTLIGHT_SCALE            2000
 #define MAX_BOUNCES                 0
 
@@ -625,7 +625,7 @@ void Miss(inout RayPayload payload)
     {
         // Sample sun color
         const float lerpFactor = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
-        payload.m_Radiance = lerp(0.0f, g_GlobalConstants.m_SunColor.xyz * SUNLIGHT_SCALE, lerpFactor);
+        payload.m_Radiance = 0;//lerp(0.0f, g_GlobalConstants.m_SunColor.xyz * SUNLIGHT_SCALE, lerpFactor);
     }
     else
     {

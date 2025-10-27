@@ -52,6 +52,7 @@ void Ether::Ecs::EcsSkinnedVisualComponent::Serialize(OStream& ostream) const
     ostream << m_MeshGuid.GetString();
     ostream << m_MaterialGuid.GetString();
     ostream << m_SkeletonGuid.GetString();
+    ostream << m_AnimationGuid.GetString();
 }
 
 void Ether::Ecs::EcsSkinnedVisualComponent::Deserialize(IStream& istream)
@@ -60,4 +61,5 @@ void Ether::Ecs::EcsSkinnedVisualComponent::Deserialize(IStream& istream)
     istream >> m_MeshGuid;
     istream >> m_MaterialGuid;
     istream >> m_SkeletonGuid;
+    istream >> m_AnimationGuid;
 }

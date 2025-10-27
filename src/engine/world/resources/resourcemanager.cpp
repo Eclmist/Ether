@@ -32,7 +32,8 @@ void Ether::ResourceManager::Serialize(OStream& ostream) const
     Serializable::Serialize(ostream);
     SerializeResource<Graphics::StaticMesh>(ostream, m_StaticMeshes);
     SerializeResource<Graphics::SkinnedMesh>(ostream, m_SkinnedMeshes);
-    SerializeResource<Graphics::Skeleton>(ostream, m_Skeleton);
+    SerializeResource<Graphics::Skeleton>(ostream, m_Skeletons);
+    SerializeResource<Graphics::AnimationClip>(ostream, m_AnimationClips);
     SerializeResource<Graphics::Material>(ostream, m_Materials);
     SerializeResource<Graphics::Texture>(ostream, m_Textures);
 }
@@ -43,7 +44,8 @@ void Ether::ResourceManager::Deserialize(IStream& istream)
     Serializable::Deserialize(istream);
     DeserializeResource<Graphics::StaticMesh>(istream, m_StaticMeshes);
     DeserializeResource<Graphics::SkinnedMesh>(istream, m_SkinnedMeshes);
-    DeserializeResource<Graphics::Skeleton>(istream, m_Skeleton);
+    DeserializeResource<Graphics::Skeleton>(istream, m_Skeletons);
+    DeserializeResource<Graphics::AnimationClip>(istream, m_AnimationClips);
     DeserializeResource<Graphics::Material>(istream, m_Materials);
     DeserializeResource<Graphics::Texture>(istream, m_Textures);
     CreateGpuResources();
@@ -66,7 +68,14 @@ Ether::StringID Ether::ResourceManager::RegisterSkinnedMeshResource(std::unique_
 Ether::StringID Ether::ResourceManager::RegisterSkeletonResource(std::unique_ptr<Graphics::Skeleton>&& skeleton)
 {
     StringID sid = skeleton->GetGuid();
-    m_Skeleton[sid] = std::move(skeleton);
+    m_Skeletons[sid] = std::move(skeleton);
+    return sid;
+}
+
+Ether::StringID Ether::ResourceManager::RegisterAnimationClipResource(std::unique_ptr<Graphics::AnimationClip>&& animationClip)
+{
+    StringID sid = animationClip->GetGuid();
+    m_AnimationClips[sid] = std::move(animationClip);
     return sid;
 }
 
@@ -102,10 +111,18 @@ Ether::Graphics::SkinnedMesh* Ether::ResourceManager::GetSkinnedMeshResource(Str
 
 Ether::Graphics::Skeleton* Ether::ResourceManager::GetSkeletonResource(StringID guid) const
 {
-    if (m_Skeleton.find(guid) == m_Skeleton.end())
+    if (m_Skeletons.find(guid) == m_Skeletons.end())
         return nullptr;
 
-    return m_Skeleton.at(guid).get();
+    return m_Skeletons.at(guid).get();
+}
+
+Ether::Graphics::AnimationClip* Ether::ResourceManager::GetAnimationClipResource(StringID guid) const
+{
+    if (m_AnimationClips.find(guid) == m_AnimationClips.end())
+        return nullptr;
+
+    return m_AnimationClips.at(guid).get();
 }
 
 Ether::Graphics::Material* Ether::ResourceManager::GetMaterialResource(StringID guid) const

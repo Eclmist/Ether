@@ -48,7 +48,7 @@ public:
     void SetSkeletonGuid(StringID guid) { m_SkeletonGuid = guid; }
 
 public:
-    void NextFrame(const Skeleton& skeleton, const SkeletonPose& pose);
+    void NextFrame(const Skeleton& skeleton, const AnimationClip& animationClip);
     void UpdateGpuResources(CommandContext& ctx);
 
 protected:

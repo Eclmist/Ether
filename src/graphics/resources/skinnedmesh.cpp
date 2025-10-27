@@ -86,7 +86,7 @@ void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::
     ComputeBoundingBox();
 }
 
-void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const SkeletonPose& pose)
+void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const AnimationClip& animationClip)
 {
     // DEBUG CODE!
     if (GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled &&
@@ -118,6 +118,14 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ske
     }
 
     // --- CPU Skinning --- //
+    // Loop animation time
+    const float ticksPerSecond = 120.0f; // TODO: Get from animation file
+    const float duration = animationClip.GetAnimDuration();
+    const float timeInSeconds = Time::GetTimeSinceStartup() / 1000.0f;
+    const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
+
+    const SkeletonPose pose = skeleton.CalculatePoseFromAnimation(animationClip, loopedTimeInTicks);
+
     for (uint32_t i = 0; i < m_NumVertices; ++i)
     {
         ethVector4 skinnedPos(0, 0, 0, 0);
@@ -134,10 +142,10 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ske
                 continue;
 
             const SkeletonBone& bone = skeleton.GetBone(boneIndex);
-            const ethMatrix4x4 finalBoneMatrix = pose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
+            const ethMatrix4x4 finalBoneMatrix = pose.m_GlobalInverseTransform * pose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
 
             skinnedPos += (finalBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 1.0f)) * weight;
-            skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 0.0f)) * weight;
+            skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Normal.x, src.m_Normal.y, src.m_Normal.z, 0.0f)) * weight;
         }
 
         m_PackedVertices[i].m_Position = skinnedPos.Resize<3>();

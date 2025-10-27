@@ -28,12 +28,12 @@
 
 #define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 1
-#define SKYLIGHT_SCALE 10000
+#define SKYLIGHT_SCALE 2000
 
 // 0 -> Importance sample BRDF
 // 1 -> Importance sample Cosine Hemisphere
 // 2 -> Sample Hemisphere
-#define IMPORTANCE_SAMPLING 2
+#define IMPORTANCE_SAMPLING 0
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
@@ -74,8 +74,6 @@ float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, flo
     shadowRay.TMax = RAY_TMAX;
     shadowRay.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
-
-    normal = dot(wo, normal) < 0 ? -normal : normal; 
 
     const float3 wi = normalize(shadowRay.Direction);
     const float3 Li = payload.m_Radiance;
