@@ -39,11 +39,11 @@ https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-se
 */
 Ether::Graphics::RhiInputElementDesc Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::s_InputElementDesc
     [PositionNormalTangentTexcoord_NumElements] = {
-        { "COLOR", 0, RhiFormat::R32G32B32A32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
         { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+        { "COLOR", 0, RhiFormat::R32G32B32A32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
     };
 
 void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Serialize(OStream& ostream) const
