@@ -335,9 +335,15 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     dx12Obj->m_Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
     dx12Obj->m_Inputs.pGeometryDescs = &dx12Obj->m_GeometryDesc;
     if (desc.m_IsStatic)
+    {
         dx12Obj->m_Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+        dx12Obj->m_Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_COMPACTION;
+    }
     else
+    {
         dx12Obj->m_Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_BUILD;
+        dx12Obj->m_Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+    }
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info = {};
     m_Device->GetRaytracingAccelerationStructurePrebuildInfo(&dx12Obj->m_Inputs, &info);

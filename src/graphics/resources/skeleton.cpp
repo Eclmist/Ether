@@ -469,7 +469,7 @@ Ether::Graphics::SkeletonPose Ether::Graphics::Skeleton::CalculatePoseFromAnimat
             ethMatrix4x4 rotation = QuaternionToMatrixRowMajor(interpolatedRotation);
             ethMatrix4x4 scale = Transform::GetScaleMatrix(interpolatedScale);
 
-            //localTransformation = translation;
+            localTransformation = translation * rotation * scale;
         }
         
         const ethMatrix4x4 parentTransformation = hasParent ? newPose.m_GlobalBoneTransform[currentBone.m_ParentIndex] : ethMatrix4x4();

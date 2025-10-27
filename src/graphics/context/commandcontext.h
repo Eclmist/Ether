@@ -72,6 +72,7 @@ public:
     // Raytracing
     void BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
     void BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
+    void RefitBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
     void SetRaytracingShaderBindingTable(const RhiResource* bindTable);
 
     // Barriers
