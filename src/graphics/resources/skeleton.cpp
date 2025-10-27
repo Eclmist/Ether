@@ -143,31 +143,6 @@ Ether::Graphics::Skeleton::Skeleton()
 {
 }
 
-void Ether::Graphics::Skeleton::DebugPrint(uint32_t parentIndex, const std::string& prefix, bool isLast) const
-{
-    // Count children for this parent
-    std::vector<uint32_t> children;
-    for (uint32_t i = 0; i < NumBones(); ++i)
-    {
-        if (GetBone(i).m_ParentIndex == parentIndex)
-            children.push_back(i);
-    }
-
-    for (uint32_t i = 0; i < children.size(); ++i)
-    {
-        uint32_t childBoneIndex = children[i];
-        bool childIsLast = (i == children.size() - 1);
-
-        std::string connector = childIsLast ? "„¤„Ÿ " : "„¥„Ÿ ";
-        std::string line = prefix + connector + GetBone(childBoneIndex).m_Name;
-        LogInfo("%s", line.c_str());
-
-        // Prefix for next level
-        std::string childPrefix = prefix + (childIsLast ? "   " : "„   ");
-        DebugPrint(childBoneIndex, childPrefix, childIsLast);
-    }
-}
-
 // BIBG BIG BIG BIG HACK!!!
 // SMath does not have quaternion support yet, so we're gonna do it here!! (rtcamp)
 Ether::ethVector4 QuaternionSlerp(const Ether::ethVector4& q1, const Ether::ethVector4& q2, float t)
@@ -298,21 +273,6 @@ void Ether::Graphics::AnimationClip::BoneKeyframes::Serialize(OStream& ostream) 
     }
 }
 
-void Ether::Graphics::AnimationClip::Serialize(OStream& ostream) const
-{
-    Serializable::Serialize(ostream);
-
-    ostream << m_Name;
-    ostream << m_AnimDuration;
-
-    ostream << (uint32_t)m_Keyframes.size();
-    for (auto iter = m_Keyframes.begin(); iter != m_Keyframes.end(); ++iter)
-    {
-        ostream << iter->first;
-        iter->second.Serialize(ostream);
-    }
-}
-
 void Ether::Graphics::AnimationClip::BoneKeyframes::Deserialize(IStream& istream)
 {
     uint32_t numPositionKeyframes, numRotationKeyframes, numScaleKeyframes;
@@ -342,12 +302,29 @@ void Ether::Graphics::AnimationClip::BoneKeyframes::Deserialize(IStream& istream
     }
 }
 
+void Ether::Graphics::AnimationClip::Serialize(OStream& ostream) const
+{
+    Serializable::Serialize(ostream);
+
+    ostream << m_Name;
+    ostream << m_TotalTicks;
+    ostream << m_TicksPerSecond;
+
+    ostream << (uint32_t)m_Keyframes.size();
+    for (auto iter = m_Keyframes.begin(); iter != m_Keyframes.end(); ++iter)
+    {
+        ostream << iter->first;
+        iter->second.Serialize(ostream);
+    }
+}
+
 void Ether::Graphics::AnimationClip::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
 
     istream >> m_Name;
-    istream >> m_AnimDuration;
+    istream >> m_TotalTicks;
+    istream >> m_TicksPerSecond;
 
     uint32_t numKeyframes;
     istream >> numKeyframes;
@@ -428,10 +405,12 @@ Ether::ethVector3 Ether::Graphics::AnimationClip::BoneKeyframes::GetInterpolated
 
 Ether::Graphics::AnimationClip::AnimationClip(
     const std::string& name,
-    float duration)
+    float totalTicks,
+    float ticksPerSecond)
     : Serializable(AnimClipVersion, ETH_CLASS_ID_ANIMATIONCLIP)
     , m_Name(name)
-    , m_AnimDuration(duration)
+    , m_TotalTicks(totalTicks)
+    , m_TicksPerSecond(ticksPerSecond)
 {
 }
 
@@ -482,3 +461,38 @@ Ether::Graphics::SkeletonPose Ether::Graphics::Skeleton::CalculatePoseFromAnimat
     return newPose;
 }
 
+#if ETH_TOOLMODE
+void Ether::Graphics::Skeleton::DebugPrint(uint32_t parentIndex, const std::string& prefix, bool isLast) const
+{
+    // Count children for this parent
+    std::vector<uint32_t> children;
+    for (uint32_t i = 0; i < NumBones(); ++i)
+    {
+        if (GetBone(i).m_ParentIndex == parentIndex)
+            children.push_back(i);
+    }
+
+    for (uint32_t i = 0; i < children.size(); ++i)
+    {
+        uint32_t childBoneIndex = children[i];
+        bool childIsLast = (i == children.size() - 1);
+
+        std::string connector = childIsLast ? "„¤„Ÿ " : "„¥„Ÿ ";
+        std::string line = prefix + connector + GetBone(childBoneIndex).m_Name;
+        LogInfo("%s", line.c_str());
+
+        // Prefix for next level
+        std::string childPrefix = prefix + (childIsLast ? "   " : "„   ");
+        DebugPrint(childBoneIndex, childPrefix, childIsLast);
+    }
+}
+
+uint32_t Ether::Graphics::Skeleton::GetBoneIndex(const std::string& name) const
+{
+    for (uint32_t i = 0; i < NumBones(); ++i)
+        if (m_Bones[i].m_Name == name)
+            return i;
+
+    return InvalidBoneIndex;
+}
+#endif

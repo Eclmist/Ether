@@ -76,7 +76,7 @@ public:
     };
 
 public:
-    AnimationClip(const std::string& name = "Unnamed Animation Clip", float duration = 0);
+    AnimationClip(const std::string& name = "Unnamed Animation Clip", float totalTicks = 0.0f, float ticksPerSecond = 30.0f);
     ~AnimationClip() override = default;
 
 public:
@@ -85,7 +85,8 @@ public:
 
 public:
     inline const std::string& GetName() const { return m_Name; }
-    inline const float GetAnimDuration() const { return m_AnimDuration; }
+    inline const float GetTotalTicks() const { return m_TotalTicks; }
+    inline const float GetTicksPerSecond() const { return m_TicksPerSecond; }
 
     inline bool HasBoneInfluence(const std::string& boneName) const { return m_Keyframes.find(boneName) != m_Keyframes.end();}
     inline const BoneKeyframes& GetKeyframes(const std::string& boneName) const { return m_Keyframes.at(boneName); }
@@ -95,7 +96,8 @@ public:
 
 private:
     std::string m_Name;
-    float m_AnimDuration;
+    float m_TotalTicks;
+    float m_TicksPerSecond;
     std::unordered_map<std::string, BoneKeyframes> m_Keyframes;
 };
 
@@ -123,7 +125,10 @@ public:
     SkeletonPose CalculatePoseFromAnimation(const AnimationClip& animation, float animTimeTicks) const;
 
 public:
+#if ETH_TOOLMODE
+    uint32_t GetBoneIndex(const std::string& name) const;
     void DebugPrint(uint32_t parentIndex = UINT32_MAX, const std::string& prefix = "", bool isLast = true) const;
+#endif
 
 private:
     std::vector<SkeletonBone> m_Bones;

@@ -192,6 +192,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
 
             Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, ToEthMatrix4x4(currentBone->mOffsetMatrix));
             skeleton->AddBone(bone);
+            m_BoneNameToSkeletonMap.emplace(bone.m_Name, *skeleton);
 
             Graphics::SkeletonPose bindPose = skeleton->GetBindPose();
             bindPose.m_GlobalBoneTransform.push_back(globalTransformation);
@@ -228,8 +229,9 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
         LogInfo("Found animation: %s", animation->mName.C_Str());
 
         const std::string animName = animation->mName.C_Str();
-        const float animDuration = animation->mDuration;
-        Graphics::AnimationClip animationClip(animName, animDuration);
+        const float totalTicks = animation->mDuration;
+        const float ticksPerSecond = animation->mTicksPerSecond;
+        Graphics::AnimationClip animationClip(animName, totalTicks, ticksPerSecond);
 
         for (uint32_t j = 0; j < animation->mNumChannels; ++j)
         {
@@ -299,7 +301,7 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
         AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
 
         if (assimpMesh->HasVertexColors(0))
-            packedVertices[j].m_Color = ToEthVector4(*assimpMesh->mColors[j]);
+            packedVertices[j].m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
 
         if (assimpMesh->HasPositions())
             packedVertices[j].m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
@@ -376,20 +378,27 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     // Process Bones
     AssertToolmode(assimpMesh->HasBones(), "Encountered skinned mesh without bones (illegal codepath)");
 
-    for (uint32_t boneIndex = 0; boneIndex < assimpMesh->mNumBones; ++boneIndex)
+    for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
     {
-        aiBone* bone = assimpMesh->mBones[boneIndex];
+        const aiBone* bone = assimpMesh->mBones[i];
+        const Graphics::Skeleton skeleton = m_BoneNameToSkeletonMap.at(bone->mName.C_Str());
+        const uint32_t boneIndex = skeleton.GetBoneIndex(bone->mName.C_Str());
+
+        if (boneIndex == Graphics::InvalidBoneIndex)
+            continue;
 
         // iterate through each "vertex" that this bone influences
         for (uint32_t vertexIndex = 0; vertexIndex < bone->mNumWeights; ++vertexIndex)
         {
             aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
 
+            if (vertexRef.mWeight <= 0.0f)
+                continue;
+
             // Find which weight slot is still available on the vertex
             for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
             {
-                if (packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex ||
-                    packedSkinnedVertices[vertexRef.mVertexId].m_BoneWeights[k] <= 0.0f)
+                if (packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex)
                 {
                     packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
                     packedSkinnedVertices[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
