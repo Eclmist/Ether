@@ -41,11 +41,11 @@ public:
     static uint32_t s_NumElements;
 
 public:
-    ethVector4 m_Color = { 1, 1, 1, 1 };
     ethVector3 m_Position;
     ethVector3 m_Normal;
     ethVector3 m_Tangent;
     ethVector2 m_TexCoord;
+    ethVector4 m_Color = { 1, 1, 1, 1 };
 };
 
 class ETH_GRAPHIC_DLL PositionNormalTangentTexcoord_Skinned : public PositionNormalTangentTexcoord
