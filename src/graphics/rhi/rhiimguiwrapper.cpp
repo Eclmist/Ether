@@ -84,6 +84,16 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Depth Of Field"))
+            {
+                ImGui::Checkbox("Enabled", &gfxConfig.m_IsDofEnabled);
+                ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 10);
+                ImGui::SliderFloat("Focal Length", &gfxConfig.m_FocalLength, 0, 1);
+                ImGui::SliderFloat("Aperture", &gfxConfig.m_Aperture, 0, 1);
+                ImGui::SliderFloat("MaxCoC", &gfxConfig.m_MaxCoC, 0, 100.0f);
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Temporal AA"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsTemporalAAEnabled);

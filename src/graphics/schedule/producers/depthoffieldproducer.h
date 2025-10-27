@@ -19,25 +19,24 @@
 
 #pragma once
 
-#include "graphics/pch.h"
-#include "graphics/common/visualbatch.h"
+#include "graphics/schedule/producers/postprocessproducer.h"
 
 namespace Ether::Graphics
 {
-struct ETH_GRAPHIC_DLL RenderData
+class DepthOfFieldProducer : public PostProcessProducer
 {
 public:
-    ethMatrix4x4 m_ViewMatrix;
-    ethMatrix4x4 m_ProjectionMatrix;
-    ethVector3 m_CameraDirection;
-    ethVector3 m_CameraPosition;
-    ethVector2 m_CameraJitter;
-    ethVector2 m_CameraClipNearFar;
+    DepthOfFieldProducer();
+    ~DepthOfFieldProducer() override = default;
 
-    StringID m_HdriTextureID;
+public:
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
-    std::vector<Visual> m_Visuals;
-    std::vector<SkinnedVisual> m_SkinnedVisuals;
-    std::vector<VisualBatch> m_VisualBatches;
+protected:
+    bool IsEnabled() override;
+
+private:
+    void CreateRootSignature() override;
 };
 } // namespace Ether::Graphics

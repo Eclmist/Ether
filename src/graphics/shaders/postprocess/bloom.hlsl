@@ -100,8 +100,9 @@ void CompositePass(uint3 threadID)
 [numthreads(BLOOM_KERNEL_GROUP_SIZE_X, BLOOM_KERNEL_GROUP_SIZE_Y, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    //if (threadID.y > g_BloomParams.m_Resolution.y)
-    //    return;
+    if (any(threadID.xy > g_BloomParams.m_Resolution.xy))
+        return;
+
     if (g_BloomParams.m_PassIndex == BLOOM_PASSINDEX_DOWNSAMPLE)
         DownsamplePass(threadID);
     else if (g_BloomParams.m_PassIndex == BLOOM_PASSINDEX_UPSAMPLE)

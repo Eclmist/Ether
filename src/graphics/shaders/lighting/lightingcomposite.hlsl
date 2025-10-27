@@ -56,6 +56,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     float4 normals = g_GBufferTexture2[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 albedo = g_GBufferTexture0[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
     float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    float4 gbuffer3 = g_GBufferTexture3[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
 
     if (normals.x == 0 && normals.y == 0)
         return sky;
@@ -64,7 +65,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     //    return albedo * 1000.0;
 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(DecodeNormals(normals.xy) * albedo.x, 0) * 10000.0;
+        return gbuffer3.w * 1000.0;
 
     float4 finalColor = lighting;
     return finalColor;

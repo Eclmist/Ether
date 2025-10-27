@@ -28,18 +28,12 @@
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/instanceparams.h"
 
-
-//DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,    Albedo.y,    Albedo.z,   MaterialID] 8 bit per channel (0-255)
-//DEFINE_GFX_RT(GBufferTexture1) // [OctNormal.x, OctNormal.y, Velocity.x, Velocity.y] 16 bit per channel (half float)
-//DEFINE_GFX_RT(GBufferTexture2) // [LinearDepth, Reserved,    Reserved,   Reserved]   16 bit per channel (half float)
-
-
 DEFINE_GFX_PA(GBufferProducer)
 DEFINE_GFX_DS(GBufferDepthStencil)
 DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   Metalness]
 DEFINE_GFX_RT(GBufferTexture1) // [Position.x, Position.y, Position.z, Roughness]
 DEFINE_GFX_RT(GBufferTexture2) // [Normal.x,   Normal.y,   Velocity.x, Velocity.y]
-DEFINE_GFX_RT(GBufferTexture3) // [Emissive.x, Emissive.y, Emissive.z]
+DEFINE_GFX_RT(GBufferTexture3) // [Emissive.x, Emissive.y, Emissive.z, LinearDepth]
 DEFINE_GFX_SR(GBufferTexture0)
 DEFINE_GFX_SR(GBufferTexture1)
 DEFINE_GFX_SR(GBufferTexture2)
@@ -68,11 +62,11 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
-    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R11G11B10Float);
+    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
@@ -83,6 +77,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
+
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
     const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
 
@@ -192,7 +187,7 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     RhiFormat formats[] = { RhiFormat::R8G8B8A8Unorm,
                             RhiFormat::R32G32B32A32Float,
                             RhiFormat::R16G16B16A16Float,
-                            RhiFormat::R11G11B10Float, };
+                            RhiFormat::R16G16B16A16Float, };
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);

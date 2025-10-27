@@ -89,6 +89,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
         renderData.m_CameraDirection = forward.Resize<3>();
         renderData.m_CameraPosition = transform.m_Translation;
         renderData.m_CameraJitter = cameraJitter;
+        renderData.m_CameraClipNearFar = { camera.m_NearPlane, camera.m_FarPlane };
         renderData.m_HdriTextureID = camera.GetHdriTextureID();
 
         // Only render the first camera for now, since the renderer is not designed for multiple yet
