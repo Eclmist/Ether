@@ -47,7 +47,7 @@ struct PS_OUTPUT
     float4 Output0      : SV_TARGET0;
     float4 Output1      : SV_TARGET1;
     float4 Output2      : SV_TARGET2;
-    float3 Output3      : SV_TARGET3;
+    float4 Output3      : SV_TARGET3;
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
@@ -63,6 +63,13 @@ float4x4 RemoveJitter(float4x4 jitteredProjMatrix)
         0, 0, 0, 1);
     float4x4 originalProjMatrix = mul(inverseJitterMatrix, jitteredProjMatrix);
     return originalProjMatrix;
+}
+
+float LinearizeDepth(float depth)
+{
+    float zNear = g_GlobalConstants.m_CameraClipNearFar.x;
+    float zFar = g_GlobalConstants.m_CameraClipNearFar.y;
+    return (zNear * zFar) / (zFar - (1.0 - depth) * (zFar - zNear));
 }
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
@@ -89,6 +96,7 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     float4 clipPosCurr = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrix), worldPos);
     float2 texSpacePrev = ClipToTextureSpace(clipPosPrev);
     float2 texSpaceCurr = ClipToTextureSpace(clipPosCurr);
+    float linearDepth = LinearizeDepth(IN.Position.z / IN.Position.w);
 
     float4 albedo = material.m_BaseColor;
     float4 emissive = material.m_EmissiveColor;
@@ -120,8 +128,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
         roughness = roughnessTex.Sample(linearSampler, IN.TexCoord).g;
     }
 
-roughness = max(0.9, roughness);
-
     if (material.m_MetalnessTextureIndex != 0)
     {
         Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];
@@ -148,6 +154,6 @@ roughness = max(0.9, roughness);
     o.Output0 = float4(albedo.x,     albedo.y,      albedo.z,   metalness);
     o.Output1 = float4(worldPos.x,   worldPos.y,    worldPos.z, roughness);
     o.Output2 = float4(octNormals.x, octNormals.y,  velocity.x, velocity.y);
-    o.Output3 = float3(emissive.x,   emissive.y,    emissive.z);
+    o.Output3 = float4(emissive.x,   emissive.y,    emissive.z, linearDepth);
     return o;
 }

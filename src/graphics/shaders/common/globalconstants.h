@@ -44,6 +44,9 @@ struct GlobalConstants
 
     ethVector4 m_CameraPosition;
     ethVector4 m_CameraDirection;
+    ethVector2 m_CameraClipNearFar;
+    ethVector2 m_Padding1;
+
     ethVector4 m_Time;
 
     ethVector4 m_SunDirection;

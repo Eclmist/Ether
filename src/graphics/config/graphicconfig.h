@@ -83,6 +83,14 @@ public:
     float m_BloomScatter = 0.85f;
     float m_BloomAnamorphic = 0.0f;
 
+    // Dof
+    bool m_IsDofEnabled = true;
+
+    float m_FocusDistance   = 2.0f; // meters (2m)
+    float m_FocalLength     = 0.05f; // meters (50mm)
+    float m_Aperture        = 0.02;  // unitless scalar
+    float m_MaxCoC          = 60.0f; // pixels
+
     // Tonemapping
     int32_t m_TonemapperType = 3;
     float m_TonemapperParamA = 1;

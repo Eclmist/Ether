@@ -19,25 +19,19 @@
 
 #pragma once
 
-#include "graphics/pch.h"
-#include "graphics/common/visualbatch.h"
+#include "hlsltranslation.h"
 
-namespace Ether::Graphics
+#define DOF_KERNEL_GROUP_SIZE_X 8
+#define DOF_KERNEL_GROUP_SIZE_Y 8
+
+ETH_BEGIN_SHADER_NAMESPACE
+
+struct DepthOfFieldParams
 {
-struct ETH_GRAPHIC_DLL RenderData
-{
-public:
-    ethMatrix4x4 m_ViewMatrix;
-    ethMatrix4x4 m_ProjectionMatrix;
-    ethVector3 m_CameraDirection;
-    ethVector3 m_CameraPosition;
-    ethVector2 m_CameraJitter;
-    ethVector2 m_CameraClipNearFar;
-
-    StringID m_HdriTextureID;
-
-    std::vector<Visual> m_Visuals;
-    std::vector<SkinnedVisual> m_SkinnedVisuals;
-    std::vector<VisualBatch> m_VisualBatches;
+    float m_FocalLength;
+    float m_Aperture;
+    float m_MaxCoC;
+    float m_FocusDistance;
 };
-} // namespace Ether::Graphics
+
+ETH_END_SHADER_NAMESPACE
