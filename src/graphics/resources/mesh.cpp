@@ -104,11 +104,16 @@ void Ether::Graphics::Mesh::CreateIndexBuffer(CommandContext& ctx)
 void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx, bool allowUpdate)
 {
     RhiBottomLevelAccelerationStructureDesc desc = {};
+
+    // Don't generate BLAS for degenerate meshes
+    if (GetNumVertices() == 0 || GetNumIndices() < 3)
+        return;
+
     Mesh* meshes[] = { this };
     desc.m_Meshes = (void**)meshes;
     desc.m_NumMeshes = 1;
     desc.m_IsOpaque = true;
-    desc.m_IsStatic = allowUpdate == false;
+    desc.m_IsStatic = !allowUpdate;
 
     m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
     ctx.PushMarker("Build BLAS");
