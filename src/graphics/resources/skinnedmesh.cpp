@@ -121,8 +121,8 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
 
     // --- CPU Skinning --- //
     // Loop animation time
-    const float ticksPerSecond = 120.0f; // TODO: Get from animation file
-    const float duration = animationClip.GetAnimDuration();
+    const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
+    const float duration = animationClip.GetTotalTicks();
     const float timeInSeconds = Time::GetTimeSinceStartup() / 1000.0f;
     const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
 
