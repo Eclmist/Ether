@@ -26,20 +26,20 @@
 
 struct VS_INPUT
 {
-    float4 Color        : COLOR;
     float3 Position     : POSITION;
     float3 Normal       : NORMAL;
     float3 Tangent      : TANGENT;
     float2 TexCoord     : TEXCOORD;
+    float4 PrevPosition : COLOR;
 };
 
 struct VS_OUTPUT
 {
-    float4 Color        : COLOR;
     float4 Position     : SV_POSITION;
     float3 Normal       : NORMAL;
     float2 TexCoord     : TEXCOORD0;
     float3 Tangent      : TEXCOORD1;
+    float4 PrevClipPos  : TEXCOORD2;
 };
 
 struct PS_OUTPUT
@@ -69,11 +69,11 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    o.Color = IN.Color;
     o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, float4(IN.Position, 1.0f));
     o.Normal = IN.Normal;
     o.TexCoord = IN.TexCoord;
     o.Tangent = IN.Tangent;
+    o.PrevClipPos = mul(g_GlobalConstants.m_ViewProjectionMatrixPrev, float4(IN.PrevPosition.xyz, 1.0f));
 
     return o;
 }
@@ -85,9 +85,8 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
 
     float4 clipPos = ScreenToClipSpace(IN.Position, g_GlobalConstants.m_ScreenResolution);
     float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clipPos);
-    float4 clipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrev, worldPos);
     float4 clipPosCurr = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrix), worldPos);
-    float2 texSpacePrev = ClipToTextureSpace(clipPosPrev);
+    float2 texSpacePrev = ClipToTextureSpace(IN.PrevClipPos);
     float2 texSpaceCurr = ClipToTextureSpace(clipPosCurr);
 
     float4 albedo = material.m_BaseColor;

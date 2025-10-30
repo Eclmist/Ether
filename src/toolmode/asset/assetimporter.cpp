@@ -318,6 +318,12 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
 
         if (assimpMesh->HasTextureCoords(0))
             packedVertices[j].m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
+
+        //  Hack prev pos into vertex color (RTCamp11 TODO)
+        packedVertices[j].m_Color.x = packedVertices[j].m_Position.x;
+        packedVertices[j].m_Color.y = packedVertices[j].m_Position.y;
+        packedVertices[j].m_Color.z = packedVertices[j].m_Position.z;
+        packedVertices[j].m_Color.w = 0;
     }
 
     const uint32_t numVerticesPerFace = 3; // Triangulated mesh only

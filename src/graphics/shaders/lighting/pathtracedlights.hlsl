@@ -61,7 +61,7 @@ void RayGeneration()
     const RayPayload indirectRay = TraceShadingRay(surface, wi, MAX_DEPTH);
     const float3 indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, viewDir) / pdf;
 
-    float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    float a = max(0.1, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[sampleCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
     g_IndirectOutput[sampleCoords].xyz = accumulatedIndirect;
