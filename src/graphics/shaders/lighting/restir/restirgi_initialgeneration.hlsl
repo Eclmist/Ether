@@ -102,7 +102,7 @@ void Miss(inout RayPayload payload)
 {
     payload.m_Hit = false;
     payload.m_Radiance = 0;
-    payload.m_HitPosition = WorldRayOrigin() + WorldRayDirection() * 9999.0f;
+    payload.m_HitPosition = WorldRayOrigin() + WorldRayDirection() * 9999999.0f;
 
     if (payload.m_IsShadowRay)
     {

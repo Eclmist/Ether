@@ -24,14 +24,26 @@
 #define DOF_KERNEL_GROUP_SIZE_X 8
 #define DOF_KERNEL_GROUP_SIZE_Y 8
 
+#define DOF_PASSINDEX_GENERATE_COC      0
+#define DOF_PASSINDEX_PREFILTER_PASS    1
+#define DOF_PASSINDEX_ACCUMULATE        2
+#define DOF_PASSINDEX_POSTFILTER_PASS   3
+#define DOF_PASSINDEX_COMPOSITE         4
+
 ETH_BEGIN_SHADER_NAMESPACE
 
 struct DepthOfFieldParams
 {
+    uint32_t m_PassIndex;
+
     float m_FocalLength;
     float m_Aperture;
     float m_MaxCoC;
     float m_FocusDistance;
+
+    float m_FocusRange;
+
+
 };
 
 ETH_END_SHADER_NAMESPACE

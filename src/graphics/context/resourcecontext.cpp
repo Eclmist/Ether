@@ -109,8 +109,12 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DR
 
     if ((flags & RhiResourceFlag::AllowDepthStencil) != RhiResourceFlag::None)
     {
-        desc.m_ClearValue = { format, { 1, 0 } };
         desc.m_State = RhiResourceState::DepthWrite;
+
+        // RTCamp11 Hack
+        // Force this specific format for DS resource
+        desc.m_ResourceDesc.m_Format = DepthBufferFormat;
+        desc.m_ClearValue = { DepthBufferDsvFormat, { 1, 0 } };
     }
 
     if (!ShouldRecreateResource(resourceName, desc))

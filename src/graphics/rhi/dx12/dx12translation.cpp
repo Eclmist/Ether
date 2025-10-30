@@ -258,12 +258,20 @@ DXGI_FORMAT Ether::Graphics::Translate(const RhiFormat& rhiType)
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
     case RhiFormat::D32Float:
         return DXGI_FORMAT_D32_FLOAT;
-    case RhiFormat::R32Uint:
-        return DXGI_FORMAT_R32_UINT;
     case RhiFormat::R16Uint:
         return DXGI_FORMAT_R16_UINT;
+    case RhiFormat::R32Uint:
+        return DXGI_FORMAT_R32_UINT;
+    case RhiFormat::R16Float:
+        return DXGI_FORMAT_R16_FLOAT;
+    case RhiFormat::R32Float:
+        return DXGI_FORMAT_R32_FLOAT;
     case RhiFormat::D24UnormS8Uint:
         return DXGI_FORMAT_D24_UNORM_S8_UINT;
+    case RhiFormat::R24G8Typeless:
+        return DXGI_FORMAT_R24G8_TYPELESS;
+    case RhiFormat::R24UNormX8Typeless:
+        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
     case RhiFormat::R11G11B10Float:
         return DXGI_FORMAT_R11G11B10_FLOAT;
     default:

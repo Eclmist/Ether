@@ -146,9 +146,13 @@ enum class RhiFormat
     R32G32B32Float,
     R32G32B32A32Float,
     D32Float,
-    R32Uint,
     R16Uint,
+    R32Uint,
+    R16Float,
+    R32Float,
     D24UnormS8Uint,
+    R24G8Typeless,
+    R24UNormX8Typeless,
 };
 
 enum class RhiFilter

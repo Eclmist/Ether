@@ -517,6 +517,7 @@ void Ether::Graphics::Dx12Device::InitializeShaderResourceView(RhiShaderResource
 
     D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.Format = Translate(srv.GetFormat());
+
     desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
     switch (srv.GetDimension())

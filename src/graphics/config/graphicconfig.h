@@ -88,8 +88,9 @@ public:
 
     float m_FocusDistance   = 2.0f; // meters (2m)
     float m_FocalLength     = 0.05f; // meters (50mm)
-    float m_Aperture        = 0.02;  // unitless scalar
+    float m_Aperture        = 4.0f;  // unitless scalar
     float m_MaxCoC          = 60.0f; // pixels
+    float m_FocusRange      = 3.0f; // meters..? (3m)
 
     // Tonemapping
     int32_t m_TonemapperType = 3;

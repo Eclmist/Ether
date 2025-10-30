@@ -75,6 +75,10 @@ void Ether::Ecs::EcsVisualSystem::Update()
             gfxVisualBatch = &renderData.m_VisualBatches[materialToBatchMap.at(data.m_MaterialGuid)];
         }
 
+        // Translucency not supported yet due to raytracing
+        if (gfxVisualBatch->m_Material->GetBaseColor().w < 1.0)
+            continue;
+
         gfxVisual.m_Mesh = resources.GetStaticMeshResource(data.m_MeshGuid);
 
         if (gfxVisual.m_Mesh == nullptr)

@@ -21,3 +21,4 @@ float GetLuminanceFromRGB(float3 rgb)
 {
     return dot(float3(0.2126, 0.7152, 0.0722), rgb);
 }
+
