@@ -47,13 +47,13 @@ void RayGeneration()
 
     if (finalReservoir.IsValid())
     {
-        const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
+        //const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
 
-        if (validationRay.m_Hit)
-        {
-            finalReservoir = GIReservoir::Empty();
-            g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
-        }
+        //if (validationRay.m_Hit)
+        //{
+        //    finalReservoir = GIReservoir::Empty();
+        //    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
+        //}
         
         finalReservoir.FinalizeResampling();
         indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
