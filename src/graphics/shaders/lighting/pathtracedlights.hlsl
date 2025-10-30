@@ -24,9 +24,9 @@
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 #include "utils/encoding.hlsl"
+#include "utils/shading.hlsl"
 #include "lighting/brdf.hlsl"
 
-#define EMISSION_SCALE 10000
 #define SUNLIGHT_SCALE 1
 #define SKYLIGHT_SCALE 2000
 
@@ -155,53 +155,12 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
 
 float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    const uint mipLevelToSample = 8;
-
-    float4 albedo = material.m_BaseColor;
-    float4 emission = material.m_EmissiveColor * EMISSION_SCALE;
-    float3 normal = hitSurface.m_Normal;
-    float roughness = 1;
-    float metalness = 0;
-
-    if (material.m_AlbedoTextureIndex != 0)
-    {
-        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
-        albedo *= albedoTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample);
-    }
-
-    if (material.m_NormalTextureIndex != 0)
-    {
-        Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
-        normal = normalTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).xyz;
-        normal = normal * 2.0 - 1.0;
-        float3 bitangent = cross(hitSurface.m_Tangent, hitSurface.m_Normal);
-        float3x3 TBN = float3x3(hitSurface.m_Tangent, bitangent, hitSurface.m_Normal.xyz);
-        normal = normalize(mul(normal, TBN));
-    }
-
-    if (material.m_RoughnessTextureIndex != 0)
-    {
-        Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
-        roughness = 1 - roughnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).g;
-    }
-
-    if (material.m_MetalnessTextureIndex != 0)
-    {
-        Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];
-        metalness = metalnessTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample).b;
-    }
-
-    if (material.m_EmissiveTextureIndex != 0)
-    {
-        Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
-        emission *= emissiveTex.SampleLevel(linearSampler, hitSurface.m_TexCoord, mipLevelToSample);
-    }
+    ShadingSurface surface = GetShadingSurfaceFromHit(hitSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
 
     const float3 wo = normalize(-WorldRayDirection());
-    const float3 direct = TraceShadow(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness);
-    const float3 indirect = TraceRecursively(hitSurface.m_Position, wo, normal, albedo.xyz, roughness, metalness, payload.m_Depth - 1);
-    return emission.xyz + direct + indirect;
+    const float3 direct = TraceShadow(surface.m_Position, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+    const float3 indirect = TraceRecursively(surface.m_Position, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness, payload.m_Depth - 1);
+    return surface.m_Emission + direct + indirect;
 }
 
 [shader("raygeneration")]

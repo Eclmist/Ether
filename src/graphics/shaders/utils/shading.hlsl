@@ -98,7 +98,7 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
 
     ShadingSurface shadingSurface;
     shadingSurface.m_Position = hitSurface.m_Position;
-    shadingSurface.m_Normal = normal;
+    shadingSurface.m_Normal = dot(-WorldRayDirection(), normal) < 0 ? -normal : normal; // Fix lightleakage
     shadingSurface.m_Albedo = albedo;
     shadingSurface.m_Roughness = roughness;
     shadingSurface.m_Metalness = metalness;

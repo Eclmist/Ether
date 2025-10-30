@@ -125,7 +125,6 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
     ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-    surface.m_Normal = dot(-WorldRayDirection(), surface.m_Normal) < 0 ? -surface.m_Normal : surface.m_Normal;
 
     payload.m_Hit = true;
     payload.m_HitPosition = surface.m_Position;
