@@ -90,48 +90,24 @@ void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::
 
 void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const AnimationClip& animationClip)
 {
-    // DEBUG CODE!
-    if (GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled &&
-        GraphicCore::GetGraphicConfig().m_SkinningDebugBoneId != -1)
-    {
-        for (uint32_t i = 0; i < m_NumVertices; ++i)
-        {
-            m_PackedVertices[i].m_Color = ethVector4(0, 0, 0, 0);
-        }
-
-        for (uint32_t i = 0; i < m_NumVertices; ++i)
-        {
-            for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
-            {
-                if (m_PackedVertices[i].m_BoneIndices[j] == GraphicCore::GetGraphicConfig().m_SkinningDebugBoneId)
-                {
-                    m_PackedVertices[i].m_Color.x = m_PackedVertices[i].m_BoneWeights[j];
-                }
-            }
-        }
-
-    }
-    else
-    {
-        for (uint32_t i = 0; i < m_NumVertices; ++i)
-        {
-            m_PackedVertices[i].m_Color = ethVector4(1, 1, 1, 1);
-        }
-    }
-
     // --- CPU Skinning --- //
     // Loop animation time
+    
+    // RTCamp11 Hack (TODO)
     const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
     const float duration = animationClip.GetTotalTicks();
     const float timeInSeconds = Time::GetTimeSinceStartup() / 1000.0f;
     const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
+    const float loopedTimeInTicksPrev = std::fmod((timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond, duration);
 
+    const SkeletonPose prevPose = skeleton.CalculatePoseFromAnimation(animationClip, loopedTimeInTicksPrev);
     const SkeletonPose pose = skeleton.CalculatePoseFromAnimation(animationClip, loopedTimeInTicks);
 
     for (uint32_t i = 0; i < m_NumVertices; ++i)
     {
         ethVector4 skinnedPos(0, 0, 0, 0);
         ethVector4 skinnedNormal(0, 0, 0, 0);
+        ethVector4 prevSkinnedPos(0, 0, 0, 0);
 
         const VertexFormats::PositionNormalTangentTexcoord_Skinned& src = m_PackedVerticesOriginal[i];
 
@@ -145,13 +121,18 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
 
             const SkeletonBone& bone = skeleton.GetBone(boneIndex);
             const ethMatrix4x4 finalBoneMatrix = pose.m_GlobalInverseTransform * pose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
+            const ethMatrix4x4 prevBoneMatrix = prevPose.m_GlobalInverseTransform * prevPose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
 
             skinnedPos += (finalBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 1.0f)) * weight;
             skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Normal.x, src.m_Normal.y, src.m_Normal.z, 0.0f)) * weight;
+            prevSkinnedPos += (prevBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 1.0f)) * weight;
         }
 
         m_PackedVertices[i].m_Position = skinnedPos.Resize<3>();
         m_PackedVertices[i].m_Normal = skinnedNormal.Resize<3>().Normalized();
+
+        // put prev pos into color for now (RTCamp11 hack TODO)
+        m_PackedVertices[i].m_Color = prevSkinnedPos;
     }
 }
 
