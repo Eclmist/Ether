@@ -21,38 +21,6 @@
 
 RWTexture2D<float4> g_LightingOutput                        : register(u3);
 
-void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
-{
-    const uint3 launchIndex = DispatchRaysIndex();
-    const uint3 launchDim = DispatchRaysDimensions();
-    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
-    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
-
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-    const float diffuseWeight = lerp(lerp(0.5, 1.0, surface.m_Roughness), 0.0, surface.m_Metalness);
-    const float specularWeight = 1.0 - diffuseWeight;
-
-    const bool importanceSampleBrdf = Random(rand2D.x) <= specularWeight;
-
-    if (importanceSampleBrdf)
-        wi = normalize(ImportanceSampleGGX(rand2D, wo, surface.m_Normal, surface.m_Roughness));
-    else
-        wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), surface.m_Normal));
-
-    const float3 H = normalize(wi + wo);
-    const float nDotH = saturate(dot(surface.m_Normal, H));
-    const float nDotV = saturate(dot(surface.m_Normal, wo));
-    const float vDotH = saturate(dot(wo, H));
-
-    // TODO: Abs is also wrong here. Why does it work?
-    const float cosTheta = abs(dot(-wi, surface.m_Normal));
-
-    if (importanceSampleBrdf)
-        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, surface.m_Roughness);
-    else
-        pdf = SampleDirectionHemisphere_Pdf();
-}
-
 [shader("raygeneration")]
 void RayGeneration()
 {
@@ -70,7 +38,7 @@ void RayGeneration()
     GIReservoir finalReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
     DeviceMemoryBarrier();
 
-    const RayPayload shadowRay = TraceShadowRay(surface);
+    const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
     const float3 Li = shadowRay.m_Radiance;
     const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
@@ -79,13 +47,13 @@ void RayGeneration()
 
     if (finalReservoir.IsValid())
     {
-        //const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
+        const RayPayload validationRay = TraceShadowRay(surface, normalize(finalReservoir.m_Sample.m_Position - surface.m_Position));
 
-        //if (validationRay.m_Hit)
-        //{
-        //    finalReservoir = GIReservoir::Empty();
-        //    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
-        //}
+        if (validationRay.m_Hit)
+        {
+            finalReservoir = GIReservoir::Empty();
+            g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
+        }
         
         finalReservoir.FinalizeResampling();
         indirectLighting = ComputeRadiance(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
@@ -94,28 +62,6 @@ void RayGeneration()
     g_LightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
     g_LightingOutput[screenCoords].a = 0;
 
-}
-
-[shader("miss")]
-void Miss(inout RayPayload payload)
-{
-    payload.m_Hit = false;
-
-    // Sample sun color
-    const float lerpFactor = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
-    payload.m_Radiance = lerp(0.0f, g_GlobalConstants.m_SunColor.xyz, lerpFactor);
-
-    if (payload.m_IsShadowRay)
-    {
-        // Sample sun color
-        const float lerpFactor = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
-        payload.m_Radiance = lerp(0.0f, g_GlobalConstants.m_SunColor.xyz, lerpFactor);
-    }
-    else
-    {
-        // Sample environment color
-        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
-    }
 }
 
 [shader("closesthit")]
@@ -135,7 +81,7 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     if (payload.m_IsShadowRay)
         return;
 
-    const RayPayload shadowRay = TraceShadowRay(surface);
+    const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
     const float3 wo = normalize(-WorldRayDirection());
     const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
     payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);

@@ -30,6 +30,8 @@ ETH_BEGIN_SHADER_NAMESPACE
 #define RAY_TMAX            128
 #define RAY_TMIN            0.1
 
+#define USE_IMPORTANCE_SAMPLING 1
+
 struct GeometryInfo
 {
     uint32_t m_VBDescriptorIndex;
@@ -57,5 +59,16 @@ struct GIPackedReservoir
     ethVector3 m_TargetPdf;
     float M;
 };
+
+struct MeshVertex
+{
+    ethVector3 m_Position;
+    ethVector3 m_Normal;
+    ethVector3 m_Tangent;
+    ethVector2 m_TexCoord;
+    ethVector4 m_Color;
+};
+
+
 
 ETH_END_SHADER_NAMESPACE
