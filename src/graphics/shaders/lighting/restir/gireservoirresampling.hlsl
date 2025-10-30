@@ -72,7 +72,6 @@ uint GetSampleIndexFromScreenCoords(uint2 screenCoords, uint2 screenSize)
     return GetSampleIndexFromSampleCoords(GetSampleCoordsFromScreenCoords(screenCoords), screenSize / (float)DOWNSAMPLE_FACTOR);
 }
 
-
 float3 SampleEnvironmentLighting(float3 wi)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
@@ -83,8 +82,9 @@ float3 SampleEnvironmentLighting(float3 wi)
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 4);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
+    const float groundFactor = saturate(wi.y);
 
-    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
+    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor * groundFactor;
 
     return (exposure * hdri * color).xyz;
 }
@@ -124,6 +124,7 @@ RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
+    payload.m_Radiance = 0.0f;
 
     if (depth <= 0)
         return payload;
@@ -133,7 +134,7 @@ RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
     ray.Direction = direction;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -147,7 +148,7 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
     RayDesc ray;
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
     ray.Direction = normalize(sample.m_Position - surface.m_Position);
-    ray.TMax = length(sample.m_Position - ray.Origin) * 0.9f;
+    ray.TMax = length(sample.m_Position - ray.Origin) * 0.99f;
     ray.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
