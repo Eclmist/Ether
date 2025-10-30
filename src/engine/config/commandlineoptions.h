@@ -42,6 +42,7 @@ public:
     ETH_TOOLONLY(inline const float GetImportScale() const { return m_ImportScale; })
     ETH_TOOLONLY(inline const std::vector<std::string>& GetImportPaths() const { return m_ImportPaths; })
     ETH_TOOLONLY(inline const std::vector<std::string>& GetFlatternedImportPaths() const { return m_FlattenedImportPaths; })
+    ETH_TOOLONLY(inline const std::string& GetExportName() const { return m_ExportName; })
 
 private:
     void RegisterSingleOption(const std::string& flag, const std::string& arg = "");
@@ -60,5 +61,6 @@ private:
     ETH_TOOLONLY(float m_ImportScale = 1.0f);
     ETH_TOOLONLY(std::vector<std::string> m_ImportPaths);
     ETH_TOOLONLY(std::vector<std::string> m_FlattenedImportPaths);
+    ETH_TOOLONLY(std::string m_ExportName);
 };
 } // namespace Ether

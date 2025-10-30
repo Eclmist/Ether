@@ -149,9 +149,9 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(DepthOfFieldProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(BloomProducer).Get().get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(DepthOfFieldProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 }
 

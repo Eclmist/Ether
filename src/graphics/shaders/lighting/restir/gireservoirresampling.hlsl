@@ -77,7 +77,7 @@ float3 SampleEnvironmentLighting(float3 wi)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    const float exposure = 1000.0f;
+    const float exposure = 10000.0f;
 
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 4);
@@ -91,7 +91,7 @@ float3 SampleEnvironmentLighting(float3 wi)
 
 float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
 {
-    const float3 f = CelBrdf(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+    const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     return f * Li * cosTheta;
 }
@@ -121,7 +121,6 @@ RayPayload TraceShadowRay(ShadingSurface surface)
 
 RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
 {
-
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;

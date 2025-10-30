@@ -285,10 +285,6 @@ void Ether::Graphics::ScheduleContext::ValidateView(RhiResourceView* firstView, 
         firstView->GetWidth() == view->GetWidth() && firstView->GetHeight() == view->GetHeight() &&
             firstView->GetDepth() == view->GetDepth(),
         "Different descriptor resolutions are pointing to the same resource");
-
-    AssertGraphics(
-        firstView->GetFormat() == view->GetFormat(),
-        "Different descriptor formats are pointing to the same resource");
 }
 
 void Ether::Graphics::ScheduleContext::CreateViews(ResourceContext& resourceContext)

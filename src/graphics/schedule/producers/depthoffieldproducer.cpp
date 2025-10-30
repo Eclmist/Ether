@@ -20,21 +20,15 @@
 #include "depthoffieldproducer.h"
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
-#include "graphics/shaders/common/depthoffieldparams.h"
 
 DEFINE_GFX_PA(DepthOfFieldProducer)
 
-DECLARE_GFX_SR(GBufferTexture3) // for linear depth stored in w
-DECLARE_GFX_SR(BloomTexture0)
-DECLARE_GFX_SR(BloomTexture1)
-DECLARE_GFX_SR(BloomTexture2)
-DECLARE_GFX_SR(BloomTexture3)
-DECLARE_GFX_SR(BloomTexture4)
-DECLARE_GFX_SR(BloomTexture5)
-DECLARE_GFX_SR(BloomTexture6)
-DECLARE_GFX_SR(BloomTexture7)
-DECLARE_GFX_SR(BloomTexture8)
+DECLARE_GFX_SR(GBufferDepthStencil)
 DECLARE_GFX_UA_SR(PostFxSourceTexture)
+
+DEFINE_GFX_UA_SR(DofIntermediateTexture1)
+DEFINE_GFX_UA_SR(DofIntermediateTexture2)
+DEFINE_GFX_UA_SR(DofCircleOfConfusionTexture)
 
 Ether::Graphics::DepthOfFieldProducer::DepthOfFieldProducer()
     : PostProcessProducer("DepthOfFieldProducer", "postprocess\\depthoffield.hlsl")
@@ -43,17 +37,18 @@ Ether::Graphics::DepthOfFieldProducer::DepthOfFieldProducer()
 
 void Ether::Graphics::DepthOfFieldProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
+    const ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+
+    schedule.NewUA(ACCESS_GFX_UA(DofIntermediateTexture1), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(DofIntermediateTexture1), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(DofIntermediateTexture2), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(DofIntermediateTexture2), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(DofCircleOfConfusionTexture), resolution.x, resolution.y, RhiFormat::R16Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(DofCircleOfConfusionTexture), resolution.x, resolution.y, RhiFormat::R16Float, RhiResourceDimension::Texture2D);
+
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture3));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture0));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture1));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture2));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture3));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture4));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture5));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture6));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture7));
-    schedule.Read(ACCESS_GFX_SR(BloomTexture8));
+    schedule.Read(ACCESS_GFX_SR(GBufferDepthStencil));
+
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
 }
@@ -63,35 +58,95 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
     PostProcessProducer::RenderFrame(ctx, rc);
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const ethVector2u resolution = config.GetResolution();
+    const ethVector2u halfResolution = resolution / 2.0f;
 
-    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
-    Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
-    params->m_Aperture = config.m_Aperture;
-    params->m_FocusDistance = config.m_FocusDistance;
-    params->m_FocalLength = config.m_FocalLength;
-    params->m_MaxCoC = config.m_MaxCoC;
-    ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(BloomTexture0)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(BloomTexture1)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(BloomTexture2)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(BloomTexture3)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_SR(BloomTexture4)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_SR(BloomTexture5)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_SR(BloomTexture6)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(11, ACCESS_GFX_SR(BloomTexture7)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(12, ACCESS_GFX_SR(BloomTexture8)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(13, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
-    ctx.Dispatch(
-        std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)),
-        std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)),
-        1);
+    // Generate circle of confusion
+    {
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
+        Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
+        BindCommonParams(*params, DOF_PASSINDEX_GENERATE_COC);
+
+        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        //ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferDepthStencil)->GetGpuAddress());
+        //ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofCircleOfConfusionTexture)->GetGpuAddress());
+        ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    }
+
+    // Generate downsampled scene color + coc
+    {
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
+        Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
+        BindCommonParams(*params, DOF_PASSINDEX_PREFILTER_PASS);
+
+        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
+        //ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferDepthStencil)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture1)->GetGpuAddress());
+        ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    }
+
+    // Accumulate dof / bokeh
+    {
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
+        Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
+        BindCommonParams(*params, DOF_PASSINDEX_ACCUMULATE);
+
+        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture2)->GetGpuAddress());
+        ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    }
+
+    // Post filter / tent filter
+    {
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
+        Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
+        BindCommonParams(*params, DOF_PASSINDEX_POSTFILTER_PASS);
+
+        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(DofIntermediateTexture2)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture1)->GetGpuAddress());
+        ctx.Dispatch(
+            std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)),
+            std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)),
+            1);
+    }
+
+    // Final Composite
+    {
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
+        Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
+        BindCommonParams(*params, DOF_PASSINDEX_COMPOSITE);
+
+        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferDepthStencil)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
+        //ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
+        ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    }
+
+}
+
+void Ether::Graphics::DepthOfFieldProducer::BindCommonParams(Shader::DepthOfFieldParams& params, uint32_t passIndex)
+{
+    const GraphicConfig& config = GraphicCore::GetGraphicConfig();
+    params.m_Aperture = config.m_Aperture;
+    params.m_FocusDistance = config.m_FocusDistance;
+    params.m_FocalLength = config.m_FocalLength;
+    params.m_MaxCoC = config.m_MaxCoC;
+    params.m_FocusRange = config.m_FocusRange;
+    params.m_PassIndex = passIndex;
 }
 
 bool Ether::Graphics::DepthOfFieldProducer::IsEnabled()
 {
-    if (!GraphicCore::GetGraphicConfig().m_IsBloomEnabled)
+    if (!GraphicCore::GetGraphicConfig().m_IsDofEnabled)
         return false;
 
     return true;
@@ -99,33 +154,22 @@ bool Ether::Graphics::DepthOfFieldProducer::IsEnabled()
 
 void Ether::Graphics::DepthOfFieldProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(14, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(8, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) Global Constants
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) Dof Params
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 0); // (t0) Source
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) GBufferTexture3
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) GBufferDepthStencil
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 2); // (t2) Bloom0
+    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 2); // (t2) CoC Texture
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 3); // (t3) Bloom1
+    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 3); // (t2) DofIntermediateTexture1
     rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 4); // (t4) Bloom2
+    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 4); // (t2) DofIntermediateTexture1
+
     rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Srv, 1, 0, 5); // (t5) Bloom3
-    rsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Srv, 1, 0, 6); // (t6) Bloom4
-    rsDesc->SetAsDescriptorTable(9, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(9, RhiDescriptorType::Srv, 1, 0, 7); // (t7) Bloom5
-    rsDesc->SetAsDescriptorTable(10, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(10, RhiDescriptorType::Srv, 1, 0, 8); // (t8) Bloom6
-    rsDesc->SetAsDescriptorTable(11, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(11, RhiDescriptorType::Srv, 1, 0, 9); // (t9) Bloom7
-    rsDesc->SetAsDescriptorTable(12, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(12, RhiDescriptorType::Srv, 1, 0, 10); // (t10) Bloom8
-    rsDesc->SetAsDescriptorTable(13, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(13, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
+    rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
