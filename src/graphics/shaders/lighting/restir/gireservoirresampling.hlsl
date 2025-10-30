@@ -28,7 +28,7 @@
 #define DOWNSAMPLE_FACTOR 1
 
 // TODO: Make into cvar
-#define MAX_TEMPORAL_HISTORY 32
+#define MAX_TEMPORAL_HISTORY 3200
 #define NUM_SPATIAL_SAMPLES 8
 #define SPATIAL_KERNEL_RADIUS 32
 
@@ -61,10 +61,27 @@ uint GetSampleIndexFromScreenCoords(uint2 screenCoords, uint2 screenSize)
     return GetSampleIndexFromSampleCoords(GetSampleCoordsFromScreenCoords(screenCoords), screenSize / (float)DOWNSAMPLE_FACTOR);
 }
 
-float3 ComputeRadiance(ShadingSurface surface, GIReservoirSample sample)
+float3 ComputeTargetFunction(ShadingSurface surface, GIReservoirSample sample)
 {
     const float3 wi = normalize(sample.m_Position - surface.m_Position);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     return ComputeRadiance(surface, sample.m_Radiance, wi, wo);
 }
+
+RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
+{
+    RayPayload payload;
+    payload.m_IsShadowRay = true;
+    payload.m_Depth = 1;
+
+    RayDesc ray;
+    ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
+    ray.Direction = normalize(sample.m_Position - surface.m_Position);
+    ray.TMax = length(sample.m_Position - ray.Origin) * 0.99f;
+    ray.TMin = RAY_TMIN;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
+
+    return payload;
+}
+
 

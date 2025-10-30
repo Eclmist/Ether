@@ -69,7 +69,7 @@ void CS_Main(
 
             if (historyReservoir.IsValid() && boilingFilter)
             {
-                const float3 targetFunction = ComputeRadiance(surface, historyReservoir.m_Sample);
+                const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
                 historyReservoir.FinalizeResampling();
                 historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
                 initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), targetFunction);
