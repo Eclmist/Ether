@@ -83,6 +83,8 @@ RayPayload TraceShadowRay(ShadingSurface surface)
 
 RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
 {
+    direction = normalize(direction);
+    
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
@@ -123,14 +125,22 @@ void SampleDirectionBrdf(ShadingSurface surface, out float3 wi, out float pdf)
     const float nDotH = saturate(dot(surface.m_Normal, H));
     const float nDotV = saturate(dot(surface.m_Normal, wo));
     const float vDotH = saturate(dot(wo, H));
-
-    // TODO: Abs is also wrong here. Why does it work?
-    const float cosTheta = abs(dot(-wi, surface.m_Normal));
+    const float cosTheta = abs(dot(wi, surface.m_Normal));
 
     if (importanceSampleBrdf)
         pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, surface.m_Roughness);
     else
         pdf = SampleDirectionHemisphere_Pdf();
+}
+
+void SampleDirectionUniform(ShadingSurface surface, out float3 wi, out float pdf)
+{
+    const uint2 sampleCoords = DispatchRaysIndex().xy;
+    const uint2 bufferSize = DispatchRaysDimensions().xy;
+    const uint sampleIdx = sampleCoords.y * bufferSize.x + sampleCoords.x;
+    const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber);
+    wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
+    pdf = SampleDirectionHemisphere_Pdf();
 }
 
 [shader("raygeneration")]
@@ -230,5 +240,5 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
     }
 
-    payload.m_Radiance = surface.m_Emission + direct;
+    payload.m_Radiance = surface.m_Emission + direct + indirect;
 }
