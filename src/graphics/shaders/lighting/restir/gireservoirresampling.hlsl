@@ -121,6 +121,8 @@ RayPayload TraceShadowRay(ShadingSurface surface)
 
 RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
 {
+    direction = normalize(direction);
+
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
