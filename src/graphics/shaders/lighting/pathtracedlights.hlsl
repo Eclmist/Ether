@@ -63,24 +63,27 @@ float3 EvaluateSkyLighting(float3 wi)
     return (exposure * hdri * color).xyz;
 }
 
-float3 TraceShadow(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
+{
+    const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+    const float cosTheta = saturate(dot(wi, surface.m_Normal));
+    return f * Li * cosTheta;
+}
+
+RayPayload TraceShadowRay(ShadingSurface surface)
 {
     RayPayload payload;
     payload.m_IsShadowRay = true;
+    payload.m_Depth = 1;
 
-    RayDesc shadowRay;
-    shadowRay.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
-    shadowRay.Origin = position + (normal * 0.01);
-    shadowRay.TMax = RAY_TMAX;
-    shadowRay.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, shadowRay, payload);
+    RayDesc ray;
+    ray.Direction = normalize(g_GlobalConstants.m_SunDirection).xyz;
+    ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
+    ray.TMax = RAY_TMAX;
+    ray.TMin = RAY_TMIN;
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
-    const float3 wi = normalize(shadowRay.Direction);
-    const float3 Li = payload.m_Radiance;
-    const float3 f = BRDF_UE4(wi, wo, normal, albedo, roughness, metalness);
-    const float cosTheta = saturate(dot(wi, normal));
-    const float3 Lo = Li * f * cosTheta;
-    return Lo;
+    return payload;
 }
 
 float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo, float roughness, float metalness, uint depth)
@@ -153,52 +156,31 @@ float3 TraceRecursively(float3 position, float3 wo, float3 normal, float3 albedo
     return Li * f * cosTheta;
 }
 
-float3 PathTrace(in MeshVertex hitSurface, in Material material, in RayPayload payload)
-{
-    ShadingSurface surface = GetShadingSurfaceFromHit(hitSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-
-    const float3 wo = normalize(-WorldRayDirection());
-    const float3 direct = TraceShadow(surface.m_Position, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
-    const float3 indirect = TraceRecursively(surface.m_Position, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness, payload.m_Depth - 1);
-    return surface.m_Emission + direct + indirect;
-}
-
 [shader("raygeneration")]
 void RayGeneration()
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const uint2 sampleCoords = DispatchRaysIndex().xy;
+    const uint2 bufferSize = DispatchRaysDimensions().xy;
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(sampleCoords, g_GBufferOutput0, g_GBufferOutput1, g_GBufferOutput2, g_GBufferOutput3);
 
-    const uint3 launchIndex = DispatchRaysIndex();
-    const uint3 launchDim = DispatchRaysDimensions();
-    const uint sampleIdx = launchIndex.y * launchDim.x + launchIndex.x;
-
-    const float4 gbuffer0 = g_GBufferOutput0.Load(launchIndex);
-    const float4 gbuffer1 = g_GBufferOutput1.Load(launchIndex);
-    const float4 gbuffer2 = g_GBufferOutput2.Load(launchIndex);
-    const float4 gbuffer3 = g_GBufferOutput3.Load(launchIndex);
-
-    const float3 color = gbuffer0.xyz;
-    const float3 emission = gbuffer3.xyz * EMISSION_SCALE;
-    const float3 position = gbuffer1.xyz;
-    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - position);
-    const float3 normal = normalize(DecodeNormals(gbuffer2.xy));
-    const float2 velocity = gbuffer2.zw;
-    const float metalness = gbuffer0.w;
-    const float roughness = gbuffer1.w;
-    const float2 uv = (float2)launchIndex.xy / launchDim.xy + rcp((float2)launchDim.xy) / 2.0;
-    const float2 uvPrev = uv - velocity;
+    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float2 uv = (float2) sampleCoords.xy / bufferSize.xy + rcp((float2) bufferSize.xy) / 2.0;
+    const float2 uvPrev = uv - surface.m_Velocity;
+    const float3 wo = g_GlobalConstants.m_SunDirection.xyz;
     float4 accumulation = 0;
 
+    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     if (uvPrev.x >= 0 && uvPrev.x < 1 && uvPrev.y >= 0 && uvPrev.y < 1)
          accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
-    const float3 direct = TraceShadow(position, viewDir, normal, color, roughness, metalness);
-    const float3 indirect = TraceRecursively(position, viewDir, normal, color, roughness, metalness, MAX_DEPTH);
+    const RayPayload shadowRay = TraceShadowRay(surface);
+    const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, viewDir, wo);
+    const float3 indirect = TraceRecursively(surface.m_Position, viewDir, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness, MAX_DEPTH);
 
     float a = max(0.01, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
-    g_LightingOutput[launchIndex.xy].xyz = emission + direct + accumulatedIndirect;
-    g_IndirectOutput[launchIndex.xy].xyz = accumulatedIndirect;
+    g_LightingOutput[sampleCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
+    g_IndirectOutput[sampleCoords].xyz = accumulatedIndirect;
 }
 
 [shader("miss")]
@@ -223,15 +205,26 @@ void Miss(inout RayPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
+    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
+    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+
+    ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+
     payload.m_Hit = true;
+    payload.m_HitPosition = surface.m_Position;
+    payload.m_HitNormal = surface.m_Normal;
+    payload.m_Depth = max(0, (int) payload.m_Depth - 1);
     payload.m_Radiance = 0;
 
     if (payload.m_IsShadowRay)
         return;
 
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
-    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+    const RayPayload shadowRay = TraceShadowRay(surface);
+    const float3 wo = normalize(-WorldRayDirection());
+    const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
 
-    payload.m_Radiance = PathTrace(vertex, material, payload);
+    const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
+    const float3 indirect = 0;// TraceRecursively(surface.m_Position, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness, payload.m_Depth - 1);
+    payload.m_Radiance = surface.m_Emission + direct + indirect;
 }
