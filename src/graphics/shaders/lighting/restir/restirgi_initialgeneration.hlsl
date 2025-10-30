@@ -132,6 +132,9 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Depth = max(0, (int)payload.m_Depth - 1);
     payload.m_Radiance = 0;
 
+    if (payload.m_Depth <= 0)
+        return;
+
     if (payload.m_IsShadowRay)
         return;
 

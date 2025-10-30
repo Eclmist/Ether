@@ -25,6 +25,7 @@ struct MeshVertex
     float3 m_Normal;
     float3 m_Tangent;
     float2 m_TexCoord;
+    float4 m_Color;
 };
 
 float BarycentricLerp(in float v0, in float v1, in float v2, in float3 barycentrics)
