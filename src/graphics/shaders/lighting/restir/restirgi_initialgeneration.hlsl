@@ -46,7 +46,7 @@ void RayGeneration()
     initialSample.m_Normal = payload.m_HitNormal;
     initialSample.m_Radiance = payload.m_Radiance;
 
-    const float3 targetFunction = ComputeRadiance(surface, initialSample);
+    const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
     const float3 risWeight = targetFunction / pdf;
 
     GIReservoir initialReservoir = GIReservoir::Empty();

@@ -96,8 +96,6 @@ void CS_Main(
             continue;
 
         GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
-        const float jacobian = CalculateJacobian(surface.m_Position, neighbourSurface.m_Position, neighbourReservoir);
-        neighbourReservoir.m_WeightSum *= jacobian;
 
         if (!neighbourReservoir.IsValid())
             continue;
@@ -107,10 +105,10 @@ void CS_Main(
             continue;
 
         {
-            const float3 targetFunction = ComputeRadiance(surface, neighbourReservoir.m_Sample);
+            const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample);
             neighbourReservoir.FinalizeResampling();
             neighbourReservoir.M = min(neighbourReservoir.M, 200);
-            initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 200), targetFunction);
+            initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
         }
     }
 

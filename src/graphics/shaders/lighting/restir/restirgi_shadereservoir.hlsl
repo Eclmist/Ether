@@ -47,7 +47,7 @@ void RayGeneration()
 
     if (finalReservoir.IsValid())
     {
-        const RayPayload validationRay = TraceShadowRay(surface, normalize(finalReservoir.m_Sample.m_Position - surface.m_Position));
+        const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
 
         if (validationRay.m_Hit)
         {
@@ -56,7 +56,7 @@ void RayGeneration()
         }
         
         finalReservoir.FinalizeResampling();
-        indirectLighting = ComputeRadiance(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
+        indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
     }
 
     g_LightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
