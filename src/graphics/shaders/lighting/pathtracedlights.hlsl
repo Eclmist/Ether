@@ -88,10 +88,6 @@ RayPayload TraceShadingRay(float3 position, float3 direction, uint depth)
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
-    payload.m_Radiance = 0.0f;
-
-    if (depth <= 0)
-        return payload;
 
     RayDesc ray;
     ray.Origin = position + direction * 0.01;
@@ -215,6 +211,9 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Depth = max(0, (int) payload.m_Depth - 1);
     payload.m_Radiance = 0;
 
+    if (payload.m_Depth <= 0)
+        return;
+
     if (payload.m_IsShadowRay)
         return;
 
@@ -240,5 +239,5 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
     }
 
-    payload.m_Radiance = surface.m_Emission + direct + indirect;
+    payload.m_Radiance = surface.m_Emission + direct;
 }
