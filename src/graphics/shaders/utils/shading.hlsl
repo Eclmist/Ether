@@ -59,7 +59,7 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     surface.m_Position = gbuffer1.xyz;
     surface.m_Normal = DecodeNormals(gbuffer2.xy);
     surface.m_Albedo = gbuffer0.rgb;
-    surface.m_Emission = gbuffer3.rgb * EMISSION_SCALE;
+    surface.m_Emission = gbuffer3.rgb;
     surface.m_Roughness = gbuffer1.w;
     surface.m_Metalness = gbuffer0.w;
     surface.m_Velocity = gbuffer2.zw;
