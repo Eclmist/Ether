@@ -73,7 +73,6 @@ void RayGeneration()
     }
 
     float a = max(0.005, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
-    a = 0.01;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[sampleCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
     g_IndirectOutput[sampleCoords].xyz = accumulatedIndirect;
