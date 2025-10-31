@@ -49,7 +49,7 @@ struct PS_OUTPUT
     float4 Output0 : SV_TARGET0;
     float4 Output1 : SV_TARGET1;
     float4 Output2 : SV_TARGET2;
-    float3 Output3 : SV_TARGET3;
+    float4 Output3 : SV_TARGET3;
 };
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
@@ -115,6 +115,6 @@ PS_OUTPUT PS_Main(VS_OUTPUT IN)
     o.Output0 = float4(albedo.x, albedo.y, albedo.z, metalness);
     o.Output1 = float4(worldPos.x, worldPos.y, worldPos.z, roughness);
     o.Output2 = float4(octNormals.x, octNormals.y, velocity.x, velocity.y);
-    o.Output3 = float3(emissive.x, emissive.y, emissive.z);
+    o.Output3 = float4(emissive.x, emissive.y, emissive.z, g_InstanceParams.m_MaterialIdx);
     return o;
 }

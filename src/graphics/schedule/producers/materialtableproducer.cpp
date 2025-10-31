@@ -58,6 +58,7 @@ void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, Re
         materials[i].m_RoughnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetRoughnessTextureID());
         materials[i].m_MetalnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetMetalnessTextureID());
         materials[i].m_EmissiveTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetEmissiveTextureID());
+        materials[i].m_MaterialId = i;
     }
 
     ctx.CopyBufferRegion(

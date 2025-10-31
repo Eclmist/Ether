@@ -34,6 +34,8 @@ struct Material
     uint32_t m_RoughnessTextureIndex;
     uint32_t m_MetalnessTextureIndex;
     uint32_t m_EmissiveTextureIndex;
+
+    uint32_t m_MaterialId;
 };
 
 ETH_END_SHADER_NAMESPACE

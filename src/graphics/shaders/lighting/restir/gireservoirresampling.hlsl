@@ -32,10 +32,11 @@
 #define NUM_SPATIAL_SAMPLES 8
 #define SPATIAL_KERNEL_RADIUS 32
 
-Texture2D<float4> g_GBufferA                                : register(t3);
-Texture2D<float4> g_GBufferB                                : register(t4);
-Texture2D<float4> g_GBufferC                                : register(t5);
-Texture2D<float4> g_GBufferD                                : register(t6);
+Texture2D<float4> g_SceneDepth                              : register(t3);
+Texture2D<float4> g_GBufferA                                : register(t4);
+Texture2D<float4> g_GBufferB                                : register(t5);
+Texture2D<float4> g_GBufferC                                : register(t6);
+Texture2D<float4> g_GBufferD                                : register(t7);
 
 RWStructuredBuffer<GIPackedReservoir> g_InputReservoir      : register(u0);
 RWStructuredBuffer<GIPackedReservoir> g_HistoryReservoir    : register(u1);
@@ -63,7 +64,7 @@ uint GetSampleIndexFromScreenCoords(uint2 screenCoords, uint2 screenSize)
 
 float3 ComputeTargetFunction(ShadingSurface surface, GIReservoirSample sample)
 {
-    const float3 wi = normalize(sample.m_Position - surface.m_Position);
+    const float3 wi = normalize(sample.m_SamplePosition - surface.m_Position);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     return ComputeRadiance(surface, sample.m_Radiance, wi, wo);
 }
@@ -76,8 +77,8 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
 
     RayDesc ray;
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
-    ray.Direction = normalize(sample.m_Position - surface.m_Position);
-    ray.TMax = length(sample.m_Position - ray.Origin) * 0.99f;
+    ray.Direction = normalize(sample.m_SamplePosition - surface.m_Position);
+    ray.TMax = length(sample.m_SamplePosition - ray.Origin) * 0.99f;
     ray.TMin = RAY_TMIN;
     TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
