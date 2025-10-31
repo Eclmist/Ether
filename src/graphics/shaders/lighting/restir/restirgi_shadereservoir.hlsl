@@ -28,6 +28,9 @@ void RayGeneration()
     const uint2 screenCoords = DispatchRaysIndex().xy;
     uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
+    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+        return;
+
 #if DOWNSAMPLE_FACTOR != 1
     const float2 stochasticOffsets = (CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber + 400.0f) - 0.5f) * 2.0f;
     const uint2 sampleCoords = round( GetSampleCoordsFromScreenCoords(screenCoords) + stochasticOffsets);
@@ -45,6 +48,8 @@ void RayGeneration()
     const float3 directLighting = ComputeRadiance(surface, Li, wi, wo);
     float3 indirectLighting = 0;
 
+    finalReservoir.FinalizeResampling();
+
     if (finalReservoir.IsValid())
     {
         //const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
@@ -55,34 +60,11 @@ void RayGeneration()
         //    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
         //}
         
-        finalReservoir.FinalizeResampling();
+        //indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
         indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
     }
 
     g_LightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
     g_LightingOutput[screenCoords].a = 0;
-
 }
 
-[shader("closesthit")]
-void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
-{
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
-    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-    const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-
-    payload.m_Hit = true;
-    payload.m_HitPosition = surface.m_Position;
-    payload.m_HitNormal = surface.m_Normal;
-    payload.m_Depth = max(0, (int)payload.m_Depth - 1);
-    payload.m_Radiance = 0;
-
-    if (payload.m_IsShadowRay)
-        return;
-
-    const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
-    const float3 wo = normalize(-WorldRayDirection());
-    const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-    payload.m_Radiance = ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
-}

@@ -20,11 +20,8 @@
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
 
-bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
+bool AreSurfacesSimilar(ShadingSurface thisSurface, ShadingSurface otherSurface)
 {
-    const ShadingSurface thisSurface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-    const ShadingSurface otherSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-
     if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.95f)
         return false;
 
@@ -70,10 +67,13 @@ void CS_Main(
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
+
+    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+        return;
+
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
-
     const uint numSamples = initialReservoir.M < 5 ? NUM_SPATIAL_SAMPLES * 2.0f : NUM_SPATIAL_SAMPLES;
     const float lowHistorySampleMultiplier = 1.5f;
     const uint historyAwareSpatialSampleCount = NUM_SPATIAL_SAMPLES * max(1, lowHistorySampleMultiplier - (initialReservoir.M / (MAX_TEMPORAL_HISTORY / lowHistorySampleMultiplier)));
@@ -82,20 +82,18 @@ void CS_Main(
     {
         const float goldenAngle = 2.3999632f;
         const float angle = (i + Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200) * 3.1415) * goldenAngle;
-        const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float)numSamples;
+        const float materialFactor = max(surface.m_Roughness, 1.0f - surface.m_Metalness);
+        const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float) numSamples * surface.m_Roughness;
         const float2 offset = float2(cos(angle), sin(angle)) * radius;
         const int2 neighbourScreenCoords = screenCoords + offset;
         const uint neighbourSampleIdx = GetSampleIndexFromScreenCoords(neighbourScreenCoords, screenSize);
 
         const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-        if (neighbourSurface.m_Roughness < 0.5f)
-            continue;
-
         if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenSize))
             continue;
 
-        if (!AreSurfacesSimilar(screenCoords, neighbourScreenCoords))
+        if (!AreSurfacesSimilar(surface, neighbourSurface))
             continue;
 
         GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
@@ -103,16 +101,10 @@ void CS_Main(
         if (!neighbourReservoir.IsValid())
             continue;
 
-        const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.8f, GetLuminanceFromRGB(neighbourReservoir.m_WeightSum));
-        if (!boilingFilter)
-            continue;
-
-        {
-            const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample);
-            neighbourReservoir.FinalizeResampling();
-            neighbourReservoir.M = min(neighbourReservoir.M, 100);
-            initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
-        }
+        const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample);
+        neighbourReservoir.FinalizeResampling();
+        neighbourReservoir.M = min(neighbourReservoir.M, 100);
+        initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
     }
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);

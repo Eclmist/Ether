@@ -66,7 +66,7 @@ void RayGeneration()
     SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
 
-    if (pdf > 0.1f)
+    if (pdf > 0.01f)
     {
         const RayPayload indirectRay = TraceShadingRay(surface, wi, MAX_DEPTH);
         indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, viewDir) / pdf;
@@ -78,52 +78,4 @@ void RayGeneration()
     g_IndirectOutput[sampleCoords].xyz = accumulatedIndirect;
 }
 
-[shader("closesthit")]
-void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
-{
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
-    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-    const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
 
-    payload.m_Hit = true;
-    payload.m_HitPosition = surface.m_Position;
-    payload.m_HitNormal = surface.m_Normal;
-    payload.m_Depth = max(0, (int) payload.m_Depth - 1);
-    payload.m_Radiance = 0;
-
-    if (payload.m_Depth <= 0)
-        return;
-
-    if (payload.m_IsShadowRay)
-        return;
-
-    float3 direct = 0.0f;
-    float3 indirect = 0.0f;
-
-    {   // Direct lighting
-        const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
-        direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, -WorldRayDirection());
-    }
-
-    {   // Indirect lighting
-        float3 wi;
-        float pdf;
-
-#if USE_IMPORTANCE_SAMPLING
-        SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
-#else
-        SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
-#endif
-
-        if (pdf > 0.1f)
-        {
-            const RayPayload indirectRay = TraceShadingRay(surface, wi, payload.m_Depth);
-            indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
-        }
-        
-    }
-
-    payload.m_Radiance = surface.m_Emission + direct + indirect;
-}

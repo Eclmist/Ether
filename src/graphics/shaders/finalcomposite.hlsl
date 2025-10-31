@@ -179,7 +179,7 @@ float3 ColorGrade(float3 color, float temperature = 0.1, float tint = 0.05, floa
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    const float manualExposure = 0.0001;
+    const float manualExposure = 0.0005;
 
     float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
     col = col * manualExposure;

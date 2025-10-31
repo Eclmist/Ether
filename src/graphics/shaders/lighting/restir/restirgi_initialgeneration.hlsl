@@ -27,6 +27,9 @@ void RayGeneration()
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
 
+    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+        return;
+
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
@@ -40,43 +43,22 @@ void RayGeneration()
     SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
 
-    const RayPayload payload = TraceShadingRay(surface, wi, MAX_DEPTH);
-    GIReservoirSample initialSample = GIReservoirSample::Empty();
-    initialSample.m_Position = payload.m_HitPosition;
-    initialSample.m_Normal = payload.m_HitNormal;
-    initialSample.m_Radiance = payload.m_Radiance;
-
-    const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
-    const float3 risWeight = targetFunction / pdf;
-
     GIReservoir initialReservoir = GIReservoir::Empty();
-    initialReservoir.Resample(initialSample, Random(screenCoords, g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
+
+    if (pdf > 0.01f)
+    {
+        const RayPayload payload = TraceShadingRay(surface, wi, MAX_DEPTH);
+        GIReservoirSample initialSample = GIReservoirSample::Empty();
+        initialSample.m_Position = payload.m_HitPosition;
+        initialSample.m_Normal = payload.m_HitNormal;
+        initialSample.m_Radiance = payload.m_Radiance;
+
+        const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
+        const float3 risWeight = targetFunction / max(0.001f, pdf);
+            
+        initialReservoir.Resample(initialSample, Random(screenCoords, g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
+    }
+
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
 
-[shader("closesthit")]
-void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
-{
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
-    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-
-    ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-
-    payload.m_Hit = true;
-    payload.m_HitPosition = surface.m_Position;
-    payload.m_HitNormal = surface.m_Normal;
-    payload.m_Depth = max(0, (int) payload.m_Depth - 1);
-    payload.m_Radiance = 0;
-
-    if (payload.m_Depth <= 0)
-        return;
-
-    if (payload.m_IsShadowRay)
-        return;
-
-    const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
-    const float3 wo = normalize(-WorldRayDirection());
-    const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-    payload.m_Radiance = surface.m_Emission + ComputeRadiance(surface, shadowRay.m_Radiance, wi, wo);
-}

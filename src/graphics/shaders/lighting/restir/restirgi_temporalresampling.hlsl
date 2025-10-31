@@ -20,14 +20,8 @@
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
 
-bool IsValidReprojection(uint2 screenCoords, int2 prevScreenCoords)
+bool IsValidReprojection(ShadingSurface surface, ShadingSurface prevSurface)
 {
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-    const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-
-    if (any(prevScreenCoords < 0) || any(prevScreenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
-        return false;
-
     if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
         return false;
 
@@ -49,33 +43,37 @@ void CS_Main(
     const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
-
-    const float2 jitterDelta = g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter;
-    const float2 pixelVelocity = surface.m_Velocity * screenSize;
-
-    const uint2 prevScreenCoords = floor(((float2) screenCoords + 0.5f) - pixelVelocity + jitterDelta);
-    const uint prevSampleIdx = GetSampleIndexFromScreenCoords(prevScreenCoords, screenSize);
 
     if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return;
+    
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const float2 pixelJitterDelta = g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter;
+    const float2 pixelVelocity = surface.m_Velocity * screenSize;
+    const float2 prevScreenCoords = floor((float2(screenCoords) + 0.5f) - pixelVelocity + pixelJitterDelta);
+    const uint prevSampleIdx = GetSampleIndexFromScreenCoords(prevScreenCoords, screenSize);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
+    GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
 
-    if (initialReservoir.IsValid())
+    const float specularDependence = lerp(0.0f, lerp(1.0f, 0.0f, pow(surface.m_Roughness, 0.1f)), pow(surface.m_Metalness, 2.0f));
+
+    if (Random(screenCoords, g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
     {
-        if (IsValidReprojection(screenCoords, prevScreenCoords))
+        if (all(prevScreenCoords >= 0) && all(prevScreenCoords < g_GlobalConstants.m_ScreenResolution.xy))
         {
-            GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
+            const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-            const bool boilingFilter = BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(historyReservoir.m_WeightSum));
-
-            if (historyReservoir.IsValid() && boilingFilter)
+            if (IsValidReprojection(surface, prevSurface))
             {
-                const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
-                historyReservoir.FinalizeResampling();
-                historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), targetFunction);
+                if (historyReservoir.IsValid())
+                {
+                    const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
+
+                    historyReservoir.FinalizeResampling();
+                    historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
+                    initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), targetFunction);
+                }
             }
         }
     }
