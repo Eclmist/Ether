@@ -304,7 +304,7 @@ float4 SampleHdri(float2 uv)
 
 float4 GetHdriSkyColor(float2 uv)
 {
-    const float exposure = 3000.0f;
+    const float exposure = 15000.0f;
     const float3 viewDir = NormalizeDirection(uv);
     const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
 

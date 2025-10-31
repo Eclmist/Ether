@@ -34,7 +34,8 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
     const float2 velocity = g_GBufferTexture2.Load(threadID).zw;
     const float2 uv = threadID.xy / resolution + 0.5 / resolution;
-    const float2 uvPrev = uv - velocity;
+    const float2 jitterDeltaUV = (g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter) / resolution;
+    const float2 uvPrev = uv - velocity + jitterDeltaUV;
 
     if (any(threadID.xy < 0) || any(threadID.xy >= g_GlobalConstants.m_ScreenResolution.xy))
         return;

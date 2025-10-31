@@ -23,41 +23,13 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
-#define INDIRECT_MIP_LEVEL  8
-#define MAX_DEPTH           2
-
-// TODO: implement various biases (pullback, surface, etc.)
-#define RAY_TMAX            128
-#define RAY_TMIN            0.1
-
-#define USE_IMPORTANCE_SAMPLING 1
-
-struct GeometryInfo
-{
-    uint32_t m_VBDescriptorIndex;
-    uint32_t m_IBDescriptorIndex;
-    uint32_t m_MaterialIndex;
-    uint32_t m_PadTo16Bytes;
-};
-
-struct RayPayload
-{
-    bool m_Hit;
-    bool m_IsShadowRay;
-    uint32_t m_Depth;
-    ethVector3 m_Radiance;
-    ethVector3 m_HitPosition;
-    ethVector3 m_HitNormal;
-};
-
-struct GIPackedReservoir
+struct MeshVertex
 {
     ethVector3 m_Position;
-    ethVector2 m_PackedNormals;
-    ethVector3 m_Radiance;
-    ethVector3 m_WeightSum;
-    ethVector3 m_TargetPdf;
-    float M;
+    ethVector3 m_Normal;
+    ethVector3 m_Tangent;
+    ethVector2 m_TexCoord;
+    ethVector4 m_Color;
 };
 
 ETH_END_SHADER_NAMESPACE

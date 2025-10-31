@@ -65,9 +65,8 @@ void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath, bo
     LogToolmodeInfo("Importing asset %s", assetPath.c_str());
 
     Assimp::Importer importer;
-    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, Graphics::MaxVerticesPerMesh);
-    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, Graphics::MaxTrianglePerMesh);
-
+    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, Graphics::MaxVerticesPerMesh - 1);
+    importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, Graphics::MaxTrianglePerMesh - 1);
 
     uint32_t importFlags = 0;
     importFlags |= aiProcess_ConvertToLeftHanded;
@@ -221,7 +220,6 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
     {
         OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, skeleton.GetGuid()));
         skeleton.Serialize(ofstream);
-        skeleton.DebugPrint();
     }
 }
 
@@ -551,7 +549,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
         return m_PathToGuidMap.at(texturePath);
 
-    std::string path = texturePath.GetString();
+    std::string path = PathUtils::ResolveEncodings(texturePath.GetString());
     if (PathUtils::GetFileExtension(path) == ".dds")
         path = PathUtils::GetFolderPath(path) + PathUtils::GetFileName(path) + ".png";
 

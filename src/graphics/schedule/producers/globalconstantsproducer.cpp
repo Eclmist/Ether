@@ -113,8 +113,6 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     // For velocity vector calculations
     viewMatrixPrev = globalConstants->m_ViewMatrix;
     projMatrixPrev = globalConstants->m_ProjectionMatrix;
-    projMatrixPrev.m_13 -= globalConstants->m_CameraJitter.x;
-    projMatrixPrev.m_23 -= globalConstants->m_CameraJitter.y;
     cameraJitterPrev = globalConstants->m_CameraJitter;
 }
 

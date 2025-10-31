@@ -96,6 +96,17 @@ float3 CelBrdf(float3 wi, float3 wo, float3 normal, float3 albedo, float roughne
 
 float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
 {
+    wi = normalize(wi);
+    wo = normalize(wo);
+    normal = normalize(normal);
+
+    if (dot(wi, normal) < 0.0f)
+        normal = -normal;
+    
+    albedo = max(0, albedo);
+    roughness = min(max(0.01f, roughness), 1.0f);
+    metalness = saturate(metalness);
+    
     const float3 l = normalize(wi);
     const float3 v = normalize(wo);
     const float3 n = normalize(normal);
