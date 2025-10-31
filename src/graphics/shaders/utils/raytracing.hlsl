@@ -115,12 +115,7 @@ void SampleDirectionBrdf(ShadingSurface surface, float seed, float3 wo, out floa
     const float vDotH = saturate(dot(wo, H));
     const float cosTheta = abs(dot(wi, surface.m_Normal));
 
-    if (importanceSampleBrdf)
-        pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, surface.m_Roughness);
-    else
-        pdf = SampleDirectionHemisphere_Pdf();
-
-    pdf = max(0.001f, pdf);
+    pdf = UE4JointPdf(specularWeight, nDotH, cosTheta, vDotH, surface.m_Roughness);
 }
 
 void SampleDirectionUniform(ShadingSurface surface, float seed, out float3 wi, out float pdf)
@@ -130,22 +125,20 @@ void SampleDirectionUniform(ShadingSurface surface, float seed, out float3 wi, o
     const uint sampleIdx = sampleCoords.y * bufferSize.x + sampleCoords.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, seed);
     wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
-    pdf = max(0.001f, SampleDirectionHemisphere_Pdf());
 }
 
 float3 SampleEnvironmentLighting(float3 wi)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    const float exposure = 10000.0f;
+    const float exposure = 15000.0f;
 
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 4);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
-    const float groundFactor = saturate(wi.y);
 
-    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor * groundFactor;
+    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
 
     return (exposure * hdri * color).xyz;
 }

@@ -51,7 +51,10 @@ void CS_Main(
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    const int2 prevScreenCoords = ((float2)screenCoords + 0.5f) - (surface.m_Velocity * screenSize);
+    const float2 jitterDelta = g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter;
+    const float2 pixelVelocity = surface.m_Velocity * screenSize;
+
+    const uint2 prevScreenCoords = floor(((float2) screenCoords + 0.5f) - pixelVelocity + jitterDelta);
     const uint prevSampleIdx = GetSampleIndexFromScreenCoords(prevScreenCoords, screenSize);
 
     if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))

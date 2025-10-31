@@ -28,4 +28,5 @@ ETH_COMMON_DLL std::string GetFileExtension(const std::string& path);
 ETH_COMMON_DLL std::string GetFileNameWithExtension(const std::string& path);
 ETH_COMMON_DLL std::string GetFileName(const std::string& path);
 ETH_COMMON_DLL std::string GetFolderPath(const std::string& path);
+ETH_COMMON_DLL std::string ResolveEncodings(const std::string& path);
 } // namespace Ether::PathUtils

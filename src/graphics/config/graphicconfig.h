@@ -68,7 +68,7 @@ public:
     // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
-    int32_t m_RaytracingMode = RaytracingMode::Pathtrace;
+    int32_t m_RaytracingMode = RaytracingMode::ReSTIR;
     int32_t m_SkinningDebugBoneId = -1;
 
     // TAA
@@ -112,7 +112,7 @@ public:
 
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
-    float m_SunIntensity = 50000.0f;
+    float m_SunIntensity = 100000.0f;
 
 private:
     ethVector4 m_ClearColor;

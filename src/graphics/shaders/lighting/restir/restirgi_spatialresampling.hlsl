@@ -25,7 +25,7 @@ bool AreSurfacesSimilar(uint2 screenCoords, uint2 prevScreenCoords)
     const ShadingSurface thisSurface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
     const ShadingSurface otherSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-    if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.8f)
+    if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.95f)
         return false;
 
     const float depthA = distance(thisSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
@@ -89,6 +89,9 @@ void CS_Main(
 
         const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
+        if (neighbourSurface.m_Roughness < 0.5f)
+            continue;
+
         if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenSize))
             continue;
 
@@ -107,7 +110,7 @@ void CS_Main(
         {
             const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample);
             neighbourReservoir.FinalizeResampling();
-            neighbourReservoir.M = min(neighbourReservoir.M, 200);
+            neighbourReservoir.M = min(neighbourReservoir.M, 100);
             initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
         }
     }

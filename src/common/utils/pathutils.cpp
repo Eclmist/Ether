@@ -46,3 +46,15 @@ std::string Ether::PathUtils::GetFolderPath(const std::string& path)
     return std::filesystem::path(path).remove_filename().string();
 }
 
+std::string Ether::PathUtils::ResolveEncodings(const std::string& path)
+{
+    std::string decoded = path;
+    size_t pos = 0;
+    while ((pos = decoded.find("%20", pos)) != std::string::npos)
+    {
+        decoded.replace(pos, 3, " ");
+        pos++; // Move past the replaced space to find the next one
+    }
+    return decoded;
+}
+

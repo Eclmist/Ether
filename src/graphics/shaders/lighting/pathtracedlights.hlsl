@@ -38,19 +38,27 @@ void RayGeneration()
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(sampleCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-    const float2 uv = (float2) sampleCoords.xy / bufferSize.xy + rcp((float2) bufferSize.xy) / 2.0;
-    const float2 uvPrev = uv - surface.m_Velocity;
-    float4 accumulation = 0;
+    const float2 uv = (float2)sampleCoords.xy / bufferSize.xy + rcp((float2) bufferSize.xy) / 2.0;
+    const float2 jitterDeltaUV = (g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter) / g_GlobalConstants.m_ScreenResolution;
+    const float2 uvPrev = uv - surface.m_Velocity + jitterDeltaUV;
+    float4 accumulation = 0.0f;
 
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    if (all(uv >= 0.0f) && all(uv <= 1.0f))
-         accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+    if (all(uvPrev >= 0.0f) && all(uvPrev <= 1.0f))
+    {
+        accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+
+        if (any(isnan(accumulation)) || any(isinf(accumulation)))
+            accumulation = 0.0f;
+        
+    }
 
     const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
     const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, viewDir);
 
     float3 wi;
     float pdf;
+    float3 indirect = 0.0f;
 
 #if USE_IMPORTANCE_SAMPLING
     SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
@@ -58,10 +66,14 @@ void RayGeneration()
     SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
 
-    const RayPayload indirectRay = TraceShadingRay(surface, wi, MAX_DEPTH);
-    const float3 indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, viewDir) / pdf;
+    if (pdf > 0.1f)
+    {
+        const RayPayload indirectRay = TraceShadingRay(surface, wi, MAX_DEPTH);
+        indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, viewDir) / pdf;
+    }
 
-    float a = max(0.1, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    float a = max(0.005, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    a = 0.01;
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
     g_LightingOutput[sampleCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
     g_IndirectOutput[sampleCoords].xyz = accumulatedIndirect;
@@ -88,8 +100,8 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     if (payload.m_IsShadowRay)
         return;
 
-    float3 direct;
-    float3 indirect;
+    float3 direct = 0.0f;
+    float3 indirect = 0.0f;
 
     {   // Direct lighting
         const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
@@ -105,9 +117,13 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 #else
         SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
+
+        if (pdf > 0.1f)
+        {
+            const RayPayload indirectRay = TraceShadingRay(surface, wi, payload.m_Depth);
+            indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
+        }
         
-        const RayPayload indirectRay = TraceShadingRay(surface, wi, payload.m_Depth);
-        indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
     }
 
     payload.m_Radiance = surface.m_Emission + direct + indirect;
