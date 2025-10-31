@@ -101,10 +101,19 @@ void CS_Main(
         if (!neighbourReservoir.IsValid())
             continue;
 
-        const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample);
+        const float jacobian = CalculateJacobian(surface.m_Position, neighbourSurface.m_Position, neighbourReservoir);
+        const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample) * jacobian;
+
+        // surface detail is somehow lost if this is added
+        // neighbourReservoir.m_TargetPdf = targetFunction;
+
         neighbourReservoir.FinalizeResampling();
-        neighbourReservoir.M = min(neighbourReservoir.M, 100);
-        initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
+        if (BoilingFilter(groupThreadID, 0.5f, neighbourReservoir.m_WeightSum))
+        {
+            neighbourReservoir.M = min(neighbourReservoir.M,  100);
+            initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
+        }
+
     }
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
