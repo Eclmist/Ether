@@ -182,7 +182,7 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     ray.Direction = direction;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }

@@ -30,7 +30,7 @@
 // TODO: Make into cvar
 #define MAX_TEMPORAL_HISTORY 12
 #define NUM_SPATIAL_SAMPLES 8
-#define SPATIAL_KERNEL_RADIUS 32
+#define SPATIAL_KERNEL_RADIUS 64
 
 Texture2D<float4> g_SceneDepth                              : register(t3);
 Texture2D<float4> g_GBufferA                                : register(t4);

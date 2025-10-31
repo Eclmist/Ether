@@ -25,10 +25,10 @@ bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurfac
     if (surface.m_MaterialID != prevSurface.m_MaterialID)
         return false;
 
-    if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.8f)
+    if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.9f)
         return false;
 
-    if (abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / surface.m_VisibleDepth > 0.15f)
+    if (abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / surface.m_VisibleDepth > 0.05f)
         return false;
 
     return true;

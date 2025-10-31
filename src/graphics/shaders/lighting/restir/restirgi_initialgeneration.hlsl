@@ -19,6 +19,14 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
+// TODO: Move to common
+float LinearizeDepth(float depth)
+{
+    float near = g_GlobalConstants.m_CameraClipNearFar.x;
+    float far = g_GlobalConstants.m_CameraClipNearFar.y;
+    return (far * near) / ((near - far) * depth + far);
+}
+
 [shader("raygeneration")]
 void RayGeneration()
 {
@@ -51,7 +59,7 @@ void RayGeneration()
     {
         const RayPayload payload = TraceShadingRay(surface, wi, MAX_DEPTH);
         GIReservoirSample initialSample = GIReservoirSample::Empty();
-        initialSample.m_VisibleDepth = depth;
+        initialSample.m_VisibleDepth = LinearizeDepth(depth);
         initialSample.m_VisibleNormal = surface.m_Normal;
         initialSample.m_MaterialID = surface.m_MaterialID;
         initialSample.m_SamplePosition = payload.m_HitPosition;
