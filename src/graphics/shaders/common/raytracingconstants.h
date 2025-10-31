@@ -52,11 +52,14 @@ struct RayPayload
 
 struct GIPackedReservoir
 {
-    ethVector3 m_Position;
-    ethVector2 m_PackedNormals;
+    float m_VisibleDepth;
+    ethVector2 m_PackedVisibleNormals;
+    ethVector3 m_SamplePosition;
+    ethVector2 m_PackedSampleNormals;
     ethVector3 m_Radiance;
     ethVector3 m_WeightSum;
     ethVector3 m_TargetPdf;
+    uint32_t m_MaterialID;
     float M;
 };
 

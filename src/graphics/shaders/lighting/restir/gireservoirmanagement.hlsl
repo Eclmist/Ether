@@ -21,15 +21,21 @@
 
 struct GIReservoirSample
 {
-    float3 m_Position;
-    float3 m_Normal;
+    uint m_MaterialID;
+    float m_VisibleDepth;
+    float3 m_VisibleNormal;
+    float3 m_SamplePosition;
+    float3 m_SampleNormal;
     float3 m_Radiance;
 
     static GIReservoirSample Empty()
     {
         GIReservoirSample sample;
-        sample.m_Position = 0;
-        sample.m_Normal = 0;
+        sample.m_MaterialID = 0;
+        sample.m_VisibleDepth = 0;
+        sample.m_VisibleNormal = 0;
+        sample.m_SamplePosition = 0;
+        sample.m_SampleNormal = 0;
         sample.m_Radiance = 0;
         return sample;
     }
@@ -57,8 +63,11 @@ struct GIReservoir
     static GIReservoir Unpack(GIPackedReservoir packedReservoir)
     {
         GIReservoir reservoir;
-        reservoir.m_Sample.m_Position = packedReservoir.m_Position;
-        reservoir.m_Sample.m_Normal = DecodeNormals(packedReservoir.m_PackedNormals);
+        reservoir.m_Sample.m_MaterialID = packedReservoir.m_MaterialID;
+        reservoir.m_Sample.m_VisibleDepth = packedReservoir.m_VisibleDepth;
+        reservoir.m_Sample.m_VisibleNormal = DecodeNormals(packedReservoir.m_PackedVisibleNormals);
+        reservoir.m_Sample.m_SamplePosition = packedReservoir.m_SamplePosition;
+        reservoir.m_Sample.m_SampleNormal = DecodeNormals(packedReservoir.m_PackedSampleNormals);
         reservoir.m_Sample.m_Radiance = packedReservoir.m_Radiance;
         reservoir.m_WeightSum = packedReservoir.m_WeightSum;
         reservoir.m_TargetPdf = packedReservoir.m_TargetPdf;
@@ -73,8 +82,11 @@ struct GIReservoir
     static GIPackedReservoir Pack(GIReservoir reservoir)
     {
         GIPackedReservoir packedReservoir;
-        packedReservoir.m_Position = reservoir.m_Sample.m_Position;
-        packedReservoir.m_PackedNormals = EncodeNormals(reservoir.m_Sample.m_Normal);
+        packedReservoir.m_MaterialID = reservoir.m_Sample.m_MaterialID;
+        packedReservoir.m_VisibleDepth = reservoir.m_Sample.m_VisibleDepth;
+        packedReservoir.m_PackedVisibleNormals = EncodeNormals(reservoir.m_Sample.m_VisibleNormal);
+        packedReservoir.m_SamplePosition = reservoir.m_Sample.m_SamplePosition;
+        packedReservoir.m_PackedSampleNormals = EncodeNormals(reservoir.m_Sample.m_SampleNormal);
         packedReservoir.m_Radiance = reservoir.m_Sample.m_Radiance;
         packedReservoir.m_WeightSum = reservoir.m_WeightSum;
         packedReservoir.m_TargetPdf = reservoir.m_TargetPdf;
@@ -132,6 +144,6 @@ struct GIReservoir
     void FinalizeResampling()
     {
         const float3 denom = m_TargetPdf * M;
-        m_WeightSum = (denom <= 0.0f) ? 0.0f : m_WeightSum / denom;
+        m_WeightSum = (any(denom <= 0.0f)) ? 0.0f : m_WeightSum / denom;
     }
 };

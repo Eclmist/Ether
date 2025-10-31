@@ -22,6 +22,9 @@
 
 bool AreSurfacesSimilar(ShadingSurface thisSurface, ShadingSurface otherSurface)
 {
+    if (thisSurface.m_MaterialID != otherSurface.m_MaterialID)
+        return false;
+
     if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.95f)
         return false;
 
@@ -47,8 +50,8 @@ float CalculateJacobian(float3 RecieverPos, float3 NeighborReceiverPos, const GI
 {
 	float OriginalDistanceSqr, OriginalCosine;
 	float NewDistanceSqr, NewCosine;
-	CalculatePartialJacobian(RecieverPos, NeighborReservoir.m_Sample.m_Position, NeighborReservoir.m_Sample.m_Normal, NewDistanceSqr, NewCosine);
-	CalculatePartialJacobian(NeighborReceiverPos, NeighborReservoir.m_Sample.m_Position, NeighborReservoir.m_Sample.m_Normal, OriginalDistanceSqr, OriginalCosine);
+	CalculatePartialJacobian(RecieverPos, NeighborReservoir.m_Sample.m_SamplePosition, NeighborReservoir.m_Sample.m_SampleNormal, NewDistanceSqr, NewCosine);
+	CalculatePartialJacobian(NeighborReceiverPos, NeighborReservoir.m_Sample.m_SamplePosition, NeighborReservoir.m_Sample.m_SampleNormal, OriginalDistanceSqr, OriginalCosine);
 
 	float Jacobian = (NewCosine * OriginalDistanceSqr) / (OriginalCosine * NewDistanceSqr);
 
@@ -68,7 +71,7 @@ void CS_Main(
     const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
-    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return;
 
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
@@ -108,7 +111,7 @@ void CS_Main(
         // neighbourReservoir.m_TargetPdf = targetFunction;
 
         neighbourReservoir.FinalizeResampling();
-        if (BoilingFilter(groupThreadID, 0.5f, neighbourReservoir.m_WeightSum))
+        if (BoilingFilter(groupThreadID, 0.5f, GetLuminanceFromRGB(neighbourReservoir.m_WeightSum)))
         {
             neighbourReservoir.M = min(neighbourReservoir.M,  100);
             initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);

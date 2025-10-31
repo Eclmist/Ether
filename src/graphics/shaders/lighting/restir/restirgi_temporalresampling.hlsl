@@ -20,15 +20,15 @@
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
 
-bool IsValidReprojection(ShadingSurface surface, ShadingSurface prevSurface)
+bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurface)
 {
-    if (dot(surface.m_Normal, prevSurface.m_Normal) < 0.8f)
+    if (surface.m_MaterialID != prevSurface.m_MaterialID)
         return false;
 
-    const float depthA = distance(surface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
-    const float depthB = distance(prevSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+    if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.8f)
+        return false;
 
-    if (abs(depthA - depthB) / depthA > 0.15f)
+    if (abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / surface.m_VisibleDepth > 0.15f)
         return false;
 
     return true;
@@ -44,7 +44,7 @@ void CS_Main(
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
-    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return;
     
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
@@ -65,7 +65,7 @@ void CS_Main(
         {
             const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
 
-            if (IsValidReprojection(surface, prevSurface))
+            if (IsValidReprojection(initialReservoir.m_Sample, historyReservoir.m_Sample))
             {
                 if (historyReservoir.IsValid())
                 {
@@ -73,7 +73,7 @@ void CS_Main(
                     //const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
 
                     historyReservoir.FinalizeResampling();
-                    if (BoilingFilter(groupThreadID, 0.5f, historyReservoir.m_WeightSum))
+                    if (BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(historyReservoir.m_WeightSum)))
                     {
                         historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
                         initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), historyReservoir.m_TargetPdf);

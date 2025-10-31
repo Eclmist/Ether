@@ -40,6 +40,8 @@ struct ShadingSurface
     float m_Metalness;
     float m_Opacity;
     float2 m_Velocity;
+
+    int m_MaterialID;
 };
 
 ShadingSurface GetShadingSurfaceFromGBuffers(
@@ -63,6 +65,7 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     surface.m_Roughness = gbuffer1.w;
     surface.m_Metalness = gbuffer0.w;
     surface.m_Velocity = gbuffer2.zw;
+    surface.m_MaterialID = gbuffer3.w;
     return surface;
 }
 
@@ -137,6 +140,7 @@ ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, 
     shadingSurface.m_Emission = emission;
     shadingSurface.m_Opacity = albedo.a;
     shadingSurface.m_Velocity = 0.0f;
+    shadingSurface.m_MaterialID = material.m_MaterialId;
 
     return shadingSurface;
 }

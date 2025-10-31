@@ -27,10 +27,12 @@ void RayGeneration()
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
 
-    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return;
 
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const float depth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
+
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
 
@@ -49,8 +51,11 @@ void RayGeneration()
     {
         const RayPayload payload = TraceShadingRay(surface, wi, MAX_DEPTH);
         GIReservoirSample initialSample = GIReservoirSample::Empty();
-        initialSample.m_Position = payload.m_HitPosition;
-        initialSample.m_Normal = payload.m_HitNormal;
+        initialSample.m_VisibleDepth = depth;
+        initialSample.m_VisibleNormal = surface.m_Normal;
+        initialSample.m_MaterialID = surface.m_MaterialID;
+        initialSample.m_SamplePosition = payload.m_HitPosition;
+        initialSample.m_SampleNormal = payload.m_HitNormal;
         initialSample.m_Radiance = payload.m_Radiance;
 
         const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
