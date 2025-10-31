@@ -183,8 +183,8 @@ void AccumulateDepthOfField(uint3 threadID)
 
     for (int i = 0; i < g_KernelSampleCount; ++i)
     {
-        float2 offset = g_Kernel[i] * g_DepthOfFieldParams.m_Aperture * coc;
-        float radius = length(offset) / g_DepthOfFieldParams.m_Aperture;
+        float2 offset = g_Kernel[i] * g_DepthOfFieldParams.m_Aperture;
+        float radius = length(offset);
         offset *= texelSize;
         float4 sample = g_SourceTexture.Sample(pointSampler, uv + offset);
 
@@ -246,7 +246,7 @@ void CompositePass(uint3 threadID)
     }
 
     const float dofStrength = smoothstep(0.1, 1, abs(coc));
-    const float3 finalColor = lerp(sceneColor, dofColor, dofStrength).rgb;
+    const float3 finalColor = lerp(sceneColor, dofColor, dofStrength + dofColor.a - dofStrength * dofColor.a).rgb;
 
     g_DestinationTextureUav[threadID.xy] = float4(finalColor, sceneColor.a);
 }
