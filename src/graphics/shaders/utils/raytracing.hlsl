@@ -23,6 +23,8 @@
 #include "utils/shading.hlsl"
 #include "lighting/brdf.hlsl"
 
+#define SKYLIGHT_SCALE 1.0f
+
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 StructuredBuffer<GeometryInfo> g_GeometryInfo       : register(t1);
@@ -102,9 +104,7 @@ void SampleDirectionBrdf(ShadingSurface surface, float seed, float3 wo, out floa
     const float diffuseWeight = lerp(lerp(0.5, 1.0, surface.m_Roughness), 0.0, surface.m_Metalness);
     const float specularWeight = 1.0 - diffuseWeight;
 
-    const bool importanceSampleBrdf = Random(rand2D.x) <= specularWeight;
-
-    if (importanceSampleBrdf)
+    if (Random(rand2D.x) <= specularWeight)
         wi = normalize(ImportanceSampleGGX(rand2D, wo, surface.m_Normal, surface.m_Roughness));
     else
         wi = normalize(TangentToWorld(SampleDirectionCosineHemisphere(rand2D), surface.m_Normal));
@@ -125,22 +125,30 @@ void SampleDirectionUniform(ShadingSurface surface, float seed, out float3 wi, o
     const uint sampleIdx = sampleCoords.y * bufferSize.x + sampleCoords.x;
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, seed);
     wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
+    pdf = SampleDirectionHemisphere_Pdf();
+
 }
 
-float3 SampleEnvironmentLighting(float3 wi)
+float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
     const float exposure = 15000.0f;
 
     const float2 hdriUv = SampleSphericalMap(wi);
-    const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, 4);
+    const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, mipLevel);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
+    const float groundFactor = saturate((wi.y + 1.0f) / 2);
 
-    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
+    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor * groundFactor;
 
     return (exposure * hdri * color).xyz;
+}
+
+float3 SampleEnvironmentLighting(float3 wi)
+{
+    return SampleEnvironmentLighting(wi, 4);
 }
 
 RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
@@ -195,7 +203,56 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample environment color
-        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
+        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection()) * SKYLIGHT_SCALE;
     }
 }
 
+[shader("closesthit")]
+void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
+    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+    const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+
+    payload.m_Hit = true;
+    payload.m_HitPosition = surface.m_Position;
+    payload.m_HitNormal = surface.m_Normal;
+    payload.m_Depth = max(0, payload.m_Depth - 1);
+    payload.m_Radiance = 0;
+
+    if (payload.m_Depth <= 0)
+        return;
+
+    if (payload.m_IsShadowRay)
+        return;
+
+    float3 direct = 0.0f;
+    float3 indirect = 0.0f;
+
+    {   // Direct lighting
+        const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
+        direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, -WorldRayDirection());
+    }
+
+    {   // Indirect lighting
+        float3 wi;
+        float pdf;
+
+#if USE_IMPORTANCE_SAMPLING
+        SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
+#else
+        SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
+#endif
+
+        if (pdf > 0.1f)
+        {
+            const RayPayload indirectRay = TraceShadingRay(surface, wi, payload.m_Depth);
+            indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
+        }
+        
+    }
+
+    payload.m_Radiance = surface.m_Emission + direct + indirect;
+}
