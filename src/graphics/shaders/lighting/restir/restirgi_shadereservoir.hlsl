@@ -48,6 +48,7 @@ void RayGeneration()
     const float3 directLighting = ComputeRadiance(surface, Li, wi, wo);
     float3 indirectLighting = 0;
 
+    finalReservoir.m_TargetPdf = ComputeTargetFunction(surface, finalReservoir.m_Sample);
     finalReservoir.FinalizeResampling();
 
     if (finalReservoir.IsValid())
@@ -61,7 +62,7 @@ void RayGeneration()
         //}
         
         //indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
-        indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
+        indirectLighting = finalReservoir.m_TargetPdf * finalReservoir.m_WeightSum;
     }
 
     g_LightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;

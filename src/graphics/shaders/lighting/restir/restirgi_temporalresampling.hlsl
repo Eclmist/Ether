@@ -58,6 +58,7 @@ void CS_Main(
 
     const float specularDependence = lerp(0.0f, lerp(1.0f, 0.0f, pow(surface.m_Roughness, 0.1f)), pow(surface.m_Metalness, 2.0f));
 
+
     if (Random(screenCoords, g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
     {
         if (all(prevScreenCoords >= 0) && all(prevScreenCoords < g_GlobalConstants.m_ScreenResolution.xy))
@@ -68,11 +69,16 @@ void CS_Main(
             {
                 if (historyReservoir.IsValid())
                 {
-                    const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
+                    // recomputing target function here causes a lot of inf fireflies 
+                    //const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
 
                     historyReservoir.FinalizeResampling();
-                    historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                    initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), targetFunction);
+                    if (BoilingFilter(groupThreadID, 0.5f, historyReservoir.m_WeightSum))
+                    {
+                        historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
+                        initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), historyReservoir.m_TargetPdf);
+                    }
+
                 }
             }
         }
