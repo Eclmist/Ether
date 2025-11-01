@@ -23,7 +23,7 @@
 
 DEFINE_GFX_PA(DepthOfFieldProducer)
 
-DECLARE_GFX_SR(GBufferDepthStencil)
+DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_UA_SR(PostFxSourceTexture)
 
 DEFINE_GFX_UA_SR(DofIntermediateTexture1)
@@ -47,7 +47,7 @@ void Ether::Graphics::DepthOfFieldProducer::GetInputOutput(ScheduleContext& sche
     schedule.NewSR(ACCESS_GFX_SR(DofCircleOfConfusionTexture), resolution.x, resolution.y, RhiFormat::R16Float, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
-    schedule.Read(ACCESS_GFX_SR(GBufferDepthStencil));
+    schedule.Read(ACCESS_GFX_SR(SceneDepth));
 
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
@@ -68,7 +68,7 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
 
         ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         //ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferDepthStencil)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
         //ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofCircleOfConfusionTexture)->GetGpuAddress());
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
@@ -82,7 +82,7 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
 
         ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        //ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferDepthStencil)->GetGpuAddress());
+        //ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture1)->GetGpuAddress());
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
@@ -123,7 +123,7 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
 
         ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferDepthStencil)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
         //ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
@@ -160,7 +160,7 @@ void Ether::Graphics::DepthOfFieldProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 0); // (t0) Source
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) GBufferDepthStencil
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) SceneDepth
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 2); // (t2) CoC Texture
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);

@@ -20,7 +20,6 @@
 #include "common/globalconstants.h"
 #include "common/material.h"
 #include "common/instanceparams.h"
-#include "utils/fullscreenhelpers.hlsl"
 #include "utils/encoding.hlsl"
 #include "utils/noise.hlsl"
 #include "utils/shading.hlsl"
@@ -62,10 +61,8 @@ struct PS_OUTPUT
     float4 Output0 : SV_TARGET0;
     float4 Output1 : SV_TARGET1;
     float4 Output2 : SV_TARGET2;
-    float4 Output3 : SV_TARGET3;
 };
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
 StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
@@ -110,7 +107,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float2 velocity = (texSpaceCurr - texSpacePrev);
 
     GeometricSurface geometricSurface;
-    geometricSurface.m_Position = ClipToWorldSpace(IN.ClipPos, g_GlobalConstants.m_ViewProjectionMatrixInv);
+    geometricSurface.m_Position = ClipToWorldSpace(IN.ClipPos);
     geometricSurface.m_Normal = IN.Normal;
     geometricSurface.m_Tangent = IN.Tangent;
     geometricSurface.m_TexCoord = IN.TexCoord;
@@ -118,7 +115,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, -1);
 
     const float3 worldPos = shadingSurface.m_Position;
-    const float2 octNormals = EncodeNormals(shadingSurface.m_Normal);
+    const float3 normal = shadingSurface.m_Normal;
     const float3 albedo = shadingSurface.m_Albedo;
     const float3 emissive = shadingSurface.m_Emission;
     const float roughness = shadingSurface.m_Roughness;
@@ -130,9 +127,8 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
         discard;
 
     PS_OUTPUT o;
-    o.Output0 = float4(albedo.x, albedo.y, albedo.z, metalness);
-    o.Output1 = float4(worldPos.x, worldPos.y, worldPos.z, roughness);
-    o.Output2 = float4(octNormals.x, octNormals.y, velocity.x, velocity.y);
-    o.Output3 = float4(emissive.x, emissive.y, emissive.z, g_InstanceParams.m_MaterialIdx);
+    o.Output0 = float4(albedo.x, albedo.y, albedo.z, (g_InstanceParams.m_MaterialIdx / 255.0f));
+    o.Output1 = float4(EncodeNormals(normal), velocity.x, velocity.y);
+    o.Output2 = float4(emissive.x, emissive.y, emissive.z, EncodeFP16(roughness, metalness));
     return o;
 }

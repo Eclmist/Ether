@@ -92,4 +92,8 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Border;
 };
 
+#ifdef __HLSL__
+ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
+#endif
+
 ETH_END_SHADER_NAMESPACE

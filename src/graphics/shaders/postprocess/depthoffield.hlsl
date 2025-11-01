@@ -21,7 +21,6 @@
 #include "common/depthoffieldparams.h"
 #include "utils/constants.hlsl"
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 ConstantBuffer<DepthOfFieldParams> g_DepthOfFieldParams : register(b1);
 
 Texture2D<float4> g_SourceTexture                   : register(t0);

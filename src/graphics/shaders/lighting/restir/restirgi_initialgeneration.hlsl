@@ -38,7 +38,7 @@ void RayGeneration()
     if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return;
 
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
     const float depth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
 
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);

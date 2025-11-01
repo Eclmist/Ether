@@ -36,23 +36,30 @@ float2 ClipToTextureSpace(float4 clip)
     return uv;
 }
 
-float4 ScreenToClipSpace(float2 uv, float sceneDepth)
+float2 ScreenToTextureSpace(float2 screenCoords)
 {
+    return screenCoords / g_GlobalConstants.m_ScreenResolution;
+}
+
+float4 ScreenToClipSpace(float2 screenCoords, float sceneDepth)
+{
+    float2 uv = ScreenToTextureSpace(screenCoords);
     float4 clip;
-    clip.xy = uv * 2.0f - 1.0f;
+    clip.xy = (uv * 2.0f - 1.0f);
+    clip.y = -clip.y;
     clip.z = sceneDepth;
     clip.w = 1.0f;
     return clip;
 }
 
-float3 ClipToWorldSpace(float4 clip, float4x4 invViewProj)
+float3 ClipToWorldSpace(float4 clip)
 {
-    float4 worldPos = mul(invViewProj, clip);
+    float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clip);
     worldPos.xyz /= worldPos.w;
     return worldPos.xyz;
 }
 
-float3 ScreenToWorldSpace(float2 uv, float sceneDepth, float4x4 invViewProj)
+float3 ScreenToWorldSpace(float2 screenCoords, float sceneDepth)
 {
-    return ClipToWorldSpace(ScreenToClipSpace(uv, sceneDepth), invViewProj);
+    return ClipToWorldSpace(ScreenToClipSpace(screenCoords, sceneDepth));
 }

@@ -18,15 +18,13 @@
 */
 
 #include "common/globalconstants.h"
-#include "utils/fullscreenhelpers.hlsl"
 #include "utils/encoding.hlsl"
 #include "utils/shading.hlsl"
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_GBuffer0                        : register(t0);
 Texture2D<float4> g_GBuffer1                        : register(t1);
 Texture2D<float4> g_GBuffer2                        : register(t2);
-Texture2D<float4> g_GBuffer3                        : register(t3);
+Texture2D<float> g_SceneDepth                       : register(t3);
 Texture2D<float4> g_LightingTexture                 : register(t4);
 Texture2D<float4> g_ProceduralSkyTexture            : register(t5);
 
@@ -55,19 +53,20 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     const float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
     const float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    const float2 uv = IN.TexCoord * g_GlobalConstants.m_ScreenResolution;
-
-    ShadingSurface surface = GetShadingSurfaceFromGBuffers(uv, g_GBuffer0, g_GBuffer1, g_GBuffer2, g_GBuffer3);
+    const float2 screenCoords = IN.TexCoord * g_GlobalConstants.m_ScreenResolution;
+    const float depth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
+ 
+    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBuffer0, g_GBuffer1, g_GBuffer2, g_SceneDepth);
 
     // Hack to get sky which is basically nothing drawn in gbuffer
-    if (all(surface.m_Position == 0))
+    if (depth == 1)
         return sky;
 
     // Debug: 
     //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
     //    return float4(albedo) * 1000;
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(surface.m_Velocity, 0, 1.0f) * 1000;
+        return float4(surface.m_Position, 1.0f);
 
     float4 finalColor = lighting;
     return finalColor;

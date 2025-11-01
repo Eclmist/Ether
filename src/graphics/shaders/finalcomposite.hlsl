@@ -20,7 +20,6 @@
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_LightingCompositeTexture        : register(t0);
 
 struct VS_OUTPUT
@@ -176,28 +175,30 @@ float3 ColorGrade(float3 color, float temperature = 0.1, float tint = 0.05, floa
     return saturate(color);
 }
 
-
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    const float manualExposure = 0.0005;
-
     float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
-    col = col * manualExposure;
 
-    col = ColorGrade(
-        col,
-        g_GlobalConstants.m_ColorGrading_Temperature,
-        g_GlobalConstants.m_ColorGrading_Tint,
-        g_GlobalConstants.m_ColorGrading_Contrast,
-        g_GlobalConstants.m_ColorGrading_Saturation
-    );
+    if (!g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    {
+        const float manualExposure = 0.0005;
+        col = col * manualExposure;
 
-    if (g_GlobalConstants.m_TonemapperType == 1)
-        col = ACESFitted(col);
-    else if (g_GlobalConstants.m_TonemapperType == 2)
-        col = reinhard_extended_luminance(col, 200000.0);
-    else if (g_GlobalConstants.m_TonemapperType == 3)
-        col = GTTonemap(col);
+        col = ColorGrade(
+            col,
+            g_GlobalConstants.m_ColorGrading_Temperature,
+            g_GlobalConstants.m_ColorGrading_Tint,
+            g_GlobalConstants.m_ColorGrading_Contrast,
+            g_GlobalConstants.m_ColorGrading_Saturation
+        );
+
+        if (g_GlobalConstants.m_TonemapperType == 1)
+            col = ACESFitted(col);
+        else if (g_GlobalConstants.m_TonemapperType == 2)
+            col = reinhard_extended_luminance(col, 200000.0);
+        else if (g_GlobalConstants.m_TonemapperType == 3)
+            col = GTTonemap(col);
+    }
 
     return float4(col, 1.0f);
 }

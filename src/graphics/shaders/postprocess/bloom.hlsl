@@ -20,7 +20,6 @@
 #include "common/globalconstants.h"
 #include "common/bloomparams.h"
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 ConstantBuffer<BloomParams> g_BloomParams           : register(b1);
 Texture2D<float4> g_SourceTexture                   : register(t0);
 Texture2D<float4> g_DestinationTexture              : register(t1);

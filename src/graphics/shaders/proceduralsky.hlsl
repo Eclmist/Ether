@@ -21,8 +21,6 @@
 #include "utils/fullscreenhelpers.hlsl"
 #include "utils/constants.hlsl"
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-
 struct VS_OUTPUT
 {
     float4 Position : SV_Position;
