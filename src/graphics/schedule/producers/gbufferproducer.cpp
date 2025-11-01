@@ -33,7 +33,7 @@ DEFINE_GFX_DS(GBufferDepthStencil)
 DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   Metalness]
 DEFINE_GFX_RT(GBufferTexture1) // [Position.x, Position.y, Position.z, Roughness]
 DEFINE_GFX_RT(GBufferTexture2) // [Normal.x,   Normal.y,   Velocity.x, Velocity.y]
-DEFINE_GFX_RT(GBufferTexture3) // [Emissive.x, Emissive.y, Emissive.z]
+DEFINE_GFX_RT(GBufferTexture3) // [Emissive.x, Emissive.y, Emissive.z, MaterialID]
 
 DEFINE_GFX_SR(GBufferDepthStencil)
 DEFINE_GFX_SR(GBufferTexture0)
@@ -196,7 +196,7 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     m_PsoDesc->SetPixelShader(*m_PixelShader);
     m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
     m_PsoDesc->SetRootSignature(*m_RootSignature);
-    m_PsoDesc->SetInputLayout(VertexFormats::PositionNormalTangentTexcoord::s_InputElementDesc, VertexFormats::PositionNormalTangentTexcoord::s_NumElements);
+    m_PsoDesc->SetInputLayout(VertexFormats::BaseVertexFormat::s_InputElementDesc, VertexFormats::BaseVertexFormat::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);

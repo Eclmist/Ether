@@ -19,11 +19,9 @@
 
 #include "graphics/common/vertexformats.h"
 
-uint32_t Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::
-    s_NumElements = PositionNormalTangentTexcoord_NumElements;
+uint32_t Ether::Graphics::VertexFormats::BaseVertexFormat::s_NumElements = BaseVertexFormat_NumElements;
 
 /*
-Semantic names are predefined!!
 https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-semantics
 
     BINORMAL[n]	Binormal	float4
@@ -37,34 +35,35 @@ https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-se
     TANGENT[n]	Tangent	float4
     TEXCOORD[n]	Texture coordinates	float4
 */
-Ether::Graphics::RhiInputElementDesc Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::s_InputElementDesc
-    [PositionNormalTangentTexcoord_NumElements] = {
-        { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
-        { "COLOR", 0, RhiFormat::R32G32B32A32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },
+Ether::Graphics::RhiInputElementDesc Ether::Graphics::VertexFormats::BaseVertexFormat::s_InputElementDesc
+    [BaseVertexFormat_NumElements] = {
+        { "POSITION", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },  // Position
+        { "NORMAL", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },    // Normal
+        { "TANGENT", 0, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },   // Tangent
+        { "COLOR", 0, RhiFormat::R32G32B32A32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },  // Color
+        { "TEXCOORD", 0, RhiFormat::R32G32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },     // Texture Coordinates
+        { "TEXCOORD", 1, RhiFormat::R32G32B32Float, 0, 0xffffffff, RhiInputClassification::PerVertexData, 0 },  // Prev Position
     };
 
-void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Serialize(OStream& ostream) const
+void Ether::Graphics::VertexFormats::BaseVertexFormat::Serialize(OStream& ostream) const
 {
-    ostream.WriteBytes(this, sizeof(PositionNormalTangentTexcoord));
+    ostream.WriteBytes(this, sizeof(BaseVertexFormat));
 }
 
-void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord::Deserialize(IStream& istream)
+void Ether::Graphics::VertexFormats::BaseVertexFormat::Deserialize(IStream& istream)
 {
-    istream.ReadBytes(this, sizeof(PositionNormalTangentTexcoord));
+    istream.ReadBytes(this, sizeof(BaseVertexFormat));
 }
 
-Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord_Skinned::PositionNormalTangentTexcoord_Skinned()
+Ether::Graphics::VertexFormats::SkinnedVertexFormat::SkinnedVertexFormat()
 {
     for (uint32_t i = 0; i < MaxBonesPerVextex; ++i)
         m_BoneIndices[i] = InvalidBoneIndex;
 }
 
-void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord_Skinned::Serialize(OStream& ostream) const
+void Ether::Graphics::VertexFormats::SkinnedVertexFormat::Serialize(OStream& ostream) const
 {
-    PositionNormalTangentTexcoord::Serialize(ostream);
+    BaseVertexFormat::Serialize(ostream);
 
     for (uint32_t i = 0; i < MaxBonesPerVextex; ++i)
     {
@@ -73,9 +72,9 @@ void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord_Skinned::Seri
     }
 }
 
-void Ether::Graphics::VertexFormats::PositionNormalTangentTexcoord_Skinned::Deserialize(IStream& istream)
+void Ether::Graphics::VertexFormats::SkinnedVertexFormat::Deserialize(IStream& istream)
 {
-    PositionNormalTangentTexcoord::Deserialize(istream);
+    BaseVertexFormat::Deserialize(istream);
 
     for (uint32_t i = 0; i < MaxBonesPerVextex; ++i)
     {

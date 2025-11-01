@@ -111,10 +111,10 @@ void CS_Main(
         // neighbourReservoir.m_TargetPdf = targetFunction;
 
         neighbourReservoir.FinalizeResampling();
-        if (BoilingFilter(groupThreadID, 0.5f, GetLuminanceFromRGB(neighbourReservoir.m_WeightSum)))
+        if (BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(neighbourReservoir.m_WeightSum)))
         {
             neighbourReservoir.M = min(neighbourReservoir.M,  100);
-            initialReservoir.Combine(neighbourReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 300), targetFunction);
+            initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 300), targetFunction);
         }
 
     }

@@ -20,7 +20,7 @@
 #include "graphics/resources/skinnedmesh.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t SkinnedMeshVersion = 0;
+constexpr uint32_t SkinnedMeshVersion = 1;
 
 Ether::Graphics::SkinnedMesh::SkinnedMesh()
     : Mesh(SkinnedMeshVersion, ETH_CLASS_ID_SKINNEDMESH)
@@ -70,17 +70,17 @@ void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
 
     for (auto& vertex : m_PackedVertices)
     {
-        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Position.x);
-        m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Position.y);
-        m_BoundingBox.m_Min.z = std::min(m_BoundingBox.m_Min.z, vertex.m_Position.z);
+        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Attributes.m_Position.x);
+        m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Attributes.m_Position.y);
+        m_BoundingBox.m_Min.z = std::min(m_BoundingBox.m_Min.z, vertex.m_Attributes.m_Position.z);
 
-        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Position.x);
-        m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Position.y);
-        m_BoundingBox.m_Max.z = std::max(m_BoundingBox.m_Max.z, vertex.m_Position.z);
+        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Attributes.m_Position.x);
+        m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Attributes.m_Position.y);
+        m_BoundingBox.m_Max.z = std::max(m_BoundingBox.m_Max.z, vertex.m_Attributes.m_Position.z);
     }
 }
 
-void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned>&& vertices)
+void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices)
 {
     m_PackedVertices = std::move(vertices);
     m_NumVertices = m_PackedVertices.size();
@@ -109,7 +109,7 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
         ethVector4 skinnedNormal(0, 0, 0, 0);
         ethVector4 prevSkinnedPos(0, 0, 0, 0);
 
-        const VertexFormats::PositionNormalTangentTexcoord_Skinned& src = m_PackedVerticesOriginal[i];
+        const VertexFormats::SkinnedVertexFormat& src = m_PackedVerticesOriginal[i];
 
         for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
         {
@@ -123,16 +123,14 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
             const ethMatrix4x4 finalBoneMatrix = pose.m_GlobalInverseTransform * pose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
             const ethMatrix4x4 prevBoneMatrix = prevPose.m_GlobalInverseTransform * prevPose.m_GlobalBoneTransform[boneIndex] * bone.m_InverseBindMatrix;
 
-            skinnedPos += (finalBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 1.0f)) * weight;
-            skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Normal.x, src.m_Normal.y, src.m_Normal.z, 0.0f)) * weight;
-            prevSkinnedPos += (prevBoneMatrix * ethVector4(src.m_Position.x, src.m_Position.y, src.m_Position.z, 1.0f)) * weight;
+            skinnedPos += (finalBoneMatrix * ethVector4(src.m_Attributes.m_Position.x, src.m_Attributes.m_Position.y, src.m_Attributes.m_Position.z, 1.0f)) * weight;
+            skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Attributes.m_Normal.x, src.m_Attributes.m_Normal.y, src.m_Attributes.m_Normal.z, 0.0f)) * weight;
+            prevSkinnedPos += (prevBoneMatrix * ethVector4(src.m_Attributes.m_Position.x, src.m_Attributes.m_Position.y, src.m_Attributes.m_Position.z, 1.0f)) * weight;
         }
 
-        m_PackedVertices[i].m_Position = skinnedPos.Resize<3>();
-        m_PackedVertices[i].m_Normal = skinnedNormal.Resize<3>().Normalized();
-
-        // put prev pos into color for now (RTCamp11 hack TODO)
-        m_PackedVertices[i].m_Color = prevSkinnedPos;
+        m_PackedVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
+        m_PackedVertices[i].m_Attributes.m_PrevPosition = prevSkinnedPos.Resize<3>();
+        m_PackedVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
     }
 }
 

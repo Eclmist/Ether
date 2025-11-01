@@ -20,12 +20,13 @@
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
 #include "utils/encoding.hlsl"
+#include "utils/shading.hlsl"
 
 ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
-Texture2D<float4> g_GBufferTexture0                 : register(t0);
-Texture2D<float4> g_GBufferTexture1                 : register(t1);
-Texture2D<float4> g_GBufferTexture2                 : register(t2);
-Texture2D<float4> g_GBufferTexture3                 : register(t3);
+Texture2D<float4> g_GBuffer0                        : register(t0);
+Texture2D<float4> g_GBuffer1                        : register(t1);
+Texture2D<float4> g_GBuffer2                        : register(t2);
+Texture2D<float4> g_GBuffer3                        : register(t3);
 Texture2D<float4> g_LightingTexture                 : register(t4);
 Texture2D<float4> g_ProceduralSkyTexture            : register(t5);
 
@@ -52,18 +53,21 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
 
-    float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
-    float4 normals = g_GBufferTexture2[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    float4 albedo = g_GBufferTexture0[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    float4 gbuffer3 = g_GBufferTexture3[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    const float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
+    const float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
+    const float2 uv = IN.TexCoord * g_GlobalConstants.m_ScreenResolution;
 
-    if (normals.x == 0 && normals.y == 0)
+    ShadingSurface surface = GetShadingSurfaceFromGBuffers(uv, g_GBuffer0, g_GBuffer1, g_GBuffer2, g_GBuffer3);
+
+    // Hack to get sky which is basically nothing drawn in gbuffer
+    if (all(surface.m_Position == 0))
         return sky;
 
+    // Debug: 
+    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    //    return float4(albedo) * 1000;
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return gbuffer3.w * 100;
-
+        return float4(surface.m_Velocity, 0, 1.0f) * 1000;
 
     float4 finalColor = lighting;
     return finalColor;

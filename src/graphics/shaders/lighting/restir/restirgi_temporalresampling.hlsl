@@ -28,7 +28,7 @@ bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurfac
     if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.9f)
         return false;
 
-    if (abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / surface.m_VisibleDepth > 0.05f)
+    if (abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) > 7.0f)
         return false;
 
     return true;
@@ -59,7 +59,7 @@ void CS_Main(
     const float specularDependence = lerp(0.0f, lerp(1.0f, 0.0f, pow(surface.m_Roughness, 0.1f)), pow(surface.m_Metalness, 2.0f));
 
 
-    if (Random(screenCoords, g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
+    if (Random(screenCoords * g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
     {
         if (all(prevScreenCoords >= 0) && all(prevScreenCoords < g_GlobalConstants.m_ScreenResolution.xy))
         {
@@ -76,7 +76,7 @@ void CS_Main(
                     if (BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(historyReservoir.m_WeightSum)))
                     {
                         historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                        initialReservoir.Combine(historyReservoir, Random(screenCoords, g_GlobalConstants.m_FrameNumber + 100), historyReservoir.m_TargetPdf);
+                        initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), historyReservoir.m_TargetPdf);
                     }
 
                 }

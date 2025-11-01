@@ -41,10 +41,10 @@ public:
     void CreateGpuResources(CommandContext& ctx) override;
     void ComputeBoundingBox() override;
     void* GetPackedVertexData() override { return m_PackedVertices.data(); }
-    uint32_t GetVertexStride() override { return sizeof(VertexFormats::PositionNormalTangentTexcoord_Skinned); }
+    uint32_t GetVertexStride() override { return sizeof(VertexFormats::SkinnedVertexFormat); }
 
 public:
-    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned>&& vertices);
+    void SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices);
     void SetSkeletonGuid(StringID guid) { m_SkeletonGuid = guid; }
 
 public:
@@ -56,11 +56,11 @@ protected:
     void RefitAccelerationStructure(CommandContext& ctx);
 
 protected:
-    std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned> m_PackedVertices;
+    std::vector<VertexFormats::SkinnedVertexFormat> m_PackedVertices;
 
     // RtCamp11 Hack: Update skinning vertex buffer from CPU side (TODO)
     std::unique_ptr<RhiResource> m_StagingVertexBufferResource;
-    std::vector<VertexFormats::PositionNormalTangentTexcoord_Skinned> m_PackedVerticesOriginal;
+    std::vector<VertexFormats::SkinnedVertexFormat> m_PackedVerticesOriginal;
 
     StringID m_SkeletonGuid;
 };

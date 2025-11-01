@@ -101,12 +101,12 @@ struct GIReservoir
     }
 
     // Streaming RIS using weighted reservoir sampling
-    bool Resample(GIReservoirSample newSample, float2 random, float3 newTargetPdf, float3 risWeight)
+    bool Resample(GIReservoirSample newSample, float random, float3 newTargetPdf, float3 risWeight)
     {
         M += 1;
         m_WeightSum += risWeight;
 
-        const bool newSampleSelected = random.x * GetLuminanceFromRGB(m_WeightSum) <= GetLuminanceFromRGB(risWeight);
+        const bool newSampleSelected = random * GetLuminanceFromRGB(m_WeightSum) <= GetLuminanceFromRGB(risWeight);
 
         if (newSampleSelected)
         {
@@ -117,7 +117,7 @@ struct GIReservoir
         return newSampleSelected;
     }
 
-    bool Combine(GIReservoir newReservoir, float2 random, float3 newTargetPdf)
+    bool Combine(GIReservoir newReservoir, float random, float3 newTargetPdf)
     {
         if (!newReservoir.IsValid())
             return false;
@@ -127,7 +127,7 @@ struct GIReservoir
         M += newReservoir.M;
         m_WeightSum += risWeight;
 
-        const bool newSampleSelected = random.x * GetLuminanceFromRGB(m_WeightSum) <= GetLuminanceFromRGB(risWeight);
+        const bool newSampleSelected = random * GetLuminanceFromRGB(m_WeightSum) <= GetLuminanceFromRGB(risWeight);
 
         if (newSampleSelected)
         {

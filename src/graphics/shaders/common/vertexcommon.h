@@ -23,13 +23,15 @@
 
 ETH_BEGIN_SHADER_NAMESPACE
 
+// Must match BaseVertexFormat
 struct MeshVertex
 {
     ethVector3 m_Position;
     ethVector3 m_Normal;
     ethVector3 m_Tangent;
-    ethVector2 m_TexCoord;
     ethVector4 m_Color;
+    ethVector2 m_TexCoord;
+    ethVector3 m_PrevPosition;
 };
 
 ETH_END_SHADER_NAMESPACE

@@ -69,7 +69,7 @@ void RayGeneration()
         const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
         const float3 risWeight = targetFunction / max(0.001f, pdf);
             
-        initialReservoir.Resample(initialSample, Random(screenCoords, g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
+        initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
     }
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
