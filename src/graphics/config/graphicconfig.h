@@ -71,6 +71,9 @@ public:
     int32_t m_RaytracingMode = RaytracingMode::ReSTIR;
     int32_t m_SkinningDebugBoneId = -1;
 
+    // Camera
+    float m_Fov = 90.0f;
+
     // TAA
     bool m_IsTemporalAAEnabled = true;
     int32_t m_TemporalAAJitterMode = 2;

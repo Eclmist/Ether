@@ -38,12 +38,12 @@ public:
     void CreateGpuResources(CommandContext& ctx) override;
     void ComputeBoundingBox() override;
     void* GetPackedVertexData() override { return m_PackedVertices.data(); }
-    uint32_t GetVertexStride() override { return sizeof(VertexFormats::PositionNormalTangentTexcoord); }
+    uint32_t GetVertexStride() override { return sizeof(VertexFormats::BaseVertexFormat); }
 
 public:
-    void SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices);
+    void SetPackedVertices(std::vector<VertexFormats::BaseVertexFormat>&& vertices);
 
 protected:
-    std::vector<VertexFormats::PositionNormalTangentTexcoord> m_PackedVertices;
+    std::vector<VertexFormats::BaseVertexFormat> m_PackedVertices;
 };
 } // namespace Ether::Graphics

@@ -21,38 +21,35 @@
 
 #include "graphics/pch.h"
 #include "graphics/resources/skeleton.h"
+#include "graphics/shaders/common/vertexcommon.h"
 
 namespace Ether::Graphics::VertexFormats
 {
-static constexpr uint32_t PositionNormalTangentTexcoord_NumElements = 5;
+static constexpr uint32_t BaseVertexFormat_NumElements = 6;
 
-class ETH_GRAPHIC_DLL PositionNormalTangentTexcoord
+class ETH_GRAPHIC_DLL BaseVertexFormat
 {
 public:
-    PositionNormalTangentTexcoord() = default;
-    ~PositionNormalTangentTexcoord() = default;
+    BaseVertexFormat() = default;
+    ~BaseVertexFormat() = default;
 
 public:
     void Serialize(OStream& ostream) const;
     void Deserialize(IStream& istream);
 
 public:
-    static RhiInputElementDesc s_InputElementDesc[PositionNormalTangentTexcoord_NumElements];
+    static RhiInputElementDesc s_InputElementDesc[BaseVertexFormat_NumElements];
     static uint32_t s_NumElements;
 
 public:
-    ethVector3 m_Position;
-    ethVector3 m_Normal;
-    ethVector3 m_Tangent;
-    ethVector2 m_TexCoord;
-    ethVector4 m_Color = { 1, 1, 1, 1 };
+    Shader::MeshVertex m_Attributes;
 };
 
-class ETH_GRAPHIC_DLL PositionNormalTangentTexcoord_Skinned : public PositionNormalTangentTexcoord
+class ETH_GRAPHIC_DLL SkinnedVertexFormat : public BaseVertexFormat
 {
 public:
-    PositionNormalTangentTexcoord_Skinned();
-    ~PositionNormalTangentTexcoord_Skinned() = default;
+    SkinnedVertexFormat();
+    ~SkinnedVertexFormat() = default;
 
 public:
     void Serialize(OStream& ostream) const;

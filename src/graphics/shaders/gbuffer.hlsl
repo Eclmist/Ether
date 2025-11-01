@@ -27,21 +27,34 @@
 
 struct VS_INPUT
 {
-    float3 Position : POSITION;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float2 TexCoord : TEXCOORD;
-    float4 PrevPosition : COLOR;
+    float3 Position         : POSITION;
+    float3 Normal           : NORMAL;
+    float3 Tangent          : TANGENT;
+    float4 Color            : COLOR;
+    float2 TexCoord         : TEXCOORD0;
+    float3 PositionPrev     : TEXCOORD1;
 };
 
 struct VS_OUTPUT
 {
-    float4 Position : SV_POSITION;
-    float3 Normal : NORMAL;
-    float2 TexCoord : TEXCOORD0;
-    float3 Tangent : TEXCOORD1;
-    float3 WorldPos : TEXCOORD2;
-    float4 PrevClipPos : TEXCOORD3;
+    float4 Position         : SV_POSITION;
+    float3 Normal           : NORMAL;
+    float4 Color            : COLOR;
+    float3 Tangent          : TEXCOORD0;
+    float2 TexCoord         : TEXCOORD1;
+    float4 ClipPos          : TEXCOORD2;
+    float4 ClipPosPrev      : TEXCOORD3;
+};
+
+struct PS_INPUT
+{
+    float4 ScreenPos        : SV_POSITION;
+    float3 Normal           : NORMAL;
+    float4 Color            : COLOR;
+    float3 Tangent          : TEXCOORD0;
+    float2 TexCoord         : TEXCOORD1;
+    float4 ClipPos          : TEXCOORD2;
+    float4 ClipPosPrev      : TEXCOORD3;
 };
 
 struct PS_OUTPUT
@@ -52,9 +65,9 @@ struct PS_OUTPUT
     float4 Output3 : SV_TARGET3;
 };
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
-ConstantBuffer<InstanceParams> g_InstanceParams : register(b1);
-StructuredBuffer<Material> g_MaterialTable : register(t0);
+ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
+ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
+StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
 float4x4 RemoveJitter(float4x4 jitteredProjMatrix, float2 jitter)
 {
@@ -71,28 +84,33 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, float4(IN.Position, 1.0f));
+    const float4 worldPos = float4(IN.Position, 1.0f); // TODO: Implement model matrices here?
+    const float4 worldPosPrev = float4(IN.PositionPrev, 1.0f); // TODO: Implement model matrices here?
+    
+    o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
+
     o.Normal = IN.Normal;
-    o.TexCoord = IN.TexCoord;
     o.Tangent = IN.Tangent;
-    o.WorldPos = IN.Position; // TODO: Add model matrix
-    o.PrevClipPos = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrixPrev, g_GlobalConstants.m_CameraJitterPrev), float4(IN.PrevPosition.xyz, 1.0f));
+    o.TexCoord = IN.TexCoord;
+    o.Color = IN.Color;
+
+    o.ClipPos = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrix, g_GlobalConstants.m_CameraJitter), worldPos);
+    o.ClipPosPrev = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrixPrev, g_GlobalConstants.m_CameraJitterPrev), worldPosPrev);
 
     return o;
 }
 
-PS_OUTPUT PS_Main(VS_OUTPUT IN)
+PS_OUTPUT PS_Main(PS_INPUT IN)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     const Material material = g_MaterialTable[g_InstanceParams.m_MaterialIdx];
 
-    const float4 clipPosCurr = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrix, g_GlobalConstants.m_CameraJitter), float4(IN.WorldPos, 1.0f));
-    const float2 texSpacePrev = ClipToTextureSpace(IN.PrevClipPos);
-    const float2 texSpaceCurr = ClipToTextureSpace(clipPosCurr);
+    const float2 texSpaceCurr = ClipToTextureSpace(IN.ClipPos);
+    const float2 texSpacePrev = ClipToTextureSpace(IN.ClipPosPrev);
     const float2 velocity = (texSpaceCurr - texSpacePrev);
 
     GeometricSurface geometricSurface;
-    geometricSurface.m_Position = IN.WorldPos;
+    geometricSurface.m_Position = ClipToWorldSpace(IN.ClipPos, g_GlobalConstants.m_ViewProjectionMatrixInv);
     geometricSurface.m_Normal = IN.Normal;
     geometricSurface.m_Tangent = IN.Tangent;
     geometricSurface.m_TexCoord = IN.TexCoord;

@@ -85,11 +85,6 @@ float Random(float2 uv)
     return frac(sin(sn) * c);
 }
 
-float2 Random(float2 uv, uint index)
-{
-    return Random(uv * index);
-}
-
 float2 Random2D(float2 uv, uint index)
 {
     return CMJ_Sample2D(uv.y * 1024 + uv.x, 1024, 1024, index);

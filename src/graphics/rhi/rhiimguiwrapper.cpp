@@ -75,6 +75,12 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
         if (ImGui::CollapsingHeader("Render Options"))
         {
+            if (ImGui::TreeNode("Camera"))
+            {
+                ImGui::SliderFloat("Fov", &gfxConfig.m_Fov, 1, 120);
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Bloom"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsBloomEnabled);
@@ -87,7 +93,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             if (ImGui::TreeNode("Depth Of Field"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsDofEnabled);
-                ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 10);
+                ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 100);
                 ImGui::SliderFloat("Focal Length", &gfxConfig.m_FocalLength, 0, 1);
                 ImGui::SliderFloat("Aperture", &gfxConfig.m_Aperture, 0, 16.0f);
                 ImGui::SliderFloat("MaxCoC", &gfxConfig.m_MaxCoC, 0, 100.0f);

@@ -61,7 +61,8 @@ void Ether::Ecs::EcsCameraSystem::Update()
         {
         case ProjectionMode::Perspective:
             projectionMatrix = Transform::GetPerspectiveMatrixLH(
-                SMath::DegToRad(camera.m_FieldOfView),
+                //SMath::DegToRad(camera.m_FieldOfView),
+                SMath::DegToRad(gfxConfig.m_Fov),
                 aspect,
                 camera.m_NearPlane,
                 camera.m_FarPlane);

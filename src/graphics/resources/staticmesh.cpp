@@ -20,7 +20,7 @@
 #include "graphics/resources/staticmesh.h"
 #include "graphics/graphiccore.h"
 
-constexpr uint32_t StaticMeshVersion = 9;
+constexpr uint32_t StaticMeshVersion = 10;
 
 Ether::Graphics::StaticMesh::StaticMesh()
     : Mesh(StaticMeshVersion, ETH_CLASS_ID_STATICMESH)
@@ -67,17 +67,17 @@ void Ether::Graphics::StaticMesh::ComputeBoundingBox()
 
     for (auto& vertex : m_PackedVertices)
     {
-        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Position.x);
-        m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Position.y);
-        m_BoundingBox.m_Min.z = std::min(m_BoundingBox.m_Min.z, vertex.m_Position.z);
+        m_BoundingBox.m_Min.x = std::min(m_BoundingBox.m_Min.x, vertex.m_Attributes.m_Position.x);
+        m_BoundingBox.m_Min.y = std::min(m_BoundingBox.m_Min.y, vertex.m_Attributes.m_Position.y);
+        m_BoundingBox.m_Min.z = std::min(m_BoundingBox.m_Min.z, vertex.m_Attributes.m_Position.z);
     
-        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Position.x);
-        m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Position.y);
-        m_BoundingBox.m_Max.z = std::max(m_BoundingBox.m_Max.z, vertex.m_Position.z);
+        m_BoundingBox.m_Max.x = std::max(m_BoundingBox.m_Max.x, vertex.m_Attributes.m_Position.x);
+        m_BoundingBox.m_Max.y = std::max(m_BoundingBox.m_Max.y, vertex.m_Attributes.m_Position.y);
+        m_BoundingBox.m_Max.z = std::max(m_BoundingBox.m_Max.z, vertex.m_Attributes.m_Position.z);
     }
 }
 
-void Ether::Graphics::StaticMesh::SetPackedVertices(std::vector<VertexFormats::PositionNormalTangentTexcoord>&& vertices)
+void Ether::Graphics::StaticMesh::SetPackedVertices(std::vector<VertexFormats::BaseVertexFormat>&& vertices)
 {
     m_PackedVertices = std::move(vertices);
     m_NumVertices = m_PackedVertices.size();
