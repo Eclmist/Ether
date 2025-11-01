@@ -38,7 +38,7 @@ DECLARE_GFX_SR(LightingTexture)
 DECLARE_GFX_SR(GBufferTexture0)
 DECLARE_GFX_SR(GBufferTexture1)
 DECLARE_GFX_SR(GBufferTexture2)
-DECLARE_GFX_SR(GBufferTexture3)
+DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
@@ -73,7 +73,7 @@ void Ether::Graphics::ReferenceLightingProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture3));
+    schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
@@ -103,7 +103,7 @@ void Ether::Graphics::ReferenceLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_SR(GBufferTexture3)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(RTIndirectTexture)->GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
@@ -173,7 +173,7 @@ void Ether::Graphics::ReferenceLightingProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Srv, 1, 0, 6);    // (t6) GBuffer2
     rsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Srv, 1, 0, 7);    // (t7) GBuffer3
+    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Srv, 1, 0, 7);    // (t7) SceneDepth
     rsDesc->SetAsDescriptorTable(9, 1, RhiShaderVisibility::All);       
     rsDesc->SetDescriptorTableRange(9, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) LightingTexture
     rsDesc->SetAsDescriptorTable(10, 1, RhiShaderVisibility::All);       

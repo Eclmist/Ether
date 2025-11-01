@@ -45,8 +45,15 @@ void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, Re
     const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetRenderData();
     uint32_t numMaterials = renderData.m_VisualBatches.size();
 
+    if (numMaterials > 256)
+    {
+        LogGraphicsWarning("MaterialID is packed into 8 bits in GBuffer, so only 256 IDs are supported for now. Some materials will be missing");
+        numMaterials = 256;
+    }
+
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::Material) * numMaterials, 256 });
     Shader::Material* materials = (Shader::Material*)alloc->GetCpuHandle();
+
     for (uint32_t i = 0; i < numMaterials; ++i)
     {
         Material* currMat = renderData.m_VisualBatches[i].m_Material;

@@ -32,11 +32,10 @@
 #define NUM_SPATIAL_SAMPLES 8
 #define SPATIAL_KERNEL_RADIUS 64
 
-Texture2D<float4> g_SceneDepth                              : register(t3);
+Texture2D<float> g_SceneDepth                               : register(t3);
 Texture2D<float4> g_GBufferA                                : register(t4);
 Texture2D<float4> g_GBufferB                                : register(t5);
 Texture2D<float4> g_GBufferC                                : register(t6);
-Texture2D<float4> g_GBufferD                                : register(t7);
 
 RWStructuredBuffer<GIPackedReservoir> g_InputReservoir      : register(u0);
 RWStructuredBuffer<GIPackedReservoir> g_HistoryReservoir    : register(u1);

@@ -25,7 +25,6 @@
 
 #define SKYLIGHT_SCALE 1.0f
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 StructuredBuffer<GeometryInfo> g_GeometryInfo       : register(t1);
 StructuredBuffer<Material> g_MaterialTable          : register(t2);

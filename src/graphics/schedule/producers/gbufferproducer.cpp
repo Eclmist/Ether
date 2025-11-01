@@ -29,17 +29,15 @@
 #include "graphics/shaders/common/instanceparams.h"
 
 DEFINE_GFX_PA(GBufferProducer)
-DEFINE_GFX_DS(GBufferDepthStencil)
-DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   Metalness]
-DEFINE_GFX_RT(GBufferTexture1) // [Position.x, Position.y, Position.z, Roughness]
-DEFINE_GFX_RT(GBufferTexture2) // [Normal.x,   Normal.y,   Velocity.x, Velocity.y]
-DEFINE_GFX_RT(GBufferTexture3) // [Emissive.x, Emissive.y, Emissive.z, MaterialID]
+DEFINE_GFX_DS(SceneDepth)
+DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   MaterialID]
+DEFINE_GFX_RT(GBufferTexture1) // [Normal.x,   Normal.y,   Velocity.x, Velocity.y]
+DEFINE_GFX_RT(GBufferTexture2) // [Emissive.x, Emissive.y, Emissive.z, Roughness/Metalness]
 
-DEFINE_GFX_SR(GBufferDepthStencil)
+DEFINE_GFX_SR(SceneDepth)
 DEFINE_GFX_SR(GBufferTexture0)
 DEFINE_GFX_SR(GBufferTexture1)
 DEFINE_GFX_SR(GBufferTexture2)
-DEFINE_GFX_SR(GBufferTexture3)
 
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
@@ -60,16 +58,14 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    schedule.NewDS(ACCESS_GFX_DS(GBufferDepthStencil), resolution.x, resolution.y, DepthBufferDsvFormat);
+    schedule.NewDS(ACCESS_GFX_DS(SceneDepth), resolution.x, resolution.y, DepthBufferDsvFormat);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm);
-    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float);
+    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
     schedule.NewRT(ACCESS_GFX_RT(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
-    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferDepthStencil), resolution.x, resolution.y, DepthBufferSrvFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(SceneDepth), resolution.x, resolution.y, DepthBufferSrvFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R32G32B32A32Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture3), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
@@ -103,12 +99,10 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture0)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture1)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture2)), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture3)), RhiResourceState::RenderTarget);
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture0));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture1));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture2));
-    ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture3));
-    ctx.ClearDepthStencil(*ACCESS_GFX_DS(GBufferDepthStencil), 1.0);
+    ctx.ClearDepthStencil(*ACCESS_GFX_DS(SceneDepth), 1.0);
     ctx.PopMarker();
 
     ctx.PushMarker("Draw Geometry");
@@ -126,10 +120,9 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
 
     RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0),
                                    *ACCESS_GFX_RT(GBufferTexture1),
-                                   *ACCESS_GFX_RT(GBufferTexture2),
-                                   *ACCESS_GFX_RT(GBufferTexture3)};
+                                   *ACCESS_GFX_RT(GBufferTexture2)};
     
-    ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(GBufferDepthStencil)));
+    ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Actually do batching..? (TODO)
     for (const VisualBatch& batch : batches)
@@ -188,7 +181,6 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
 void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
 {
     RhiFormat formats[] = { RhiFormat::R8G8B8A8Unorm,
-                            RhiFormat::R32G32B32A32Float,
                             RhiFormat::R16G16B16A16Float,
                             RhiFormat::R16G16B16A16Float, };
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();

@@ -37,7 +37,7 @@ void RayGeneration()
     sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, screenSize / (float)DOWNSAMPLE_FACTOR);
 #endif
 
-    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
     GIReservoir finalReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
     DeviceMemoryBarrier();
 

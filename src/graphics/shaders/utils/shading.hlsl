@@ -19,6 +19,7 @@
 
 #include "common/vertexcommon.h"
 #include "common/material.h"
+#include "utils/fullscreenhelpers.hlsl"
 
 #define EMISSION_SCALE 10000.0f
 
@@ -49,23 +50,22 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     Texture2D gbufferA,
     Texture2D gbufferB,
     Texture2D gbufferC,
-    Texture2D gbufferD
-)
+    Texture2D<float> sceneDepth)
 {
     const float4 gbuffer0 = gbufferA.Load(int3(screenCoord, 0));
     const float4 gbuffer1 = gbufferB.Load(int3(screenCoord, 0));
     const float4 gbuffer2 = gbufferC.Load(int3(screenCoord, 0));
-    const float4 gbuffer3 = gbufferD.Load(int3(screenCoord, 0));
+    const float depth = sceneDepth.Load(int3(screenCoord, 0)).r;
 
     ShadingSurface surface;
-    surface.m_Position = gbuffer1.xyz;
-    surface.m_Normal = DecodeNormals(gbuffer2.xy);
+    surface.m_Position = ScreenToWorldSpace(screenCoord, depth);
+    surface.m_Normal = DecodeNormals(gbuffer1.xy);
     surface.m_Albedo = gbuffer0.rgb;
-    surface.m_Emission = gbuffer3.rgb;
-    surface.m_Roughness = gbuffer1.w;
-    surface.m_Metalness = gbuffer0.w;
-    surface.m_Velocity = gbuffer2.zw;
-    surface.m_MaterialID = gbuffer3.w;
+    surface.m_Emission = gbuffer2.rgb;
+    surface.m_Roughness = DecodeFP16(gbuffer2.w).x;
+    surface.m_Metalness = DecodeFP16(gbuffer2.w).y;
+    surface.m_Velocity = gbuffer1.zw;
+    surface.m_MaterialID = floor(gbuffer0.w * 255.0f);
     return surface;
 }
 

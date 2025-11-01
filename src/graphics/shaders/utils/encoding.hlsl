@@ -50,3 +50,14 @@ float3 DecodeNormals(float2 f)
     n.xy += n.xy >= 0.0 ? -t : t;
     return normalize(n);
 }
+
+// Encodes two [0,1] floats into a single FP16 float, sacrificing some precision
+float EncodeFP16(float a, float b)
+{
+    return floor(a * 255.0f) + clamp(b, 0.0f, 0.999f);
+}
+
+float2 DecodeFP16(float fp16)
+{
+    return float2(floor(fp16) / 255.0f, frac(fp16));
+}

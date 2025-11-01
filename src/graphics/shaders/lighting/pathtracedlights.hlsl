@@ -25,7 +25,7 @@ Texture2D<float4> g_AccumulationTexture             : register(t3);
 Texture2D<float4> g_GBufferA                        : register(t4);
 Texture2D<float4> g_GBufferB                        : register(t5);
 Texture2D<float4> g_GBufferC                        : register(t6);
-Texture2D<float4> g_GBufferD                        : register(t7);
+Texture2D<float> g_SceneDepth                       : register(t7);
 RWTexture2D<float4> g_LightingOutput                : register(u0);
 RWTexture2D<float4> g_IndirectOutput                : register(u1);
 
@@ -35,7 +35,7 @@ void RayGeneration()
     const uint2 sampleCoords = DispatchRaysIndex().xy;
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = sampleCoords.y * bufferSize.x + sampleCoords.x;
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(sampleCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(sampleCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
 
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float2 uv = (float2)sampleCoords.xy / bufferSize.xy + rcp((float2) bufferSize.xy) / 2.0;

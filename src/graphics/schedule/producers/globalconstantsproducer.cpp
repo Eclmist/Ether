@@ -60,9 +60,9 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_ProjectionMatrixInv = renderData.m_ProjectionMatrix.Inversed();
     globalConstants->m_ProjectionMatrixPrev = projMatrixPrev;
     globalConstants->m_ViewProjectionMatrix = globalConstants->m_ProjectionMatrix * globalConstants->m_ViewMatrix;
-    globalConstants->m_ViewProjectionMatrixInv = globalConstants->m_ViewMatrixInv * globalConstants->m_ProjectionMatrixInv;
+    globalConstants->m_ViewProjectionMatrixInv = globalConstants->m_ViewProjectionMatrix.Inversed();
     globalConstants->m_ViewProjectionMatrixPrev = globalConstants->m_ProjectionMatrixPrev * globalConstants->m_ViewMatrixPrev;
-    globalConstants->m_CameraClipNearFar = renderData.m_CameraClipNearFar;
+    globalConstants->m_CameraClipNearFar = ethVector2(0.1, 1000.0f);
     globalConstants->m_CameraDirection = renderData.m_CameraDirection.Resize<4>();
     globalConstants->m_CameraPosition = renderData.m_CameraPosition.Resize<4>();
     globalConstants->m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;

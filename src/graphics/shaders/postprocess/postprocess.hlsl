@@ -18,9 +18,7 @@
 */
 
 #include "common/globalconstants.h"
-#include "utils/fullscreenhelpers.hlsl"
 
-ConstantBuffer<GlobalConstants> g_GlobalConstants   : register(b0);
 Texture2D<float4> g_SourceTexture                   : register(t0);
 RWTexture2D<float4> g_DestinationTexture            : register(u0);
 

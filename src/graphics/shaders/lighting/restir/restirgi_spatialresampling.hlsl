@@ -74,7 +74,7 @@ void CS_Main(
     if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
         return;
 
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
     const uint numSamples = initialReservoir.M < 5 ? NUM_SPATIAL_SAMPLES * 2.0f : NUM_SPATIAL_SAMPLES;
@@ -91,7 +91,7 @@ void CS_Main(
         const int2 neighbourScreenCoords = screenCoords + offset;
         const uint neighbourSampleIdx = GetSampleIndexFromScreenCoords(neighbourScreenCoords, screenSize);
 
-        const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_GBufferD);
+        const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
 
         if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenSize))
             continue;
