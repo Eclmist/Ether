@@ -67,7 +67,6 @@ public:
 
     static inline bool IsInitialized() { return Instance().m_IsInitialized; }
 
-
 public:
     static void Main();
     static void FlushGpu();

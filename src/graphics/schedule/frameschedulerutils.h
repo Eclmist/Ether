@@ -89,6 +89,9 @@ public:
     inline const char* GetSharedResourceName() const { return m_SharedResourceName; }
 
 public:
+    inline void Release() { m_Resource.reset(); }
+
+public:
     inline void Create() { if (m_Resource == nullptr) m_Resource = std::make_shared<T>(); }
     inline void Create(T* source) { if (m_Resource == nullptr) m_Resource = std::shared_ptr<T>(source); }
 
