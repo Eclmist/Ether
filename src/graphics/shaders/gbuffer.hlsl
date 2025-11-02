@@ -110,6 +110,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     geometricSurface.m_Position = ClipToWorldSpace(IN.ClipPos);
     geometricSurface.m_Normal = IN.Normal;
     geometricSurface.m_Tangent = IN.Tangent;
+    geometricSurface.m_Color = IN.Color;
     geometricSurface.m_TexCoord = IN.TexCoord;
 
     const ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, -1);

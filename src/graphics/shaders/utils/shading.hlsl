@@ -29,6 +29,7 @@ struct GeometricSurface
     float3 m_Normal;
     float3 m_Tangent;
     float2 m_TexCoord;
+    float4 m_Color;
 };
 
 struct ShadingSurface
@@ -73,21 +74,24 @@ ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, 
 {
     sampler linearSampler = SamplerDescriptorHeap[samplerIndex];
 
-    float4 albedo = material.m_BaseColor;
+    float3 baseColor = geometricSurface.m_Color.rgb * material.m_BaseColor.rgb;
     float3 emission = material.m_EmissiveColor.rgb * EMISSION_SCALE;
     float3 normal = geometricSurface.m_Normal;
     float roughness = 0.5f;
     float metalness = 0.0f;
-    float opacity = 1.0f;
+    float opacity = material.m_BaseColor.a; // ignore vertex color alpha for now (TODO)
 
     if (material.m_AlbedoTextureIndex != 0)
     {
         Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
-
+        float4 albedo;
         if (mipLevel != -1)
-            albedo *= albedoTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel);
+            albedo = albedoTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel);
         else
-            albedo *= albedoTex.Sample(linearSampler, geometricSurface.m_TexCoord);
+            albedo = albedoTex.Sample(linearSampler, geometricSurface.m_TexCoord);
+
+        baseColor *= albedo.rgb;
+        opacity *= albedo.a;
     }
     if (material.m_NormalTextureIndex != 0)
     {
@@ -134,11 +138,11 @@ ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, 
     ShadingSurface shadingSurface;
     shadingSurface.m_Position = geometricSurface.m_Position;
     shadingSurface.m_Normal = normal;
-    shadingSurface.m_Albedo = albedo.rgb;
+    shadingSurface.m_Albedo = baseColor.rgb;
     shadingSurface.m_Roughness = roughness;
     shadingSurface.m_Metalness = metalness;
     shadingSurface.m_Emission = emission;
-    shadingSurface.m_Opacity = albedo.a;
+    shadingSurface.m_Opacity = opacity;
     shadingSurface.m_Velocity = 0.0f;
     shadingSurface.m_MaterialID = material.m_MaterialId;
 
@@ -151,6 +155,7 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
     geometricSurface.m_Position = hitSurface.m_Position;
     geometricSurface.m_Normal = hitSurface.m_Normal;
     geometricSurface.m_Tangent = hitSurface.m_Tangent;
+    geometricSurface.m_Color = hitSurface.m_Color;
     geometricSurface.m_TexCoord = hitSurface.m_TexCoord;
 
     ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, samplerIndex, mipLevel);

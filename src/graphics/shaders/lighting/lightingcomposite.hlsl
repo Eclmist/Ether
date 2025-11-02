@@ -59,14 +59,14 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBuffer0, g_GBuffer1, g_GBuffer2, g_SceneDepth);
 
     // Hack to get sky which is basically nothing drawn in gbuffer
-    if (depth == 1)
+    if (depth >= 1)
         return sky;
 
     // Debug: 
-    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-    //    return float4(albedo) * 1000;
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(surface.m_Position, 1.0f);
+        return float4(surface.m_Albedo, 1.0f);
+    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    //    return float4(surface.m_Position, 1.0f);
 
     float4 finalColor = lighting;
     return finalColor;
