@@ -26,10 +26,12 @@ Ether is a 3D renderer written with DirectX 12 and C++, meant to be used as a pl
 Ether is open-sourced, licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ## Features
-* Physically Based Rendering - UE4 Microfacet BRDF, Image Based Lighting
-* Raytracing with DXR (AO, shadows)
+* Physically Based Rendering
+* Raytraced lighting / GI (ReSTIR GI)
+* Reference Pathtracer
 * Bindless Textures
-* Post Processing (TAA, Bloom)
+* Post Processing (TAA, Bloom, DOF)
+* Skeletal Mesh / Animations
 * GPU Resource/Descriptor Management
 * Shader Hot Reloading 
 * Asset Pipeline /w Tool Integration ([Matcha Editor](https://github.com/Eclmist/Matcha-Editor))
