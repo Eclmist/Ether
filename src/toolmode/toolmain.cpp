@@ -65,9 +65,8 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const std::vector<std::string>& m_FlatternedImportPaths = GetCommandLineOptions().GetFlatternedImportPaths();
-    const bool hasImports = !m_ImportPaths.empty() || !m_FlatternedImportPaths.empty();
 
-    if (hasImports)
+    if (GetCommandLineOptions().HasImports())
     {
         const float meshScale = GetCommandLineOptions().GetImportScale();
         const std::string exportWorldName = GetCommandLineOptions().GetExportName();

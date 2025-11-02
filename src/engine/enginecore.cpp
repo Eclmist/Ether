@@ -27,7 +27,12 @@ void Ether::EngineCore::Initialize()
     m_NotificationTray = std::make_unique<Win32::Win32NotificationTray>();
     m_ActiveWorld = std::make_unique<World>();
 
-    InitializeGraphicsLayer();
+#if ETH_TOOLMODE
+    if (m_CommandLineOptions.ShouldInitializeRenderer())
+#endif
+    {
+        InitializeGraphicsLayer();
+    }
 
     m_IsInitialized = true;
 }
@@ -66,7 +71,9 @@ void Ether::EngineCore::Shutdown()
     m_ActiveWorld.reset();
     m_NotificationTray.reset();
     m_MainWindow.reset();
-    Graphics::GraphicCore::Instance().Shutdown();
+
+    if (Graphics::GraphicCore::HasInstance())
+        Graphics::GraphicCore::Instance().Shutdown();
 
     m_IsInitialized = false;
 }
