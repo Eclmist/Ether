@@ -44,7 +44,6 @@ struct RayPayload
 {
     bool m_Hit;
     bool m_IsShadowRay;
-    float m_Throughput;
     uint32_t m_Depth;
     ethVector3 m_Radiance;
     ethVector3 m_HitPosition;

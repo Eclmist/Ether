@@ -157,7 +157,6 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
     RayPayload payload;
     payload.m_IsShadowRay = true;
     payload.m_Depth = 1;
-    payload.m_Throughput = 1;
     payload.m_Radiance = 0;
 
     RayDesc ray;
@@ -179,7 +178,6 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
-    payload.m_Throughput = 1;
 
     RayDesc ray;
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
@@ -225,7 +223,7 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     payload.m_Hit = true;
     payload.m_HitPosition = surface.m_Position;
     payload.m_HitNormal = surface.m_Normal;
-    payload.m_Depth = max(0, payload.m_Depth - 1);
+    payload.m_Depth = max(0, (int)payload.m_Depth - 1);
     payload.m_Radiance = 0;
 
     if (payload.m_Depth <= 0)
@@ -261,7 +259,6 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     }
 
     payload.m_Radiance = surface.m_Emission + direct + indirect;
-    payload.m_Radiance *= payload.m_Throughput;
 }
 
 [shader("anyhit")]
@@ -271,24 +268,21 @@ void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
-    if (payload.m_Depth <= 0)
-        return;
- 
     // Early out if not masked
     //if (!mat.IsMasked()) (TODO)
     //    return;
 
-    ShadingSurface surface;
-
-    if (payload.m_IsShadowRay)
-        surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 0);
-    else
-        surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 4);
-
-    
-    if (surface.m_Opacity < 1.0f)
+    float opacity = material.m_BaseColor.a; // ignore vertex color alpha for now (TODO)
+    if (material.m_AlbedoTextureIndex != 0)
     {
-        payload.m_Throughput *= surface.m_Opacity;
+        sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
+        float4 gatherOpacity = albedoTex.GatherAlpha(linearSampler, vertex.m_TexCoord);
+        opacity *= (gatherOpacity.x + gatherOpacity.y + gatherOpacity.z + gatherOpacity.w) / 4.0f;
+    }
+
+    if (opacity < 1.0f)
+    {
         IgnoreHit();
     }
 }
