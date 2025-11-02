@@ -41,8 +41,7 @@ void Ether::Graphics::GraphicRenderer::WaitForPresent()
 void Ether::Graphics::GraphicRenderer::Render()
 {
     ETH_MARKER_EVENT("Renderer - Render");
-    static GraphicContext gfxContext("GraphicRenderer - Single Threaded Render Context");
-
+    GraphicContext gfxContext("GraphicRenderer - Single Threaded Render Context");
     m_Scheduler.BuildSchedule();
     m_Scheduler.RenderSingleThreaded(gfxContext);
 }

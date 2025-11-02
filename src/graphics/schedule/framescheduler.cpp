@@ -70,6 +70,18 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 
 Ether::Graphics::FrameScheduler::~FrameScheduler()
 {
+    ACCESS_GFX_PA(FinalCompositeProducer).Release();
+    ACCESS_GFX_PA(GBufferProducer).Release();
+    ACCESS_GFX_PA(GlobalConstantsProducer).Release();
+    ACCESS_GFX_PA(LightingCompositeProducer).Release();
+    ACCESS_GFX_PA(MaterialTableProducer).Release();
+    ACCESS_GFX_PA(PostFxSourceProducer).Release();
+    ACCESS_GFX_PA(ProceduralSkyProducer).Release();
+    ACCESS_GFX_PA(ReferenceLightingProducer).Release();
+    ACCESS_GFX_PA(LightingProducer).Release();
+    ACCESS_GFX_PA(BloomProducer).Release();
+    ACCESS_GFX_PA(TemporalAAProducer).Release();
+    ACCESS_GFX_PA(DepthOfFieldProducer).Release();
 }
 
 void Ether::Graphics::FrameScheduler::Register(GFX_STATIC::GFX_PA_TYPE& pass, GraphicProducer* producer)

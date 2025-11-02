@@ -116,11 +116,11 @@ void Ether::Graphics::Dx12Module::InitializeDebugLayer()
 void Ether::Graphics::Dx12Module::ReportLiveObjects()
 {
 #if defined(_DEBUG)
-    IDXGIDebug1* pDebug = NULL;
-    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
+    IDXGIDebug1* dxgiDebug;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
     {
-        pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
-        pDebug->Release();
+        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
+        dxgiDebug->Release();
     }
 #endif
 }

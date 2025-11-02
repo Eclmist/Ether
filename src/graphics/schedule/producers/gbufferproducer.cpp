@@ -99,6 +99,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture0)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture1)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture2)), RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_DS(SceneDepth)), RhiResourceState::DepthWrite);
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture0));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture1));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture2));
