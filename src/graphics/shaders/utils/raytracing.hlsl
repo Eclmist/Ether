@@ -55,6 +55,7 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
     vtx.m_Position = BarycentricLerp(v0.m_Position, v1.m_Position, v2.m_Position, barycentrics);
     vtx.m_Normal = normalize(BarycentricLerp(v0.m_Normal, v1.m_Normal, v2.m_Normal, barycentrics));
     vtx.m_Tangent = normalize(BarycentricLerp(v0.m_Tangent, v1.m_Tangent, v2.m_Tangent, barycentrics));
+    vtx.m_Color = BarycentricLerp(v0.m_Color, v1.m_Color, v2.m_Color, barycentrics);
     vtx.m_TexCoord = BarycentricLerp(v0.m_TexCoord, v1.m_TexCoord, v2.m_TexCoord, barycentrics);
 
     return vtx;
@@ -138,9 +139,8 @@ float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, mipLevel);
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
     const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
-    const float groundFactor = saturate((wi.y + 1.0f) / 2);
 
-    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor * groundFactor;
+    const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
 
     return (exposure * hdri * color).xyz;
 }

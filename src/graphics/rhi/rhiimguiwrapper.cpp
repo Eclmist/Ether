@@ -119,13 +119,13 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 {
                     const char* items[] = { "Pathtracer", "ReSTIR GI" };
                     ImGui::Combo("Raytracing Mode", &gfxConfig.m_RaytracingMode, items, IM_ARRAYSIZE(items));
-                }
 
-                if (gfxConfig.m_RaytracingMode == RaytracingMode::ReSTIR)
-                {
-                    ImGui::Checkbox("Temporal Resampling", &gfxConfig.m_ReSTIRGIConfig.m_TemporalResampling);
-                    ImGui::Checkbox("Spatial Resampling", &gfxConfig.m_ReSTIRGIConfig.m_SpatialResampling);
-                    ImGui::Checkbox("Spatial Feedback", &gfxConfig.m_ReSTIRGIConfig.m_SpatialFeedback);
+                    if (gfxConfig.m_RaytracingMode == RaytracingMode::ReSTIR)
+                    {
+                        ImGui::Checkbox("Temporal Resampling", &gfxConfig.m_ReSTIRGIConfig.m_TemporalResampling);
+                        ImGui::Checkbox("Spatial Resampling", &gfxConfig.m_ReSTIRGIConfig.m_SpatialResampling);
+                        ImGui::Checkbox("Spatial Feedback", &gfxConfig.m_ReSTIRGIConfig.m_SpatialFeedback);
+                    }
                 }
 
                 ImGui::TreePop();

@@ -28,9 +28,6 @@ bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurfac
     if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.9f)
         return false;
 
-    if ((abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / prevSurface.m_VisibleDepth) > 0.2f)
-        return false;
-
     return true;
 }
 

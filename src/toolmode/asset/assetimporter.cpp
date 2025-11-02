@@ -303,21 +303,34 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
         AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
 
         if (assimpMesh->HasVertexColors(0))
+        {
             packedVertices[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
+        }
+        else
+        {
+            packedVertices[j].m_Attributes.m_Color = 1.0f;
+        }
 
         if (assimpMesh->HasPositions())
+        {
             packedVertices[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
+            packedVertices[j].m_Attributes.m_PrevPosition = packedVertices[j].m_Attributes.m_Position;
+        }
 
         if (assimpMesh->HasNormals())
+        {
             packedVertices[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
+        }
 
         if (assimpMesh->HasTangentsAndBitangents())
+        {
             packedVertices[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
+        }
 
         if (assimpMesh->HasTextureCoords(0))
+        {
             packedVertices[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
-
-        packedVertices[j].m_Attributes.m_PrevPosition = packedVertices[j].m_Attributes.m_Position;
+        }
     }
 
     const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
@@ -364,21 +377,34 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
         AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
 
         if (assimpMesh->HasVertexColors(0))
-            packedSkinnedVertices[j].m_Attributes.m_Color = ToEthVector4(*assimpMesh->mColors[j]);
+        {
+            packedSkinnedVertices[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
+        }
+        else
+        {
+            packedSkinnedVertices[j].m_Attributes.m_Color = 1.0f;
+        }
 
         if (assimpMesh->HasPositions())
+        {
             packedSkinnedVertices[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
+            packedSkinnedVertices[j].m_Attributes.m_PrevPosition = packedSkinnedVertices[j].m_Attributes.m_Position;
+        }
 
         if (assimpMesh->HasNormals())
+        {
             packedSkinnedVertices[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
+        }
 
         if (assimpMesh->HasTangentsAndBitangents())
+        {
             packedSkinnedVertices[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
+        }
 
         if (assimpMesh->HasTextureCoords(0))
+        {
             packedSkinnedVertices[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
-
-        packedSkinnedVertices[j].m_Attributes.m_PrevPosition = packedSkinnedVertices[j].m_Attributes.m_Position;
+        }
     }
 
     // Process Bones
