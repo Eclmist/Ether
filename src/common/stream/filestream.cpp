@@ -100,19 +100,31 @@ Ether::IStream& Ether::IFileStream::operator>>(bool& value)
     return *this;
 }
 
-Ether::IStream& Ether::IFileStream::operator>>(ethVector2& value)
+Ether::IStream& Ether::IFileStream::operator>>(ethVectorData2& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IFileStream::operator>>(ethVector3& value)
+Ether::IStream& Ether::IFileStream::operator>>(ethVectorData3& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IFileStream::operator>>(ethVector4& value)
+Ether::IStream& Ether::IFileStream::operator>>(ethVectorData4& value)
+{
+    ReadBytes(&value, sizeof(value));
+    return *this;
+}
+
+Ether::IStream& Ether::IFileStream::operator>>(ethMatrixData3& value)
+{
+    ReadBytes(&value, sizeof(value));
+    return *this;
+}
+
+Ether::IStream& Ether::IFileStream::operator>>(ethMatrixData4& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
@@ -198,19 +210,31 @@ Ether::OStream& Ether::OFileStream::operator<<(const bool value)
     return *this;
 }
 
-Ether::OStream& Ether::OFileStream::operator<<(const ethVector2& value)
+Ether::OStream& Ether::OFileStream::operator<<(const ethVectorData2& value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OFileStream::operator<<(const ethVector3& value)
+Ether::OStream& Ether::OFileStream::operator<<(const ethVectorData3& value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OFileStream::operator<<(const ethVector4& value)
+Ether::OStream& Ether::OFileStream::operator<<(const ethVectorData4& value)
+{
+    WriteBytes(&value, sizeof(value));
+    return *this;
+}
+
+Ether::OStream& Ether::OFileStream::operator<<(const ethMatrixData3& value)
+{
+    WriteBytes(&value, sizeof(value));
+    return *this;
+}
+
+Ether::OStream& Ether::OFileStream::operator<<(const ethMatrixData4& value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;

@@ -41,9 +41,11 @@ public:
     IStream& operator>>(std::string& v) override final;
     IStream& operator>>(StringID& v) override final;
     IStream& operator>>(bool& v) override final;
-    IStream& operator>>(ethVector2& v) override final;
-    IStream& operator>>(ethVector3& v) override final;
-    IStream& operator>>(ethVector4& v) override final;
+    IStream& operator>>(ethVectorData2& v) override final;
+    IStream& operator>>(ethVectorData3& v) override final;
+    IStream& operator>>(ethVectorData4& v) override final;
+    IStream& operator>>(ethMatrixData3& v) override final;
+    IStream& operator>>(ethMatrixData4& v) override final;
 
     void ReadBytes(void* dest, uint32_t numBytes) override final;
 
@@ -69,9 +71,11 @@ public:
     OStream& operator<<(const std::string& v) override final;
     OStream& operator<<(const StringID& v) override final;
     OStream& operator<<(const bool v) override final;
-    OStream& operator<<(const ethVector2& v) override final;
-    OStream& operator<<(const ethVector3& v) override final;
-    OStream& operator<<(const ethVector4& v) override final;
+    OStream& operator<<(const ethVectorData2& v) override final;
+    OStream& operator<<(const ethVectorData3& v) override final;
+    OStream& operator<<(const ethVectorData4& v) override final;
+    OStream& operator<<(const ethMatrixData3& v) override final;
+    OStream& operator<<(const ethMatrixData4& v) override final;
 
     void WriteBytes(const void* src, uint32_t numBytes) override final;
 

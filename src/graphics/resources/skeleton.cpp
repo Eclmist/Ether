@@ -50,10 +50,7 @@ void Ether::Graphics::SkeletonBone::Serialize(OStream& ostream) const
 
     ostream << m_Name;
     ostream << m_ParentIndex;
-
-    // Lazy to add a matrix overload for now (todo)
-    for (uint32_t i = 0; i < 16; ++i)
-        ostream << m_InverseBindMatrix.m_Data[i];
+    ostream << m_InverseBindMatrix;
 }
 
 void Ether::Graphics::Skeleton::Serialize(OStream& ostream) const
@@ -73,10 +70,7 @@ void Ether::Graphics::SkeletonBone::Deserialize(IStream& istream)
 
     istream >> m_Name;
     istream >> m_ParentIndex;
-
-    // Lazy to add a matrix overload for now (todo)
-    for (uint32_t i = 0; i < 16; ++i)
-        istream >> m_InverseBindMatrix.m_Data[i];
+    istream >> m_InverseBindMatrix;
 }
 
 void Ether::Graphics::SkeletonPose::Serialize(OStream& ostream) const
@@ -86,18 +80,13 @@ void Ether::Graphics::SkeletonPose::Serialize(OStream& ostream) const
 
     ostream << numBones;
 
-    // Lazy to add a matrix overload for now (todo)
     for (uint32_t i = 0; i < numBones; ++i)
     {
-        for (uint32_t j = 0; j < 16; ++j)
-            ostream << m_LocalBoneTransform[i].m_Data[j];
-
-        for (uint32_t j = 0; j < 16; ++j)
-            ostream << m_GlobalBoneTransform[i].m_Data[j];
+        ostream << m_LocalBoneTransform[i];
+        ostream << m_GlobalBoneTransform[i];
     }
 
-    for (uint32_t j = 0; j < 16; ++j)
-        ostream << m_GlobalInverseTransform.m_Data[j];
+    ostream << m_GlobalInverseTransform;
 }
 
 void Ether::Graphics::SkeletonPose::Deserialize(IStream& istream)
@@ -108,18 +97,13 @@ void Ether::Graphics::SkeletonPose::Deserialize(IStream& istream)
     m_LocalBoneTransform.resize(numBones);
     m_GlobalBoneTransform.resize(numBones);
 
-    // Lazy to add a matrix overload for now (todo)
     for (uint32_t i = 0; i < numBones; ++i)
     {
-        for (uint32_t j = 0; j < 16; ++j)
-            istream >> m_LocalBoneTransform[i].m_Data[j];
-
-        for (uint32_t j = 0; j < 16; ++j)
-            istream >> m_GlobalBoneTransform[i].m_Data[j];
+        istream >> m_LocalBoneTransform[i];
+        istream >> m_GlobalBoneTransform[i];
     }
 
-    for (uint32_t j = 0; j < 16; ++j)
-        istream >> m_GlobalInverseTransform.m_Data[j];
+    istream >> m_GlobalInverseTransform;
 }
 
 void Ether::Graphics::Skeleton::Deserialize(IStream& istream)
@@ -141,111 +125,6 @@ void Ether::Graphics::Skeleton::Deserialize(IStream& istream)
 Ether::Graphics::Skeleton::Skeleton()
     : Serializable(SkeletonVersion, ETH_CLASS_ID_SKELETON)
 {
-}
-
-// BIBG BIG BIG BIG HACK!!!
-// SMath does not have quaternion support yet, so we're gonna do it here!! (rtcamp)
-Ether::ethVector4 QuaternionSlerp(const Ether::ethVector4& q1, const Ether::ethVector4& q2, float t)
-{
-    float cosTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
-
-    Ether::ethVector4 q2Copy = q2;
-    if (cosTheta < 0.0f)
-    {
-        cosTheta = -cosTheta;
-        q2Copy.x = -q2Copy.x;
-        q2Copy.y = -q2Copy.y;
-        q2Copy.z = -q2Copy.z;
-        q2Copy.w = -q2Copy.w;
-    }
-
-    const float EPSILON = 1e-6f;
-    if (cosTheta > 1.0f - EPSILON)
-    {
-        // Lerp
-        Ether::ethVector4 result;
-        result.x = q1.x + t * (q2Copy.x - q1.x);
-        result.y = q1.y + t * (q2Copy.y - q1.y);
-        result.z = q1.z + t * (q2Copy.z - q1.z);
-        result.w = q1.w + t * (q2Copy.w - q1.w);
-
-        // Normalize
-        float len = std::sqrt(result.x * result.x + result.y * result.y + result.z * result.z + result.w * result.w);
-        result.x /= len;
-        result.y /= len;
-        result.z /= len;
-        result.w /= len;
-        return result;
-    }
-
-    // Standard slerp
-    float angle = std::acos(cosTheta);
-    float sinAngle = std::sqrt(1.0f - cosTheta * cosTheta);
-
-    float a = std::sin((1.0f - t) * angle) / sinAngle;
-    float b = std::sin(t * angle) / sinAngle;
-
-    Ether::ethVector4 result;
-    result.x = a * q1.x + b * q2Copy.x;
-    result.y = a * q1.y + b * q2Copy.y;
-    result.z = a * q1.z + b * q2Copy.z;
-    result.w = a * q1.w + b * q2Copy.w;
-    return result;
-}
-
-Ether::ethVector4 QuaternionNormalize(const Ether::ethVector4& q)
-{
-    float len = std::sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
-    if (len > 0.0f)
-    {
-        float invLen = 1.0f / len;
-        return { q.x * invLen, q.y * invLen, q.z * invLen, q.w * invLen };
-    }
-    // Return identity quaternion if zero length
-    return { 0.0f, 0.0f, 0.0f, 1.0f };
-}
-
-Ether::ethMatrix4x4 QuaternionToMatrixRowMajor(const Ether::ethVector4& q)
-{
-    float x = q.x, y = q.y, z = q.z, w = q.w;
-
-    float x2 = x + x;
-    float y2 = y + y;
-    float z2 = z + z;
-
-    float xx = x * x2;
-    float yy = y * y2;
-    float zz = z * z2;
-    float xy = x * y2;
-    float xz = x * z2;
-    float yz = y * z2;
-    float wx = w * x2;
-    float wy = w * y2;
-    float wz = w * z2;
-
-    // row-major
-    Ether::ethMatrix4x4 out;
-    out.m_Data2D[0][0] = 1.0f - (yy + zz);
-    out.m_Data2D[0][1] = xy - wz;
-    out.m_Data2D[0][2] = xz + wy;
-    out.m_Data2D[0][3] = 0.0f;
-
-    out.m_Data2D[1][0] = xy + wz;
-    out.m_Data2D[1][1] = 1.0f - (xx + zz);
-    out.m_Data2D[1][2] = yz - wx;
-    out.m_Data2D[1][3] = 0.0f;
-
-    out.m_Data2D[2][0] = xz - wy;
-    out.m_Data2D[2][1] = yz + wx;
-    out.m_Data2D[2][2] = 1.0f - (xx + yy);
-    out.m_Data2D[2][3] = 0.0f;
-
-    out.m_Data2D[3][0] = 0.0f;
-    out.m_Data2D[3][1] = 0.0f;
-    out.m_Data2D[3][2] = 0.0f;
-    out.m_Data2D[3][3] = 1.0f;
-
-    return out;
 }
 
 void Ether::Graphics::AnimationClip::BoneKeyframes::Serialize(OStream& ostream) const
@@ -366,7 +245,7 @@ Ether::ethVector3 Ether::Graphics::AnimationClip::BoneKeyframes::GetInterpolated
 
 }
 
-Ether::ethVector4 Ether::Graphics::AnimationClip::BoneKeyframes::GetInterpolatedRotation(float animTick) const
+Ether::ethQuaternion Ether::Graphics::AnimationClip::BoneKeyframes::GetInterpolatedRotation(float animTick) const
 {
     if (m_RotationKeyframes.size() == 1)
         return m_RotationKeyframes[0].second;
@@ -375,15 +254,13 @@ Ether::ethVector4 Ether::Graphics::AnimationClip::BoneKeyframes::GetInterpolated
     const uint32_t idx1 = idx0 + 1;
     const float t0 = m_RotationKeyframes[idx0].first;
     const float t1 = m_RotationKeyframes[idx1].first;
-    const ethVector4 rot0 = m_RotationKeyframes[idx0].second;
-    const ethVector4 rot1 = m_RotationKeyframes[idx1].second;
+    const ethQuaternion rot0 = m_RotationKeyframes[idx0].second;
+    const ethQuaternion rot1 = m_RotationKeyframes[idx1].second;
 
     const float dt = t1 - t0;
     const float a = (animTick - t0) / dt;
-    ethVector4 rotOut = QuaternionSlerp(rot0, rot1, a);
-    rotOut = QuaternionNormalize(rotOut);
 
-    return rotOut;
+    return ethQuaternion::Slerp(rot0, rot1, a).Normalized();
 }
 
 Ether::ethVector3 Ether::Graphics::AnimationClip::BoneKeyframes::GetInterpolatedScale(float animTick) const
@@ -445,7 +322,7 @@ Ether::Graphics::SkeletonPose Ether::Graphics::Skeleton::CalculatePoseFromAnimat
             ethVector3 interpolatedScale = keyframes.GetInterpolatedScale(animTimeTicks);
 
             ethMatrix4x4 translation = Transform::GetTranslationMatrix(interpolatedPosition);
-            ethMatrix4x4 rotation = QuaternionToMatrixRowMajor(interpolatedRotation);
+            ethMatrix4x4 rotation = Transform::GetRotationMatrix(interpolatedRotation);
             ethMatrix4x4 scale = Transform::GetScaleMatrix(interpolatedScale);
 
             localTransformation = translation * rotation * scale;
