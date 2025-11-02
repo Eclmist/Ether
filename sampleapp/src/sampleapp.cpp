@@ -144,7 +144,7 @@ void SampleApp::UpdateCamera() const
     if (Input::GetKey((KeyCode)Win32::KeyCode::Q))
         m_CameraTransform->m_Translation.y -= Time::GetDeltaTime() * moveSpeed;
 
-    ethMatrix4x4 rotation = Transform::GetRotationMatrix(m_CameraTransform->m_Rotation);
+    ethMatrix4x4 rotation = Transform::GetRotationMatrix(ethQuaternion::FromEuler(m_CameraTransform->m_Rotation));
     ethVector3 forward = (rotation * ethVector4(0, 0, 1, 0)).Resize<3>().Normalized();
     ethVector3 upVec = { 0, 1, 0 };
     ethVector3 rightVec = ethVector3::Cross(upVec, forward).Normalized();

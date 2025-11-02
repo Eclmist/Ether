@@ -49,7 +49,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
         if (!camera.m_Enabled)
             continue;
 
-        ethMatrix4x4 rotationInv = Transform::GetRotationMatrix(transform.m_Rotation).Inversed();
+        ethMatrix4x4 rotationInv = Transform::GetRotationMatrix(ethQuaternion::FromEuler(transform.m_Rotation)).Inversed();
         ethMatrix4x4 translationInv = Transform::GetTranslationMatrix(-transform.m_Translation);
         ethMatrix4x4 viewMatrix = rotationInv * translationInv;
 
@@ -81,7 +81,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
             projectionMatrix.m_23 += cameraJitter.y;
         }
 
-        ethMatrix4x4 rotation = Transform::GetRotationMatrix(transform.m_Rotation);
+        ethMatrix4x4 rotation = Transform::GetRotationMatrix(ethQuaternion::FromEuler(transform.m_Rotation));
         ethVector4 forward = rotation * ethVector4(0, 0, 1, 0);
 
         Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();

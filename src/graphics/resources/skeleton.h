@@ -67,11 +67,11 @@ public:
         void Deserialize(IStream& istream);
 
         ethVector3 GetInterpolatedPosition(float animTick) const;
-        ethVector4 GetInterpolatedRotation(float animTick) const;
+        ethQuaternion GetInterpolatedRotation(float animTick) const;
         ethVector3 GetInterpolatedScale(float animTick) const;
 
         std::vector<std::pair<float, ethVector3>> m_PositionKeyframes;
-        std::vector<std::pair<float, ethVector4>> m_RotationKeyframes;
+        std::vector<std::pair<float, ethQuaternion>> m_RotationKeyframes;
         std::vector<std::pair<float, ethVector3>> m_ScalingKeyframes;
     };
 

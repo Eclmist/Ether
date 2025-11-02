@@ -48,9 +48,11 @@ public:
     virtual IStream& operator>>(std::string& v) = 0;
     virtual IStream& operator>>(StringID& sid) = 0;
     virtual IStream& operator>>(bool& v) = 0;
-    virtual IStream& operator>>(ethVector2& v) = 0;
-    virtual IStream& operator>>(ethVector3& v) = 0;
-    virtual IStream& operator>>(ethVector4& v) = 0;
+    virtual IStream& operator>>(ethVectorData2& v) = 0;
+    virtual IStream& operator>>(ethVectorData3& v) = 0;
+    virtual IStream& operator>>(ethVectorData4& v) = 0;
+    virtual IStream& operator>>(ethMatrixData3& v) = 0;
+    virtual IStream& operator>>(ethMatrixData4& v) = 0;
 
     virtual void ReadBytes(void* dest, uint32_t numBytes) = 0;
 };
@@ -68,9 +70,11 @@ public:
     virtual OStream& operator<<(const std::string& v) = 0;
     virtual OStream& operator<<(const StringID& sid) = 0;
     virtual OStream& operator<<(const bool v) = 0;
-    virtual OStream& operator<<(const ethVector2& v) = 0;
-    virtual OStream& operator<<(const ethVector3& v) = 0;
-    virtual OStream& operator<<(const ethVector4& v) = 0;
+    virtual OStream& operator<<(const ethVectorData2& v) = 0;
+    virtual OStream& operator<<(const ethVectorData3& v) = 0;
+    virtual OStream& operator<<(const ethVectorData4& v) = 0;
+    virtual OStream& operator<<(const ethMatrixData3& v) = 0;
+    virtual OStream& operator<<(const ethMatrixData4& v) = 0;
 
     virtual void WriteBytes(const void* src, uint32_t numBytes) = 0;
 };
