@@ -45,8 +45,9 @@ DECLARE_GFX_SR(MaterialTable)
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
+static const wchar_t* k_AnyHitShader = L"AnyHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
-static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader };
+static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader, k_AnyHitShader };
 
 Ether::Graphics::ReferenceLightingProducer::ReferenceLightingProducer()
     : GraphicProducer("RaytracedLightingProducer")
@@ -190,8 +191,9 @@ void Ether::Graphics::ReferenceLightingProducer::CreatePipelineState(ResourceCon
     m_RTPsoDesc->SetHitGroupName(k_HitGroupName);
     m_RTPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_RTPsoDesc->SetMissShaderName(k_MissShader);
+    m_RTPsoDesc->SetAnyHitShaderName(k_AnyHitShader);
     m_RTPsoDesc->SetRayGenShaderName(k_RayGenShader);
-    m_RTPsoDesc->SetMaxRecursionDepth(4);
+    m_RTPsoDesc->SetMaxRecursionDepth(2);
     m_RTPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_RTPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload) + 4);
     m_RTPsoDesc->SetRootSignature(*m_GlobalRootSignature);

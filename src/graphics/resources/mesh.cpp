@@ -112,7 +112,7 @@ void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx, boo
     Mesh* meshes[] = { this };
     desc.m_Meshes = (void**)meshes;
     desc.m_NumMeshes = 1;
-    desc.m_IsOpaque = true;
+    desc.m_IsOpaque = false; // RTCamp11 hacks: Assume all geometry to be masked so we trigger any hit. Should really have a material flag, but this info is not available in the current importer. Need Toolmode UI to mark materials as masked 
     desc.m_IsStatic = !allowUpdate;
 
     m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);

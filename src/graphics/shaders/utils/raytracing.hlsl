@@ -163,7 +163,7 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas,  RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -181,7 +181,7 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     ray.Direction = direction;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -255,3 +255,26 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 
     payload.m_Radiance = surface.m_Emission + direct + indirect;
 }
+
+[shader("anyhit")]
+void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
+{
+    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
+    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+ 
+    // Early out if not masked
+    //if (!mat.IsMasked())
+    //    return;
+
+    ShadingSurface surface;
+
+    if (payload.m_IsShadowRay)
+        surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 2);
+    else
+        surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 4);
+
+    if (surface.m_Opacity < 0.5f)
+        IgnoreHit();
+}
+

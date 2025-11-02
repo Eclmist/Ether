@@ -50,8 +50,9 @@ DEFINE_GFX_UA(GIReservoir_Staging)
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
+static const wchar_t* k_AnyHitShader = L"AnyHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
-static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader };
+static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader, k_AnyHitShader };
 
 Ether::Graphics::LightingProducer::LightingProducer()
     : GraphicProducer("LightingProducer")
@@ -285,7 +286,7 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_InitialGenerationPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_InitialGenerationPsoDesc->SetMissShaderName(k_MissShader);
     m_InitialGenerationPsoDesc->SetRayGenShaderName(k_RayGenShader);
-    m_InitialGenerationPsoDesc->SetMaxRecursionDepth(4);
+    m_InitialGenerationPsoDesc->SetMaxRecursionDepth(2);
     m_InitialGenerationPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_InitialGenerationPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload) + 4);
     m_InitialGenerationPsoDesc->SetRootSignature(*m_RootSignature);
@@ -302,8 +303,9 @@ void Ether::Graphics::LightingProducer::CreatePipelineState(ResourceContext& rc)
     m_LightingEvaluationPsoDesc->SetHitGroupName(k_HitGroupName);
     m_LightingEvaluationPsoDesc->SetClosestHitShaderName(k_ClosestHitShader);
     m_LightingEvaluationPsoDesc->SetMissShaderName(k_MissShader);
+    m_LightingEvaluationPsoDesc->SetAnyHitShaderName(k_AnyHitShader);
     m_LightingEvaluationPsoDesc->SetRayGenShaderName(k_RayGenShader);
-    m_LightingEvaluationPsoDesc->SetMaxRecursionDepth(4);
+    m_LightingEvaluationPsoDesc->SetMaxRecursionDepth(2);
     m_LightingEvaluationPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_LightingEvaluationPsoDesc->SetMaxPayloadSize(sizeof(Shader::RayPayload) + 4);
     m_LightingEvaluationPsoDesc->SetRootSignature(*m_RootSignature);
