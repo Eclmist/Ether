@@ -36,9 +36,14 @@ float2 ClipToTextureSpace(float4 clip)
     return uv;
 }
 
+float2 TextureToScreenSpace(float2 uv)
+{
+    return floor(uv * g_GlobalConstants.m_ScreenResolution);
+}
+
 float2 ScreenToTextureSpace(float2 screenCoords)
 {
-    return screenCoords / g_GlobalConstants.m_ScreenResolution;
+    return (screenCoords + 0.5f) / g_GlobalConstants.m_ScreenResolution;
 }
 
 float4 ScreenToClipSpace(float2 screenCoords, float sceneDepth)

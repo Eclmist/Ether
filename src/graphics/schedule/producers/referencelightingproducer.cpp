@@ -64,12 +64,12 @@ void Ether::Graphics::ReferenceLightingProducer::Initialize(ResourceContext& rc)
 void Ether::Graphics::ReferenceLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint32_t numVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.size();
+    uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.size();
 
     schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
-    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals);
+    schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numRTVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
+    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
@@ -87,6 +87,7 @@ void Ether::Graphics::ReferenceLightingProducer::RenderFrame(GraphicContext& ctx
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
+    const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals;
 
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.PushMarker("Raytrace");
@@ -112,27 +113,19 @@ void Ether::Graphics::ReferenceLightingProducer::RenderFrame(GraphicContext& ctx
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * visuals.size(), 256 });
     Shader::GeometryInfo* geometryInfos = (Shader::GeometryInfo*)alloc->GetCpuHandle();
-    for (uint32_t i = 0; i < visuals.size(); ++i)
+    for (uint32_t i = 0; i < raytracedVisuals.size(); ++i)
     {
-        geometryInfos[i].m_VBDescriptorIndex = visuals[i].m_Mesh->GetVertexBufferSrvIndex();
-        geometryInfos[i].m_IBDescriptorIndex = visuals[i].m_Mesh->GetIndexBufferSrvIndex();
-        geometryInfos[i].m_MaterialIndex = visuals[i].m_Material->GetTransientMaterialIdx();
+        geometryInfos[i].m_VBDescriptorIndex = raytracedVisuals[i].m_Mesh->GetVertexBufferSrvIndex();
+        geometryInfos[i].m_IBDescriptorIndex = raytracedVisuals[i].m_Mesh->GetIndexBufferSrvIndex();
+        geometryInfos[i].m_MaterialIndex = raytracedVisuals[i].m_Material->GetTransientMaterialIdx();
     }
 
-    ctx.CopyBufferRegion(
-        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
-        *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo)),
-        sizeof(Shader::GeometryInfo) * visuals.size(),
-        0,
-        0);
-
+    ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo)), sizeof(Shader::GeometryInfo) * raytracedVisuals.size(), 0, 0);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)), RhiResourceState::CopyDest);
-    ctx.CopyResource(
-        *rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)),
-        *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
     ctx.PopMarker();
 }
 
@@ -141,7 +134,7 @@ bool Ether::Graphics::ReferenceLightingProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.empty())
         return false;
 
     return true;

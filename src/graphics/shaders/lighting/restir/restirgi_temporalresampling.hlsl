@@ -55,7 +55,6 @@ void CS_Main(
 
     const float specularDependence = lerp(0.0f, lerp(1.0f, 0.0f, pow(surface.m_Roughness, 0.1f)), pow(surface.m_Metalness, 2.0f));
 
-
     if (Random(screenCoords * g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
     {
         if (all(prevScreenCoords >= 0) && all(prevScreenCoords < g_GlobalConstants.m_ScreenResolution.xy))
@@ -66,20 +65,19 @@ void CS_Main(
             {
                 if (historyReservoir.IsValid())
                 {
-                    // recomputing target function here causes a lot of inf fireflies 
-                    //const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
+                    // recomputing target function here may causes a lot of inf fireflies 
+                    const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
 
                     historyReservoir.FinalizeResampling();
-                    if (BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(historyReservoir.m_WeightSum)))
-                    {
-                        historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                        initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), historyReservoir.m_TargetPdf);
-                    }
-
+                    historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
+                    initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), targetFunction);
                 }
             }
         }
     }
+
+    if (!BoilingFilter(groupThreadID.xy, 0.3f, GetLuminanceFromRGB(initialReservoir.m_WeightSum)))
+        initialReservoir = GIReservoir::Empty();
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }

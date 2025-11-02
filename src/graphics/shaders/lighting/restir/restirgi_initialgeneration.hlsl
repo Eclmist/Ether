@@ -58,23 +58,20 @@ void RayGeneration()
 #endif
 
     GIReservoir initialReservoir = GIReservoir::Empty();
+    GIReservoirSample initialSample = GIReservoirSample::Empty();
 
-    if (pdf > 0.01f)
-    {
-        const RayPayload payload = TraceShadingRay(surface, wi, MAX_DEPTH);
-        GIReservoirSample initialSample = GIReservoirSample::Empty();
-        initialSample.m_VisibleDepth = LinearizeDepth(depth);
-        initialSample.m_VisibleNormal = surface.m_Normal;
-        initialSample.m_MaterialID = surface.m_MaterialID;
-        initialSample.m_SamplePosition = payload.m_HitPosition;
-        initialSample.m_SampleNormal = payload.m_HitNormal;
-        initialSample.m_Radiance = payload.m_Radiance;
+    const RayPayload payload = TraceShadingRay(surface, wi, MAX_DEPTH);
+    initialSample.m_VisibleDepth = LinearizeDepth(depth);
+    initialSample.m_VisibleNormal = surface.m_Normal;
+    initialSample.m_MaterialID = surface.m_MaterialID;
+    initialSample.m_SamplePosition = payload.m_HitPosition;
+    initialSample.m_SampleNormal = payload.m_HitNormal;
+    initialSample.m_Radiance = payload.m_Radiance;
 
-        const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
-        const float3 risWeight = targetFunction / max(0.001f, pdf);
-            
-        initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
-    }
+    const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
+    const float3 risWeight = targetFunction / max(0.001f, pdf);
+        
+    initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }

@@ -157,13 +157,17 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
     RayPayload payload;
     payload.m_IsShadowRay = true;
     payload.m_Depth = 1;
+    payload.m_Throughput = 1;
+    payload.m_Radiance = 0;
 
     RayDesc ray;
     ray.Direction = direction;
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
+
+    uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
+    TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -175,13 +179,16 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
+    payload.m_Throughput = 1;
 
     RayDesc ray;
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
     ray.Direction = direction;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, 0, 0xFF, 0, 0, 0, ray, payload);
+
+    uint rayFlags = RAY_FLAG_FORCE_OPAQUE; // Don't do any-hit for GI rays for performance reasons
+    TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -190,8 +197,8 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
 void Miss(inout RayPayload payload)
 {
     payload.m_Hit = false;
-    payload.m_Radiance = 0;
     payload.m_HitPosition = WorldRayOrigin() + WorldRayDirection() * 9999.0f;
+    payload.m_Radiance = 0;
 
     if (payload.m_IsShadowRay)
     {
@@ -254,6 +261,7 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     }
 
     payload.m_Radiance = surface.m_Emission + direct + indirect;
+    payload.m_Radiance *= payload.m_Throughput;
 }
 
 [shader("anyhit")]
@@ -262,19 +270,26 @@ void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+
+    if (payload.m_Depth <= 0)
+        return;
  
     // Early out if not masked
-    //if (!mat.IsMasked())
+    //if (!mat.IsMasked()) (TODO)
     //    return;
 
     ShadingSurface surface;
 
     if (payload.m_IsShadowRay)
-        surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 2);
+        surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 0);
     else
         surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, 4);
 
-    if (surface.m_Opacity < 0.5f)
+    
+    if (surface.m_Opacity < 1.0f)
+    {
+        payload.m_Throughput *= surface.m_Opacity;
         IgnoreHit();
+    }
 }
 

@@ -28,9 +28,6 @@ bool AreSurfacesSimilar(ShadingSurface thisSurface, ShadingSurface otherSurface)
     if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.95f)
         return false;
 
-    if (dot(thisSurface.m_Albedo, otherSurface.m_Albedo) < 0.95f)
-        return false;
-
     const float depthA = distance(thisSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
     const float depthB = distance(otherSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
 
@@ -114,12 +111,8 @@ void CS_Main(
         // neighbourReservoir.m_TargetPdf = targetFunction;
 
         neighbourReservoir.FinalizeResampling();
-        if (BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(neighbourReservoir.m_WeightSum)))
-        {
-            neighbourReservoir.M = min(neighbourReservoir.M,  100);
-            initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 300), targetFunction);
-        }
-
+        neighbourReservoir.M = min(neighbourReservoir.M,  100);
+        initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 300), targetFunction);
     }
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);

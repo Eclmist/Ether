@@ -168,7 +168,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::SliderFloat3("Sun Direction", gfxConfig.m_SunDirection.m_Data, -1, 1);
                 ImGui::SliderFloat("Sun Intensity", &gfxConfig.m_SunIntensity, 0, 200000);
                 ImGui::SliderFloat("Sky Intensity", &gfxConfig.m_SkyIntensity, 0, 200000);
-                ImGui::SliderFloat("Exposure", &gfxConfig.m_Exposure, 0, 1);
+                ImGui::InputFloat("Exposure", &gfxConfig.m_Exposure, 0.00001, 0.0001);
                 sunDirection.Normalize();
                 ImGui::TreePop();
             }

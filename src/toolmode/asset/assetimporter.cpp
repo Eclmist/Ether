@@ -228,7 +228,7 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
     for (uint32_t i = 0; i < assimpScene->mNumAnimations; ++i)
     {
         aiAnimation* animation = assimpScene->mAnimations[i];
-        LogInfo("Found animation: %s", animation->mName.C_Str());
+        LogToolmodeInfo("Found animation: %s", animation->mName.C_Str());
 
         const std::string animName = animation->mName.C_Str();
         const float totalTicks = animation->mDuration;

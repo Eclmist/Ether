@@ -77,6 +77,7 @@ void Ether::Graphics::GraphicCore::Main()
     // TODO: This really isn't the right place to clear visuals. However, there's currently a conflict between skinned visuals and regular visual system
     // on who should be clearing.
     s_Instance->m_GraphicRenderer->GetRenderData().m_Visuals.clear();
+    s_Instance->m_GraphicRenderer->GetRenderData().m_RaytracingVisuals.clear();
     s_Instance->m_GraphicRenderer->GetRenderData().m_VisualBatches.clear();
     s_Instance->m_GraphicRenderer->GetRenderData().m_SkinnedVisuals.clear();
 }

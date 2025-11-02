@@ -75,10 +75,6 @@ void Ether::Ecs::EcsVisualSystem::Update()
             gfxVisualBatch = &renderData.m_VisualBatches[materialToBatchMap.at(data.m_MaterialGuid)];
         }
 
-        // Translucency not supported yet due to raytracing
-        if (gfxVisualBatch->m_Material->GetBaseColor().w < 1.0)
-            continue;
-
         gfxVisual.m_Mesh = resources.GetStaticMeshResource(data.m_MeshGuid);
 
         if (gfxVisual.m_Mesh == nullptr)
@@ -86,6 +82,10 @@ void Ether::Ecs::EcsVisualSystem::Update()
 
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
+        gfxVisual.m_VisibleInRaytracing = gfxVisual.m_Material->GetBaseColor().w >= 1.0f;
+
+        if (gfxVisual.m_VisibleInRaytracing)
+            renderData.m_RaytracingVisuals.push_back(gfxVisual);
 
         renderData.m_Visuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
@@ -199,7 +199,9 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         gfxVisual.m_Mesh = skinnedMesh;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
+        gfxVisual.m_VisibleInRaytracing = gfxVisual.m_Material->GetBaseColor().w >= 1.0f;
 
+        renderData.m_RaytracingVisuals.push_back(gfxVisual);
         renderData.m_Visuals.push_back(gfxVisual);
         renderData.m_SkinnedVisuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);

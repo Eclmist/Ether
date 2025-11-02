@@ -73,6 +73,7 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
     RayPayload payload;
     payload.m_IsShadowRay = true;
     payload.m_Depth = 1;
+    payload.m_Throughput = 1;
 
     RayDesc ray;
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
