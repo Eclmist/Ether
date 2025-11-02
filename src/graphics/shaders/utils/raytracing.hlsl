@@ -133,7 +133,7 @@ float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    const float exposure = 15000.0f;
+    const float exposure = g_GlobalConstants.m_SkyIntensity;
 
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, mipLevel);
@@ -163,7 +163,7 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
     ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
-    TraceRay(g_RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(g_RaytracingTlas,  RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }

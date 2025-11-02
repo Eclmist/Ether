@@ -67,6 +67,8 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_CameraPosition = renderData.m_CameraPosition.Resize<4>();
     globalConstants->m_SunDirection = GraphicCore::GetGraphicConfig().m_SunDirection;
     globalConstants->m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor * GraphicCore::GetGraphicConfig().m_SunIntensity;
+    globalConstants->m_SkyIntensity = GraphicCore::GetGraphicConfig().m_SkyIntensity;
+    globalConstants->m_Exposure = GraphicCore::GetGraphicConfig().m_Exposure;
     globalConstants->m_Time = ethVector4(Time::GetTimeSinceStartup()) / 1000.0f;
     globalConstants->m_Time.x *= 20;
     globalConstants->m_Time.y *= 1;

@@ -93,11 +93,11 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             if (ImGui::TreeNode("Depth Of Field"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsDofEnabled);
-                ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 100);
+                ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 1000);
                 ImGui::SliderFloat("Focal Length", &gfxConfig.m_FocalLength, 0, 1);
                 ImGui::SliderFloat("Aperture", &gfxConfig.m_Aperture, 0, 16.0f);
                 ImGui::SliderFloat("MaxCoC", &gfxConfig.m_MaxCoC, 0, 100.0f);
-                ImGui::SliderFloat("Focus Range", &gfxConfig.m_FocusRange, 0, 10.0f);
+                ImGui::SliderFloat("Focus Range", &gfxConfig.m_FocusRange, 0, 1000.0f);
                 ImGui::TreePop();
             }
 
@@ -166,7 +166,9 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 static ethVector4& sunDirection = gfxConfig.m_SunDirection;
                 ImGui::ColorEdit3("Sun Color", gfxConfig.m_SunColor.m_Data);
                 ImGui::SliderFloat3("Sun Direction", gfxConfig.m_SunDirection.m_Data, -1, 1);
-                ImGui::InputFloat("Sun Intensity", &gfxConfig.m_SunIntensity);
+                ImGui::SliderFloat("Sun Intensity", &gfxConfig.m_SunIntensity, 0, 200000);
+                ImGui::SliderFloat("Sky Intensity", &gfxConfig.m_SkyIntensity, 0, 200000);
+                ImGui::SliderFloat("Exposure", &gfxConfig.m_Exposure, 0, 1);
                 sunDirection.Normalize();
                 ImGui::TreePop();
             }

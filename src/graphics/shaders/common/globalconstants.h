@@ -51,6 +51,8 @@ struct GlobalConstants
 
     ethVector4 m_SunDirection;
     ethVector4 m_SunColor;
+    float m_SkyIntensity;
+    float m_Exposure; // TODO: Physical camera params
 
     ethVector2u m_ScreenResolution;
     uint32_t m_FrameNumber;
@@ -60,8 +62,8 @@ struct GlobalConstants
 
     // ============== TAA =============== //
     float m_TaaAccumulationFactor;
+    float m_Padding2;
 
-    uint32_t m_Padding0;
     ethVector2 m_CameraJitter;
     ethVector2 m_CameraJitterPrev;
     uint32_t m_FrameSinceLastMovement;

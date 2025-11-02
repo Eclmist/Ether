@@ -72,12 +72,12 @@ public:
     int32_t m_SkinningDebugBoneId = -1;
 
     // Camera
-    float m_Fov = 90.0f;
+    float m_Fov = 70.0f;
 
     // TAA
     bool m_IsTemporalAAEnabled = true;
     int32_t m_TemporalAAJitterMode = 2;
-    float m_DebugJitterScale = 1;
+    float m_DebugJitterScale = 0;
     float m_TemporalAAAcumulationFactor = 0.1;
 
     // Bloom
@@ -89,11 +89,11 @@ public:
     // Dof
     bool m_IsDofEnabled = true;
 
-    float m_FocusDistance   = 2.0f; // meters (2m)
+    float m_FocusDistance   = 20.0f; // unitless (depends on linear depth; near/far plane)
     float m_FocalLength     = 0.05f; // meters (50mm)
     float m_Aperture        = 4.0f;  // unitless scalar
-    float m_MaxCoC          = 60.0f; // pixels
-    float m_FocusRange      = 3.0f; // meters..? (3m)
+    float m_MaxCoC          = 60.0f; // pixels (unused)
+    float m_FocusRange      = 2000.0f; // unitless scalar
 
     // Tonemapping
     int32_t m_TonemapperType = 3;
@@ -115,7 +115,9 @@ public:
 
     ethVector4 m_SunDirection = { 0, 1, 0, 0 };
     ethVector4 m_SunColor = { 1, 0.95, 0.92, 1 };
-    float m_SunIntensity = 100000.0f;
+    float m_SunIntensity = 120000.0f;
+    float m_SkyIntensity = 35000.0f;
+    float m_Exposure = 0.000045f;
 
 private:
     ethVector4 m_ClearColor;

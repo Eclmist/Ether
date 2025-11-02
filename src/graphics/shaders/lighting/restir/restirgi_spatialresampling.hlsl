@@ -28,6 +28,9 @@ bool AreSurfacesSimilar(ShadingSurface thisSurface, ShadingSurface otherSurface)
     if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.95f)
         return false;
 
+    if (dot(thisSurface.m_Albedo, otherSurface.m_Albedo) < 0.95f)
+        return false;
+
     const float depthA = distance(thisSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
     const float depthB = distance(otherSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
 

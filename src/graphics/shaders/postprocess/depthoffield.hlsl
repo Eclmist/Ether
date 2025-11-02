@@ -127,7 +127,7 @@ float WeighSample(float3 c)
 void GenerateCocPass(uint3 threadID)
 {
     const float linearDepth = LinearizeDepth(g_SceneDepth.Load(threadID).r);
-    const float coc = clamp((linearDepth - g_DepthOfFieldParams.m_FocusDistance) / (g_DepthOfFieldParams.m_FocusRange * 10.0f), -1.0f, 1.0f) * g_DepthOfFieldParams.m_Aperture;
+    const float coc = clamp((linearDepth - g_DepthOfFieldParams.m_FocusDistance) / (g_DepthOfFieldParams.m_FocusRange), -1.0f, 1.0f) * g_DepthOfFieldParams.m_Aperture;
     g_DestinationTextureUav[threadID.xy] = coc;
 }
 

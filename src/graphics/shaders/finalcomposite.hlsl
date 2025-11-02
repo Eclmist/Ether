@@ -181,7 +181,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     if (!g_GlobalConstants.m_RaytracedLightingDebug == 1)
     {
-        const float manualExposure = 0.0005;
+        const float manualExposure = g_GlobalConstants.m_Exposure;
         col = col * manualExposure;
 
         col = ColorGrade(

@@ -124,7 +124,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float opacity = shadingSurface.m_Opacity;
     
     // Dither non-opaque surfaces in gbuffer
-    if (InterleavedGradientNoise(IN.TexCoord) > shadingSurface.m_Opacity)
+    if (InterleavedGradientNoise(IN.TexCoord) > smoothstep(0.5, 1.0f, shadingSurface.m_Opacity))
         discard;
 
     PS_OUTPUT o;
