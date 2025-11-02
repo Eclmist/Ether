@@ -28,6 +28,8 @@ struct Material
     ethVector4 m_BaseColor;
     ethVector4 m_SpecularColor;
     ethVector4 m_EmissiveColor;
+    float m_Roughness;
+    float m_Metalness;
 
     uint32_t m_AlbedoTextureIndex;
     uint32_t m_NormalTextureIndex;

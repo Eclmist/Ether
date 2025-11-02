@@ -60,6 +60,8 @@ void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, Re
         materials[i].m_BaseColor = currMat->GetBaseColor();
         materials[i].m_SpecularColor = currMat->GetSpecularColor();
         materials[i].m_EmissiveColor = currMat->GetEmissiveColor();
+        materials[i].m_Roughness = currMat->GetRoughness();
+        materials[i].m_Metalness = currMat->GetMetalness();
         materials[i].m_AlbedoTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetAlbedoTextureID());
         materials[i].m_NormalTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetNormalTextureID());
         materials[i].m_RoughnessTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(currMat->GetRoughnessTextureID());

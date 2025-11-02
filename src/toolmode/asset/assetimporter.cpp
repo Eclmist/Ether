@@ -485,15 +485,21 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(
         aiColor3D baseColor;
         aiColor3D specularColor;
         aiColor3D emissiveColor;
+        float roughness;
+        float metalness;
         float opacity;
         material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
         material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
         material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
+        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+        material->Get(AI_MATKEY_METALLIC_FACTOR, metalness);
         material->Get(AI_MATKEY_OPACITY, opacity);
 
         gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, opacity });
         gfxMaterial.SetSpecularColor({ specularColor.r, baseColor.g, baseColor.b, 1 });
         gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b, 0 });
+        gfxMaterial.SetRoughness(roughness);
+        gfxMaterial.SetMetalness(metalness);
 
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {

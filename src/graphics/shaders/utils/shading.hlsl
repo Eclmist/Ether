@@ -77,8 +77,8 @@ ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, 
     float3 baseColor = geometricSurface.m_Color.rgb * material.m_BaseColor.rgb;
     float3 emission = material.m_EmissiveColor.rgb * EMISSION_SCALE;
     float3 normal = geometricSurface.m_Normal;
-    float roughness = 0.5f;
-    float metalness = 0.0f;
+    float roughness = material.m_Roughness;
+    float metalness = material.m_Metalness;
     float opacity = material.m_BaseColor.a; // ignore vertex color alpha for now (TODO)
 
     if (material.m_AlbedoTextureIndex != 0)

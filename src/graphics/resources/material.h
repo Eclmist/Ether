@@ -40,6 +40,8 @@ public:
     inline ethVector4 GetBaseColor() const { return m_BaseColor; }
     inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
     inline ethVector4 GetEmissiveColor() const { return m_EmissiveColor; }
+    inline float GetRoughness() const { return m_Roughness; }
+    inline float GetMetalness() const { return m_Metalness; }
     inline StringID GetAlbedoTextureID() const { return m_AlbedoTextureID; }
     inline StringID GetNormalTextureID() const { return m_NormalTextureID; }
     inline StringID GetRoughnessTextureID() const { return m_RoughnessTextureID; }
@@ -50,6 +52,8 @@ public:
     inline void SetBaseColor(const ethVector4& color) { m_BaseColor = color; }
     inline void SetSpecularColor(const ethVector4& color) { m_SpecularColor = color; }
     inline void SetEmissiveColor(const ethVector4& color) { m_EmissiveColor = color; }
+    inline void SetRoughness(float roughness) { m_Roughness = roughness; }
+    inline void SetMetalness(float metalness) { m_Metalness = metalness; }
     inline void SetAlbedoTextureID(const StringID& id) { m_AlbedoTextureID = id; }
     inline void SetNormalTextureID(const StringID& id) { m_NormalTextureID = id; }
     inline void SetRoughnessTextureID(const StringID& id) { m_RoughnessTextureID = id; }
@@ -60,6 +64,8 @@ private:
     ethVector4 m_BaseColor;
     ethVector4 m_SpecularColor;
     ethVector4 m_EmissiveColor;
+    float m_Roughness;
+    float m_Metalness;
 
     StringID m_AlbedoTextureID;
     StringID m_NormalTextureID;
