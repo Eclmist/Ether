@@ -22,10 +22,15 @@
 
 bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurface)
 {
-    if (surface.m_MaterialID != prevSurface.m_MaterialID)
-        return false;
+    // Since some materials are dithered in gbuffer (decals, etc.)
+    // this check can basically kill reprojection.
+    //if (surface.m_MaterialID != prevSurface.m_MaterialID)
+    //    return false;
 
     if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.9f)
+        return false;
+
+    if ((abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / prevSurface.m_VisibleDepth) > 0.2f)
         return false;
 
     return true;
