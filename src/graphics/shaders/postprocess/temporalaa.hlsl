@@ -31,10 +31,10 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    const float2 screenCoords = threadID.xy;
     const float2 velocity = g_GBufferTexture1.Load(threadID).zw;
-    const float2 uv = threadID.xy / resolution + 0.5 / resolution;
-    const float2 jitterDeltaUV = (g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter) / resolution;
-    const float2 uvPrev = uv - velocity + jitterDeltaUV;
+    const float2 uv = ScreenToTextureSpace(screenCoords);
+    const float2 uvPrev = uv - velocity;
 
     if (any(threadID.xy < 0) || any(threadID.xy >= g_GlobalConstants.m_ScreenResolution.xy))
         return;

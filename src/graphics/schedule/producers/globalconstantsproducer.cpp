@@ -45,6 +45,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
 
     static ethMatrix4x4 viewMatrixPrev = renderData.m_ViewMatrix;
     static ethMatrix4x4 projMatrixPrev = renderData.m_ProjectionMatrix;
+    static ethMatrix4x4 projMatrixPrevNoJitter = renderData.m_ProjectionMatrixNoJitter;
     static ethVector2 cameraJitterPrev = renderData.m_CameraJitter;
     static uint32_t lastMovedFrameNumber = 0;
 
@@ -62,6 +63,8 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_ViewProjectionMatrix = globalConstants->m_ProjectionMatrix * globalConstants->m_ViewMatrix;
     globalConstants->m_ViewProjectionMatrixInv = globalConstants->m_ViewProjectionMatrix.Inversed();
     globalConstants->m_ViewProjectionMatrixPrev = globalConstants->m_ProjectionMatrixPrev * globalConstants->m_ViewMatrixPrev;
+    globalConstants->m_ViewProjectionMatrixNoJitter = renderData.m_ProjectionMatrixNoJitter * globalConstants->m_ViewMatrix;
+    globalConstants->m_ViewProjectionMatrixPrevNoJitter = projMatrixPrevNoJitter * globalConstants->m_ViewMatrixPrev;
     globalConstants->m_CameraClipNearFar = ethVector2(0.1, 1000.0f);
     globalConstants->m_CameraDirection = renderData.m_CameraDirection.Resize<4>();
     globalConstants->m_CameraPosition = renderData.m_CameraPosition.Resize<4>();
@@ -115,6 +118,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     // For velocity vector calculations
     viewMatrixPrev = globalConstants->m_ViewMatrix;
     projMatrixPrev = globalConstants->m_ProjectionMatrix;
+    projMatrixPrevNoJitter = renderData.m_ProjectionMatrixNoJitter;
     cameraJitterPrev = globalConstants->m_CameraJitter;
 }
 

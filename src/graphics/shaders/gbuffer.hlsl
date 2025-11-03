@@ -66,15 +66,12 @@ struct PS_OUTPUT
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
 StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
-float4x4 RemoveJitter(float4x4 jitteredProjMatrix, float2 jitter)
+// TODO: Move to common
+float LinearizeDepth(float depth)
 {
-    float4x4 inverseJitterMatrix = float4x4(
-        1, 0, -jitter.x, 0,
-        0, 1, -jitter.y, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1);
-    float4x4 originalProjMatrix = mul(inverseJitterMatrix, jitteredProjMatrix);
-    return originalProjMatrix;
+    float near = g_GlobalConstants.m_CameraClipNearFar.x;
+    float far = g_GlobalConstants.m_CameraClipNearFar.y;
+    return (far * near) / ((near - far) * depth + far);
 }
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
@@ -85,14 +82,13 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     const float4 worldPosPrev = float4(IN.PositionPrev, 1.0f); // TODO: Implement model matrices here?
     
     o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
-
     o.Normal = IN.Normal;
     o.Tangent = IN.Tangent;
     o.TexCoord = IN.TexCoord;
     o.Color = IN.Color;
 
-    o.ClipPos = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrix, g_GlobalConstants.m_CameraJitter), worldPos);
-    o.ClipPosPrev = mul(RemoveJitter(g_GlobalConstants.m_ViewProjectionMatrixPrev, g_GlobalConstants.m_CameraJitterPrev), worldPosPrev);
+    o.ClipPos = mul(g_GlobalConstants.m_ViewProjectionMatrixNoJitter, worldPos);
+    o.ClipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrevNoJitter, worldPosPrev);
 
     return o;
 }
@@ -122,9 +118,9 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float roughness = shadingSurface.m_Roughness;
     const float metalness = shadingSurface.m_Metalness;
     const float opacity = shadingSurface.m_Opacity;
-    
+
     // Dither non-opaque surfaces in gbuffer
-    if (InterleavedGradientNoise(TextureToScreenSpace(texSpaceCurr) + g_GlobalConstants.m_FrameNumber) > opacity)
+    if (min(0.95, InterleavedGradientNoise(IN.ScreenPos.xy + g_GlobalConstants.m_CameraJitter)) > opacity)
         discard;
 
     PS_OUTPUT o;

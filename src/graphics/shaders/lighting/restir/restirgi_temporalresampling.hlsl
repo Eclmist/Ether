@@ -50,10 +50,9 @@ void CS_Main(
         return;
     
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
-    const float2 pixelJitterDelta = g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter;
     const float2 pixelVelocity = surface.m_Velocity * screenSize;
-    const float2 prevScreenCoords = floor((float2(screenCoords) + 0.5f) - pixelVelocity + pixelJitterDelta);
-    const uint prevSampleIdx = GetSampleIndexFromScreenCoords(prevScreenCoords, screenSize);
+    const float2 screenCoordsPrev = screenCoords - pixelVelocity;
+    const uint prevSampleIdx = GetSampleIndexFromScreenCoords(screenCoordsPrev, screenSize);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
     GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
@@ -62,9 +61,9 @@ void CS_Main(
 
     if (Random(screenCoords * g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
     {
-        if (all(prevScreenCoords >= 0) && all(prevScreenCoords < g_GlobalConstants.m_ScreenResolution.xy))
+        if (all(screenCoordsPrev >= 0) && all(screenCoordsPrev < g_GlobalConstants.m_ScreenResolution.xy))
         {
-            const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(prevScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+            const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(screenCoordsPrev, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
 
             if (IsValidReprojection(initialReservoir.m_Sample, historyReservoir.m_Sample))
             {

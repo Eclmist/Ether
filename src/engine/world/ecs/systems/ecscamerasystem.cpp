@@ -56,11 +56,11 @@ void Ether::Ecs::EcsCameraSystem::Update()
         ethVector2u resolution = EngineCore::GetEngineConfig().GetClientSize();
         float aspect = static_cast<float>(resolution.x) / resolution.y;
 
-        ethMatrix4x4 projectionMatrix;
+        ethMatrix4x4 projectionMatrixNoJitter;
         switch (camera.m_ProjectionMode)
         {
         case ProjectionMode::Perspective:
-            projectionMatrix = Transform::GetPerspectiveMatrixLH(
+            projectionMatrixNoJitter = Transform::GetPerspectiveMatrixLH(
                 //SMath::DegToRad(camera.m_FieldOfView),
                 SMath::DegToRad(gfxConfig.m_Fov),
                 aspect,
@@ -69,16 +69,17 @@ void Ether::Ecs::EcsCameraSystem::Update()
             break;
         }
 
+        ethMatrix4x4 projectionMatrixJittered = projectionMatrixNoJitter;
         ethVector2 cameraJitter;
         if (gfxConfig.m_IsTemporalAAEnabled)
         {
             static uint32_t idx = 0;
-            ethVector2 sample = camera.GetJitterOffset(idx++);
-            cameraJitter.x = (sample.x - 0.5f) * gfxConfig.m_DebugJitterScale / resolution.x;
-            cameraJitter.y = (sample.y - 0.5f) * gfxConfig.m_DebugJitterScale / resolution.y;
+            cameraJitter = (camera.GetJitterOffset(idx++) * 2.0f - 1.0f) * gfxConfig.m_DebugJitterScale;
 
-            projectionMatrix.m_13 += cameraJitter.x;
-            projectionMatrix.m_23 += cameraJitter.y;
+            const ethVector3 jitterTranslation = { cameraJitter.x / (resolution.x * 0.5f),
+                                                   cameraJitter.y / (resolution.y * 0.5f),
+                                                   0.0f };
+            projectionMatrixJittered = projectionMatrixNoJitter * Transform::GetTranslationMatrix(jitterTranslation);
         }
 
         ethMatrix4x4 rotation = Transform::GetRotationMatrix(ethQuaternion::FromEuler(transform.m_Rotation));
@@ -86,7 +87,8 @@ void Ether::Ecs::EcsCameraSystem::Update()
 
         Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
         renderData.m_ViewMatrix = viewMatrix;
-        renderData.m_ProjectionMatrix = projectionMatrix;
+        renderData.m_ProjectionMatrix = projectionMatrixJittered;
+        renderData.m_ProjectionMatrixNoJitter = projectionMatrixNoJitter;
         renderData.m_CameraDirection = forward.Resize<3>();
         renderData.m_CameraPosition = transform.m_Translation;
         renderData.m_CameraJitter = cameraJitter;

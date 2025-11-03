@@ -32,15 +32,15 @@ RWTexture2D<float4> g_IndirectOutput                : register(u1);
 [shader("raygeneration")]
 void RayGeneration()
 {
-    const uint2 sampleCoords = DispatchRaysIndex().xy;
+    const float2 screenCoords = DispatchRaysIndex().xy;
+    const float2 screenCoordsPrev = screenCoords - g_GlobalConstants.m_CameraJitter + g_GlobalConstants.m_CameraJitterPrev;
     const uint2 bufferSize = DispatchRaysDimensions().xy;
-    const uint sampleIdx = sampleCoords.y * bufferSize.x + sampleCoords.x;
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(sampleCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+    const uint sampleIdx = screenCoords.y * bufferSize.x + screenCoords.x;
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
 
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-    const float2 uv = (float2)sampleCoords.xy / bufferSize.xy + rcp((float2) bufferSize.xy) / 2.0;
-    const float2 jitterDeltaUV = (g_GlobalConstants.m_CameraJitterPrev - g_GlobalConstants.m_CameraJitter) / g_GlobalConstants.m_ScreenResolution;
-    const float2 uvPrev = uv - surface.m_Velocity + jitterDeltaUV;
+    const float2 uv = ScreenToTextureSpace(screenCoords);
+    const float2 uvPrev = ScreenToTextureSpace(screenCoords - surface.m_Velocity);
     float4 accumulation = 0.0f;
 
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
@@ -74,8 +74,8 @@ void RayGeneration()
 
     float a = max(0.005, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
-    g_LightingOutput[sampleCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
-    g_IndirectOutput[sampleCoords].xyz = accumulatedIndirect;
+    g_LightingOutput[screenCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
+    g_IndirectOutput[screenCoords].xyz = accumulatedIndirect;
 }
 
 

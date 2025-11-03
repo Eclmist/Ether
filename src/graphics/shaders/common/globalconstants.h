@@ -41,6 +41,8 @@ struct GlobalConstants
     ethMatrix4x4 m_ViewProjectionMatrix;
     ethMatrix4x4 m_ViewProjectionMatrixInv;
     ethMatrix4x4 m_ViewProjectionMatrixPrev;
+    ethMatrix4x4 m_ViewProjectionMatrixNoJitter;
+    ethMatrix4x4 m_ViewProjectionMatrixPrevNoJitter;
 
     ethVector4 m_CameraPosition;
     ethVector4 m_CameraDirection;
