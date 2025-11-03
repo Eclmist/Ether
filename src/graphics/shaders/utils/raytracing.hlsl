@@ -281,7 +281,7 @@ void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
         opacity *= (gatherOpacity.x + gatherOpacity.y + gatherOpacity.z + gatherOpacity.w) / 4.0f;
     }
 
-    if (opacity < 1.0f)
+    if (opacity < 0.5f)
     {
         IgnoreHit();
     }
