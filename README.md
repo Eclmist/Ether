@@ -36,28 +36,6 @@ Ether is open-sourced, licensed under the [GNU General Public License v3](https:
 * Shader Hot Reloading 
 * Asset Pipeline /w Tool Integration ([Matcha Editor](https://github.com/Eclmist/Matcha-Editor))
 
-## Requirements
-
-As Ether is a DirectX 12 renderer, it can only be built and ran on a Windows 10 machine that supports DirectX 12.
-
-Ether uses [SMath](https://github.com/Eclmist/SMath) as a submodule. As such, it is necessary to pull submodules when cloning Ether.
-
-## Getting Started
-
-> Note: Ether is currently a very early WIP and is considered unstable and not particularly useful. Proceed with caution at your own risk.
-
-Ether uses CMake to build it's binaries. If you would like to build Ether yourselves, make sure that CMake is installed and run the included build script `GenerateProjects.bat`.
-
-All targets (debug, release, library) will be generated automatically.
-
-To compile, simply run
-
-```
-$ cmake --build ./build/
-```
-
-This will generate projects in the `/build/` folder, and will build the Ether binaries into `/bin/`.
-
 ## Screenshots
 <p align="center">
   <img src="https://raw.githubusercontent.com/eclmist/ether/develop/docs/suntemple.png" width=1000>
