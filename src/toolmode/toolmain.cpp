@@ -182,6 +182,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             AssertToolmode(skeleton != nullptr, "Why would this ever be null?");
             if (skeleton != nullptr)
             {
+                bool foundAnim = false;
                 // Find the first valid animation clip for any of the bones in the skeleton
                 // This is so stupid, fix after rtcamp11 (TODO)
                 for (uint32_t i = 0; i < animationClips.size(); ++i)
@@ -191,9 +192,13 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
                         if (animationClips[i]->HasBoneInfluence(skeleton->GetBone(j).m_Name))
                         {
                             visual.m_AnimationGuid = animationClips[i]->GetGuid();
-                            continue;
+                            foundAnim = true;
+                            break;
                         }
                     }
+
+                    if (foundAnim)
+                        break;
                 }
             }
 

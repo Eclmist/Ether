@@ -328,7 +328,8 @@ Ether::Graphics::SkeletonPose Ether::Graphics::Skeleton::CalculatePoseFromAnimat
             localTransformation = translation * rotation * scale;
         }
         
-        const ethMatrix4x4 parentTransformation = hasParent ? newPose.m_GlobalBoneTransform[currentBone.m_ParentIndex] : ethMatrix4x4();
+        const ethMatrix4x4 parentTransformation = hasParent ? newPose.m_GlobalBoneTransform[currentBone.m_ParentIndex]
+                                                            : ethMatrix4x4();
         const ethMatrix4x4 globalTransformation = parentTransformation * localTransformation;
 
         newPose.m_LocalBoneTransform[i] = localTransformation;
