@@ -24,7 +24,7 @@ float LinearizeDepth(float depth)
 {
     float near = g_GlobalConstants.m_CameraClipNearFar.x;
     float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return (far * near) / ((near - far) * depth + far);
+    return far * near / (depth * (far - near) + near);
 }
 
 [shader("raygeneration")]
@@ -41,7 +41,7 @@ void RayGeneration()
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
     const float depth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
 
-    if (depth >= 1.0f)
+    if (depth <= 0) // Reverse-z
         return;
 
     const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);

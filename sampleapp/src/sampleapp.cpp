@@ -61,7 +61,7 @@ void SampleApp::LoadContent()
     graphicConfig.m_BloomScatter = 0.646;
     graphicConfig.m_BloomAnamorphic = 0.57f;
 
-    graphicConfig.m_FocusDistance = 128.141;
+    graphicConfig.m_FocusDistance = 17.588;
     graphicConfig.m_Aperture = 5.910;
     graphicConfig.m_FocusRange = 37.688;
 

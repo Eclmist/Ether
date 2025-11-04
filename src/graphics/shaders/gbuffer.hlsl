@@ -71,7 +71,7 @@ float LinearizeDepth(float depth)
 {
     float near = g_GlobalConstants.m_CameraClipNearFar.x;
     float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return (far * near) / ((near - far) * depth + far);
+    return far * near / (depth * (far - near) + near);
 }
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
@@ -120,7 +120,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float opacity = shadingSurface.m_Opacity;
 
     // Dither non-opaque surfaces in gbuffer
-    if (min(0.95, InterleavedGradientNoise(IN.ScreenPos.xy + g_GlobalConstants.m_CameraJitter)) > opacity)
+    if (min(0.95, InterleavedGradientNoise(IN.ScreenPos.xy + g_GlobalConstants.m_FrameNumber)) > opacity)
         discard;
 
     PS_OUTPUT o;

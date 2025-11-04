@@ -19,7 +19,7 @@
 
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
-#include "utils/constants.hlsl"
+#include "utils/sampling.hlsl"
 
 struct VS_OUTPUT
 {
@@ -135,23 +135,6 @@ float Stars(float3 viewDir)
     return max(0.0f, stars);
 }
 
-float3 NormalizeDirection(float2 uv)
-{
-    // Step 1: Compute Screen Space Coordinates
-    uv.y = 1 - uv.y;
-    uv = uv * 2 - 1;
-    float4 worldSpaceDirection = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, float4(uv, 1.0, 1.0));
-    return normalize(worldSpaceDirection.xyz);
-}
-
-float2 SampleSphericalMap(float3 direction)
-{
-    float2 uv = float2(atan2(direction.z, direction.x), asin(-direction.y));
-    uv *= float2(InvPi2, InvPi);
-    uv += 0.5;
-    return uv;
-}
-
 float3 CalculateSunRadiance(float3 viewDirection, float3 sunDirection, float3 sunColor)
 {
     float cosTheta = dot(viewDirection, sunDirection);
@@ -250,7 +233,7 @@ float4 ProceduralSky(float2 texCoord)
     float3 skyColor = lerp(nightSkyColor, daySkyColor, dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
 
     // Normalize screenUV to get a direction vector
-    float3 viewDirection = NormalizeDirection(texCoord);
+    float3 viewDirection = normalize(ScreenToWorldSpace(TextureToScreenSpace(texCoord * 2 - 1), 0.0f)); // Reverse-Z
 
     // Calculate sun contribution
     float3 sunRadiance = CalculateSunRadiance(
@@ -297,13 +280,13 @@ float4 SampleHdri(float2 uv)
     const float4 hdri1 = hdriTexture.SampleLevel(linearSampler, uv + flow1 * distortion, 0);
     const float4 hdri2 = hdriTexture.SampleLevel(linearSampler, uv + flow2 * distortion, 0);
 
-    return lerp(hdri1, hdri2, alt);
+    return lerp(hdri1, hdri2, alt) * 0.6;
 }
 
 float4 GetHdriSkyColor(float2 uv)
 {
-    const float exposure = g_GlobalConstants.m_SkyIntensity;
-    const float3 viewDir = NormalizeDirection(uv);
+    const float exposure = g_GlobalConstants.m_SkyIntensity * 1;
+    const float3 viewDir = normalize(ScreenToWorldSpace(TextureToScreenSpace(uv), 0.0f)); // Reverse-Z
     const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
 
     const float cloudMask = 1 - smoothstep(0.15, 0.3, hdri.r);

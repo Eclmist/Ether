@@ -106,8 +106,8 @@ bool Ether::Ecs::EcsVisualSystem::IsVisualCulled(const Graphics::Visual& visual)
     //viewProjectionMatrix = viewProjectionMatrix.Transposed();
 
     ethVector4 planes[6];
-    planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[2]);
-    planes[1] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[2]);
+    planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[2]);
+    planes[1] = ethVector4(viewProjectionMatrix.m_Data2D[2]);
     planes[2] = ethVector4(viewProjectionMatrix.m_Data2D[3]) + ethVector4(viewProjectionMatrix.m_Data2D[0]);
     planes[3] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[0]);
     planes[4] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[1]);

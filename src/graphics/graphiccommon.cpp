@@ -72,7 +72,7 @@ void Ether::Graphics::GraphicCommon::InitializeDepthStates()
     m_DepthStateReadWrite = m_DepthStateDisabled;
     m_DepthStateReadWrite.m_DepthEnabled = true;
     m_DepthStateReadWrite.m_DepthWriteMask = RhiDepthWriteMask::All;
-    m_DepthStateReadWrite.m_DepthComparator = RhiComparator::LessEqual;
+    m_DepthStateReadWrite.m_DepthComparator = RhiComparator::Greater;
 
     m_DepthStateReadOnly = m_DepthStateReadWrite;
     m_DepthStateReadOnly.m_DepthWriteMask = RhiDepthWriteMask::Zero;

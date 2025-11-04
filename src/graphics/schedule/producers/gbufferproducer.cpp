@@ -103,7 +103,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture0));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture1));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture2));
-    ctx.ClearDepthStencil(*ACCESS_GFX_DS(SceneDepth), 1.0);
+    ctx.ClearDepthStencil(*ACCESS_GFX_DS(SceneDepth), 0.0); // Clear to 0 for reverse-z
     ctx.PopMarker();
 
     ctx.PushMarker("Draw Geometry");

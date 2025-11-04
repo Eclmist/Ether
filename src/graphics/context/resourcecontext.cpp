@@ -114,7 +114,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture2DR
         // RTCamp11 Hack
         // Force this specific format for DS resource
         desc.m_ResourceDesc.m_Format = DepthBufferFormat;
-        desc.m_ClearValue = { DepthBufferDsvFormat, { 1, 0 } };
+        desc.m_ClearValue = { DepthBufferDsvFormat, { 0, 0 } };
     }
 
     if (!ShouldRecreateResource(resourceName, desc))

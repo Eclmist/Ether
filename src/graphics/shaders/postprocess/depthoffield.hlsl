@@ -111,7 +111,7 @@ float LinearizeDepth(float depth)
 {
     float near = g_GlobalConstants.m_CameraClipNearFar.x;
     float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return (far * near) / ((near - far) * depth + far);
+    return far * near / (depth * (far - near) + near);
 }
 
 float WeighSample(float coc, float radius)

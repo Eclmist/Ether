@@ -59,7 +59,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBuffer0, g_GBuffer1, g_GBuffer2, g_SceneDepth);
 
     // Hack to get sky which is basically nothing drawn in gbuffer
-    if (depth >= 1)
+    if (depth <= 0) // Reverse-z
         return sky;
 
     // Debug: 

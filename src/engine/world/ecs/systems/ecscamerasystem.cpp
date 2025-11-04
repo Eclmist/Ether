@@ -42,6 +42,10 @@ void Ether::Ecs::EcsCameraSystem::Update()
         EcsCameraComponent& camera = entity.GetComponent<EcsCameraComponent>();
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
 
+        // TODO: To remove (testing)
+        camera.m_NearPlane = 0.1f;
+        camera.m_FarPlane = 50.0f;
+
         // TODO: Jitter mode is set through imgui debug menu (which is in gfx project), so we need to update the component manually
         // In the future, this should be updated through the engine side, and this can be removed.
         camera.SetJitterMode((JitterMode)Graphics::GraphicCore::GetGraphicConfig().m_TemporalAAJitterMode);
@@ -64,8 +68,8 @@ void Ether::Ecs::EcsCameraSystem::Update()
                 //SMath::DegToRad(camera.m_FieldOfView),
                 SMath::DegToRad(gfxConfig.m_Fov),
                 aspect,
-                camera.m_NearPlane,
-                camera.m_FarPlane);
+                camera.m_FarPlane,    // flipped near/far planes for reverse-z
+                camera.m_NearPlane);
             break;
         }
 
