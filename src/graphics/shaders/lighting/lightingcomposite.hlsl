@@ -64,7 +64,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     // Debug: 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(surface.m_Position, 0);
+        return surface.m_Albedo.xyzz;
     //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
     //    return float4(surface.m_Position, 1.0f);
 
