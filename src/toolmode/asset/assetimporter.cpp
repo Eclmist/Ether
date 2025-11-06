@@ -61,7 +61,7 @@ Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
              aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4 };
 }
 
-void Ether::Toolmode::AssetImporter::ImportMesh(const std::string& assetPath, bool flattern)
+void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool flattern)
 {
     LogToolmodeInfo("Importing asset %s", assetPath.c_str());
 
@@ -104,21 +104,99 @@ Ether::StringID Ether::Toolmode::AssetImporter::GetAssetGuid(const std::string& 
 
 void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath, const aiScene* assimpScene)
 {
-    if (assimpScene->HasMaterials())
-        ProcessMaterials(folderPath, assimpScene->mMaterials, assimpScene->mNumMaterials);
-
-    // Assimp doesn't flag whether or not skeletons exist at the scene level. It expects you to iterate all meshes to discover
-    // skeletons. Absolute insanity.
-    ProcessSkeletons(assimpScene);
-
-    if (assimpScene->HasAnimations())
-        ProcessAnimations(assimpScene);
-
-    if (assimpScene->HasMeshes())
-        ProcessMeshs(assimpScene->mMeshes, assimpScene->mNumMeshes);
+    ProcessMaterials(folderPath, assimpScene);
+    ProcessBones(assimpScene);
+    ProcessAnimations(assimpScene);
+    ProcessMeshs(assimpScene);
 }
 
-void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene)
+void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene)
+{
+    for (uint32_t i = 0; i < assimpScene->mNumMaterials; ++i)
+    {
+        const aiMaterial* material = assimpScene->mMaterials[i];
+
+        aiColor3D baseColor;
+        aiColor3D emissiveColor;
+        float roughness;
+        float metalness;
+        float opacity;
+        material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
+        material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
+        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+        material->Get(AI_MATKEY_METALLIC_FACTOR, metalness);
+        material->Get(AI_MATKEY_OPACITY, opacity);
+
+        Graphics::Material gfxMaterial;
+        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, opacity });
+        gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b, 0 });
+        gfxMaterial.SetRoughness(roughness);
+        gfxMaterial.SetMetalness(metalness);
+
+        if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_BASE_COLOR, 0), textureName);
+            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
+        }
+        else if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
+            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
+        }
+
+        if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
+            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+
+        if (material->GetTextureCount(aiTextureType_GLTF_METALLIC_ROUGHNESS) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_GLTF_METALLIC_ROUGHNESS, 0), textureName);
+            gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
+            gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+        else
+        {
+            if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+            {
+                aiString textureName;
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE_ROUGHNESS, 0), textureName);
+                gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
+            }
+
+            if (material->GetTextureCount(aiTextureType_METALNESS) > 0)
+            {
+                aiString textureName;
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
+                gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
+            }
+        }
+
+        if (material->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSION_COLOR, 0), textureName);
+            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+        else if (material->GetTextureCount(aiTextureType_EMISSIVE) > 0)
+        {
+            aiString textureName;
+            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSIVE, 0), textureName);
+            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
+        }
+
+        m_MaterialGuidTable[i] = gfxMaterial.GetGuid();
+
+        SerializeLibraryData(&gfxMaterial);
+    }
+}
+
+void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
 {
     for (int i = 0; i < assimpScene->mNumMeshes; ++i)
     {
@@ -184,313 +262,52 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
             animationClip.AddBoneKeyframes(boneName, keyframe);
         }
 
-        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, animationClip.GetGuid()));
-        animationClip.Serialize(ofstream);
+        SerializeLibraryData(&animationClip);
     }
 }
 
-void Ether::Toolmode::AssetImporter::ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes)
+void Ether::Toolmode::AssetImporter::ProcessMeshs(const aiScene* assimpScene)
 {
-    for (uint32_t i = 0; i < numMeshes; ++i)
+    for (uint32_t i = 0; i < assimpScene->mNumMeshes; ++i)
     {
-        const aiMesh* mesh = assimpMesh[i];
+        const aiMesh* mesh = assimpScene->mMeshes[i];
 
         if (mesh->HasBones())
-        {
             ProcessSkinnedMesh(mesh);
-        }
         else
-        {
             ProcessStaticMesh(mesh);
-        }
     }
 }
 
 void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
 {
     std::vector<Graphics::VertexFormats::BaseVertexFormat> packedVertices;
+    FillVertexData(assimpMesh, packedVertices);
 
-    AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
-    packedVertices.resize(assimpMesh->mNumVertices);
-
-    for (int j = 0; j < assimpMesh->mNumVertices; ++j)
-    {
-        // There might be a bug here if ethVector3 and aiVector3D's floating point precisions mismatch
-        // However, since we compile assimp ourselves and did not specify double precision, this should be fine
-        AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
-        AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
-
-        if (assimpMesh->HasVertexColors(0))
-        {
-            packedVertices[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
-        }
-        else
-        {
-            packedVertices[j].m_Attributes.m_Color = 1.0f;
-        }
-
-        if (assimpMesh->HasPositions())
-        {
-            packedVertices[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
-            packedVertices[j].m_Attributes.m_PrevPosition = packedVertices[j].m_Attributes.m_Position;
-        }
-
-        if (assimpMesh->HasNormals())
-        {
-            packedVertices[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
-        }
-
-        if (assimpMesh->HasTangentsAndBitangents())
-        {
-            packedVertices[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
-        }
-
-        if (assimpMesh->HasTextureCoords(0))
-        {
-            packedVertices[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
-        }
-    }
-
-    const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
     std::vector<uint32_t> indices;
-    AssertToolmode(assimpMesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
-    indices.reserve(assimpMesh->mNumFaces * numVerticesPerFace);
-    for (int j = 0; j < assimpMesh->mNumFaces; ++j)
-    {
-        if (assimpMesh->mFaces[j].mNumIndices != numVerticesPerFace)
-            break;
-
-        for (int k = 0; k < numVerticesPerFace; ++k)
-            indices.emplace_back(assimpMesh->mFaces[j].mIndices[k]);
-    }
-
-    if (indices.size() <= 0)
-    {
-        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
-        return;
-    }
+    FillIndexData(assimpMesh, indices);
 
     Graphics::StaticMesh gfxStaticMesh;
-    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxStaticMesh.GetGuid()));
-
     gfxStaticMesh.SetPackedVertices(std::move(packedVertices));
     gfxStaticMesh.SetIndices(std::move(indices));
     gfxStaticMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
-    gfxStaticMesh.Serialize(ofstream);
+    SerializeLibraryData(&gfxStaticMesh);
 }
 
-// TODO: Abstract this properly. Mostly copy-pasted from ProcessStaticMesh
 void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh)
 {
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat> packedSkinnedVertices;
+    FillVertexData(assimpMesh, packedSkinnedVertices);
 
-    AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
-    packedSkinnedVertices.resize(assimpMesh->mNumVertices);
-
-    for (int j = 0; j < assimpMesh->mNumVertices; ++j)
-    {
-        // There might be a bug here if ethVector3 and aiVector3D's floating point precisions mismatch
-        // However, since we compile assimp ourselves and did not specify double precision, this should be fine
-        AssertToolmode(sizeof(ethVector3) == sizeof(aiVector3D), "Ether type and Assimp type is mismatched");
-        AssertToolmode(sizeof(ethVector2) == sizeof(aiVector2D), "Ether type and Assimp type is mismatched");
-
-        if (assimpMesh->HasVertexColors(0))
-        {
-            packedSkinnedVertices[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
-        }
-        else
-        {
-            packedSkinnedVertices[j].m_Attributes.m_Color = 1.0f;
-        }
-
-        if (assimpMesh->HasPositions())
-        {
-            packedSkinnedVertices[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
-            packedSkinnedVertices[j].m_Attributes.m_PrevPosition = packedSkinnedVertices[j].m_Attributes.m_Position;
-        }
-
-        if (assimpMesh->HasNormals())
-        {
-            packedSkinnedVertices[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
-        }
-
-        if (assimpMesh->HasTangentsAndBitangents())
-        {
-            packedSkinnedVertices[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
-        }
-
-        if (assimpMesh->HasTextureCoords(0))
-        {
-            packedSkinnedVertices[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
-        }
-    }
-
-    // Process Bones
-    AssertToolmode(assimpMesh->HasBones(), "Encountered skinned mesh without bones (illegal codepath)");
-
-    const aiNode* skeletonRoot = assimpMesh->mBones[0]->mArmature;
-    const Graphics::Skeleton& skeleton = ProcessSkeleton(skeletonRoot);
-
-    for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
-    {
-        const aiBone* bone = assimpMesh->mBones[i];
-        const uint32_t boneIndex = skeleton.GetBoneIndex(bone->mName.C_Str());
-
-        if (boneIndex == Graphics::InvalidBoneIndex)
-        {
-            LogToolmodeWarning("Found contribution from invalid bone index. Skeleton may be broken");
-            continue;
-        }
-
-        // iterate through each "vertex" that this bone influences
-        for (uint32_t vertexIndex = 0; vertexIndex < bone->mNumWeights; ++vertexIndex)
-        {
-            aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
-
-            if (vertexRef.mWeight <= 0.0f)
-                continue;
-
-            // Find which weight slot is still available on the vertex
-            for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
-            {
-                if (packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex)
-                {
-                    packedSkinnedVertices[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
-                    packedSkinnedVertices[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
-                    break;
-                }
-            }
-        }
-    }
-
-    const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
     std::vector<uint32_t> indices;
-    AssertToolmode(assimpMesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
-    indices.reserve(assimpMesh->mNumFaces * numVerticesPerFace);
-    for (int j = 0; j < assimpMesh->mNumFaces; ++j)
-    {
-        if (assimpMesh->mFaces[j].mNumIndices != numVerticesPerFace)
-            break;
-
-        for (int k = 0; k < numVerticesPerFace; ++k)
-            indices.emplace_back(assimpMesh->mFaces[j].mIndices[k]);
-    }
-
-    if (indices.size() <= 0)
-    {
-        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
-        return;
-    }
+    FillIndexData(assimpMesh, indices);
 
     Graphics::SkinnedMesh gfxSkinnedMesh;
-    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxSkinnedMesh.GetGuid()));
-
     gfxSkinnedMesh.SetPackedVertices(std::move(packedSkinnedVertices));
     gfxSkinnedMesh.SetIndices(std::move(indices));
     gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
-    gfxSkinnedMesh.SetSkeletonGuid(skeleton.GetGuid());
-    gfxSkinnedMesh.Serialize(ofstream);
-}
-
-void Ether::Toolmode::AssetImporter::ProcessMaterials(
-    const std::string& folderPath, aiMaterial** assimpMaterials,
-    uint32_t numMaterials)
-{
-    for (uint32_t i = 0; i < numMaterials; ++i)
-    {
-        const aiMaterial* material = assimpMaterials[i];
-
-        Graphics::Material gfxMaterial;
-        OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxMaterial.GetGuid()));
-
-        assert(sizeof(ethVector3) == sizeof(aiColor3D));
-
-        aiColor3D baseColor;
-        aiColor3D specularColor;
-        aiColor3D emissiveColor;
-        float roughness;
-        float metalness;
-        float opacity;
-        material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
-        material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
-        material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
-        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
-        material->Get(AI_MATKEY_METALLIC_FACTOR, metalness);
-        material->Get(AI_MATKEY_OPACITY, opacity);
-
-        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, opacity });
-        gfxMaterial.SetSpecularColor({ specularColor.r, baseColor.g, baseColor.b, 1 });
-        gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b, 0 });
-        gfxMaterial.SetRoughness(roughness);
-        gfxMaterial.SetMetalness(metalness);
-
-        if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
-            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
-        }
-        else if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_BASE_COLOR, 0), textureName);
-            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
-        }
-
-        if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
-            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-        else if (material->GetTextureCount(aiTextureType_HEIGHT) > 0)
-        {
-            // Experimental: Bistro labels normal maps as bump. We don't support bump mapping,
-            // so load it as normals regardless
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_HEIGHT, 0), textureName);
-            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-
-        if (material->GetTextureCount(aiTextureType_SPECULAR) > 0)
-        {
-            // Expeimental: Specular contains metalness in g, and roughness in b. ( or is it the other way round?? )
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_SPECULAR, 0), textureName);
-            gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
-            gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-
-        if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE_ROUGHNESS, 0), textureName);
-            gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-
-        if (material->GetTextureCount(aiTextureType_METALNESS) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
-            gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-
-        if (material->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSION_COLOR, 0), textureName);
-            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
-        } 
-        else if (material->GetTextureCount(aiTextureType_EMISSIVE) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSIVE, 0), textureName);
-            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-
-        gfxMaterial.Serialize(ofstream);
-        m_MaterialGuidTable[i] = gfxMaterial.GetGuid();
-    }
+    gfxSkinnedMesh.SetSkeletonGuid(m_ArmatureRootToSkeletonMap.at(assimpMesh->mBones[0]->mArmature->mName.C_Str())->GetGuid());
+    SerializeLibraryData(&gfxSkinnedMesh);
 }
 
 Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
@@ -519,7 +336,6 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     }
 
     Graphics::Texture gfxTexture;
-    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, gfxTexture.GetGuid()));
 
     unsigned char* downscaleOutput = image;
 
@@ -537,37 +353,34 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
     gfxTexture.SetData(downscaleOutput, genMips);
-    gfxTexture.Serialize(ofstream);
+    SerializeLibraryData(&gfxTexture);
 
     m_PathToGuidMap[texturePath] = gfxTexture.GetGuid();
+
     return gfxTexture.GetGuid();
 }
 
-const Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiNode* assimpArmature)
+Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiNode& armatureRootNode)
 {
-    AssertToolmode(assimpArmature != nullptr, "Armature Root Node cannot be null");
-
-    const std::unordered_map<StringID, aiBone*>& armatureBones = m_ArmatureToBonesMap.at(assimpArmature->mName.C_Str());
+    const std::unordered_map<StringID, aiBone*>& armatureBones = m_ArmatureToBonesMap.at(armatureRootNode.mName.C_Str());
     
-    if (m_ArmatureRootToSkeletonMap.find(assimpArmature->mName.C_Str()) != m_ArmatureRootToSkeletonMap.end())
+    if (m_ArmatureRootToSkeletonMap.find(armatureRootNode.mName.C_Str()) != m_ArmatureRootToSkeletonMap.end())
     {
         // Skeleton already exist and has been processed
-        return *m_ArmatureRootToSkeletonMap.at(assimpArmature->mName.C_Str());
+        return *m_ArmatureRootToSkeletonMap.at(armatureRootNode.mName.C_Str());
     }
 
-    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(assimpArmature->mName.C_Str(), std::make_unique<Graphics::Skeleton>());
+    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(armatureRootNode.mName.C_Str(), std::make_unique<Graphics::Skeleton>());
     Graphics::Skeleton& skeleton = *iter->second;
 
     // Update the global inverse transform
     Graphics::SkeletonPose bindPose = skeleton.GetBindPose();
-    bindPose.m_GlobalInverseTransform = ToEthMatrix4x4(assimpArmature->mTransformation).Inversed();
+    bindPose.m_GlobalInverseTransform = ToEthMatrix4x4(armatureRootNode.mTransformation).Inversed();
     skeleton.SetBindPose(bindPose);
 
     // Depth first search each root bone to build our own skeleton hierarchy
     std::function<void(const aiNode*, uint32_t, ethMatrix4x4)> GenerateSkeletonHierarchy =
-    [&](const aiNode* node,
-            uint32_t parentBoneIndex,
-            const ethMatrix4x4& parentTransform) -> void
+        [&](const aiNode* node, uint32_t parentBoneIndex, const ethMatrix4x4& parentTransform) -> void
     {
         aiBone* aibone = nullptr;
         if (armatureBones.find(node->mName.C_Str()) != armatureBones.end())
@@ -576,7 +389,8 @@ const Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton
         const uint32_t currentBoneIndex = skeleton.NumBones();
         const ethMatrix4x4 localTransformation = ToEthMatrix4x4(node->mTransformation);
         const ethMatrix4x4 globalTransformation = parentTransform * localTransformation;
-        const ethMatrix4x4 offsetMatrix = aibone == nullptr ? globalTransformation.Inversed() : ToEthMatrix4x4(aibone->mOffsetMatrix);
+        const ethMatrix4x4 offsetMatrix = aibone == nullptr ? globalTransformation.Inversed()
+                                                            : ToEthMatrix4x4(aibone->mOffsetMatrix);
 
         Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
         skeleton.AddBone(bone);
@@ -594,19 +408,135 @@ const Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton
     };
 
     // Assumption: Armature root is not a bone, and the root bone is one or more of its children
-    AssertToolmode(armatureBones.find(assimpArmature->mName.C_Str()) == armatureBones.end(), "Armature root node is actually a bone??");
+    AssertToolmode(armatureBones.find(armatureRootNode.mName.C_Str()) == armatureBones.end(), "Armature root node is actually a bone??");
 
-    for (uint32_t i = 0; i < assimpArmature->mNumChildren; ++i)
+    for (uint32_t i = 0; i < armatureRootNode.mNumChildren; ++i)
     {
-        if (armatureBones.find(assimpArmature->mChildren[i]->mName.C_Str()) != armatureBones.end())
+        if (armatureBones.find(armatureRootNode.mChildren[i]->mName.C_Str()) != armatureBones.end())
         {
-            GenerateSkeletonHierarchy(assimpArmature->mChildren[i], Graphics::InvalidBoneIndex, {});
+            GenerateSkeletonHierarchy(armatureRootNode.mChildren[i], Graphics::InvalidBoneIndex, {});
         }
     }
 
-    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, skeleton.GetGuid()));
-    skeleton.Serialize(ofstream);
+    SerializeLibraryData(&skeleton);
 
     return skeleton;
+}
+
+template void Ether::Toolmode::AssetImporter::FillVertexData(
+    const aiMesh* assimpMesh,
+    std::vector<Ether::Graphics::VertexFormats::BaseVertexFormat>& data);
+
+template void Ether::Toolmode::AssetImporter::FillVertexData(
+    const aiMesh* assimpMesh,
+    std::vector<Ether::Graphics::VertexFormats::SkinnedVertexFormat>& data);
+
+template <typename VertexFormat>
+void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, std::vector<VertexFormat>& data)
+{
+    AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
+    data.resize(assimpMesh->mNumVertices);
+
+    for (int j = 0; j < assimpMesh->mNumVertices; ++j)
+    {
+        if (assimpMesh->HasVertexColors(0))
+        {
+            data[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
+        }
+        else
+        {
+            data[j].m_Attributes.m_Color = 1.0f;
+        }
+
+        if (assimpMesh->HasPositions())
+        {
+            data[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
+            data[j].m_Attributes.m_PrevPosition = data[j].m_Attributes.m_Position;
+        }
+
+        if (assimpMesh->HasNormals())
+        {
+            data[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
+        }
+
+        if (assimpMesh->HasTangentsAndBitangents())
+        {
+            data[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
+        }
+
+        if (assimpMesh->HasTextureCoords(0))
+        {
+            data[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
+        }
+    }
+
+    if constexpr (std::is_same_v<VertexFormat, Graphics::VertexFormats::SkinnedVertexFormat>)
+    {
+        const aiNode* skeletonRoot = assimpMesh->mBones[0]->mArmature;
+
+        AssertToolmode(assimpMesh->HasBones(), "Encountered skinned mesh without bones (illegal codepath)");
+        AssertToolmode(skeletonRoot != nullptr, "Armature Root Node cannot be null");
+
+        const Graphics::Skeleton& skeleton = ProcessSkeleton(*skeletonRoot);
+
+        for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
+        {
+            const aiBone* bone = assimpMesh->mBones[i];
+            const uint32_t boneIndex = skeleton.GetBoneIndex(bone->mName.C_Str());
+
+            if (boneIndex == Graphics::InvalidBoneIndex)
+            {
+                LogToolmodeWarning("Found contribution from invalid bone index. Skeleton may be broken");
+                continue;
+            }
+
+            // iterate through each "vertex" that this bone influences
+            for (uint32_t vertexIndex = 0; vertexIndex < bone->mNumWeights; ++vertexIndex)
+            {
+                aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
+
+                if (vertexRef.mWeight <= 0.0f)
+                    continue;
+
+                // Find which weight slot is still available on the vertex
+                for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
+                {
+                    if (data[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex)
+                    {
+                        data[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
+                        data[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Ether::Toolmode::AssetImporter::FillIndexData(const aiMesh* assimpMesh, std::vector<uint32_t>& indices) const
+{
+    const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
+    AssertToolmode(assimpMesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
+    indices.reserve(assimpMesh->mNumFaces * numVerticesPerFace);
+    for (int j = 0; j < assimpMesh->mNumFaces; ++j)
+    {
+        if (assimpMesh->mFaces[j].mNumIndices != numVerticesPerFace)
+            break;
+
+        for (int k = 0; k < numVerticesPerFace; ++k)
+            indices.emplace_back(assimpMesh->mFaces[j].mIndices[k]);
+    }
+
+    if (indices.size() <= 0)
+    {
+        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
+        return;
+    }
+}
+
+void Ether::Toolmode::AssetImporter::SerializeLibraryData(Ether::Serializable* libraryData)
+{
+    OFileStream ofstream(std::format("{}\\{}.eres", m_LibraryPath, libraryData->GetGuid()));
+    libraryData->Serialize(ofstream);
 }
 

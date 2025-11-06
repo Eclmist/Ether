@@ -169,10 +169,6 @@ void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()
 void Ether::Graphics::GraphicCommon::InitializeMaterials()
 {
     m_DefaultMaterial = std::make_unique<Material>();
-    m_DefaultMaterial->SetBaseColor({ 1, 1, 1, 1 });
-    m_DefaultMaterial->SetSpecularColor({ 0.5, 0.5, 0.5, 0.5 });
-
     m_ErrorMaterial = std::make_unique<Material>();
     m_ErrorMaterial->SetBaseColor({ 1, 0, 1, 1 });
-    m_ErrorMaterial->SetSpecularColor({ 0, 0, 0, 0 });
 }

@@ -27,6 +27,6 @@ Ether::Toolmode::ImportAssetCommand::ImportAssetCommand(const CommandData* data)
 
 void Ether::Toolmode::ImportAssetCommand::Execute()
 {
-    AssetImporter::Instance().ImportMesh(m_Path);
+    AssetImporter::Instance().Import(m_Path);
 }
 

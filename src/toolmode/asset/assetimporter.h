@@ -41,7 +41,7 @@ namespace Ether::Toolmode
         inline void SetMeshScale(float scale) { m_MeshScale = scale; }
 
     public:
-        void ImportMesh(const std::string& assetPath, bool flattern = false);
+        void Import(const std::string& assetPath, bool flattern = false);
         void ImportTexture(const std::string& assetPath, bool isSrgb = true, bool genMips = true);
 
     public:
@@ -49,16 +49,24 @@ namespace Ether::Toolmode
 
     private:
         void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
-        void ProcessSkeletons(const aiScene* assimpScene);
+        void ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene);
+        void ProcessBones(const aiScene* assimpScene);
         void ProcessAnimations(const aiScene* assimpScene);
-        void ProcessMeshs(aiMesh** assimpMesh, uint32_t numMeshes);
-        void ProcessStaticMesh(const aiMesh* assimpMesh);
-        void ProcessSkinnedMesh(const aiMesh* assimpMesh);
-        void ProcessMaterials(const std::string& folderPath, aiMaterial** assimpMaterials, uint32_t numMaterials);
-        StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
+        void ProcessMeshs(const aiScene* assimpScene);
 
     private:
-        const Graphics::Skeleton& ProcessSkeleton(const aiNode* assimpArmature);
+        void ProcessStaticMesh(const aiMesh* assimpMesh);
+        void ProcessSkinnedMesh(const aiMesh* assimpMesh);
+        StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
+        Graphics::Skeleton& ProcessSkeleton(const aiNode& armatureRootNode);
+
+    private:
+        template <typename VertexFormat>
+        void FillVertexData(const aiMesh* assimpMesh, std::vector<VertexFormat>& data);
+        void FillIndexData(const aiMesh* assimpMesh, std::vector<uint32_t>& indices) const;
+
+    private:
+        void SerializeLibraryData(Ether::Serializable* libraryData);
 
     private:
         std::string m_WorkspacePath = "";
@@ -72,5 +80,6 @@ namespace Ether::Toolmode
         std::unordered_map<StringID, Graphics::Skeleton> m_BoneNameToSkeletonMap; // unused
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
+
 }
 

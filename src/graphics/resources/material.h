@@ -38,7 +38,6 @@ public:
 public:
     inline uint32_t GetTransientMaterialIdx() const { return m_TransientMaterialIdx; }
     inline ethVector4 GetBaseColor() const { return m_BaseColor; }
-    inline ethVector4 GetSpecularColor() const { return m_SpecularColor; }
     inline ethVector4 GetEmissiveColor() const { return m_EmissiveColor; }
     inline float GetRoughness() const { return m_Roughness; }
     inline float GetMetalness() const { return m_Metalness; }
@@ -50,7 +49,6 @@ public:
 
     inline void SetTransientMaterialIdx(uint32_t id) { m_TransientMaterialIdx = id; }
     inline void SetBaseColor(const ethVector4& color) { m_BaseColor = color; }
-    inline void SetSpecularColor(const ethVector4& color) { m_SpecularColor = color; }
     inline void SetEmissiveColor(const ethVector4& color) { m_EmissiveColor = color; }
     inline void SetRoughness(float roughness) { m_Roughness = roughness; }
     inline void SetMetalness(float metalness) { m_Metalness = metalness; }
@@ -62,7 +60,6 @@ public:
 
 private:
     ethVector4 m_BaseColor;
-    ethVector4 m_SpecularColor;
     ethVector4 m_EmissiveColor;
     float m_Roughness;
     float m_Metalness;

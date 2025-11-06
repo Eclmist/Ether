@@ -58,7 +58,6 @@ void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, Re
     {
         Material* currMat = renderData.m_VisualBatches[i].m_Material;
         materials[i].m_BaseColor = currMat->GetBaseColor();
-        materials[i].m_SpecularColor = currMat->GetSpecularColor();
         materials[i].m_EmissiveColor = currMat->GetEmissiveColor();
         materials[i].m_Roughness = currMat->GetRoughness();
         materials[i].m_Metalness = currMat->GetMetalness();

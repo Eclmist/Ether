@@ -26,7 +26,6 @@ ETH_BEGIN_SHADER_NAMESPACE
 struct Material
 {
     ethVector4 m_BaseColor;
-    ethVector4 m_SpecularColor;
     ethVector4 m_EmissiveColor;
     float m_Roughness;
     float m_Metalness;

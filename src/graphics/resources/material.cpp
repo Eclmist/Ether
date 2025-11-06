@@ -19,12 +19,11 @@
 
 #include "graphics/resources/material.h"
 
-constexpr uint32_t MaterialVersion = 0;
+constexpr uint32_t MaterialVersion = 1;
 
 Ether::Graphics::Material::Material()
     : Serializable(MaterialVersion, ETH_CLASS_ID_MATERIAL)
     , m_BaseColor(1, 1, 1, 1)
-    , m_SpecularColor(0.5, 0.5, 0.5, 0.5)
     , m_EmissiveColor(0, 0, 0, 0)
     , m_Roughness(0.5)
     , m_Metalness(0.0)
@@ -39,7 +38,6 @@ void Ether::Graphics::Material::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
     ostream << m_BaseColor;
-    ostream << m_SpecularColor;
     ostream << m_EmissiveColor;
     ostream << m_Roughness;
     ostream << m_Metalness;
@@ -54,7 +52,6 @@ void Ether::Graphics::Material::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
     istream >> m_BaseColor;
-    istream >> m_SpecularColor;
     istream >> m_EmissiveColor;
     istream >> m_Roughness;
     istream >> m_Metalness;

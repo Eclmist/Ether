@@ -87,10 +87,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         }
 
         for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
-            AssetImporter::Instance().ImportMesh(m_ImportPaths[i]);
+            AssetImporter::Instance().Import(m_ImportPaths[i]);
 
         for (uint32_t i = 0; i < m_FlatternedImportPaths.size(); ++i)
-            AssetImporter::Instance().ImportMesh(m_FlatternedImportPaths[i], true);
+            AssetImporter::Instance().Import(m_FlatternedImportPaths[i], true);
 
         AssetImporter::Instance().ImportTexture(hdriPath);
 
