@@ -83,7 +83,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
             const ethVector3 jitterTranslation = { cameraJitter.x / (resolution.x * 0.5f),
                                                    cameraJitter.y / (resolution.y * 0.5f),
                                                    0.0f };
-            projectionMatrixJittered = projectionMatrixNoJitter * Transform::GetTranslationMatrix(jitterTranslation);
+            projectionMatrixJittered = Transform::GetTranslationMatrix(jitterTranslation) * projectionMatrixNoJitter;
         }
 
         ethMatrix4x4 rotation = Transform::GetRotationMatrix(ethQuaternion::FromEuler(transform.m_Rotation));
