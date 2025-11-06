@@ -25,12 +25,13 @@ ETH_BEGIN_SHADER_NAMESPACE
 
 struct Material
 {
-    ethVector4 m_BaseColor;
-    ethVector4 m_EmissiveColor;
+    ethVector3 m_BaseColor;
+    ethVector3 m_EmissiveColor;
     float m_Roughness;
     float m_Metalness;
+    float m_Opacity;
 
-    uint32_t m_AlbedoTextureIndex;
+    uint32_t m_BaseColorTextureIndex;
     uint32_t m_NormalTextureIndex;
     uint32_t m_RoughnessTextureIndex;
     uint32_t m_MetalnessTextureIndex;

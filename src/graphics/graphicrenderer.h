@@ -40,6 +40,7 @@ public:
     void WaitForPresent();
     void Render();
     void Present();
+    void Cleanup();
 
 private:
     uint64_t m_FrameNumber;

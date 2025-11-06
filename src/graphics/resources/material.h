@@ -37,39 +37,52 @@ public:
 
 public:
     inline uint32_t GetTransientMaterialIdx() const { return m_TransientMaterialIdx; }
-    inline ethVector4 GetBaseColor() const { return m_BaseColor; }
-    inline ethVector4 GetEmissiveColor() const { return m_EmissiveColor; }
+    inline ethVector3 GetBaseColor() const { return m_BaseColor; }
+    inline ethVector3 GetEmissiveColor() const { return m_EmissiveColor; }
     inline float GetRoughness() const { return m_Roughness; }
     inline float GetMetalness() const { return m_Metalness; }
-    inline StringID GetAlbedoTextureID() const { return m_AlbedoTextureID; }
+    inline float GetOpacity() const { return m_Opacity; }
+    inline StringID GetBaseColorTextureID() const { return m_BaseColorTextureID; }
     inline StringID GetNormalTextureID() const { return m_NormalTextureID; }
     inline StringID GetRoughnessTextureID() const { return m_RoughnessTextureID; }
     inline StringID GetMetalnessTextureID() const { return m_MetalnessTextureID; }
     inline StringID GetEmissiveTextureID() const { return m_EmissiveTextureID; }
+    inline bool GetRaytracingVisibility() const { return m_RaytracingVisibility; }
 
     inline void SetTransientMaterialIdx(uint32_t id) { m_TransientMaterialIdx = id; }
-    inline void SetBaseColor(const ethVector4& color) { m_BaseColor = color; }
-    inline void SetEmissiveColor(const ethVector4& color) { m_EmissiveColor = color; }
+    inline void SetBaseColor(const ethVector3& color) { m_BaseColor = color; }
+    inline void SetEmissiveColor(const ethVector3& color) { m_EmissiveColor = color; }
     inline void SetRoughness(float roughness) { m_Roughness = roughness; }
     inline void SetMetalness(float metalness) { m_Metalness = metalness; }
-    inline void SetAlbedoTextureID(const StringID& id) { m_AlbedoTextureID = id; }
+    inline void SetOpacity(float opacity) { m_Opacity = opacity; }
+    inline void SetBaseColorTextureID(const StringID& id) { m_BaseColorTextureID = id; }
     inline void SetNormalTextureID(const StringID& id) { m_NormalTextureID = id; }
     inline void SetRoughnessTextureID(const StringID& id) { m_RoughnessTextureID = id; }
     inline void SetMetalnessTextureID(const StringID& id) { m_MetalnessTextureID = id; }
     inline void SetEmissiveTextureID(const StringID& id) { m_EmissiveTextureID = id; }
+    inline void SetRaytracingVisibility(bool visibility) { m_RaytracingVisibility = visibility; }
+
+public:
+    bool HasTranslucency() const;
 
 private:
-    ethVector4 m_BaseColor;
-    ethVector4 m_EmissiveColor;
+    ethVector3 m_BaseColor;
+    ethVector3 m_EmissiveColor;
     float m_Roughness;
     float m_Metalness;
+    float m_Opacity;
 
-    StringID m_AlbedoTextureID;
+    StringID m_BaseColorTextureID;
     StringID m_NormalTextureID;
     StringID m_RoughnessTextureID;
     StringID m_MetalnessTextureID;
     StringID m_EmissiveTextureID;
 
+private:
+    // Material Settings
+    bool m_RaytracingVisibility;
+
+private:
     // Transient Data
     uint32_t m_TransientMaterialIdx;
 };

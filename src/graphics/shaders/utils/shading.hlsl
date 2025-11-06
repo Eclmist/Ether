@@ -23,9 +23,9 @@
 
 #define EMISSION_SCALE 10000.0f
 
-struct GeometricSurface
+struct InterpolatedSurface
 {
-    float3 m_Position;
+    float3 m_VertexPosition;
     float3 m_Normal;
     float3 m_Tangent;
     float2 m_TexCoord;
@@ -36,7 +36,7 @@ struct ShadingSurface
 {
     float3 m_Position;
     float3 m_Normal;
-    float3 m_Albedo;
+    float3 m_BaseColor;
     float3 m_Emission;
     float m_Roughness;
     float m_Metalness;
@@ -61,50 +61,54 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     ShadingSurface surface;
     surface.m_Position = ScreenToWorldSpace(screenCoord, depth);
     surface.m_Normal = DecodeNormals(gbuffer1.xy);
-    surface.m_Albedo = gbuffer0.rgb;
+    surface.m_BaseColor = gbuffer0.rgb;
     surface.m_Emission = gbuffer2.rgb;
     surface.m_Roughness = DecodeFP16(gbuffer2.w).x;
     surface.m_Metalness = DecodeFP16(gbuffer2.w).y;
     surface.m_Velocity = gbuffer1.zw;
     surface.m_MaterialID = floor(gbuffer0.w * 255.0f);
+
+    // Opacity information is lost after gbuffer discards alpha masked pixels.
+    // For actually translucent pixels, they're not drawn in the gbuffer at all.
+    surface.m_Opacity = 1.0f;
+
     return surface;
 }
 
-ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, Material material, uint samplerIndex, float mipLevel)
+ShadingSurface GetShadingSurfaceFromGeometry(InterpolatedSurface interpolatedSurface, Material material, uint samplerIndex, float mipLevel)
 {
     sampler linearSampler = SamplerDescriptorHeap[samplerIndex];
-
-    float3 baseColor = geometricSurface.m_Color.rgb * material.m_BaseColor.rgb;
+    float3 baseColor = material.m_BaseColor * interpolatedSurface.m_Color.rgb;
     float3 emission = material.m_EmissiveColor.rgb * EMISSION_SCALE;
-    float3 normal = geometricSurface.m_Normal;
+    float3 normal = interpolatedSurface.m_Normal;
     float roughness = material.m_Roughness;
     float metalness = material.m_Metalness;
-    float opacity = material.m_BaseColor.a; // ignore vertex color alpha for now (TODO)
+    float opacity = material.m_Opacity * interpolatedSurface.m_Color.a;
 
-    if (material.m_AlbedoTextureIndex != 0)
+    if (material.m_BaseColorTextureIndex != 0)
     {
-        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
-        float4 albedo;
+        Texture2D<float4> baseColorTex = ResourceDescriptorHeap[material.m_BaseColorTextureIndex];
+        float4 baseColorSample;
         if (mipLevel != -1)
-            albedo = albedoTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel);
+            baseColorSample = baseColorTex.SampleLevel(linearSampler, interpolatedSurface.m_TexCoord, mipLevel);
         else
-            albedo = albedoTex.Sample(linearSampler, geometricSurface.m_TexCoord);
+            baseColorSample = baseColorTex.Sample(linearSampler, interpolatedSurface.m_TexCoord);
 
-        baseColor *= albedo.rgb;
-        opacity *= albedo.a;
+        baseColor *= baseColorSample.rgb;
+        opacity *= baseColorSample.a;
     }
     if (material.m_NormalTextureIndex != 0)
     {
         Texture2D<float4> normalTex = ResourceDescriptorHeap[material.m_NormalTextureIndex];
 
         if (mipLevel != -1)
-            normal = normalTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel).xyz;
+            normal = normalTex.SampleLevel(linearSampler, interpolatedSurface.m_TexCoord, mipLevel).xyz;
         else
-            normal = normalTex.Sample(linearSampler, geometricSurface.m_TexCoord).xyz;
+            normal = normalTex.Sample(linearSampler, interpolatedSurface.m_TexCoord).xyz;
 
         normal = normal * 2.0 - 1.0;
-        float3 bitangent = cross(geometricSurface.m_Tangent, geometricSurface.m_Normal);
-        float3x3 TBN = float3x3(geometricSurface.m_Tangent, bitangent, geometricSurface.m_Normal.xyz);
+        float3 bitangent = cross(interpolatedSurface.m_Tangent, interpolatedSurface.m_Normal);
+        float3x3 TBN = float3x3(interpolatedSurface.m_Tangent, bitangent, interpolatedSurface.m_Normal.xyz);
         normal = normalize(mul(normal, TBN));
     }
     if (material.m_RoughnessTextureIndex != 0)
@@ -112,33 +116,33 @@ ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, 
         Texture2D<float4> roughnessTex = ResourceDescriptorHeap[material.m_RoughnessTextureIndex];
 
         if (mipLevel != -1)
-            roughness = roughnessTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel).g;
+            roughness = roughnessTex.SampleLevel(linearSampler, interpolatedSurface.m_TexCoord, mipLevel).g;
         else
-            roughness = roughnessTex.Sample(linearSampler, geometricSurface.m_TexCoord).g;
+            roughness = roughnessTex.Sample(linearSampler, interpolatedSurface.m_TexCoord).g;
     }
     if (material.m_MetalnessTextureIndex != 0)
     {
         Texture2D<float4> metalnessTex = ResourceDescriptorHeap[material.m_MetalnessTextureIndex];
 
         if (mipLevel != -1)
-            metalness = metalnessTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel).b;
+            metalness = metalnessTex.SampleLevel(linearSampler, interpolatedSurface.m_TexCoord, mipLevel).b;
         else
-            metalness = metalnessTex.Sample(linearSampler, geometricSurface.m_TexCoord).b;
+            metalness = metalnessTex.Sample(linearSampler, interpolatedSurface.m_TexCoord).b;
     }
     if (material.m_EmissiveTextureIndex != 0)
     {
         Texture2D<float4> emissiveTex = ResourceDescriptorHeap[material.m_EmissiveTextureIndex];
 
         if (mipLevel != -1)
-            emission *= emissiveTex.SampleLevel(linearSampler, geometricSurface.m_TexCoord, mipLevel).rgb;
+            emission *= emissiveTex.SampleLevel(linearSampler, interpolatedSurface.m_TexCoord, mipLevel).rgb;
         else
-            emission *= emissiveTex.Sample(linearSampler, geometricSurface.m_TexCoord).rgb;
+            emission *= emissiveTex.Sample(linearSampler, interpolatedSurface.m_TexCoord).rgb;
     }
 
     ShadingSurface shadingSurface;
-    shadingSurface.m_Position = geometricSurface.m_Position;
+    shadingSurface.m_Position = interpolatedSurface.m_VertexPosition;
     shadingSurface.m_Normal = normal;
-    shadingSurface.m_Albedo = baseColor.rgb;
+    shadingSurface.m_BaseColor = baseColor.rgb;
     shadingSurface.m_Roughness = roughness;
     shadingSurface.m_Metalness = metalness;
     shadingSurface.m_Emission = emission;
@@ -151,8 +155,8 @@ ShadingSurface GetShadingSurfaceFromGeometry(GeometricSurface geometricSurface, 
 
 ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material, uint samplerIndex, float mipLevel)
 {
-    GeometricSurface geometricSurface;
-    geometricSurface.m_Position = hitSurface.m_Position;
+    InterpolatedSurface geometricSurface;
+    geometricSurface.m_VertexPosition = hitSurface.m_Position;
     geometricSurface.m_Normal = hitSurface.m_Normal;
     geometricSurface.m_Tangent = hitSurface.m_Tangent;
     geometricSurface.m_Color = hitSurface.m_Color;

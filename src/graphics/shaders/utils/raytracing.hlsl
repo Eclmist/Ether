@@ -87,7 +87,7 @@ float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
 {
     wi = normalize(wi);
     wo = normalize(wo);
-    const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_Albedo, surface.m_Roughness, surface.m_Metalness);
+    const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_BaseColor, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     return f * Li * cosTheta;
 }
@@ -272,11 +272,11 @@ void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     //if (!mat.IsMasked()) (TODO)
     //    return;
 
-    float opacity = material.m_BaseColor.a; // ignore vertex color alpha for now (TODO)
-    if (material.m_AlbedoTextureIndex != 0)
+    float opacity = material.m_Opacity;
+    if (material.m_BaseColorTextureIndex != 0)
     {
         sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_AlbedoTextureIndex];
+        Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_BaseColorTextureIndex];
         float4 gatherOpacity = albedoTex.GatherAlpha(linearSampler, vertex.m_TexCoord);
         opacity *= (gatherOpacity.x + gatherOpacity.y + gatherOpacity.z + gatherOpacity.w) / 4.0f;
     }

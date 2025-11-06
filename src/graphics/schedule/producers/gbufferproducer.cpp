@@ -30,9 +30,9 @@
 
 DEFINE_GFX_PA(GBufferProducer)
 DEFINE_GFX_DS(SceneDepth)
-DEFINE_GFX_RT(GBufferTexture0) // [Albedo.x,   Albedo.y,   Albedo.z,   MaterialID]
-DEFINE_GFX_RT(GBufferTexture1) // [Normal.x,   Normal.y,   Velocity.x, Velocity.y]
-DEFINE_GFX_RT(GBufferTexture2) // [Emissive.x, Emissive.y, Emissive.z, Roughness/Metalness]
+DEFINE_GFX_RT(GBufferTexture0) // [BaseColor.x, BaseColor.y, BaseColor.z, MaterialID]
+DEFINE_GFX_RT(GBufferTexture1) // [Normal.x,    Normal.y,    Velocity.x,  Velocity.y]
+DEFINE_GFX_RT(GBufferTexture2) // [Emissive.x,  Emissive.y,  Emissive.z,  Roughness & Metalness Packed]
 
 DEFINE_GFX_SR(SceneDepth)
 DEFINE_GFX_SR(GBufferTexture0)
@@ -80,7 +80,8 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
     const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
 
-    // Temporarily weave in skinned mesh update here for convenience. Really need a new render pass for this. (TODO)
+    // Temporarily weave in skinned mesh update here for convenience.
+    // Really need a new render pass for this. (TODO - ComputeSkinning)
     for (const SkinnedVisual& skinnedVisual : skinnedVisuals)
     {
         ETH_MARKER_EVENT("Update skinned mesh VBs");
@@ -125,22 +126,27 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     
     ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(SceneDepth)));
 
-    // Actually do batching..? (TODO)
+    // Batch by material only for now
     for (const VisualBatch& batch : batches)
-    for (const Visual& visual : batch.m_Visuals)
     {
-        ETH_MARKER_EVENT("Draw Meshes");
-        if (visual.m_Culled)
-            continue;
-        
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
-        instanceParams->m_MaterialIdx = visual.m_Material->GetTransientMaterialIdx();
+        instanceParams->m_MaterialIdx = batch.m_Material->GetTransientMaterialIdx();
 
-        ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
-        ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
-        ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
+        if (batch.m_Material->HasTranslucency())
+            continue;
+
+        for (const Visual& visual : batch.m_Visuals)
+        {
+            ETH_MARKER_EVENT("Draw Meshes");
+            if (visual.m_Culled)
+                continue;
+
+            ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+            ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
+            ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
+            ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
+        }
     }
 
     ctx.PopMarker();

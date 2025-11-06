@@ -74,6 +74,12 @@ float LinearizeDepth(float depth)
     return far * near / (depth * (far - near) + near);
 }
 
+void DiscardAlphaMaskedPixels(const ShadingSurface surface)
+{
+    if (surface.m_Opacity < 0.5f)
+        discard;
+}
+
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
@@ -102,29 +108,27 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float2 texSpacePrev = ClipToTextureSpace(IN.ClipPosPrev);
     const float2 velocity = (texSpaceCurr - texSpacePrev);
 
-    GeometricSurface geometricSurface;
-    geometricSurface.m_Position = ClipToWorldSpace(IN.ClipPos);
-    geometricSurface.m_Normal = IN.Normal;
-    geometricSurface.m_Tangent = IN.Tangent;
-    geometricSurface.m_Color = IN.Color;
-    geometricSurface.m_TexCoord = IN.TexCoord;
+    InterpolatedSurface interpolatedSurface;
+    interpolatedSurface.m_VertexPosition = ClipToWorldSpace(IN.ClipPos);
+    interpolatedSurface.m_Normal = IN.Normal;
+    interpolatedSurface.m_Tangent = IN.Tangent;
+    interpolatedSurface.m_Color = IN.Color;
+    interpolatedSurface.m_TexCoord = IN.TexCoord;
 
-    const ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, -1);
+    const ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(interpolatedSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, -1);
 
     const float3 worldPos = shadingSurface.m_Position;
     const float3 normal = shadingSurface.m_Normal;
-    const float3 albedo = shadingSurface.m_Albedo;
+    const float3 baseColor = shadingSurface.m_BaseColor;
     const float3 emissive = shadingSurface.m_Emission;
     const float roughness = shadingSurface.m_Roughness;
     const float metalness = shadingSurface.m_Metalness;
     const float opacity = shadingSurface.m_Opacity;
 
-    // Dither non-opaque surfaces in gbuffer
-    if (min(0.95, InterleavedGradientNoise(IN.ScreenPos.xy + g_GlobalConstants.m_CameraJitter)) > opacity)
-        discard;
+    DiscardAlphaMaskedPixels(shadingSurface);
 
     PS_OUTPUT o;
-    o.Output0 = float4(albedo.x, albedo.y, albedo.z, (g_InstanceParams.m_MaterialIdx / 255.0f));
+    o.Output0 = float4(baseColor.x, baseColor.y, baseColor.z, (g_InstanceParams.m_MaterialIdx / 255.0f));
     o.Output1 = float4(EncodeNormals(normal), velocity.x, velocity.y);
     o.Output2 = float4(emissive.x, emissive.y, emissive.z, EncodeFP16(roughness, metalness));
     return o;

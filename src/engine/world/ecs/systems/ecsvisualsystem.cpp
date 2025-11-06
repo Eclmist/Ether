@@ -37,6 +37,7 @@ void Ether::Ecs::EcsVisualSystem::Update()
     ETH_MARKER_EVENT("Visual System - Update");
 
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
+
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
     std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
@@ -82,10 +83,11 @@ void Ether::Ecs::EcsVisualSystem::Update()
 
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
-        gfxVisual.m_VisibleInRaytracing = gfxVisual.m_Material->GetBaseColor().w >= 1.0f;
 
-        if (gfxVisual.m_VisibleInRaytracing)
+        if (gfxVisual.m_Material->GetRaytracingVisibility())
+        {
             renderData.m_RaytracingVisuals.push_back(gfxVisual);
+        }
 
         renderData.m_Visuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
@@ -199,9 +201,12 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         gfxVisual.m_Mesh = skinnedMesh;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
-        gfxVisual.m_VisibleInRaytracing = gfxVisual.m_Material->GetBaseColor().w >= 1.0f;
 
-        renderData.m_RaytracingVisuals.push_back(gfxVisual);
+        if (gfxVisual.m_Material->GetRaytracingVisibility())
+        {
+            renderData.m_RaytracingVisuals.push_back(gfxVisual);
+        }
+
         renderData.m_Visuals.push_back(gfxVisual);
         renderData.m_SkinnedVisuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);

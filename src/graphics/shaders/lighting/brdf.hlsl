@@ -64,37 +64,7 @@ float3 Microfacet(float roughness, float3 f0, float nDotL, float nDotV, float nD
     return (D * F * G) / max(0.001, (4 * nDotL * nDotV));
 }
 
-float3 CelBrdf(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness) 
-{
-    // normalize directions just in case
-    wi = normalize(wi);
-    wo = normalize(wo);
-    normal = normalize(normal);
-
-    // --- Diffuse term ---
-    float NdotL = saturate(dot(normal, wi));
-    
-    // Cel-style step: 2 levels for simplicity
-    float diffStep = NdotL > 0.5 ? 1.0 : 0.4;
-    float3 diffuse = albedo * diffStep / Pi; // Lambertian diffuse
-
-    // --- Specular term ---
-    float3 halfVector = normalize(wi + wo);
-    float NdotH = saturate(dot(normal, halfVector));
-
-    // Roughness maps to specular sharpness for cel effect
-    float specIntensity = pow(NdotH, (1.0 - roughness) * 30.0); // sharper when roughness is low
-    // Cel-style step for specular
-    specIntensity = specIntensity > 0.5 ? 1.0 : 0.0;
-
-    // Simple Fresnel approximation
-    float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metalness);
-    float3 specular = F0 * specIntensity;
-
-    return diffuse + specular;
-}
-
-float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughness, float metalness)
+float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 baseColor, float roughness, float metalness)
 {
     wi = normalize(wi);
     wo = normalize(wo);
@@ -103,7 +73,6 @@ float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughn
     if (dot(wi, normal) < 0.0f)
         normal = -normal;
     
-    albedo = max(0, albedo);
     roughness = min(max(0.01f, roughness), 1.0f);
     metalness = saturate(metalness);
     
@@ -117,11 +86,11 @@ float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 albedo, float roughn
     const float nDotH = clamp(dot(n, h), 0.01f, 1);
     const float vDotH = clamp(dot(v, h), 0.01f, 1);
 
-    const float specularConstant = 0.5;
-    const float3 f0 = lerp(0.08 * specularConstant, albedo, metalness);
+    const float3 albedo = baseColor * (1.0f - metalness);
+    const float3 f0 = lerp(0.04, baseColor, metalness);
     const float3 diffuse = Lambert(albedo);
     const float3 specular = Microfacet(roughness, f0, nDotL, nDotV, nDotH, vDotH);
-    return diffuse * (1 - metalness) + specular;
+    return diffuse + specular;
 }
 
 float3 ImportanceSampleGGX(float2 Xi, float3 wo, float3 N, float roughness)

@@ -53,3 +53,11 @@ void Ether::Graphics::GraphicRenderer::Present()
     gfxDisplay.SetCurrentBackBufferFence(GraphicCore::GetCommandManager().GetGraphicQueue().GetFinalFenceValue());
     gfxDisplay.Present();
 }
+
+void Ether::Graphics::GraphicRenderer::Cleanup()
+{
+    m_RenderData.m_Visuals.clear();
+    m_RenderData.m_VisualBatches.clear();
+    m_RenderData.m_SkinnedVisuals.clear();
+    m_RenderData.m_RaytracingVisuals.clear();
+}

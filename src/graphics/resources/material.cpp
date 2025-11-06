@@ -23,11 +23,12 @@ constexpr uint32_t MaterialVersion = 1;
 
 Ether::Graphics::Material::Material()
     : Serializable(MaterialVersion, ETH_CLASS_ID_MATERIAL)
-    , m_BaseColor(1, 1, 1, 1)
-    , m_EmissiveColor(0, 0, 0, 0)
-    , m_Roughness(0.5)
-    , m_Metalness(0.0)
-    , m_AlbedoTextureID()
+    , m_BaseColor(1.0f, 1.0f, 1.0f)
+    , m_EmissiveColor(0.0f, 0.0f, 0.0f)
+    , m_Roughness(0.5f)
+    , m_Metalness(0.0f)
+    , m_Opacity(1.0f)
+    , m_BaseColorTextureID()
     , m_NormalTextureID()
     , m_MetalnessTextureID()
     , m_RoughnessTextureID()
@@ -41,7 +42,8 @@ void Ether::Graphics::Material::Serialize(OStream& ostream) const
     ostream << m_EmissiveColor;
     ostream << m_Roughness;
     ostream << m_Metalness;
-    ostream << m_AlbedoTextureID;
+    ostream << m_Opacity;
+    ostream << m_BaseColorTextureID;
     ostream << m_NormalTextureID;
     ostream << m_MetalnessTextureID;
     ostream << m_RoughnessTextureID;
@@ -55,9 +57,17 @@ void Ether::Graphics::Material::Deserialize(IStream& istream)
     istream >> m_EmissiveColor;
     istream >> m_Roughness;
     istream >> m_Metalness;
-    istream >> m_AlbedoTextureID;
+    istream >> m_Opacity;
+    istream >> m_BaseColorTextureID;
     istream >> m_NormalTextureID;
     istream >> m_MetalnessTextureID;
     istream >> m_RoughnessTextureID;
     istream >> m_EmissiveTextureID;
+}
+
+bool Ether::Graphics::Material::HasTranslucency() const
+{
+    // TODO: Add support for different lighting models, including one for translucency
+    // For now, just check opacity
+    return GetOpacity() < 1.0f;
 }

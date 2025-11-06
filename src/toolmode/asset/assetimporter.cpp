@@ -128,22 +128,23 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         material->Get(AI_MATKEY_OPACITY, opacity);
 
         Graphics::Material gfxMaterial;
-        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b, opacity });
-        gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b, 0 });
+        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b });
+        gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b });
         gfxMaterial.SetRoughness(roughness);
         gfxMaterial.SetMetalness(metalness);
+        gfxMaterial.SetOpacity(opacity);
 
         if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_BASE_COLOR, 0), textureName);
-            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
+            gfxMaterial.SetBaseColorTextureID(ProcessTexture(folderPath, textureName.data, true));
         }
         else if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
             aiString textureName;
             material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
-            gfxMaterial.SetAlbedoTextureID(ProcessTexture(folderPath, textureName.data, true));
+            gfxMaterial.SetBaseColorTextureID(ProcessTexture(folderPath, textureName.data, true));
         }
 
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)

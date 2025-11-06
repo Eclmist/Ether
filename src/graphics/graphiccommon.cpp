@@ -170,5 +170,5 @@ void Ether::Graphics::GraphicCommon::InitializeMaterials()
 {
     m_DefaultMaterial = std::make_unique<Material>();
     m_ErrorMaterial = std::make_unique<Material>();
-    m_ErrorMaterial->SetBaseColor({ 1, 0, 1, 1 });
+    m_ErrorMaterial->SetBaseColor({ 1, 0, 1 });
 }
