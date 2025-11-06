@@ -17,6 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <execution>
 #include "graphics/resources/texture.h"
 #include "graphics/graphiccore.h"
 
@@ -156,22 +157,30 @@ void Ether::Graphics::Texture::DownsizeData(const void* src, void* dest, uint32_
     const uint32_t pitchSrc = width * bpp;
     const uint32_t pitchDest = halfWidth * bpp;
 
-    for (uint32_t y = 0; y < halfHeight; ++y)
-        for (uint32_t x = 0; x < halfWidth; ++x)
+    std::vector<uint32_t> rows(halfHeight);
+    std::iota(rows.begin(), rows.end(), 0);
+
+    std::for_each(
+        std::execution::par,
+        rows.begin(),
+        rows.end(),
+        [&](uint32_t y)
         {
-            const uint32_t xUp = x * 2;
-            const uint32_t yUp = y * 2;
+            for (uint32_t x = 0; x < halfWidth; ++x)
+            {
+                const uint32_t xUp = x * 2;
+                const uint32_t yUp = y * 2;
 
-            const ethColor4 upColor0 = GetColor(src, xUp + 0, yUp + 0, pitchSrc);
-            const ethColor4 upColor1 = GetColor(src, xUp + 1, yUp + 0, pitchSrc);
-            const ethColor4 upColor2 = GetColor(src, xUp + 0, yUp + 1, pitchSrc);
-            const ethColor4 upColor3 = GetColor(src, xUp + 1, yUp + 1, pitchSrc);
+                const ethColor4 upColor0 = GetColor(src, xUp + 0, yUp + 0, pitchSrc);
+                const ethColor4 upColor1 = GetColor(src, xUp + 1, yUp + 0, pitchSrc);
+                const ethColor4 upColor2 = GetColor(src, xUp + 0, yUp + 1, pitchSrc);
+                const ethColor4 upColor3 = GetColor(src, xUp + 1, yUp + 1, pitchSrc);
 
-            const ethColor4 avgColor = (upColor0 + upColor1 + upColor2 + upColor3) / 4.0;
-            SetColor(dest, avgColor, x, y, pitchDest);
-        }
+                const ethColor4 avgColor = (upColor0 + upColor1 + upColor2 + upColor3) * 0.25f;
+                SetColor(dest, avgColor, x, y, pitchDest);
+            }
+        });
 }
-
 void Ether::Graphics::Texture::GenerateMips()
 {
     const uint32_t lowestDim = std::min(m_Width, m_Height);

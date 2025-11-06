@@ -76,8 +76,6 @@ namespace Ether::Toolmode
         StringID m_MaterialGuidTable[MaxMaterialsPerAsset];
         std::unordered_map<StringID, std::unique_ptr<Graphics::Skeleton>> m_ArmatureRootToSkeletonMap;
         std::unordered_map<StringID, std::unordered_map<StringID, aiBone*>> m_ArmatureToBonesMap;
-        std::unordered_map<StringID, StringID> m_BoneNameToSkeletonGuidMap; // unused
-        std::unordered_map<StringID, Graphics::Skeleton> m_BoneNameToSkeletonMap; // unused
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
 

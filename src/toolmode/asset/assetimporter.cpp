@@ -18,6 +18,7 @@
 */
 
 #include <functional>
+#include <execution>
 
 #include "toolmode/asset/assetimporter.h"
 #include "graphics/resources/staticmesh.h"
@@ -33,27 +34,27 @@
 #include "parser/image/stb_image.h"
 #include "parser/image/stb_image_resize.h"
 
-Ether::ethVector2 ToEthVector2(aiVector2D aiVec2)
+inline Ether::ethVector2 ToEthVector2(aiVector2D aiVec2)
 {
     return { aiVec2.x, aiVec2.y };
 }
 
-Ether::ethVector3 ToEthVector3(aiVector3D aiVec3)
+inline Ether::ethVector3 ToEthVector3(aiVector3D aiVec3)
 {
     return { aiVec3.x, aiVec3.y, aiVec3.z };
 }
 
-Ether::ethVector4 ToEthVector4(aiColor4D aiVec4)
+inline Ether::ethVector4 ToEthVector4(aiColor4D aiVec4)
 {
     return { aiVec4.r, aiVec4.g, aiVec4.b, aiVec4.a };
 }
 
-Ether::ethQuaternion ToEthQuaternion(aiQuaternion aiVec4)
+inline Ether::ethQuaternion ToEthQuaternion(aiQuaternion aiVec4)
 {
     return { aiVec4.x, aiVec4.y, aiVec4.z, aiVec4.w };
 }
 
-Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
+inline Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
 {
     return { aiMatrix.a1, aiMatrix.a2, aiMatrix.a3, aiMatrix.a4,
              aiMatrix.b1, aiMatrix.b2, aiMatrix.b3, aiMatrix.b4,
@@ -63,6 +64,8 @@ Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
 
 void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool flattern)
 {
+    ETH_MARKER_FRAME("Import Frame");
+
     LogToolmodeInfo("Importing asset %s", assetPath.c_str());
 
     Assimp::Importer importer;
@@ -104,6 +107,8 @@ Ether::StringID Ether::Toolmode::AssetImporter::GetAssetGuid(const std::string& 
 
 void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath, const aiScene* assimpScene)
 {
+    ETH_MARKER_EVENT("Process Assimp Scene");
+
     ProcessMaterials(folderPath, assimpScene);
     ProcessBones(assimpScene);
     ProcessAnimations(assimpScene);
@@ -112,107 +117,116 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
 
 void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene)
 {
-    for (uint32_t i = 0; i < assimpScene->mNumMaterials; ++i)
-    {
-        const aiMaterial* material = assimpScene->mMaterials[i];
+    ETH_MARKER_EVENT("Process Materials");
 
-        aiColor3D baseColor;
-        aiColor3D emissiveColor;
-        float roughness;
-        float metalness;
-        float opacity;
-        aiBlendMode blendMode;
+    const uint32_t numMaterials = assimpScene->mNumMaterials;
+    std::vector<uint32_t> indices(numMaterials);
+    std::iota(indices.begin(), indices.end(), 0u);
 
-        material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
-        material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
-        material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
-        material->Get(AI_MATKEY_METALLIC_FACTOR, metalness);
-        material->Get(AI_MATKEY_OPACITY, opacity);
-        material->Get(AI_MATKEY_BLEND_FUNC, blendMode);
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+        [&](uint32_t i)
+        {
+            aiMaterial* material = assimpScene->mMaterials[i];
 
-        Graphics::Material gfxMaterial;
-        gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b });
-        gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b });
-        gfxMaterial.SetRoughness(roughness);
-        gfxMaterial.SetMetalness(metalness);
-        gfxMaterial.SetOpacity(opacity);
+            aiColor3D baseColor;
+            aiColor3D emissiveColor;
+            float roughness;
+            float metalness;
+            float opacity;
+            aiBlendMode blendMode;
 
-        if (opacity == 1.0f)
-        {
-            gfxMaterial.SetBlendMode(Graphics::BlendMode::Opaque);
-            gfxMaterial.SetRaytracingVisibility(Graphics::RaytracingVisibility::Lighting);
-        }
-        else
-        {
-            gfxMaterial.SetBlendMode(blendMode == aiBlendMode_Additive ? Graphics::BlendMode::Additive : Graphics::BlendMode::Translucent);
-            gfxMaterial.SetRaytracingVisibility(Graphics::RaytracingVisibility::Translucency);
-        }
+            material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
+            material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
+            material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+            material->Get(AI_MATKEY_METALLIC_FACTOR, metalness);
+            material->Get(AI_MATKEY_OPACITY, opacity);
+            material->Get(AI_MATKEY_BLEND_FUNC, blendMode);
 
-        if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_BASE_COLOR, 0), textureName);
-            gfxMaterial.SetBaseColorTextureID(ProcessTexture(folderPath, textureName.data, true));
-        }
-        else if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
-            gfxMaterial.SetBaseColorTextureID(ProcessTexture(folderPath, textureName.data, true));
-        }
+            Graphics::Material gfxMaterial;
+            gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b });
+            gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b });
+            gfxMaterial.SetRoughness(roughness);
+            gfxMaterial.SetMetalness(metalness);
+            gfxMaterial.SetOpacity(opacity);
 
-        if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
-            gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
-        }
+            if (opacity == 1.0f)
+            {
+                gfxMaterial.SetBlendMode(Graphics::BlendMode::Opaque);
+                gfxMaterial.SetRaytracingVisibility(Graphics::RaytracingVisibility::Lighting);
+            }
+            else
+            {
+                gfxMaterial.SetBlendMode(blendMode == aiBlendMode_Additive ? Graphics::BlendMode::Additive : Graphics::BlendMode::Translucent);
+                gfxMaterial.SetRaytracingVisibility(Graphics::RaytracingVisibility::Translucency);
+            }
 
-        if (material->GetTextureCount(aiTextureType_GLTF_METALLIC_ROUGHNESS) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_GLTF_METALLIC_ROUGHNESS, 0), textureName);
-            gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
-            gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-        else
-        {
-            if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+            if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
             {
                 aiString textureName;
-                material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE_ROUGHNESS, 0), textureName);
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_BASE_COLOR, 0), textureName);
+                gfxMaterial.SetBaseColorTextureID(ProcessTexture(folderPath, textureName.data, true));
+            }
+            else if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+            {
+                aiString textureName;
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
+                gfxMaterial.SetBaseColorTextureID(ProcessTexture(folderPath, textureName.data, true));
+            }
+
+            if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
+            {
+                aiString textureName;
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
+                gfxMaterial.SetNormalTextureID(ProcessTexture(folderPath, textureName.data));
+            }
+
+            if (material->GetTextureCount(aiTextureType_GLTF_METALLIC_ROUGHNESS) > 0)
+            {
+                aiString textureName;
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_GLTF_METALLIC_ROUGHNESS, 0), textureName);
+                gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
                 gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
             }
+            else
+            {
+                if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+                {
+                    aiString textureName;
+                    material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE_ROUGHNESS, 0), textureName);
+                    gfxMaterial.SetRoughnessTextureID(ProcessTexture(folderPath, textureName.data));
+                }
 
-            if (material->GetTextureCount(aiTextureType_METALNESS) > 0)
+                if (material->GetTextureCount(aiTextureType_METALNESS) > 0)
+                {
+                    aiString textureName;
+                    material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
+                    gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
+                }
+            }
+
+            if (material->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0)
             {
                 aiString textureName;
-                material->Get(AI_MATKEY_TEXTURE(aiTextureType_METALNESS, 0), textureName);
-                gfxMaterial.SetMetalnessTextureID(ProcessTexture(folderPath, textureName.data));
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSION_COLOR, 0), textureName);
+                gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
             }
-        }
+            else if (material->GetTextureCount(aiTextureType_EMISSIVE) > 0)
+            {
+                aiString textureName;
+                material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSIVE, 0), textureName);
+                gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
+            }
 
-        if (material->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSION_COLOR, 0), textureName);
-            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
-        }
-        else if (material->GetTextureCount(aiTextureType_EMISSIVE) > 0)
-        {
-            aiString textureName;
-            material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSIVE, 0), textureName);
-            gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
-        }
+            m_MaterialGuidTable[i] = gfxMaterial.GetGuid();
 
-        m_MaterialGuidTable[i] = gfxMaterial.GetGuid();
-
-        SerializeLibraryData(&gfxMaterial);
-    }
+            SerializeLibraryData(&gfxMaterial);
+        });
 }
 
 void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
 {
+    ETH_MARKER_EVENT("Process Bones");
+
     for (int i = 0; i < assimpScene->mNumMeshes; ++i)
     {
         const aiMesh* mesh = assimpScene->mMeshes[i];
@@ -236,8 +250,12 @@ void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
 
 void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScene)
 {
+    ETH_MARKER_EVENT("Process Animations");
+
     for (uint32_t i = 0; i < assimpScene->mNumAnimations; ++i)
     {
+        ETH_MARKER_EVENT("Process Animation");
+
         aiAnimation* animation = assimpScene->mAnimations[i];
         LogToolmodeInfo("Found animation: %s", animation->mName.C_Str());
 
@@ -283,6 +301,8 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
 
 void Ether::Toolmode::AssetImporter::ProcessMeshs(const aiScene* assimpScene)
 {
+    ETH_MARKER_EVENT("Process Meshes");
+
     for (uint32_t i = 0; i < assimpScene->mNumMeshes; ++i)
     {
         const aiMesh* mesh = assimpScene->mMeshes[i];
@@ -296,6 +316,7 @@ void Ether::Toolmode::AssetImporter::ProcessMeshs(const aiScene* assimpScene)
 
 void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
 {
+    ETH_MARKER_EVENT("Process Static Mesh");
     std::vector<Graphics::VertexFormats::BaseVertexFormat> packedVertices;
     FillVertexData(assimpMesh, packedVertices);
 
@@ -317,6 +338,7 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
 
 void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh)
 {
+    ETH_MARKER_EVENT("Process Skinned Mesh");
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat> packedSkinnedVertices;
     FillVertexData(assimpMesh, packedSkinnedVertices);
 
@@ -343,6 +365,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     bool isSrgb,
     bool genMips)
 {
+    ETH_MARKER_EVENT("Process Texture");
     if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
         return m_PathToGuidMap.at(texturePath);
 
@@ -389,6 +412,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
 
 Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiNode& armatureRootNode)
 {
+    ETH_MARKER_EVENT("Process Skeleton");
     const std::unordered_map<StringID, aiBone*>& armatureBones = m_ArmatureToBonesMap.at(armatureRootNode.mName.C_Str());
     
     if (m_ArmatureRootToSkeletonMap.find(armatureRootNode.mName.C_Str()) != m_ArmatureRootToSkeletonMap.end())
@@ -464,38 +488,50 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
     AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
     data.resize(assimpMesh->mNumVertices);
 
-    for (int j = 0; j < assimpMesh->mNumVertices; ++j)
-    {
-        if (assimpMesh->HasVertexColors(0))
-        {
-            data[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
-        }
-        else
-        {
-            data[j].m_Attributes.m_Color = 1.0f;
-        }
+    const bool hasVertexColors = assimpMesh->HasVertexColors(0);
+    const bool hasPositions = assimpMesh->HasPositions();
+    const bool hasNormals = assimpMesh->HasNormals();
+    const bool hasTangents = assimpMesh->HasTangentsAndBitangents();
+    const bool hasUV0 = assimpMesh->HasTextureCoords(0);
 
-        if (assimpMesh->HasPositions())
+    for_each(
+        std::execution::par,
+        data.begin(),
+        data.begin() + assimpMesh->mNumVertices,
+        [&](auto& vtx)
         {
-            data[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
-            data[j].m_Attributes.m_PrevPosition = data[j].m_Attributes.m_Position;
-        }
+            int j = static_cast<int>(&vtx - data.data());
 
-        if (assimpMesh->HasNormals())
-        {
-            data[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
-        }
+            if (hasVertexColors)
+            {
+                data[j].m_Attributes.m_Color = ToEthVector4(assimpMesh->mColors[0][j]);
+            }
+            else
+            {
+                data[j].m_Attributes.m_Color = 1.0f;
+            }
 
-        if (assimpMesh->HasTangentsAndBitangents())
-        {
-            data[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
-        }
+            if (hasPositions)
+            {
+                data[j].m_Attributes.m_Position = ToEthVector3(assimpMesh->mVertices[j]) * m_MeshScale;
+                data[j].m_Attributes.m_PrevPosition = data[j].m_Attributes.m_Position;
+            }
 
-        if (assimpMesh->HasTextureCoords(0))
-        {
-            data[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
-        }
-    }
+            if (hasNormals)
+            {
+                data[j].m_Attributes.m_Normal = ToEthVector3(assimpMesh->mNormals[j]);
+            }
+
+            if (hasTangents)
+            {
+                data[j].m_Attributes.m_Tangent = ToEthVector3(assimpMesh->mTangents[j]);
+            }
+
+            if (hasUV0)
+            {
+                data[j].m_Attributes.m_TexCoord = ToEthVector3(assimpMesh->mTextureCoords[0][j]).Resize<2>();
+            }
+        });
 
     if constexpr (std::is_same_v<VertexFormat, Graphics::VertexFormats::SkinnedVertexFormat>)
     {
