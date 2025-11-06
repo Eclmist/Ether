@@ -356,6 +356,38 @@ void Ether::Graphics::Dx12CommandList::CopyTexture(
         allMipsData.data());
 }
 
+void Ether::Graphics::Dx12CommandList::CopyTextureToBuffer(
+    const RhiResource& src,
+    RhiResource& dest,
+    uint32_t rowPitch,
+    uint32_t numRows)
+{
+    const auto dx12SrcResource = (Dx12Resource*)&src;
+    const auto dx12DstResource = (Dx12Resource*)&dest;
+
+    D3D12_RESOURCE_DESC srcDesc = dx12SrcResource->m_Resource->GetDesc();
+
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout = {};
+    layout.Offset = 0;
+    layout.Footprint.Format = srcDesc.Format;
+    layout.Footprint.Width = static_cast<UINT>(srcDesc.Width);
+    layout.Footprint.Height = numRows;
+    layout.Footprint.Depth = 1;
+    layout.Footprint.RowPitch = rowPitch;
+
+    D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
+    srcLocation.pResource = dx12SrcResource->m_Resource.Get();
+    srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    srcLocation.SubresourceIndex = 0;
+
+    D3D12_TEXTURE_COPY_LOCATION dstLocation = {};
+    dstLocation.pResource = dx12DstResource->m_Resource.Get();
+    dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    dstLocation.PlacedFootprint = layout;
+
+    m_CommandList->CopyTextureRegion(&dstLocation, 0, 0, 0, &srcLocation, nullptr);
+}
+
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(
     const RhiRenderTargetView rtv,
     const ethVector4& clearColor)

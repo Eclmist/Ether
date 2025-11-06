@@ -36,6 +36,7 @@ void Ether::Graphics::GraphicCore::Initialize()
     m_GraphicCommon = std::make_unique<GraphicCommon>();
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     m_GraphicRenderer = std::make_unique<GraphicRenderer>();
+    m_GraphicExporter = std::make_unique<GraphicExporter>();
 
     m_IsInitialized = true;
 }
@@ -44,6 +45,7 @@ void Ether::Graphics::GraphicCore::Shutdown()
 {
     FlushGpu();
 
+    m_GraphicExporter.reset();
     m_GraphicRenderer.reset();
     m_GraphicDisplay.reset();
     m_GraphicCommon.reset();
@@ -61,12 +63,7 @@ void Ether::Graphics::GraphicCore::Shutdown()
     m_IsInitialized = false;
 }
 
-void Ether::Graphics::GraphicCore::FlushGpu()
-{
-    GetCommandManager().Flush();
-}
-
-void Ether::Graphics::GraphicCore::Main()
+void Ether::Graphics::GraphicCore::NewFrame()
 {
     ETH_MARKER_EVENT("Graphics Update");
 
@@ -74,4 +71,12 @@ void Ether::Graphics::GraphicCore::Main()
     s_Instance->m_GraphicRenderer->Render();
     s_Instance->m_GraphicRenderer->Present();
     s_Instance->m_GraphicRenderer->Cleanup();
+
+    s_Instance->m_GraphicExporter->Export();
 }
+
+void Ether::Graphics::GraphicCore::FlushGpu()
+{
+    GetCommandManager().Flush();
+}
+

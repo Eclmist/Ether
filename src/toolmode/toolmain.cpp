@@ -242,7 +242,11 @@ void Ether::Toolmode::EtherHeadless::OnUpdate(const Ether::UpdateEventArgs& e)
     UpdateCamera();
 }
 
-void Ether::Toolmode::EtherHeadless::OnRender(const Ether::RenderEventArgs& e)
+void Ether::Toolmode::EtherHeadless::OnPreRender(const Ether::RenderEventArgs& e)
+{
+}
+
+void Ether::Toolmode::EtherHeadless::OnPostRender()
 {
 }
 

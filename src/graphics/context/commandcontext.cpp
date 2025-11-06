@@ -118,8 +118,25 @@ void Ether::Graphics::CommandContext::CopyBufferRegion(
     uint32_t srcOffset,
     uint32_t destOffset)
 {
+    TransitionResource(src, RhiResourceState::CopySrc);
     TransitionResource(dest, RhiResourceState::CopyDest);
     m_CommandList->CopyBufferRegion(src, dest, size, srcOffset, destOffset);
+}
+
+void Ether::Graphics::CommandContext::CopyTextureToBuffer(
+    RhiResource& src,
+    RhiResource& dest,
+    uint32_t width,
+    uint32_t height)
+{
+    TransitionResource(src, RhiResourceState::CopySrc);
+    TransitionResource(dest, RhiResourceState::CopyDest);
+
+    // 4 - pixel size (rgba) and 256 (dx12 alignment) is hardcoded for now (RTCamp-TODO)
+    uint32_t rowPitch = AlignUp(width * 4, 256);
+    uint32_t numRows = height;
+
+    m_CommandList->CopyTextureToBuffer(src, dest, rowPitch, numRows);
 }
 
 void Ether::Graphics::CommandContext::InitializeBufferRegion(

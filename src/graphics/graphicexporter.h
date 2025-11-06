@@ -20,33 +20,27 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/common/renderdata.h"
 #include "graphics/context/graphiccontext.h"
-#include "graphics/schedule/framescheduler.h"
 
 namespace Ether::Graphics
 {
-class GraphicRenderer : public NonCopyable, public NonMovable
+class GraphicExporter : public NonCopyable, public NonMovable
 {
 public:
-    GraphicRenderer();
-    ~GraphicRenderer() = default;
+    GraphicExporter();
+    ~GraphicExporter() = default;
 
 public:
-    inline uint64_t GetFrameNumber() const { return m_FrameNumber; }
-    inline RenderData& GetRenderData() { return m_RenderData; }
+    ETH_GRAPHIC_DLL void RequestExport(void** exportTarget);
 
 public:
-    void WaitForPresent();
-    void Render();
-    void Present();
-    void Cleanup();
+    void Export();
 
 private:
-    uint64_t m_FrameNumber;
     bool m_ExportRequested;
+    void** m_ExportAddress;
+    ethVector2u m_ExportResolution;
 
-    FrameScheduler m_Scheduler;
-    RenderData m_RenderData;
+    std::unique_ptr<RhiResource> m_ReadbackBuffer;
 };
 } // namespace Ether::Graphics

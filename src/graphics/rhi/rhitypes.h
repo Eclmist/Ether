@@ -88,6 +88,16 @@ struct RhiClearValue
     }
 };
 
+struct RhiTextureRegion
+{
+    uint32_t m_Left;
+    uint32_t m_Right;
+    uint32_t m_Top;
+    uint32_t m_Bottom;
+    uint32_t m_Front;
+    uint32_t m_Back;
+};
+
 //============================= Memory ==============================//
 
 using RhiCpuAddress = uint64_t;

@@ -61,6 +61,11 @@ Ether::Graphics::GraphicConfig& Ether::Graphics::GetGraphicConfig()
     return GraphicCore::GetGraphicConfig();
 }
 
+void Ether::Graphics::RequestExport(void** exportTarget)
+{
+    return GraphicCore::GetGraphicExporter().RequestExport(exportTarget);
+}
+
 void Ether::Client::SetClientTitle(const std::string& title)
 {
     EngineCore::GetMainWindow().SetTitle(title);

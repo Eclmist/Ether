@@ -24,6 +24,7 @@
 
 Ether::Graphics::GraphicRenderer::GraphicRenderer()
     : m_FrameNumber(0)
+    , m_ExportRequested(false)
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
     m_Scheduler.PrecompilePipelineStates();

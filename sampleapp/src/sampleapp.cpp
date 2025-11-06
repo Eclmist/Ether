@@ -51,33 +51,6 @@ void SampleApp::LoadContent()
     m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
     m_CameraTransform->m_Translation = { 0, 2, 0 };
     m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
-
-
-    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
-
-    graphicConfig.m_Fov = 7.0f;
-
-    graphicConfig.m_BloomIntensity = 0.440f;
-    graphicConfig.m_BloomScatter = 0.646;
-    graphicConfig.m_BloomAnamorphic = 0.57f;
-
-    graphicConfig.m_FocusDistance = 20.352;
-    graphicConfig.m_Aperture = 8.241;
-    graphicConfig.m_FocusRange = 12.814;
-
-    graphicConfig.m_SunDirection = ethVector4(0.353, 0.590, 0.247, 1.0f).Normalized();
-    graphicConfig.m_SunColor = ethVector4(254 / 255.0f, 200 / 255.0f, 142 / 255.0f, 1.0f);
-    graphicConfig.m_Exposure = 0.00015;
-
-    graphicConfig.m_ColorGrading_Temperature = -0.15;
-    graphicConfig.m_BloomAnamorphic = 0.57f;
-
-    graphicConfig.m_DebugJitterScale = 1.0f;
-
-    m_CameraTransform->m_Translation = { 7.432314, 1.387823, -12.617146 };
-    m_CameraTransform->m_Rotation = { 0.062000, -0.552797, 0.000000 };
-
-
 }
 
 void SampleApp::UnloadContent()
@@ -94,7 +67,11 @@ void SampleApp::OnUpdate(const UpdateEventArgs& e)
     UpdateCamera();
 }
 
-void SampleApp::OnRender(const RenderEventArgs& e)
+void SampleApp::OnPreRender(const RenderEventArgs& e)
+{
+}
+
+void SampleApp::OnPostRender()
 {
 }
 

@@ -60,7 +60,10 @@ void Ether::EngineCore::RunEngineLoop()
         m_ActiveWorld->Update();
 
         Graphics::GraphicCore::GetGraphicConfig().SetResolution(m_EngineConfig.GetClientSize());
-        Graphics::GraphicCore::Main();
+
+        m_MainApplication->OnPreRender({});
+        Graphics::GraphicCore::NewFrame();
+        m_MainApplication->OnPostRender();
     }
 }
 

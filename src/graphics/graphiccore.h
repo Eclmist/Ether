@@ -36,6 +36,7 @@
 #include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
 #include "graphics/graphicrenderer.h"
+#include "graphics/graphicexporter.h"
 
 namespace Ether::Graphics
 {
@@ -63,12 +64,13 @@ public:
     static inline GraphicCommon& GetGraphicCommon() { return *Instance().m_GraphicCommon; }
     static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
     static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
+    static inline GraphicExporter& GetGraphicExporter() { return *Instance().m_GraphicExporter; }
     static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
     static inline bool IsInitialized() { return Instance().m_IsInitialized; }
 
 public:
-    static void Main();
+    static void NewFrame();
     static void FlushGpu();
 
 private:
@@ -86,6 +88,7 @@ private:
     std::unique_ptr<GraphicCommon> m_GraphicCommon;
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
+    std::unique_ptr<GraphicExporter> m_GraphicExporter;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
 private:
