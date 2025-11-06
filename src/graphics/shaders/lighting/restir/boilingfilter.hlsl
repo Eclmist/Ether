@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __BOILING_FILTER_HLSL__
+#define __BOILING_FILTER_HLSL__
+
 #define BOILING_FILTER_MIN_LANE_COUNT 32
 groupshared float GBoilingFilterWeights[(THREADGROUP_SIZE * THREADGROUP_SIZE) / BOILING_FILTER_MIN_LANE_COUNT];
 groupshared uint GBoilingFilterCount[(THREADGROUP_SIZE * THREADGROUP_SIZE) / BOILING_FILTER_MIN_LANE_COUNT];
@@ -66,3 +69,5 @@ bool BoilingFilter(uint2 groupThreadID, float filterStrength, float weight)
 
 	return true;
 }
+
+#endif // __BOILING_FILTER_HLSL__

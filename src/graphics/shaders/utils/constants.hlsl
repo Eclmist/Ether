@@ -17,9 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __CONSTANTS_HLSL__
+#define __CONSTANTS_HLSL__
+
 static const float Pi = 3.14159265359f;
 static const float Pi2 = 6.28318530718f;
 static const float Pi_2 = 1.57079632679f;
 static const float Pi_4 = 0.78539816339f;
 static const float InvPi = 0.31830988618f;
 static const float InvPi2 = 0.15915494309f;
+
+#endif // __CONSTANTS_HLSL__

@@ -26,10 +26,10 @@ DEFINE_GFX_PA(PostFxSourceProducer)
 DEFINE_GFX_SR(PostFxSourceTexture)
 DEFINE_GFX_UA(PostFxSourceTexture)
 
-DECLARE_GFX_SR(LightingCompositeTexture)
+DECLARE_GFX_SR(SceneColor)
 
 Ether::Graphics::PostFxSourceProducer::PostFxSourceProducer()
-    : PostProcessProducer("PostFxSourceProducer", "postprocess\\postprocess.hlsl")
+    : PostProcessProducer("PostFxSourceProducer", "postprocess\\postprocess_cs.hlsl")
 {
 }
 
@@ -38,16 +38,16 @@ void Ether::Graphics::PostFxSourceProducer::GetInputOutput(ScheduleContext& sche
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.NewSR(ACCESS_GFX_SR(PostFxSourceTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(PostFxSourceTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.Read(ACCESS_GFX_SR(LightingCompositeTexture));
+    schedule.Read(ACCESS_GFX_SR(SceneColor));
 }
 
 void Ether::Graphics::PostFxSourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     PostProcessProducer::RenderFrame(ctx, rc);
 
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingCompositeTexture)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneColor)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
-    ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_SR(LightingCompositeTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_SR(SceneColor)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
     DispatchFullscreen(ctx);
 }

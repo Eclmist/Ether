@@ -17,9 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __NOISE_HLSL__
+#define __NOISE_HLSL__
+
 #include "utils/random.hlsl"
 
 float InterleavedGradientNoise(float2 pos)
 {
     return frac(52.9829189 * frac(0.06711056 * pos.x + 0.00583715 * pos.y));
 }
+
+#endif // __NOISE_HLSL__

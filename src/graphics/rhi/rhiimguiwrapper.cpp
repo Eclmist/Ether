@@ -75,39 +75,15 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
         if (ImGui::CollapsingHeader("Render Options"))
         {
+            if (ImGui::TreeNode("Translucencies"))
+            {
+                ImGui::Checkbox("Enabled", &gfxConfig.m_DrawTranslucencies);
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Camera"))
             {
                 ImGui::SliderFloat("Fov", &gfxConfig.m_Fov, 1, 120);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Bloom"))
-            {
-                ImGui::Checkbox("Enabled", &gfxConfig.m_IsBloomEnabled);
-                ImGui::SliderFloat("Intensity", &gfxConfig.m_BloomIntensity, 0, 1);
-                ImGui::SliderFloat("Scatter", &gfxConfig.m_BloomScatter, 0, 1);
-                ImGui::SliderFloat("Anamorphic", &gfxConfig.m_BloomAnamorphic, 0, 1);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Depth Of Field"))
-            {
-                ImGui::Checkbox("Enabled", &gfxConfig.m_IsDofEnabled);
-                ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 100);
-                ImGui::SliderFloat("Focal Length", &gfxConfig.m_FocalLength, 0, 1);
-                ImGui::SliderFloat("Aperture", &gfxConfig.m_Aperture, 0, 16.0f);
-                ImGui::SliderFloat("MaxCoC", &gfxConfig.m_MaxCoC, 0, 100.0f);
-                ImGui::SliderFloat("Focus Range", &gfxConfig.m_FocusRange, 0, 100.0f);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Temporal AA"))
-            {
-                ImGui::Checkbox("Enabled", &gfxConfig.m_IsTemporalAAEnabled);
-                const char* items[] = { "None", "Grid", "Halton" };
-                ImGui::Combo("Jitter Mode", &gfxConfig.m_TemporalAAJitterMode, items, IM_ARRAYSIZE(items));
-                ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_DebugJitterScale, 0, 10);
-                ImGui::SliderFloat("Temporal Accumulation", &gfxConfig.m_TemporalAAAcumulationFactor, 0, 1);
                 ImGui::TreePop();
             }
 
@@ -131,30 +107,66 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::TreePop();
             }
 
-            if (ImGui::TreeNode("Tonemapper"))
-            {
-                const char* items[] = { "None", "ACES Refitted", "Reinhard Extended", "GT" };
-                ImGui::Combo("Tonemapper", &gfxConfig.m_TonemapperType, items, IM_ARRAYSIZE(items));
 
-                // GT Tonemapper
-                if (gfxConfig.m_TonemapperType == 3)
+            if (ImGui::TreeNode("Post Processing"))
+            {
+                if (ImGui::TreeNode("Bloom"))
                 {
-                    ImGui::SliderFloat("Max Brightness", &gfxConfig.m_TonemapperParamA, 1, 100);
-                    ImGui::SliderFloat("Contrast", &gfxConfig.m_TonemapperParamB, 0, 5);
-                    ImGui::SliderFloat("Slope Start", &gfxConfig.m_TonemapperParamC, 0, 1);
-                    ImGui::SliderFloat("Slope Length", &gfxConfig.m_TonemapperParamD, 0, 1);
-                    ImGui::SliderFloat("Black Tightness", &gfxConfig.m_TonemapperParamE, 1, 3);
+                    ImGui::Checkbox("Enabled", &gfxConfig.m_IsBloomEnabled);
+                    ImGui::SliderFloat("Intensity", &gfxConfig.m_BloomIntensity, 0, 1);
+                    ImGui::SliderFloat("Scatter", &gfxConfig.m_BloomScatter, 0, 1);
+                    ImGui::SliderFloat("Anamorphic", &gfxConfig.m_BloomAnamorphic, 0, 1);
+                    ImGui::TreePop();
                 }
 
-                ImGui::TreePop();
-            }
+                if (ImGui::TreeNode("Depth Of Field"))
+                {
+                    ImGui::Checkbox("Enabled", &gfxConfig.m_IsDofEnabled);
+                    ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 100);
+                    ImGui::SliderFloat("Focal Length", &gfxConfig.m_FocalLength, 0, 1);
+                    ImGui::SliderFloat("Aperture", &gfxConfig.m_Aperture, 0, 16.0f);
+                    ImGui::SliderFloat("MaxCoC", &gfxConfig.m_MaxCoC, 0, 100.0f);
+                    ImGui::SliderFloat("Focus Range", &gfxConfig.m_FocusRange, 0, 100.0f);
+                    ImGui::TreePop();
+                }
 
-            if (ImGui::TreeNode("Color Grading"))
-            {
-                ImGui::SliderFloat("Temperature", &gfxConfig.m_ColorGrading_Temperature, -1, 1);
-                ImGui::SliderFloat("Tint", &gfxConfig.m_ColorGrading_Tint, -1, 1);
-                ImGui::SliderFloat("Contrast", &gfxConfig.m_ColorGrading_Contrast, 0, 2);
-                ImGui::SliderFloat("Saturation", &gfxConfig.m_ColorGrading_Saturation, 0, 2);
+                if (ImGui::TreeNode("Temporal AA"))
+                {
+                    ImGui::Checkbox("Enabled", &gfxConfig.m_IsTemporalAAEnabled);
+                    const char* items[] = { "None", "Grid", "Halton" };
+                    ImGui::Combo("Jitter Mode", &gfxConfig.m_TemporalAAJitterMode, items, IM_ARRAYSIZE(items));
+                    ImGui::SliderFloat("Jitter Scale (debug)", &gfxConfig.m_DebugJitterScale, 0, 10);
+                    ImGui::SliderFloat("Temporal Accumulation", &gfxConfig.m_TemporalAAAcumulationFactor, 0, 1);
+                    ImGui::TreePop();
+                }
+
+                if (ImGui::TreeNode("Tonemapping"))
+                {
+                    const char* items[] = { "None", "ACES Refitted", "Reinhard Extended", "GT" };
+                    ImGui::Combo("Tonemapper", &gfxConfig.m_TonemapperType, items, IM_ARRAYSIZE(items));
+
+                    // GT Tonemapper
+                    if (gfxConfig.m_TonemapperType == 3)
+                    {
+                        ImGui::SliderFloat("Max Brightness", &gfxConfig.m_TonemapperParamA, 1, 100);
+                        ImGui::SliderFloat("Contrast", &gfxConfig.m_TonemapperParamB, 0, 5);
+                        ImGui::SliderFloat("Slope Start", &gfxConfig.m_TonemapperParamC, 0, 1);
+                        ImGui::SliderFloat("Slope Length", &gfxConfig.m_TonemapperParamD, 0, 1);
+                        ImGui::SliderFloat("Black Tightness", &gfxConfig.m_TonemapperParamE, 1, 3);
+                    }
+
+                    ImGui::TreePop();
+                }
+
+                if (ImGui::TreeNode("Color Grading"))
+                {
+                    ImGui::SliderFloat("Temperature", &gfxConfig.m_ColorGrading_Temperature, -1, 1);
+                    ImGui::SliderFloat("Tint", &gfxConfig.m_ColorGrading_Tint, -1, 1);
+                    ImGui::SliderFloat("Contrast", &gfxConfig.m_ColorGrading_Contrast, 0, 2);
+                    ImGui::SliderFloat("Saturation", &gfxConfig.m_ColorGrading_Saturation, 0, 2);
+                    ImGui::TreePop();
+                }
+
                 ImGui::TreePop();
             }
         }

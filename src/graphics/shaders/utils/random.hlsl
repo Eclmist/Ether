@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __RANDOM_HLSL__
+#define __RANDOM_HLSL__
+
 float CMJ_Random_Internal(uint i, uint p)
 {
     i ^= p;
@@ -89,3 +92,5 @@ float2 Random2D(float2 uv, uint index)
 {
     return CMJ_Sample2D(uv.y * 1024 + uv.x, 1024, 1024, index);
 }
+
+#endif // __RANDOM_HLSL__

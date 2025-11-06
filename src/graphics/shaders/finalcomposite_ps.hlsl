@@ -17,29 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __FINAL_COMPOSITE_PS_HLSL__
+#define __FINAL_COMPOSITE_PS_HLSL__
+
 #include "common/globalconstants.h"
-#include "utils/fullscreenhelpers.hlsl"
 
-Texture2D<float4> g_LightingCompositeTexture        : register(t0);
-
-struct VS_OUTPUT
-{
-    float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD;
-};
-
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
-{
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
-
-    VS_OUTPUT o;
-    o.Position = float4(pos, 1.0, 1.0);
-    o.TexCoord = uv;
-
-    return o;
-}
+Texture2D<float4> g_SceneColor        : register(t0);
 
 float luminance(float3 v)
 {
@@ -175,9 +158,15 @@ float3 ColorGrade(float3 color, float temperature = 0.1, float tint = 0.05, floa
     return saturate(color);
 }
 
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
+struct PS_INPUT
 {
-    float3 col = g_LightingCompositeTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD;
+};
+
+float4 PS_Main(PS_INPUT IN) : SV_Target
+{
+    float3 col = g_SceneColor[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
 
     if (!g_GlobalConstants.m_RaytracedLightingDebug == 1)
     {
@@ -202,3 +191,5 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     return float4(col, 1.0f);
 }
+
+#endif // __FINAL_COMPOSITE_PS_HLSL__

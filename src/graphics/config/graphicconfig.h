@@ -25,7 +25,7 @@ namespace Ether::Graphics
 {
 enum RaytracingMode : int32_t
 {
-    Pathtrace,
+    Pathtracer,
     ReSTIR
 };
 
@@ -118,6 +118,9 @@ public:
     float m_SunIntensity = 120000.0f;
     float m_SkyIntensity = 35000.0f;
     float m_Exposure = 0.000045f;
+
+    // Translucency
+    bool m_DrawTranslucencies = true;
 
 private:
     ethVector4 m_ClearColor;

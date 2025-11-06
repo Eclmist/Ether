@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __RESTIR_GI_SPATIAL_RESAMPLING_CS_HLSL__
+#define __RESTIR_GI_SPATIAL_RESAMPLING_CS_HLSL__
+
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
 
@@ -117,3 +120,6 @@ void CS_Main(
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
+
+#endif // __RESTIR_GI_SPATIAL_RESAMPLING_CS_HLSL__
+

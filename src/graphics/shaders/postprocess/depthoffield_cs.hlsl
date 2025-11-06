@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __DEPTH_OF_FIELD_CS_HLSL__
+#define __DEPTH_OF_FIELD_CS_HLSL__
+
 #include "common/globalconstants.h"
 #include "common/depthoffieldparams.h"
 #include "utils/constants.hlsl"
@@ -267,3 +270,5 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     else if (g_DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_COMPOSITE)
         CompositePass(threadID);
 }
+
+#endif // __DEPTH_OF_FIELD_CS_HLSL__

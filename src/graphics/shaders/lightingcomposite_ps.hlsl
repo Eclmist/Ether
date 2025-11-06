@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __LIGHTING_COMPOSITE_PS_HLSL__
+#define __LIGHTING_COMPOSITE_PS_HLSL__
+
 #include "common/globalconstants.h"
 #include "utils/encoding.hlsl"
 #include "utils/shading.hlsl"
@@ -28,26 +31,13 @@ Texture2D<float> g_SceneDepth                       : register(t3);
 Texture2D<float4> g_LightingTexture                 : register(t4);
 Texture2D<float4> g_ProceduralSkyTexture            : register(t5);
 
-struct VS_OUTPUT
+struct PS_INPUT
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD;
 };
 
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
-{
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
-
-    VS_OUTPUT o;
-    o.Position = float4(pos, 1.0, 1.0);
-    o.TexCoord = uv;
-
-    return o;
-}
-
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
+float4 PS_Main(PS_INPUT IN) : SV_Target
 {
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
 
@@ -71,3 +61,5 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     float4 finalColor = lighting;
     return finalColor;
 }
+
+#endif // __LIGHTING_COMPOSITE_PS_HLSL__

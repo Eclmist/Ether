@@ -17,33 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __GBUFFER_PS_HLSL__
+#define __GBUFFER_PS_HLSL__
+
 #include "common/globalconstants.h"
 #include "common/material.h"
 #include "common/instanceparams.h"
-#include "utils/encoding.hlsl"
-#include "utils/noise.hlsl"
 #include "utils/shading.hlsl"
-
-struct VS_INPUT
-{
-    float3 Position         : POSITION;
-    float3 Normal           : NORMAL;
-    float3 Tangent          : TANGENT;
-    float4 Color            : COLOR;
-    float2 TexCoord         : TEXCOORD0;
-    float3 PositionPrev     : TEXCOORD1;
-};
-
-struct VS_OUTPUT
-{
-    float4 Position         : SV_POSITION;
-    float3 Normal           : NORMAL;
-    float4 Color            : COLOR;
-    float3 Tangent          : TEXCOORD0;
-    float2 TexCoord         : TEXCOORD1;
-    float4 ClipPos          : TEXCOORD2;
-    float4 ClipPosPrev      : TEXCOORD3;
-};
 
 struct PS_INPUT
 {
@@ -66,37 +46,10 @@ struct PS_OUTPUT
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
 StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
-// TODO: Move to common
-float LinearizeDepth(float depth)
-{
-    float near = g_GlobalConstants.m_CameraClipNearFar.x;
-    float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return far * near / (depth * (far - near) + near);
-}
-
 void DiscardAlphaMaskedPixels(const ShadingSurface surface)
 {
     if (surface.m_Opacity < 0.5f)
         discard;
-}
-
-VS_OUTPUT VS_Main(VS_INPUT IN)
-{
-    VS_OUTPUT o;
-
-    const float4 worldPos = float4(IN.Position, 1.0f); // TODO: Implement model matrices here?
-    const float4 worldPosPrev = float4(IN.PositionPrev, 1.0f); // TODO: Implement model matrices here?
-    
-    o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
-    o.Normal = IN.Normal;
-    o.Tangent = IN.Tangent;
-    o.TexCoord = IN.TexCoord;
-    o.Color = IN.Color;
-
-    o.ClipPos = mul(g_GlobalConstants.m_ViewProjectionMatrixNoJitter, worldPos);
-    o.ClipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrevNoJitter, worldPosPrev);
-
-    return o;
 }
 
 PS_OUTPUT PS_Main(PS_INPUT IN)
@@ -133,3 +86,5 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     o.Output2 = float4(emissive.x, emissive.y, emissive.z, EncodeFP16(roughness, metalness));
     return o;
 }
+
+#endif // __GBUFFER_PS_HLSL__

@@ -39,7 +39,7 @@ DECLARE_GFX_UA_SR(PostFxSourceTexture)
 constexpr  uint32_t NumBloomTextures = 9;
 
 Ether::Graphics::BloomProducer::BloomProducer()
-    : PostProcessProducer("BloomProducer", "postprocess\\bloom.hlsl")
+    : PostProcessProducer("BloomProducer", "postprocess\\bloom_cs.hlsl")
 {
 }
 

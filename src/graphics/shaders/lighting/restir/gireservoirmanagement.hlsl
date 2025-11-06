@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __RESERVOIR_MANAGEMENT_HLSL__
+#define __RESERVOIR_MANAGEMENT_HLSL__
+
 #include "common/raytracingconstants.h"
 
 struct GIReservoirSample
@@ -147,3 +150,5 @@ struct GIReservoir
         m_WeightSum = (any(denom <= 0.0f)) ? 0.0f : m_WeightSum / denom;
     }
 };
+
+#endif // __RESERVOIR_MANAGEMENT_HLSL__

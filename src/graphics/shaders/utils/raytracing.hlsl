@@ -17,11 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __RAYTRACING_HLSL__
+#define __RAYTRACING_HLSL__
+
 #include "common/globalconstants.h"
 #include "common/raytracingconstants.h"
 #include "utils/encoding.hlsl"
 #include "utils/shading.hlsl"
-#include "lighting/brdf.hlsl"
+#include "utils/brdf.hlsl"
 
 #define SKYLIGHT_SCALE 1.0f
 
@@ -287,3 +290,4 @@ void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     }
 }
 
+#endif // __RAYTRACING_HLSL__

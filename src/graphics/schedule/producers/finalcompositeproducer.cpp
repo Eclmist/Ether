@@ -28,7 +28,7 @@ DECLARE_GFX_SR(PostFxSourceTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
 Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
-    : FullScreenProducer("FinalCompositeProducer", "finalcomposite.hlsl")
+    : FullScreenProducer("FinalCompositeProducer", "finalcomposite_ps.hlsl")
 {
 }
 

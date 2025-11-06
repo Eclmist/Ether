@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __GI_RESERVOIR_SAMPLING_HLSL__
+#define __GI_RESERVOIR_SAMPLING_HLSL__
+
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 #include "utils/helpers.hlsl"
@@ -84,4 +87,4 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
     return payload;
 }
 
-
+#endif // __GI_RESERVOIR_SAMPLING_HLSL__

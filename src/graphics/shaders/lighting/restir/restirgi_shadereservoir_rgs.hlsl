@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __RESTIR_GI_SHADE_RESERVOIR_RGS_HLSL__
+#define __RESTIR_GI_SHADE_RESERVOIR_RGS_HLSL__
+
 #include "lighting/restir/gireservoirresampling.hlsl"
 
 RWTexture2D<float4> g_LightingOutput                        : register(u3);
@@ -69,3 +72,4 @@ void RayGeneration()
     g_LightingOutput[screenCoords].a = 0;
 }
 
+#endif // __RESTIR_GI_SHADE_RESERVOIR_RGS_HLSL__

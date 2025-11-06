@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __BLOOM_CS_HLSL__
+#define __BLOOM_CS_HLSL__
+
 #include "common/globalconstants.h"
 #include "common/bloomparams.h"
 
@@ -109,3 +112,5 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     else if (g_BloomParams.m_PassIndex == BLOOM_PASSINDEX_COMPOSITE)
         CompositePass(threadID);
 }
+
+#endif // __BLOOM_CS_HLSL__

@@ -17,6 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __BRDF_HLSL__
+#define __BRDF_HLSL__
+
+#include "utils/constants.hlsl"
+#include "utils/sampling.hlsl"
+
 float Sqr(float v)
 {
     return v * v;
@@ -129,3 +135,4 @@ inline float UE4JointPdf(float t, float nDotH, float nDotL, float vDotH, float r
     return ((1 - t) * pdf_d) + (t * pdf_s);
 }
 
+#endif // __BRDF_HLSL__

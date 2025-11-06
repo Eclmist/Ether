@@ -17,13 +17,28 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common/globalconstants.h"
+#ifndef __FULLSCREEN_VS_HLSL__
+#define __FULLSCREEN_VS_HLSL__
 
-Texture2D<float4> g_SourceTexture                   : register(t0);
-RWTexture2D<float4> g_DestinationTexture            : register(u0);
+#include "utils/fullscreenhelpers.hlsl"
 
-[numthreads(32, 32, 1)]
-void CS_Main(uint3 threadID : SV_DispatchThreadID)
+struct VS_OUTPUT
 {
-    g_DestinationTexture[threadID.xy] = g_SourceTexture[threadID.xy];
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD;
+};
+
+VS_OUTPUT VS_Main(uint ID : SV_VertexID)
+{
+    float2 pos;
+    float2 uv;
+    GetVertexFromID(ID, pos, uv);
+
+    VS_OUTPUT o;
+    o.Position = float4(pos, 1.0, 1.0);
+    o.TexCoord = uv;
+
+    return o;
 }
+
+#endif // __FULLSCREEN_VS_HLSL__

@@ -30,7 +30,7 @@ DECLARE_GFX_UA(PostFxSourceTexture)
 DECLARE_GFX_SR(GBufferTexture1) // For the velocity vectors
 
 Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
-    : PostProcessProducer("TemporalAAProducer", "postprocess\\temporalaa.hlsl")
+    : PostProcessProducer("TemporalAAProducer", "postprocess\\temporalaa_cs.hlsl")
 {
 }
 

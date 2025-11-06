@@ -134,6 +134,9 @@ bool Ether::Graphics::ReferenceLightingProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
+    if (GraphicCore::GetGraphicConfig().m_RaytracingMode != RaytracingMode::Pathtracer)
+        return false;
+
     if (GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.empty())
         return false;
 
@@ -143,7 +146,7 @@ bool Ether::Graphics::ReferenceLightingProducer::IsEnabled()
 void Ether::Graphics::ReferenceLightingProducer::CreateShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_Shader = gfxDevice.CreateShader({ "lighting\\pathtracedlights.hlsl", "", RhiShaderType::Library });
+    m_Shader = gfxDevice.CreateShader({ "lighting\\pathtracing_rgs.hlsl", "", RhiShaderType::Library });
     // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_Shader->Compile();
 

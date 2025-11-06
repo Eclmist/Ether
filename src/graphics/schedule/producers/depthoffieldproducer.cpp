@@ -31,7 +31,7 @@ DEFINE_GFX_UA_SR(DofIntermediateTexture2)
 DEFINE_GFX_UA_SR(DofCircleOfConfusionTexture)
 
 Ether::Graphics::DepthOfFieldProducer::DepthOfFieldProducer()
-    : PostProcessProducer("DepthOfFieldProducer", "postprocess\\depthoffield.hlsl")
+    : PostProcessProducer("DepthOfFieldProducer", "postprocess\\depthoffield_cs.hlsl")
 {
 }
 

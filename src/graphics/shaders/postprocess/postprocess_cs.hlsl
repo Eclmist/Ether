@@ -17,12 +17,18 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __HELPERS_HLSL__
-#define __HELPERS_HLSL__
+#ifndef __POST_PROCESS_CS_HLSL__
+#define __POST_PROCESS_CS_HLSL__
 
-float GetLuminanceFromRGB(float3 rgb)
+#include "common/globalconstants.h"
+
+Texture2D<float4> g_SourceTexture                   : register(t0);
+RWTexture2D<float4> g_DestinationTexture            : register(u0);
+
+[numthreads(32, 32, 1)]
+void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    return dot(float3(0.2126, 0.7152, 0.0722), rgb);
+    g_DestinationTexture[threadID.xy] = g_SourceTexture[threadID.xy];
 }
 
-#endif // __HELPERS_HLSL__
+#endif //__POST_PROCESS_CS_HLSL__ 

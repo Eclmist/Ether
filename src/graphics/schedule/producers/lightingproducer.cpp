@@ -225,6 +225,9 @@ bool Ether::Graphics::LightingProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
+    if (GraphicCore::GetGraphicConfig().m_RaytracingMode != RaytracingMode::ReSTIR)
+        return false;
+
     if (GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.empty())
         return false;
 
@@ -234,10 +237,10 @@ bool Ether::Graphics::LightingProducer::IsEnabled()
 void Ether::Graphics::LightingProducer::CreateShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_InitialGenerationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_initialgeneration.hlsl", "", RhiShaderType::Library });
-    m_TemporalResamplingShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_temporalresampling.hlsl", "CS_Main", RhiShaderType::Compute });
-    m_SpatialResamplingShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_spatialresampling.hlsl", "CS_Main", RhiShaderType::Compute });
-    m_LightingEvaluationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_shadereservoir.hlsl", "", RhiShaderType::Library });
+    m_InitialGenerationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_initialgeneration_rgs.hlsl", "", RhiShaderType::Library });
+    m_TemporalResamplingShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_temporalresampling_cs.hlsl", "CS_Main", RhiShaderType::Compute });
+    m_SpatialResamplingShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_spatialresampling_cs.hlsl", "CS_Main", RhiShaderType::Compute });
+    m_LightingEvaluationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_shadereservoir_rgs.hlsl", "", RhiShaderType::Library });
 
     // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_InitialGenerationShader->Compile();

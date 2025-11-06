@@ -17,28 +17,12 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __PROCEDURAL_SKY_PS_HLSL__
+#define __PROCEDURAL_SKY_PS_HLSL__
+
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
 #include "utils/sampling.hlsl"
-
-struct VS_OUTPUT
-{
-    float4 Position : SV_Position;
-    float2 TexCoord : TEXCOORD;
-};
-
-VS_OUTPUT VS_Main(uint ID : SV_VertexID)
-{
-    float2 pos;
-    float2 uv;
-    GetVertexFromID(ID, pos, uv);
-
-    VS_OUTPUT o;
-    o.Position = float4(pos, 1.0, 1.0);
-    o.TexCoord = uv;
-
-    return o;
-}
 
 // 3D Gradient noise from: https://www.shadertoy.com/view/Xsl3Dl
 float3 hash(float3 p)
@@ -305,7 +289,15 @@ float4 GetHdriSkyColor(float2 uv)
     return exposure * finalHdri + stars + sun;
 }
 
-float4 PS_Main(VS_OUTPUT IN) : SV_Target
+struct PS_OUTPUT
+{
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD;
+};
+
+float4 PS_Main(PS_OUTPUT IN) : SV_Target
 {
     return GetHdriSkyColor(IN.TexCoord);
 }
+
+#endif // __PROCEDURAL_SKY_PS_HLSL__

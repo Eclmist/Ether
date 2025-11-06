@@ -17,7 +17,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gbufferproducer.h"
+#include "translucencyproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/config/graphicconfig.h"
@@ -28,50 +28,34 @@
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/instanceparams.h"
 
-DEFINE_GFX_PA(GBufferProducer)
-DEFINE_GFX_DS(SceneDepth)
-DEFINE_GFX_RT(GBufferTexture0) // [BaseColor.x, BaseColor.y, BaseColor.z, MaterialID]
-DEFINE_GFX_RT(GBufferTexture1) // [Normal.x,    Normal.y,    Velocity.x,  Velocity.y]
-DEFINE_GFX_RT(GBufferTexture2) // [Emissive.x,  Emissive.y,  Emissive.z,  Roughness & Metalness Packed]
+DEFINE_GFX_PA(TranslucencyProducer)
 
-DEFINE_GFX_SR(SceneDepth)
-DEFINE_GFX_SR(GBufferTexture0)
-DEFINE_GFX_SR(GBufferTexture1)
-DEFINE_GFX_SR(GBufferTexture2)
-
+DECLARE_GFX_RT(SceneColor)
+DECLARE_GFX_DS(SceneDepth)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
-Ether::Graphics::GBufferProducer::GBufferProducer()
-    : GraphicProducer("GBufferProducer")
+Ether::Graphics::TranslucencyProducer::TranslucencyProducer()
+    : GraphicProducer("TranslucencyProducer")
 {
 }
 
-void Ether::Graphics::GBufferProducer::Initialize(ResourceContext& rc)
+void Ether::Graphics::TranslucencyProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
+void Ether::Graphics::TranslucencyProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-
-    schedule.NewDS(ACCESS_GFX_DS(SceneDepth), resolution.x, resolution.y, DepthBufferDsvFormat);
-    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm);
-    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
-    schedule.NewRT(ACCESS_GFX_RT(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
-    schedule.NewSR(ACCESS_GFX_SR(SceneDepth), resolution.x, resolution.y, DepthBufferSrvFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture0), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture1), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(GBufferTexture2), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-
+    schedule.Read(ACCESS_GFX_RT(SceneColor));
+    schedule.Read(ACCESS_GFX_DS(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 }
 
-void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
@@ -80,33 +64,13 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
     const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
 
-    // Temporarily weave in skinned mesh update here for convenience.
-    // Really need a new render pass for this. (TODO - ComputeSkinning)
-    for (const SkinnedVisual& skinnedVisual : skinnedVisuals)
-    {
-        ETH_MARKER_EVENT("Update skinned mesh VBs");
-        if (skinnedVisual.m_Culled)
-            continue;
-
-        SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(skinnedVisual.m_Mesh);
-        if (skinnedMesh != nullptr)
-        {
-            skinnedMesh->UpdateGpuResources(ctx);
-        }
-    }
-
     ctx.PushMarker("Clear");
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture0)), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture1)), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture2)), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_DS(SceneDepth)), RhiResourceState::DepthWrite);
-    ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture0));
-    ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture1));
-    ctx.ClearColor(*ACCESS_GFX_RT(GBufferTexture2));
-    ctx.ClearDepthStencil(*ACCESS_GFX_DS(SceneDepth), 0.0); // Clear to 0 for reverse-z
+    ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(SceneColor)), RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_DS(SceneDepth)), RhiResourceState::DepthRead);
     ctx.PopMarker();
 
-    ctx.PushMarker("Draw Geometry");
+    ctx.PushMarker("Draw Translucencies");
     ctx.SetViewport(gfxDisplay.GetViewport());
     ctx.SetScissorRect(gfxDisplay.GetScissorRect());
     ctx.SetPrimitiveTopology(RhiPrimitiveTopology::TriangleList);
@@ -118,23 +82,17 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
     ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-
-    RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTexture0),
-                                   *ACCESS_GFX_RT(GBufferTexture1),
-                                   *ACCESS_GFX_RT(GBufferTexture2)};
-    
-    ctx.SetRenderTargets(rtvs, sizeof(rtvs) / sizeof(rtvs[0]), &(*ACCESS_GFX_DS(SceneDepth)));
+    ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Batch by material only for now
     for (const VisualBatch& batch : batches)
     {
-        ETH_MARKER_EVENT("Material Batch");
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
         Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
         instanceParams->m_MaterialIdx = batch.m_Material->GetTransientMaterialIdx();
         ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-        if (batch.m_Material->HasTranslucency())
+        if (!batch.m_Material->HasTranslucency())
             continue;
 
         for (const Visual& visual : batch.m_Visuals)
@@ -151,20 +109,24 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.PopMarker();
 }
 
-bool Ether::Graphics::GBufferProducer::IsEnabled()
+bool Ether::Graphics::TranslucencyProducer::IsEnabled()
 {
-    // This will break because we have later passes dependent on this pass, and no frame graph is implemented yet
-    //if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
-    //    return false;
+    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
+        return false;
+
+    if (!GraphicCore::GetGraphicConfig().m_DrawTranslucencies)
+        return false;
 
     return true;
 }
 
-void Ether::Graphics::GBufferProducer::CreateShaders()
+void Ether::Graphics::TranslucencyProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
+
+    // TODO: This shader is already compiled! No need to recompile it, create some manager to sort the shaders
     m_VertexShader = gfxDevice.CreateShader({ "basepass_vs.hlsl", "VS_Main", RhiShaderType::Vertex });
-    m_PixelShader = gfxDevice.CreateShader({ "gbuffer_ps.hlsl", "PS_Main", RhiShaderType::Pixel });
+    m_PixelShader = gfxDevice.CreateShader({ "forwardtranslucency_ps.hlsl", "PS_Main", RhiShaderType::Pixel });
 
     // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_VertexShader->Compile();
@@ -174,7 +136,7 @@ void Ether::Graphics::GBufferProducer::CreateShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_PixelShader);
 }
 
-void Ether::Graphics::GBufferProducer::CreateRootSignature()
+void Ether::Graphics::TranslucencyProducer::CreateRootSignature()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
@@ -184,19 +146,17 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 
-void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
+void Ether::Graphics::TranslucencyProducer::CreatePipelineState(ResourceContext& rc)
 {
-    RhiFormat formats[] = { RhiFormat::R8G8B8A8Unorm,
-                            RhiFormat::R16G16B16A16Float,
-                            RhiFormat::R16G16B16A16Float, };
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
+    m_PsoDesc->SetRenderTargetFormat(BackBufferHdrFormat);
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(VertexFormats::BaseVertexFormat::s_InputElementDesc, VertexFormats::BaseVertexFormat::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
-    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadWrite);
+    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
+    m_PsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 

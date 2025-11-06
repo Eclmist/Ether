@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __TEMPORAL_AA_CS_HLSL
+#define __TEMPORAL_AA_CS_HLSL
+
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
 
@@ -64,3 +67,5 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 
     g_TargetTexture[threadID.xy] = newColor;
 }
+
+#endif // __TEMPORAL_AA_CS_HLSL

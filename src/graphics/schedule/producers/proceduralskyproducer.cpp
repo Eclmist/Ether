@@ -29,7 +29,7 @@ DEFINE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
 Ether::Graphics::ProceduralSkyProducer::ProceduralSkyProducer()
-    : FullScreenProducer("ProceduralSkyProducer", "proceduralsky.hlsl")
+    : FullScreenProducer("ProceduralSkyProducer", "proceduralsky_ps.hlsl")
 {
 }
 

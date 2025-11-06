@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __RESTIR_GI_INITIAL_GENERATION_RGS_HLSL__
+#define __RESTIR_GI_INITIAL_GENERATION_RGS_HLSL__
+
 #include "lighting/restir/gireservoirresampling.hlsl"
 
 // TODO: Move to common
@@ -75,3 +78,4 @@ void RayGeneration()
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
 
+#endif // __RESTIR_INITIAL_GENERATION_RGS_HLSL__

@@ -58,7 +58,7 @@ void Ether::Graphics::FullScreenProducer::RenderFrame(GraphicContext& ctx, Resou
 void Ether::Graphics::FullScreenProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_VertexShader = gfxDevice.CreateShader({ m_ShaderPath.c_str(), "VS_Main", RhiShaderType::Vertex });
+    m_VertexShader = gfxDevice.CreateShader({ "fullscreen_vs.hlsl", "VS_Main", RhiShaderType::Vertex });
     m_PixelShader = gfxDevice.CreateShader({ m_ShaderPath.c_str(), "PS_Main", RhiShaderType::Pixel });
 
     m_VertexShader->Compile();

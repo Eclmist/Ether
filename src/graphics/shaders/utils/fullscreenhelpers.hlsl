@@ -17,6 +17,11 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __FULLSCREEN_HELPERS_HLSL__
+#define __FULLSCREEN_HELPERS_HLSL__
+
+#include "common/globalconstants.h"
+
 void GetVertexFromID(const uint vertexID, out float2 pos, out float2 uv)
 {
     uint2 v = uint2(vertexID / 2, vertexID % 2);
@@ -68,3 +73,5 @@ float3 ScreenToWorldSpace(float2 screenCoords, float sceneDepth)
 {
     return ClipToWorldSpace(ScreenToClipSpace(screenCoords, sceneDepth));
 }
+
+#endif // __FULLSCREEN_HELPERS_HLSL__

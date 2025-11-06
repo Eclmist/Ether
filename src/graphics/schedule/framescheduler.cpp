@@ -34,6 +34,7 @@
 #include "graphics/schedule/producers/temporalaaproducer.h"
 #include "graphics/schedule/producers/bloomproducer.h"
 #include "graphics/schedule/producers/depthoffieldproducer.h"
+#include "graphics/schedule/producers/translucencyproducer.h"
 
 DECLARE_GFX_PA(DenoisedLightingProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
@@ -45,6 +46,7 @@ DECLARE_GFX_PA(PostFxSourceProducer)
 DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(ReferenceLightingProducer)
 DECLARE_GFX_PA(LightingProducer)
+DECLARE_GFX_PA(TranslucencyProducer)
 DECLARE_GFX_PA(TemporalAAProducer)
 DECLARE_GFX_PA(BloomProducer)
 DECLARE_GFX_PA(DepthOfFieldProducer)
@@ -60,6 +62,7 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(ReferenceLightingProducer), new ReferenceLightingProducer());
     Register(ACCESS_GFX_PA(LightingProducer), new LightingProducer());
+    Register(ACCESS_GFX_PA(TranslucencyProducer), new TranslucencyProducer());
     Register(ACCESS_GFX_PA(BloomProducer), new BloomProducer());
     Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
     Register(ACCESS_GFX_PA(DepthOfFieldProducer), new DepthOfFieldProducer());
@@ -79,6 +82,7 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(ProceduralSkyProducer).Release();
     ACCESS_GFX_PA(ReferenceLightingProducer).Release();
     ACCESS_GFX_PA(LightingProducer).Release();
+    ACCESS_GFX_PA(TranslucencyProducer).Release();
     ACCESS_GFX_PA(BloomProducer).Release();
     ACCESS_GFX_PA(TemporalAAProducer).Release();
     ACCESS_GFX_PA(DepthOfFieldProducer).Release();
@@ -150,20 +154,14 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(MaterialTableProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
-
-    if (GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
-    {
-        if (GraphicCore::GetGraphicConfig().m_RaytracingMode == RaytracingMode::Pathtrace)
-            m_OrderedProducers.push(ACCESS_GFX_PA(ReferenceLightingProducer).Get().get());
-        else if (GraphicCore::GetGraphicConfig().m_RaytracingMode == RaytracingMode::ReSTIR)
-            m_OrderedProducers.push(ACCESS_GFX_PA(LightingProducer).Get().get());
-    }
-
+    m_OrderedProducers.push(ACCESS_GFX_PA(ReferenceLightingProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(LightingProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(TranslucencyProducer).Get().get());
 
     // Order of post process is important, obviously
     // Reference: https://www.renderingevolution.net/?p=103
+    m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(DepthOfFieldProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(BloomProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());

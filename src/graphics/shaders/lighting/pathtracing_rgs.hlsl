@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __PATHTRACING_RGS_HLSL__
+#define __PATHTRACING_RGS_HLSL__
+
 #include "utils/helpers.hlsl"
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
@@ -78,4 +81,4 @@ void RayGeneration()
     g_IndirectOutput[screenCoords].xyz = accumulatedIndirect;
 }
 
-
+#endif // __PATHTRACING_RGS_HLSL__

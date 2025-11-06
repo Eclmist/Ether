@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __ENCODING_HLSL__
+#define __ENCODING_HLSL__
+
 float EncodeLinearDepth(float viewDepth, float near, float far)
 {
     float linearDepth = (viewDepth - near) / (far - near);
@@ -61,3 +64,5 @@ float2 DecodeFP16(float fp16)
 {
     return float2(floor(fp16) / 255.0f, frac(fp16));
 }
+
+#endif // __ENCODING_HLSL__

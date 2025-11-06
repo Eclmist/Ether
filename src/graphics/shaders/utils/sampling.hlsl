@@ -17,6 +17,9 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __SAMPLING_HLSL__
+#define __SAMPLING_HLSL__
+
 #include "utils/noise.hlsl"
 #include "utils/constants.hlsl"
 
@@ -125,3 +128,4 @@ float2 SampleSphericalMap(float3 direction)
     return uv;
 }
 
+#endif // __SAMPLING_HLSL__

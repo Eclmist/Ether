@@ -17,9 +17,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __SHADING_HLSL__
+#define __SHADING_HLSL__
+
 #include "common/vertexcommon.h"
 #include "common/material.h"
 #include "utils/fullscreenhelpers.hlsl"
+#include "utils/encoding.hlsl"
 
 #define EMISSION_SCALE 10000.0f
 
@@ -167,4 +171,4 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
     return shadingSurface;
 }
 
-
+#endif // __SHADING_HLSL__

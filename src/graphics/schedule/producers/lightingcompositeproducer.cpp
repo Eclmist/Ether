@@ -23,8 +23,8 @@
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(LightingCompositeProducer)
-DEFINE_GFX_RT(LightingCompositeTexture)
-DEFINE_GFX_SR(LightingCompositeTexture)
+DEFINE_GFX_RT(SceneColor)
+DEFINE_GFX_SR(SceneColor)
 
 DECLARE_GFX_SR(GBufferTexture0)
 DECLARE_GFX_SR(GBufferTexture1)
@@ -35,15 +35,15 @@ DECLARE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalRingBuffer)
 
 Ether::Graphics::LightingCompositeProducer::LightingCompositeProducer()
-    : FullScreenProducer("LightingCompositeProducer", "lighting\\lightingcomposite.hlsl")
+    : FullScreenProducer("LightingCompositeProducer", "lightingcomposite_ps.hlsl")
 {
 }
 
 void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewRT(ACCESS_GFX_RT(LightingCompositeTexture), resolution.x, resolution.y, BackBufferHdrFormat);
-    schedule.NewSR(ACCESS_GFX_SR(LightingCompositeTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewRT(ACCESS_GFX_RT(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat);
+    schedule.NewSR(ACCESS_GFX_SR(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
@@ -64,7 +64,7 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneDepth)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(ProceduralSkyTexture)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(LightingCompositeTexture)), RhiResourceState::RenderTarget);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(SceneColor)), RhiResourceState::RenderTarget);
 
     ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
@@ -73,7 +73,7 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(LightingTexture)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(6, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
 
-    ctx.SetRenderTarget(*ACCESS_GFX_RT(LightingCompositeTexture).Get());
+    ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor).Get());
     ctx.DrawInstanced(3, 1);
 }
 
