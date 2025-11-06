@@ -21,6 +21,10 @@
 
 #include "ether.h"
 #include <string>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 #include "engine/world/ecs/components/ecstransformcomponent.h"
 
 class RTCamp11 : public Ether::IApplicationBase
@@ -43,4 +47,51 @@ private:
 
 private:
     Ether::Ecs::EcsTransformComponent* m_CameraTransform;
+};
+
+struct ExportJob
+{
+    std::string filename;
+    std::vector<uint8_t> pixels;
+    uint32_t width;
+    uint32_t height;
+};
+
+class FrameExportWorker
+{
+public:
+    FrameExportWorker()
+        : m_Running(true)
+        , m_Thread(&FrameExportWorker::WorkerMain, this)
+    {
+    }
+
+    ~FrameExportWorker()
+    {
+        {
+            std::unique_lock lock(m_Mutex);
+            m_Running = false;
+        }
+        m_Cond.notify_one();
+        m_Thread.join();
+    }
+
+    void Enqueue(ExportJob job)
+    {
+        {
+            std::unique_lock lock(m_Mutex);
+            m_Queue.push(std::move(job));
+        }
+        m_Cond.notify_one();
+    }
+
+private:
+    void WorkerMain();
+
+private:
+    std::thread m_Thread;
+    std::mutex m_Mutex;
+    std::condition_variable m_Cond;
+    std::queue<ExportJob> m_Queue;
+    bool m_Running;
 };

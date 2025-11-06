@@ -35,11 +35,24 @@ static constexpr KeyCode KeyCode_ToggleDebugGui = (KeyCode)Win32::KeyCode::F3;
 static constexpr KeyCode KeyCode_ToggleFullscreen = (KeyCode)Win32::KeyCode::F11;
 static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode::Space;
 
+static constexpr float TotalTimeBudgetMS = 175000;      // 175 seconds (RTCamp11 rule) + 5 second buffer
+static constexpr float TotalMovieTimeMS = 10000;        // 10 seconds
+static constexpr uint32_t MovieFramesPerSecond = 24;    // 24 fps looks more filmic
+static constexpr uint32_t NumFramesToExport = MovieFramesPerSecond * (TotalMovieTimeMS / 1000.0f);
+
+void* g_ExportBufferData = nullptr;
+uint32_t g_MovieFrameNumber = 0;
+bool g_ExportQueued = false;
+float g_LastExportTime = -999;
+float g_RunningFrameBudget = TotalTimeBudgetMS / NumFramesToExport;
+
+FrameExportWorker g_FrameExportWorker;
+
 void RTCamp11::Initialize()
 {
-    LogInfo("Initializing Application: Sample App");
-    Client::SetClientTitle("Ether Sample App");
-    Client::SetClientSize({ 1920, 1080 });
+    LogInfo("Initializing Application: RTCamp");
+    Client::SetClientTitle("Raytracing Camp 11!!");
+    Client::SetClientSize({ 640, 1080 });
 }
 
 void RTCamp11::LoadContent()
@@ -77,10 +90,10 @@ void RTCamp11::LoadContent()
 
     graphicConfig.m_DebugJitterScale = 1.0f;
 
-    m_CameraTransform->m_Translation = { 7.432314, 1.387823, -12.617146 };
-    m_CameraTransform->m_Rotation = { 0.062000, -0.552797, 0.000000 };
+    graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::Pathtracer;
 
-
+    m_CameraTransform->m_Translation = { 7.671061, 0.412040, -12.706130 };
+    m_CameraTransform->m_Rotation = { 0.014000, -0.574797, 0.000000 };
 }
 
 void RTCamp11::UnloadContent()
@@ -97,36 +110,67 @@ void RTCamp11::OnUpdate(const UpdateEventArgs& e)
     UpdateCamera();
 }
 
-void* g_ExportBufferData;
-
 void RTCamp11::OnPreRender(const RenderEventArgs& e)
 {
-    Ether::Graphics::RequestExport(&g_ExportBufferData);
+    ETH_MARKER_EVENT("OnPreRender()");
+
+    const float currentTimeMS = Ether::Time::GetRealTimeSinceStartup();
+    const int32_t framesLeft = NumFramesToExport - g_MovieFrameNumber;
+
+    if (framesLeft <= 0)
+    {
+        LogInfo("Full movie exported! :))");
+        return;
+    }
+
+    if (currentTimeMS > TotalTimeBudgetMS)
+    {
+        LogWarning("Time exceeded but there are still %d frames left :(", framesLeft);
+        return;
+    }
+
+    if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
+    {
+        Ether::Graphics::RequestExport(&g_ExportBufferData);
+        g_ExportQueued = true;
+        g_LastExportTime = currentTimeMS;
+        return;
+    }
+
+    g_ExportQueued = false;
 }
 
 void RTCamp11::OnPostRender()
 {
-    static uint32_t localFrameNumber = 0;
+    ETH_MARKER_EVENT("OnPostRender()");
 
-    if (localFrameNumber >= 300) // Debug
+    if (!g_ExportQueued)
         return;
-
-    std::ostringstream filename;
-    filename << std::setw(3) << std::setfill('0') << localFrameNumber << ".png";
-
-    LogInfo("Exporting frame number %u", localFrameNumber);
 
     ethVector2u resolution = Client::GetClientSize();
 
-    stbi_write_png(
-        filename.str().c_str(),
-        resolution.x,
-        resolution.y,
-        4,
-        g_ExportBufferData,
-        4 * resolution.x);
+    std::ostringstream filename;
+    filename << std::setw(3) << std::setfill('0') << g_MovieFrameNumber << ".png";
 
-    localFrameNumber++;
+    LogInfo("Queuing frame %u for export...", g_MovieFrameNumber);
+
+    size_t dataSize = 4ull * resolution.x * resolution.y;
+    std::vector<uint8_t> pixels(dataSize);
+    memcpy(pixels.data(), g_ExportBufferData, dataSize);
+
+    ExportJob job;
+    job.filename = filename.str();
+    job.width = resolution.x;
+    job.height = resolution.y;
+    job.pixels = std::move(pixels);
+
+    g_FrameExportWorker.Enqueue(std::move(job));
+
+    g_MovieFrameNumber++;
+
+    // Update time budget dynamically in case we hitch or some frames took longer
+    //g_RunningFrameBudget = (TotalTimeBudgetMS - Ether::Time::GetRealTimeSinceStartup()) /
+    //                       (g_MovieFrameNumber - NumFramesToExport);
 }
 
 void RTCamp11::OnShutdown()
@@ -219,4 +263,39 @@ void RTCamp11::UpdateCamera() const
     if (Input::GetKey((KeyCode)Win32::KeyCode::D))
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +
                                            rightVec * Time::GetDeltaTime() * moveSpeed;
+
+    if (Input::GetKey((KeyCode)Win32::KeyCode::P))
+    {
+        LogInfo(
+            "Camera Translation: %f, %f, %f; Camera Rotation: %f, %f, %f",
+            m_CameraTransform->m_Translation.x,
+            m_CameraTransform->m_Translation.y,
+            m_CameraTransform->m_Translation.z,
+            m_CameraTransform->m_Rotation.x,
+            m_CameraTransform->m_Rotation.y,
+            m_CameraTransform->m_Rotation.z);
+    }
+}
+
+void FrameExportWorker::WorkerMain()
+{
+    ETH_MARKER_THREAD("Export Thread");
+
+    while (true)
+    {
+        ExportJob job;
+        {
+            std::unique_lock lock(m_Mutex);
+            m_Cond.wait(lock, [&] { return !m_Queue.empty() || !m_Running; });
+
+            if (!m_Running && m_Queue.empty())
+                break;
+
+            job = std::move(m_Queue.front());
+            m_Queue.pop();
+        }
+
+        ETH_MARKER_EVENT("STBI Image Write");
+        stbi_write_png(job.filename.c_str(), job.width, job.height, 4, job.pixels.data(), 4 * job.width);
+    }
 }
