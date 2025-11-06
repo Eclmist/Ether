@@ -139,7 +139,7 @@ Ether::Ecs::EcsSkinnedVisualSystem::EcsSkinnedVisualSystem()
 
 void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 {
-    ETH_MARKER_EVENT("SKinned Visual System - Update");
+    ETH_MARKER_EVENT("Skinned Visual System - Update");
 
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
