@@ -47,7 +47,9 @@ public:
     inline StringID GetRoughnessTextureID() const { return m_RoughnessTextureID; }
     inline StringID GetMetalnessTextureID() const { return m_MetalnessTextureID; }
     inline StringID GetEmissiveTextureID() const { return m_EmissiveTextureID; }
-    inline bool GetRaytracingVisibility() const { return m_RaytracingVisibility; }
+
+    inline BlendMode GetBlendMode() const { return m_BlendMode; }
+    inline RaytracingVisibility GetRaytracingVisibility() const { return m_RaytracingVisibility; }
 
     inline void SetTransientMaterialIdx(uint32_t id) { m_TransientMaterialIdx = id; }
     inline void SetBaseColor(const ethVector3& color) { m_BaseColor = color; }
@@ -60,7 +62,9 @@ public:
     inline void SetRoughnessTextureID(const StringID& id) { m_RoughnessTextureID = id; }
     inline void SetMetalnessTextureID(const StringID& id) { m_MetalnessTextureID = id; }
     inline void SetEmissiveTextureID(const StringID& id) { m_EmissiveTextureID = id; }
-    inline void SetRaytracingVisibility(bool visibility) { m_RaytracingVisibility = visibility; }
+
+    inline void SetBlendMode(BlendMode blendMode) { m_BlendMode = blendMode; }
+    inline void SetRaytracingVisibility(RaytracingVisibility visibility) { m_RaytracingVisibility = visibility; }
 
 public:
     bool HasTranslucency() const;
@@ -79,8 +83,8 @@ private:
     StringID m_EmissiveTextureID;
 
 private:
-    // Material Settings
-    bool m_RaytracingVisibility;
+    BlendMode m_BlendMode;
+    RaytracingVisibility m_RaytracingVisibility;
 
 private:
     // Transient Data

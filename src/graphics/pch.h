@@ -29,6 +29,8 @@
 #include "graphics/rhi/rhiresource.h"
 #include "graphics/rhi/rhiresourceviews.h"
 
+#include "graphics/common/graphicenums.h"
+
 namespace Ether::Graphics
 {
     constexpr uint32_t MaxSwapChainBuffers          = 3;

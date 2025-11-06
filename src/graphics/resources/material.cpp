@@ -48,6 +48,9 @@ void Ether::Graphics::Material::Serialize(OStream& ostream) const
     ostream << m_MetalnessTextureID;
     ostream << m_RoughnessTextureID;
     ostream << m_EmissiveTextureID;
+
+    ostream << static_cast<uint32_t>(m_BlendMode);
+    ostream << static_cast<uint32_t>(m_RaytracingVisibility);
 }
 
 void Ether::Graphics::Material::Deserialize(IStream& istream)
@@ -63,11 +66,17 @@ void Ether::Graphics::Material::Deserialize(IStream& istream)
     istream >> m_MetalnessTextureID;
     istream >> m_RoughnessTextureID;
     istream >> m_EmissiveTextureID;
+
+    uint32_t blendMode;
+    istream >> blendMode;
+    m_BlendMode = static_cast<BlendMode>(blendMode);
+
+    uint32_t raytracingVisibility;
+    istream >> raytracingVisibility;
+    m_RaytracingVisibility = static_cast<RaytracingVisibility>(raytracingVisibility);
 }
 
 bool Ether::Graphics::Material::HasTranslucency() const
 {
-    // TODO: Add support for different lighting models, including one for translucency
-    // For now, just check opacity
-    return GetOpacity() < 1.0f;
+    return m_BlendMode == BlendMode::Translucent || m_BlendMode == BlendMode::Additive;
 }

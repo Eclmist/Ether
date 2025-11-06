@@ -121,11 +121,14 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         float roughness;
         float metalness;
         float opacity;
+        aiBlendMode blendMode;
+
         material->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
         material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
         material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
         material->Get(AI_MATKEY_METALLIC_FACTOR, metalness);
         material->Get(AI_MATKEY_OPACITY, opacity);
+        material->Get(AI_MATKEY_BLEND_FUNC, blendMode);
 
         Graphics::Material gfxMaterial;
         gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b });
@@ -133,6 +136,17 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         gfxMaterial.SetRoughness(roughness);
         gfxMaterial.SetMetalness(metalness);
         gfxMaterial.SetOpacity(opacity);
+
+        if (opacity == 1.0f)
+        {
+            gfxMaterial.SetBlendMode(Graphics::BlendMode::Opaque);
+            gfxMaterial.SetRaytracingVisibility(Graphics::RaytracingVisibility::Lighting);
+        }
+        else
+        {
+            gfxMaterial.SetBlendMode(blendMode == aiBlendMode_Additive ? Graphics::BlendMode::Additive : Graphics::BlendMode::Translucent);
+            gfxMaterial.SetRaytracingVisibility(Graphics::RaytracingVisibility::Translucency);
+        }
 
         if (material->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
         {
@@ -288,6 +302,12 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
     std::vector<uint32_t> indices;
     FillIndexData(assimpMesh, indices);
 
+    if (indices.size() <= 0)
+    {
+        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
+        return;
+    }
+
     Graphics::StaticMesh gfxStaticMesh;
     gfxStaticMesh.SetPackedVertices(std::move(packedVertices));
     gfxStaticMesh.SetIndices(std::move(indices));
@@ -302,6 +322,12 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
 
     std::vector<uint32_t> indices;
     FillIndexData(assimpMesh, indices);
+
+    if (indices.size() <= 0)
+    {
+        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
+        return;
+    }
 
     Graphics::SkinnedMesh gfxSkinnedMesh;
     gfxSkinnedMesh.SetPackedVertices(std::move(packedSkinnedVertices));
@@ -522,16 +548,13 @@ void Ether::Toolmode::AssetImporter::FillIndexData(const aiMesh* assimpMesh, std
     for (int j = 0; j < assimpMesh->mNumFaces; ++j)
     {
         if (assimpMesh->mFaces[j].mNumIndices != numVerticesPerFace)
-            break;
+        {
+            LogToolmodeWarning("Found a degenerate face that isn't exactly 3 vertices. Discarding.");
+            continue;
+        }
 
         for (int k = 0; k < numVerticesPerFace; ++k)
             indices.emplace_back(assimpMesh->mFaces[j].mIndices[k]);
-    }
-
-    if (indices.size() <= 0)
-    {
-        LogWarning("Encountered a mesh with no indices. This mesh will be discarded");
-        return;
     }
 }
 

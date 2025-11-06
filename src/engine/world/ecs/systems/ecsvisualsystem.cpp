@@ -84,10 +84,8 @@ void Ether::Ecs::EcsVisualSystem::Update()
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
 
-        if (gfxVisual.m_Material->GetRaytracingVisibility())
-        {
+        if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
             renderData.m_RaytracingVisuals.push_back(gfxVisual);
-        }
 
         renderData.m_Visuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
@@ -105,7 +103,6 @@ bool Ether::Ecs::EcsVisualSystem::IsVisualCulled(const Graphics::Visual& visual)
     Aabb visualAabb = visual.m_Mesh->GetBoundingBox();
 
     ethMatrix4x4 viewProjectionMatrix = renderData.m_ProjectionMatrix * renderData.m_ViewMatrix;
-    //viewProjectionMatrix = viewProjectionMatrix.Transposed();
 
     ethVector4 planes[6];
     planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[2]);
@@ -202,10 +199,8 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
 
-        if (gfxVisual.m_Material->GetRaytracingVisibility())
-        {
+        if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
             renderData.m_RaytracingVisuals.push_back(gfxVisual);
-        }
 
         renderData.m_Visuals.push_back(gfxVisual);
         renderData.m_SkinnedVisuals.push_back(gfxVisual);
@@ -224,7 +219,6 @@ bool Ether::Ecs::EcsSkinnedVisualSystem::IsVisualCulled(const Graphics::Visual& 
     Aabb visualAabb = visual.m_Mesh->GetBoundingBox();
 
     ethMatrix4x4 viewProjectionMatrix = renderData.m_ProjectionMatrix * renderData.m_ViewMatrix;
-    // viewProjectionMatrix = viewProjectionMatrix.Transposed();
 
     ethVector4 planes[6];
     planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[2]);
