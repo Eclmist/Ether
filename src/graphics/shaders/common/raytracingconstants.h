@@ -53,13 +53,14 @@ struct RayPayload
 struct GIPackedReservoir
 {
     ethVector4 m_PackedNormals;
-    ethVector3 m_Radiance;
     ethVector3 m_WeightSum;
-    ethVector3 m_TargetPdf;
 
-    uint32_t m_PackedData0; // VisibleDepth (fp16) | MaterialID (fp16)
-    uint32_t m_PackedData1; // M (fp16) | Position.x
-    uint32_t m_PackedData2; // Position.y | Position.z
+    uint32_t m_PackedData0; // [fp16] VisibleDepth  | [fp16] MaterialID
+    uint32_t m_PackedData1; // [fp16] M             | [fp16] Position.x
+    uint32_t m_PackedData2; // [fp16] Position.y    | [fp16] Position.z
+    uint32_t m_PackedData3; // [fp16] Radiance.x    | [fp16] Radiance.y
+    uint32_t m_PackedData4; // [fp16] Radiance.z    | [fp16] TargetPdf.x
+    uint32_t m_PackedData5; // [fp16] TargetPdf.y   | [fp16] TargetPdf.z
 };
 
 ETH_END_SHADER_NAMESPACE
