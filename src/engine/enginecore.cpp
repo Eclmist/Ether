@@ -46,7 +46,7 @@ void Ether::EngineCore::LoadApplication(IApplicationBase& app)
 
 void Ether::EngineCore::RunEngineLoop()
 {
-    while (true)
+    while (!m_ShutdownQueued)
     {
         ETH_MARKER_FRAME("Engine Frame");
 
@@ -66,10 +66,7 @@ void Ether::EngineCore::RunEngineLoop()
         m_MainApplication->OnPostRender();
         Graphics::GraphicCore::EndOfFrame();
     }
-}
 
-void Ether::EngineCore::Shutdown()
-{
     m_MainApplication->OnShutdown();
 
     m_ActiveWorld.reset();
@@ -80,6 +77,11 @@ void Ether::EngineCore::Shutdown()
         Graphics::GraphicCore::Instance().Shutdown();
 
     m_IsInitialized = false;
+}
+
+void Ether::EngineCore::Shutdown()
+{
+    m_ShutdownQueued = true;
 }
 
 void Ether::EngineCore::InitializeGraphicsLayer()
