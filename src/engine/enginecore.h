@@ -56,6 +56,7 @@ private:
 
 private:
     bool m_IsInitialized = false;
+    bool m_ShutdownQueued = false;
 
     std::unique_ptr<PlatformWindow> m_MainWindow;
     std::unique_ptr<PlatformNotificationTray> m_NotificationTray;

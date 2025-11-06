@@ -44,6 +44,7 @@ int Ether::Start(IApplicationBase& app)
 
 void Ether::Shutdown()
 {
+    EngineCore::Instance().Shutdown();
 }
 
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()
