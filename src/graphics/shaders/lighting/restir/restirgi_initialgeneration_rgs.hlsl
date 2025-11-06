@@ -21,14 +21,7 @@
 #define __RESTIR_GI_INITIAL_GENERATION_RGS_HLSL__
 
 #include "lighting/restir/gireservoirresampling.hlsl"
-
-// TODO: Move to common
-float LinearizeDepth(float depth)
-{
-    float near = g_GlobalConstants.m_CameraClipNearFar.x;
-    float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return far * near / (depth * (far - near) + near);
-}
+#include "utils/helpers.hlsl"
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -71,7 +64,7 @@ void RayGeneration()
     initialSample.m_Radiance = payload.m_Radiance;
 
     const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
-    const float3 risWeight = targetFunction / max(0.001f, pdf);
+    const float3 risWeight = targetFunction / max(0.01f, pdf);
         
     initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
