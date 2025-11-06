@@ -32,6 +32,7 @@ DEFINE_GFX_PA(TranslucencyProducer)
 
 DECLARE_GFX_RT(SceneColor)
 DECLARE_GFX_DS(SceneDepth)
+DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
@@ -51,6 +52,7 @@ void Ether::Graphics::TranslucencyProducer::GetInputOutput(ScheduleContext& sche
 {
     schedule.Read(ACCESS_GFX_RT(SceneColor));
     schedule.Read(ACCESS_GFX_DS(SceneDepth));
+    schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 }
@@ -82,6 +84,7 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
     ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Batch by material only for now
@@ -124,8 +127,8 @@ void Ether::Graphics::TranslucencyProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
-    // TODO: This shader is already compiled! No need to recompile it, create some manager to sort the shaders
-    m_VertexShader = gfxDevice.CreateShader({ "basepass_vs.hlsl", "VS_Main", RhiShaderType::Vertex });
+    // RTCamp11 TODO: Fall back to basepass_vs after we no longer need water animation hack
+    m_VertexShader = gfxDevice.CreateShader({ "forwardtranslucency_ps.hlsl", "VS_Main", RhiShaderType::Vertex });
     m_PixelShader = gfxDevice.CreateShader({ "forwardtranslucency_ps.hlsl", "PS_Main", RhiShaderType::Pixel });
 
     // Manually compile shader since raytracing PSO caching has not been implemented yet
@@ -138,10 +141,13 @@ void Ether::Graphics::TranslucencyProducer::CreateShaders()
 
 void Ether::Graphics::TranslucencyProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(4, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) InstanceParams
     rsDesc->SetAsShaderResourceView(2, 0, RhiShaderVisibility::All); // (t0) MaterialTable
+    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) SceneDepth
+
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

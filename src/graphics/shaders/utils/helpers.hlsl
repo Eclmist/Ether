@@ -20,9 +20,18 @@
 #ifndef __HELPERS_HLSL__
 #define __HELPERS_HLSL__
 
+#include "common/globalconstants.h"
+
 float GetLuminanceFromRGB(float3 rgb)
 {
     return dot(float3(0.2126, 0.7152, 0.0722), rgb);
+}
+
+float LinearizeDepth(float depth)
+{
+    float near = g_GlobalConstants.m_CameraClipNearFar.x;
+    float far = g_GlobalConstants.m_CameraClipNearFar.y;
+    return far * near / (depth * (far - near) + near);
 }
 
 #endif // __HELPERS_HLSL__

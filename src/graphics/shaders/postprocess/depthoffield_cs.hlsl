@@ -23,6 +23,7 @@
 #include "common/globalconstants.h"
 #include "common/depthoffieldparams.h"
 #include "utils/constants.hlsl"
+#include "utils/helpers.hlsl"
 
 ConstantBuffer<DepthOfFieldParams> g_DepthOfFieldParams : register(b1);
 
@@ -109,13 +110,6 @@ static const float2 g_Kernel[g_KernelSampleCount] = {
     float2(0.90096885,-0.43388376),
     float2(0.9749279,-0.22252086),
 };
-
-float LinearizeDepth(float depth)
-{
-    float near = g_GlobalConstants.m_CameraClipNearFar.x;
-    float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return far * near / (depth * (far - near) + near);
-}
 
 float WeighSample(float coc, float radius)
 {

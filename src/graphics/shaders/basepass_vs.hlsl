@@ -50,14 +50,6 @@ struct VS_OUTPUT
 
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
 
-// TODO: Move to common
-float LinearizeDepth(float depth)
-{
-    float near = g_GlobalConstants.m_CameraClipNearFar.x;
-    float far = g_GlobalConstants.m_CameraClipNearFar.y;
-    return far * near / (depth * (far - near) + near);
-}
-
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
