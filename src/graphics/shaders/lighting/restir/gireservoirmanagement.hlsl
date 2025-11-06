@@ -68,14 +68,19 @@ struct GIReservoir
         GIReservoir reservoir;
         reservoir.m_Sample.m_VisibleNormal = DecodeNormals(packedReservoir.m_PackedNormals.xy);
         reservoir.m_Sample.m_SampleNormal = DecodeNormals(packedReservoir.m_PackedNormals.zw);
-        reservoir.m_Sample.m_SamplePosition = packedReservoir.m_SamplePosition;
         reservoir.m_Sample.m_Radiance = packedReservoir.m_Radiance;
         reservoir.m_WeightSum = packedReservoir.m_WeightSum;
         reservoir.m_TargetPdf = packedReservoir.m_TargetPdf;
-        reservoir.M = packedReservoir.M;
+
 
         reservoir.m_Sample.m_MaterialID = packedReservoir.m_PackedData0 & 0xFFFF;
         reservoir.m_Sample.m_VisibleDepth = f16tof32(packedReservoir.m_PackedData0 >> 16);
+
+        reservoir.M = float(packedReservoir.m_PackedData1 >> 16);
+
+        reservoir.m_Sample.m_SamplePosition.x = f16tof32(packedReservoir.m_PackedData1 & 0xFFFF);
+        reservoir.m_Sample.m_SamplePosition.y = f16tof32(packedReservoir.m_PackedData2 >> 16);
+        reservoir.m_Sample.m_SamplePosition.z = f16tof32(packedReservoir.m_PackedData2 & 0xFFFF);
 
         if (any(isinf(reservoir.m_WeightSum)) || any(isnan(reservoir.m_WeightSum)))
             return Empty();
@@ -88,14 +93,17 @@ struct GIReservoir
         GIPackedReservoir packedReservoir;
         packedReservoir.m_PackedNormals.xy = EncodeNormals(reservoir.m_Sample.m_VisibleNormal);
         packedReservoir.m_PackedNormals.zw = EncodeNormals(reservoir.m_Sample.m_SampleNormal);
-        packedReservoir.m_SamplePosition = reservoir.m_Sample.m_SamplePosition;
         packedReservoir.m_Radiance = reservoir.m_Sample.m_Radiance;
         packedReservoir.m_WeightSum = reservoir.m_WeightSum;
         packedReservoir.m_TargetPdf = reservoir.m_TargetPdf;
-        packedReservoir.M = reservoir.M;
 
         packedReservoir.m_PackedData0 = (f32tof16(reservoir.m_Sample.m_VisibleDepth) << 16);
         packedReservoir.m_PackedData0 |= min(0xFFFF, reservoir.m_Sample.m_MaterialID) & 0xFFFF;
+
+        packedReservoir.m_PackedData1 = min(0xFFFF, (uint) reservoir.M) << 16;
+        packedReservoir.m_PackedData1 |= f32tof16(reservoir.m_Sample.m_SamplePosition.x);
+        packedReservoir.m_PackedData2 = f32tof16(reservoir.m_Sample.m_SamplePosition.y) << 16;
+        packedReservoir.m_PackedData2 |= f32tof16(reservoir.m_Sample.m_SamplePosition.z) & 0xFFFF;
 
         return packedReservoir;
     }
