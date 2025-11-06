@@ -35,6 +35,7 @@ public:
 
 public:
     void Export();
+    void Reset();
 
 private:
     bool m_ExportRequested;
