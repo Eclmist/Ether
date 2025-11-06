@@ -64,6 +64,7 @@ void Ether::EngineCore::RunEngineLoop()
         m_MainApplication->OnPreRender({});
         Graphics::GraphicCore::NewFrame();
         m_MainApplication->OnPostRender();
+        Graphics::GraphicCore::EndOfFrame();
     }
 }
 

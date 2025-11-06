@@ -72,11 +72,20 @@ void Ether::Graphics::GraphicExporter::Export()
         return;
     }
 
+    ETH_MARKER_EVENT("Backbuffer Readback");
+
     CommandContext context("Command Context - Export Context");
     context.Reset();
     context.CopyTextureToBuffer(GraphicCore::GetGraphicDisplay().GetBackBuffer(), *m_ReadbackBuffer, m_ExportResolution.x, m_ExportResolution.y);
     context.FinalizeAndExecute(true);
 
     m_ReadbackBuffer->Map(m_ExportAddress);
+}
+
+void Ether::Graphics::GraphicExporter::Reset()
+{
+    m_ExportRequested = false;
+    m_ExportAddress = nullptr;
+    m_ExportResolution = { 0, 0 };
 }
 

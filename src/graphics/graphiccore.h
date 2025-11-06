@@ -71,6 +71,7 @@ public:
 
 public:
     static void NewFrame();
+    static void EndOfFrame();
     static void FlushGpu();
 
 private:

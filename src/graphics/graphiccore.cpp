@@ -70,13 +70,17 @@ void Ether::Graphics::GraphicCore::NewFrame()
     s_Instance->m_GraphicRenderer->WaitForPresent();
     s_Instance->m_GraphicRenderer->Render();
     s_Instance->m_GraphicRenderer->Present();
-    s_Instance->m_GraphicRenderer->Cleanup();
-
     s_Instance->m_GraphicExporter->Export();
 }
 
 void Ether::Graphics::GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
+}
+
+void Ether::Graphics::GraphicCore::EndOfFrame()
+{
+    s_Instance->m_GraphicRenderer->Cleanup();
+    s_Instance->m_GraphicExporter->Reset();
 }
 
