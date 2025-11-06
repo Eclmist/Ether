@@ -26,8 +26,6 @@
 #include "utils/shading.hlsl"
 #include "utils/brdf.hlsl"
 
-#define SKYLIGHT_SCALE 1.0f
-
 RaytracingAccelerationStructure g_RaytracingTlas    : register(t0);
 StructuredBuffer<GeometryInfo> g_GeometryInfo       : register(t1);
 StructuredBuffer<Material> g_MaterialTable          : register(t2);
@@ -210,7 +208,7 @@ void Miss(inout RayPayload payload)
     else
     {
         // Sample environment color
-        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection()) * SKYLIGHT_SCALE;
+        payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
     }
 }
 

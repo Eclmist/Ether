@@ -73,6 +73,9 @@ void CS_Main(
                 if (historyReservoir.IsValid())
                 {
                     // recomputing target function here may causes a lot of inf fireflies 
+                    // But not computing it can cause a color bleed from spatial feedback.
+                    // For RTCamp11 Scene, recomputing looks better
+                    // For Sponza, not recomputing looks better
                     const float3 targetFunction = ComputeTargetFunction(surface, historyReservoir.m_Sample);
 
                     historyReservoir.FinalizeResampling();

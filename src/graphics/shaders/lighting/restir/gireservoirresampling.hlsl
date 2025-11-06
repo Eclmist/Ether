@@ -68,7 +68,7 @@ float3 ComputeTargetFunction(ShadingSurface surface, GIReservoirSample sample)
 {
     const float3 wi = normalize(sample.m_SamplePosition - surface.m_Position);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-    return ComputeRadiance(surface, sample.m_Radiance, wi, wo);
+    return clamp(ComputeRadiance(surface, sample.m_Radiance, wi, wo), 0, 100000);
 }
 
 RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)

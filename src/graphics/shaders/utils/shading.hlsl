@@ -145,12 +145,12 @@ ShadingSurface GetShadingSurfaceFromGeometry(InterpolatedSurface interpolatedSur
 
     ShadingSurface shadingSurface;
     shadingSurface.m_Position = interpolatedSurface.m_VertexPosition;
-    shadingSurface.m_Normal = normal;
-    shadingSurface.m_BaseColor = baseColor.rgb;
-    shadingSurface.m_Roughness = roughness;
-    shadingSurface.m_Metalness = metalness;
+    shadingSurface.m_Normal = normalize(normal);
+    shadingSurface.m_BaseColor = saturate(baseColor);
+    shadingSurface.m_Roughness = clamp(roughness, 0.01f, 1.0f);
+    shadingSurface.m_Metalness = saturate(metalness);
     shadingSurface.m_Emission = emission;
-    shadingSurface.m_Opacity = opacity;
+    shadingSurface.m_Opacity = saturate(opacity);
     shadingSurface.m_Velocity = 0.0f;
     shadingSurface.m_MaterialID = material.m_MaterialId;
 

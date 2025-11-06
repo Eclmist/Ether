@@ -64,7 +64,7 @@ void RayGeneration()
     initialSample.m_Radiance = payload.m_Radiance;
 
     const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
-    const float3 risWeight = targetFunction / max(0.01f, pdf);
+    const float3 risWeight = targetFunction / max(0.05f, pdf);
         
     initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
