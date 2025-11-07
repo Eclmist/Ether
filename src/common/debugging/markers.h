@@ -19,8 +19,17 @@
 
 #pragma once
 
+#ifndef ETH_SHIPPING
+
 #include "optick/optick.h"
 
 #define ETH_MARKER_FRAME(name)  OPTICK_FRAME(name);
 #define ETH_MARKER_THREAD(name) OPTICK_THREAD(name);
 #define ETH_MARKER_EVENT(name)  OPTICK_EVENT(name);
+
+#else
+#define ETH_MARKER_FRAME(name)  void(0);
+#define ETH_MARKER_THREAD(name) void(0);
+#define ETH_MARKER_EVENT(name)  void(0);
+
+#endif

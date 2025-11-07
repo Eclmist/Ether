@@ -29,7 +29,11 @@ int Ether::Start(IApplicationBase& app)
     LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
     EngineCore::Instance().Initialize();
     EngineCore::Instance().LoadApplication(app);
-    ETH_ENGINEONLY(EngineCore::Instance().GetMainWindow().Show());
+
+    #if ETH_ENGINE
+    if (!EngineCore::GetCommandLineOptions().GetUseHeadlessRenderer())
+        EngineCore::Instance().GetMainWindow().Show();
+    #endif
 
     EngineCore::Instance().RunEngineLoop();
 

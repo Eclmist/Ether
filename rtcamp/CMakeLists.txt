@@ -55,3 +55,11 @@ add_custom_command(TARGET RTCamp POST_BUILD
 )
 
 
+add_custom_command(TARGET RTCamp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/src/graphics/shaders"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/data/shaders"
+    COMMENT "Copying the shaders folder to the working directory"
+)
+
+
