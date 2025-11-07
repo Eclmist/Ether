@@ -50,6 +50,7 @@ namespace Ether::Toolmode
     private:
         void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
         void ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene);
+        void ProcessNodes(const aiScene* assimpScene);
         void ProcessBones(const aiScene* assimpScene);
         void ProcessAnimations(const aiScene* assimpScene);
         void ProcessMeshs(const aiScene* assimpScene);
@@ -58,7 +59,10 @@ namespace Ether::Toolmode
         void ProcessStaticMesh(const aiMesh* assimpMesh);
         void ProcessSkinnedMesh(const aiMesh* assimpMesh);
         StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
-        Graphics::Skeleton& ProcessSkeleton(const aiNode& armatureRootNode);
+        Graphics::Skeleton& ProcessSkeleton(aiBone* rootBone);
+        aiBone* GetArmatureRoot(aiBone* bone) const;
+        aiBone* GetNodeBone(aiNode* node) const;
+        aiNode* GetBoneNode(aiBone* bone) const;
 
     private:
         template <typename VertexFormat>
@@ -74,10 +78,12 @@ namespace Ether::Toolmode
         float m_MeshScale = 1.0f;
 
         StringID m_MaterialGuidTable[MaxMaterialsPerAsset];
-        std::unordered_map<StringID, std::unique_ptr<Graphics::Skeleton>> m_ArmatureRootToSkeletonMap;
-        std::unordered_map<StringID, std::unordered_map<StringID, aiBone*>> m_ArmatureToBonesMap;
+        std::unordered_map<StringID, aiNode*> m_NameToNodeMap;
+        std::unordered_map<aiBone*, std::unique_ptr<Graphics::Skeleton>> m_ArmatureRootToSkeletonMap;
+        std::unordered_map<aiBone*, aiBone*> m_ArmatureToBonesMap;
+        std::unordered_map<aiNode*, aiBone*> m_NodeToBoneMap;
+        std::unordered_map<aiBone*, aiNode*> m_BoneToNodeMap;
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
-
 }
 
