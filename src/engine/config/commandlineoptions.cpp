@@ -57,6 +57,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseShaderDaemon = true;
     else if (flag == "-validationlayer")
         m_UseValidationLayer = true;
+    else if (flag == "-headless")
+        m_UseHeadlessRenderer = true;
     else if (flag == "-world")
         m_WorldName = arg;
 #if defined(ETH_TOOLMODE)
