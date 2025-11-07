@@ -61,6 +61,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseHeadlessRenderer = true;
     else if (flag == "-world")
         m_WorldName = arg;
+    else if (flag == "-exportmovie")
+        m_ExportMovie = true;
 #if defined(ETH_TOOLMODE)
     else if (flag == "-workspace")
         m_WorkspacePath = arg;

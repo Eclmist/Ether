@@ -34,6 +34,7 @@ public:
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
     inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
     inline bool GetUseHeadlessRenderer() const { return m_UseHeadlessRenderer; }
+    inline bool GetExportMovie() const { return m_ExportMovie; }
     inline const std::string& GetWorldName() const { return m_WorldName; }
     inline const std::string& GetShaderSourcePath() const { return m_ShaderSourcePath; }
 
@@ -55,6 +56,7 @@ private:
     bool m_UseShaderDaemon;
     bool m_UseValidationLayer;
     bool m_UseHeadlessRenderer;
+    bool m_ExportMovie;
 
     std::string m_WorldName;
     std::string m_ShaderSourcePath;

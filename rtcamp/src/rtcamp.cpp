@@ -39,6 +39,7 @@ static constexpr float TotalMovieTimeMS = 10000;        // 10 seconds
 static constexpr uint32_t MovieFramesPerSecond = 24;    // 24 fps looks more filmic
 static constexpr uint32_t NumFramesToExport = MovieFramesPerSecond * (TotalMovieTimeMS / 1000.0f);
 
+bool g_ShouldExportMovie = false;
 void* g_ExportBufferData = nullptr;
 uint32_t g_MovieFrameNumber = 0;
 bool g_ExportQueued = false;
@@ -52,6 +53,8 @@ void RTCamp11::Initialize()
     LogInfo("Initializing Application: RTCamp");
     Client::SetClientTitle("Raytracing Camp 11!!");
     Client::SetClientSize({ 640, 1080 });
+
+    g_ShouldExportMovie = GetCommandLineOptions().GetExportMovie();
 }
 
 void RTCamp11::LoadContent()
@@ -117,31 +120,34 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
 {
     ETH_MARKER_EVENT("OnPreRender()");
 
-    const float currentTimeMS = Ether::Time::GetRealTimeSinceStartup();
-    const int32_t framesLeft = NumFramesToExport - g_MovieFrameNumber;
-
-    if (framesLeft <= 0)
+    if (g_ShouldExportMovie)
     {
-        LogInfo("Full movie exported! :))");
+        const float currentTimeMS = Ether::Time::GetRealTimeSinceStartup();
+        const int32_t framesLeft = NumFramesToExport - g_MovieFrameNumber;
 
-        g_FrameExportWorker.Join();
-        Ether::Shutdown();
-        return;
-    }
+        if (framesLeft <= 0)
+        {
+            LogInfo("Full movie exported! :))");
 
-    static bool bHasPrintedWarning = false;
-    if (currentTimeMS > TotalTimeBudgetMS && !bHasPrintedWarning)
-    {
-        LogWarning("Time limit likely exceeded but there are still %d frames left :(", framesLeft);
-        bHasPrintedWarning = true;
-    }
+            g_FrameExportWorker.Join();
+            Ether::Shutdown();
+            return;
+        }
 
-    if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
-    {
-        Ether::Graphics::RequestExport(&g_ExportBufferData);
-        g_ExportQueued = true;
-        g_LastExportTime = currentTimeMS;
-        return;
+        static bool bHasPrintedWarning = false;
+        if (currentTimeMS > TotalTimeBudgetMS && !bHasPrintedWarning)
+        {
+            LogWarning("Time limit likely exceeded but there are still %d frames left :(", framesLeft);
+            bHasPrintedWarning = true;
+        }
+
+        if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
+        {
+            Ether::Graphics::RequestExport(&g_ExportBufferData);
+            g_ExportQueued = true;
+            g_LastExportTime = currentTimeMS;
+            return;
+        }
     }
 }
 
@@ -149,34 +155,37 @@ void RTCamp11::OnPostRender()
 {
     ETH_MARKER_EVENT("OnPostRender()");
 
-    if (!g_ExportQueued)
-        return;
+    if (g_ShouldExportMovie)
+    {
+        if (!g_ExportQueued)
+            return;
 
-    g_ExportQueued = false;
-    ethVector2u resolution = Client::GetClientSize();
+        g_ExportQueued = false;
+        ethVector2u resolution = Client::GetClientSize();
 
-    std::ostringstream filename;
-    filename << std::setw(3) << std::setfill('0') << g_MovieFrameNumber << ".png";
+        std::ostringstream filename;
+        filename << std::setw(3) << std::setfill('0') << g_MovieFrameNumber << ".png";
 
-    LogInfo("Queuing frame %u for export...", g_MovieFrameNumber);
+        LogInfo("Queuing frame %u for export...", g_MovieFrameNumber);
 
-    size_t dataSize = 4ull * resolution.x * resolution.y;
-    std::vector<uint8_t> pixels(dataSize);
-    memcpy(pixels.data(), g_ExportBufferData, dataSize);
+        size_t dataSize = 4ull * resolution.x * resolution.y;
+        std::vector<uint8_t> pixels(dataSize);
+        memcpy(pixels.data(), g_ExportBufferData, dataSize);
 
-    ExportJob job;
-    job.filename = filename.str();
-    job.width = resolution.x;
-    job.height = resolution.y;
-    job.pixels = std::move(pixels);
+        ExportJob job;
+        job.filename = filename.str();
+        job.width = resolution.x;
+        job.height = resolution.y;
+        job.pixels = std::move(pixels);
 
-    g_FrameExportWorker.Enqueue(std::move(job));
+        g_FrameExportWorker.Enqueue(std::move(job));
 
-    g_MovieFrameNumber++;
+        g_MovieFrameNumber++;
 
-    // Update time budget dynamically in case we hitch or some frames took longer
-    //g_RunningFrameBudget = (TotalTimeBudgetMS - Ether::Time::GetRealTimeSinceStartup()) /
-    //                       (g_MovieFrameNumber - NumFramesToExport);
+        // Update time budget dynamically in case we hitch or some frames took longer
+        //g_RunningFrameBudget = (TotalTimeBudgetMS - Ether::Time::GetRealTimeSinceStartup()) /
+        //                       (g_MovieFrameNumber - NumFramesToExport);
+    }
 }
 
 void RTCamp11::OnShutdown()
