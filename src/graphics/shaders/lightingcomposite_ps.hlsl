@@ -54,7 +54,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
 
     // Debug: 
     if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-        return surface.m_BaseColor.xyzz;
+        return float4(surface.m_Velocity, 0.0f, 0.0f) * 1000.0f;
     //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
     //    return float4(surface.m_Position, 1.0f);
 
