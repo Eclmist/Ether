@@ -128,7 +128,7 @@ void Ether::Graphics::TranslucencyProducer::CreateShaders()
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
 
     // RTCamp11 TODO: Fall back to basepass_vs after we no longer need water animation hack
-    m_VertexShader = gfxDevice.CreateShader({ "forwardtranslucency_ps.hlsl", "VS_Main", RhiShaderType::Vertex });
+    m_VertexShader = gfxDevice.CreateShader({ "basepass_vs.hlsl", "VS_Main", RhiShaderType::Vertex });
     m_PixelShader = gfxDevice.CreateShader({ "forwardtranslucency_ps.hlsl", "PS_Main", RhiShaderType::Pixel });
 
     // Manually compile shader since raytracing PSO caching has not been implemented yet
