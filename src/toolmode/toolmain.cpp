@@ -179,7 +179,6 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             visual.m_SkeletonGuid = skinnedMesh->GetSkeletonGuid();
 
             const Graphics::Skeleton* skeleton = resources.GetSkeletonResource(skinnedMesh->GetSkeletonGuid());
-            AssertToolmode(skeleton != nullptr, "Why would this ever be null?");
             if (skeleton != nullptr)
             {
                 bool foundAnim = false;

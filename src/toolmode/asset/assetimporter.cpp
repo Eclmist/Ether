@@ -62,6 +62,13 @@ inline Ether::ethMatrix4x4 ToEthMatrix4x4(aiMatrix4x4 aiMatrix)
              aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4 };
 }
 
+inline aiMatrix4x4 ToAiMatrix4x4(Ether::ethMatrix4x4 matrix)
+{
+    return { matrix.m_11, matrix.m_12, matrix.m_13, matrix.m_14,
+             matrix.m_21, matrix.m_22, matrix.m_23, matrix.m_24,
+             matrix.m_31, matrix.m_32, matrix.m_33, matrix.m_34,
+             matrix.m_41, matrix.m_42, matrix.m_43, matrix.m_44 };
+}
 void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool flattern)
 {
     ETH_MARKER_FRAME("Import Frame");
@@ -74,12 +81,18 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
 
     uint32_t importFlags = 0;
     importFlags |= aiProcess_ConvertToLeftHanded;
-    importFlags |= aiProcessPreset_TargetRealtime_Quality;
     importFlags |= aiProcess_TransformUVCoords;
-    importFlags |= aiProcess_PopulateArmatureData;
+    importFlags |= aiProcessPreset_TargetRealtime_Quality;
 
     if (flattern)
+    {
         importFlags |= aiProcess_PreTransformVertices;
+    }
+    else
+    {
+        // Workaround for large skeletal meshes. Splitting discards bones!
+        importFlags &= ~aiProcess_SplitLargeMeshes;
+    }
 
     auto scene = importer.ReadFile(assetPath, importFlags);
     if (scene == nullptr)
@@ -110,6 +123,7 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
     ETH_MARKER_EVENT("Process Assimp Scene");
 
     ProcessMaterials(folderPath, assimpScene);
+    ProcessNodes(assimpScene);
     ProcessBones(assimpScene);
     ProcessAnimations(assimpScene);
     ProcessMeshs(assimpScene);
@@ -223,6 +237,25 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         });
 }
 
+void Ether::Toolmode::AssetImporter::ProcessNodes(const aiScene* assimpScene)
+{
+    // DFS traverse entire scene once to record the m_NameToNodeMap
+    std::function<void(aiNode*)> PopulateNodeMap = [&](aiNode* node) -> void
+    {
+        if (node == nullptr)
+            return;
+
+        m_NameToNodeMap.emplace(node->mName.C_Str(), node);
+
+        for (uint32_t i = 0; i < node->mNumChildren; ++i)
+        {
+            PopulateNodeMap(node->mChildren[i]);
+        }
+    };
+
+    PopulateNodeMap(assimpScene->mRootNode);
+}
+
 void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
 {
     ETH_MARKER_EVENT("Process Bones");
@@ -234,16 +267,28 @@ void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
         if (!mesh->HasBones())
             continue;
 
-        aiNode* rootArmature = mesh->mBones[0]->mArmature;
+        for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+        {
+            aiBone* bone = mesh->mBones[boneIndex];
+
+            if (!m_NameToNodeMap.contains(bone->mName.C_Str()))
+            {
+                LogToolmodeError("Serious import issue: Node for bone was not detected. This mesh will be broken");
+            }
+
+            aiNode* node = m_NameToNodeMap.at(bone->mName.C_Str());
+
+            m_NodeToBoneMap.emplace(node, bone);
+            m_BoneToNodeMap.emplace(bone, node);
+        }
 
         for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
         {
             aiBone* aibone = mesh->mBones[boneIndex];
+            aiBone* rootBone = GetArmatureRoot(aibone);
 
-            AssertToolmode(aibone->mArmature == rootArmature, "Encountered a mesh with influence from multiple skeleton roots. This is not supported");
-            AssertToolmode(StringID(aibone->mName.C_Str()) == StringID(aibone->mNode->mName.C_Str()), "Bone name does not match node name");
-
-            m_ArmatureToBonesMap[rootArmature->mName.C_Str()].emplace(aibone->mNode->mName.C_Str(), aibone);
+            if (rootBone != nullptr)
+                m_ArmatureToBonesMap.emplace(rootBone, aibone);
         }
     }
 }
@@ -355,7 +400,12 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     gfxSkinnedMesh.SetPackedVertices(std::move(packedSkinnedVertices));
     gfxSkinnedMesh.SetIndices(std::move(indices));
     gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
-    gfxSkinnedMesh.SetSkeletonGuid(m_ArmatureRootToSkeletonMap.at(assimpMesh->mBones[0]->mArmature->mName.C_Str())->GetGuid());
+
+    if (m_ArmatureRootToSkeletonMap.contains(GetArmatureRoot(assimpMesh->mBones[0])))
+    {
+        gfxSkinnedMesh.SetSkeletonGuid(m_ArmatureRootToSkeletonMap.at(GetArmatureRoot(assimpMesh->mBones[0]))->GetGuid());
+    }
+
     SerializeLibraryData(&gfxSkinnedMesh);
 }
 
@@ -374,16 +424,25 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
         path = PathUtils::GetFolderPath(path) + PathUtils::GetFileName(path) + ".png";
 
     int w, h, channels;
-    unsigned char* image = stbi_load((folderPath + path).c_str(), &w,
+    unsigned char* image = stbi_load(path.c_str(), &w,
         &h,
         &channels,
         STBI_rgb_alpha);
 
     if (image == nullptr)
     {
+        image = stbi_load((folderPath + path).c_str(), &w,
+            &h,
+            &channels,
+            STBI_rgb_alpha);
+    }
+
+    if (image == nullptr)
+    {
         LogToolmodeError("Failed to load texture: %s", (folderPath + path).c_str());
         return {};
     }
+
 
     Graphics::Texture gfxTexture;
 
@@ -410,41 +469,44 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     return gfxTexture.GetGuid();
 }
 
-Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiNode& armatureRootNode)
+Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBone)
 {
     ETH_MARKER_EVENT("Process Skeleton");
-    const std::unordered_map<StringID, aiBone*>& armatureBones = m_ArmatureToBonesMap.at(armatureRootNode.mName.C_Str());
-    
-    if (m_ArmatureRootToSkeletonMap.find(armatureRootNode.mName.C_Str()) != m_ArmatureRootToSkeletonMap.end())
+
+    aiNode* rootNode = GetBoneNode(rootBone);
+
+    AssertToolmode(rootBone != nullptr, "Can't process a null bone");
+    AssertToolmode(rootNode != nullptr, "Can't process a null node");
+
+    if (m_ArmatureRootToSkeletonMap.contains(rootBone))
     {
         // Skeleton already exist and has been processed
-        return *m_ArmatureRootToSkeletonMap.at(armatureRootNode.mName.C_Str());
+        return *m_ArmatureRootToSkeletonMap.at(rootBone);
     }
 
-    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(armatureRootNode.mName.C_Str(), std::make_unique<Graphics::Skeleton>());
+    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootBone, std::make_unique<Graphics::Skeleton>());
     Graphics::Skeleton& skeleton = *iter->second;
 
     // Update the global inverse transform
     Graphics::SkeletonPose bindPose = skeleton.GetBindPose();
-    bindPose.m_GlobalInverseTransform = ToEthMatrix4x4(armatureRootNode.mTransformation).Inversed();
+    bindPose.m_GlobalInverseTransform = ToEthMatrix4x4(rootNode->mTransformation).Inversed();
     skeleton.SetBindPose(bindPose);
 
     // Depth first search each root bone to build our own skeleton hierarchy
-    std::function<void(const aiNode*, uint32_t, ethMatrix4x4)> GenerateSkeletonHierarchy =
-        [&](const aiNode* node, uint32_t parentBoneIndex, const ethMatrix4x4& parentTransform) -> void
+    std::function<void(aiNode*, uint32_t, ethMatrix4x4)> GenerateSkeletonHierarchy =
+        [&](aiNode* node, uint32_t parentBoneIndex, const ethMatrix4x4& parentTransform) -> void
     {
-        aiBone* aibone = nullptr;
-        if (armatureBones.find(node->mName.C_Str()) != armatureBones.end())
-            aibone = armatureBones.at(node->mName.C_Str());
+        AssertToolmode(node != nullptr, "node cannot be null");
+
+        aiBone* aibone = GetNodeBone(node);
 
         const uint32_t currentBoneIndex = skeleton.NumBones();
         const ethMatrix4x4 localTransformation = ToEthMatrix4x4(node->mTransformation);
         const ethMatrix4x4 globalTransformation = parentTransform * localTransformation;
-        const ethMatrix4x4 offsetMatrix = aibone == nullptr ? globalTransformation.Inversed()
-                                                            : ToEthMatrix4x4(aibone->mOffsetMatrix);
+        const ethMatrix4x4 offsetMatrix = aibone != nullptr ? ToEthMatrix4x4(aibone->mOffsetMatrix) : globalTransformation.Inversed();
 
-        Graphics::SkeletonBone bone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
-        skeleton.AddBone(bone);
+        Graphics::SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
+        skeleton.AddBone(gfxBone);
 
         Graphics::SkeletonPose bindPose = skeleton.GetBindPose();
         bindPose.m_GlobalBoneTransform.push_back(globalTransformation);
@@ -453,25 +515,52 @@ Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(const
 
         for (uint32_t i = 0; i < node->mNumChildren; ++i)
         {
-            const aiNode* childNode = node->mChildren[i];
-            GenerateSkeletonHierarchy(childNode, currentBoneIndex, globalTransformation);
+            aiNode* child = node->mChildren[i];
+            GenerateSkeletonHierarchy(child, currentBoneIndex, globalTransformation);
         };
     };
 
-    // Assumption: Armature root is not a bone, and the root bone is one or more of its children
-    AssertToolmode(armatureBones.find(armatureRootNode.mName.C_Str()) == armatureBones.end(), "Armature root node is actually a bone??");
-
-    for (uint32_t i = 0; i < armatureRootNode.mNumChildren; ++i)
-    {
-        if (armatureBones.find(armatureRootNode.mChildren[i]->mName.C_Str()) != armatureBones.end())
-        {
-            GenerateSkeletonHierarchy(armatureRootNode.mChildren[i], Graphics::InvalidBoneIndex, {});
-        }
-    }
+    GenerateSkeletonHierarchy(rootNode, Graphics::InvalidBoneIndex, {});
 
     SerializeLibraryData(&skeleton);
 
     return skeleton;
+}
+
+aiBone* Ether::Toolmode::AssetImporter::GetArmatureRoot(aiBone* bone) const
+{
+    aiBone* armatureRootBone = bone;
+    AssertToolmode(armatureRootBone != nullptr, "Bone is assumed to be valid in this context");
+
+    aiNode* armatureRootNode = GetBoneNode(armatureRootBone);
+    AssertToolmode(armatureRootNode != nullptr, "Bone node is assumed to be valid in this context");
+
+    while (armatureRootNode->mParent != nullptr)
+    {
+        if (!m_NodeToBoneMap.contains(armatureRootNode->mParent))
+            break;
+
+        armatureRootNode = armatureRootNode->mParent;
+        armatureRootBone = GetNodeBone(armatureRootNode);
+    }
+
+    return armatureRootBone;
+}
+
+aiBone* Ether::Toolmode::AssetImporter::GetNodeBone(aiNode* node) const
+{
+    if (!m_NodeToBoneMap.contains(node))
+        return nullptr;
+
+    return m_NodeToBoneMap.at(node);
+}
+
+aiNode* Ether::Toolmode::AssetImporter::GetBoneNode(aiBone* bone) const
+{
+    if (!m_BoneToNodeMap.contains(bone))
+        return nullptr;
+
+    return m_BoneToNodeMap.at(bone);
 }
 
 template void Ether::Toolmode::AssetImporter::FillVertexData(
@@ -535,43 +624,49 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
 
     if constexpr (std::is_same_v<VertexFormat, Graphics::VertexFormats::SkinnedVertexFormat>)
     {
-        const aiNode* skeletonRoot = assimpMesh->mBones[0]->mArmature;
-
         AssertToolmode(assimpMesh->HasBones(), "Encountered skinned mesh without bones (illegal codepath)");
-        AssertToolmode(skeletonRoot != nullptr, "Armature Root Node cannot be null");
 
-        const Graphics::Skeleton& skeleton = ProcessSkeleton(*skeletonRoot);
+        aiBone* rootBone = GetArmatureRoot(assimpMesh->mBones[0]);
 
-        for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
+        if (rootBone != nullptr)
         {
-            const aiBone* bone = assimpMesh->mBones[i];
-            const uint32_t boneIndex = skeleton.GetBoneIndex(bone->mName.C_Str());
+            const Graphics::Skeleton& skeleton = ProcessSkeleton(rootBone);
 
-            if (boneIndex == Graphics::InvalidBoneIndex)
+            for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
             {
-                LogToolmodeWarning("Found contribution from invalid bone index. Skeleton may be broken");
-                continue;
-            }
+                const aiBone* bone = assimpMesh->mBones[i];
+                const uint32_t boneIndex = skeleton.GetBoneIndex(bone->mName.C_Str());
 
-            // iterate through each "vertex" that this bone influences
-            for (uint32_t vertexIndex = 0; vertexIndex < bone->mNumWeights; ++vertexIndex)
-            {
-                aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
-
-                if (vertexRef.mWeight <= 0.0f)
-                    continue;
-
-                // Find which weight slot is still available on the vertex
-                for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
+                if (boneIndex == Graphics::InvalidBoneIndex)
                 {
-                    if (data[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex)
+                    LogToolmodeWarning("Found contribution from invalid bone index. Skeleton may be broken");
+                    continue;
+                }
+
+                // iterate through each "vertex" that this bone influences
+                for (uint32_t vertexIndex = 0; vertexIndex < bone->mNumWeights; ++vertexIndex)
+                {
+                    aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
+
+                    if (vertexRef.mWeight <= 0.0f)
+                        continue;
+
+                    // Find which weight slot is still available on the vertex
+                    for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
                     {
-                        data[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
-                        data[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
-                        break;
+                        if (data[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex)
+                        {
+                            data[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
+                            data[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;
+                            break;
+                        }
                     }
                 }
             }
+        }
+        else
+        {
+            LogToolmodeError("Serious import issue: root bone was not detected. This mesh will be broken");
         }
     }
 }
