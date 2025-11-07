@@ -68,12 +68,10 @@ public:
 
     ~FrameExportWorker()
     {
+        if (m_Running)
         {
-            std::unique_lock lock(m_Mutex);
-            m_Running = false;
+            Join();
         }
-        m_Cond.notify_one();
-        m_Thread.join();
     }
 
     void Enqueue(ExportJob job)
@@ -83,6 +81,16 @@ public:
             m_Queue.push(std::move(job));
         }
         m_Cond.notify_one();
+    }
+
+    void Join()
+    {
+        {
+            std::unique_lock lock(m_Mutex);
+            m_Running = false;
+        }
+        m_Cond.notify_one();
+        m_Thread.join();
     }
 
 private:

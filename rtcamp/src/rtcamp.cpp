@@ -30,7 +30,6 @@
 
 using namespace Ether;
 
-static constexpr KeyCode KeyCode_LoadScene = (KeyCode)Win32::KeyCode::F1;
 static constexpr KeyCode KeyCode_ToggleDebugGui = (KeyCode)Win32::KeyCode::F3;
 static constexpr KeyCode KeyCode_ToggleFullscreen = (KeyCode)Win32::KeyCode::F11;
 static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode::Space;
@@ -43,7 +42,7 @@ static constexpr uint32_t NumFramesToExport = MovieFramesPerSecond * (TotalMovie
 void* g_ExportBufferData = nullptr;
 uint32_t g_MovieFrameNumber = 0;
 bool g_ExportQueued = false;
-float g_LastExportTime = -999;
+float g_LastExportTime = 0;
 float g_RunningFrameBudget = TotalTimeBudgetMS / NumFramesToExport;
 
 FrameExportWorker g_FrameExportWorker;
@@ -90,10 +89,14 @@ void RTCamp11::LoadContent()
 
     graphicConfig.m_DebugJitterScale = 1.0f;
 
-    graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::Pathtracer;
+    graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::ReSTIR;
 
     m_CameraTransform->m_Translation = { 7.671061, 0.412040, -12.706130 };
     m_CameraTransform->m_Rotation = { 0.014000, -0.574797, 0.000000 };
+
+    // Prewarm the first frame
+    g_LastExportTime = Ether::Time::GetRealTimeSinceStartup();
+    g_RunningFrameBudget = (TotalTimeBudgetMS - g_LastExportTime) / NumFramesToExport;
 }
 
 void RTCamp11::UnloadContent()
@@ -120,13 +123,17 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
     if (framesLeft <= 0)
     {
         LogInfo("Full movie exported! :))");
+
+        g_FrameExportWorker.Join();
+        Ether::Shutdown();
         return;
     }
 
-    if (currentTimeMS > TotalTimeBudgetMS)
+    static bool bHasPrintedWarning = false;
+    if (currentTimeMS > TotalTimeBudgetMS && !bHasPrintedWarning)
     {
-        LogWarning("Time exceeded but there are still %d frames left :(", framesLeft);
-        return;
+        LogWarning("Time limit likely exceeded but there are still %d frames left :(", framesLeft);
+        bHasPrintedWarning = true;
     }
 
     if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
@@ -136,8 +143,6 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
         g_LastExportTime = currentTimeMS;
         return;
     }
-
-    g_ExportQueued = false;
 }
 
 void RTCamp11::OnPostRender()
@@ -147,6 +152,7 @@ void RTCamp11::OnPostRender()
     if (!g_ExportQueued)
         return;
 
+    g_ExportQueued = false;
     ethVector2u resolution = Client::GetClientSize();
 
     std::ostringstream filename;
