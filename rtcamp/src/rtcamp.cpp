@@ -73,15 +73,15 @@ void RTCamp11::LoadContent()
 
     Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
 
-    graphicConfig.m_Fov = 7.0f;
+    graphicConfig.m_Fov = 7.279;
 
     graphicConfig.m_BloomIntensity = 0.440f;
     graphicConfig.m_BloomScatter = 0.646;
-    graphicConfig.m_BloomAnamorphic = 0.57f;
+    graphicConfig.m_BloomAnamorphic = 1;
 
-    graphicConfig.m_FocusDistance = 20.352;
-    graphicConfig.m_Aperture = 8.241;
-    graphicConfig.m_FocusRange = 12.814;
+    graphicConfig.m_FocusDistance = 16.834;
+    graphicConfig.m_Aperture = 11.859;
+    graphicConfig.m_FocusRange = 29.397;
 
     graphicConfig.m_SunDirection = ethVector4(0.353, 0.590, 0.247, 1.0f).Normalized();
     graphicConfig.m_SunColor = ethVector4(254 / 255.0f, 200 / 255.0f, 142 / 255.0f, 1.0f);
@@ -90,12 +90,11 @@ void RTCamp11::LoadContent()
     graphicConfig.m_ColorGrading_Temperature = -0.15;
     graphicConfig.m_BloomAnamorphic = 0.57f;
 
-    graphicConfig.m_DebugJitterScale = 1.0f;
-
+    graphicConfig.m_DebugJitterScale = 0.0f;
     graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::ReSTIR;
 
-    m_CameraTransform->m_Translation = { 7.671061, 0.412040, -12.706130 };
-    m_CameraTransform->m_Rotation = { 0.014000, -0.574797, 0.000000 };
+    m_CameraTransform->m_Translation = { 6.970290, -0.165515, -11.497716 };
+    m_CameraTransform->m_Rotation = { -0.040000, -0.574797, 0.000000 };
 
     // Prewarm the first frame
     g_LastExportTime = Ether::Time::GetRealTimeSinceStartup();
