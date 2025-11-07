@@ -22,6 +22,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "lighting/restir/boilingfilter.hlsl"
+#include "utils/random.hlsl"
 
 bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurface)
 {
@@ -53,8 +54,9 @@ void CS_Main(
         return;
     
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
-    const float2 pixelVelocity = surface.m_Velocity * screenSize;
-    const float2 screenCoordsPrev = screenCoords - pixelVelocity;
+    const float2 pixelVelocity = (surface.m_Velocity * screenSize);
+    const float2 screenCoordsPrev = screenCoords - pixelVelocity + 0.5f;
+
     const uint prevSampleIdx = GetSampleIndexFromScreenCoords(screenCoordsPrev, screenSize);
 
     GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
