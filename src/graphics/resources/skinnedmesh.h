@@ -40,7 +40,7 @@ public:
 
     void CreateGpuResources(CommandContext& ctx) override;
     void ComputeBoundingBox() override;
-    void* GetPackedVertexData() override { return m_GPUCompatiblePackedVertices.data(); }
+    void* GetPackedVertexData() override { return m_StagingVertices.data(); }
     uint32_t GetVertexStride() override { return sizeof(VertexFormats::BaseVertexFormat); }
 
 public:
@@ -52,16 +52,17 @@ public:
     void UpdateGpuResources(CommandContext& ctx);
 
 protected:
+    void InitSkinnedVertices();
     void CreateStagingVertexBuffer();
     void RefitAccelerationStructure(CommandContext& ctx);
+
 
 protected:
     std::vector<VertexFormats::SkinnedVertexFormat> m_PackedVertices;
 
     // RtCamp11 Hack: Update skinning vertex buffer from CPU side (TODO)
     std::unique_ptr<RhiResource> m_StagingVertexBufferResource;
-    std::vector<VertexFormats::SkinnedVertexFormat> m_PackedVerticesOriginal;
-    std::vector<VertexFormats::BaseVertexFormat> m_GPUCompatiblePackedVertices;
+    std::vector<VertexFormats::BaseVertexFormat> m_StagingVertices;
 
     StringID m_SkeletonGuid;
 };

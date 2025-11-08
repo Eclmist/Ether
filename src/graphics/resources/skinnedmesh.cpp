@@ -51,23 +51,18 @@ void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
         m_PackedVertices[i].Deserialize(istream);
 
     istream >> m_SkeletonGuid;
+
+    InitSkinnedVertices();
 }
 
 void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
 {
-    m_GPUCompatiblePackedVertices.resize(m_PackedVertices.size());
-    for (uint32_t i = 0; i < m_PackedVertices.size(); ++i)
-    {
-        m_GPUCompatiblePackedVertices[i].m_Attributes = m_PackedVertices[i].m_Attributes;
-    }
-
     CreateVertexBuffer(ctx);
     CreateIndexBuffer(ctx);
     CreateAccelerationStructure(ctx, true /* allow update */);
 
     // RtCamp11 hacks (TODO)
     CreateStagingVertexBuffer();
-    m_PackedVerticesOriginal = m_PackedVertices;
 }
 
 void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
@@ -120,11 +115,11 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
 
     std::for_each(
         std::execution::par,
-        std::begin(m_PackedVerticesOriginal),
-        std::begin(m_PackedVerticesOriginal) + m_NumVertices,
+        std::begin(m_PackedVertices),
+        std::begin(m_PackedVertices) + m_NumVertices,
         [&](const VertexFormats::SkinnedVertexFormat& src)
         {
-            const uint32_t i = &src - &m_PackedVerticesOriginal[0];
+            const uint32_t i = &src - &m_PackedVertices[0];
 
             ethVector4 skinnedPos(0, 0, 0, 0);
             ethVector4 skinnedNormal(0, 0, 0, 0);
@@ -145,9 +140,9 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
                 prevSkinnedPos += (prevBoneMatrix * ethVector4(src.m_Attributes.m_Position.x, src.m_Attributes.m_Position.y, src.m_Attributes.m_Position.z, 1.0f)) * weight;
             }
 
-            m_PackedVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
-            m_PackedVertices[i].m_Attributes.m_PrevPosition = prevSkinnedPos.Resize<3>();
-            m_PackedVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
+            m_StagingVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
+            m_StagingVertices[i].m_Attributes.m_PrevPosition = prevSkinnedPos.Resize<3>();
+            m_StagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
         });
 }
 
@@ -155,16 +150,10 @@ void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
 {
     const size_t vertexBufferSize = m_NumVertices * GetVertexStride();
 
-    m_GPUCompatiblePackedVertices.resize(m_PackedVertices.size());
-    for (uint32_t i = 0; i < m_PackedVertices.size(); ++i)
-    {
-        m_GPUCompatiblePackedVertices[i].m_Attributes = m_PackedVertices[i].m_Attributes;
-    }
-
     // Copy CPU-skinned data into staging/upload buffer
     void* mappedAddr;
     m_StagingVertexBufferResource->Map(&mappedAddr);
-    memcpy(mappedAddr, m_GPUCompatiblePackedVertices.data(), vertexBufferSize);
+    memcpy(mappedAddr, m_StagingVertices.data(), vertexBufferSize);
     m_StagingVertexBufferResource->Unmap();
 
     ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::CopyDest);
@@ -173,6 +162,15 @@ void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
 
     // Update BVH
     RefitAccelerationStructure(ctx);
+}
+
+void Ether::Graphics::SkinnedMesh::InitSkinnedVertices()
+{
+    m_StagingVertices.resize(m_PackedVertices.size());
+    for (uint32_t i = 0; i < m_PackedVertices.size(); ++i)
+    {
+        m_StagingVertices[i].m_Attributes = m_PackedVertices[i].m_Attributes;
+    }
 }
 
 void Ether::Graphics::SkinnedMesh::CreateStagingVertexBuffer()

@@ -59,7 +59,6 @@ void Ether::Graphics::RaytracingResourceProducer::RenderFrame(GraphicContext& ct
         geometryInfos[i].m_MaterialIndex = raytracedVisuals[i].m_Material->GetTransientMaterialIdx();
     }
 
-
     ctx.PushMarker("Upload Raytracing Geometry Info");
     ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo)), sizeof(Shader::GeometryInfo) * raytracedVisuals.size(), 0, 0);
     ctx.PopMarker();
