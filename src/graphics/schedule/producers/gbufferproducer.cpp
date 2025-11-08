@@ -85,9 +85,6 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     for (const SkinnedVisual& skinnedVisual : skinnedVisuals)
     {
         ETH_MARKER_EVENT("Update skinned mesh VBs");
-        if (skinnedVisual.m_Culled)
-            continue;
-
         SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(skinnedVisual.m_Mesh);
         if (skinnedMesh != nullptr)
         {

@@ -197,7 +197,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         skinnedMesh->NextFrame(*skeleton, *animClip);
         gfxVisual.m_Mesh = skinnedMesh;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
-        gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
+        gfxVisual.m_Culled = false; // TODO: Calculate max AABB for skinned mesh to do proper culling
 
         if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
             renderData.m_RaytracingVisuals.push_back(gfxVisual);
@@ -221,8 +221,8 @@ bool Ether::Ecs::EcsSkinnedVisualSystem::IsVisualCulled(const Graphics::Visual& 
     ethMatrix4x4 viewProjectionMatrix = renderData.m_ProjectionMatrix * renderData.m_ViewMatrix;
 
     ethVector4 planes[6];
-    planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[2]);
-    planes[1] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[2]);
+    planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[2]);
+    planes[1] = ethVector4(viewProjectionMatrix.m_Data2D[2]);
     planes[2] = ethVector4(viewProjectionMatrix.m_Data2D[3]) + ethVector4(viewProjectionMatrix.m_Data2D[0]);
     planes[3] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[0]);
     planes[4] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[1]);
