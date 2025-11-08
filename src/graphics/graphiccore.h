@@ -94,5 +94,11 @@ private:
 
 private:
     GraphicConfig m_Config;
+
+public:
+    // Big RTCamp11 hack - allow for skinning to freeze frame to accumulate for movie output
+    static inline float GetApplicationTimeOverride() { return Instance().m_ApplicationTimeOverride; }
+    static inline void SetApplicationTimeOverride(float time) { Instance().m_ApplicationTimeOverride = time; }
+    float m_ApplicationTimeOverride = -1;
 };
 } // namespace Ether::Graphics

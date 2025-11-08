@@ -36,7 +36,7 @@ static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode
 
 static constexpr float TotalTimeBudgetMS = 175000;      // 175 seconds (RTCamp11 rule) + 5 second buffer
 static constexpr float TotalMovieTimeMS = 10000;        // 10 seconds
-static constexpr uint32_t MovieFramesPerSecond = 24;    // 24 fps looks more filmic
+static constexpr uint32_t MovieFramesPerSecond = 60;
 static constexpr uint32_t NumFramesToExport = MovieFramesPerSecond * (TotalMovieTimeMS / 1000.0f);
 
 bool g_ShouldExportMovie = false;
@@ -45,6 +45,9 @@ uint32_t g_MovieFrameNumber = 0;
 bool g_ExportQueued = false;
 float g_LastExportTime = 0;
 float g_RunningFrameBudget = TotalTimeBudgetMS / NumFramesToExport;
+
+float g_RenderTimeOverridePrev = 0;
+float g_RenderTimeOverride = 0;
 
 FrameExportWorker g_FrameExportWorker;
 
@@ -91,7 +94,9 @@ void RTCamp11::LoadContent()
     graphicConfig.m_BloomAnamorphic = 0.57f;
 
     graphicConfig.m_DebugJitterScale = 0.0f;
+    graphicConfig.m_TemporalAAAcumulationFactor = 0.01f;
     graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::ReSTIR;
+    graphicConfig.m_ReSTIRGIConfig.m_SpatialFeedback = false;
 
     m_CameraTransform->m_Translation = { 6.970290, -0.165515, -11.497716 };
     m_CameraTransform->m_Rotation = { -0.040000, -0.574797, 0.000000 };
@@ -99,6 +104,9 @@ void RTCamp11::LoadContent()
     // Prewarm the first frame
     g_LastExportTime = Ether::Time::GetRealTimeSinceStartup();
     g_RunningFrameBudget = (TotalTimeBudgetMS - g_LastExportTime) / NumFramesToExport;
+
+    if (g_ShouldExportMovie)
+        Ether::Graphics::OverrideTime(g_RenderTimeOverride);
 }
 
 void RTCamp11::UnloadContent()
@@ -126,9 +134,11 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
 
         if (framesLeft <= 0)
         {
-            LogInfo("Full movie exported! :))");
-
+            LogInfo("Full movie rendered! :))");
+            LogInfo("Waiting for image writing thread to join...");
             g_FrameExportWorker.Join();
+
+            LogInfo("All frames written to disk!");
             Ether::Shutdown();
             return;
         }
@@ -140,13 +150,21 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
             bHasPrintedWarning = true;
         }
 
-        if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
+        //if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
         {
             Ether::Graphics::RequestExport(&g_ExportBufferData);
             g_ExportQueued = true;
             g_LastExportTime = currentTimeMS;
+
+            // Calculate current frame's "time" to let the renderer freeze and accumulate
+            g_RenderTimeOverride = (g_MovieFrameNumber + 1) / (float)MovieFramesPerSecond * 1000.0f;
+            Ether::Graphics::OverrideTime(g_RenderTimeOverride);
             return;
         }
+    }
+    else
+    {
+        g_RenderTimeOverride = Time::GetRealTimeSinceStartup();
     }
 }
 
@@ -237,7 +255,12 @@ void RTCamp11::UpdateGraphicConfig() const
 void RTCamp11::UpdateCamera() const
 {
     static ethVector3 cameraRotation;
-    static float moveSpeed = 0.001f;
+    static float moveSpeed = 0.0001f;
+    static ethVector3 shakeOffset = { 0, 0, 0 };
+
+    // Camera shake parameters
+    const float SHAKE_INTENSITY = 0.0005; // Amplitude of the shake
+    const float SHAKE_FREQUENCY = 0.0045f; // How fast the shake oscillates (per ms)
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
         moveSpeed = 0.002f;
@@ -256,7 +279,6 @@ void RTCamp11::UpdateCamera() const
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::E))
         m_CameraTransform->m_Translation.y += Time::GetDeltaTime() * moveSpeed;
-
     if (Input::GetKey((KeyCode)Win32::KeyCode::Q))
         m_CameraTransform->m_Translation.y -= Time::GetDeltaTime() * moveSpeed;
 
@@ -277,6 +299,35 @@ void RTCamp11::UpdateCamera() const
     if (Input::GetKey((KeyCode)Win32::KeyCode::D))
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +
                                            rightVec * Time::GetDeltaTime() * moveSpeed;
+
+    if (g_RenderTimeOverridePrev < g_RenderTimeOverride || !g_ShouldExportMovie)
+    {
+        float shakePhase = g_RenderTimeOverride * SHAKE_FREQUENCY;
+
+        // Generate natural-looking shake using Perlin-like noise simulation
+        // Using multiple sine waves at different phases for organic feel
+        float shakeX = std::sin(shakePhase * 1.0f) * 0.6f + std::sin(shakePhase * 2.3f) * 0.3f +
+                       std::sin(shakePhase * 0.4f) * 0.1f;
+
+        float shakeY = std::sin(shakePhase * 1.3f + 3.14f) * 0.6f + std::sin(shakePhase * 2.1f + 1.57f) * 0.3f +
+                       std::sin(shakePhase * 0.5f + 2.0f) * 0.1f;
+
+        float shakeZ = std::sin(shakePhase * 1.1f + 1.57f) * 0.4f + std::sin(shakePhase * 1.9f) * 0.3f;
+
+        // Apply shake (no decay needed since we're using absolute time)
+        shakeOffset.x = shakeX * SHAKE_INTENSITY;
+        shakeOffset.y = shakeY * SHAKE_INTENSITY;
+        shakeOffset.z = shakeZ * SHAKE_INTENSITY;
+
+        // Apply shake to camera translation
+        m_CameraTransform->m_Translation += shakeOffset;
+
+        // Also apply subtle rotation shake for more authentic phone camera feel
+        m_CameraTransform->m_Rotation.x += shakeX * 0.0001f;
+        m_CameraTransform->m_Rotation.y += shakeY * 0.0001f;
+
+        g_RenderTimeOverridePrev = g_RenderTimeOverride;
+    }
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::P))
     {
@@ -311,5 +362,6 @@ void FrameExportWorker::WorkerMain()
 
         ETH_MARKER_EVENT("STBI Image Write");
         stbi_write_png(job.filename.c_str(), job.width, job.height, 4, job.pixels.data(), 4 * job.width);
+        LogInfo("%s written to file", job.filename);
     }
 }

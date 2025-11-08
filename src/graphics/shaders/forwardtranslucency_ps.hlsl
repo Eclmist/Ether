@@ -184,7 +184,9 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     const float depthFade = sceneDepth - pixelDepth;
 
     surface.m_Roughness = 0.5;
-    surface.m_BaseColor = lerp(surface.m_BaseColor, 1.0f, smoothstep(0.4, 0.1, depthFade));
+    surface.m_BaseColor = lerp(surface.m_BaseColor, 1.0f, smoothstep(0.9, 0.89, depthFade));
+    surface.m_Opacity = saturate(surface.m_Opacity * saturate(pow(depthFade / 5.0f, 1.3)));
+    surface.m_Opacity = lerp(surface.m_Opacity, 1.0f, smoothstep(0.9, 0.5, depthFade));
 
     float3 Lo = 0;
 
@@ -201,7 +203,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     Lo += BruteForcedIBL(surface, wo) * 10.0f;
 
 
-    return float4(Lo, surface.m_Opacity * saturate(pow(depthFade / 5.0f, 0.3)));
+    return float4(Lo, surface.m_Opacity);
 }
 
 #endif // __FORWARD_TRANSLUCENCY_PS__

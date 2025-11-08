@@ -71,6 +71,11 @@ void Ether::Graphics::RequestExport(void** exportTarget)
     return GraphicCore::GetGraphicExporter().RequestExport(exportTarget);
 }
 
+ETH_ENGINE_DLL void Ether::Graphics::OverrideTime(float timeOverride)
+{
+    GraphicCore::SetApplicationTimeOverride(timeOverride);
+}
+
 void Ether::Client::SetClientTitle(const std::string& title)
 {
     EngineCore::GetMainWindow().SetTitle(title);

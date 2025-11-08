@@ -72,7 +72,13 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_SunColor = GraphicCore::GetGraphicConfig().m_SunColor * GraphicCore::GetGraphicConfig().m_SunIntensity;
     globalConstants->m_SkyIntensity = GraphicCore::GetGraphicConfig().m_SkyIntensity;
     globalConstants->m_Exposure = GraphicCore::GetGraphicConfig().m_Exposure;
-    globalConstants->m_Time = ethVector4(Time::GetTimeSinceStartup()) / 1000.0f;
+
+    // RTCamp11 Hack: Override time to stop shader animations from playing during accumulation
+    float time = Time::GetTimeSinceStartup();
+    if (GraphicCore::GetApplicationTimeOverride() >= 0)
+        time = GraphicCore::GetApplicationTimeOverride();
+
+    globalConstants->m_Time = ethVector4(time) / 1000.0f;
     globalConstants->m_Time.x *= 20;
     globalConstants->m_Time.y *= 1;
     globalConstants->m_Time.z *= 0.5;

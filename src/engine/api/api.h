@@ -40,6 +40,7 @@ namespace Ether::Graphics
 {
 ETH_ENGINE_DLL GraphicConfig& GetGraphicConfig();
 ETH_ENGINE_DLL void RequestExport(void** exportTarget);
+ETH_ENGINE_DLL void OverrideTime(float timeOverride);
 }
 
 namespace Ether::Client

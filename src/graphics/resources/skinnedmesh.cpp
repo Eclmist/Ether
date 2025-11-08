@@ -94,10 +94,14 @@ void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const Ani
     // --- CPU Skinning --- //
     // Loop animation time
     
+    float animationTime = GraphicCore::GetApplicationTimeOverride();
+    if (animationTime < 0)
+        animationTime = Time::GetTimeSinceStartup();
+
     // RTCamp11 Hack (TODO)
     const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
     const float duration = animationClip.GetTotalTicks();
-    const float timeInSeconds = Time::GetTimeSinceStartup() / 1000.0f;
+    const float timeInSeconds = animationTime / 1000.0f;
     const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
     const float loopedTimeInTicksPrev = std::fmod((timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond, duration);
 
