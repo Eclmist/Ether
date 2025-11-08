@@ -29,7 +29,6 @@
 #include "utils/fullscreenhelpers.hlsl"
 
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
-StructuredBuffer<Material> g_MaterialTable          : register(t0);
 Texture2D<float4> g_SceneDepth                      : register(t1);
 
 struct PS_INPUT
@@ -55,7 +54,6 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     interpolatedSurface.m_TexCoord = IN.TexCoord;
     
     ShadingSurface surface = GetShadingSurfaceFromGeometry(interpolatedSurface, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, -1);
-
     float3 Lo = 0;
 
     // Sun radiance

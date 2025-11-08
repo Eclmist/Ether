@@ -285,7 +285,6 @@ float4 GetHdriSkyColor(float2 uv)
     const float4 coloredHdri = sunAttenuatedHdri * color;
     const float4 finalHdri = coloredHdri;
 
-
     return exposure * finalHdri + stars + sun;
 }
 

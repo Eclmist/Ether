@@ -37,7 +37,7 @@ namespace Ether::Graphics
     constexpr uint32_t DefaultBackBufferWidth       = 1920;
     constexpr uint32_t DefaultBackBufferHeight      = 1080;
     constexpr RhiFormat BackBufferLdrFormat         = RhiFormat::R8G8B8A8UnormSrgb; // Needs to be SRGB for auto gamma correction
-    constexpr RhiFormat BackBufferHdrFormat         = RhiFormat::R32G32B32A32Float; // Will be copied to LDR buffer, so no need SRGB
+    constexpr RhiFormat BackBufferHdrFormat         = RhiFormat::R32G32B32A32Float; // Will be copied to LDR buffer, so no need SRGB TODO: No need alpha component, use R32G32B32Float
     constexpr RhiFormat DepthBufferFormat           = RhiFormat::R24G8Typeless;
     constexpr RhiFormat DepthBufferDsvFormat        = RhiFormat::D24UnormS8Uint;
     constexpr RhiFormat DepthBufferSrvFormat        = RhiFormat::R24UNormX8Typeless;
