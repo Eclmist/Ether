@@ -40,14 +40,12 @@ void RayGeneration()
     if (depth <= 0) // Reverse-z
         return;
 
-    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-
     float3 wi;
     float pdf;
 
 #if USE_IMPORTANCE_SAMPLING
-    SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
+    SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, wo, wi, pdf);
 #else
     SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
 #endif

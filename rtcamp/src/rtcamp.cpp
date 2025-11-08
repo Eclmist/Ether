@@ -97,9 +97,9 @@ void RTCamp11::LoadContent()
     graphicConfig.m_TemporalAAAcumulationFactor = 0.01f;
 
     if (GetCommandLineOptions().GetPathtrace())
-        graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::Pathtracer;
+        graphicConfig.m_LightingMode = Ether::Graphics::RaytracingMode::Pathtracer;
     else
-        graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::ReSTIR;
+        graphicConfig.m_LightingMode = Ether::Graphics::RaytracingMode::ReSTIR;
 
     graphicConfig.m_ReSTIRGIConfig.m_SpatialFeedback = false;
 

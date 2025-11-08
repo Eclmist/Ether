@@ -44,7 +44,6 @@ struct PS_OUTPUT
 };
 
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
-StructuredBuffer<Material> g_MaterialTable          : register(t0);
 
 void DiscardAlphaMaskedPixels(const ShadingSurface surface)
 {

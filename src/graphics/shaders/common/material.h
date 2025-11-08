@@ -40,4 +40,8 @@ struct Material
     uint32_t m_MaterialId;
 };
 
+#ifdef __HLSL__
+StructuredBuffer<Material> g_MaterialTable : register(t0);
+#endif
+
 ETH_END_SHADER_NAMESPACE

@@ -25,6 +25,7 @@
 DEFINE_GFX_PA(LightingCompositeProducer)
 DEFINE_GFX_RT(SceneColor)
 DEFINE_GFX_SR(SceneColor)
+DEFINE_GFX_UA(SceneColor)
 
 DECLARE_GFX_SR(GBufferTexture0)
 DECLARE_GFX_SR(GBufferTexture1)
@@ -44,6 +45,7 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.NewRT(ACCESS_GFX_RT(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat);
     schedule.NewSR(ACCESS_GFX_SR(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));

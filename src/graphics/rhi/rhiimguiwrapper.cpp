@@ -77,7 +77,8 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         {
             if (ImGui::TreeNode("Translucencies"))
             {
-                ImGui::Checkbox("Enabled", &gfxConfig.m_DrawTranslucencies);
+                const char* items[] = { "None", "Forward Raster", "Raytraced" };
+                ImGui::Combo("Translucency Mode", &gfxConfig.m_TranslucencyMode, items, IM_ARRAYSIZE(items));
                 ImGui::TreePop();
             }
 
@@ -94,13 +95,16 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 if (gfxConfig.m_IsRaytracingEnabled)
                 {
                     const char* items[] = { "Pathtracer", "ReSTIR GI" };
-                    ImGui::Combo("Raytracing Mode", &gfxConfig.m_RaytracingMode, items, IM_ARRAYSIZE(items));
+                    ImGui::Combo("Raytracing Mode", &gfxConfig.m_LightingMode, items, IM_ARRAYSIZE(items));
 
-                    if (gfxConfig.m_RaytracingMode == RaytracingMode::ReSTIR)
+                    if (gfxConfig.m_LightingMode == RaytracingMode::ReSTIR)
                     {
-                        ImGui::Checkbox("Temporal Resampling", &gfxConfig.m_ReSTIRGIConfig.m_TemporalResampling);
-                        ImGui::Checkbox("Spatial Resampling", &gfxConfig.m_ReSTIRGIConfig.m_SpatialResampling);
-                        ImGui::Checkbox("Spatial Feedback", &gfxConfig.m_ReSTIRGIConfig.m_SpatialFeedback);
+                        if (ImGui::CollapsingHeader("ReSTIR Options"))
+                        {
+                            ImGui::Checkbox("Temporal Resampling", &gfxConfig.m_ReSTIRGIConfig.m_TemporalResampling);
+                            ImGui::Checkbox("Spatial Resampling", &gfxConfig.m_ReSTIRGIConfig.m_SpatialResampling);
+                            ImGui::Checkbox("Spatial Feedback", &gfxConfig.m_ReSTIRGIConfig.m_SpatialFeedback);
+                        }
                     }
                 }
 

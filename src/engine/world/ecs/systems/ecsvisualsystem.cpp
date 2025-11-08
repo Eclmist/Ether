@@ -84,7 +84,8 @@ void Ether::Ecs::EcsVisualSystem::Update()
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
 
-        if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
+        // Raytraced translucency TODO
+        // if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
             renderData.m_RaytracingVisuals.push_back(gfxVisual);
 
         renderData.m_Visuals.push_back(gfxVisual);
@@ -204,6 +205,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
         renderData.m_Visuals.push_back(gfxVisual);
         renderData.m_SkinnedVisuals.push_back(gfxVisual);
+        renderData.m_RaytracingVisuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
     }
 }

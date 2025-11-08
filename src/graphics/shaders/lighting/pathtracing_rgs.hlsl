@@ -36,12 +36,11 @@ RWTexture2D<float4> g_IndirectOutput                : register(u1);
 void RayGeneration()
 {
     const float2 screenCoords = DispatchRaysIndex().xy;
-    const float2 screenCoordsPrev = screenCoords - g_GlobalConstants.m_CameraJitter + g_GlobalConstants.m_CameraJitterPrev;
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = screenCoords.y * bufferSize.x + screenCoords.x;
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
 
-    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float2 uv = ScreenToTextureSpace(screenCoords);
     const float2 uvPrev = ScreenToTextureSpace(screenCoords - surface.m_Velocity);
     float4 accumulation = 0.0f;
@@ -57,14 +56,14 @@ void RayGeneration()
     }
 
     const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
-    const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, viewDir);
+    const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, wo);
 
     float3 wi;
     float pdf;
     float3 indirect = 0.0f;
 
 #if USE_IMPORTANCE_SAMPLING
-    SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
+    SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, wo, wi, pdf);
 #else
     SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
@@ -72,7 +71,7 @@ void RayGeneration()
     if (pdf > 0.01f)
     {
         const RayPayload indirectRay = TraceShadingRay(surface, wi, MAX_DEPTH);
-        indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, viewDir) / pdf;
+        indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, wo) / pdf;
     }
 
     float a = max(0.005, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));

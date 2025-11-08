@@ -29,7 +29,6 @@
 
 // RTCamp11-Only
 ConstantBuffer<InstanceParams> g_InstanceParams : register(b1);
-StructuredBuffer<Material> g_MaterialTable : register(t0);
 Texture2D<float4> g_SceneDepth : register(t1);
 
 struct VS_INPUT
@@ -186,7 +185,6 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     surface.m_Roughness = 0.5;
     surface.m_BaseColor = lerp(surface.m_BaseColor, 1.0f, smoothstep(0.9, 0.89, depthFade));
     surface.m_Opacity = saturate(surface.m_Opacity * saturate(pow(depthFade / 5.0f, 1.3)));
-    surface.m_Opacity = lerp(surface.m_Opacity, 1.0f, smoothstep(0.9, 0.5, depthFade));
 
     float3 Lo = 0;
 
