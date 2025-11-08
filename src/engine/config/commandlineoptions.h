@@ -37,6 +37,7 @@ public:
     inline bool GetExportMovie() const { return m_ExportMovie; }
     inline bool GetPathtrace() const { return m_Pathtrace; }
     inline bool GetAccumulateFrames() const { return m_AccumulateFrames; }
+
     inline const std::string& GetWorldName() const { return m_WorldName; }
     inline const std::string& GetShaderSourcePath() const { return m_ShaderSourcePath; }
 

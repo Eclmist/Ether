@@ -51,6 +51,12 @@ float2 ScreenToTextureSpace(float2 screenCoords)
     return (screenCoords + 0.5f) / g_GlobalConstants.m_ScreenResolution;
 }
 
+float4 ScreenToClipSpace(float4 screenCoords)
+{
+    float2 ndc = (screenCoords.xy / g_GlobalConstants.m_ScreenResolution) * 2.0 - 1.0;
+    return float4(ndc * screenCoords.w, screenCoords.z * screenCoords.w, screenCoords.w);
+}
+
 float4 ScreenToClipSpace(float2 screenCoords, float sceneDepth)
 {
     float2 uv = ScreenToTextureSpace(screenCoords);
@@ -67,6 +73,11 @@ float3 ClipToWorldSpace(float4 clip)
     float4 worldPos = mul(g_GlobalConstants.m_ViewProjectionMatrixInv, clip);
     worldPos.xyz /= worldPos.w;
     return worldPos.xyz;
+}
+
+float3 ScreenToWorldSpace(float4 screenCoords)
+{
+    return ClipToWorldSpace(ScreenToClipSpace(screenCoords));
 }
 
 float3 ScreenToWorldSpace(float2 screenCoords, float sceneDepth)
