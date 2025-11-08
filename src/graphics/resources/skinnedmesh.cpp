@@ -55,6 +55,12 @@ void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
 
 void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
 {
+    m_GPUCompatiblePackedVertices.resize(m_PackedVertices.size());
+    for (uint32_t i = 0; i < m_PackedVertices.size(); ++i)
+    {
+        m_GPUCompatiblePackedVertices[i].m_Attributes = m_PackedVertices[i].m_Attributes;
+    }
+
     CreateVertexBuffer(ctx);
     CreateIndexBuffer(ctx);
     CreateAccelerationStructure(ctx, true /* allow update */);
@@ -149,10 +155,16 @@ void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
 {
     const size_t vertexBufferSize = m_NumVertices * GetVertexStride();
 
+    m_GPUCompatiblePackedVertices.resize(m_PackedVertices.size());
+    for (uint32_t i = 0; i < m_PackedVertices.size(); ++i)
+    {
+        m_GPUCompatiblePackedVertices[i].m_Attributes = m_PackedVertices[i].m_Attributes;
+    }
+
     // Copy CPU-skinned data into staging/upload buffer
     void* mappedAddr;
     m_StagingVertexBufferResource->Map(&mappedAddr);
-    memcpy(mappedAddr, m_PackedVertices.data(), vertexBufferSize);
+    memcpy(mappedAddr, m_GPUCompatiblePackedVertices.data(), vertexBufferSize);
     m_StagingVertexBufferResource->Unmap();
 
     ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::CopyDest);

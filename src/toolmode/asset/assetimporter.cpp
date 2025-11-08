@@ -101,6 +101,13 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
         return;
     }
 
+    // TOOD: Cleanup
+    m_NameToNodeMap.clear();
+    m_ArmatureRootToSkeletonMap.clear();
+    m_ArmatureToBonesMap.clear();
+    m_NodeToBoneMap.clear();
+    m_BoneToNodeMap.clear();
+
     ProcessScene(PathUtils::GetFolderPath(assetPath), scene);
 }
 
