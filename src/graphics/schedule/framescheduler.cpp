@@ -29,8 +29,9 @@
 #include "graphics/schedule/producers/materialtableproducer.h"
 #include "graphics/schedule/producers/postfxsourceproducer.h"
 #include "graphics/schedule/producers/proceduralskyproducer.h"
-#include "graphics/schedule/producers/referencelightingproducer.h"
-#include "graphics/schedule/producers/lightingproducer.h"
+#include "graphics/schedule/producers/raytracingresourceproducer.h"
+#include "graphics/schedule/producers/pathtracedlightingproducer.h"
+#include "graphics/schedule/producers/raytracedlightingproducer.h"
 #include "graphics/schedule/producers/temporalaaproducer.h"
 #include "graphics/schedule/producers/bloomproducer.h"
 #include "graphics/schedule/producers/depthoffieldproducer.h"
@@ -44,8 +45,9 @@ DECLARE_GFX_PA(LightingCompositeProducer)
 DECLARE_GFX_PA(MaterialTableProducer)
 DECLARE_GFX_PA(PostFxSourceProducer)
 DECLARE_GFX_PA(ProceduralSkyProducer)
-DECLARE_GFX_PA(ReferenceLightingProducer)
-DECLARE_GFX_PA(LightingProducer)
+DECLARE_GFX_PA(RaytracingResourceProducer)
+DECLARE_GFX_PA(PathtracedLightingProducer)
+DECLARE_GFX_PA(RaytracedLightingProducer)
 DECLARE_GFX_PA(TranslucencyProducer)
 DECLARE_GFX_PA(TemporalAAProducer)
 DECLARE_GFX_PA(BloomProducer)
@@ -60,8 +62,9 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(MaterialTableProducer), new MaterialTableProducer());
     Register(ACCESS_GFX_PA(PostFxSourceProducer), new PostFxSourceProducer());
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
-    Register(ACCESS_GFX_PA(ReferenceLightingProducer), new ReferenceLightingProducer());
-    Register(ACCESS_GFX_PA(LightingProducer), new LightingProducer());
+    Register(ACCESS_GFX_PA(RaytracingResourceProducer), new RaytracingResourceProducer());
+    Register(ACCESS_GFX_PA(PathtracedLightingProducer), new PathtracedLightingProducer());
+    Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
     Register(ACCESS_GFX_PA(TranslucencyProducer), new TranslucencyProducer());
     Register(ACCESS_GFX_PA(BloomProducer), new BloomProducer());
     Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
@@ -80,8 +83,9 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(MaterialTableProducer).Release();
     ACCESS_GFX_PA(PostFxSourceProducer).Release();
     ACCESS_GFX_PA(ProceduralSkyProducer).Release();
-    ACCESS_GFX_PA(ReferenceLightingProducer).Release();
-    ACCESS_GFX_PA(LightingProducer).Release();
+    ACCESS_GFX_PA(RaytracingResourceProducer).Release();
+    ACCESS_GFX_PA(PathtracedLightingProducer).Release();
+    ACCESS_GFX_PA(RaytracedLightingProducer).Release();
     ACCESS_GFX_PA(TranslucencyProducer).Release();
     ACCESS_GFX_PA(BloomProducer).Release();
     ACCESS_GFX_PA(TemporalAAProducer).Release();
@@ -154,8 +158,9 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(MaterialTableProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get().get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(ReferenceLightingProducer).Get().get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(LightingProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(RaytracingResourceProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(PathtracedLightingProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(TranslucencyProducer).Get().get());
 

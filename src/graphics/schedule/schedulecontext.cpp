@@ -302,6 +302,8 @@ void Ether::Graphics::ScheduleContext::CreateViews(ResourceContext& resourceCont
             resourceContext.InitializeUnorderedAccessView(view);
         else if (dynamic_cast<RhiConstantBufferView*>(view.get()) != nullptr)
             resourceContext.InitializeConstantBufferView(view);
+        else if (dynamic_cast<RhiAccelerationStructureResourceView*>(view.get()) != nullptr)
+            resourceContext.InitializeConstantBufferView(view);
     }
 
     for (auto viewIter = m_Writes.begin(); viewIter != m_Writes.end(); ++viewIter)
@@ -316,6 +318,8 @@ void Ether::Graphics::ScheduleContext::CreateViews(ResourceContext& resourceCont
         else if (dynamic_cast<RhiUnorderedAccessView*>(view.get()) != nullptr)
             resourceContext.InitializeUnorderedAccessView(view);
         else if (dynamic_cast<RhiConstantBufferView*>(view.get()) != nullptr)
+            resourceContext.InitializeConstantBufferView(view);
+        else if (dynamic_cast<RhiAccelerationStructureResourceView*>(view.get()) != nullptr)
             resourceContext.InitializeConstantBufferView(view);
     }
 }

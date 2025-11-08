@@ -20,16 +20,14 @@
 #pragma once
 
 #include "graphics/schedule/producers/graphicproducer.h"
-#include "graphics/rhi/rhiraytracingpipelinestate.h"
-#include "graphics/rhi/rhiraytracingshaderbindingtable.h"
 
 namespace Ether::Graphics
 {
-class LightingProducer : public GraphicProducer
+class RaytracingResourceProducer : public GraphicProducer
 {
 public:
-    LightingProducer();
-    ~LightingProducer() override = default;
+    RaytracingResourceProducer();
+    ~RaytracingResourceProducer() override = default;
 
 public:
     void Initialize(ResourceContext& rc) override;
@@ -38,28 +36,5 @@ public:
 
 protected:
     bool IsEnabled() override;
-
-protected: 
-    void CreateShaders();
-    void CreateRootSignature();
-    void CreatePipelineState(ResourceContext& rc);
-    void InitializeShaderBindingTable(ResourceContext& rc);
-
-protected:
-    std::unique_ptr<RhiShader> m_InitialGenerationShader;
-    std::unique_ptr<RhiShader> m_TemporalResamplingShader;
-    std::unique_ptr<RhiShader> m_SpatialResamplingShader;
-    std::unique_ptr<RhiShader> m_LightingEvaluationShader;
-    std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiRootSignature> m_ComputeRootSignature;
-
-    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_InitialGenerationPsoDesc;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_TemporalResamplingPsoDesc;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_SpatialResamplingPsoDesc;
-    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_LightingEvaluationPsoDesc;
-
-protected:
-    RhiResource* m_InitialGenerationSBT;
-    RhiResource* m_LightingEvaluationSBT;
 };
 } // namespace Ether::Graphics

@@ -18,7 +18,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "referencelightingproducer.h"
+#include "pathtracedlightingproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
@@ -27,12 +27,12 @@
 #include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"
 
-DEFINE_GFX_PA(ReferenceLightingProducer)
+DEFINE_GFX_PA(PathtracedLightingProducer)
 DEFINE_GFX_UA(RTIndirectTexture)
 DEFINE_GFX_SR(RTAccumulationTexture)
-DEFINE_GFX_SR(RTGeometryInfo)
-DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
 
+DECLARE_GFX_SR(RTGeometryInfo)
+DECLARE_GFX_AS(RTTopLevelAccelerationStructure)
 DECLARE_GFX_UA(LightingTexture)
 DECLARE_GFX_SR(LightingTexture)
 DECLARE_GFX_SR(GBufferTexture0)
@@ -49,28 +49,27 @@ static const wchar_t* k_AnyHitShader = L"AnyHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
 static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader, k_AnyHitShader };
 
-Ether::Graphics::ReferenceLightingProducer::ReferenceLightingProducer()
-    : GraphicProducer("RaytracedLightingProducer")
+Ether::Graphics::PathtracedLightingProducer::PathtracedLightingProducer()
+    : GraphicProducer("PathtracedLightingProducer")
 {
 }
 
-void Ether::Graphics::ReferenceLightingProducer::Initialize(ResourceContext& rc)
+void Ether::Graphics::PathtracedLightingProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::ReferenceLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
+void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.size();
 
     schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numRTVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
-    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals);
 
+    schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
+    schedule.Read(ACCESS_GFX_AS(RTTopLevelAccelerationStructure));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
@@ -81,22 +80,21 @@ void Ether::Graphics::ReferenceLightingProducer::GetInputOutput(ScheduleContext&
     InitializeShaderBindingTable(rc);
 }
 
-void Ether::Graphics::ReferenceLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
-    const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals;
-
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    ctx.PushMarker("Raytrace");
+    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
+
+    ctx.PushMarker("Direct & Indirect lighting with pathtracing");
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(LightingTexture)), RhiResourceState::UnorderedAccess);
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_GlobalRootSignature);
 
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());
@@ -110,17 +108,6 @@ void Ether::Graphics::ReferenceLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(RTIndirectTexture)->GetGpuAddress());
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
-
-    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * visuals.size(), 256 });
-    Shader::GeometryInfo* geometryInfos = (Shader::GeometryInfo*)alloc->GetCpuHandle();
-    for (uint32_t i = 0; i < raytracedVisuals.size(); ++i)
-    {
-        geometryInfos[i].m_VBDescriptorIndex = raytracedVisuals[i].m_Mesh->GetVertexBufferSrvIndex();
-        geometryInfos[i].m_IBDescriptorIndex = raytracedVisuals[i].m_Mesh->GetIndexBufferSrvIndex();
-        geometryInfos[i].m_MaterialIndex = raytracedVisuals[i].m_Material->GetTransientMaterialIdx();
-    }
-
-    ctx.CopyBufferRegion(dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(), *rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo)), sizeof(Shader::GeometryInfo) * raytracedVisuals.size(), 0, 0);
     ctx.DispatchRays(resolution.x, resolution.y, 1);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
@@ -129,7 +116,7 @@ void Ether::Graphics::ReferenceLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.PopMarker();
 }
 
-bool Ether::Graphics::ReferenceLightingProducer::IsEnabled()
+bool Ether::Graphics::PathtracedLightingProducer::IsEnabled()
 {
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
@@ -143,7 +130,7 @@ bool Ether::Graphics::ReferenceLightingProducer::IsEnabled()
     return true;
 }
 
-void Ether::Graphics::ReferenceLightingProducer::CreateShaders()
+void Ether::Graphics::PathtracedLightingProducer::CreateShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_Shader = gfxDevice.CreateShader({ "lighting\\pathtracing_rgs.hlsl", "", RhiShaderType::Library });
@@ -153,7 +140,7 @@ void Ether::Graphics::ReferenceLightingProducer::CreateShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_Shader);
 }
 
-void Ether::Graphics::ReferenceLightingProducer::CreateRootSignature()
+void Ether::Graphics::PathtracedLightingProducer::CreateRootSignature()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(11, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
@@ -180,7 +167,7 @@ void Ether::Graphics::ReferenceLightingProducer::CreateRootSignature()
     m_GlobalRootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 
-void Ether::Graphics::ReferenceLightingProducer::CreatePipelineState(ResourceContext& rc)
+void Ether::Graphics::PathtracedLightingProducer::CreatePipelineState(ResourceContext& rc)
 {
     m_RTPsoDesc = GraphicCore::GetDevice().CreateRaytracingPipelineStateDesc();
     m_RTPsoDesc->SetLibraryShader(*m_Shader);
@@ -206,7 +193,7 @@ void Ether::Graphics::ReferenceLightingProducer::CreatePipelineState(ResourceCon
     rc.RegisterPipelineState((GetName() + " Raytracing Pipeline State").c_str(), *m_RTPsoDesc);
 }
 
-void Ether::Graphics::ReferenceLightingProducer::InitializeShaderBindingTable(ResourceContext& rc)
+void Ether::Graphics::PathtracedLightingProducer::InitializeShaderBindingTable(ResourceContext& rc)
 {
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
