@@ -95,7 +95,12 @@ void RTCamp11::LoadContent()
 
     graphicConfig.m_DebugJitterScale = 0.0f;
     graphicConfig.m_TemporalAAAcumulationFactor = 0.01f;
-    graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::ReSTIR;
+
+    if (GetCommandLineOptions().GetPathtrace())
+        graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::Pathtracer;
+    else
+        graphicConfig.m_RaytracingMode = Ether::Graphics::RaytracingMode::ReSTIR;
+
     graphicConfig.m_ReSTIRGIConfig.m_SpatialFeedback = false;
 
     m_CameraTransform->m_Translation = { 6.970290, -0.165515, -11.497716 };
@@ -135,11 +140,11 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
         if (framesLeft <= 0)
         {
             LogInfo("Full movie rendered! :))");
+            Ether::Shutdown();
+
             LogInfo("Waiting for image writing thread to join...");
             g_FrameExportWorker.Join();
-
             LogInfo("All frames written to disk!");
-            Ether::Shutdown();
             return;
         }
 
@@ -150,7 +155,7 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
             bHasPrintedWarning = true;
         }
 
-        //if (currentTimeMS - g_LastExportTime > g_RunningFrameBudget)
+        if (!GetCommandLineOptions().GetAccumulateFrames() || (currentTimeMS - g_LastExportTime > g_RunningFrameBudget))
         {
             Ether::Graphics::RequestExport(&g_ExportBufferData);
             g_ExportQueued = true;
