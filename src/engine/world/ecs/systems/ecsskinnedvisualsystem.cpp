@@ -181,11 +181,10 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
 {
     // --- CPU Skinning --- //
     // Loop animation time
-
     float animationTime = Time::GetTimeSinceStartup();
 
     // RTCamp11 Hack (TODO)
-    const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
+    const float ticksPerSecond = animationClip.GetTicksPerSecond();
     const float duration = animationClip.GetTotalTicks();
     const float timeInSeconds = animationTime / 1000.0f;
     const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
