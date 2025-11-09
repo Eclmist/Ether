@@ -127,7 +127,8 @@ public:
     float m_Exposure = 0.000045f;
 
     // Translucency
-    int32_t m_TranslucencyMode = TranslucencyMode::ForwardRaster;
+    bool m_ForwardTranslucency = true;
+    bool m_RaytracedReflections = true;
 
 private:
     ethVector4 m_ClearColor;

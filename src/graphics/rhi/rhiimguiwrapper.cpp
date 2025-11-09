@@ -77,8 +77,8 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         {
             if (ImGui::TreeNode("Translucencies"))
             {
-                const char* items[] = { "None", "Forward Raster", "Raytraced" };
-                ImGui::Combo("Translucency Mode", &gfxConfig.m_TranslucencyMode, items, IM_ARRAYSIZE(items));
+                ImGui::Checkbox("Forward Raster", &gfxConfig.m_ForwardTranslucency);
+                ImGui::Checkbox("Raytraced Reflections", &gfxConfig.m_RaytracedReflections);
                 ImGui::TreePop();
             }
 

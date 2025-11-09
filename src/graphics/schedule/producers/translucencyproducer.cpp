@@ -117,7 +117,7 @@ bool Ether::Graphics::TranslucencyProducer::IsEnabled()
     if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
         return false;
 
-    if (GraphicCore::GetGraphicConfig().m_TranslucencyMode != TranslucencyMode::ForwardRaster)
+    if (!GraphicCore::GetGraphicConfig().m_ForwardTranslucency)
         return false;
 
     return true;

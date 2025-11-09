@@ -102,6 +102,9 @@ bool Ether::Graphics::RaytracedTranslucencyProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
+    if (!GraphicCore::GetGraphicConfig().m_RaytracedReflections)
+        return false;
+
     if (GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.empty())
         return false;
 

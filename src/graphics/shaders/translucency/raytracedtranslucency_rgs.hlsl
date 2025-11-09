@@ -151,9 +151,10 @@ TranslucentRayPayload TracePrimaryRay(float2 screenCoords, float sceneDepth, uin
     const float tmax = length(worldPos - origin) * 0.99;
 
     TranslucentRayPayload payload;
-    payload.SetPrimaryRay(true);
     payload.m_Depth = depth;
     payload.m_Radiance = 0;
+    payload.m_Flags = 0;
+    payload.SetPrimaryRay(true);
 
     RayDesc ray;
     ray.Direction = direction;
@@ -188,8 +189,7 @@ void RayGeneration()
 [shader("miss")]
 void Miss(inout TranslucentRayPayload payload)
 {
-    payload.SetHit(false);
-    payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection()) * 0.1;
+    payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
 }
 
 [shader("closesthit")]
@@ -199,59 +199,37 @@ void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersect
     MeshVertex vertex = GetHitSurface(attribs, geoInfo);
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
-    payload.SetHit(false);
     payload.m_Depth = max(0, (int)payload.m_Depth - 1);
     payload.m_Radiance = 0;
 
     // TODO: why is payload flags not updating?
-    // if (!payload.IsPrimaryRay())
-    if (payload.m_Depth > 0)
+    if (payload.IsPrimaryRay())
     {
         if (material.m_Opacity >= 0.99f)
             return;
 
-        payload.SetHit(true);
+        vertex.m_TexCoord *= 20;
         vertex.m_TexCoord += float2(0.2, -1) * g_GlobalConstants.m_Time.z;
         const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
 
-        float3 direct = 0.0f;
-        float3 reflection = 0.0f;
-        float3 refraction = 1000000.0f;
+        TranslucentRayPayload screenTracePayload;
+        screenTracePayload.m_Depth = payload.m_Depth - 1;
+        screenTracePayload.m_Radiance = 0;
+        screenTracePayload.m_Flags = 0;
 
-        {   // SSR
-            TranslucentRayPayload screenTracePayload;
-            screenTracePayload.SetPrimaryRay(false);
-            screenTracePayload.m_Depth = screenTracePayload.m_Depth - 1;
-            screenTracePayload.m_Radiance = 0;
+        RayDesc ray;
+        ray.Direction = reflect(WorldRayDirection(), surface.m_Normal);
+        ray.Origin = surface.m_Position;
+        ray.TMax = RAY_TMAX;
+        ray.TMin = RAY_TMIN;
 
-            RayDesc ray;
-            ray.Direction = reflect(WorldRayDirection(), surface.m_Normal);
-            ray.Origin = surface.m_Position;
-            ray.TMax = RAY_TMAX;
-            ray.TMin = RAY_TMIN;
-
-            uint rayFlags = 0;
-            TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, screenTracePayload);
-            payload.m_Radiance = ComputeRadiance(surface, screenTracePayload.m_Radiance, ray.Direction, -WorldRayDirection());
-        }
-
+        uint rayFlags = 0;
+        TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, screenTracePayload);
+        payload.m_Radiance = ComputeRadiance(surface, screenTracePayload.m_Radiance, ray.Direction, -WorldRayDirection());
     }
     else
     {
         const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-/*
-        // Project hit point to screen space
-        float4 hitPosWS = float4(vertex.m_Position, 1.0f);
-        float4 hitPosProjection = mul(g_GlobalConstants.m_ViewProjectionMatrix, hitPosWS);
-        hitPosProjection.xyz /= hitPosProjection.w;
-
-        // Lookup scene depth + color
-        float sceneDepthAtHit = g_SceneDepth.Load(int3(screenCoords, 0)).r;
-
-        // Return the real hit depth, + the projected screen pixel
-        // The original raygen shader should use this info to sample scene color and maybe reject it
-        */
-
         payload.m_Radiance += BruteForcedIBL(surface, -WorldRayDirection());
     }
 
@@ -265,8 +243,10 @@ void AnyHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersectionA
     const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
 
     //TODO: Any hit needs to be updated to ignore translucent objects in ssr
-    if (material.m_Opacity < 1)
+    if (payload.IsPrimaryRay())
+    {
         return;
+    }
 
     // Ignore alpha masked materials (hack)
     float opacity = material.m_Opacity;
@@ -278,7 +258,7 @@ void AnyHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersectionA
         opacity *= (gatherOpacity.x + gatherOpacity.y + gatherOpacity.z + gatherOpacity.w) / 4.0f;
     }
 
-    if (opacity < 0.5)
+    if (opacity < 1.0)
         IgnoreHit();
 }
 

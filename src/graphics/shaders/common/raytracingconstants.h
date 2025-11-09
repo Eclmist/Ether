@@ -56,17 +56,24 @@ struct TranslucentRayPayload
     uint32_t m_Depth;
     uint32_t m_Flags;
 
-    bool IsHit()                    { return m_Flags & (1u << 0); }
-    bool IsPrimaryRay()             { return m_Flags & (1u << 1); }
-    bool IsReflectionRay()          { return m_Flags & (1u << 2); }
-    bool IsRefractionRay()          { return m_Flags & (1u << 3); }
-    bool IsScreenRay()              { return m_Flags & (1u << 4); }
+    bool IsHit()                    { return (m_Flags & (1u << 0)) != 0; }
+    bool IsPrimaryRay()             { return (m_Flags & (1u << 1)) != 0; }
 
-    void SetHit(bool v)             { v ? m_Flags |= (1u << 0) : m_Flags &= ~(1u << 0); }
-    void SetPrimaryRay(bool v)      { v ? m_Flags |= (1u << 1) : m_Flags &= ~(1u << 1); }
-    void SetReflectionRay(bool v)   { v ? m_Flags |= (1u << 2) : m_Flags &= ~(1u << 2); }
-    void SetRefractionRay(bool v)   { v ? m_Flags |= (1u << 3) : m_Flags &= ~(1u << 3); }
-    void SetScreenRay(bool v)       { v ? m_Flags |= (1u << 4) : m_Flags &= ~(1u << 4); }
+    void SetHit(bool v)
+    {
+        if (v)
+            m_Flags |= (1u << 0);
+        else
+            m_Flags &= ~(1u << 0);
+    }
+
+    void SetPrimaryRay(bool v)
+    {
+        if (v)
+            m_Flags |= (1u << 1);
+        else
+            m_Flags &= ~(1u << 1);
+    }
 };
 
 struct GIPackedReservoir
