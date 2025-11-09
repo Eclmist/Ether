@@ -35,7 +35,7 @@ static constexpr KeyCode KeyCode_ToggleFullscreen = (KeyCode)Win32::KeyCode::F11
 static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode::Space;
 
 static constexpr float TotalTimeBudgetMS = 175000;      // 175 seconds (RTCamp11 rule) + 5 second buffer
-static constexpr float TotalMovieTimeMS = 10000;        // 10 seconds
+static constexpr float TotalMovieTimeMS = 3000;        // 10 seconds
 static constexpr uint32_t MovieFramesPerSecond = 60;
 static constexpr uint32_t NumFramesToExport = MovieFramesPerSecond * (TotalMovieTimeMS / 1000.0f);
 
@@ -350,6 +350,7 @@ void RTCamp11::UpdateCamera() const
 void FrameExportWorker::WorkerMain()
 {
     ETH_MARKER_THREAD("Export Thread");
+    std::vector<std::thread> threads;
 
     while (true)
     {
@@ -357,16 +358,29 @@ void FrameExportWorker::WorkerMain()
         {
             std::unique_lock lock(m_Mutex);
             m_Cond.wait(lock, [&] { return !m_Queue.empty() || !m_Running; });
-
             if (!m_Running && m_Queue.empty())
                 break;
-
             job = std::move(m_Queue.front());
             m_Queue.pop();
         }
 
-        ETH_MARKER_EVENT("STBI Image Write");
-        stbi_write_png(job.filename.c_str(), job.width, job.height, 4, job.pixels.data(), 4 * job.width);
-        LogInfo("%s written to file", job.filename);
+        threads.emplace_back(
+            [job = std::move(job)]()
+            {
+                ETH_MARKER_THREAD("Export Job Thread");
+                ETH_MARKER_EVENT("STBI Image Write");
+                stbi_write_png(job.filename.c_str(), job.width, job.height, 4, job.pixels.data(), 4 * job.width);
+                LogInfo("%s written to file", job.filename);
+            });
+
+        // Clean up finished threads
+        threads.erase(
+            std::remove_if(threads.begin(), threads.end(), [](std::thread& t) { return !t.joinable(); }),
+            threads.end());
     }
+
+    // Wait for remaining threads
+    for (auto& t : threads)
+        if (t.joinable())
+            t.join();
 }
