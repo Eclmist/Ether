@@ -57,7 +57,7 @@ void Ether::Graphics::VertexFormats::BaseVertexFormat::Deserialize(IStream& istr
 
 Ether::Graphics::VertexFormats::SkinnedVertexFormat::SkinnedVertexFormat()
 {
-    for (uint32_t i = 0; i < MaxBonesPerVextex; ++i)
+    for (uint32_t i = 0; i < MaxBonesPerVertex; ++i)
         m_BoneIndices[i] = InvalidBoneIndex;
 }
 
@@ -65,7 +65,7 @@ void Ether::Graphics::VertexFormats::SkinnedVertexFormat::Serialize(OStream& ost
 {
     BaseVertexFormat::Serialize(ostream);
 
-    for (uint32_t i = 0; i < MaxBonesPerVextex; ++i)
+    for (uint32_t i = 0; i < MaxBonesPerVertex; ++i)
     {
         ostream << m_BoneIndices[i];
         ostream << m_BoneWeights[i];
@@ -76,7 +76,7 @@ void Ether::Graphics::VertexFormats::SkinnedVertexFormat::Deserialize(IStream& i
 {
     BaseVertexFormat::Deserialize(istream);
 
-    for (uint32_t i = 0; i < MaxBonesPerVextex; ++i)
+    for (uint32_t i = 0; i < MaxBonesPerVertex; ++i)
     {
         istream >> m_BoneIndices[i];
         istream >> m_BoneWeights[i];

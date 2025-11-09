@@ -43,19 +43,21 @@ public:
     void* GetPackedVertexData() override { return m_StagingVertices.data(); }
     uint32_t GetVertexStride() override { return sizeof(VertexFormats::BaseVertexFormat); }
 
+    // TODO: Remove after GPU skinning implementation
+    std::vector<VertexFormats::SkinnedVertexFormat>& GetSkinningVertices() { return m_PackedVertices; }
+    std::vector<VertexFormats::BaseVertexFormat>& GetStagingVertices() { return m_StagingVertices; }
+
 public:
     void SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices);
     void SetSkeletonGuid(StringID guid) { m_SkeletonGuid = guid; }
 
 public:
-    void NextFrame(const Skeleton& skeleton, const AnimationClip& animationClip);
     void UpdateGpuResources(CommandContext& ctx);
 
 protected:
     void InitSkinnedVertices();
     void CreateStagingVertexBuffer();
     void RefitAccelerationStructure(CommandContext& ctx);
-
 
 protected:
     std::vector<VertexFormats::SkinnedVertexFormat> m_PackedVertices;

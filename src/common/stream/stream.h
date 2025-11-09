@@ -39,12 +39,12 @@ class ETH_COMMON_DLL IStream : public Stream
 {
 public:
     virtual IStream& operator>>(float& v) = 0;
-    virtual IStream& operator>>(int& v) = 0;
-    virtual IStream& operator>>(long& v) = 0;
-    virtual IStream& operator>>(char& v) = 0;
-    virtual IStream& operator>>(unsigned int& v) = 0;
-    virtual IStream& operator>>(unsigned long& v) = 0;
-    virtual IStream& operator>>(unsigned char& v) = 0;
+    virtual IStream& operator>>(int8_t& v) = 0;
+    virtual IStream& operator>>(int32_t& v) = 0;
+    virtual IStream& operator>>(int64_t& v) = 0;
+    virtual IStream& operator>>(uint8_t& v) = 0;
+    virtual IStream& operator>>(uint32_t& v) = 0;
+    virtual IStream& operator>>(uint64_t& v) = 0;
     virtual IStream& operator>>(std::string& v) = 0;
     virtual IStream& operator>>(StringID& sid) = 0;
     virtual IStream& operator>>(bool& v) = 0;
@@ -61,12 +61,12 @@ class ETH_COMMON_DLL OStream : public Stream
 {
 public:
     virtual OStream& operator<<(const float v) = 0;
-    virtual OStream& operator<<(const int v) = 0;
-    virtual OStream& operator<<(const long v) = 0;
-    virtual OStream& operator<<(const char v) = 0;
-    virtual OStream& operator<<(const unsigned int v) = 0;
-    virtual OStream& operator<<(const unsigned long v) = 0;
-    virtual OStream& operator<<(const unsigned char v) = 0;
+    virtual OStream& operator<<(const int8_t v) = 0;
+    virtual OStream& operator<<(const int32_t v) = 0;
+    virtual OStream& operator<<(const int64_t v) = 0;
+    virtual OStream& operator<<(const uint8_t v) = 0;
+    virtual OStream& operator<<(const uint32_t v) = 0;
+    virtual OStream& operator<<(const uint64_t v) = 0;
     virtual OStream& operator<<(const std::string& v) = 0;
     virtual OStream& operator<<(const StringID& sid) = 0;
     virtual OStream& operator<<(const bool v) = 0;

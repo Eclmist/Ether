@@ -21,6 +21,7 @@
 
 #include "engine/world/ecs/systems/ecscamerasystem.h"
 #include "engine/world/ecs/systems/ecsvisualsystem.h"
+#include "engine/world/ecs/systems/ecsskinnedvisualsystem.h"
 
 Ether::Ecs::EcsSystemManager::EcsSystemManager()
 {

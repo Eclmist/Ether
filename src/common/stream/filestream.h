@@ -32,12 +32,12 @@ public:
     ~IFileStream();
 
     IStream& operator>>(float& v) override final;
-    IStream& operator>>(int& v) override final;
-    IStream& operator>>(long& v) override final;
-    IStream& operator>>(char& v) override final;
-    IStream& operator>>(unsigned int& v) override final;
-    IStream& operator>>(unsigned long& v) override final;
-    IStream& operator>>(unsigned char& v) override final;
+    IStream& operator>>(int8_t& v) override final;
+    IStream& operator>>(int32_t& v) override final;
+    IStream& operator>>(int64_t& v) override final;
+    IStream& operator>>(uint8_t& v) override final;
+    IStream& operator>>(uint32_t& v) override final;
+    IStream& operator>>(uint64_t& v) override final;
     IStream& operator>>(std::string& v) override final;
     IStream& operator>>(StringID& v) override final;
     IStream& operator>>(bool& v) override final;
@@ -64,12 +64,12 @@ public:
     ~OFileStream();
 
     OStream& operator<<(const float v) override final;
-    OStream& operator<<(const int v) override final;
-    OStream& operator<<(const long v) override final;
-    OStream& operator<<(const char v) override final;
-    OStream& operator<<(const unsigned int v) override final;
-    OStream& operator<<(const unsigned long v) override final;
-    OStream& operator<<(const unsigned char v) override final;
+    OStream& operator<<(const int8_t v) override final;
+    OStream& operator<<(const int32_t v) override final;
+    OStream& operator<<(const int64_t v) override final;
+    OStream& operator<<(const uint8_t v) override final;
+    OStream& operator<<(const uint32_t v) override final;
+    OStream& operator<<(const uint64_t v) override final;
     OStream& operator<<(const std::string& v) override final;
     OStream& operator<<(const StringID& v) override final;
     OStream& operator<<(const bool v) override final;

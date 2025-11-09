@@ -21,22 +21,25 @@
 
 #include "engine/pch.h"
 #include "engine/world/ecs/systems/ecssystem.h"
+#include "engine/animation/animation.h"
+#include "engine/animation/skeleton.h"
 #include "graphics/common/visual.h"
 
 namespace Ether::Ecs
 {
-class EcsVisualSystem : public EcsSystem
+class EcsSkinnedVisualSystem : public EcsSystem
 {
 public:
-    EcsVisualSystem();
-    ~EcsVisualSystem() override = default;
+    EcsSkinnedVisualSystem();
+    ~EcsSkinnedVisualSystem() override = default;
 
 protected:
     friend class EcsManager;
-    virtual void Update() override;
+    void Update() override;
 
 protected:
+    SkeletonPose CalculatePoseFromAnimation(const Skeleton& skeleton, const AnimationClip& animation, float animTimeTicks) const;
+    void UpdateSkinnedMesh(Graphics::SkinnedMesh& skinnedMesh, const Skeleton& skeleton, const AnimationClip& animationClip);
     bool IsVisualCulled(const Graphics::Visual& visual) const;
 };
-
 } // namespace Ether::Ecs

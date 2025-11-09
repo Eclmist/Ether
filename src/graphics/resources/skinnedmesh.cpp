@@ -17,7 +17,6 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <execution>
 #include "graphics/resources/skinnedmesh.h"
 #include "graphics/graphiccore.h"
 
@@ -88,66 +87,6 @@ void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::
     m_NumVertices = m_PackedVertices.size();
 
     ComputeBoundingBox();
-}
-
-void Ether::Graphics::SkinnedMesh::NextFrame(const Skeleton& skeleton, const AnimationClip& animationClip)
-{
-    // --- CPU Skinning --- //
-    // Loop animation time
-    
-    float animationTime = GraphicCore::GetApplicationTimeOverride();
-    if (animationTime < 0)
-        animationTime = Time::GetTimeSinceStartup();
-
-    // RTCamp11 Hack (TODO)
-    const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
-    const float duration = animationClip.GetTotalTicks();
-    const float timeInSeconds = animationTime / 1000.0f;
-    const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
-    const float loopedTimeInTicksPrev = std::fmod((timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond, duration);
-
-    const SkeletonPose prevPose = skeleton.CalculatePoseFromAnimation(animationClip, loopedTimeInTicksPrev);
-    const SkeletonPose pose = skeleton.CalculatePoseFromAnimation(animationClip, loopedTimeInTicks);
-
-    std::vector<ethMatrix4x4> boneMatrices(skeleton.NumBones());
-    std::vector<ethMatrix4x4> prevBoneMatrices(skeleton.NumBones());
-    for (uint32_t b = 0; b < skeleton.NumBones(); ++b)
-    {
-        boneMatrices[b] = pose.m_GlobalInverseTransform * pose.m_GlobalBoneTransform[b] * skeleton.GetBone(b).m_InverseBindMatrix;
-        prevBoneMatrices[b] = prevPose.m_GlobalInverseTransform * prevPose.m_GlobalBoneTransform[b] * skeleton.GetBone(b).m_InverseBindMatrix;
-    }
-
-    std::for_each(
-        std::execution::par,
-        std::begin(m_PackedVertices),
-        std::begin(m_PackedVertices) + m_NumVertices,
-        [&](const VertexFormats::SkinnedVertexFormat& src)
-        {
-            const uint32_t i = &src - &m_PackedVertices[0];
-
-            ethVector4 skinnedPos(0, 0, 0, 0);
-            ethVector4 skinnedNormal(0, 0, 0, 0);
-            ethVector4 prevSkinnedPos(0, 0, 0, 0);
-
-            for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
-            {
-                const uint32_t boneIndex = src.m_BoneIndices[j];
-                const float weight = src.m_BoneWeights[j];
-                if (weight <= 0.0f || boneIndex == Graphics::InvalidBoneIndex)
-                    continue;
-
-                const ethMatrix4x4 finalBoneMatrix = boneMatrices[boneIndex];
-                const ethMatrix4x4 prevBoneMatrix = prevBoneMatrices[boneIndex];
-
-                skinnedPos += (finalBoneMatrix * ethVector4(src.m_Attributes.m_Position.x, src.m_Attributes.m_Position.y, src.m_Attributes.m_Position.z, 1.0f)) * weight;
-                skinnedNormal += (finalBoneMatrix * ethVector4(src.m_Attributes.m_Normal.x, src.m_Attributes.m_Normal.y, src.m_Attributes.m_Normal.z, 0.0f)) * weight;
-                prevSkinnedPos += (prevBoneMatrix * ethVector4(src.m_Attributes.m_Position.x, src.m_Attributes.m_Position.y, src.m_Attributes.m_Position.z, 1.0f)) * weight;
-            }
-
-            m_StagingVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
-            m_StagingVertices[i].m_Attributes.m_PrevPosition = prevSkinnedPos.Resize<3>();
-            m_StagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
-        });
 }
 
 void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)

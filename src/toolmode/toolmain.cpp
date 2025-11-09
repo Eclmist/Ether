@@ -23,6 +23,8 @@
 #include "engine/platform/win32/ethwin.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include "engine/animation/animation.h"
+#include "engine/animation/skeleton.h"
 #include "asset/assetimporter.h"
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
@@ -99,7 +101,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         // then saving the world file.
         std::vector<std::unique_ptr<Graphics::StaticMesh>> staticMeshes;
         std::vector<std::unique_ptr<Graphics::SkinnedMesh>> skinnedMeshes;
-        std::vector<Graphics::AnimationClip*> animationClips;
+        std::vector<AnimationClip*> animationClips;
 
         for (const auto& entry : std::filesystem::directory_iterator(libraryPath))
         {
@@ -116,7 +118,6 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             static const StringID MaterialClassID = StringID(ETH_CLASS_ID_MATERIAL);
             static const StringID TextureClassID = StringID(ETH_CLASS_ID_TEXTURE);
 
-
             IFileStream assetFileStream(entry.path().string());
             if (classID == StaticMeshClassID)
             {
@@ -130,13 +131,13 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             }
             else if (classID == SkeletonClassID)
             {
-                std::unique_ptr<Graphics::Skeleton> skeleton = std::make_unique<Graphics::Skeleton>();
+                std::unique_ptr<Skeleton> skeleton = std::make_unique<Skeleton>();
                 skeleton->Deserialize(assetFileStream);
                 resources.RegisterSkeletonResource(std::move(skeleton));
             }
             else if (classID == AnimationClipClassID)
             {
-                std::unique_ptr<Graphics::AnimationClip> animationClip = std::make_unique<Graphics::AnimationClip>();
+                std::unique_ptr<AnimationClip> animationClip = std::make_unique<AnimationClip>();
                 animationClips.push_back(animationClip.get());
                 animationClip->Deserialize(assetFileStream);
                 resources.RegisterAnimationClipResource(std::move(animationClip));
@@ -178,7 +179,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             visual.m_MaterialGuid = skinnedMesh->GetDefaultMaterialGuid();
             visual.m_SkeletonGuid = skinnedMesh->GetSkeletonGuid();
 
-            const Graphics::Skeleton* skeleton = resources.GetSkeletonResource(skinnedMesh->GetSkeletonGuid());
+            const Skeleton* skeleton = resources.GetSkeletonResource(skinnedMesh->GetSkeletonGuid());
             if (skeleton != nullptr)
             {
                 bool foundAnim = false;
@@ -188,7 +189,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
                 {
                     for (uint32_t j = 0; j < skeleton->NumBones(); ++j)
                     {
-                        if (animationClips[i]->HasBoneInfluence(skeleton->GetBone(j).m_Name))
+                        if (animationClips[i]->GetChannel(skeleton->GetBone(j).m_Name + "_Position"))
                         {
                             visual.m_AnimationGuid = animationClips[i]->GetGuid();
                             foundAnim = true;
