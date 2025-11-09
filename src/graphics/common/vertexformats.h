@@ -20,12 +20,13 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/resources/skeleton.h"
 #include "graphics/shaders/common/vertexcommon.h"
 
 namespace Ether::Graphics::VertexFormats
 {
 static constexpr uint32_t BaseVertexFormat_NumElements = 6;
+static constexpr uint32_t MaxBonesPerVertex = 4;
+static constexpr uint32_t InvalidBoneIndex = -1;
 
 class ETH_GRAPHIC_DLL BaseVertexFormat
 {
@@ -57,7 +58,7 @@ public:
 
 public:
     // CPU side data for skinning
-    uint32_t m_BoneIndices[MaxBonesPerVextex];  // 4 x u8 packed into u32 (or uint32[4])
-    ethVector4 m_BoneWeights;                   // 4 floats
+    uint32_t m_BoneIndices[MaxBonesPerVertex]; // 4 x u8 packed into u32 (or uint32[4])
+    ethVector4 m_BoneWeights;                  // 4 floats
 };
-} // namespace Ether::Graphics::VertexFormats
+} // namespace Ether::Graphics::VertexFormats 

@@ -48,37 +48,37 @@ Ether::IStream& Ether::IByteStream::operator>>(float& value)
     return *this;
 }
 
-Ether::IStream& Ether::IByteStream::operator>>(int& value)
+Ether::IStream& Ether::IByteStream::operator>>(int8_t& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IByteStream::operator>>(long& value)
+Ether::IStream& Ether::IByteStream::operator>>(int32_t& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IByteStream::operator>>(char& value)
+Ether::IStream& Ether::IByteStream::operator>>(int64_t& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IByteStream::operator>>(unsigned int& value)
+Ether::IStream& Ether::IByteStream::operator>>(uint8_t& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IByteStream::operator>>(unsigned long& value)
+Ether::IStream& Ether::IByteStream::operator>>(uint32_t& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::IStream& Ether::IByteStream::operator>>(unsigned char& value)
+Ether::IStream& Ether::IByteStream::operator>>(uint64_t& value)
 {
     ReadBytes(&value, sizeof(value));
     return *this;
@@ -160,37 +160,37 @@ Ether::OStream& Ether::OByteStream::operator<<(const float value)
     return *this;
 }
 
-Ether::OStream& Ether::OByteStream::operator<<(const int value)
+Ether::OStream& Ether::OByteStream::operator<<(const int8_t value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OByteStream::operator<<(const long value)
+Ether::OStream& Ether::OByteStream::operator<<(const int32_t value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OByteStream::operator<<(const char value)
+Ether::OStream& Ether::OByteStream::operator<<(const int64_t value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OByteStream::operator<<(const unsigned int value)
+Ether::OStream& Ether::OByteStream::operator<<(const uint8_t value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OByteStream::operator<<(const unsigned long value)
+Ether::OStream& Ether::OByteStream::operator<<(const uint32_t value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;
 }
 
-Ether::OStream& Ether::OByteStream::operator<<(const unsigned char value)
+Ether::OStream& Ether::OByteStream::operator<<(const uint64_t value)
 {
     WriteBytes(&value, sizeof(value));
     return *this;

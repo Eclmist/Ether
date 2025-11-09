@@ -21,6 +21,8 @@
 #include <execution>
 
 #include "toolmode/asset/assetimporter.h"
+#include "engine/animation/animation.h"
+#include "engine/animation/skeleton.h"
 #include "graphics/resources/staticmesh.h"
 #include "graphics/resources/texture.h"
 #include "graphics/common/vertexformats.h"
@@ -314,37 +316,51 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
         const std::string animName = animation->mName.C_Str();
         const float totalTicks = animation->mDuration;
         const float ticksPerSecond = animation->mTicksPerSecond;
-        Graphics::AnimationClip animationClip(animName, totalTicks, ticksPerSecond);
 
+        Ether::AnimationClip animationClip(animName, totalTicks, ticksPerSecond);
+
+        // Each assimp animation channel is one BONE, not one property, unlike in Ether.
+        // So we will create a channel for each bone+property
+        // e.g. RootBone_Translation
+        //      RootBone_Rotation
+        //      RootBone_Scale
+        // During lookup, we can combine bone+channelname to look up the keyframes
         for (uint32_t j = 0; j < animation->mNumChannels; ++j)
         {
             aiNodeAnim* animatedBone = animation->mChannels[j];
             const std::string boneName = animatedBone->mNodeName.C_Str();
 
-            Graphics::AnimationClip::BoneKeyframes keyframe;
+            auto positionChannel = std::make_unique<Ether::AnimationClip::AnimationChannel<ethVector3>>(boneName + "_Position");
+            auto rotationChannel = std::make_unique<Ether::AnimationClip::AnimationChannel<ethQuaternion>>(boneName + "_Rotation");
+            auto scaleChannel = std::make_unique<Ether::AnimationClip::AnimationChannel<ethVector3>>(boneName + "_Scale");
 
             for (uint32_t k = 0; k < animatedBone->mNumPositionKeys; ++k)
             {
-                keyframe.m_PositionKeyframes.emplace_back(
+                Ether::AnimationClip::Keyframe<ethVector3> positionKey(
                     (float)animatedBone->mPositionKeys[k].mTime,
                     ToEthVector3(animatedBone->mPositionKeys[k].mValue) * m_MeshScale);
+                positionChannel->InsertKeyframe(positionKey);
             }
 
             for (uint32_t k = 0; k < animatedBone->mNumRotationKeys; ++k)
             {
-                keyframe.m_RotationKeyframes.emplace_back(
+                Ether::AnimationClip::Keyframe<ethQuaternion> rotationKey(
                     (float)animatedBone->mRotationKeys[k].mTime,
                     ToEthQuaternion(animatedBone->mRotationKeys[k].mValue));
+                rotationChannel->InsertKeyframe(rotationKey);
             }
 
             for (uint32_t k = 0; k < animatedBone->mNumScalingKeys; ++k)
             {
-                keyframe.m_ScalingKeyframes.emplace_back(
+                Ether::AnimationClip::Keyframe<ethVector3> scaleKey(
                     (float)animatedBone->mScalingKeys[k].mTime,
                     ToEthVector3(animatedBone->mScalingKeys[k].mValue));
+                scaleChannel->InsertKeyframe(scaleKey);
             }
 
-            animationClip.AddBoneKeyframes(boneName, keyframe);
+            animationClip.AddChannel(positionChannel->GetChannelName(), std::move(positionChannel));
+            animationClip.AddChannel(rotationChannel->GetChannelName(), std::move(rotationChannel));
+            animationClip.AddChannel(scaleChannel->GetChannelName(), std::move(scaleChannel));
         }
 
         SerializeLibraryData(&animationClip);
@@ -476,7 +492,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     return gfxTexture.GetGuid();
 }
 
-Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBone)
+Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBone)
 {
     ETH_MARKER_EVENT("Process Skeleton");
 
@@ -491,11 +507,11 @@ Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBon
         return *m_ArmatureRootToSkeletonMap.at(rootBone);
     }
 
-    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootBone, std::make_unique<Graphics::Skeleton>());
-    Graphics::Skeleton& skeleton = *iter->second;
+    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootBone, std::make_unique<Skeleton>());
+    Skeleton& skeleton = *iter->second;
 
     // Update the global inverse transform
-    Graphics::SkeletonPose bindPose = skeleton.GetBindPose();
+    SkeletonPose bindPose = skeleton.GetBindPose();
     bindPose.m_GlobalInverseTransform = ToEthMatrix4x4(rootNode->mTransformation).Inversed();
     skeleton.SetBindPose(bindPose);
 
@@ -512,10 +528,10 @@ Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBon
         const ethMatrix4x4 globalTransformation = parentTransform * localTransformation;
         const ethMatrix4x4 offsetMatrix = aibone != nullptr ? ToEthMatrix4x4(aibone->mOffsetMatrix) : globalTransformation.Inversed();
 
-        Graphics::SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
+        SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
         skeleton.AddBone(gfxBone);
 
-        Graphics::SkeletonPose bindPose = skeleton.GetBindPose();
+        SkeletonPose bindPose = skeleton.GetBindPose();
         bindPose.m_GlobalBoneTransform.push_back(globalTransformation);
         bindPose.m_LocalBoneTransform.push_back(localTransformation);
         skeleton.SetBindPose(bindPose);
@@ -527,7 +543,7 @@ Ether::Graphics::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBon
         };
     };
 
-    GenerateSkeletonHierarchy(rootNode, Graphics::InvalidBoneIndex, {});
+    GenerateSkeletonHierarchy(rootNode, InvalidBoneIndex, {});
 
     SerializeLibraryData(&skeleton);
 
@@ -637,14 +653,14 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
 
         if (rootBone != nullptr)
         {
-            const Graphics::Skeleton& skeleton = ProcessSkeleton(rootBone);
+            const Skeleton& skeleton = ProcessSkeleton(rootBone);
 
             for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
             {
                 const aiBone* bone = assimpMesh->mBones[i];
                 const uint32_t boneIndex = skeleton.GetBoneIndex(bone->mName.C_Str());
 
-                if (boneIndex == Graphics::InvalidBoneIndex)
+                if (boneIndex == InvalidBoneIndex)
                 {
                     LogToolmodeWarning("Found contribution from invalid bone index. Skeleton may be broken");
                     continue;
@@ -659,9 +675,9 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
                         continue;
 
                     // Find which weight slot is still available on the vertex
-                    for (uint32_t k = 0; k < Graphics::MaxBonesPerVextex; ++k)
+                    for (uint32_t k = 0; k < MaxBonesPerVextex; ++k)
                     {
-                        if (data[vertexRef.mVertexId].m_BoneIndices[k] == Graphics::InvalidBoneIndex)
+                        if (data[vertexRef.mVertexId].m_BoneIndices[k] == InvalidBoneIndex)
                         {
                             data[vertexRef.mVertexId].m_BoneIndices[k] = boneIndex;
                             data[vertexRef.mVertexId].m_BoneWeights[k] = vertexRef.mWeight;

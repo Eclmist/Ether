@@ -59,7 +59,7 @@ namespace Ether::Toolmode
         void ProcessStaticMesh(const aiMesh* assimpMesh);
         void ProcessSkinnedMesh(const aiMesh* assimpMesh);
         StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
-        Graphics::Skeleton& ProcessSkeleton(aiBone* rootBone);
+        Skeleton& ProcessSkeleton(aiBone* rootBone);
         aiBone* GetArmatureRoot(aiBone* bone) const;
         aiBone* GetNodeBone(aiNode* node) const;
         aiNode* GetBoneNode(aiBone* bone) const;
@@ -79,7 +79,7 @@ namespace Ether::Toolmode
 
         StringID m_MaterialGuidTable[MaxNumMaterials];
         std::unordered_map<StringID, aiNode*> m_NameToNodeMap;
-        std::unordered_map<aiBone*, std::unique_ptr<Graphics::Skeleton>> m_ArmatureRootToSkeletonMap;
+        std::unordered_map<aiBone*, std::unique_ptr<Skeleton>> m_ArmatureRootToSkeletonMap;
         std::unordered_map<aiBone*, aiBone*> m_ArmatureToBonesMap;
         std::unordered_map<aiNode*, aiBone*> m_NodeToBoneMap;
         std::unordered_map<aiBone*, aiNode*> m_BoneToNodeMap;

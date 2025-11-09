@@ -19,19 +19,16 @@
 
 #pragma once
 
-#include "graphics/pch.h"
-#include <unordered_set>
+#include "engine/pch.h"
 
-#define ETH_CLASS_ID_SKELETON "Graphics::Skeleton"
-#define ETH_CLASS_ID_SKELETONBONE "Graphics::SkeletonBone"
-#define ETH_CLASS_ID_ANIMATIONCLIP "Graphics::AnimationClip"
+#define ETH_CLASS_ID_SKELETON "Engine::Skeleton"
 
-namespace Ether::Graphics
+namespace Ether
 {
 static constexpr uint32_t MaxBonesPerVextex = 4;
 static constexpr uint32_t InvalidBoneIndex = -1;
 
-class ETH_GRAPHIC_DLL SkeletonBone : public Serializable
+class ETH_ENGINE_DLL SkeletonBone
 {
 public:
     SkeletonBone();
@@ -39,8 +36,8 @@ public:
     ~SkeletonBone() = default;
 
 public:
-    void Serialize(OStream& ostream) const override;
-    void Deserialize(IStream& istream) override;
+    void Serialize(OStream& ostream) const;
+    void Deserialize(IStream& istream);
 
 public:
     std::string m_Name;
@@ -48,7 +45,7 @@ public:
     ethMatrix4x4 m_InverseBindMatrix;
 };
 
-struct ETH_GRAPHIC_DLL SkeletonPose
+struct ETH_ENGINE_DLL SkeletonPose
 {
     void Serialize(OStream& ostream) const;
     void Deserialize(IStream& istream);
@@ -58,50 +55,7 @@ struct ETH_GRAPHIC_DLL SkeletonPose
     ethMatrix4x4 m_GlobalInverseTransform;
 };
 
-class ETH_GRAPHIC_DLL AnimationClip : public Serializable
-{
-public:
-    struct BoneKeyframes
-    {
-        void Serialize(OStream& ostream) const;
-        void Deserialize(IStream& istream);
-
-        ethVector3 GetInterpolatedPosition(float animTick) const;
-        ethQuaternion GetInterpolatedRotation(float animTick) const;
-        ethVector3 GetInterpolatedScale(float animTick) const;
-
-        std::vector<std::pair<float, ethVector3>> m_PositionKeyframes;
-        std::vector<std::pair<float, ethQuaternion>> m_RotationKeyframes;
-        std::vector<std::pair<float, ethVector3>> m_ScalingKeyframes;
-    };
-
-public:
-    AnimationClip(const std::string& name = "Unnamed Animation Clip", float totalTicks = 0.0f, float ticksPerSecond = 30.0f);
-    ~AnimationClip() override = default;
-
-public:
-    void Serialize(OStream& ostream) const override;
-    void Deserialize(IStream& istream) override;
-
-public:
-    inline const std::string& GetName() const { return m_Name; }
-    inline const float GetTotalTicks() const { return m_TotalTicks; }
-    inline const float GetTicksPerSecond() const { return m_TicksPerSecond; }
-
-    inline bool HasBoneInfluence(const std::string& boneName) const { return m_Keyframes.find(boneName) != m_Keyframes.end();}
-    inline const BoneKeyframes& GetKeyframes(const std::string& boneName) const { return m_Keyframes.at(boneName); }
-
-public:
-    void AddBoneKeyframes(const std::string& boneName, const BoneKeyframes& keyframes);
-
-private:
-    std::string m_Name;
-    float m_TotalTicks;
-    float m_TicksPerSecond;
-    std::unordered_map<std::string, BoneKeyframes> m_Keyframes;
-};
-
-class ETH_GRAPHIC_DLL Skeleton : public Serializable
+class ETH_ENGINE_DLL Skeleton : public Serializable
 {
 public:
     Skeleton();
@@ -119,10 +73,6 @@ public:
     inline void AddBone(const SkeletonBone& bone) { m_Bones.push_back(bone); }
     inline void SetBindPose(const SkeletonPose bindPose) { m_BindPose = bindPose; }
     inline void SetCurrentPose(const SkeletonPose pose) { m_CurrentPose = pose; }
-
-public:
-    //TOOD: make static? This doesn't feel like the right place to put this
-    SkeletonPose CalculatePoseFromAnimation(const AnimationClip& animation, float animTimeTicks) const;
 
 public:
 #if ETH_TOOLMODE
