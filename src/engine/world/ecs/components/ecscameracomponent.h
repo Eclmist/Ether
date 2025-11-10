@@ -69,7 +69,7 @@ private:
     template <uint32_t baseX, uint32_t baseY>
     ethVector2 GetHaltonSequence(uint32_t index) const;
 
-public:
+private:
     float m_FieldOfView;
     float m_NearPlane;
     float m_FarPlane;
@@ -79,7 +79,6 @@ public:
 
     StringID m_HdriTextureID;
 };
-
 
 template <uint32_t baseX, uint32_t baseY>
 ethVector2 Ether::Ecs::EcsCameraComponent::GetHaltonSequence(uint32_t index) const
