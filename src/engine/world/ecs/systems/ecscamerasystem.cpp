@@ -42,9 +42,9 @@ void Ether::Ecs::EcsCameraSystem::Update()
         EcsCameraComponent& camera = entity.GetComponent<EcsCameraComponent>();
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
 
-        // TODO: To remove (testing)
-        camera.m_NearPlane = 0.1f;
-        camera.m_FarPlane = 50.0f;
+        // RTCamp11 TODO: To remove (testing)
+        camera.SetNearPlane(0.1f);
+        camera.SetFarPlane(50.0f);
 
         // TODO: Jitter mode is set through imgui debug menu (which is in gfx project), so we need to update the component manually
         // In the future, this should be updated through the engine side, and this can be removed.
@@ -61,15 +61,15 @@ void Ether::Ecs::EcsCameraSystem::Update()
         float aspect = static_cast<float>(resolution.x) / resolution.y;
 
         ethMatrix4x4 projectionMatrixNoJitter;
-        switch (camera.m_ProjectionMode)
+        switch (camera.GetProjectionMode())
         {
         case ProjectionMode::Perspective:
             projectionMatrixNoJitter = Transform::GetPerspectiveMatrixLH(
                 //SMath::DegToRad(camera.m_FieldOfView),
                 SMath::DegToRad(gfxConfig.m_Fov),
                 aspect,
-                camera.m_FarPlane,    // flipped near/far planes for reverse-z
-                camera.m_NearPlane);
+                camera.GetFarPlane(),    // flipped near/far planes for reverse-z
+                camera.GetNearPlane());
             break;
         }
 
@@ -96,7 +96,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
         renderData.m_CameraDirection = forward.Resize<3>();
         renderData.m_CameraPosition = transform.m_Translation;
         renderData.m_CameraJitter = cameraJitter;
-        renderData.m_CameraClipNearFar = { camera.m_NearPlane, camera.m_FarPlane };
+        renderData.m_CameraClipNearFar = { camera.GetNearPlane(), camera.GetFarPlane() };
         renderData.m_HdriTextureID = camera.GetHdriTextureID();
 
         // Only render the first camera for now, since the renderer is not designed for multiple yet
