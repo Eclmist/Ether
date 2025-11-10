@@ -61,10 +61,10 @@ struct GlobalConstants
 
     // ============== HDRI =============== //
     uint32_t m_HdriTextureIndex;
+    uint32_t m_UiTextureIndex;
 
     // ============== TAA =============== //
     float m_TaaAccumulationFactor;
-    float m_Padding2;
 
     ethVector2 m_CameraJitter;
     ethVector2 m_CameraJitterPrev;

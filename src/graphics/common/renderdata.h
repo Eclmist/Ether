@@ -36,6 +36,7 @@ public:
     ethVector2 m_CameraClipNearFar;
 
     StringID m_HdriTextureID;
+    StringID m_UITextureID;
 
     std::vector<Visual> m_Visuals;
     std::vector<Visual> m_RaytracingVisuals;

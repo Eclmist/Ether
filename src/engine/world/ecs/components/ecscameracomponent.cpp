@@ -43,6 +43,7 @@ void Ether::Ecs::EcsCameraComponent::Serialize(OStream& ostream) const
     ostream << static_cast<uint32_t>(m_ProjectionMode);
     ostream << static_cast<uint32_t>(m_JitterMode);
     ostream << m_HdriTextureID;
+    ostream << m_UITextureID;
 }
 
 void Ether::Ecs::EcsCameraComponent::Deserialize(IStream& istream)
@@ -55,6 +56,7 @@ void Ether::Ecs::EcsCameraComponent::Deserialize(IStream& istream)
     istream >> (uint32_t&)m_ProjectionMode;
     istream >> (uint32_t&)m_JitterMode;
     istream >> m_HdriTextureID;
+    istream >> m_UITextureID;
 }
 
 Ether::ethVector2 Ether::Ecs::EcsCameraComponent::GetJitterOffset(uint32_t index) const

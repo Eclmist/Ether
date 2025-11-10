@@ -64,6 +64,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     ResourceManager& resources = currentWorld.GetResourceManager();
 
     const std::string hdriPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\RtCamp11\\sky_26_2k.png";
+    const std::string uiOverlayPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\RtCamp11\\UI\\camera_overlay.png";
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
     const std::vector<std::string>& m_FlatternedImportPaths = GetCommandLineOptions().GetFlatternedImportPaths();
@@ -95,6 +96,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             AssetImporter::Instance().Import(m_FlatternedImportPaths[i], true);
 
         AssetImporter::Instance().ImportTexture(hdriPath);
+        AssetImporter::Instance().ImportTexture(uiOverlayPath);
 
         // Load from library files and serialize to world
         // This simulates user dragging resources from the editor resource browser into the scene,
@@ -207,6 +209,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
         Entity& cameraObj = currentWorld.CreateCamera();
         cameraObj.GetComponent<Ecs::EcsCameraComponent>().SetHdriTextureID(AssetImporter::Instance().GetAssetGuid(hdriPath));
+        cameraObj.GetComponent<Ecs::EcsCameraComponent>().m_UITextureID = AssetImporter::Instance().GetAssetGuid(uiOverlayPath);
 
         currentWorld.SetWorldName(exportWorldName);
         currentWorld.Save(sceneSavePath);

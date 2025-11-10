@@ -439,6 +439,8 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     bool genMips)
 {
     ETH_MARKER_EVENT("Process Texture");
+    LogToolmodeInfo("Importing texture: %s", (folderPath + texturePath.GetString()).c_str());
+
     if (m_PathToGuidMap.find(texturePath) != m_PathToGuidMap.end())
         return m_PathToGuidMap.at(texturePath);
 

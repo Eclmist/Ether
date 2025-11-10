@@ -79,7 +79,12 @@ private:
     JitterMode m_JitterMode;
 
     StringID m_HdriTextureID;
+
+public:
+    // RTCamp11
+    StringID m_UITextureID;
 };
+
 
 template <uint32_t baseX, uint32_t baseY>
 ethVector2 Ether::Ecs::EcsCameraComponent::GetHaltonSequence(uint32_t index) const
