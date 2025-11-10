@@ -135,6 +135,51 @@ public:
             return intepolator(val0, val1, a);
         }
 
+        T CatmullRomInterpolate(const T& p0, const T& p1, const T& p2, const T& p3, float t)
+        {
+            float t2 = t * t;
+            float t3 = t2 * t;
+
+            // Catmull-Rom basis functions
+            float b0 = -0.5f * t3 + t2 - 0.5f * t;
+            float b1 = 1.5f * t3 - 2.5f * t2 + 1.0f;
+            float b2 = -1.5f * t3 + 2.0f * t2 + 0.5f * t;
+            float b3 = 0.5f * t3 - 0.5f * t2;
+
+            return p0 * b0 + p1 * b1 + p2 * b2 + p3 * b3;
+        }
+
+        T GetSmoothValue(float time)
+        {
+            if (m_Keyframes.empty())
+                return T();
+            if (m_Keyframes.size() == 1)
+                return m_Keyframes[0].m_Value;
+
+            const uint32_t idx1 = GetStartIndex(time);
+            const uint32_t idx2 = idx1 + 1;
+
+            // Clamp to last keyframe
+            if (idx2 >= m_Keyframes.size())
+                return m_Keyframes.back().m_Value;
+
+            // Get surrounding control points for Catmull-Rom
+            const uint32_t idx0 = (idx1 > 0) ? idx1 - 1 : idx1;
+            const uint32_t idx3 = (idx2 + 1 < m_Keyframes.size()) ? idx2 + 1 : idx2;
+
+            const float t0 = m_Keyframes[idx1].m_Time;
+            const float t1 = m_Keyframes[idx2].m_Time;
+            const float dt = t1 - t0;
+            const float a = (time - t0) / dt;
+
+            return CatmullRomInterpolate(
+                m_Keyframes[idx0].m_Value,
+                m_Keyframes[idx1].m_Value,
+                m_Keyframes[idx2].m_Value,
+                m_Keyframes[idx3].m_Value,
+                a);
+        }
+
     protected:
         uint32_t GetStartIndex(float time)
         {
@@ -182,9 +227,9 @@ public:
     }
 
     template <typename T>
-    void AddChannel(const std::string& channelName, std::unique_ptr<AnimationChannel<T>>&& channel)
+    void AddChannel(std::unique_ptr<AnimationChannel<T>>&& channel)
     {
-        m_Channels[channelName] = std::move(channel);
+        m_Channels[channel->GetChannelName()] = std::move(channel);
     }
 
 private:

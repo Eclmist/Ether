@@ -130,6 +130,17 @@ public:
     bool m_ForwardTranslucency = true;
     bool m_RaytracedReflections = true;
 
+    // RTCamp11 Special!
+    bool m_AnimationPaused = false;
+    float m_OverridenAnimationTime = 0.0f;
+
+    bool m_TracksActive = true;
+    bool m_CameraTrack_Fov = true;
+    bool m_CameraTrack_Transform = true;
+    bool m_DOFTrack_FocusDistance = true;
+    bool m_DOFTrack_Aperture = true;
+    bool m_DOFTrack_FocusRange = true;
+
 private:
     ethVector4 m_ClearColor;
     ethVector2u m_Resolution;

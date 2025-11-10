@@ -183,20 +183,25 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     // Loop animation time
 
     float animationTime = Graphics::GraphicCore::GetApplicationTimeOverride();
+    float animationTimePrev = Graphics::GraphicCore::GetApplicationTimeOverridePrev();
+
     if (animationTime < 0)
+    {
         animationTime = Time::GetTimeSinceStartup();
+        animationTimePrev = animationTime - Time::GetDeltaTime();
+    }
 
     // RTCamp11 Hack (TODO)
     const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
-    const float duration = animationClip.GetTotalTicks();
-    const float timeInSeconds = animationTime / 1000.0f;
-    const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
-    const float loopedTimeInTicksPrev = std::fmod(
-        (timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond,
-        duration);
+    const float totalTicks = animationClip.GetTotalTicks();
 
-    const SkeletonPose prevPose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicksPrev);
+    const float timeInSeconds = animationTime / 1000.0f;
+    const float prevTimeInSeconds = animationTimePrev / 1000.0f;
+    const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, totalTicks);
+    const float loopedTimeInTicksPrev = std::fmod(prevTimeInSeconds * ticksPerSecond, totalTicks);
+
     const SkeletonPose pose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicks);
+    const SkeletonPose prevPose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicksPrev);
 
     std::vector<ethMatrix4x4> boneMatrices(skeleton.NumBones());
     std::vector<ethMatrix4x4> prevBoneMatrices(skeleton.NumBones());

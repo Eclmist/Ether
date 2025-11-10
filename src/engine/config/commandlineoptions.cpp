@@ -66,7 +66,10 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
     else if (flag == "-pathtrace")
         m_Pathtrace = true;
     else if (flag == "-accumulate")
+    {
         m_AccumulateFrames = true;
+        m_AccumulationBudget = stof(arg);
+    }
 #if defined(ETH_TOOLMODE)
     else if (flag == "-workspace")
         m_WorkspacePath = arg;

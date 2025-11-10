@@ -237,7 +237,7 @@ void CompositePass(uint3 threadID)
         if (coc > 0)
             debugColor = float4(0, 0, 1, 1);
 
-        g_DestinationTextureUav[threadID.xy] = lerp(sceneColor, sceneColor * debugColor, abs(coc));
+        g_DestinationTextureUav[threadID.xy] = lerp(sceneColor, sceneColor * debugColor, saturate(abs(coc)));
         return;
     }
 

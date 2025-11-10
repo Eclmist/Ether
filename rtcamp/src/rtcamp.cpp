@@ -17,6 +17,32 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+// RTCAMP HACKS!!
+#define CAMERA_CONFIG_TRACK(track, configTarget, enabled)                              \
+    do                                                                                 \
+    {                                                                                  \
+        static bool saveFlag = true;                                                   \
+        static auto backup = configTarget;                                             \
+        if (enabled)                                                                   \
+        {                                                                              \
+            if (saveFlag)                                                              \
+            {                                                                          \
+                backup = configTarget;                                                 \
+                saveFlag = false;                                                      \
+            }                                                                          \
+            auto interpolated = track->GetSmoothValue(g_RenderTimeOverride);           \
+            configTarget = interpolated;                                               \
+        }                                                                              \
+        else                                                                           \
+        {                                                                              \
+            if (!saveFlag)                                                             \
+            {                                                                          \
+                configTarget = backup;                                                 \
+                saveFlag = true;                                                       \
+            }                                                                          \
+        }                                                                              \
+    } while (0)
+
 #include "rtcamp.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
@@ -32,10 +58,10 @@ using namespace Ether;
 
 static constexpr KeyCode KeyCode_ToggleDebugGui = (KeyCode)Win32::KeyCode::F3;
 static constexpr KeyCode KeyCode_ToggleFullscreen = (KeyCode)Win32::KeyCode::F11;
-static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode::Space;
+static constexpr KeyCode KeyCode_ToggleRaytracingDebug = (KeyCode)Win32::KeyCode::F4;
+static constexpr KeyCode KeyCode_PauseAnimation = (KeyCode)Win32::KeyCode::Space;
 
-static constexpr float TotalTimeBudgetMS = 175000;      // 175 seconds (RTCamp11 rule) + 5 second buffer
-static constexpr float TotalMovieTimeMS = 3000;        // 10 seconds
+static constexpr float TotalMovieTimeMS = 10000;        // 10 seconds
 static constexpr uint32_t MovieFramesPerSecond = 60;
 static constexpr uint32_t NumFramesToExport = MovieFramesPerSecond * (TotalMovieTimeMS / 1000.0f);
 
@@ -44,7 +70,10 @@ void* g_ExportBufferData = nullptr;
 uint32_t g_MovieFrameNumber = 0;
 bool g_ExportQueued = false;
 float g_LastExportTime = 0;
-float g_RunningFrameBudget = TotalTimeBudgetMS / NumFramesToExport;
+
+bool g_ShouldAccumulateFrames = false;
+float g_TotalTimeBudgetMS = 0; // 0 means real time
+float g_RunningFrameBudget = g_TotalTimeBudgetMS / NumFramesToExport;
 
 float g_RenderTimeOverridePrev = 0;
 float g_RenderTimeOverride = 0;
@@ -56,8 +85,14 @@ void RTCamp11::Initialize()
     LogInfo("Initializing Application: RTCamp");
     Client::SetClientTitle("Raytracing Camp 11!!");
     Client::SetClientSize({ 640, 1080 });
+    //Client::SetClientSize({ 1920, 1080 });
+    //Client::SetClientSize({ 2560, 1080 });
 
     g_ShouldExportMovie = GetCommandLineOptions().GetExportMovie();
+    g_ShouldAccumulateFrames = GetCommandLineOptions().GetAccumulateFrames();
+
+    if (g_ShouldAccumulateFrames)
+        g_TotalTimeBudgetMS = GetCommandLineOptions().GetAccumulationBudget();
 }
 
 void RTCamp11::LoadContent()
@@ -68,13 +103,12 @@ void RTCamp11::LoadContent()
     if (worldToLoad != "")
         world.Load(worldToLoad);
 
+    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
+
     Entity& cameraObj = world.CreateCamera();
     m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
-    m_CameraTransform->m_Translation = { 0, 2, 0 };
-    m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
-
-
-    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
+    m_CameraTransform->m_Translation = { 6.970290, -0.165515, -11.497716 };
+    m_CameraTransform->m_Rotation = { -0.040000, -0.574797, 0.000000 };
 
     graphicConfig.m_Fov = 7.279;
 
@@ -101,14 +135,11 @@ void RTCamp11::LoadContent()
     else
         graphicConfig.m_LightingMode = Ether::Graphics::RaytracingMode::ReSTIR;
 
-    graphicConfig.m_ReSTIRGIConfig.m_SpatialFeedback = false;
-
-    m_CameraTransform->m_Translation = { 6.970290, -0.165515, -11.497716 };
-    m_CameraTransform->m_Rotation = { -0.040000, -0.574797, 0.000000 };
+    graphicConfig.m_ReSTIRGIConfig.m_SpatialFeedback = true;
 
     // Prewarm the first frame
     g_LastExportTime = Ether::Time::GetRealTimeSinceStartup();
-    g_RunningFrameBudget = (TotalTimeBudgetMS - g_LastExportTime) / NumFramesToExport;
+    g_RunningFrameBudget = std::max((g_TotalTimeBudgetMS - g_LastExportTime) / NumFramesToExport, 0.0f);
 
     if (g_ShouldExportMovie)
         Ether::Graphics::OverrideTime(g_RenderTimeOverride);
@@ -125,6 +156,8 @@ void RTCamp11::Shutdown()
 void RTCamp11::OnUpdate(const UpdateEventArgs& e)
 {
     UpdateGraphicConfig();
+
+    UpdateRTCampAnimations();
     UpdateCamera();
 }
 
@@ -142,20 +175,21 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
             LogInfo("Full movie rendered! :))");
             Ether::Shutdown();
 
-            LogInfo("Waiting for image writing thread to join...");
+            LogInfo("Waiting for image writing threads to join...");
             g_FrameExportWorker.Join();
             LogInfo("All frames written to disk!");
+            LogInfo("Full render completed in %f seconds", currentTimeMS / 1000.0f);
             return;
         }
 
         static bool bHasPrintedWarning = false;
-        if (currentTimeMS > TotalTimeBudgetMS && !bHasPrintedWarning)
+        if (currentTimeMS > g_TotalTimeBudgetMS && !bHasPrintedWarning && g_ShouldAccumulateFrames)
         {
             LogWarning("Time limit likely exceeded but there are still %d frames left :(", framesLeft);
             bHasPrintedWarning = true;
         }
 
-        if (!GetCommandLineOptions().GetAccumulateFrames() || (currentTimeMS - g_LastExportTime > g_RunningFrameBudget))
+        if (currentTimeMS - g_LastExportTime >= g_RunningFrameBudget)
         {
             Ether::Graphics::RequestExport(&g_ExportBufferData);
             g_ExportQueued = true;
@@ -163,14 +197,32 @@ void RTCamp11::OnPreRender(const RenderEventArgs& e)
 
             // Calculate current frame's "time" to let the renderer freeze and accumulate
             g_RenderTimeOverride = (g_MovieFrameNumber + 1) / (float)MovieFramesPerSecond * 1000.0f;
-            Ether::Graphics::OverrideTime(g_RenderTimeOverride);
-            return;
         }
     }
     else
     {
-        g_RenderTimeOverride = Time::GetRealTimeSinceStartup();
+        Ether::Graphics::GraphicConfig& gfxConfig = Ether::Graphics::GetGraphicConfig();
+
+        if (gfxConfig.m_AnimationPaused)
+        {
+            g_RenderTimeOverride = gfxConfig.m_OverridenAnimationTime;
+            g_RenderTimeOverridePrev = g_RenderTimeOverride + 1;
+        }
+        else
+        {
+            g_RenderTimeOverride += Ether::Time::GetDeltaTime();
+            gfxConfig.m_OverridenAnimationTime = g_RenderTimeOverride;
+        }
+
+        if (g_RenderTimeOverride > TotalMovieTimeMS)
+        {
+            g_RenderTimeOverride = 0;
+            g_RenderTimeOverridePrev = -1;
+        }
+
     }
+
+    Ether::Graphics::OverrideTime(g_RenderTimeOverride);
 }
 
 void RTCamp11::OnPostRender()
@@ -212,6 +264,66 @@ void RTCamp11::OnPostRender()
 
 void RTCamp11::OnShutdown()
 {
+}
+
+void RTCamp11::UpdateRTCampAnimations()
+{
+    Ether::Graphics::GraphicConfig& gfxConfig = Ether::Graphics::GetGraphicConfig();
+
+    if (Input::GetKeyDown(KeyCode_PauseAnimation))
+        gfxConfig.m_AnimationPaused = !gfxConfig.m_AnimationPaused;
+
+    // Uncomment this !!!
+    //static auto cameraFov = std::make_unique<AnimationClip::AnimationChannel<float>>("camera_fov");
+    //static auto dofFocusDistance = std::make_unique<AnimationClip::AnimationChannel<float>>("dof_focusdistance");
+    //static auto dofFocusRange = std::make_unique<AnimationClip::AnimationChannel<float>>("dof_focusrange");
+    //static auto dofAperture = std::make_unique<AnimationClip::AnimationChannel<float>>("dof_aperture");
+
+    static bool firstLoad = true;
+
+    // TODO::: UNCOMMENT THIS!!!
+    //if (firstLoad)
+    auto cameraFov = std::make_unique<AnimationClip::AnimationChannel<float>>("camera_fov");
+    auto cameraPosition = std::make_unique<AnimationClip::AnimationChannel<ethVector3>>("camera_position");
+    auto cameraRotation = std::make_unique<AnimationClip::AnimationChannel<ethVector3>>("camera_rotation");
+    auto dofFocusDistance = std::make_unique<AnimationClip::AnimationChannel<float>>("dof_focusdistance");
+    auto dofFocusRange = std::make_unique<AnimationClip::AnimationChannel<float>>("dof_focusrange");
+    auto dofAperture = std::make_unique<AnimationClip::AnimationChannel<float>>("dof_aperture");
+
+
+    {
+        firstLoad = false;
+
+        cameraFov->InsertKeyframe({ 0, 13.865 });
+        cameraFov->InsertKeyframe({ 1100, 7.279 });
+        cameraFov->InsertKeyframe({ 2500, 7.877 });
+        cameraFov->InsertKeyframe({ 10000, 8.0 });
+
+        dofFocusDistance->InsertKeyframe({ 0, 0.0 });
+        dofFocusDistance->InsertKeyframe({ 400, 9.296 });
+        dofFocusDistance->InsertKeyframe({ 900, 3.296 });
+        dofFocusDistance->InsertKeyframe({ 2000, 16.809 });
+
+        dofFocusRange->InsertKeyframe({ 0, 0 });
+        dofFocusRange->InsertKeyframe({ 1574, 17.337 });
+        dofFocusRange->InsertKeyframe({ 1838.942, 17.337 });
+
+        dofAperture->InsertKeyframe({ 0, 16.0f });
+        dofAperture->InsertKeyframe({ 1838.942, 12.744 });
+        dofAperture->InsertKeyframe({ 1838.942, 12.744 });
+ 
+        cameraPosition->InsertKeyframe({ 0, { 7.116200, -0.038912, -11.229546 } });
+        // portrait composition
+        cameraRotation->InsertKeyframe({ 0, { -0.029500, -0.595296, 0.000000 } });
+        // widescreen composition
+        //cameraRotation->InsertKeyframe({ 0, { -0.043282, -0.539111, 0.000000 } });
+    }
+
+    CAMERA_CONFIG_TRACK(cameraFov, gfxConfig.m_Fov, gfxConfig.m_CameraTrack_Fov);
+    CAMERA_CONFIG_TRACK(cameraPosition, m_CameraTransform->m_Translation, gfxConfig.m_CameraTrack_Transform);
+    CAMERA_CONFIG_TRACK(cameraRotation, m_CameraTransform->m_Rotation, gfxConfig.m_CameraTrack_Transform);
+    CAMERA_CONFIG_TRACK(dofFocusDistance, gfxConfig.m_FocusDistance, gfxConfig.m_DOFTrack_FocusDistance);
+    CAMERA_CONFIG_TRACK(dofAperture, gfxConfig.m_Aperture, gfxConfig.m_DOFTrack_Aperture);
 }
 
 void RTCamp11::UpdateGraphicConfig() const
@@ -259,23 +371,24 @@ void RTCamp11::UpdateGraphicConfig() const
 
 void RTCamp11::UpdateCamera() const
 {
+    Ether::Graphics::GraphicConfig& gfxConfig = Ether::Graphics::GetGraphicConfig();
+
     static ethVector3 cameraRotation;
     static float moveSpeed = 0.0001f;
     static ethVector3 shakeOffset = { 0, 0, 0 };
 
-    // Camera shake parameters
-    const float SHAKE_INTENSITY = 0.0005; // Amplitude of the shake
-    const float SHAKE_FREQUENCY = 0.0045f; // How fast the shake oscillates (per ms)
+    const float SHAKE_INTENSITY = 0.02f;
+    const float SHAKE_FREQUENCY = 0.002f;
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
-        moveSpeed = 0.002f;
+        moveSpeed = 0.004f;
     else
         moveSpeed = 0.001f;
 
     if (Input::GetMouseButton(2))
     {
-        m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 500;
-        m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 500;
+        m_CameraTransform->m_Rotation.x += Input::GetMouseDeltaY() / 2000;
+        m_CameraTransform->m_Rotation.y += Input::GetMouseDeltaX() / 2000;
         m_CameraTransform->m_Rotation.x = std::clamp(
             m_CameraTransform->m_Rotation.x,
             -SMath::DegToRad(89.0f),
@@ -305,7 +418,9 @@ void RTCamp11::UpdateCamera() const
         m_CameraTransform->m_Translation = m_CameraTransform->m_Translation +
                                            rightVec * Time::GetDeltaTime() * moveSpeed;
 
-    if (g_RenderTimeOverridePrev < g_RenderTimeOverride || !g_ShouldExportMovie)
+    const bool cameraShake = gfxConfig.m_CameraTrack_Transform;
+
+    if (cameraShake && g_RenderTimeOverridePrev <= g_RenderTimeOverride)
     {
         float shakePhase = g_RenderTimeOverride * SHAKE_FREQUENCY;
 
@@ -328,8 +443,8 @@ void RTCamp11::UpdateCamera() const
         m_CameraTransform->m_Translation += shakeOffset;
 
         // Also apply subtle rotation shake for more authentic phone camera feel
-        m_CameraTransform->m_Rotation.x += shakeX * 0.0001f;
-        m_CameraTransform->m_Rotation.y += shakeY * 0.0001f;
+        m_CameraTransform->m_Rotation.x += shakeX * 0.001f;
+        m_CameraTransform->m_Rotation.y += shakeY * 0.001f;
 
         g_RenderTimeOverridePrev = g_RenderTimeOverride;
     }

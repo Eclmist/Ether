@@ -358,9 +358,9 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
                 scaleChannel->InsertKeyframe(scaleKey);
             }
 
-            animationClip.AddChannel(positionChannel->GetChannelName(), std::move(positionChannel));
-            animationClip.AddChannel(rotationChannel->GetChannelName(), std::move(rotationChannel));
-            animationClip.AddChannel(scaleChannel->GetChannelName(), std::move(scaleChannel));
+            animationClip.AddChannel(std::move(positionChannel));
+            animationClip.AddChannel(std::move(rotationChannel));
+            animationClip.AddChannel(std::move(scaleChannel));
         }
 
         SerializeLibraryData(&animationClip);

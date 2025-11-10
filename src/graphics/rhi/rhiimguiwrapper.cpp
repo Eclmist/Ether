@@ -43,6 +43,53 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     auto& gfxConfig = GraphicCore::GetGraphicConfig();
 
+    // Animation Window!
+    // RTCamp11 Special
+    const float windowHeight = 100.0f;
+    const float padding = 20.0f;
+    const ethVector2u screenResolution = GraphicCore::GetGraphicConfig().GetResolution();
+
+
+    ImGui::SetNextWindowSize(ImVec2(screenResolution.x - padding - padding, 0.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(padding, screenResolution.y - padding - windowHeight), ImGuiCond_FirstUseEver);
+    {
+        ImGui::Begin("Animation Timeline", nullptr);
+
+        ImGui::PushItemWidth(-1);
+        ImGui::Checkbox("Paused", &gfxConfig.m_AnimationPaused);
+        ImGui::SameLine();
+        ImGui::SliderFloat("", &gfxConfig.m_OverridenAnimationTime, 0.0f, 10000.0f);
+        ImGui::PopItemWidth();
+
+        ImGui::End();
+    }
+
+    ImGui::SetNextWindowPos(ImVec2(20, 300), ImGuiCond_FirstUseEver);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
+    {
+        ImGui::Begin("Animations", nullptr);
+        ImGui::Checkbox("Tracks Active (Master Switch)", &gfxConfig.m_TracksActive);
+        if (ImGui::CollapsingHeader("Camera Tracks"))
+        {
+            ImGui::Checkbox("Transform", &gfxConfig.m_CameraTrack_Transform);
+            ImGui::Checkbox("FOV", &gfxConfig.m_CameraTrack_Fov);
+        }
+        if (ImGui::CollapsingHeader("DOF Tracks"))
+        {
+            ImGui::Checkbox("Focus Distance", &gfxConfig.m_DOFTrack_FocusDistance);
+            ImGui::Checkbox("Focus Range", &gfxConfig.m_DOFTrack_FocusRange);
+            ImGui::Checkbox("Aperture", &gfxConfig.m_DOFTrack_Aperture);
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(padding, ImGui::GetWindowHeight()));
+        ImGui::End();
+    }
+    ImGui::PopStyleVar();
+
+
+
+    // =====================================================================================================
+
     ImGui::SetNextWindowPos(ImVec2(20, 20));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
     {
@@ -126,11 +173,12 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 if (ImGui::TreeNode("Depth Of Field"))
                 {
                     ImGui::Checkbox("Enabled", &gfxConfig.m_IsDofEnabled);
-                    ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 100);
-                    ImGui::SliderFloat("Focal Length", &gfxConfig.m_FocalLength, 0, 1);
+                    ImGui::SliderFloat("Focus Distance", &gfxConfig.m_FocusDistance, 0, 30.0f);
+                    ImGui::SliderFloat("Focus Range", &gfxConfig.m_FocusRange, 0, 1000.0f);
                     ImGui::SliderFloat("Aperture", &gfxConfig.m_Aperture, 0, 16.0f);
-                    ImGui::SliderFloat("MaxCoC", &gfxConfig.m_MaxCoC, 0, 100.0f);
-                    ImGui::SliderFloat("Focus Range", &gfxConfig.m_FocusRange, 0, 100.0f);
+                    ImGui::Spacing();
+                    ImGui::SliderFloat("Focal Length (unused)", &gfxConfig.m_FocalLength, 0, 1);
+                    ImGui::SliderFloat("MaxCoC (unused)", &gfxConfig.m_MaxCoC, 0, 100.0f);
                     ImGui::TreePop();
                 }
 

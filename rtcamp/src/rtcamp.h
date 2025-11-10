@@ -42,6 +42,7 @@ public:
     void OnShutdown() override;
 
 private:
+    void UpdateRTCampAnimations();
     void UpdateGraphicConfig() const;
     void UpdateCamera() const;
 

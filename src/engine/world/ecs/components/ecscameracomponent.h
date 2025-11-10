@@ -20,6 +20,7 @@
 #pragma once
 
 #include "engine/world/ecs/components/ecstogglecomponent.h"
+#include "engine/animation/animation.h"
 
 namespace Ether::Ecs
 {

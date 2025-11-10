@@ -189,7 +189,7 @@ void RayGeneration()
 [shader("miss")]
 void Miss(inout TranslucentRayPayload payload)
 {
-    payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection());
+payload.m_Radiance = SampleEnvironmentLighting(WorldRayDirection()) * 5;
 }
 
 [shader("closesthit")]
