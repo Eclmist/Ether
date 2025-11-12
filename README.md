@@ -27,12 +27,13 @@ Ether is open-sourced, licensed under the [GNU General Public License v3](https:
 
 ## Features
 * Physically Based Rendering
-* Raytraced lighting / GI (ReSTIR GI)
+* Deferred Opaque/Masked + Forward Translucency
+* Raytraced Lighting/Translucency/Reflections/GI (ReSTIR GI)
 * Reference Pathtracer
 * Bindless Textures
 * Post Processing (TAA, Bloom, DOF)
-* Skeletal Mesh / Animations
-* GPU Resource/Descriptor Management
+* Skeletal Mesh & Animation System
+* GPU Resource & Descriptor Management
 * Shader Hot Reloading 
 * Asset Pipeline /w Tool Integration ([Matcha Editor](https://github.com/Eclmist/Matcha-Editor))
 
