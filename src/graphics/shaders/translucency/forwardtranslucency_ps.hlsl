@@ -183,7 +183,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     const float depthFade = sceneDepth - pixelDepth;
 
     surface.m_Roughness = 0.5;
-    surface.m_BaseColor = lerp(surface.m_BaseColor, 1.0f, smoothstep(0.9, 0.89, depthFade));
+    surface.m_BaseColor = lerp(surface.m_BaseColor, 1.0f, smoothstep(5.9, 0.89, depthFade));
     surface.m_Opacity = saturate(surface.m_Opacity * saturate(pow(depthFade / 5.0f, 1.3)));
 
     float3 Lo = 0;

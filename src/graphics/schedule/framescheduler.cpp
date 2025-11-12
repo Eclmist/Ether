@@ -172,9 +172,9 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     // Order of post process is important, obviously
     // Reference: https://www.renderingevolution.net/?p=103
     m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(DepthOfFieldProducer).Get().get());
     m_OrderedProducers.push(ACCESS_GFX_PA(BloomProducer).Get().get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get().get());
 
     // TODO: Add a tonemapping pass instead of dumping it in final composite, and move it before TAA
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());

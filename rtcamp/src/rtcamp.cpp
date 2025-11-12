@@ -84,8 +84,8 @@ void RTCamp11::Initialize()
 {
     LogInfo("Initializing Application: RTCamp");
     Client::SetClientTitle("Raytracing Camp 11!!");
-    Client::SetClientSize({ 640, 1080 });
-    //Client::SetClientSize({ 1920, 1080 });
+    //Client::SetClientSize({ 640, 1080 });
+    Client::SetClientSize({ 1920, 1080 });
     //Client::SetClientSize({ 2560, 1080 });
 
     g_ShouldExportMovie = GetCommandLineOptions().GetExportMovie();
@@ -118,16 +118,19 @@ void RTCamp11::LoadContent()
 
     graphicConfig.m_FocusDistance = 16.834;
     graphicConfig.m_Aperture = 11.859;
-    graphicConfig.m_FocusRange = 29.397;
+    graphicConfig.m_FocusRange = 22.613;
 
     graphicConfig.m_SunDirection = ethVector4(0.353, 0.590, 0.247, 1.0f).Normalized();
     graphicConfig.m_SunColor = ethVector4(254 / 255.0f, 200 / 255.0f, 142 / 255.0f, 1.0f);
     graphicConfig.m_Exposure = 0.00015;
 
-    graphicConfig.m_ColorGrading_Temperature = -0.15;
+    graphicConfig.m_ColorGrading_Temperature = -0.040;
+    graphicConfig.m_ColorGrading_Tint = 0.00;
     graphicConfig.m_BloomAnamorphic = 0.57f;
 
-    graphicConfig.m_DebugJitterScale = 0.0f;
+    if (g_ShouldAccumulateFrames)
+        graphicConfig.m_DebugJitterScale = 0.1f;
+
     graphicConfig.m_TemporalAAAcumulationFactor = 0.01f;
 
     if (GetCommandLineOptions().GetPathtrace())
@@ -309,12 +312,12 @@ void RTCamp11::UpdateRTCampAnimations()
         dofFocusRange->InsertKeyframe({ 1838.942, 17.337 });
 
         dofAperture->InsertKeyframe({ 0, 16.0f });
-        dofAperture->InsertKeyframe({ 1838.942, 12.744 });
-        dofAperture->InsertKeyframe({ 1838.942, 12.744 });
+        dofAperture->InsertKeyframe({ 1838.942, 13.467 });
+        dofAperture->InsertKeyframe({ 1838.942, 13.467 });
  
         cameraPosition->InsertKeyframe({ 0, { 7.116200, -0.038912, -11.229546 } });
         // portrait composition
-        cameraRotation->InsertKeyframe({ 0, { -0.029500, -0.595296, 0.000000 } });
+        cameraRotation->InsertKeyframe({ 0, { -0.029500, -0.592796, 0.000000 } });
         // widescreen composition
         //cameraRotation->InsertKeyframe({ 0, { -0.043282, -0.539111, 0.000000 } });
     }
