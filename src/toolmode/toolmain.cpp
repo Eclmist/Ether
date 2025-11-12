@@ -180,30 +180,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             visual.m_MeshGuid = skinnedMesh->GetGuid();
             visual.m_MaterialGuid = skinnedMesh->GetDefaultMaterialGuid();
             visual.m_SkeletonGuid = skinnedMesh->GetSkeletonGuid();
-
-            const Skeleton* skeleton = resources.GetSkeletonResource(skinnedMesh->GetSkeletonGuid());
-            if (skeleton != nullptr)
-            {
-                bool foundAnim = false;
-                // Find the first valid animation clip for any of the bones in the skeleton
-                // This is so stupid, fix after rtcamp11 (TODO)
-                for (uint32_t i = 0; i < animationClips.size(); ++i)
-                {
-                    for (uint32_t j = 0; j < skeleton->NumBones(); ++j)
-                    {
-                        if (animationClips[i]->GetChannel(skeleton->GetBone(j).m_Name + "_Position"))
-                        {
-                            visual.m_AnimationGuid = animationClips[i]->GetGuid();
-                            foundAnim = true;
-                            break;
-                        }
-                    }
-
-                    if (foundAnim)
-                        break;
-                }
-            }
-
+            visual.m_AnimationGuid = skinnedMesh->GetAnimationGuid();
             resources.RegisterSkinnedMeshResource(std::move(skinnedMesh));
         }
 

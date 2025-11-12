@@ -192,7 +192,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     }
 
     // RTCamp11 Hack (TODO)
-    const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
+    const float ticksPerSecond = animationClip.GetTicksPerSecond();
     const float totalTicks = animationClip.GetTotalTicks();
 
     const float timeInSeconds = animationTime / 1000.0f;

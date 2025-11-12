@@ -36,6 +36,7 @@ void Ether::Graphics::SkinnedMesh::Serialize(OStream& ostream) const
         m_PackedVertices[i].Serialize(ostream);
 
     ostream << m_SkeletonGuid;
+    ostream << m_AnimationGuid;
 }
 
 void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
@@ -50,6 +51,7 @@ void Ether::Graphics::SkinnedMesh::Deserialize(IStream& istream)
         m_PackedVertices[i].Deserialize(istream);
 
     istream >> m_SkeletonGuid;
+    istream >> m_AnimationGuid;
 
     InitSkinnedVertices();
 }

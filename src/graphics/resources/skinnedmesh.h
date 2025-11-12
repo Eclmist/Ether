@@ -33,6 +33,7 @@ public:
 
 public:
     inline StringID GetSkeletonGuid() const { return m_SkeletonGuid; }
+    inline StringID GetAnimationGuid() const { return m_AnimationGuid; }
 
 public:
     void Serialize(OStream& ostream) const override;
@@ -50,6 +51,7 @@ public:
 public:
     void SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices);
     void SetSkeletonGuid(StringID guid) { m_SkeletonGuid = guid; }
+    void SetAnimationGuid(StringID guid) { m_AnimationGuid = guid; }
 
 public:
     void UpdateGpuResources(CommandContext& ctx);
@@ -67,6 +69,7 @@ protected:
     std::vector<VertexFormats::BaseVertexFormat> m_StagingVertices;
 
     StringID m_SkeletonGuid;
+    StringID m_AnimationGuid;
 };
 
 } // namespace Ether::Graphics
