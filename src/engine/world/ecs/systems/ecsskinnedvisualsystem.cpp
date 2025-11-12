@@ -182,9 +182,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     // --- CPU Skinning --- //
     // Loop animation time
 
-    float animationTime = Graphics::GraphicCore::GetApplicationTimeOverride();
-    if (animationTime < 0)
-        animationTime = Time::GetTimeSinceStartup();
+    float animationTime = Time::GetTimeSinceStartup();
 
     // RTCamp11 Hack (TODO)
     const float ticksPerSecond = animationClip.GetTicksPerSecond(); // TODO: Get from animation file
