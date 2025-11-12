@@ -185,12 +185,10 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
 
     // RTCamp11 Hack (TODO)
     const float ticksPerSecond = animationClip.GetTicksPerSecond();
-    const float duration = animationClip.GetTotalTicks();
+    const float totalTicks = animationClip.GetTotalTicks();
     const float timeInSeconds = animationTime / 1000.0f;
-    const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, duration);
-    const float loopedTimeInTicksPrev = std::fmod(
-        (timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond,
-        duration);
+    const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, totalTicks);
+    const float loopedTimeInTicksPrev = std::fmod((timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond, totalTicks);
 
     const SkeletonPose prevPose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicksPrev);
     const SkeletonPose pose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicks);

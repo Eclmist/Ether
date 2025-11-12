@@ -24,10 +24,6 @@
 #include "assimp/scene.h"
 #include <unordered_set>
 
-constexpr uint32_t MaxNumMaterials = 256;
-constexpr uint32_t MaxSkeletonsPerAsset = 32;
-constexpr uint32_t MaxAnimationsPerAsset = 32;
-
 namespace Ether::Toolmode
 {
     class AssetImporter : public Singleton<AssetImporter>
@@ -77,7 +73,8 @@ namespace Ether::Toolmode
         std::string m_LibraryPath = "";
         float m_MeshScale = 1.0f;
 
-        StringID m_MaterialGuidTable[MaxNumMaterials];
+        std::vector<StringID> m_MaterialGuids;
+        std::vector<StringID> m_AnimationGuids;
         std::unordered_map<StringID, aiNode*> m_NameToNodeMap;
         std::unordered_map<aiBone*, std::unique_ptr<Skeleton>> m_ArmatureRootToSkeletonMap;
         std::unordered_map<aiBone*, aiBone*> m_ArmatureToBonesMap;

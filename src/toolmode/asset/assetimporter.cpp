@@ -104,6 +104,8 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
     }
 
     // TOOD: Cleanup
+    m_MaterialGuids.clear();
+    m_AnimationGuids.clear();
     m_NameToNodeMap.clear();
     m_ArmatureRootToSkeletonMap.clear();
     m_ArmatureToBonesMap.clear();
@@ -143,6 +145,8 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
     ETH_MARKER_EVENT("Process Materials");
 
     const uint32_t numMaterials = assimpScene->mNumMaterials;
+    m_MaterialGuids.resize(numMaterials);
+
     std::vector<uint32_t> indices(numMaterials);
     std::iota(indices.begin(), indices.end(), 0u);
 
@@ -240,8 +244,7 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
                 gfxMaterial.SetEmissiveTextureID(ProcessTexture(folderPath, textureName.data));
             }
 
-            m_MaterialGuidTable[i] = gfxMaterial.GetGuid();
-
+            m_MaterialGuids[i] = gfxMaterial.GetGuid();
             SerializeLibraryData(&gfxMaterial);
         });
 }
@@ -305,6 +308,7 @@ void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
 void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScene)
 {
     ETH_MARKER_EVENT("Process Animations");
+    m_AnimationGuids.resize(assimpScene->mNumAnimations);
 
     for (uint32_t i = 0; i < assimpScene->mNumAnimations; ++i)
     {
@@ -363,6 +367,7 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
             animationClip.AddChannel(scaleChannel->GetChannelName(), std::move(scaleChannel));
         }
 
+        m_AnimationGuids[i] = animationClip.GetGuid();
         SerializeLibraryData(&animationClip);
     }
 }
@@ -400,7 +405,7 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
     Graphics::StaticMesh gfxStaticMesh;
     gfxStaticMesh.SetPackedVertices(std::move(packedVertices));
     gfxStaticMesh.SetIndices(std::move(indices));
-    gfxStaticMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
+    gfxStaticMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
     SerializeLibraryData(&gfxStaticMesh);
 }
 
@@ -422,7 +427,8 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     Graphics::SkinnedMesh gfxSkinnedMesh;
     gfxSkinnedMesh.SetPackedVertices(std::move(packedSkinnedVertices));
     gfxSkinnedMesh.SetIndices(std::move(indices));
-    gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuidTable[assimpMesh->mMaterialIndex]);
+    gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
+    gfxSkinnedMesh.SetAnimationGuid(m_AnimationGuids[0]); // Assign the first available animation
 
     if (m_ArmatureRootToSkeletonMap.contains(GetArmatureRoot(assimpMesh->mBones[0])))
     {
