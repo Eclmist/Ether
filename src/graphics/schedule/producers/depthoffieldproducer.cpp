@@ -82,7 +82,7 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
 
         ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        //ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture1)->GetGpuAddress());
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);

@@ -29,7 +29,7 @@
 
 // RTCamp11-Only
 ConstantBuffer<InstanceParams> g_InstanceParams : register(b1);
-Texture2D<float4> g_SceneDepth : register(t1);
+Texture2D<float2> g_SceneDepth : register(t1);
 
 struct VS_INPUT
 {
