@@ -33,7 +33,8 @@ Texture2D<float4> g_CircleOfConfusionTexture        : register(t2);
 Texture2D<float4> g_DownsampledSceneColor           : register(t3);
 Texture2D<float4> g_DofAccumulationTexture          : register(t4);
 
-RWTexture2D<float4> g_DestinationTextureUav         : register(u0);
+RWTexture2D<float4> g_DestinationTexture            : register(u0);
+RWTexture2D<float4> g_AccumulationTexture           : register(u1);
 
 // From https://github.com/Unity-Technologies/Graphics/blob/master/com.unity.postprocessing/PostProcessing/Shaders/Builtins/DiskKernels.hlsl
 static const int g_KernelSampleCount = 71;
@@ -125,7 +126,7 @@ void GenerateCocPass(uint3 threadID)
 {
     const float linearDepth = LinearizeDepth(g_SceneDepth.Load(threadID).r);
     const float coc = clamp((linearDepth - g_DepthOfFieldParams.m_FocusDistance) / (g_DepthOfFieldParams.m_FocusRange), -1.0f, 1.0f) * g_DepthOfFieldParams.m_Aperture;
-    g_DestinationTextureUav[threadID.xy] = coc;
+    g_DestinationTexture[threadID.xy] = coc;
 }
 
 void PreFilterPass(uint3 threadID)
@@ -159,7 +160,7 @@ void PreFilterPass(uint3 threadID)
     const float cocMax = max(max(max(coc0, coc1), coc2), coc3);
     const float coc = cocMax >= -cocMin ? cocMax : cocMin;
 
-    g_DestinationTextureUav[threadID.xy] = float4(color, coc);
+    g_DestinationTexture[threadID.xy] = float4(color, coc);
 }
 
 void AccumulateDepthOfField(uint3 threadID)
@@ -198,7 +199,7 @@ void AccumulateDepthOfField(uint3 threadID)
 
     float blendFactor = min(1.0f, foregroundWeight * Pi / g_KernelSampleCount);
     float3 finalColor = lerp(backgroundColor, foregroundColor, blendFactor);
-    g_DestinationTextureUav[threadID.xy] = float4(finalColor, blendFactor);
+    g_DestinationTexture[threadID.xy] = float4(finalColor, blendFactor);
 }
 
 void PostFilterPass(uint3 threadID)
@@ -215,7 +216,7 @@ void PostFilterPass(uint3 threadID)
                         g_SourceTexture.Sample(linearSampler, uv + offset.xw) + 
                         g_SourceTexture.Sample(linearSampler, uv + offset.zw);
 
-    g_DestinationTextureUav[threadID.xy] = tentFilter * 0.25f;
+    g_DestinationTexture[threadID.xy] = tentFilter * 0.25f;
 }
 
 void CompositePass(uint3 threadID)
@@ -237,14 +238,22 @@ void CompositePass(uint3 threadID)
         if (coc > 0)
             debugColor = float4(0, 0, 1, 1);
 
-        g_DestinationTextureUav[threadID.xy] = lerp(sceneColor, sceneColor * debugColor, saturate(abs(coc)));
+        g_DestinationTexture[threadID.xy] = lerp(sceneColor, sceneColor * debugColor, saturate(abs(coc)));
         return;
     }
 
-    const float dofStrength = smoothstep(0.1, 1, abs(coc));
-    const float3 finalColor = lerp(sceneColor, dofColor, dofStrength + dofColor.a - dofStrength * dofColor.a).rgb;
 
-    g_DestinationTextureUav[threadID.xy] = float4(finalColor, sceneColor.a);
+    float a = 0.35f;
+    const float4 temporalDofColor = g_AccumulationTexture[threadID.xy];
+    const float4 accumulatedDofColor = (a * dofColor) + (1 - a) * temporalDofColor;
+    const float dofStrength = smoothstep(0.1, 1, abs(coc));
+    const float3 finalColor = lerp(sceneColor, accumulatedDofColor, dofStrength + dofColor.a - dofStrength * accumulatedDofColor.a).rgb;
+
+    g_DestinationTexture[threadID.xy] = float4(finalColor, sceneColor.a);
+
+    bool isNewFrame = g_GlobalConstants.m_FrameNumber == g_GlobalConstants.m_FrameSinceLastMovement;
+    if (isNewFrame)
+        g_AccumulationTexture[threadID.xy] = accumulatedDofColor;
 }
 
 [numthreads(DOF_KERNEL_GROUP_SIZE_X, DOF_KERNEL_GROUP_SIZE_Y, 1)]

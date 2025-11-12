@@ -194,8 +194,8 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
     Texture2D<float4> uiTexture = ResourceDescriptorHeap[g_GlobalConstants.m_UiTextureIndex];
 
-    float4 ui = uiTexture.Sample(linearSampler, IN.TexCoord.yx * float2(-1, 1));
-    float a = pow((1 - ui.a), 0.8);
+    float4 ui = uiTexture.Sample(linearSampler, IN.TexCoord);
+    float a = (1 - ui.a);
 
     return lerp(float4(col, 1.0f) + ui, ui, a);
 }

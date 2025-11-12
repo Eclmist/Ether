@@ -84,8 +84,8 @@ void RTCamp11::Initialize()
 {
     LogInfo("Initializing Application: RTCamp");
     Client::SetClientTitle("Raytracing Camp 11!!");
-    //Client::SetClientSize({ 640, 1080 });
-    Client::SetClientSize({ 1920, 1080 });
+    Client::SetClientSize({ 640, 1080 });
+    //Client::SetClientSize({ 1920, 1080 });
     //Client::SetClientSize({ 2560, 1080 });
 
     g_ShouldExportMovie = GetCommandLineOptions().GetExportMovie();
@@ -312,8 +312,7 @@ void RTCamp11::UpdateRTCampAnimations()
         dofFocusRange->InsertKeyframe({ 1838.942, 17.337 });
 
         dofAperture->InsertKeyframe({ 0, 16.0f });
-        dofAperture->InsertKeyframe({ 1838.942, 13.467 });
-        dofAperture->InsertKeyframe({ 1838.942, 13.467 });
+        dofAperture->InsertKeyframe({ 1838.942, 12.467 });
  
         cameraPosition->InsertKeyframe({ 0, { 7.116200, -0.038912, -11.229546 } });
         // portrait composition

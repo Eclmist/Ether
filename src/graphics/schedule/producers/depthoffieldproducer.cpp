@@ -26,6 +26,7 @@ DEFINE_GFX_PA(DepthOfFieldProducer)
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_UA_SR(PostFxSourceTexture)
 
+DEFINE_GFX_UA(DofAccumulationTexture)
 DEFINE_GFX_UA_SR(DofIntermediateTexture1)
 DEFINE_GFX_UA_SR(DofIntermediateTexture2)
 DEFINE_GFX_UA_SR(DofCircleOfConfusionTexture)
@@ -39,6 +40,7 @@ void Ether::Graphics::DepthOfFieldProducer::GetInputOutput(ScheduleContext& sche
 {
     const ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
+    schedule.NewUA(ACCESS_GFX_UA(DofAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(DofIntermediateTexture1), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(DofIntermediateTexture1), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(DofIntermediateTexture2), resolution.x / 2.0f, resolution.y / 2.0f, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
@@ -128,6 +130,7 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         //ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
         ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
+        ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_UA(DofAccumulationTexture)->GetGpuAddress());
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -154,7 +157,7 @@ bool Ether::Graphics::DepthOfFieldProducer::IsEnabled()
 
 void Ether::Graphics::DepthOfFieldProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(8, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(9, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) Global Constants
     rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) Dof Params
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
@@ -170,6 +173,8 @@ void Ether::Graphics::DepthOfFieldProducer::CreateRootSignature()
 
     rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
+    rsDesc->SetAsDescriptorTable(8, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(8, RhiDescriptorType::Uav, 1, 0, 1); // (u1) TemporalAccumulation 
 
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());

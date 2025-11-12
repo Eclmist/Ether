@@ -72,7 +72,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float3 worldPos = shadingSurface.m_Position;
     const float3 normal = shadingSurface.m_Normal;
     const float3 baseColor = shadingSurface.m_BaseColor;
-    const float3 emissive = shadingSurface.m_Emission;
+    const float3 emissive = shadingSurface.m_Emission * 2;
     const float roughness = shadingSurface.m_Roughness;
     const float metalness = shadingSurface.m_Metalness;
     const float opacity = shadingSurface.m_Opacity;

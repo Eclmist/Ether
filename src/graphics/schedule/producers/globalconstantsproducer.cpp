@@ -49,8 +49,11 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     static ethVector2 cameraJitterPrev = renderData.m_CameraJitter;
     static uint32_t lastMovedFrameNumber = 0;
 
-    if (renderData.m_ViewMatrix != viewMatrixPrev)
-        lastMovedFrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
+    if (GraphicCore::GetApplicationTimeOverride() < 0)
+    {
+        if (renderData.m_ViewMatrix != viewMatrixPrev)
+            lastMovedFrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
+    }
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GlobalConstants), 256 });
     Shader::GlobalConstants* globalConstants = (Shader::GlobalConstants*)alloc->GetCpuHandle();
@@ -76,7 +79,16 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     // RTCamp11 Hack: Override time to stop shader animations from playing during accumulation
     float time = Time::GetTimeSinceStartup();
     if (GraphicCore::GetApplicationTimeOverride() >= 0)
+    {
         time = GraphicCore::GetApplicationTimeOverride();
+        static float lastTime = time;
+
+        if (time > lastTime)
+        {
+            lastTime = time;
+            lastMovedFrameNumber = GraphicCore::GetGraphicRenderer().GetFrameNumber();
+        }
+    }
 
     globalConstants->m_Time = ethVector4(time) / 1000.0f;
     globalConstants->m_Time.x *= 20;
