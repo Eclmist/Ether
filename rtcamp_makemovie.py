@@ -44,12 +44,14 @@ def main():
     input_pattern = os.path.join(folder, "%03d.png")
     output_file = "output.mp4"
     
-    # Build ffmpeg command
+    # Build ffmpeg command with maximum quality settings
     cmd = [
         "ffmpeg",
         "-framerate", str(fps),
         "-i", input_pattern,
         "-c:v", "libx264",
+        "-crf", "0",  # Lossless quality (0 = best, 51 = worst)
+        "-preset", "veryslow",  # Slowest encoding for best compression
         "-pix_fmt", "yuv420p",
         output_file
     ]
