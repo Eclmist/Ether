@@ -541,7 +541,6 @@ Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBon
 
         SkeletonPose bindPose = skeleton.GetBindPose();
         bindPose.m_GlobalBoneTransform.push_back(globalTransformation);
-        bindPose.m_LocalBoneTransform.push_back(localTransformation);
         skeleton.SetBindPose(bindPose);
 
         for (uint32_t i = 0; i < node->mNumChildren; ++i)

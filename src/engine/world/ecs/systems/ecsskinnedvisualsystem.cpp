@@ -114,15 +114,12 @@ Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimati
 {
     SkeletonPose newPose;
     newPose.m_GlobalBoneTransform.resize(skeleton.NumBones());
-    newPose.m_LocalBoneTransform.resize(skeleton.NumBones());
 
     // Since bones were populated in DFS fashion, every node is populated after its parent
     for (uint32_t i = 0; i < skeleton.NumBones(); ++i)
     {
         const SkeletonBone& currentBone = skeleton.GetBone(i);
         const bool hasParent = currentBone.m_ParentIndex != InvalidBoneIndex;
-
-        ethMatrix4x4 localTransformation = skeleton.GetBindPose().m_LocalBoneTransform[i];
 
         auto positionChannel = dynamic_cast<AnimationClip::AnimationChannel<ethVector3>*>(animation.GetChannel(currentBone.m_Name + "_Position"));
         auto rotationChannel = dynamic_cast<AnimationClip::AnimationChannel<ethQuaternion>*>(animation.GetChannel(currentBone.m_Name + "_Rotation"));
@@ -162,12 +159,11 @@ Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimati
             scale = Transform::GetScaleMatrix(interpolatedScale);
         }
 
-        localTransformation = translation * rotation * scale;
+        const ethMatrix4x4 localTransformation = translation * rotation * scale;
         const ethMatrix4x4 parentTransformation = hasParent ? newPose.m_GlobalBoneTransform[currentBone.m_ParentIndex]
                                                             : ethMatrix4x4();
         const ethMatrix4x4 globalTransformation = parentTransformation * localTransformation;
 
-        newPose.m_LocalBoneTransform[i] = localTransformation;
         newPose.m_GlobalBoneTransform[i] = globalTransformation;
     }
 
