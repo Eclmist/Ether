@@ -517,17 +517,15 @@ Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBon
     Skeleton& skeleton = *iter->second;
 
     // Depth first search each root bone to build our own skeleton hierarchy
-    std::function<void(aiNode*, uint32_t, ethMatrix4x4)> GenerateSkeletonHierarchy =
-        [&](aiNode* node, uint32_t parentBoneIndex, const ethMatrix4x4& parentTransform) -> void
+    std::function<void(aiNode*, uint32_t)> GenerateSkeletonHierarchy =
+        [&](aiNode* node, uint32_t parentBoneIndex) -> void
     {
         AssertToolmode(node != nullptr, "node cannot be null");
 
         aiBone* aibone = GetNodeBone(node);
 
         const uint32_t currentBoneIndex = skeleton.NumBones();
-        const ethMatrix4x4 localTransformation = ToEthMatrix4x4(node->mTransformation);
-        const ethMatrix4x4 globalTransformation = parentTransform * localTransformation;
-        const ethMatrix4x4 offsetMatrix = aibone != nullptr ? ToEthMatrix4x4(aibone->mOffsetMatrix) : globalTransformation.Inversed();
+        const ethMatrix4x4 offsetMatrix = aibone != nullptr ? ToEthMatrix4x4(aibone->mOffsetMatrix) : ethMatrix4x4{};
 
         SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
         skeleton.AddBone(gfxBone);
@@ -535,11 +533,11 @@ Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBon
         for (uint32_t i = 0; i < node->mNumChildren; ++i)
         {
             aiNode* child = node->mChildren[i];
-            GenerateSkeletonHierarchy(child, currentBoneIndex, globalTransformation);
+            GenerateSkeletonHierarchy(child, currentBoneIndex);
         };
     };
 
-    GenerateSkeletonHierarchy(rootNode, InvalidBoneIndex, {});
+    GenerateSkeletonHierarchy(rootNode, InvalidBoneIndex);
 
     SerializeLibraryData(&skeleton);
 
