@@ -113,7 +113,7 @@ Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimati
     float animTimeTicks) const
 {
     SkeletonPose newPose;
-    newPose.m_GlobalBoneTransform.resize(skeleton.NumBones());
+    newPose.m_GlobalBoneTransforms.resize(skeleton.NumBones());
 
     // Since bones were populated in DFS fashion, every node is populated after its parent
     for (uint32_t i = 0; i < skeleton.NumBones(); ++i)
@@ -160,11 +160,11 @@ Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimati
         }
 
         const ethMatrix4x4 localTransformation = translation * rotation * scale;
-        const ethMatrix4x4 parentTransformation = hasParent ? newPose.m_GlobalBoneTransform[currentBone.m_ParentIndex]
+        const ethMatrix4x4 parentTransformation = hasParent ? newPose.m_GlobalBoneTransforms[currentBone.m_ParentIndex]
                                                             : ethMatrix4x4();
         const ethMatrix4x4 globalTransformation = parentTransformation * localTransformation;
 
-        newPose.m_GlobalBoneTransform[i] = globalTransformation;
+        newPose.m_GlobalBoneTransforms[i] = globalTransformation;
     }
 
     return newPose;
@@ -193,8 +193,8 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     std::vector<ethMatrix4x4> prevBoneMatrices(skeleton.NumBones());
     for (uint32_t b = 0; b < skeleton.NumBones(); ++b)
     {
-        boneMatrices[b] = pose.m_GlobalBoneTransform[b] * skeleton.GetBone(b).m_InverseBindMatrix;
-        prevBoneMatrices[b] = prevPose.m_GlobalBoneTransform[b] * skeleton.GetBone(b).m_InverseBindMatrix;
+        boneMatrices[b] = pose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
+        prevBoneMatrices[b] = prevPose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
     }
 
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat>& skinningVertices = skinnedMesh.GetSkinningVertices();

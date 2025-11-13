@@ -50,7 +50,7 @@ struct ETH_ENGINE_DLL SkeletonPose
     void Serialize(OStream& ostream) const;
     void Deserialize(IStream& istream);
 
-    std::vector<ethMatrix4x4> m_GlobalBoneTransform;
+    std::vector<ethMatrix4x4> m_GlobalBoneTransforms;
 };
 
 class ETH_ENGINE_DLL Skeleton : public Serializable

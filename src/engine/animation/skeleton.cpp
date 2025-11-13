@@ -55,11 +55,11 @@ void Ether::SkeletonBone::Deserialize(IStream& istream)
 
 void Ether::SkeletonPose::Serialize(OStream& ostream) const
 {
-    const uint32_t numBones = m_GlobalBoneTransform.size();
+    const uint32_t numBones = m_GlobalBoneTransforms.size();
     ostream << numBones;
     for (uint32_t i = 0; i < numBones; ++i)
     {
-        ostream << m_GlobalBoneTransform[i];
+        ostream << m_GlobalBoneTransforms[i];
     }
 }
 
@@ -68,11 +68,11 @@ void Ether::SkeletonPose::Deserialize(IStream& istream)
     uint32_t numBones;
     istream >> numBones;
 
-    m_GlobalBoneTransform.resize(numBones);
+    m_GlobalBoneTransforms.resize(numBones);
 
     for (uint32_t i = 0; i < numBones; ++i)
     {
-        istream >> m_GlobalBoneTransform[i];
+        istream >> m_GlobalBoneTransforms[i];
     }
 }
 
