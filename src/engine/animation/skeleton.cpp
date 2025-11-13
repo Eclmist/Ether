@@ -55,14 +55,10 @@ void Ether::SkeletonBone::Deserialize(IStream& istream)
 
 void Ether::SkeletonPose::Serialize(OStream& ostream) const
 {
-    const uint32_t numBones = m_LocalBoneTransform.size();
-    AssertGraphics(m_LocalBoneTransform.size() == m_GlobalBoneTransform.size(), "Bone transforms corrupted");
-
+    const uint32_t numBones = m_GlobalBoneTransform.size();
     ostream << numBones;
-
     for (uint32_t i = 0; i < numBones; ++i)
     {
-        ostream << m_LocalBoneTransform[i];
         ostream << m_GlobalBoneTransform[i];
     }
 
@@ -74,12 +70,10 @@ void Ether::SkeletonPose::Deserialize(IStream& istream)
     uint32_t numBones;
     istream >> numBones;
 
-    m_LocalBoneTransform.resize(numBones);
     m_GlobalBoneTransform.resize(numBones);
 
     for (uint32_t i = 0; i < numBones; ++i)
     {
-        istream >> m_LocalBoneTransform[i];
         istream >> m_GlobalBoneTransform[i];
     }
 
