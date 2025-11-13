@@ -80,18 +80,6 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
     const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
 
-    // Temporarily weave in skinned mesh update here for convenience.
-    // Really need a new render pass for this. (TODO - ComputeSkinning)
-    for (const SkinnedVisual& skinnedVisual : skinnedVisuals)
-    {
-        ETH_MARKER_EVENT("Update skinned mesh VBs");
-        SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(skinnedVisual.m_Mesh);
-        if (skinnedMesh != nullptr)
-        {
-            skinnedMesh->UpdateGpuResources(ctx);
-        }
-    }
-
     ctx.PushMarker("Clear");
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture0)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture1)), RhiResourceState::RenderTarget);
