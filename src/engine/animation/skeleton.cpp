@@ -61,8 +61,6 @@ void Ether::SkeletonPose::Serialize(OStream& ostream) const
     {
         ostream << m_GlobalBoneTransform[i];
     }
-
-    ostream << m_GlobalInverseTransform;
 }
 
 void Ether::SkeletonPose::Deserialize(IStream& istream)
@@ -76,8 +74,6 @@ void Ether::SkeletonPose::Deserialize(IStream& istream)
     {
         istream >> m_GlobalBoneTransform[i];
     }
-
-    istream >> m_GlobalInverseTransform;
 }
 
 Ether::Skeleton::Skeleton()
@@ -92,8 +88,6 @@ void Ether::Skeleton::Serialize(OStream& ostream) const
     ostream << NumBones();
     for (uint32_t i = 0; i < m_Bones.size(); ++i)
         m_Bones[i].Serialize(ostream);
-
-    m_BindPose.Serialize(ostream);
 }
 
 void Ether::Skeleton::Deserialize(IStream& istream)
@@ -108,8 +102,6 @@ void Ether::Skeleton::Deserialize(IStream& istream)
     {
         m_Bones[i].Deserialize(istream);
     }
-
-    m_BindPose.Deserialize(istream);
 }
 
 #if ETH_TOOLMODE

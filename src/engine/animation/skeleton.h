@@ -51,7 +51,6 @@ struct ETH_ENGINE_DLL SkeletonPose
     void Deserialize(IStream& istream);
 
     std::vector<ethMatrix4x4> m_GlobalBoneTransform;
-    ethMatrix4x4 m_GlobalInverseTransform;
 };
 
 class ETH_ENGINE_DLL Skeleton : public Serializable
@@ -67,11 +66,8 @@ public:
 public:
     inline uint32_t NumBones() const { return m_Bones.size(); }
     inline const SkeletonBone& GetBone(uint32_t index) const { return m_Bones[index]; }
-    inline const SkeletonPose& GetBindPose() const { return m_BindPose; }
 
     inline void AddBone(const SkeletonBone& bone) { m_Bones.push_back(bone); }
-    inline void SetBindPose(const SkeletonPose bindPose) { m_BindPose = bindPose; }
-    inline void SetCurrentPose(const SkeletonPose pose) { m_CurrentPose = pose; }
 
 public:
 #if ETH_TOOLMODE
@@ -81,8 +77,6 @@ public:
 
 private:
     std::vector<SkeletonBone> m_Bones;
-    SkeletonPose m_BindPose;
-    SkeletonPose m_CurrentPose;
 };
 
 } // namespace Ether::Graphics
