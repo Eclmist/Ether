@@ -203,10 +203,8 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     std::vector<ethMatrix4x4> prevBoneMatrices(skeleton.NumBones());
     for (uint32_t b = 0; b < skeleton.NumBones(); ++b)
     {
-        boneMatrices[b] = pose.m_GlobalInverseTransform * pose.m_GlobalBoneTransform[b] *
-                          skeleton.GetBone(b).m_InverseBindMatrix;
-        prevBoneMatrices[b] = prevPose.m_GlobalInverseTransform * prevPose.m_GlobalBoneTransform[b] *
-                              skeleton.GetBone(b).m_InverseBindMatrix;
+        boneMatrices[b] = pose.m_GlobalBoneTransform[b] * skeleton.GetBone(b).m_InverseBindMatrix;
+        prevBoneMatrices[b] = prevPose.m_GlobalBoneTransform[b] * skeleton.GetBone(b).m_InverseBindMatrix;
     }
 
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat>& skinningVertices = skinnedMesh.GetSkinningVertices();

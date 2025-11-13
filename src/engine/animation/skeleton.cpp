@@ -61,8 +61,6 @@ void Ether::SkeletonPose::Serialize(OStream& ostream) const
     {
         ostream << m_GlobalBoneTransform[i];
     }
-
-    ostream << m_GlobalInverseTransform;
 }
 
 void Ether::SkeletonPose::Deserialize(IStream& istream)
@@ -76,8 +74,6 @@ void Ether::SkeletonPose::Deserialize(IStream& istream)
     {
         istream >> m_GlobalBoneTransform[i];
     }
-
-    istream >> m_GlobalInverseTransform;
 }
 
 Ether::Skeleton::Skeleton()

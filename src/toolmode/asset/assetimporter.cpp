@@ -518,11 +518,6 @@ Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBon
     auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootBone, std::make_unique<Skeleton>());
     Skeleton& skeleton = *iter->second;
 
-    // Update the global inverse transform
-    SkeletonPose bindPose = skeleton.GetBindPose();
-    bindPose.m_GlobalInverseTransform = ToEthMatrix4x4(rootNode->mTransformation).Inversed();
-    skeleton.SetBindPose(bindPose);
-
     // Depth first search each root bone to build our own skeleton hierarchy
     std::function<void(aiNode*, uint32_t, ethMatrix4x4)> GenerateSkeletonHierarchy =
         [&](aiNode* node, uint32_t parentBoneIndex, const ethMatrix4x4& parentTransform) -> void
