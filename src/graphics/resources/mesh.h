@@ -26,7 +26,7 @@
 
 namespace Ether::Graphics
 {
-constexpr uint32_t MaxVerticesPerMesh = 1 << 20;
+constexpr uint32_t MaxVerticesPerMesh = 1 << 18;
 constexpr uint32_t MaxTrianglePerMesh = 1 << 18;
 
 class ETH_GRAPHIC_DLL Mesh : public Serializable

@@ -57,8 +57,8 @@ namespace Ether::Toolmode
         StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
         Skeleton& ProcessSkeleton(aiBone* rootBone);
         aiBone* GetArmatureRoot(aiBone* bone) const;
-        aiBone* GetNodeBone(aiNode* node) const;
-        aiNode* GetBoneNode(aiBone* bone) const;
+        aiBone* GetBone(aiNode* node) const;
+        aiNode* GetNode(aiBone* bone) const;
 
     private:
         template <typename VertexFormat>
@@ -75,11 +75,9 @@ namespace Ether::Toolmode
 
         std::vector<StringID> m_MaterialGuids;
         std::vector<StringID> m_AnimationGuids;
-        std::unordered_map<StringID, aiNode*> m_NameToNodeMap;
+        std::unordered_map<StringID, aiNode*> m_NodeLookupTable;
+        std::unordered_map<StringID, aiBone*> m_BoneLookupTable;
         std::unordered_map<aiBone*, std::unique_ptr<Skeleton>> m_ArmatureRootToSkeletonMap;
-        std::unordered_map<aiBone*, aiBone*> m_ArmatureToBonesMap;
-        std::unordered_map<aiNode*, aiBone*> m_NodeToBoneMap;
-        std::unordered_map<aiBone*, aiNode*> m_BoneToNodeMap;
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
 }
