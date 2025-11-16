@@ -106,11 +106,9 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
     // TOOD: Cleanup
     m_MaterialGuids.clear();
     m_AnimationGuids.clear();
-    m_NameToNodeMap.clear();
+    m_NodeLookupTable.clear();
+    m_BoneLookupTable.clear();
     m_ArmatureRootToSkeletonMap.clear();
-    m_ArmatureToBonesMap.clear();
-    m_NodeToBoneMap.clear();
-    m_BoneToNodeMap.clear();
 
     ProcessScene(PathUtils::GetFolderPath(assetPath), scene);
 }
@@ -134,7 +132,7 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
     ETH_MARKER_EVENT("Process Assimp Scene");
 
     ProcessMaterials(folderPath, assimpScene);
-    ProcessNodes(assimpScene);
+    ProcessNodes(assimpScene->mRootNode);
     ProcessBones(assimpScene);
     ProcessAnimations(assimpScene);
     ProcessMeshs(assimpScene);
@@ -249,23 +247,17 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         });
 }
 
-void Ether::Toolmode::AssetImporter::ProcessNodes(const aiScene* assimpScene)
+void Ether::Toolmode::AssetImporter::ProcessNodes(const aiNode* node)
 {
-    // DFS traverse entire scene once to record the m_NameToNodeMap
-    std::function<void(aiNode*)> PopulateNodeMap = [&](aiNode* node) -> void
+    if (node == nullptr)
+        return;
+
+    m_NodeLookupTable.emplace(node->mName.C_Str(), node);
+
+    for (uint32_t i = 0; i < node->mNumChildren; ++i)
     {
-        if (node == nullptr)
-            return;
-
-        m_NameToNodeMap.emplace(node->mName.C_Str(), node);
-
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            PopulateNodeMap(node->mChildren[i]);
-        }
-    };
-
-    PopulateNodeMap(assimpScene->mRootNode);
+        ProcessNodes(node->mChildren[i]);
+    }
 }
 
 void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
@@ -283,24 +275,11 @@ void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
         {
             aiBone* bone = mesh->mBones[boneIndex];
 
-            if (!m_NameToNodeMap.contains(bone->mName.C_Str()))
-            {
+            if (!GetNode(bone))
                 LogToolmodeError("Serious import issue: Node for bone was not detected. This mesh will be broken");
-            }
 
-            aiNode* node = m_NameToNodeMap.at(bone->mName.C_Str());
-
-            m_NodeToBoneMap.emplace(node, bone);
-            m_BoneToNodeMap.emplace(bone, node);
-        }
-
-        for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-        {
-            aiBone* aibone = mesh->mBones[boneIndex];
-            aiBone* rootBone = GetArmatureRoot(aibone);
-
-            if (rootBone != nullptr)
-                m_ArmatureToBonesMap.emplace(rootBone, aibone);
+            aiNode* node = m_NodeLookupTable.at(bone->mName.C_Str());
+            m_BoneLookupTable.emplace(node->mName.C_Str(), bone);
         }
     }
 }
@@ -502,7 +481,7 @@ Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBon
 {
     ETH_MARKER_EVENT("Process Skeleton");
 
-    aiNode* rootNode = GetBoneNode(rootBone);
+    aiNode* rootNode = GetNode(rootBone);
 
     AssertToolmode(rootBone != nullptr, "Can't process a null bone");
     AssertToolmode(rootNode != nullptr, "Can't process a null node");
@@ -522,7 +501,7 @@ Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBon
     {
         AssertToolmode(node != nullptr, "node cannot be null");
 
-        aiBone* aibone = GetNodeBone(node);
+        aiBone* aibone = GetBone(node);
 
         const uint32_t currentBoneIndex = skeleton.NumBones();
         const ethMatrix4x4 offsetMatrix = aibone != nullptr ? ToEthMatrix4x4(aibone->mOffsetMatrix) : ethMatrix4x4{};
@@ -549,35 +528,35 @@ aiBone* Ether::Toolmode::AssetImporter::GetArmatureRoot(aiBone* bone) const
     aiBone* armatureRootBone = bone;
     AssertToolmode(armatureRootBone != nullptr, "Bone is assumed to be valid in this context");
 
-    aiNode* armatureRootNode = GetBoneNode(armatureRootBone);
+    aiNode* armatureRootNode = GetNode(armatureRootBone);
     AssertToolmode(armatureRootNode != nullptr, "Bone node is assumed to be valid in this context");
 
-    while (armatureRootNode->mParent != nullptr)
+    while (armatureRootNode != nullptr && armatureRootNode->mParent != nullptr)
     {
-        if (!m_NodeToBoneMap.contains(armatureRootNode->mParent))
+        if (!GetBone(armatureRootNode->mParent))
             break;
 
         armatureRootNode = armatureRootNode->mParent;
-        armatureRootBone = GetNodeBone(armatureRootNode);
+        armatureRootBone = GetBone(armatureRootNode);
     }
 
     return armatureRootBone;
 }
 
-aiBone* Ether::Toolmode::AssetImporter::GetNodeBone(aiNode* node) const
+aiBone* Ether::Toolmode::AssetImporter::GetBone(aiNode* node) const
 {
-    if (!m_NodeToBoneMap.contains(node))
+    if (!m_BoneLookupTable.contains(node->mName.C_Str()))
         return nullptr;
 
-    return m_NodeToBoneMap.at(node);
+    return m_BoneLookupTable.at(node->mName.C_Str());
 }
 
-aiNode* Ether::Toolmode::AssetImporter::GetBoneNode(aiBone* bone) const
+aiNode* Ether::Toolmode::AssetImporter::GetNode(aiBone* bone) const
 {
-    if (!m_BoneToNodeMap.contains(bone))
+    if (!m_NodeLookupTable.contains(bone->mName.C_Str()))
         return nullptr;
 
-    return m_BoneToNodeMap.at(bone);
+    return m_NodeLookupTable.at(bone->mName.C_Str());
 }
 
 template void Ether::Toolmode::AssetImporter::FillVertexData(

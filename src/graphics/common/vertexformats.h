@@ -59,6 +59,6 @@ public:
 public:
     // CPU side data for skinning
     uint32_t m_BoneIndices[MaxBonesPerVertex]; // 4 x u8 packed into u32 (or uint32[4])
-    ethVector4 m_BoneWeights;                  // 4 floats
+    float m_BoneWeights[MaxBonesPerVertex];                  // 4 floats
 };
 } // namespace Ether::Graphics::VertexFormats 
