@@ -131,7 +131,7 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
     ETH_MARKER_EVENT("Process Assimp Scene");
 
     ProcessMaterials(folderPath, assimpScene);
-    ProcessSkeleton(assimpScene);
+    ProcessSkeletons(assimpScene);
     ProcessAnimations(assimpScene);
     ProcessMeshs(assimpScene);
 }
@@ -245,9 +245,9 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         });
 }
 
-void Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiScene* assimpScene)
+void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene)
 {
-    ETH_MARKER_EVENT("Process Bones");
+    ETH_MARKER_EVENT("Process Skeletons");
 
     for (int i = 0; i < assimpScene->mNumMeshes; ++i)
     {
@@ -270,6 +270,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiScene* assimpScene)
         if (!mesh->HasBones())
             continue;
 
+        // We make the assumption that a mesh is only affected by a single skeleton.
         aiNode* rootNode = mesh->mBones[0]->mArmature;
 
         AssertToolmode(rootNode != nullptr, "Can't process a null node");
@@ -282,27 +283,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiScene* assimpScene)
 
         auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootNode, std::make_unique<Skeleton>());
         Skeleton& skeleton = *iter->second;
-
-        // Depth first search each root bone to build our own skeleton hierarchy
-        std::function<void(aiNode*, uint32_t)> GenerateSkeletonHierarchy = [&](aiNode* node,
-                                                                               uint32_t parentBoneIndex) -> void
-        {
-            AssertToolmode(node != nullptr, "node cannot be null");
-
-            const uint32_t currentBoneIndex = skeleton.NumBones();
-            const ethMatrix4x4 offsetMatrix = GetOffsetMatrix(node);
-
-            SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
-            skeleton.AddBone(gfxBone);
-
-            for (uint32_t i = 0; i < node->mNumChildren; ++i)
-            {
-                aiNode* child = node->mChildren[i];
-                GenerateSkeletonHierarchy(child, currentBoneIndex);
-            };
-        };
-
-        GenerateSkeletonHierarchy(rootNode, InvalidBoneIndex);
+        ProcessSkeleton(skeleton, rootNode);
 
         SerializeLibraryData(&skeleton);
     }
@@ -441,6 +422,23 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     SerializeLibraryData(&gfxSkinnedMesh);
 }
 
+void Ether::Toolmode::AssetImporter::ProcessSkeleton(Skeleton& skeleton, const aiNode* node, uint32_t parentIndex) const
+{
+    AssertToolmode(node != nullptr, "node cannot be null");
+
+    const uint32_t currentBoneIndex = skeleton.NumBones();
+    const ethMatrix4x4 offsetMatrix = GetOffsetMatrix(node);
+
+    SkeletonBone gfxBone(node->mName.C_Str(), parentIndex, offsetMatrix);
+    skeleton.AddBone(gfxBone);
+
+    for (uint32_t i = 0; i < node->mNumChildren; ++i)
+    {
+        aiNode* child = node->mChildren[i];
+        ProcessSkeleton(skeleton, child, currentBoneIndex);
+    };
+}
+
 Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     const std::string& folderPath,
     const StringID& texturePath,
@@ -501,7 +499,7 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     return gfxTexture.GetGuid();
 }
 
-Ether::ethMatrix4x4 Ether::Toolmode::AssetImporter::GetOffsetMatrix(aiNode* node) const
+Ether::ethMatrix4x4 Ether::Toolmode::AssetImporter::GetOffsetMatrix(const aiNode* node) const
 {
     if (!m_OffsetMatrices.contains(node))
         return {};
