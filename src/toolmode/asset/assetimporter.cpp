@@ -85,6 +85,7 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
     importFlags |= aiProcess_ConvertToLeftHanded;
     importFlags |= aiProcess_TransformUVCoords;
     importFlags |= aiProcessPreset_TargetRealtime_Quality;
+    importFlags |= aiProcess_PopulateArmatureData;
 
     if (flattern)
     {
@@ -103,11 +104,9 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
         return;
     }
 
-    // TOOD: Cleanup
     m_MaterialGuids.clear();
     m_AnimationGuids.clear();
-    m_NodeLookupTable.clear();
-    m_BoneLookupTable.clear();
+    m_OffsetMatrices.clear();
     m_ArmatureRootToSkeletonMap.clear();
 
     ProcessScene(PathUtils::GetFolderPath(assetPath), scene);
@@ -132,8 +131,7 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
     ETH_MARKER_EVENT("Process Assimp Scene");
 
     ProcessMaterials(folderPath, assimpScene);
-    ProcessNodes(assimpScene);
-    ProcessBones(assimpScene);
+    ProcessSkeleton(assimpScene);
     ProcessAnimations(assimpScene);
     ProcessMeshs(assimpScene);
 }
@@ -247,25 +245,7 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
         });
 }
 
-void Ether::Toolmode::AssetImporter::ProcessNodes(const aiScene* assimpScene)
-{
-    std::function<void(aiNode*)> PopulateNodeMap = [&](aiNode* node) -> void
-    {
-        if (node == nullptr)
-            return;
-
-        m_NodeLookupTable.emplace(node->mName.C_Str(), node);
-
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            PopulateNodeMap(node->mChildren[i]);
-        }
-    };
-
-    PopulateNodeMap(assimpScene->mRootNode);
-}
-
-void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
+void Ether::Toolmode::AssetImporter::ProcessSkeleton(const aiScene* assimpScene)
 {
     ETH_MARKER_EVENT("Process Bones");
 
@@ -279,15 +259,52 @@ void Ether::Toolmode::AssetImporter::ProcessBones(const aiScene* assimpScene)
         for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
         {
             aiBone* bone = mesh->mBones[boneIndex];
-
-            if (!GetNode(bone))
-            {
-                LogToolmodeError("Serious import issue: Node for bone was not detected. This mesh will be broken");
-            }
-
-            aiNode* node = m_NodeLookupTable.at(bone->mName.C_Str());
-            m_BoneLookupTable.emplace(node->mName.C_Str(), bone);
+            m_OffsetMatrices.emplace(bone->mNode, ToEthMatrix4x4(bone->mOffsetMatrix));
         }
+    }
+
+    for (int i = 0; i < assimpScene->mNumMeshes; ++i)
+    {
+        const aiMesh* mesh = assimpScene->mMeshes[i];
+
+        if (!mesh->HasBones())
+            continue;
+
+        aiNode* rootNode = mesh->mBones[0]->mArmature;
+
+        AssertToolmode(rootNode != nullptr, "Can't process a null node");
+
+        if (m_ArmatureRootToSkeletonMap.contains(rootNode))
+        {
+            // Skeleton already exist and has been processed
+            continue;
+        }
+
+        auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootNode, std::make_unique<Skeleton>());
+        Skeleton& skeleton = *iter->second;
+
+        // Depth first search each root bone to build our own skeleton hierarchy
+        std::function<void(aiNode*, uint32_t)> GenerateSkeletonHierarchy = [&](aiNode* node,
+                                                                               uint32_t parentBoneIndex) -> void
+        {
+            AssertToolmode(node != nullptr, "node cannot be null");
+
+            const uint32_t currentBoneIndex = skeleton.NumBones();
+            const ethMatrix4x4 offsetMatrix = GetOffsetMatrix(node);
+
+            SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
+            skeleton.AddBone(gfxBone);
+
+            for (uint32_t i = 0; i < node->mNumChildren; ++i)
+            {
+                aiNode* child = node->mChildren[i];
+                GenerateSkeletonHierarchy(child, currentBoneIndex);
+            };
+        };
+
+        GenerateSkeletonHierarchy(rootNode, InvalidBoneIndex);
+
+        SerializeLibraryData(&skeleton);
     }
 }
 
@@ -416,9 +433,9 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
     gfxSkinnedMesh.SetAnimationGuid(m_AnimationGuids[0]); // Assign the first available animation
 
-    if (m_ArmatureRootToSkeletonMap.contains(GetArmatureRoot(assimpMesh->mBones[0])))
+    if (m_ArmatureRootToSkeletonMap.contains(assimpMesh->mBones[0]->mArmature))
     {
-        gfxSkinnedMesh.SetSkeletonGuid(m_ArmatureRootToSkeletonMap.at(GetArmatureRoot(assimpMesh->mBones[0]))->GetGuid());
+        gfxSkinnedMesh.SetSkeletonGuid(m_ArmatureRootToSkeletonMap.at(assimpMesh->mBones[0]->mArmature)->GetGuid());
     }
 
     SerializeLibraryData(&gfxSkinnedMesh);
@@ -484,86 +501,12 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     return gfxTexture.GetGuid();
 }
 
-Ether::Skeleton& Ether::Toolmode::AssetImporter::ProcessSkeleton(aiBone* rootBone)
+Ether::ethMatrix4x4 Ether::Toolmode::AssetImporter::GetOffsetMatrix(aiNode* node) const
 {
-    ETH_MARKER_EVENT("Process Skeleton");
+    if (!m_OffsetMatrices.contains(node))
+        return {};
 
-    aiNode* rootNode = GetNode(rootBone);
-
-    AssertToolmode(rootBone != nullptr, "Can't process a null bone");
-    AssertToolmode(rootNode != nullptr, "Can't process a null node");
-
-    if (m_ArmatureRootToSkeletonMap.contains(rootBone))
-    {
-        // Skeleton already exist and has been processed
-        return *m_ArmatureRootToSkeletonMap.at(rootBone);
-    }
-
-    auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootBone, std::make_unique<Skeleton>());
-    Skeleton& skeleton = *iter->second;
-
-    // Depth first search each root bone to build our own skeleton hierarchy
-    std::function<void(aiNode*, uint32_t)> GenerateSkeletonHierarchy =
-        [&](aiNode* node, uint32_t parentBoneIndex) -> void
-    {
-        AssertToolmode(node != nullptr, "node cannot be null");
-
-        aiBone* aibone = GetBone(node);
-
-        const uint32_t currentBoneIndex = skeleton.NumBones();
-        const ethMatrix4x4 offsetMatrix = aibone != nullptr ? ToEthMatrix4x4(aibone->mOffsetMatrix) : ethMatrix4x4{};
-
-        SkeletonBone gfxBone(node->mName.C_Str(), parentBoneIndex, offsetMatrix);
-        skeleton.AddBone(gfxBone);
-
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-        {
-            aiNode* child = node->mChildren[i];
-            GenerateSkeletonHierarchy(child, currentBoneIndex);
-        };
-    };
-
-    GenerateSkeletonHierarchy(rootNode, InvalidBoneIndex);
-
-    SerializeLibraryData(&skeleton);
-
-    return skeleton;
-}
-
-aiBone* Ether::Toolmode::AssetImporter::GetArmatureRoot(aiBone* bone) const
-{
-    aiBone* armatureRootBone = bone;
-    AssertToolmode(armatureRootBone != nullptr, "Bone is assumed to be valid in this context");
-
-    aiNode* armatureRootNode = GetNode(armatureRootBone);
-    AssertToolmode(armatureRootNode != nullptr, "Bone node is assumed to be valid in this context");
-
-    while (armatureRootNode != nullptr && armatureRootNode->mParent != nullptr)
-    {
-        if (!GetBone(armatureRootNode->mParent))
-            break;
-
-        armatureRootNode = armatureRootNode->mParent;
-        armatureRootBone = GetBone(armatureRootNode);
-    }
-
-    return armatureRootBone;
-}
-
-aiBone* Ether::Toolmode::AssetImporter::GetBone(aiNode* node) const
-{
-    if (!m_BoneLookupTable.contains(node->mName.C_Str()))
-        return nullptr;
-
-    return m_BoneLookupTable.at(node->mName.C_Str());
-}
-
-aiNode* Ether::Toolmode::AssetImporter::GetNode(aiBone* bone) const
-{
-    if (!m_NodeLookupTable.contains(bone->mName.C_Str()))
-        return nullptr;
-
-    return m_NodeLookupTable.at(bone->mName.C_Str());
+    return m_OffsetMatrices.at(node);
 }
 
 template void Ether::Toolmode::AssetImporter::FillVertexData(
@@ -629,11 +572,11 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
     {
         AssertToolmode(assimpMesh->HasBones(), "Encountered skinned mesh without bones (illegal codepath)");
 
-        aiBone* rootBone = GetArmatureRoot(assimpMesh->mBones[0]);
+        aiNode* rootNode = assimpMesh->mBones[0]->mArmature;
 
-        if (rootBone != nullptr)
+        if (rootNode != nullptr)
         {
-            const Skeleton& skeleton = ProcessSkeleton(rootBone);
+            const Skeleton& skeleton = *m_ArmatureRootToSkeletonMap.at(rootNode);
 
             for (uint32_t i = 0; i < assimpMesh->mNumBones; ++i)
             {
@@ -651,7 +594,7 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
                 {
                     aiVertexWeight& vertexRef = bone->mWeights[vertexIndex];
 
-                    if (vertexRef.mWeight <= 0.0f)
+                    if (vertexRef.mWeight <= 0.01f)
                         continue;
 
                     // Find which weight slot is still available on the vertex

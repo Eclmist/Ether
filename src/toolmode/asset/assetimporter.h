@@ -46,8 +46,7 @@ namespace Ether::Toolmode
     private:
         void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
         void ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene);
-        void ProcessNodes(const aiScene* assimpScene);
-        void ProcessBones(const aiScene* assimpScene);
+        void ProcessSkeleton(const aiScene* assimpScene);
         void ProcessAnimations(const aiScene* assimpScene);
         void ProcessMeshs(const aiScene* assimpScene);
 
@@ -55,10 +54,7 @@ namespace Ether::Toolmode
         void ProcessStaticMesh(const aiMesh* assimpMesh);
         void ProcessSkinnedMesh(const aiMesh* assimpMesh);
         StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
-        Skeleton& ProcessSkeleton(aiBone* rootBone);
-        aiBone* GetArmatureRoot(aiBone* bone) const;
-        aiBone* GetBone(aiNode* node) const;
-        aiNode* GetNode(aiBone* bone) const;
+        ethMatrix4x4 GetOffsetMatrix(aiNode* node) const;
 
     private:
         template <typename VertexFormat>
@@ -75,9 +71,8 @@ namespace Ether::Toolmode
 
         std::vector<StringID> m_MaterialGuids;
         std::vector<StringID> m_AnimationGuids;
-        std::unordered_map<StringID, aiNode*> m_NodeLookupTable;
-        std::unordered_map<StringID, aiBone*> m_BoneLookupTable;
-        std::unordered_map<aiBone*, std::unique_ptr<Skeleton>> m_ArmatureRootToSkeletonMap;
+        std::unordered_map<aiNode*, ethMatrix4x4> m_OffsetMatrices;
+        std::unordered_map<aiNode*, std::unique_ptr<Skeleton>> m_ArmatureRootToSkeletonMap;
         std::unordered_map<StringID, StringID> m_PathToGuidMap;
     };
 }
