@@ -270,7 +270,8 @@ float4 SampleHdri(float2 uv)
 float4 GetHdriSkyColor(float2 uv)
 {
     const float exposure = g_GlobalConstants.m_SkyIntensity * 1;
-    const float3 viewDir = normalize(ScreenToWorldSpace(TextureToScreenSpace(uv), 0.0f)); // Reverse-Z
+    const float3 pointAtInf = ScreenToWorldSpace(TextureToScreenSpace(uv), 0.0f); // Far plane point
+    const float3 viewDir = normalize(pointAtInf - g_GlobalConstants.m_CameraPosition.xyz); 
     const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
 
     const float cloudMask = 1 - smoothstep(0.15, 0.3, hdri.r);
