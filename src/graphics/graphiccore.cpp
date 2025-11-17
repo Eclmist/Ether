@@ -37,7 +37,7 @@ void Ether::Graphics::GraphicCore::Initialize()
     m_GraphicDisplay = std::make_unique<GraphicDisplay>();
     m_GraphicRenderer = std::make_unique<GraphicRenderer>();
     m_GraphicExporter = std::make_unique<GraphicExporter>();
-    m_GraphicThread = std::make_unique<GraphicThread>();
+    m_RenderThread = std::make_unique<RenderThread>();
 
     m_IsInitialized = true;
 }
@@ -46,7 +46,7 @@ void Ether::Graphics::GraphicCore::Shutdown()
 {
     FlushGpu();
 
-    m_GraphicThread.reset();
+    m_RenderThread.reset();
     m_GraphicExporter.reset();
     m_GraphicRenderer.reset();
     m_GraphicDisplay.reset();
@@ -67,13 +67,11 @@ void Ether::Graphics::GraphicCore::Shutdown()
 
 void Ether::Graphics::GraphicCore::NewFrame()
 {
-    ETH_MARKER_EVENT("Graphics Update");
-
-    GetGraphicThread().WaitForFrame();
+    GetRenderThread().WaitForFrame();
     GetGraphicRenderer().IncrementFrameNumber();
 
-    GetGraphicThread().SignalFrame();
-    GetGraphicThread().EnqueueRenderCommand([]() {
+    GetRenderThread().SignalFrame();
+    GetRenderThread().EnqueueRenderCommand([]() {
         GetGraphicRenderer().WaitForPresent();
         GetGraphicRenderer().Render();
         GetGraphicRenderer().Present();
@@ -81,17 +79,14 @@ void Ether::Graphics::GraphicCore::NewFrame()
     });
 }
 
+void Ether::Graphics::GraphicCore::EndOfFrame()
+{
+    GetGraphicExporter().Reset();
+    GetGraphicRenderer().Cleanup();
+}
+
 void Ether::Graphics::GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
-    GetGraphicThread().WaitForFrame();
+    GetRenderThread().WaitForFrame();
 }
-
-void Ether::Graphics::GraphicCore::EndOfFrame()
-{
-    GetGraphicThread().EnqueueRenderCommand([]() {
-        GetGraphicRenderer().Cleanup();
-        GetGraphicExporter().Reset();
-    });
-}
-

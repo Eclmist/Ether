@@ -35,7 +35,7 @@ int Ether::Start(IApplicationBase& app)
         EngineCore::Instance().GetMainWindow().Show();
     #endif
 
-    EngineCore::Instance().RunEngineLoop();
+    EngineCore::Instance().MainEngineLoop();
 
     LogInfo("Shutting down Ether");
     EngineCore::Instance().Shutdown();
@@ -63,6 +63,7 @@ Ether::World& Ether::GetActiveWorld()
 
 Ether::Graphics::GraphicConfig& Ether::Graphics::GetGraphicConfig()
 {
+    // NOT THREADSAFE!! Leaving it here for backwards compatibility, but should deprecate when possible.
     return GraphicCore::GetGraphicConfig();
 }
 

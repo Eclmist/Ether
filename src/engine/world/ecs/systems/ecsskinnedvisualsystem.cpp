@@ -232,7 +232,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
             stagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
         });
     
-    Graphics::GraphicCore::GetGraphicThread().EnqueueRenderCommand(
+    Graphics::GraphicCore::GetRenderThread().EnqueueRenderCommand(
         [stagingVertices = std::move(stagingVertices), &skinnedMesh]() mutable {
         skinnedMesh.SetStagingVertices(std::move(stagingVertices));
     });

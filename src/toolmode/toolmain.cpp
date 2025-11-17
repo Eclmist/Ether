@@ -234,39 +234,39 @@ void Ether::Toolmode::EtherHeadless::OnShutdown()
 
 void Ether::Toolmode::EtherHeadless::UpdateGraphicConfig() const
 {
-    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
+    Ether::Graphics::GraphicConfig& gfxConfig = Ether::Graphics::GetGraphicConfig();
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F11))
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::Space))
-        graphicConfig.m_IsRaytracingDebugEnabled = !graphicConfig.m_IsRaytracingDebugEnabled;
+        gfxConfig.m_IsRaytracingDebugEnabled = !gfxConfig.m_IsRaytracingDebugEnabled;
 
     if (Input::GetKeyDown((KeyCode)Win32::KeyCode::F3))
-        graphicConfig.SetDebugGuiEnabled(!graphicConfig.IsDebugGuiEnabled());
+        gfxConfig.SetDebugGuiEnabled(!gfxConfig.IsDebugGuiEnabled());
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::J))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection +
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection +
                                         Ether::ethVector4(-1, 0, 0, 0) * Time::GetDeltaTime() * 0.001)
                                            .Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::L))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection +
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection +
                                         Ether::ethVector4(1, 0, 0, 0) * Time::GetDeltaTime() * 0.001)
                                            .Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::I))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection +
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection +
                                         Ether::ethVector4(0, 0, 1, 0) * Time::GetDeltaTime() * 0.001)
                                            .Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::K))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection +
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection +
                                         Ether::ethVector4(0, 0, -1, 0) * Time::GetDeltaTime() * 0.001)
                                            .Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::U))
-        graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime());
+        gfxConfig.m_SunDirection =
+            (gfxConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime());
     if (Input::GetKey((KeyCode)Win32::KeyCode::O))
-        graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime());
+        gfxConfig.m_SunDirection =
+            (gfxConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime());
 }
 
 void Ether::Toolmode::EtherHeadless::UpdateCamera() const

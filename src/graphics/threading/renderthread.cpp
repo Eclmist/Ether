@@ -17,61 +17,24 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/threading/graphicthread.h"
+#include "graphics/threading/renderthread.h"
 #include "graphics/graphiccore.h"
 
-Ether::Graphics::GraphicThread::GraphicThread()
+Ether::Graphics::RenderThread::RenderThread()
 {
     m_GraphicsThreadEnabled = GraphicCore::GetGraphicConfig().GetUseGraphicsThread();
 
     if (m_GraphicsThreadEnabled)
     {
-        InitializeGraphicsThread();
+        m_GraphicsThreadRunning = true;
+        m_ShutdownRequested = false;
+
+        m_GraphicsThread = std::make_unique<std::thread>(&RenderThread::MainRenderLoop, this);
+        m_GraphicsThreadId = m_GraphicsThread->get_id();
     }
 }
 
-Ether::Graphics::GraphicThread::~GraphicThread()
-{
-    ShutdownGraphicsThread();
-}
-
-bool Ether::Graphics::GraphicThread::IsGraphicsThread()
-{
-    if (!m_GraphicsThreadEnabled)
-        return false;
-
-    return std::this_thread::get_id() == m_GraphicsThreadId;
-}
-
-bool Ether::Graphics::GraphicThread::IsGraphicsThreadEnabled()
-{
-    return m_GraphicsThreadEnabled;
-}
-
-void Ether::Graphics::GraphicThread::EnqueueRenderCommand(std::function<void()> command)
-{
-    if (!IsGraphicsThreadEnabled() || !m_GraphicsThreadRunning)
-    {
-        command(); // Fallback to single-thread
-        return;
-    }
-
-    m_RenderCommandQueue.Enqueue(command);
-}
-
-void Ether::Graphics::GraphicThread::InitializeGraphicsThread()
-{
-    if (m_GraphicsThreadRunning)
-        return;
-
-    m_GraphicsThreadRunning = true;
-    m_ShutdownRequested = false;
-
-    m_GraphicsThread = std::make_unique<std::thread>(&GraphicThread::GraphicsThreadFunction, this);
-    m_GraphicsThreadId = m_GraphicsThread->get_id();
-}
-
-void Ether::Graphics::GraphicThread::ShutdownGraphicsThread()
+Ether::Graphics::RenderThread::~RenderThread()
 {
     if (!m_GraphicsThreadRunning)
         return;
@@ -92,12 +55,38 @@ void Ether::Graphics::GraphicThread::ShutdownGraphicsThread()
     m_GraphicsThreadRunning = false;
 }
 
-void Ether::Graphics::GraphicThread::GraphicsThreadFunction()
+bool Ether::Graphics::RenderThread::IsGraphicsThread()
+{
+    if (!m_GraphicsThreadEnabled)
+        return false;
+
+    return std::this_thread::get_id() == m_GraphicsThreadId;
+}
+
+bool Ether::Graphics::RenderThread::IsGraphicsThreadEnabled()
+{
+    return m_GraphicsThreadEnabled;
+}
+
+void Ether::Graphics::RenderThread::EnqueueRenderCommand(std::function<void()> command)
+{
+    if (!IsGraphicsThreadEnabled() || !m_GraphicsThreadRunning)
+    {
+        command(); // Fallback to single-thread
+        return;
+    }
+
+    m_RenderCommandQueue.Enqueue(command);
+}
+
+void Ether::Graphics::RenderThread::MainRenderLoop()
 {
     ETH_MARKER_THREAD("Render Thread");
 
     while (!m_ShutdownRequested)
     {
+        ETH_MARKER_FRAME("Graphics Frame");
+
         {
             std::unique_lock<std::mutex> lock(m_FrameMutex);
             m_FrameCV.wait(lock, [this] { return m_RenderDataReady.load() || m_ShutdownRequested.load(); });
@@ -120,7 +109,7 @@ void Ether::Graphics::GraphicThread::GraphicsThreadFunction()
     }
 }
 
-void Ether::Graphics::GraphicThread::ProcessRenderCommands()
+void Ether::Graphics::RenderThread::ProcessRenderCommands()
 {
     RenderCommand command;
     while (m_RenderCommandQueue.TryDequeue(command))
@@ -130,7 +119,7 @@ void Ether::Graphics::GraphicThread::ProcessRenderCommands()
     }
 }
 
-void Ether::Graphics::GraphicThread::SignalFrame()
+void Ether::Graphics::RenderThread::SignalFrame()
 {
     {
         std::lock_guard<std::mutex> lock(m_FrameMutex);
@@ -140,8 +129,10 @@ void Ether::Graphics::GraphicThread::SignalFrame()
     m_FrameCV.notify_one();
 }
 
-void Ether::Graphics::GraphicThread::WaitForFrame()
+void Ether::Graphics::RenderThread::WaitForFrame()
 {
+    ETH_MARKER_EVENT("Wait for Render Thread Completion");
+
     std::unique_lock<std::mutex> lock(m_CompleteMutex);
     m_CompleteCV.wait(lock, [this] { return m_FrameComplete.load(); });
 }

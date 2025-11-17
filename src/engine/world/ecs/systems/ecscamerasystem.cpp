@@ -34,7 +34,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
 {
     ETH_MARKER_EVENT("Camera System - Update");
 
-    Graphics::GraphicConfig& gfxConfig = Graphics::GraphicCore::GetGraphicConfig();
+    const Graphics::GraphicConfig& gfxConfig = Graphics::GraphicCore::GetGraphicConfig();
 
     for (EntityID entityID : m_Entities)
     {

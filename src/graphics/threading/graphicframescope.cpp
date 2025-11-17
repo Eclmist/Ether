@@ -22,13 +22,13 @@
 
 Ether::Graphics::GraphicsFrameScope::GraphicsFrameScope()
 {
-    if (GraphicCore::GetGraphicThread().IsGraphicsThreadEnabled())
-        GraphicCore::GetGraphicThread().SignalFrame();
+    if (GraphicCore::GetRenderThread().IsGraphicsThreadEnabled())
+        GraphicCore::GetRenderThread().SignalFrame();
 }
 
 Ether::Graphics::GraphicsFrameScope::~GraphicsFrameScope()
 {
-    if (GraphicCore::GetGraphicThread().IsGraphicsThreadEnabled())
-        GraphicCore::GetGraphicThread().WaitForFrame();
+    if (GraphicCore::GetRenderThread().IsGraphicsThreadEnabled())
+        GraphicCore::GetRenderThread().WaitForFrame();
 }
 

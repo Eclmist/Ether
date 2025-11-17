@@ -40,7 +40,7 @@ public:
 
     void Initialize();
     void LoadApplication(IApplicationBase& app);
-    void RunEngineLoop();
+    void MainEngineLoop();
     void Shutdown();
 
 public:

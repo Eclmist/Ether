@@ -25,11 +25,11 @@
 
 namespace Ether::Graphics
 {
-class GraphicThread : public NonCopyable, public NonMovable
+class RenderThread : public NonCopyable, public NonMovable
 {
 public:
-    GraphicThread();
-    ~GraphicThread();
+    RenderThread();
+    ~RenderThread();
 
 public:
     ETH_GRAPHIC_DLL bool IsGraphicsThread();
@@ -37,9 +37,12 @@ public:
     ETH_GRAPHIC_DLL void EnqueueRenderCommand(std::function<void()> command);
 
 public:
-    void InitializeGraphicsThread();
-    void ShutdownGraphicsThread();
-    void GraphicsThreadFunction();
+    inline bool IsFrameComplete() const { return m_FrameComplete.load(); }
+
+public:
+    void MainRenderLoop();
+
+public:
     void ProcessRenderCommands();
     void SignalFrame();
     void WaitForFrame();

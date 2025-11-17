@@ -81,7 +81,7 @@ void SampleApp::OnShutdown()
 
 void SampleApp::UpdateGraphicConfig() const
 {
-    Ether::Graphics::GraphicConfig& graphicConfig = Ether::Graphics::GetGraphicConfig();
+    Ether::Graphics::GraphicConfig& gfxConfig = Ether::Graphics::GetGraphicConfig();
 
     if (Input::GetKeyDown(KeyCode_ToggleFullscreen))
         Ether::Client::SetFullscreen(!Ether::Client::IsFullscreen());
@@ -94,32 +94,32 @@ void SampleApp::UpdateGraphicConfig() const
             : Ether::Graphics::RaytracingMode::ReSTIR;
         */
 
-        graphicConfig.m_IsRaytracingDebugEnabled ^= true;
+        gfxConfig.m_IsRaytracingDebugEnabled ^= true;
     }
 
     if (Input::GetKeyDown(KeyCode_ToggleDebugGui))
-        graphicConfig.SetDebugGuiEnabled(!graphicConfig.IsDebugGuiEnabled());
+        gfxConfig.SetDebugGuiEnabled(!gfxConfig.IsDebugGuiEnabled());
 
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::J))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(-1, 0, 0, 0) *
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection + Ether::ethVector4(-1, 0, 0, 0) *
 
                                        Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::L))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(1, 0, 0, 0) *
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection + Ether::ethVector4(1, 0, 0, 0) *
                                        Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::I))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, 1, 0) *
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection + Ether::ethVector4(0, 0, 1, 0) *
                                        Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::K))
-        graphicConfig.m_SunDirection = (graphicConfig.m_SunDirection + Ether::ethVector4(0, 0, -1, 0) *
+        gfxConfig.m_SunDirection = (gfxConfig.m_SunDirection + Ether::ethVector4(0, 0, -1, 0) *
                                        Time::GetDeltaTime() * 0.0002).Normalized();
     if (Input::GetKey((KeyCode)Win32::KeyCode::U))
-        graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.0002);
+        gfxConfig.m_SunDirection =
+            (gfxConfig.m_SunDirection + Ether::ethVector4(0, 1, 0, 0) * Time::GetDeltaTime() * 0.0002);
     if (Input::GetKey((KeyCode)Win32::KeyCode::O))
-        graphicConfig.m_SunDirection =
-            (graphicConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.0002);
+        gfxConfig.m_SunDirection =
+            (gfxConfig.m_SunDirection + Ether::ethVector4(0, -1, 0, 0) * Time::GetDeltaTime() * 0.0002);
 }
 
 void SampleApp::UpdateCamera() const

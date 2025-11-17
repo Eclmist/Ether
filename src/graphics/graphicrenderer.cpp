@@ -32,7 +32,7 @@ Ether::Graphics::GraphicRenderer::GraphicRenderer()
 
 void Ether::Graphics::GraphicRenderer::WaitForPresent()
 {
-    ETH_MARKER_EVENT("Renderer - Wait for Present");
+    ETH_MARKER_EVENT("Renderer - Waiting for GPU (Present)");
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     GraphicCore::GetCommandManager().GetGraphicQueue().StallForFence(gfxDisplay.GetBackBufferFence());
 
@@ -57,9 +57,9 @@ void Ether::Graphics::GraphicRenderer::Present()
 void Ether::Graphics::GraphicRenderer::Cleanup()
 {
     AssertGraphics(
-        !GraphicCore::GetGraphicThread().IsGraphicsThreadEnabled() || 
-         GraphicCore::GetGraphicThread().IsGraphicsThread(), 
-        "Render data should only be cleared by the graphics thread");
+        !GraphicCore::GetRenderThread().IsGraphicsThreadEnabled() || 
+        !GraphicCore::GetRenderThread().IsGraphicsThread(), 
+        "Render data should only be cleared by the game thread");
 
     GetThreadedRenderData().m_Visuals.clear();
     GetThreadedRenderData().m_VisualBatches.clear();
@@ -69,7 +69,7 @@ void Ether::Graphics::GraphicRenderer::Cleanup()
 
 Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRenderData()
 {
-    if (GraphicCore::GetGraphicThread().IsGraphicsThread())
+    if (GraphicCore::GetRenderThread().IsGraphicsThread())
     {
         return m_RenderData[(m_FrameNumber + 1) % 2];
     }
@@ -78,3 +78,4 @@ Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRender
         return m_RenderData[m_FrameNumber % 2];
     }
 }
+
