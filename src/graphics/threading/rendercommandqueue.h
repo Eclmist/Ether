@@ -20,37 +20,40 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/common/renderdata.h"
-#include "graphics/context/graphiccontext.h"
-#include "graphics/schedule/framescheduler.h"
+#include "graphics/threading/rendercommand.h"
+#include <queue>
 
 namespace Ether::Graphics
 {
-class GraphicRenderer : public NonCopyable, public NonMovable
+class RenderCommandQueue
 {
 public:
-    GraphicRenderer();
-    ~GraphicRenderer() = default;
+    void Enqueue(RenderCommand&& command)
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_Commands.push(std::move(command));
+    }
 
-public:
-    inline uint64_t GetFrameNumber() const { return m_FrameNumber; }
-    inline void IncrementFrameNumber() { m_FrameNumber++; }
+    bool TryDequeue(RenderCommand& command)
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if (m_Commands.empty())
+            return false;
 
-public:
-    ETH_GRAPHIC_DLL RenderData& GetThreadedRenderData();
+        command = std::move(m_Commands.front());
+        m_Commands.pop();
+        return true;
+    }
 
-public:
-    void WaitForPresent();
-    void Render();
-    void Present();
-    void Cleanup();
+    void Clear()
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        while (!m_Commands.empty())
+            m_Commands.pop();
+    }
 
 private:
-    uint64_t m_FrameNumber;
-    bool m_ExportRequested;
-    FrameScheduler m_Scheduler;
-
-    // Double Buffered render data for render thread
-    RenderData m_RenderData[2];
+    std::mutex m_Mutex;
+    std::queue<RenderCommand> m_Commands;
 };
 } // namespace Ether::Graphics

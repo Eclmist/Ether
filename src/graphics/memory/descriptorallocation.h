@@ -26,7 +26,7 @@ namespace Ether::Graphics
 {
 class DescriptorAllocator;
 
-class DescriptorAllocation : public FreeListAllocation
+class DescriptorAllocation : public FreeListAllocation, public NonCopyable
 {
 public:
     DescriptorAllocation(
@@ -38,9 +38,6 @@ public:
         DescriptorAllocator* parentAllocator);
 
     ~DescriptorAllocation() noexcept;
-
-    DescriptorAllocation(const DescriptorAllocation& copy) = delete;
-    DescriptorAllocation& operator=(const DescriptorAllocation& copy) = delete;
     DescriptorAllocation(DescriptorAllocation&& move) noexcept;
     DescriptorAllocation& operator=(DescriptorAllocation&& move) noexcept;
 

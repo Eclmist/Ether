@@ -89,7 +89,7 @@ void Ether::Ecs::EcsCameraSystem::Update()
         ethMatrix4x4 rotation = Transform::GetRotationMatrix(ethQuaternion::FromEuler(transform.m_Rotation));
         ethVector4 forward = rotation * ethVector4(0, 0, 1, 0);
 
-        Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+        Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
         renderData.m_ViewMatrix = viewMatrix;
         renderData.m_ProjectionMatrix = projectionMatrixJittered;
         renderData.m_ProjectionMatrixNoJitter = projectionMatrixNoJitter;

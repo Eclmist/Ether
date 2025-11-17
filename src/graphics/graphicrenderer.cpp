@@ -36,7 +36,6 @@ void Ether::Graphics::GraphicRenderer::WaitForPresent()
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     GraphicCore::GetCommandManager().GetGraphicQueue().StallForFence(gfxDisplay.GetBackBufferFence());
 
-    m_FrameNumber++;
 }
 
 void Ether::Graphics::GraphicRenderer::Render()
@@ -57,8 +56,25 @@ void Ether::Graphics::GraphicRenderer::Present()
 
 void Ether::Graphics::GraphicRenderer::Cleanup()
 {
-    m_RenderData.m_Visuals.clear();
-    m_RenderData.m_VisualBatches.clear();
-    m_RenderData.m_SkinnedVisuals.clear();
-    m_RenderData.m_RaytracingVisuals.clear();
+    AssertGraphics(
+        !GraphicCore::GetGraphicThread().IsGraphicsThreadEnabled() || 
+         GraphicCore::GetGraphicThread().IsGraphicsThread(), 
+        "Render data should only be cleared by the graphics thread");
+
+    GetThreadedRenderData().m_Visuals.clear();
+    GetThreadedRenderData().m_VisualBatches.clear();
+    GetThreadedRenderData().m_SkinnedVisuals.clear();
+    GetThreadedRenderData().m_RaytracingVisuals.clear();
+}
+
+Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRenderData()
+{
+    if (GraphicCore::GetGraphicThread().IsGraphicsThread())
+    {
+        return m_RenderData[(m_FrameNumber + 1) % 2];
+    }
+    else
+    {
+        return m_RenderData[m_FrameNumber % 2];
+    }
 }

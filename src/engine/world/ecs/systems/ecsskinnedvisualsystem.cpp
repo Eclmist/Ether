@@ -39,7 +39,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
     ETH_MARKER_EVENT("Skinned Visual System - Update");
 
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
-    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
     std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
     for (EntityID entityID : m_Entities)
@@ -192,7 +192,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
         boneMatrices[b] = pose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
 
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat>& skinningVertices = skinnedMesh.GetSkinningVertices();
-    std::vector<Graphics::VertexFormats::BaseVertexFormat>& stagingVertices = skinnedMesh.GetStagingVertices();
+    std::vector<Graphics::VertexFormats::BaseVertexFormat> stagingVertices = skinnedMesh.GetStagingVertices();
     const uint32_t numVertices = skinningVertices.size();
 
     std::for_each(
@@ -231,6 +231,11 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
             stagingVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
             stagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
         });
+    
+    Graphics::GraphicCore::GetGraphicThread().EnqueueRenderCommand(
+        [stagingVertices = std::move(stagingVertices), &skinnedMesh]() mutable {
+        skinnedMesh.SetStagingVertices(std::move(stagingVertices));
+    });
 }
 
 bool Ether::Ecs::EcsSkinnedVisualSystem::IsVisualCulled(const Graphics::Visual& visual) const
@@ -239,7 +244,7 @@ bool Ether::Ecs::EcsSkinnedVisualSystem::IsVisualCulled(const Graphics::Visual& 
     if (camera == nullptr)
         return false;
 
-    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
 
     Aabb visualAabb = visual.m_Mesh->GetBoundingBox();
 

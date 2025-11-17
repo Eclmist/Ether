@@ -33,6 +33,10 @@
 #include "graphics/memory/bindlessdescriptormanager.h"
 #include "graphics/shaderdaemon/shaderdaemon.h"
 
+#include "graphics/threading/graphicframescope.h"
+#include "graphics/threading/rendercommandqueue.h"
+#include "graphics/threading/graphicthread.h"
+
 #include "graphics/graphiccommon.h"
 #include "graphics/graphicdisplay.h"
 #include "graphics/graphicrenderer.h"
@@ -65,11 +69,13 @@ public:
     static inline GraphicDisplay& GetGraphicDisplay() { return *Instance().m_GraphicDisplay; }
     static inline GraphicRenderer& GetGraphicRenderer() { return *Instance().m_GraphicRenderer; }
     static inline GraphicExporter& GetGraphicExporter() { return *Instance().m_GraphicExporter; }
+    static inline GraphicThread& GetGraphicThread() { return *Instance().m_GraphicThread; }
     static inline ShaderDaemon& GetShaderDaemon() { return *Instance().m_ShaderDaemon; }
 
     static inline bool IsInitialized() { return Instance().m_IsInitialized; }
 
 public:
+    static void EnqueueRenderCommand(std::function<void()> cmd) { GetGraphicThread().EnqueueRenderCommand(cmd); }
     static void NewFrame();
     static void EndOfFrame();
     static void FlushGpu();
@@ -90,6 +96,7 @@ private:
     std::unique_ptr<GraphicDisplay> m_GraphicDisplay;
     std::unique_ptr<GraphicRenderer> m_GraphicRenderer;
     std::unique_ptr<GraphicExporter> m_GraphicExporter;
+    std::unique_ptr<GraphicThread> m_GraphicThread;
     std::unique_ptr<ShaderDaemon> m_ShaderDaemon;
 
 private:

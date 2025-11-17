@@ -58,7 +58,7 @@ void Ether::Graphics::RaytracedTranslucencyProducer::Initialize(ResourceContext&
 void Ether::Graphics::RaytracedTranslucencyProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.size();
+    uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.size();
 
     schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
     schedule.Read(ACCESS_GFX_AS(RTTopLevelAccelerationStructure));
@@ -75,8 +75,8 @@ void Ether::Graphics::RaytracedTranslucencyProducer::RenderFrame(GraphicContext&
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
-    const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
-    const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals;
+    const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals;
+    const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals;
 
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.PushMarker("Raytrace translucencies");
@@ -102,7 +102,7 @@ bool Ether::Graphics::RaytracedTranslucencyProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
         return false;
 
     return true;

@@ -36,13 +36,13 @@ void Ether::Graphics::MaterialTableProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::MaterialTableProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    uint32_t numMaterials = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches.size();
+    uint32_t numMaterials = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_VisualBatches.size();
     schedule.NewSR(ACCESS_GFX_SR(MaterialTable), sizeof(Shader::Material) * numMaterials, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::Material));
 }
 
 void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetRenderData();
+    const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
     uint32_t numMaterials = renderData.m_VisualBatches.size();
 
     if (numMaterials > 256)

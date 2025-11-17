@@ -50,7 +50,7 @@ bool Ether::Graphics::DenoisedLightingProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals.empty())
         return false;
 
     return true;

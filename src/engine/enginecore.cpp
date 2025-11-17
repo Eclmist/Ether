@@ -63,8 +63,8 @@ void Ether::EngineCore::RunEngineLoop()
 
         m_MainApplication->OnPreRender({});
         Graphics::GraphicCore::NewFrame();
-        m_MainApplication->OnPostRender();
         Graphics::GraphicCore::EndOfFrame();
+        m_MainApplication->OnPostRender();
     }
 
     m_MainApplication->OnShutdown();
@@ -90,6 +90,7 @@ void Ether::EngineCore::InitializeGraphicsLayer()
     config.SetWindowHandle(m_MainWindow->GetWindowHandle());
     config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
     config.SetUseShaderDaemon(m_CommandLineOptions.GetUseShaderDaemon());
+    config.SetUseGraphicsThread(m_CommandLineOptions.GetUseGraphicsThread());
     config.SetShaderSourceDir(m_CommandLineOptions.GetShaderSourcePath());
     config.SetResolution(m_EngineConfig.GetClientSize());
 

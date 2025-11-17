@@ -29,6 +29,7 @@ Ether::CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
     , m_UseShaderDaemon(false)
     , m_UseValidationLayer(false)
+    , m_UseGraphicsThread(true)
     , m_WorldName("")
     , m_ShaderSourcePath(".\\Data\\shaders\\")
 #if defined(ETH_TOOLMODE)
@@ -57,6 +58,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_UseShaderDaemon = true;
     else if (flag == "-validationlayer")
         m_UseValidationLayer = true;
+    else if (flag == "-singlethreaded")
+        m_UseGraphicsThread = false;
     else if (flag == "-headless")
         m_UseHeadlessRenderer = true;
     else if (flag == "-world")

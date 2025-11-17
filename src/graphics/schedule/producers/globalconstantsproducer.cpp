@@ -41,7 +41,7 @@ void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& s
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetRenderData();
+    const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
 
     static ethMatrix4x4 viewMatrixPrev = renderData.m_ViewMatrix;
     static ethMatrix4x4 projMatrixPrev = renderData.m_ProjectionMatrix;
@@ -104,7 +104,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_SamplerIndex_Linear_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Wrap;
     globalConstants->m_SamplerIndex_Linear_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Border;
 
-    StringID hdriID = GraphicCore::GetGraphicRenderer().GetRenderData().m_HdriTextureID;
+    StringID hdriID = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_HdriTextureID;
     globalConstants->m_HdriTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(hdriID); 
 
     ctx.CopyBufferRegion(

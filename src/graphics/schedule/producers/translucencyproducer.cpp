@@ -63,8 +63,8 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
-    const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
-    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
+    const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_VisualBatches;
+    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_SkinnedVisuals;
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
@@ -114,7 +114,7 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
 
 bool Ether::Graphics::TranslucencyProducer::IsEnabled()
 {
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals.empty())
         return false;
 
     if (GraphicCore::GetGraphicConfig().m_TranslucencyMode != TranslucencyMode::ForwardRaster)

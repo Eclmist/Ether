@@ -59,7 +59,7 @@ public:
         T m_Value;
     };
 
-    class AnimationChannelBase
+    class AnimationChannelBase : public NonCopyable
     {
     public:
         virtual ~AnimationChannelBase() = default;
@@ -153,10 +153,6 @@ public:
 public:
     AnimationClip(const std::string& name = "Unnamed Animation Clip", float totalTicks = 0.0f, float ticksPerSecond = 30.0f);
     ~AnimationClip() override = default;
-
-    // Delete copy operations
-    AnimationClip(const AnimationClip&) = delete;
-    AnimationClip& operator=(const AnimationClip&) = delete;
 
     // Allow move operations
     AnimationClip(AnimationClip&&) = default;

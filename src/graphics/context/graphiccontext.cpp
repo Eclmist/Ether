@@ -30,11 +30,6 @@ Ether::Graphics::GraphicContext::GraphicContext(const char* contextName, size_t 
 {
 }
 
-void Ether::Graphics::GraphicContext::SetRenderData(const RenderData& renderData)
-{
-    m_RenderData = renderData;
-}
-
 void Ether::Graphics::GraphicContext::SetViewport(const RhiViewportDesc& viewport)
 {
     m_CommandList->SetViewport(viewport);

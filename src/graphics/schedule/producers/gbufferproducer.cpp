@@ -77,8 +77,8 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
 
-    const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetRenderData().m_VisualBatches;
-    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
+    const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_VisualBatches;
+    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_SkinnedVisuals;
 
     ctx.PushMarker("Clear");
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTexture0)), RhiResourceState::RenderTarget);
@@ -139,7 +139,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
 bool Ether::Graphics::GBufferProducer::IsEnabled()
 {
     // This will break because we have later passes dependent on this pass, and no frame graph is implemented yet
-    //if (GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals.empty())
+    //if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals.empty())
     //    return false;
 
     return true;

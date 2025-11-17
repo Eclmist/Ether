@@ -32,6 +32,7 @@ public:
 public:
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
+    inline bool GetUseGraphicsThread() const { return m_UseGraphicsThread; }
     inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
     inline bool GetUseHeadlessRenderer() const { return m_UseHeadlessRenderer; }
     inline const std::string& GetWorldName() const { return m_WorldName; }
@@ -53,6 +54,7 @@ private:
 private:
     bool m_UseSourceShaders;
     bool m_UseShaderDaemon;
+    bool m_UseGraphicsThread;
     bool m_UseValidationLayer;
     bool m_UseHeadlessRenderer;
 

@@ -41,16 +41,16 @@ void Ether::Graphics::RaytracingResourceProducer::Initialize(ResourceContext& rc
 void Ether::Graphics::RaytracingResourceProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.size();
+    uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.size();
 
     schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numRTVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
-    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals);
+    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals);
 }
 
 void Ether::Graphics::RaytracingResourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {    
-    const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals;
-    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_SkinnedVisuals;
+    const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals;
+    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_SkinnedVisuals;
 
     // Temporarily weave in skinned mesh update here for convenience.
     // Really need a new render pass for this. (TODO - ComputeSkinning)

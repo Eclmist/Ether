@@ -57,6 +57,7 @@ public:
     inline std::string GetShaderPath() const { return m_ShaderPath; }
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
+    inline bool GetUseGraphicsThread() const { return m_UseGraphicsThread; }
     inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
     inline bool IsDebugGuiEnabled() const { return m_IsDebugGuiEnabled; }
     inline void* GetWindowHandle() const { return m_WindowHandle; }
@@ -66,6 +67,7 @@ public:
     inline void SetShaderSourceDir(const std::string& dir) { m_ShaderPath = dir; }
     inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
     inline void SetUseShaderDaemon(bool enable) { m_UseShaderDaemon = enable; }
+    inline void SetUseGraphicsThread(bool enable) { m_UseGraphicsThread = enable; }
     inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
     inline void SetDebugGuiEnabled(bool enabled) { m_IsDebugGuiEnabled = enabled; }
     inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
@@ -135,6 +137,7 @@ private:
     std::string m_ShaderPath;
     bool m_UseSourceShaders;
     bool m_UseShaderDaemon;
+    bool m_UseGraphicsThread;
     bool m_IsValidationLayerEnabled;
     bool m_IsDebugGuiEnabled;
     void* m_WindowHandle;

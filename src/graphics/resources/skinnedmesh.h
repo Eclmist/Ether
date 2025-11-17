@@ -50,6 +50,7 @@ public:
 
 public:
     void SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices);
+    void SetStagingVertices(std::vector<VertexFormats::BaseVertexFormat>&& vertices);
     void SetSkeletonGuid(StringID guid) { m_SkeletonGuid = guid; }
     void SetAnimationGuid(StringID guid) { m_AnimationGuid = guid; }
 

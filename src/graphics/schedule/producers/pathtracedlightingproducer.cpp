@@ -85,7 +85,7 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
-    const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetRenderData().m_Visuals;
+    const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals;
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
 
@@ -124,7 +124,7 @@ bool Ether::Graphics::PathtracedLightingProducer::IsEnabled()
     if (GraphicCore::GetGraphicConfig().m_LightingMode != RaytracingMode::Pathtracer)
         return false;
 
-    if (GraphicCore::GetGraphicRenderer().GetRenderData().m_RaytracingVisuals.empty())
+    if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
         return false;
 
     return true;

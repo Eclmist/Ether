@@ -91,6 +91,13 @@ void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::
     ComputeBoundingBox();
 }
 
+void Ether::Graphics::SkinnedMesh::SetStagingVertices(std::vector<VertexFormats::BaseVertexFormat>&& vertices)
+{
+    m_StagingVertices = std::move(vertices);
+
+    // TODO: Compute bounding box here?
+}
+
 void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
 {
     const size_t vertexBufferSize = m_NumVertices * GetVertexStride();

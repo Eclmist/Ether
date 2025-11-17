@@ -34,7 +34,6 @@ public:
 
 public:
     // Common
-    void SetRenderData(const RenderData& renderData);
     void SetViewport(const RhiViewportDesc& viewport);
     void SetScissorRect(const RhiScissorDesc& scissor);
     void SetVertexBuffer(const RhiVertexBufferViewDesc& vertexBuffer);
@@ -59,6 +58,5 @@ public:
 
 private:
     RhiViewportDesc m_Viewport;
-    RenderData m_RenderData;
 };
 } // namespace Ether::Graphics

@@ -40,7 +40,7 @@ void Ether::Ecs::EcsVisualSystem::Update()
 
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
 
-    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
     std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
     for (EntityID entityID : m_Entities)
@@ -101,7 +101,7 @@ bool Ether::Ecs::EcsVisualSystem::IsVisualCulled(const Graphics::Visual& visual)
     if (camera == nullptr)
         return false;
 
-    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetRenderData();
+    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
 
     Aabb visualAabb = visual.m_Mesh->GetBoundingBox();
 
