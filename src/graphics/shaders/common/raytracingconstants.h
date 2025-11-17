@@ -24,7 +24,7 @@
 ETH_BEGIN_SHADER_NAMESPACE
 
 #define INDIRECT_MIP_LEVEL  8
-#define MAX_DEPTH           2
+#define MAX_DEPTH           1
 
 // TODO: implement various biases (pullback, surface, etc.)
 #define RAY_TMAX            128

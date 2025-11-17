@@ -184,18 +184,12 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     const float totalTicks = animationClip.GetTotalTicks();
     const float timeInSeconds = animationTime / 1000.0f;
     const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, totalTicks);
-    const float loopedTimeInTicksPrev = std::fmod((timeInSeconds - Time::GetDeltaTime() / 1000.0f) * ticksPerSecond, totalTicks);
 
-    const SkeletonPose prevPose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicksPrev);
     const SkeletonPose pose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicks);
 
     std::vector<ethMatrix4x4> boneMatrices(skeleton.NumBones());
-    std::vector<ethMatrix4x4> prevBoneMatrices(skeleton.NumBones());
     for (uint32_t b = 0; b < skeleton.NumBones(); ++b)
-    {
         boneMatrices[b] = pose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
-        prevBoneMatrices[b] = prevPose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
-    }
 
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat>& skinningVertices = skinnedMesh.GetSkinningVertices();
     std::vector<Graphics::VertexFormats::BaseVertexFormat>& stagingVertices = skinnedMesh.GetStagingVertices();
@@ -211,7 +205,6 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
 
             ethVector4 skinnedPos(0, 0, 0, 0);
             ethVector4 skinnedNormal(0, 0, 0, 0);
-            ethVector4 prevSkinnedPos(0, 0, 0, 0);
 
             for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
             {
@@ -221,7 +214,6 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
                     continue;
 
                 const ethMatrix4x4 finalBoneMatrix = boneMatrices[boneIndex];
-                const ethMatrix4x4 prevBoneMatrix = prevBoneMatrices[boneIndex];
 
                 skinnedPos += (finalBoneMatrix * ethVector4(
                                                      src.m_Attributes.m_Position.x,
@@ -233,15 +225,10 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
                                                         src.m_Attributes.m_Normal.y,
                                                         src.m_Attributes.m_Normal.z,
                                                         0.0f)) * weight;
-                prevSkinnedPos += (prevBoneMatrix * ethVector4(
-                                                        src.m_Attributes.m_Position.x,
-                                                        src.m_Attributes.m_Position.y,
-                                                        src.m_Attributes.m_Position.z,
-                                                        1.0f)) * weight;
             }
 
+            stagingVertices[i].m_Attributes.m_PrevPosition = stagingVertices[i].m_Attributes.m_Position;
             stagingVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
-            stagingVertices[i].m_Attributes.m_PrevPosition = prevSkinnedPos.Resize<3>();
             stagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
         });
 }

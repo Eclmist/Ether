@@ -42,6 +42,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 
 void Ether::Toolmode::EtherHeadless::Initialize()
 {
+    LogInfo("%p", Ether::Toolmode::GetWindowHandle());
 }
 
 // The idea of this block is to test toolmode functionality without having the actual tool developed yet
@@ -271,12 +272,12 @@ void Ether::Toolmode::EtherHeadless::UpdateGraphicConfig() const
 void Ether::Toolmode::EtherHeadless::UpdateCamera() const
 {
     static ethVector3 cameraRotation;
-    static float moveSpeed = 1.0f;
+    static float moveSpeed = 0.001f;
 
     if (Input::GetKey((KeyCode)Win32::KeyCode::ShiftKey))
-        moveSpeed = 2.0f;
+        moveSpeed = 0.002f;
     else
-        moveSpeed = 1.0f;
+        moveSpeed = 0.001f;
 
     if (Input::GetMouseButton(2))
     {

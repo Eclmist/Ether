@@ -161,3 +161,4 @@ void Ether::Toolmode::IpcManager::CommandListenerThread()
         }
     }
 }
+
