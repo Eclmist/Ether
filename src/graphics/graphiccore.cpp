@@ -88,5 +88,4 @@ void Ether::Graphics::GraphicCore::EndOfFrame()
 void Ether::Graphics::GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
-    GetRenderThread().WaitForFrame();
 }
