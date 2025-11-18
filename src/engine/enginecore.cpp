@@ -46,11 +46,9 @@ void Ether::EngineCore::LoadApplication(IApplicationBase& app)
 
 void Ether::EngineCore::MainEngineLoop()
 {
-    ETH_MARKER_THREAD("Engine Thread");
-
     while (!m_ShutdownQueued)
     {
-        ETH_MARKER_FRAME("Engine Frame");
+        ETH_MARKER_FRAME("Engine Thread");
 
         Time::NewFrame();
         Input::NewFrame();

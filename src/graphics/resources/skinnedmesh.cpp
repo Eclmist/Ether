@@ -68,6 +68,8 @@ void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
 
 void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
 {
+    std::lock_guard lock(m_SkinningDataMutex);
+
     m_BoundingBox.m_Min = 9999999;
     m_BoundingBox.m_Max = -9999999;
 
@@ -85,6 +87,8 @@ void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
 
 void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices)
 {
+    std::lock_guard lock(m_SkinningDataMutex);
+
     m_PackedVertices = std::move(vertices);
     m_NumVertices = m_PackedVertices.size();
 
@@ -93,6 +97,8 @@ void Ether::Graphics::SkinnedMesh::SetPackedVertices(std::vector<VertexFormats::
 
 void Ether::Graphics::SkinnedMesh::SetStagingVertices(std::vector<VertexFormats::BaseVertexFormat>&& vertices)
 {
+    std::lock_guard lock(m_SkinningDataMutex);
+
     m_StagingVertices = std::move(vertices);
 
     // TODO: Compute bounding box here?
@@ -100,6 +106,8 @@ void Ether::Graphics::SkinnedMesh::SetStagingVertices(std::vector<VertexFormats:
 
 void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
 {
+    std::lock_guard lock(m_SkinningDataMutex);
+
     const size_t vertexBufferSize = m_NumVertices * GetVertexStride();
 
     // Copy CPU-skinned data into staging/upload buffer
@@ -144,5 +152,17 @@ void Ether::Graphics::SkinnedMesh::RefitAccelerationStructure(CommandContext& ct
     ctx.PushMarker("Refit BLAS");
     ctx.RefitBottomLevelAccelerationStructure(*m_AccelerationStructure);
     ctx.PopMarker();
+}
+
+std::vector<Ether::Graphics::VertexFormats::SkinnedVertexFormat>& Ether::Graphics::SkinnedMesh::GetSkinningVertices()
+{
+    std::lock_guard lock(m_SkinningDataMutex);
+    return m_PackedVertices;
+}
+
+std::vector<Ether::Graphics::VertexFormats::BaseVertexFormat>& Ether::Graphics::SkinnedMesh::GetStagingVertices()
+{
+    std::lock_guard lock(m_SkinningDataMutex);
+    return m_StagingVertices;
 }
 

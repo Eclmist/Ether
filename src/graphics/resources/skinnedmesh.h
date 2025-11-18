@@ -45,8 +45,8 @@ public:
     uint32_t GetVertexStride() override { return sizeof(VertexFormats::BaseVertexFormat); }
 
     // TODO: Remove after GPU skinning implementation
-    std::vector<VertexFormats::SkinnedVertexFormat>& GetSkinningVertices() { return m_PackedVertices; }
-    std::vector<VertexFormats::BaseVertexFormat>& GetStagingVertices() { return m_StagingVertices; }
+    std::vector<VertexFormats::SkinnedVertexFormat>& GetSkinningVertices();
+    std::vector<VertexFormats::BaseVertexFormat>& GetStagingVertices();
 
 public:
     void SetPackedVertices(std::vector<VertexFormats::SkinnedVertexFormat>&& vertices);
@@ -68,6 +68,7 @@ protected:
     // RtCamp11 Hack: Update skinning vertex buffer from CPU side (TODO)
     std::unique_ptr<RhiResource> m_StagingVertexBufferResource;
     std::vector<VertexFormats::BaseVertexFormat> m_StagingVertices;
+    std::mutex m_SkinningDataMutex;
 
     StringID m_SkeletonGuid;
     StringID m_AnimationGuid;

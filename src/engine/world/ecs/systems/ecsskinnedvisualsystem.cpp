@@ -42,6 +42,8 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
     std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
+    m_ProcessedSkeletalPoses.clear();
+
     for (EntityID entityID : m_Entities)
     {
         Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
@@ -189,58 +191,67 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     const float timeInSeconds = animationTime / 1000.0f;
     const float loopedTimeInTicks = std::fmod(timeInSeconds * ticksPerSecond, totalTicks);
 
-    const SkeletonPose pose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicks);
-
     std::vector<ethMatrix4x4> boneMatrices(skeleton.NumBones());
-    for (uint32_t b = 0; b < skeleton.NumBones(); ++b)
-        boneMatrices[b] = pose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
 
-    std::vector<Graphics::VertexFormats::SkinnedVertexFormat>& skinningVertices = skinnedMesh.GetSkinningVertices();
-    std::vector<Graphics::VertexFormats::BaseVertexFormat> stagingVertices = skinnedMesh.GetStagingVertices();
-    const uint32_t numVertices = skinningVertices.size();
+    std::pair<const Skeleton*, const AnimationClip*> skeletalAnimation = std::make_pair(&skeleton, &animationClip);
 
-    std::for_each(
-        std::execution::par,
-        std::begin(skinningVertices),
-        std::begin(skinningVertices) + numVertices,
-        [&](const Graphics::VertexFormats::SkinnedVertexFormat& src)
-        {
-            const uint32_t i = &src - &skinningVertices[0];
+    if (m_ProcessedSkeletalPoses.contains(skeletalAnimation))
+    {
+        boneMatrices = m_ProcessedSkeletalPoses.at(skeletalAnimation);
+    }
+    else
+    {
+        ETH_MARKER_EVENT("CPU Skinning - Bone Matrices");
 
-            ETH_MARKER_EVENT("CPU Skinning - Vertex");
-            ethVector4 skinnedPos(0, 0, 0, 0);
-            ethVector4 skinnedNormal(0, 0, 0, 0);
+        const SkeletonPose pose = CalculatePoseFromAnimation(skeleton, animationClip, loopedTimeInTicks);
 
-            for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
-            {
-                const uint32_t boneIndex = src.m_BoneIndices[j];
-                const float weight = src.m_BoneWeights[j];
-                if (weight <= 0.0f || boneIndex == InvalidBoneIndex)
-                    continue;
+        for (uint32_t b = 0; b < skeleton.NumBones(); ++b)
+            boneMatrices[b] = pose.m_GlobalBoneTransforms[b] * skeleton.GetBone(b).m_InverseBindMatrix;
 
-                const ethMatrix4x4 finalBoneMatrix = boneMatrices[boneIndex];
-
-                skinnedPos += (finalBoneMatrix * ethVector4(
-                                                     src.m_Attributes.m_Position.x,
-                                                     src.m_Attributes.m_Position.y,
-                                                     src.m_Attributes.m_Position.z,
-                                                     1.0f)) * weight;
-                skinnedNormal += (finalBoneMatrix * ethVector4(
-                                                        src.m_Attributes.m_Normal.x,
-                                                        src.m_Attributes.m_Normal.y,
-                                                        src.m_Attributes.m_Normal.z,
-                                                        0.0f)) * weight;
-            }
-
-            stagingVertices[i].m_Attributes.m_PrevPosition = stagingVertices[i].m_Attributes.m_Position;
-            stagingVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
-            stagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
-        });
+        m_ProcessedSkeletalPoses.emplace(skeletalAnimation, boneMatrices);
+    }
     
-    Graphics::GraphicCore::GetRenderThread().EnqueueRenderCommand(
-        [stagingVertices = std::move(stagingVertices), &skinnedMesh]() mutable {
-        skinnedMesh.SetStagingVertices(std::move(stagingVertices));
-    });
+    {
+        ETH_MARKER_EVENT("CPU Skinning - Vertex Arithmetics");
+
+        std::vector<Graphics::VertexFormats::SkinnedVertexFormat>& skinningVertices = skinnedMesh.GetSkinningVertices();
+        std::vector<Graphics::VertexFormats::BaseVertexFormat> stagingVertices = skinnedMesh.GetStagingVertices();
+        const uint32_t numVertices = skinningVertices.size();
+
+        std::for_each(
+            std::execution::par,
+            std::begin(skinningVertices),
+            std::begin(skinningVertices) + numVertices,
+            [&](const Graphics::VertexFormats::SkinnedVertexFormat& src)
+            {
+                const uint32_t i = &src - &skinningVertices[0];
+                ethVector4 skinnedPos(0, 0, 0, 0);
+                ethVector4 skinnedNormal(0, 0, 0, 0);
+
+                for (uint32_t j = 0; j < MaxBonesPerVextex; ++j)
+                {
+                    const uint32_t boneIndex = skinningVertices[i].m_BoneIndices[j];
+                    const float weight = skinningVertices[i].m_BoneWeights[j];
+                    if (weight <= 0.0f || boneIndex == InvalidBoneIndex)
+                        continue;
+
+                    const ethMatrix4x4& finalBoneMatrix = boneMatrices[boneIndex];
+                    const auto& pos = skinningVertices[i].m_Attributes.m_Position;
+                    const auto& normal = skinningVertices[i].m_Attributes.m_Normal;
+                    skinnedPos += (finalBoneMatrix * ethVector4(pos.x, pos.y, pos.z, 1.0f)) * weight;
+                    skinnedNormal += (finalBoneMatrix * ethVector4(normal.x, normal.y, normal.z, 0.0f)) * weight;
+                }
+
+                stagingVertices[i].m_Attributes.m_PrevPosition = stagingVertices[i].m_Attributes.m_Position;
+                stagingVertices[i].m_Attributes.m_Position = skinnedPos.Resize<3>();
+                stagingVertices[i].m_Attributes.m_Normal = skinnedNormal.Resize<3>().Normalized();
+            });
+
+        Graphics::GraphicCore::GetRenderThread().EnqueueRenderCommand(
+            [stagingVertices = std::move(stagingVertices), &skinnedMesh]() mutable {
+            skinnedMesh.SetStagingVertices(std::move(stagingVertices));
+        });
+    }
 }
 
 bool Ether::Ecs::EcsSkinnedVisualSystem::IsVisualCulled(const Graphics::Visual& visual) const

@@ -85,8 +85,6 @@ void Ether::Graphics::RenderThread::MainRenderLoop()
 
     while (!m_ShutdownRequested)
     {
-        ETH_MARKER_FRAME("Graphics Frame");
-
         {
             std::unique_lock<std::mutex> lock(m_FrameMutex);
             m_FrameCV.wait(lock, [this] { return m_RenderDataReady.load() || m_ShutdownRequested.load(); });

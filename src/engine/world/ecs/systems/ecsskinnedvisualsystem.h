@@ -27,6 +27,21 @@
 
 namespace Ether::Ecs
 {
+
+// TODO: Remove this in favor of storing in a skeleton component
+struct SkeletonAnimPairHash
+{
+    std::size_t operator()(const std::pair<const Skeleton*, const AnimationClip*>& p) const
+    {
+        // Combine hashes of the two pointers
+        std::size_t h1 = std::hash<const Skeleton*>{}(p.first);
+        std::size_t h2 = std::hash<const AnimationClip*>{}(p.second);
+
+        // Simple hash combination (you can use boost::hash_combine pattern)
+        return h1 ^ (h2 << 1);
+    }
+};
+
 class EcsSkinnedVisualSystem : public EcsSystem
 {
 public:
@@ -41,5 +56,9 @@ protected:
     SkeletonPose CalculatePoseFromAnimation(const Skeleton& skeleton, const AnimationClip& animation, float animTimeTicks) const;
     void UpdateSkinnedMesh(Graphics::SkinnedMesh& skinnedMesh, const Skeleton& skeleton, const AnimationClip& animationClip);
     bool IsVisualCulled(const Graphics::Visual& visual) const;
+
+private:
+    // TODO: Remove this in favor of storing in a skeleton component
+    std::unordered_map<std::pair<const Skeleton*, const AnimationClip*>, std::vector<ethMatrix4x4>, SkeletonAnimPairHash> m_ProcessedSkeletalPoses;
 };
 } // namespace Ether::Ecs
