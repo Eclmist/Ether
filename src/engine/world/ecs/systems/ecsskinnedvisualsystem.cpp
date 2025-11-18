@@ -200,10 +200,10 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     ETH_MARKER_EVENT("CPU Skinning");
 
     // --- CPU Skinning --- //
+    // GPU Skinning TODO
     // Loop animation time
     float animationTime = Time::GetTimeSinceStartup();
 
-    // RTCamp11 Hack (TODO)
     const float ticksPerSecond = animationClip.GetTicksPerSecond();
     const float totalTicks = animationClip.GetTotalTicks();
     const float timeInSeconds = animationTime / 1000.0f;

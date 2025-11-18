@@ -65,7 +65,7 @@ protected:
 protected:
     std::vector<VertexFormats::SkinnedVertexFormat> m_PackedVertices;
 
-    // RtCamp11 Hack: Update skinning vertex buffer from CPU side (TODO)
+    // GPU Skinning TODO
     std::unique_ptr<RhiResource> m_StagingVertexBufferResource;
     std::vector<VertexFormats::BaseVertexFormat> m_StagingVertices;
     std::mutex m_SkinningDataMutex;

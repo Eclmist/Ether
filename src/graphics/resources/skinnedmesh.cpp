@@ -62,7 +62,7 @@ void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
     CreateIndexBuffer(ctx);
     CreateAccelerationStructure(ctx, true /* allow update */);
 
-    // RtCamp11 hacks (TODO)
+    // GPU Skinning TODO
     CreateStagingVertexBuffer();
 }
 

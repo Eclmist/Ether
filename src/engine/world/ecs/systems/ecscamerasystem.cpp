@@ -42,10 +42,6 @@ void Ether::Ecs::EcsCameraSystem::Update()
         EcsCameraComponent& camera = entity.GetComponent<EcsCameraComponent>();
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
 
-        // RTCamp11 TODO: To remove (testing)
-        camera.SetNearPlane(0.1f);
-        camera.SetFarPlane(50.0f);
-
         // TODO: Jitter mode is set through imgui debug menu (which is in gfx project), so we need to update the component manually
         // In the future, this should be updated through the engine side, and this can be removed.
         camera.SetJitterMode((JitterMode)Graphics::GraphicCore::GetGraphicConfig().m_TemporalAAJitterMode);
