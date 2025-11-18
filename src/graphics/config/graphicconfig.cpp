@@ -40,5 +40,7 @@ void Ether::Graphics::GraphicConfig::SetResolution(const ethVector2u& resolution
     m_Resolution.y = std::max(1u, resolution.y);
 
     if (GraphicCore::IsInitialized())
+    {
         GraphicCore::GetGraphicDisplay().ResizeBuffers(m_Resolution);
+    }
 }

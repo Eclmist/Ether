@@ -76,8 +76,8 @@ public:
 
 public:
     static void EnqueueRenderCommand(std::function<void()> cmd) { GetRenderThread().EnqueueRenderCommand(cmd); }
+    static void WaitForLastFrame();
     static void NewFrame();
-    static void EndOfFrame();
     static void FlushGpu();
 
 private:

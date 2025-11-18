@@ -65,23 +65,23 @@ void Ether::Graphics::GraphicCore::Shutdown()
     m_IsInitialized = false;
 }
 
-void Ether::Graphics::GraphicCore::NewFrame()
+void Ether::Graphics::GraphicCore::WaitForLastFrame()
 {
     GetRenderThread().WaitForFrame();
-    GetGraphicRenderer().IncrementFrameNumber();
+}
 
+void Ether::Graphics::GraphicCore::NewFrame()
+{
+    GetGraphicRenderer().IncrementFrameNumber();
     GetRenderThread().SignalFrame();
     GetRenderThread().EnqueueRenderCommand([]() {
         GetGraphicRenderer().WaitForPresent();
         GetGraphicRenderer().Render();
         GetGraphicRenderer().Present();
         GetGraphicExporter().Export();
+        GetGraphicExporter().Reset();
     });
-}
 
-void Ether::Graphics::GraphicCore::EndOfFrame()
-{
-    GetGraphicExporter().Reset();
     GetGraphicRenderer().Cleanup();
 }
 
@@ -89,3 +89,4 @@ void Ether::Graphics::GraphicCore::FlushGpu()
 {
     GetCommandManager().Flush();
 }
+

@@ -53,6 +53,7 @@ void Ether::Graphics::GraphicDisplay::Present()
 void Ether::Graphics::GraphicDisplay::ResizeBuffers(const ethVector2u& size)
 {
     GraphicCore::FlushGpu();
+
     ResizeViewport(size);
 
     m_SwapChain->ResizeBuffers({ size });

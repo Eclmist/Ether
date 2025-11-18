@@ -61,11 +61,11 @@ void Ether::EngineCore::MainEngineLoop()
         m_MainApplication->OnUpdate({});
         m_ActiveWorld->Update();
 
-        Graphics::GraphicCore::GetGraphicConfig().SetResolution(m_EngineConfig.GetClientSize());
+        Graphics::GraphicCore::WaitForLastFrame();
 
         m_MainApplication->OnPreRender({});
+        Graphics::GraphicCore::GetGraphicConfig().SetResolution(m_EngineConfig.GetClientSize());
         Graphics::GraphicCore::NewFrame();
-        Graphics::GraphicCore::EndOfFrame();
         m_MainApplication->OnPostRender();
     }
 

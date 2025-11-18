@@ -112,6 +112,8 @@ Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimati
     const AnimationClip& animation,
     float animTimeTicks) const
 {
+    ETH_MARKER_EVENT("Skinned Visual System - Pose Computation");
+
     SkeletonPose newPose;
     newPose.m_GlobalBoneTransforms.resize(skeleton.NumBones());
 
@@ -175,6 +177,8 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
     const Skeleton& skeleton,
     const AnimationClip& animationClip)
 {
+    ETH_MARKER_EVENT("CPU Skinning");
+
     // --- CPU Skinning --- //
     // Loop animation time
     float animationTime = Time::GetTimeSinceStartup();
@@ -203,6 +207,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
         {
             const uint32_t i = &src - &skinningVertices[0];
 
+            ETH_MARKER_EVENT("CPU Skinning - Vertex");
             ethVector4 skinnedPos(0, 0, 0, 0);
             ethVector4 skinnedNormal(0, 0, 0, 0);
 
