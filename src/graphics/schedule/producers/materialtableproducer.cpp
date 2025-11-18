@@ -42,6 +42,8 @@ void Ether::Graphics::MaterialTableProducer::GetInputOutput(ScheduleContext& sch
 
 void Ether::Graphics::MaterialTableProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("MaterialTableProducer");
+
     const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
     uint32_t numMaterials = renderData.m_VisualBatches.size();
 

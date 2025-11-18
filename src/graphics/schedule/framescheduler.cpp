@@ -146,7 +146,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     ScheduleContext schedule;
     for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
     {
-        ETH_MARKER_EVENT((iter->second->GetName() + " - GetInputOutput").c_str());
+        ETH_MARKER_EVENT(iter->second->GetName().c_str());
         iter->second->GetInputOutput(schedule, m_ResourceContext);
     }
 
@@ -195,7 +195,6 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
         // (TODO)
         if (m_OrderedProducers.front()->IsEnabled())
         {
-            ETH_MARKER_EVENT((m_OrderedProducers.front()->GetName() + " - Render").c_str());
             context.PushMarker(m_OrderedProducers.front()->GetName());
             m_OrderedProducers.front()->RenderFrame(context, m_ResourceContext);
             context.PopMarker();

@@ -39,6 +39,8 @@ void Ether::Graphics::FullScreenProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::FullScreenProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("FullScreenProducer");
+
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();

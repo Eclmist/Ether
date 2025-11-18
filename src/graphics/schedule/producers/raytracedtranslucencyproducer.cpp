@@ -72,6 +72,8 @@ void Ether::Graphics::RaytracedTranslucencyProducer::GetInputOutput(ScheduleCont
 
 void Ether::Graphics::RaytracedTranslucencyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("RaytracedTranslucencyProducer");
+
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();

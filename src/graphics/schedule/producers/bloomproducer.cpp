@@ -73,6 +73,8 @@ void Ether::Graphics::BloomProducer::GetInputOutput(ScheduleContext& schedule, R
 
 void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("BloomProducer");
+
     PostProcessProducer::RenderFrame(ctx, rc);
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const ethVector2u resolution = config.GetResolution();

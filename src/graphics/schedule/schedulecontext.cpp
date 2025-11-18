@@ -209,6 +209,8 @@ const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv,
 
 void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resourceContext)
 {
+    ETH_MARKER_EVENT("Schedule Context - Create Resources");
+
     // 1) Go through all descriptors that point to a single resource
     // 2) Determine necessary properties/flags for resource
     // 3) Create resource

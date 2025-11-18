@@ -58,6 +58,8 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
 
 void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("LightingCompositeProducer");
+
     FullScreenProducer::RenderFrame(ctx, rc);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture0)), RhiResourceState::Common);

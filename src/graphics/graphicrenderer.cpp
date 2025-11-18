@@ -39,7 +39,7 @@ void Ether::Graphics::GraphicRenderer::WaitForPresent()
 
 void Ether::Graphics::GraphicRenderer::Render()
 {
-    ETH_MARKER_EVENT("Renderer - Render");
+    ETH_MARKER_EVENT("GraphicRenderer - Render");
     GraphicContext gfxContext("GraphicRenderer - Single Threaded Render Context");
     m_Scheduler.BuildSchedule();
     m_Scheduler.RenderSingleThreaded(gfxContext);
@@ -62,7 +62,6 @@ void Ether::Graphics::GraphicRenderer::Cleanup()
 
     GetThreadedRenderData().m_Visuals.clear();
     GetThreadedRenderData().m_VisualBatches.clear();
-    GetThreadedRenderData().m_SkinnedVisuals.clear();
     GetThreadedRenderData().m_RaytracingVisuals.clear();
 }
 

@@ -40,9 +40,6 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
-    Graphics::CommandContext ctx("BLAS Update Context");
-    ctx.Reset();
-
     std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
     m_ProcessedSkeletalPoses.clear();
@@ -97,7 +94,6 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
             continue;
 
         UpdateSkinnedMesh(*skinnedMesh, *skeleton, *animClip);
-        skinnedMesh->UpdateGpuResources(ctx);
 
         gfxVisual.m_Mesh = skinnedMesh;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
@@ -107,12 +103,28 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
             renderData.m_RaytracingVisuals.push_back(gfxVisual);
 
         renderData.m_Visuals.push_back(gfxVisual);
-        renderData.m_SkinnedVisuals.push_back(gfxVisual);
         renderData.m_RaytracingVisuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
     }
 
-    ctx.FinalizeAndExecute();
+
+    Graphics::GraphicCore::GetRenderThread().EnqueueRenderCommand([&]()
+    { 
+        Graphics::CommandContext ctx("BLAS Update Context");
+        ctx.Reset();
+
+        for (Graphics::Visual visual : renderData.m_Visuals)
+        {
+            Graphics::SkinnedMesh* skinnedMesh = dynamic_cast<Graphics::SkinnedMesh*>(visual.m_Mesh);
+
+            if (skinnedMesh != nullptr)
+            {
+                skinnedMesh->UpdateGpuResources(ctx);
+            }
+        }
+
+        ctx.FinalizeAndExecute();
+    });
 }
 
 Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimation(

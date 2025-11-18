@@ -40,6 +40,8 @@ void Ether::Graphics::FinalCompositeProducer::GetInputOutput(ScheduleContext& sc
 
 void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("FinalCompositeProducer");
+
     FullScreenProducer::RenderFrame(ctx, rc);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(PostFxSourceTexture)), RhiResourceState::Common);

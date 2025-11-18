@@ -55,6 +55,8 @@ void Ether::Graphics::DepthOfFieldProducer::GetInputOutput(ScheduleContext& sche
 
 void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("DepthOfFieldProducer");
+
     PostProcessProducer::RenderFrame(ctx, rc);
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const ethVector2u resolution = config.GetResolution();

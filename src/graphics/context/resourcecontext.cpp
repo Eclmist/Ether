@@ -157,9 +157,8 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateAccelerati
     const char* resourceName,
     const RhiTopLevelAccelerationStructureDesc& desc)
 {
-    // Always recreate TLAS for now
-    //if (!ShouldRecreateResource(resourceName, desc))
-    //    return *m_ResourceTable.at(resourceName);
+    if (!ShouldRecreateResource(resourceName, desc))
+        return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
     InvalidateResource(resourceName);
@@ -286,11 +285,14 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     StringID resourceID,
     const RhiTopLevelAccelerationStructureDesc& desc)
 {
+    // TODO: Check for actual changes to visuals.
+    // However, the odds of there being absolutely nothing changing is pretty slim,
+    // So it's probably fine to rebuild TLAS every frame.
+    return true;
+
     // If the resource don't exist in the resource table at all
     if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
         return true;
-
-    return false;
 
     AssertGraphics(
         m_RaytracingResourceDescriptionTable.find(resourceID) != m_RaytracingResourceDescriptionTable.end(),

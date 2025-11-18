@@ -46,6 +46,8 @@ void Ether::Graphics::TemporalAAProducer::GetInputOutput(ScheduleContext& schedu
 
 void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("TemporalAAProducer");
+
     PostProcessProducer::RenderFrame(ctx, rc);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)), RhiResourceState::UnorderedAccess);

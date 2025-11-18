@@ -40,6 +40,8 @@ void Ether::Graphics::PostProcessProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("PostProcessProducer");
+
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();

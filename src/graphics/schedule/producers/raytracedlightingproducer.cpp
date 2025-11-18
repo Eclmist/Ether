@@ -93,6 +93,8 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
 
 void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("RaytracedLightingProducer");
+
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();

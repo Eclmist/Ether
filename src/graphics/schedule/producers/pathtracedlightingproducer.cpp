@@ -82,6 +82,8 @@ void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext
 
 void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("PathtracedLightingProducer");
+
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();

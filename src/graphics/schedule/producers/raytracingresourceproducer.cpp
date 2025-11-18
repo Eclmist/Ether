@@ -49,6 +49,8 @@ void Ether::Graphics::RaytracingResourceProducer::GetInputOutput(ScheduleContext
 
 void Ether::Graphics::RaytracingResourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {    
+    ETH_MARKER_EVENT("RaytracingResourceProducer");
+
     const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals;
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * raytracedVisuals.size(), 256 });

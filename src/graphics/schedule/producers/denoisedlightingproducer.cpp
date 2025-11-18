@@ -43,6 +43,7 @@ void Ether::Graphics::DenoisedLightingProducer::GetInputOutput(ScheduleContext& 
 
 void Ether::Graphics::DenoisedLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("DenoisedLightingProducer");
 }
 
 bool Ether::Graphics::DenoisedLightingProducer::IsEnabled()

@@ -41,6 +41,8 @@ void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& s
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("GlobalConstantsProducer");
+
     const RenderData& renderData = GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
 
     static ethMatrix4x4 viewMatrixPrev = renderData.m_ViewMatrix;

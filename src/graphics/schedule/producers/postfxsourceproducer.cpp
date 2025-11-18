@@ -43,6 +43,8 @@ void Ether::Graphics::PostFxSourceProducer::GetInputOutput(ScheduleContext& sche
 
 void Ether::Graphics::PostFxSourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
+    ETH_MARKER_EVENT("PostFxSourceProducer");
+
     PostProcessProducer::RenderFrame(ctx, rc);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneColor)), RhiResourceState::Common);
