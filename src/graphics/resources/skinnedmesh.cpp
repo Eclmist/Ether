@@ -118,7 +118,7 @@ void Ether::Graphics::SkinnedMesh::UpdateGpuResources(CommandContext& ctx)
 
     ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::CopyDest);
     ctx.CopyBufferRegion(*m_StagingVertexBufferResource, *m_VertexBufferResource, vertexBufferSize);
-    ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::Common);
+    ctx.TransitionResource(*m_VertexBufferResource, RhiResourceState::GenericRead);
 
     // Update BVH
     RefitAccelerationStructure(ctx);

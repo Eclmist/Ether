@@ -157,8 +157,9 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateAccelerati
     const char* resourceName,
     const RhiTopLevelAccelerationStructureDesc& desc)
 {
-    if (!ShouldRecreateResource(resourceName, desc))
-        return *m_ResourceTable.at(resourceName);
+    // Always recreate TLAS for now
+    //if (!ShouldRecreateResource(resourceName, desc))
+    //    return *m_ResourceTable.at(resourceName);
 
     InvalidateViews(resourceName);
     InvalidateResource(resourceName);

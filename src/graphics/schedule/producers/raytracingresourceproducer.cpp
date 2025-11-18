@@ -30,7 +30,7 @@ DEFINE_GFX_SR(RTGeometryInfo)
 DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
 
 Ether::Graphics::RaytracingResourceProducer::RaytracingResourceProducer()
-    : GraphicProducer("RaytracedLightingProducer")
+    : GraphicProducer("RaytracingResourceProducer")
 {
 }
 
@@ -50,19 +50,6 @@ void Ether::Graphics::RaytracingResourceProducer::GetInputOutput(ScheduleContext
 void Ether::Graphics::RaytracingResourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {    
     const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals;
-    const std::vector<SkinnedVisual>& skinnedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_SkinnedVisuals;
-
-    // Temporarily weave in skinned mesh update here for convenience.
-    // Really need a new render pass for this. (TODO - ComputeSkinning)
-    for (const SkinnedVisual& skinnedVisual : skinnedVisuals)
-    {
-        ETH_MARKER_EVENT("Update skinned mesh VBs");
-        SkinnedMesh* skinnedMesh = dynamic_cast<SkinnedMesh*>(skinnedVisual.m_Mesh);
-        if (skinnedMesh != nullptr)
-        {
-            skinnedMesh->UpdateGpuResources(ctx);
-        }
-    }
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::GeometryInfo) * raytracedVisuals.size(), 256 });
     Shader::GeometryInfo* geometryInfos = (Shader::GeometryInfo*)alloc->GetCpuHandle();

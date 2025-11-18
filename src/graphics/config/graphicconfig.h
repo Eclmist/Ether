@@ -23,13 +23,6 @@
 
 namespace Ether::Graphics
 {
-enum TranslucencyMode : int32_t
-{
-    None,
-    ForwardRaster,
-    Raytraced
-};
-
 enum RaytracingMode : int32_t
 {
     Pathtracer,
@@ -77,6 +70,7 @@ public:
     // Temporary debugging flags/values to be removed
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
+    bool m_RaytracedReflectionsEnabled = true;
     int32_t m_LightingMode = RaytracingMode::ReSTIR;
     int32_t m_SkinningDebugBoneId = -1;
 
@@ -129,7 +123,7 @@ public:
     float m_Exposure = 0.000045f;
 
     // Translucency
-    int32_t m_TranslucencyMode = TranslucencyMode::ForwardRaster;
+    bool m_TranslucencyEnabled = true;
 
 private:
     ethVector4 m_ClearColor;

@@ -258,6 +258,7 @@ void Ether::Graphics::Dx12CommandList::BuildAccelerationStructure(const RhiAccel
 
     m_CommandList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
     InsertUavBarrier(*as.m_DataBuffer);
+    InsertUavBarrier(*as.m_ScratchBuffer);
 }
 
 void Ether::Graphics::Dx12CommandList::RefitAccelerationStructure(const RhiAccelerationStructure& as)
@@ -275,7 +276,8 @@ void Ether::Graphics::Dx12CommandList::RefitAccelerationStructure(const RhiAccel
         asDesc.Inputs.InstanceDescs = dx12Obj->m_InstanceDescBuffer->GetGpuAddress();
 
     m_CommandList->BuildRaytracingAccelerationStructure(&asDesc, 0, nullptr);
-    InsertUavBarrier(*dx12Obj->m_DataBuffer);
+    InsertUavBarrier(*as.m_DataBuffer);
+    InsertUavBarrier(*as.m_ScratchBuffer);
 }
 
 void Ether::Graphics::Dx12CommandList::InsertUavBarrier(const RhiResource& uavResource)

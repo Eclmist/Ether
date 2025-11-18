@@ -78,7 +78,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
             if (ImGui::TreeNode("Translucencies"))
             {
                 const char* items[] = { "None", "Forward Raster", "Raytraced" };
-                ImGui::Combo("Translucency Mode", &gfxConfig.m_TranslucencyMode, items, IM_ARRAYSIZE(items));
+                ImGui::Checkbox("Translucency Enabled", &gfxConfig.m_TranslucencyEnabled);
                 ImGui::TreePop();
             }
 
@@ -94,8 +94,10 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
                 if (gfxConfig.m_IsRaytracingEnabled)
                 {
+                    ImGui::Checkbox("Raytraced Reflections", &gfxConfig.m_RaytracedReflectionsEnabled);
+
                     const char* items[] = { "Pathtracer", "ReSTIR GI" };
-                    ImGui::Combo("Raytracing Mode", &gfxConfig.m_LightingMode, items, IM_ARRAYSIZE(items));
+                    ImGui::Combo("Raytraced Lighting", &gfxConfig.m_LightingMode, items, IM_ARRAYSIZE(items));
 
                     if (gfxConfig.m_LightingMode == RaytracingMode::ReSTIR)
                     {
