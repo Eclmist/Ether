@@ -64,7 +64,6 @@ void RayGeneration()
         //    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
         //}
         
-        //indirectLighting = ComputeTargetFunction(surface, finalReservoir.m_Sample) * finalReservoir.m_WeightSum;
         indirectLighting = finalReservoir.m_TargetPdf * finalReservoir.m_WeightSum;
     }
 

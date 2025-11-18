@@ -24,17 +24,17 @@
 #include "lighting/restir/boilingfilter.hlsl"
 #include "utils/random.hlsl"
 
-bool IsValidReprojection(GIReservoirSample surface, GIReservoirSample prevSurface)
+bool IsValidReprojection(GIReservoirSample sample, GIReservoirSample prevSample)
 {
-    // Since some materials are dithered in gbuffer (decals, etc.)
-    // this check can basically kill reprojection.
-    //if (surface.m_MaterialID != prevSurface.m_MaterialID)
-    //    return false;
-
-    if (dot(surface.m_VisibleNormal, prevSurface.m_VisibleNormal) < 0.9f)
+    if (sample.m_MaterialID != prevSample.m_MaterialID)
         return false;
 
-    if ((abs(surface.m_VisibleDepth - prevSurface.m_VisibleDepth) / prevSurface.m_VisibleDepth) > 0.2f)
+    /* This causes too much flickering at geometry edges
+    if (dot(sample.m_VisibleNormal, prevSample.m_VisibleNormal) < 0.5f)
+        return false;
+    */
+
+    if ((abs(sample.m_VisibleDepth - prevSample.m_VisibleDepth) / prevSample.m_VisibleDepth) > 0.2f)
         return false;
 
     return true;
@@ -55,7 +55,7 @@ void CS_Main(
     
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
     const float2 pixelVelocity = (surface.m_Velocity * screenSize);
-    const float2 screenCoordsPrev = screenCoords - pixelVelocity + 0.5f;
+    const float2 screenCoordsPrev = screenCoords - pixelVelocity + 0.5f + (Random2D(screenCoords, g_GlobalConstants.m_FrameNumber) - 0.5f);
 
     const uint prevSampleIdx = GetSampleIndexFromScreenCoords(screenCoordsPrev, screenSize);
 
