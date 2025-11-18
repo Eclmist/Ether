@@ -68,8 +68,6 @@ void Ether::Graphics::SkinnedMesh::CreateGpuResources(CommandContext& ctx)
 
 void Ether::Graphics::SkinnedMesh::ComputeBoundingBox()
 {
-    std::lock_guard lock(m_SkinningDataMutex);
-
     m_BoundingBox.m_Min = 9999999;
     m_BoundingBox.m_Max = -9999999;
 
