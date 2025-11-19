@@ -27,7 +27,7 @@ namespace Ether
     lifecycle is controlled manually.
 */
 template <typename T>
-class Singleton : public NonCopyable
+class Singleton : public NonCopyable, public NonMovable
 {
 public:
     static bool HasInstance() { return s_Instance != nullptr; }
