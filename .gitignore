@@ -6,9 +6,6 @@
 # Ether specific
 vs-chromium-project.txt
 
-# Ignore SIE plugin .git folders
-.git_*/
-
 # Post CMake integration (No need project files anymore)
 *.sln
 *.vcxproj
@@ -32,7 +29,6 @@ _deps
 Thumbs.db
 *.vscode
 test*.png
-
 
 # User-specific files
 *.suo
