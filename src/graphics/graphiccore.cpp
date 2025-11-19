@@ -44,6 +44,7 @@ void Ether::Graphics::GraphicCore::Initialize()
 
 void Ether::Graphics::GraphicCore::Shutdown()
 {
+    GetRenderThread().WaitForFrame();
     FlushGpu();
 
     m_RenderThread.reset();

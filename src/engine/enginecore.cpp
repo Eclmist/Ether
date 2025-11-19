@@ -67,14 +67,12 @@ void Ether::EngineCore::MainEngineLoop()
         m_MainApplication->OnPostRender();
     }
 
+    Graphics::GraphicCore::Instance().Shutdown();
     m_MainApplication->OnShutdown();
 
     m_ActiveWorld.reset();
     m_NotificationTray.reset();
     m_MainWindow.reset();
-
-    if (Graphics::GraphicCore::HasInstance())
-        Graphics::GraphicCore::Instance().Shutdown();
 
     m_IsInitialized = false;
 }
