@@ -41,6 +41,8 @@ void Ether::ResourceManager::Serialize(OStream& ostream) const
 
 void Ether::ResourceManager::Deserialize(IStream& istream)
 {
+    Reset();
+
     Serializable::Deserialize(istream);
     DeserializeResource<Skeleton>(istream, m_Skeletons);
     DeserializeResource<AnimationClip>(istream, m_AnimationClips);
@@ -49,6 +51,16 @@ void Ether::ResourceManager::Deserialize(IStream& istream)
     DeserializeResource<Graphics::Material>(istream, m_Materials);
     DeserializeResource<Graphics::Texture>(istream, m_Textures);
     CreateGpuResources();
+}
+
+void Ether::ResourceManager::Reset()
+{
+    m_Skeletons.clear();
+    m_AnimationClips.clear();
+    m_StaticMeshes.clear();
+    m_SkinnedMeshes.clear();
+    m_Materials.clear();
+    m_Textures.clear();
 }
 
 Ether::StringID Ether::ResourceManager::RegisterSkeletonResource(std::unique_ptr<Skeleton>&& skeleton)
@@ -167,3 +179,4 @@ void Ether::ResourceManager::CreateGpuResources() const
         ctx.FinalizeAndExecute(true);
     }
 }
+

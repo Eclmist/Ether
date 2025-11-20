@@ -46,6 +46,13 @@ void Ether::Ecs::EcsManager::Update()
     m_SystemManager.Update();
 }
 
+void Ether::Ecs::EcsManager::Reset()
+{
+    m_EntityManager.Reset();
+    m_ComponentManager.Reset();
+    m_SystemManager.Reset();
+}
+
 Ether::Ecs::EntityID Ether::Ecs::EcsManager::CreateEntity()
 {
     return m_EntityManager.CreateEntity();
@@ -57,3 +64,4 @@ void Ether::Ecs::EcsManager::DestroyEntity(EntityID entityID)
     m_SystemManager.OnEntityDestroyed(entityID);
     m_ComponentManager.OnEntityDestroyed(entityID);
 }
+

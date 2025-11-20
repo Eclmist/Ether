@@ -28,3 +28,9 @@ Ether::Ecs::EcsSystem::EcsSystem()
 }
 
 Ether::Ecs::EcsSystem::~EcsSystem() = default;
+
+void Ether::Ecs::EcsSystem::Reset()
+{
+    m_Entities.clear();
+}
+

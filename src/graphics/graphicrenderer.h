@@ -38,6 +38,7 @@ public:
 
 public:
     ETH_GRAPHIC_DLL RenderData& GetThreadedRenderData();
+    ETH_GRAPHIC_DLL void ClearAllRenderData();
 
 public:
     void WaitForPresent();

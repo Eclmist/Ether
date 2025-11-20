@@ -19,6 +19,7 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/graphiccommon.h"
+#include "graphics/resources/texture.h"
 
 Ether::Graphics::GraphicCommon::GraphicCommon()
 {
@@ -164,6 +165,19 @@ void Ether::Graphics::GraphicCommon::InitializeSamplers()
 
 void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()
 {
+    CommandContext context("Default Texture Initialization Context");
+    context.Reset();
+
+    const uint32_t blackData = 0;
+    Texture black2DTex;
+    black2DTex.SetName("Black2DTexture");
+    black2DTex.SetFormat(RhiFormat::R8G8B8A8Unorm);
+    black2DTex.SetWidth(1);
+    black2DTex.SetHeight(1);
+    black2DTex.SetData((uint8_t*)&blackData, false);
+    black2DTex.CreateGpuResource(context);
+
+    m_Black2DTextureIndex = black2DTex.GetBindlessIndex();
 }
 
 void Ether::Graphics::GraphicCommon::InitializeMaterials()

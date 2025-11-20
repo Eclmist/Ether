@@ -26,7 +26,6 @@
 
 namespace Ether::Graphics
 {
-
 static constexpr uint32_t MaxNumMips = 11;
 static constexpr uint32_t MaxTextureSize = 1 << MaxNumMips;
 
@@ -49,6 +48,7 @@ public:
     inline uint32_t GetHeight() const { return m_Height; }
     inline uint32_t GetNumMips() const { return m_NumMips; }
     inline RhiFormat GetFormat() const { return m_Format; }
+    inline uint32_t GetBindlessIndex() const { return m_BindlessIndex; }
 
     inline void SetName(const char* name) { m_Name = name; }
     inline void SetWidth(uint32_t width) { m_Width = width; }
@@ -75,5 +75,6 @@ private:
     void* m_Data[MaxNumMips];
 
     std::unique_ptr<RhiResource> m_Resource;
+    uint32_t m_BindlessIndex;
 };
 } // namespace Ether::Graphics

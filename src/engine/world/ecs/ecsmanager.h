@@ -39,6 +39,7 @@ public:
 
 public:
     void Update();
+    void Reset();
 
 public:
     inline EcsEntityManager& GetEntityManager() { return m_EntityManager; }

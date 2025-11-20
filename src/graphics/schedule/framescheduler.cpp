@@ -180,11 +180,11 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 }
 
-void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& context)
+void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxContext)
 {
     ETH_MARKER_EVENT("Frame Scheduler - Render Single Threaded");
 
-    context.Reset();
+    gfxContext.Reset();
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
     // For single threaded rendering, all producers will append into the same context
@@ -195,23 +195,23 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& conte
         // (TODO)
         if (m_OrderedProducers.front()->IsEnabled())
         {
-            context.PushMarker(m_OrderedProducers.front()->GetName());
-            m_OrderedProducers.front()->RenderFrame(context, m_ResourceContext);
-            context.PopMarker();
+            gfxContext.PushMarker(m_OrderedProducers.front()->GetName());
+            m_OrderedProducers.front()->RenderFrame(gfxContext, m_ResourceContext);
+            gfxContext.PopMarker();
         }
 
         m_OrderedProducers.pop();
     }
 
-    context.FinalizeAndExecute();
+    gfxContext.FinalizeAndExecute();
 
     if (GraphicCore::GetGraphicConfig().IsDebugGuiEnabled())
         m_ImguiWrapper->Render();
 
     // The following can be moved into its own render pass
-    context.Reset();
-    context.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::Present);
-    context.FinalizeAndExecute();
+    gfxContext.Reset();
+    gfxContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::Present);
+    gfxContext.FinalizeAndExecute();
 }
 
 void Ether::Graphics::FrameScheduler::RenderMultiThreaded(GraphicContext& context)

@@ -24,8 +24,7 @@ constexpr uint32_t EcsEntityManagerVersion = 0;
 Ether::Ecs::EcsEntityManager::EcsEntityManager()
     : Serializable(EcsEntityManagerVersion, "Engine::EcsEntityManager")
 {
-    for (EntityID id = 0; id < MaxNumEntities; ++id)
-        m_AvailableEntities.push(id);
+    Reset();
 }
 
 void Ether::Ecs::EcsEntityManager::Serialize(OStream& ostream) const
@@ -47,6 +46,8 @@ void Ether::Ecs::EcsEntityManager::Serialize(OStream& ostream) const
 
 void Ether::Ecs::EcsEntityManager::Deserialize(IStream& istream)
 {
+    Reset();
+
     Serializable::Deserialize(istream);
 
     while (!m_AvailableEntities.empty())
@@ -66,6 +67,18 @@ void Ether::Ecs::EcsEntityManager::Deserialize(IStream& istream)
         std::string bitsetString;
         istream >> bitsetString;
         m_EntitySignatures[i] = std::bitset<MaxNumComponents>(bitsetString);
+    }
+}
+
+void Ether::Ecs::EcsEntityManager::Reset()
+{
+    while (!m_AvailableEntities.empty())
+        m_AvailableEntities.pop();
+
+    for (EntityID id = 0; id < MaxNumEntities; ++id)
+    {
+        m_AvailableEntities.push(id);
+        m_EntitySignatures[id].reset();
     }
 }
 
@@ -95,3 +108,4 @@ Ether::Ecs::EntitySignature Ether::Ecs::EcsEntityManager::GetSignature(EntityID 
 {
     return m_EntitySignatures[id];
 }
+

@@ -27,12 +27,12 @@ namespace Ether
 using ethVector2 = SMath::Vector<float, 2>;
 using ethVector3 = SMath::Vector<float, 3>;
 using ethVector4 = SMath::Vector<float, 4>;
-using ethVector2i = SMath::Vector<int, 2>;
-using ethVector3i = SMath::Vector<int, 3>;
-using ethVector4i = SMath::Vector<int, 4>;
-using ethVector2u = SMath::Vector<unsigned int, 2>;
-using ethVector3u = SMath::Vector<unsigned int, 3>;
-using ethVector4u = SMath::Vector<unsigned int, 4>;
+using ethVector2i = SMath::Vector<int32_t, 2>;
+using ethVector3i = SMath::Vector<int32_t, 3>;
+using ethVector4i = SMath::Vector<int32_t, 4>;
+using ethVector2u = SMath::Vector<uint32_t, 2>;
+using ethVector3u = SMath::Vector<uint32_t, 3>;
+using ethVector4u = SMath::Vector<uint32_t, 4>;
 using ethVectorData2 = SMath::VectorData<float, 2>;
 using ethVectorData3 = SMath::VectorData<float, 3>;
 using ethVectorData4 = SMath::VectorData<float, 4>;
@@ -40,18 +40,18 @@ using ethVectorData4 = SMath::VectorData<float, 4>;
 using ethQuaternion = SMath::Quaternion<float>;
 
 using ethColor4 = SMath::Vector<float, 4>;
-using ethColor4u = SMath::Vector<unsigned int, 4>;
+using ethColor4u = SMath::Vector<uint32_t, 4>;
 
 using ethMatrix3x3 = SMath::Matrix<float, 3>;
 using ethMatrix4x4 = SMath::Matrix<float, 4>;
-using ethMatrix3x3i = SMath::Matrix<int, 3>;
-using ethMatrix4x4i = SMath::Matrix<int, 4>;
-using ethMatrix3x3u = SMath::Matrix<unsigned int, 3>;
-using ethMatrix4x4u = SMath::Matrix<unsigned int, 4>;
+using ethMatrix3x3i = SMath::Matrix<int32_t, 3>;
+using ethMatrix4x4i = SMath::Matrix<int32_t, 4>;
+using ethMatrix3x3u = SMath::Matrix<uint32_t, 3>;
+using ethMatrix4x4u = SMath::Matrix<uint32_t, 4>;
 using ethMatrixData3 = SMath::MatrixData<float, 3>;
 using ethMatrixData4 = SMath::MatrixData<float, 4>;
 
-using Rect = SMath::Rect<unsigned int>;
+using Rect = SMath::Rect<uint32_t>;
 using Transform = SMath::Transform<float>;
 using Aabb = SMath::Box<float>;
 } // namespace Ether

@@ -130,7 +130,6 @@ void Ether::Graphics::RenderThread::SignalFrame()
 void Ether::Graphics::RenderThread::WaitForFrame()
 {
     ETH_MARKER_EVENT("Wait for Render Thread Completion");
-
     std::unique_lock<std::mutex> lock(m_CompleteMutex);
     m_CompleteCV.wait(lock, [this] { return m_FrameComplete.load(); });
 }

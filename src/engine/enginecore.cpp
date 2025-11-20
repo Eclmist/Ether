@@ -27,6 +27,7 @@ void Ether::EngineCore::Initialize()
     m_NotificationTray = std::make_unique<Win32::Win32NotificationTray>();
     m_ActiveWorld = std::make_unique<World>();
 
+
 #if ETH_TOOLMODE
     if (m_CommandLineOptions.ShouldInitializeRenderer())
 #endif
@@ -42,6 +43,9 @@ void Ether::EngineCore::LoadApplication(IApplicationBase& app)
     m_MainApplication = &app;
     m_MainApplication->Initialize();
     m_MainApplication->LoadContent();
+
+    // Create a default camera in case there isn't any. Need to separate scene camear from editor camera in the future (TODO)
+    m_ActiveWorld->CreateCamera();
 }
 
 void Ether::EngineCore::MainEngineLoop()
@@ -67,7 +71,8 @@ void Ether::EngineCore::MainEngineLoop()
         m_MainApplication->OnPostRender();
     }
 
-    Graphics::GraphicCore::Instance().Shutdown();
+    Graphics::GraphicCore::WaitForLastFrame();
+
     m_MainApplication->OnShutdown();
 
     m_ActiveWorld.reset();
@@ -75,6 +80,8 @@ void Ether::EngineCore::MainEngineLoop()
     m_MainWindow.reset();
 
     m_IsInitialized = false;
+
+    Graphics::GraphicCore::Instance().Shutdown();
 }
 
 void Ether::EngineCore::Shutdown()

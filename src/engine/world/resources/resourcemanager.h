@@ -40,13 +40,15 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    void Reset();
+
+public:
     ETH_ENGINE_DLL StringID RegisterSkeletonResource(std::unique_ptr<Skeleton>&& skeleton);
     ETH_ENGINE_DLL StringID RegisterAnimationClipResource(std::unique_ptr<AnimationClip>&& animationClip);
     ETH_ENGINE_DLL StringID RegisterStaticMeshResource(std::unique_ptr<Graphics::StaticMesh>&& staticMesh);
     ETH_ENGINE_DLL StringID RegisterSkinnedMeshResource(std::unique_ptr<Graphics::SkinnedMesh>&& skinnedMesh);
     ETH_ENGINE_DLL StringID RegisterMaterialResource(std::unique_ptr<Graphics::Material>&& material);
     ETH_ENGINE_DLL StringID RegisterTextureResource(std::unique_ptr<Graphics::Texture>&& texture);
-    ETH_ENGINE_DLL void CreateGpuResources() const;
 
     ETH_ENGINE_DLL Skeleton* GetSkeletonResource(StringID guid) const;
     ETH_ENGINE_DLL AnimationClip* GetAnimationClipResource(StringID guid) const;
@@ -54,6 +56,8 @@ public:
     ETH_ENGINE_DLL Graphics::SkinnedMesh* GetSkinnedMeshResource(StringID guid) const;
     ETH_ENGINE_DLL Graphics::Material* GetMaterialResource(StringID guid) const;
     ETH_ENGINE_DLL Graphics::Texture* GetTextureResource(StringID guid) const;
+
+    ETH_ENGINE_DLL void CreateGpuResources() const;
 
 private:
     template <typename T>

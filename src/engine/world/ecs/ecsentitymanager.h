@@ -38,6 +38,9 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    void Reset();
+
+public:
     EntityID CreateEntity();
     void DestroyEntity(EntityID id);
 

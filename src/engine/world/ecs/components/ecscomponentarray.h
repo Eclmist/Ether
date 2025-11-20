@@ -38,21 +38,11 @@ public:
 
 public:
     virtual void RemoveComponent(EntityID entityID) = 0;
-};
 
-template <typename T>
-class EcsComponentArray : public EcsComponentArrayBase
-{
 public:
-    EcsComponentArray() = default;
-    ~EcsComponentArray() = default;
-
     void Serialize(OStream& ostream) const override
     {
         Serializable::Serialize(ostream);
-
-        for (int i = 0; i < MaxNumEntities; ++i)
-            m_ComponentArray[i].Serialize(ostream);
 
         ostream << m_NumElements;
         ostream << static_cast<uint32_t>(m_EntityToComponentIDMap.size());
@@ -67,10 +57,9 @@ public:
 
     void Deserialize(IStream& istream) override
     {
-        Serializable::Deserialize(istream);
+        Reset();
 
-        for (int i = 0; i < MaxNumEntities; ++i)
-            m_ComponentArray[i].Deserialize(istream);
+        Serializable::Deserialize(istream);
 
         uint32_t compToIdMapSize, entityToCompMapSize;
         istream >> m_NumElements;
@@ -93,6 +82,43 @@ public:
         }
     }
 
+    void Reset()
+    {
+        m_NumElements = 0;
+        m_EntityToComponentIDMap.clear();
+        m_ComponentIDToEntityMap.clear();
+    }
+
+protected:
+    std::unordered_map<EntityID, uint32_t> m_EntityToComponentIDMap;
+    std::unordered_map<uint32_t, EntityID> m_ComponentIDToEntityMap;
+
+    uint32_t m_NumElements;
+};
+
+template <typename T>
+class EcsComponentArray : public EcsComponentArrayBase
+{
+public:
+    EcsComponentArray() = default;
+    ~EcsComponentArray() = default;
+
+    void Serialize(OStream& ostream) const override
+    {
+        EcsComponentArrayBase::Serialize(ostream);
+
+        for (int i = 0; i < MaxNumEntities; ++i)
+            m_ComponentArray[i].Serialize(ostream);
+    }
+
+    void Deserialize(IStream& istream) override
+    {
+        EcsComponentArrayBase::Deserialize(istream);
+
+        for (int i = 0; i < MaxNumEntities; ++i)
+            m_ComponentArray[i].Deserialize(istream);
+    }
+
 public:
     inline T& GetComponent(EntityID entityID) { return m_ComponentArray[m_EntityToComponentIDMap[entityID]]; }
 
@@ -102,10 +128,6 @@ public:
 
 private:
     std::array<T, MaxNumEntities> m_ComponentArray;
-    std::unordered_map<EntityID, uint32_t> m_EntityToComponentIDMap;
-    std::unordered_map<uint32_t, EntityID> m_ComponentIDToEntityMap;
-
-    uint32_t m_NumElements;
 };
 
 template <typename T>

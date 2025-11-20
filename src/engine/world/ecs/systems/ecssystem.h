@@ -34,6 +34,7 @@ public:
 protected:
     friend class EcsSystemManager;
     virtual void Update() = 0;
+    virtual void Reset();
 
 protected:
     std::set<EntityID> m_Entities;

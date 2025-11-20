@@ -19,12 +19,13 @@
 
 #include "engine/world/world.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
+#include "graphics/graphiccore.h"
 
 constexpr uint32_t WorldVersion = 0;
 
 Ether::World::World()
     : Serializable(WorldVersion, "Engine::World")
-    , m_WorldName("Default World")
+    , m_WorldName("Untitled World")
     , m_MainCamera(nullptr)
 {
 }
@@ -44,6 +45,7 @@ void Ether::World::Save(const std::string& path) const
 
 void Ether::World::Load(const std::string& path)
 {
+    Graphics::GraphicCore::FlushGpu();
     auto start = Time::GetRealTime();
 
     IFileStream ifstream(path.c_str());
@@ -53,7 +55,6 @@ void Ether::World::Load(const std::string& path)
         return;
     }
 
-    //IByteStream bstream(ifstream);
     Deserialize(ifstream);
 
     auto end = Time::GetRealTime();
@@ -62,6 +63,14 @@ void Ether::World::Load(const std::string& path)
 
 void Ether::World::Unload()
 {
+    Graphics::GraphicCore::FlushGpu();
+    Graphics::GraphicCore::GetGraphicRenderer().ClearAllRenderData();
+    m_WorldName = "Unloaded World";
+    m_SceneGraph.Reset();
+    m_ResourceManager.Reset();
+    m_EcsManager.Reset();
+    m_Entities.clear();
+    m_MainCamera = nullptr;
 }
 
 void Ether::World::Serialize(OStream& ostream) const

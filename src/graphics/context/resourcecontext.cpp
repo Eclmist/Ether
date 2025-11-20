@@ -288,6 +288,8 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     // TODO: Check for actual changes to visuals.
     // However, the odds of there being absolutely nothing changing is pretty slim,
     // So it's probably fine to rebuild TLAS every frame.
+    // WARNING: We also need to check if visuals are still pointing to anything at all.
+    // It's possible that the entity has been deleted on engine side.
     return true;
 
     // If the resource don't exist in the resource table at all

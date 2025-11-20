@@ -473,7 +473,6 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
         return {};
     }
 
-
     Graphics::Texture gfxTexture;
 
     unsigned char* downscaleOutput = image;

@@ -77,5 +77,7 @@ public:
 
     std::unique_ptr<Material> m_DefaultMaterial;
     std::unique_ptr<Material> m_ErrorMaterial;
+
+    uint32_t m_Black2DTextureIndex;
 };
 } // namespace Ether::Graphics

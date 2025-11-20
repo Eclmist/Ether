@@ -38,8 +38,6 @@ int Ether::Start(IApplicationBase& app)
     EngineCore::Instance().MainEngineLoop();
 
     LogInfo("Shutting down Ether");
-    EngineCore::Instance().Shutdown();
-
     Input::Reset();
     Time::Reset();
     LoggingManager::Reset();

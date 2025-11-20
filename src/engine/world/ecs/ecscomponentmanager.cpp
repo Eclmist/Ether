@@ -51,6 +51,8 @@ void Ether::Ecs::EcsComponentManager::Serialize(OStream& ostream) const
 
 void Ether::Ecs::EcsComponentManager::Deserialize(IStream& istream)
 {
+    Reset();
+
     Serializable::Deserialize(istream);
 
     uint32_t numArrays;
@@ -61,5 +63,13 @@ void Ether::Ecs::EcsComponentManager::Deserialize(IStream& istream)
         uint32_t componentTypeID;
         istream >> componentTypeID;
         m_ComponentArrays[componentTypeID]->Deserialize(istream);
+    }
+}
+
+void Ether::Ecs::EcsComponentManager::Reset()
+{
+    for (auto iter = m_ComponentArrays.begin(); iter != m_ComponentArrays.end(); ++iter)
+    {
+        iter->second->Reset();
     }
 }

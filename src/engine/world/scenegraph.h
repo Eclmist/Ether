@@ -59,14 +59,13 @@ public:
     inline Ecs::EntityID GetParent(Ecs::EntityID id) const { return m_Nodes[id].m_ParentIndex; }
     inline Ecs::EntityID GetFirstChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
     inline Ecs::EntityID GetLastChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
-    inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const
-    {
-        return m_Nodes[id].m_ChildrenIndices;
-    }
+    inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
 
     void Register(Ecs::EntityID id, Ecs::EntityID parent = RootEntityID);
     void Deregister(Ecs::EntityID id);
     void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
+
+    void Reset();
 
 private:
     SceneGraphNode m_Nodes[Ecs::MaxNumEntities];

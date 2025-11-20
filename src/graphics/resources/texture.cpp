@@ -87,7 +87,7 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
 
     m_Resource = GraphicCore::GetDevice().CreateCommittedResource(desc);
     ctx.InitializeTexture(*m_Resource, (void**)m_Data, m_NumMips, m_Width, m_Height, GetBytesPerPixel());
-    GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(m_Guid, *m_Resource.get(), m_Format);
+    m_BindlessIndex = GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(m_Guid, *m_Resource.get(), m_Format);
 
 #ifdef ETH_ENGINE
     // Texture data can be deallocated on the CPU. It's all in VRAM now.
@@ -104,7 +104,20 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
 
 void Ether::Graphics::Texture::SetData(const unsigned char* data, bool genMips)
 {
-    m_Data[0] = (void*)data;
+    uint32_t numBytesPerPixel = 4;
+    switch (GetFormat())
+    {
+    case RhiFormat::R8G8B8A8Unorm:
+    case RhiFormat::R8G8B8A8UnormSrgb:
+        numBytesPerPixel = 4;
+        break;
+    default:
+        LogGraphicsError("Requested texture type for texture object is not yet supported");
+    }
+
+
+    m_Data[0] = malloc(GetSizeInBytes(0));
+    memcpy(m_Data[0], data, GetSizeInBytes(0));
     m_NumMips = 1;
 
     if (genMips && IS_POWER_OF_2(m_Width) && IS_POWER_OF_2(m_Height))

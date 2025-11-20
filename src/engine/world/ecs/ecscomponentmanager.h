@@ -34,6 +34,9 @@ public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
 
+public:
+    void Reset();
+
     template <typename T>
     ComponentID GetTypeID()
     {

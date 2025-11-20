@@ -56,3 +56,9 @@ void Ether::Ecs::EcsSystemManager::Update()
     for (auto const& system : m_Systems)
         system->Update();
 }
+
+void Ether::Ecs::EcsSystemManager::Reset()
+{
+    for (auto const& system : m_Systems)
+        system->Reset();
+}

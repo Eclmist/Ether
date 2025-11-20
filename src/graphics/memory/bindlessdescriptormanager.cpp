@@ -22,13 +22,19 @@
 #include "graphics/rhi/rhiresourceviews.h"
 #include "graphics/common/vertexformats.h"
 
+void Ether::Graphics::BindlessDescriptorManager::Reset()
+{
+    m_GuidToIndexMap.clear();
+    m_Allocations.clear();
+}
+
 uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceView(
     StringID resourceGuid,
     const RhiResource& resource,
     RhiFormat format)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
-        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString().c_str());
+        return m_GuidToIndexMap.at(resourceGuid);
 
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
@@ -52,7 +58,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
     RhiVertexBufferViewDesc vb)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
-        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString().c_str());
+        return m_GuidToIndexMap.at(resourceGuid);
 
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
@@ -78,7 +84,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
     RhiIndexBufferViewDesc ib)
 {
     if (m_GuidToIndexMap.find(resourceGuid) != m_GuidToIndexMap.end())
-        LogGraphicsError("Resource GUID %s has already been registered", resourceGuid.GetString().c_str());
+        return m_GuidToIndexMap.at(resourceGuid);
 
     auto allocation = GraphicCore::GetSrvCbvUavAllocator().Allocate(1);
     uint32_t indexInHeap = allocation->GetOffset();
@@ -100,7 +106,7 @@ uint32_t Ether::Graphics::BindlessDescriptorManager::RegisterAsShaderResourceVie
 uint32_t Ether::Graphics::BindlessDescriptorManager::GetDescriptorIndex(StringID guid) const
 {
     if (m_GuidToIndexMap.find(guid) == m_GuidToIndexMap.end())
-        return 0;
+        return GraphicCore::GetGraphicCommon().m_Black2DTextureIndex;
 
     return m_GuidToIndexMap.at(guid);
 }

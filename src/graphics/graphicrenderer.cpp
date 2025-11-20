@@ -77,3 +77,10 @@ Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRender
     }
 }
 
+void Ether::Graphics::GraphicRenderer::ClearAllRenderData()
+{
+    GraphicCore::GetBindlessDescriptorManager().Reset();
+    m_RenderData[0] = RenderData();
+    m_RenderData[1] = RenderData();
+}
+

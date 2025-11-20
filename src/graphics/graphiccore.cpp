@@ -23,6 +23,9 @@
 
 void Ether::Graphics::GraphicCore::Initialize()
 {
+    if (Instance().m_IsInitialized)
+        return;
+
     m_RhiModule = RhiModule::InitForPlatform();
     m_RhiDevice = m_RhiModule->CreateDevice();
 
@@ -44,7 +47,9 @@ void Ether::Graphics::GraphicCore::Initialize()
 
 void Ether::Graphics::GraphicCore::Shutdown()
 {
-    GetRenderThread().WaitForFrame();
+    if (!Instance().m_IsInitialized)
+        return;
+
     FlushGpu();
 
     m_RenderThread.reset();
@@ -68,11 +73,17 @@ void Ether::Graphics::GraphicCore::Shutdown()
 
 void Ether::Graphics::GraphicCore::WaitForLastFrame()
 {
+    if (!Instance().m_IsInitialized)
+        return;
+
     GetRenderThread().WaitForFrame();
 }
 
 void Ether::Graphics::GraphicCore::NewFrame()
 {
+    if (!Instance().m_IsInitialized)
+        return;
+
     GetGraphicRenderer().IncrementFrameNumber();
     GetRenderThread().SignalFrame();
     GetRenderThread().EnqueueRenderCommand([]() {
@@ -88,6 +99,10 @@ void Ether::Graphics::GraphicCore::NewFrame()
 
 void Ether::Graphics::GraphicCore::FlushGpu()
 {
+    if (!Instance().m_IsInitialized)
+        return;
+
+    GetRenderThread().WaitForFrame();
     GetCommandManager().Flush();
 }
 

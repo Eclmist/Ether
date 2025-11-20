@@ -57,8 +57,7 @@ void Ether::SceneGraphNode::Deserialize(IStream& istream)
 Ether::SceneGraph::SceneGraph()
     : Serializable(SceneGraphVersion, "Engine::SceneGraph")
 {
-    m_Nodes[RootEntityID].m_IsRegistered = true;
-    m_Nodes[RootEntityID].m_ParentIndex = InvalidEntityID;
+    Reset();
 }
 
 void Ether::SceneGraph::Serialize(OStream& ostream) const
@@ -71,6 +70,8 @@ void Ether::SceneGraph::Serialize(OStream& ostream) const
 
 void Ether::SceneGraph::Deserialize(IStream& istream)
 {
+    Reset();
+
     Serializable::Deserialize(istream);
 
     for (int i = 0; i < Ecs::MaxNumEntities; ++i)
@@ -110,3 +111,16 @@ void Ether::SceneGraph::Deregister(Ecs::EntityID id)
 
     m_Nodes[id].m_ChildrenIndices.clear();
 }
+
+void Ether::SceneGraph::Reset()
+{
+    for (uint32_t i = 0; i < Ecs::MaxNumEntities; ++i)
+    {
+        m_Nodes[i].m_IsRegistered = false;
+        m_Nodes[i].m_ParentIndex = InvalidEntityID;
+    }
+
+    m_Nodes[RootEntityID].m_IsRegistered = true;
+    m_Nodes[RootEntityID].m_ParentIndex = InvalidEntityID;
+}
+

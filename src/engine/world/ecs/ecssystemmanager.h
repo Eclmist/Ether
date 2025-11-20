@@ -39,6 +39,7 @@ public:
 private:
     friend class EcsManager;
     void Update();
+    void Reset();
 
 private:
     std::vector<std::unique_ptr<EcsSystem>> m_Systems;
