@@ -32,6 +32,8 @@ namespace Ether
 ETH_ENGINE_DLL int Start(IApplicationBase& app);
 ETH_ENGINE_DLL void Shutdown();
 
+ETH_ENGINE_DLL bool IsInitialized();
+
 ETH_ENGINE_DLL CommandLineOptions& GetCommandLineOptions();
 ETH_ENGINE_DLL World& GetActiveWorld();
 } // namespace Ether

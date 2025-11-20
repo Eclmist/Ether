@@ -49,6 +49,11 @@ void Ether::Shutdown()
     EngineCore::Instance().Shutdown();
 }
 
+bool Ether::IsInitialized()
+{
+    return EngineCore::HasInstance() && EngineCore::IsInitialized();
+}
+
 Ether::CommandLineOptions& Ether::GetCommandLineOptions()
 {
     return EngineCore::GetCommandLineOptions();
