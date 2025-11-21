@@ -19,26 +19,32 @@
 
 #pragma once
 
-#include "engine/world/ecs/components/ecscomponent.h"
+#include "graphics/schedule/producers/graphicproducer.h"
 
-namespace Ether::Ecs
+namespace Ether::Graphics
 {
-class ETH_ENGINE_DLL EcsMetadataComponent : public EcsComponent<EcsMetadataComponent>
+class EditorGridsProducer : public GraphicProducer
 {
 public:
-    EcsMetadataComponent();
-    ~EcsMetadataComponent() override = default;
+    EditorGridsProducer();
+    ~EditorGridsProducer() override = default;
 
 public:
-    void Serialize(OStream& ostream) const override;
-    void Deserialize(IStream& istream) override;
+    void Initialize(ResourceContext& rc) override;
+    void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
+    void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
-public:
-    EntityID m_EntityID;
-    std::string m_EntityName;
-    bool m_EntityEnabled;
+protected:
+    bool IsEnabled() override;
 
-public:
-    bool m_ToolmodeVisibility;
+private:
+    void CreateShaders();
+    void CreateRootSignature();
+    void CreatePipelineState(ResourceContext& rc);
+
+private:
+    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
+    std::unique_ptr<RhiRootSignature> m_RootSignature;
+    std::unique_ptr<RhiGraphicPipelineStateDesc> m_PsoDesc;
 };
-} // namespace Ether::Ecs
+} // namespace Ether::Graphics

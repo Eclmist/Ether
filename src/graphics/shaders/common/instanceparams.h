@@ -25,6 +25,8 @@ ETH_BEGIN_SHADER_NAMESPACE
 
 struct InstanceParams
 {
+    ethMatrix4x4 m_ModelMatrix;
+    ethMatrix4x4 m_ModelMatrixPrev;
     uint32_t m_MaterialIdx;
 };
 

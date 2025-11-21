@@ -24,9 +24,6 @@
 
 namespace Ether
 {
-constexpr Ecs::EntityID InvalidEntityID = -1;
-constexpr Ecs::EntityID RootEntityID = 0;
-
 class SceneGraphNode : public Serializable
 {
 public:
@@ -36,6 +33,10 @@ public:
 public:
     void Serialize(OStream& ostream) const override;
     void Deserialize(IStream& istream) override;
+
+public:
+    inline const Ecs::EntityID GetParent() const { return m_ParentIndex; }
+    inline const std::vector<Ecs::EntityID>& GetChildren() const { return m_ChildrenIndices; }
 
 private:
     friend class SceneGraph;
@@ -56,12 +57,14 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
-    inline Ecs::EntityID GetParent(Ecs::EntityID id) const { return m_Nodes[id].m_ParentIndex; }
-    inline Ecs::EntityID GetFirstChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
-    inline Ecs::EntityID GetLastChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
-    inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
+    ETH_ENGINE_DLL inline SceneGraphNode& GetNode(Ecs::EntityID id) { return m_Nodes[id]; }
+    ETH_ENGINE_DLL inline Ecs::EntityID GetParent(Ecs::EntityID id) const { return m_Nodes[id].m_ParentIndex; }
+    ETH_ENGINE_DLL inline Ecs::EntityID GetFirstChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.front(); }
+    ETH_ENGINE_DLL inline Ecs::EntityID GetLastChild(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices.back(); }
+    ETH_ENGINE_DLL inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
 
-    void Register(Ecs::EntityID id, Ecs::EntityID parent = RootEntityID);
+public:
+    void Register(Ecs::EntityID id, Ecs::EntityID parent = Ecs::RootEntityID);
     void Deregister(Ecs::EntityID id);
     void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
 

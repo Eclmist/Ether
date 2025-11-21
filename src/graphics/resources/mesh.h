@@ -81,6 +81,7 @@ protected:
     StringID m_DefaultMaterialGuid;
     Aabb m_BoundingBox;
 
+protected:
     // Transient Data
     std::unique_ptr<RhiResource> m_VertexBufferResource;
     std::unique_ptr<RhiResource> m_IndexBufferResource;

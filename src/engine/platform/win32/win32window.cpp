@@ -319,18 +319,24 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
         Input::Instance().SetMousePosY((short)HIWORD(lParam));
         break;
     case WM_LBUTTONDOWN:
+        if (win32window.m_ParentWindowHandle != nullptr)
+            SetFocus((HWND)win32window.m_ParentWindowHandle);
         Input::Instance().SetMouseButtonDown(0);
         break;
     case WM_LBUTTONUP:
         Input::Instance().SetMouseButtonUp(0);
         break;
     case WM_MBUTTONDOWN:
+        if (win32window.m_ParentWindowHandle != nullptr)
+            SetFocus((HWND)win32window.m_ParentWindowHandle);
         Input::Instance().SetMouseButtonDown(1);
         break;
     case WM_MBUTTONUP:
         Input::Instance().SetMouseButtonUp(1);
         break;
     case WM_RBUTTONDOWN:
+        if (win32window.m_ParentWindowHandle != nullptr)
+            SetFocus((HWND)win32window.m_ParentWindowHandle);
         Input::Instance().SetMouseButtonDown(2);
         break;
     case WM_RBUTTONUP:

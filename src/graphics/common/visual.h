@@ -34,6 +34,8 @@ struct ETH_GRAPHIC_DLL Visual
 {
     Mesh* m_Mesh;
     Material* m_Material;
+    ethMatrix4x4 m_ModelMatrix;
+    ethMatrix4x4 m_ModelMatrixPrev;
     bool m_Culled;
 
     bool operator==(const Visual& other) const
@@ -41,6 +43,10 @@ struct ETH_GRAPHIC_DLL Visual
         if (m_Mesh != other.m_Mesh)
             return false;
         if (m_Material != other.m_Material)
+            return false;
+        if (m_ModelMatrix != other.m_ModelMatrix)
+            return false;
+        if (m_ModelMatrixPrev != other.m_ModelMatrixPrev)
             return false;
         return true;
     }
@@ -52,9 +58,7 @@ struct ETH_GRAPHIC_DLL SkinnedVisual : public Visual
 
     bool operator==(const SkinnedVisual& other) const
     {
-        if (m_Mesh != other.m_Mesh)
-            return false;
-        if (m_Material != other.m_Material)
+        if ((Visual)(*this) != (Visual)(other))
             return false;
         if (m_Skeleton != other.m_Skeleton)
             return false;

@@ -46,3 +46,56 @@ void Ether::Ecs::EcsTransformComponent::Deserialize(IStream& istream)
     istream >> m_Rotation;
     istream >> m_Scale;
 }
+
+Ether::ethMatrix4x4 Ether::Ecs::EcsTransformComponent::ToMatrix() const
+{
+    return Transform::GetTranslationMatrix(m_Translation) *
+           Transform::GetRotationMatrix(ethQuaternion::FromEuler(m_Rotation)) *
+           Transform::GetScaleMatrix(m_Scale);
+}
+
+void Ether::Ecs::EcsTransformComponent::FromMatrix(const ethMatrix4x4& transformation)
+{
+    // TODO: Move into SMath library?
+    m_Translation = { transformation.m_14, transformation.m_24, transformation.m_34 };
+
+    // --- Scale ---------------------------------------------------------------
+
+    ethVector3 x = { transformation.m_11, transformation.m_21, transformation.m_31 };
+    ethVector3 y = { transformation.m_12, transformation.m_22, transformation.m_32 };
+    ethVector3 z = { transformation.m_13, transformation.m_23, transformation.m_33 };
+
+    m_Scale.x = x.Magnitude();
+    m_Scale.y = y.Magnitude();
+    m_Scale.z = z.Magnitude();
+
+    // --- Normalized rotation basis ------------------------------------------
+    ethVector3 xN = x / m_Scale.x;
+    ethVector3 yN = y / m_Scale.y;
+    ethVector3 zN = z / m_Scale.z;
+
+    // Rotation matrix R:
+    //
+    // | xN.x  yN.x  zN.x |
+    // | xN.y  yN.y  zN.y |
+    // | xN.z  yN.z  zN.z |
+
+    // --- Extract Euler rotation (XYZ order) ---------------------------------
+
+    float sy = -zN.x; // -R[0][2]
+    m_Rotation.y = std::asin(sy);
+
+    float cy = std::cos(m_Rotation.y);
+
+    if (std::fabs(cy) > 1e-6f) // Not gimbal locked
+    {
+        m_Rotation.x = std::atan2(zN.y, zN.z); // atan2(R[1][2], R[2][2])
+        m_Rotation.z = std::atan2(yN.x, xN.x); // atan2(R[0][1], R[0][0])
+    }
+    else // Gimbal lock fallback
+    {
+        m_Rotation.x = std::atan2(-yN.z, yN.y);
+        m_Rotation.z = 0.0f;
+    }
+}
+

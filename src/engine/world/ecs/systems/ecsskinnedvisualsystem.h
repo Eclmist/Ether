@@ -27,7 +27,6 @@
 
 namespace Ether::Ecs
 {
-
 // TODO: Remove this in favor of storing in a skeleton component
 struct SkeletonAnimPairHash
 {

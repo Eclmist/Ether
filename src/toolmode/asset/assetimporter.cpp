@@ -132,8 +132,8 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
 
     ProcessMaterials(folderPath, assimpScene);
     ProcessSkeletons(assimpScene);
+    ProcessNodes(assimpScene, assimpScene->mRootNode, {});
     ProcessAnimations(assimpScene);
-    ProcessMeshs(assimpScene);
 }
 
 void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene)
@@ -166,6 +166,7 @@ void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderP
             material->Get(AI_MATKEY_BLEND_FUNC, blendMode);
 
             Graphics::Material gfxMaterial;
+            gfxMaterial.SetName(material->GetName().C_Str());
             gfxMaterial.SetBaseColor({ baseColor.r, baseColor.g, baseColor.b });
             gfxMaterial.SetEmissiveColor({ emissiveColor.r, emissiveColor.g, emissiveColor.b });
             gfxMaterial.SetRoughness(roughness);
@@ -283,8 +284,9 @@ void Ether::Toolmode::AssetImporter::ProcessSkeletons(const aiScene* assimpScene
 
         auto [iter, inserted] = m_ArmatureRootToSkeletonMap.emplace(rootNode, std::make_unique<Skeleton>());
         Skeleton& skeleton = *iter->second;
-        ProcessSkeleton(skeleton, rootNode);
+        skeleton.SetName(rootNode->mName.C_Str());
 
+        ProcessSkeleton(skeleton, rootNode);
         SerializeLibraryData(&skeleton);
     }
 }
@@ -306,6 +308,7 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
         const float ticksPerSecond = animation->mTicksPerSecond;
 
         Ether::AnimationClip animationClip(animName, totalTicks, ticksPerSecond);
+        animationClip.SetName(animation->mName.C_Str());
 
         // Each assimp animation channel is one BONE, not one property, unlike in Ether.
         // So we will create a channel for each bone+property
@@ -356,22 +359,7 @@ void Ether::Toolmode::AssetImporter::ProcessAnimations(const aiScene* assimpScen
     }
 }
 
-void Ether::Toolmode::AssetImporter::ProcessMeshs(const aiScene* assimpScene)
-{
-    ETH_MARKER_EVENT("Process Meshes");
-
-    for (uint32_t i = 0; i < assimpScene->mNumMeshes; ++i)
-    {
-        const aiMesh* mesh = assimpScene->mMeshes[i];
-
-        if (mesh->HasBones())
-            ProcessSkinnedMesh(mesh);
-        else
-            ProcessStaticMesh(mesh);
-    }
-}
-
-void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
+void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh, const ethMatrix4x4& transform)
 {
     ETH_MARKER_EVENT("Process Static Mesh");
     std::vector<Graphics::VertexFormats::BaseVertexFormat> packedVertices;
@@ -387,13 +375,14 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh)
     }
 
     Graphics::StaticMesh gfxStaticMesh;
+    gfxStaticMesh.SetName(assimpMesh->mName.C_Str());
     gfxStaticMesh.SetPackedVertices(std::move(packedVertices));
     gfxStaticMesh.SetIndices(std::move(indices));
     gfxStaticMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
     SerializeLibraryData(&gfxStaticMesh);
 }
 
-void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh)
+void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh, const ethMatrix4x4& transform)
 {
     ETH_MARKER_EVENT("Process Skinned Mesh");
     std::vector<Graphics::VertexFormats::SkinnedVertexFormat> packedSkinnedVertices;
@@ -409,6 +398,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     }
 
     Graphics::SkinnedMesh gfxSkinnedMesh;
+    gfxSkinnedMesh.SetName(assimpMesh->mName.C_Str());
     gfxSkinnedMesh.SetPackedVertices(std::move(packedSkinnedVertices));
     gfxSkinnedMesh.SetIndices(std::move(indices));
     gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
@@ -420,6 +410,30 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     }
 
     SerializeLibraryData(&gfxSkinnedMesh);
+}
+
+void Ether::Toolmode::AssetImporter::ProcessNodes(
+    const aiScene* assimpScene,
+    const aiNode* node,
+    const ethMatrix4x4& parentTransform)
+{
+    ethMatrix4x4 nodeGlobalTransform = parentTransform * ToEthMatrix4x4(node->mTransformation);
+    m_NodeTransforms[node->mName.C_Str()] = nodeGlobalTransform;
+
+    for (uint32_t i = 0; i < node->mNumMeshes; ++i)
+    {
+        const aiMesh* mesh = assimpScene->mMeshes[node->mMeshes[i]];
+
+        if (mesh->HasBones())
+            ProcessSkinnedMesh(mesh, nodeGlobalTransform);
+        else
+            ProcessStaticMesh(mesh, nodeGlobalTransform);
+    }
+
+    for (uint32_t i = 0; i < node->mNumChildren; ++i)
+    {
+        ProcessNodes(assimpScene, node->mChildren[i], nodeGlobalTransform);
+    }
 }
 
 void Ether::Toolmode::AssetImporter::ProcessSkeleton(Skeleton& skeleton, const aiNode* node, uint32_t parentIndex) const
@@ -491,6 +505,8 @@ Ether::StringID Ether::Toolmode::AssetImporter::ProcessTexture(
     gfxTexture.SetWidth(static_cast<uint32_t>(w));
     gfxTexture.SetHeight(static_cast<uint32_t>(h));
     gfxTexture.SetData(downscaleOutput, genMips);
+    gfxTexture.SetName(PathUtils::GetFileName(path).c_str());
+
     SerializeLibraryData(&gfxTexture);
 
     m_PathToGuidMap[texturePath] = gfxTexture.GetGuid();

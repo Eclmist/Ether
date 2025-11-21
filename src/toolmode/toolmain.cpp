@@ -163,9 +163,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
         for (auto& staticMesh : staticMeshes)
         {
-            Entity& entity = currentWorld.CreateEntity("Entity (" + staticMesh->GetGuid() + ")");
-            entity.AddComponent<Ecs::EcsVisualComponent>();
-            Ecs::EcsVisualComponent& visual = entity.GetComponent<Ecs::EcsVisualComponent>();
+            Entity& entity = currentWorld.CreateEntity(staticMesh->GetName());
+
+            Ecs::EcsVisualComponent& visual = entity.AddComponent<Ecs::EcsVisualComponent>();
             visual.m_MeshGuid = staticMesh->GetGuid();
             visual.m_MaterialGuid = staticMesh->GetDefaultMaterialGuid();
             currentWorld.GetResourceManager().RegisterStaticMeshResource(std::move(staticMesh));
@@ -173,9 +173,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
         for (auto& skinnedMesh : skinnedMeshes)
         {
-            Entity& entity = currentWorld.CreateEntity("Entity (" + skinnedMesh->GetGuid() + ")");
-            entity.AddComponent<Ecs::EcsSkinnedVisualComponent>();
-            Ecs::EcsSkinnedVisualComponent& visual = entity.GetComponent<Ecs::EcsSkinnedVisualComponent>();
+            Entity& entity = currentWorld.CreateEntity(skinnedMesh->GetName());
+
+            Ecs::EcsSkinnedVisualComponent& visual = entity.AddComponent<Ecs::EcsSkinnedVisualComponent>();
             visual.m_MeshGuid = skinnedMesh->GetGuid();
             visual.m_MaterialGuid = skinnedMesh->GetDefaultMaterialGuid();
             visual.m_SkeletonGuid = skinnedMesh->GetSkeletonGuid();
@@ -186,7 +186,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         Entity& cameraObj = currentWorld.CreateCamera();
         //cameraObj.GetComponent<Ecs::EcsCameraComponent>().SetHdriTextureID(AssetImporter::Instance().GetAssetGuid(hdriPath));
 
-        currentWorld.SetWorldName(exportWorldName);
+        currentWorld.SetName(exportWorldName);
         currentWorld.Save(sceneSavePath);
         PostQuitMessage(0);
     }

@@ -19,7 +19,7 @@
 
 #include "engine/world/ecs/ecsentitymanager.h"
 
-constexpr uint32_t EcsEntityManagerVersion = 0;
+constexpr uint32_t EcsEntityManagerVersion = 1;
 
 Ether::Ecs::EcsEntityManager::EcsEntityManager()
     : Serializable(EcsEntityManagerVersion, "Engine::EcsEntityManager")

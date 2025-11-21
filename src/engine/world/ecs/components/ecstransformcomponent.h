@@ -34,8 +34,15 @@ public:
     void Deserialize(IStream& istream) override;
 
 public:
+    ethMatrix4x4 ToMatrix() const;
+    void FromMatrix(const ethMatrix4x4& transformation);
+
+public:
     ethVector3 m_Translation;
     ethVector3 m_Rotation;
     ethVector3 m_Scale;
+
+    // Transient
+    ethMatrix4x4 m_PreviousTransform;
 };
 } // namespace Ether::Ecs

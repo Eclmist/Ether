@@ -46,13 +46,13 @@ namespace Ether::Toolmode
     private:
         void ProcessScene(const std::string& folderPath, const aiScene* assimpScene);
         void ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene);
+        void ProcessNodes(const aiScene* assimpScene, const aiNode* node, const ethMatrix4x4& parentTransform);
         void ProcessSkeletons(const aiScene* assimpScene);
         void ProcessAnimations(const aiScene* assimpScene);
-        void ProcessMeshs(const aiScene* assimpScene);
 
     private:
-        void ProcessStaticMesh(const aiMesh* assimpMesh);
-        void ProcessSkinnedMesh(const aiMesh* assimpMesh);
+        void ProcessStaticMesh(const aiMesh* assimpMesh, const ethMatrix4x4& transform);
+        void ProcessSkinnedMesh(const aiMesh* assimpMesh, const ethMatrix4x4& transform);
         void ProcessSkeleton(Skeleton& skeleton, const aiNode* node, uint32_t parentIndex = InvalidBoneIndex) const;
         StringID ProcessTexture(const std::string& folderPath, const StringID& texturePath, bool isSrgb = false, bool genMips = true);
         ethMatrix4x4 GetOffsetMatrix(const aiNode* node) const;
@@ -72,6 +72,7 @@ namespace Ether::Toolmode
 
         std::vector<StringID> m_MaterialGuids;
         std::vector<StringID> m_AnimationGuids;
+        std::unordered_map<std::string, ethMatrix4x4> m_NodeTransforms;
         std::unordered_map<const aiNode*, ethMatrix4x4> m_OffsetMatrices;
         std::unordered_map<const aiNode*, std::unique_ptr<Skeleton>> m_ArmatureRootToSkeletonMap;
         std::unordered_map<StringID, StringID> m_PathToGuidMap;

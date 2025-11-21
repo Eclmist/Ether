@@ -26,6 +26,7 @@ Ether::Ecs::EcsMetadataComponent::EcsMetadataComponent()
     , m_EntityID(-1)
     , m_EntityName("Entity")
     , m_EntityEnabled(true)
+    , m_ToolmodeVisibility(true)
 {
 }
 
@@ -36,6 +37,7 @@ void Ether::Ecs::EcsMetadataComponent::Serialize(OStream& ostream) const
     ostream << m_EntityID;
     ostream << m_EntityName;
     ostream << m_EntityEnabled;
+    ostream << m_ToolmodeVisibility;
 }
 
 void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
@@ -45,4 +47,5 @@ void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
     istream >> m_EntityID;
     istream >> m_EntityName;
     istream >> m_EntityEnabled;
+    istream >> m_ToolmodeVisibility;
 }

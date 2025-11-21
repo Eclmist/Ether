@@ -24,8 +24,7 @@
 constexpr uint32_t WorldVersion = 0;
 
 Ether::World::World()
-    : Serializable(WorldVersion, "Engine::World")
-    , m_WorldName("Untitled World")
+    : Serializable(WorldVersion, "Engine::World", "Untitled World")
     , m_MainCamera(nullptr)
 {
 }
@@ -65,7 +64,7 @@ void Ether::World::Unload()
 {
     Graphics::GraphicCore::FlushGpu();
     Graphics::GraphicCore::GetGraphicRenderer().ClearAllRenderData();
-    m_WorldName = "Unloaded World";
+    SetName("Untitled World");
     m_SceneGraph.Reset();
     m_ResourceManager.Reset();
     m_EcsManager.Reset();
@@ -76,7 +75,6 @@ void Ether::World::Unload()
 void Ether::World::Serialize(OStream& ostream) const
 {
     Serializable::Serialize(ostream);
-    ostream << m_WorldName;
 
     m_SceneGraph.Serialize(ostream);
     m_ResourceManager.Serialize(ostream);
@@ -92,7 +90,6 @@ void Ether::World::Serialize(OStream& ostream) const
 void Ether::World::Deserialize(IStream& istream)
 {
     Serializable::Deserialize(istream);
-    istream >> m_WorldName;
 
     m_SceneGraph.Deserialize(istream);
     m_ResourceManager.Deserialize(istream);
@@ -115,9 +112,11 @@ void Ether::World::Deserialize(IStream& istream)
     m_MainCamera = m_Entities.at(mainCameraId).get();
 }
 
-Ether::Entity& Ether::World::CreateEntity(const std::string& name)
+Ether::Entity& Ether::World::CreateEntity(const std::string& name, Ecs::EntityID parentID)
 {
     Ecs::EntityID entityID = m_EcsManager.GetEntityManager().CreateEntity();
+    m_SceneGraph.Register(entityID, parentID);
+
     std::unique_ptr<Entity> entity = std::make_unique<Entity>(name, entityID);
     m_Entities[entityID] = std::move(entity);
     return *m_Entities[entityID];

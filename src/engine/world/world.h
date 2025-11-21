@@ -40,17 +40,14 @@ public:
     void Unload();
 
 public:
-    inline std::string GetWorldName() const { return m_WorldName; }
     inline Entity& GetEntity(Ecs::EntityID entityID) const { return *m_Entities.at(entityID); }
     inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
     inline ResourceManager& GetResourceManager() { return m_ResourceManager; }
     inline Ecs::EcsManager& GetEcsManager() { return m_EcsManager; }
     inline Entity* GetMainCamera() { return m_MainCamera; }
 
-    inline void SetWorldName(const std::string& name) { m_WorldName = name; }
-
 public:
-    Entity& CreateEntity(const std::string& name);
+    Entity& CreateEntity(const std::string& name, Ecs::EntityID parentID = Ecs::RootEntityID);
     Entity& CreateCamera();
 
 private:
@@ -58,8 +55,6 @@ private:
     void Deserialize(IStream& istream) override;
 
 private:
-    std::string m_WorldName;
-
     SceneGraph m_SceneGraph;
     ResourceManager m_ResourceManager;
 

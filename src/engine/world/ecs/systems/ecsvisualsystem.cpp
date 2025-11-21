@@ -17,11 +17,10 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <execution>
-
 #include "engine/enginecore.h"
 #include "engine/world/entity.h"
 #include "engine/world/ecs/systems/ecsvisualsystem.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "engine/world/ecs/components/ecstransformcomponent.h"
@@ -47,6 +46,13 @@ void Ether::Ecs::EcsVisualSystem::Update()
     {
         Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
         EcsVisualComponent& data = entity.GetComponent<EcsVisualComponent>();
+        EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
+        EcsMetadataComponent& metadata = entity.GetComponent<EcsMetadataComponent>();
+
+#if ETH_TOOLMODE
+        if (!metadata.m_ToolmodeVisibility)
+            continue;
+#endif
 
         if (!data.m_Enabled)
             continue;
@@ -84,6 +90,8 @@ void Ether::Ecs::EcsVisualSystem::Update()
             continue;
 
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
+        gfxVisual.m_ModelMatrix = transform.ToMatrix();
+        gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
         gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
 
         // Raytraced translucency TODO
@@ -92,6 +100,9 @@ void Ether::Ecs::EcsVisualSystem::Update()
 
         renderData.m_Visuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
+
+        // Update previous transform for velocity
+        transform.m_PreviousTransform = gfxVisual.m_ModelMatrix;
     }
 }
 

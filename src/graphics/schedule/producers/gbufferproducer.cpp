@@ -126,6 +126,9 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
             if (visual.m_Culled)
                 continue;
 
+            instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
+            instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
+
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
             ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);

@@ -67,11 +67,9 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
 
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_VisualBatches;
 
-    ctx.PushMarker("Clear");
     ctx.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(SceneColor)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_DS(SceneDepth)), RhiResourceState::DepthRead);
-    ctx.PopMarker();
 
     ctx.PushMarker("Draw Translucencies");
     ctx.SetViewport(gfxDisplay.GetViewport());
@@ -103,6 +101,9 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
         {
             if (visual.m_Culled)
                 continue;
+
+            instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
+            instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
 
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());

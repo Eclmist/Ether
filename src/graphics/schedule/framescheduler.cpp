@@ -38,6 +38,10 @@
 #include "graphics/schedule/producers/depthoffieldproducer.h"
 #include "graphics/schedule/producers/translucencyproducer.h"
 
+#if ETH_TOOLMODE
+#include "graphics/schedule/producers/toolmode/editorgridsproducer.h"
+#endif
+
 DECLARE_GFX_PA(DenoisedLightingProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
 DECLARE_GFX_PA(GBufferProducer)
@@ -54,6 +58,10 @@ DECLARE_GFX_PA(TranslucencyProducer)
 DECLARE_GFX_PA(TemporalAAProducer)
 DECLARE_GFX_PA(BloomProducer)
 DECLARE_GFX_PA(DepthOfFieldProducer)
+
+#if ETH_TOOLMODE
+DECLARE_GFX_PA(EditorGridsProducer)
+#endif
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
 {
@@ -72,6 +80,10 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(BloomProducer), new BloomProducer());
     Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
     Register(ACCESS_GFX_PA(DepthOfFieldProducer), new DepthOfFieldProducer());
+
+#if ETH_TOOLMODE
+    Register(ACCESS_GFX_PA(EditorGridsProducer), new EditorGridsProducer());
+#endif
 
     // Also for now, add imgui here
     m_ImguiWrapper = RhiImguiWrapper::InitForPlatform();
@@ -94,6 +106,10 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(BloomProducer).Release();
     ACCESS_GFX_PA(TemporalAAProducer).Release();
     ACCESS_GFX_PA(DepthOfFieldProducer).Release();
+
+#if ETH_TOOLMODE
+    ACCESS_GFX_PA(EditorGridsProducer).Release();
+#endif
 }
 
 void Ether::Graphics::FrameScheduler::Register(GFX_STATIC::GFX_PA_TYPE& pass, GraphicProducer* producer)
@@ -178,6 +194,11 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 
     // TODO: Add a tonemapping pass instead of dumping it in final composite, and move it before TAA
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
+
+#if ETH_TOOLMODE
+    m_OrderedProducers.push(ACCESS_GFX_PA(EditorGridsProducer).Get().get());
+#endif
+
 }
 
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxContext)

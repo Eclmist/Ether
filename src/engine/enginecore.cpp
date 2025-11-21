@@ -71,7 +71,7 @@ void Ether::EngineCore::MainEngineLoop()
         m_MainApplication->OnPostRender();
     }
 
-    Graphics::GraphicCore::WaitForLastFrame();
+    Graphics::GraphicCore::FlushGpu();
 
     m_MainApplication->OnShutdown();
 

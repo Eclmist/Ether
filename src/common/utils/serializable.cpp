@@ -21,9 +21,10 @@
 #include "common/stream/filestream.h"
 #include <format>
 
-Ether::Serializable::Serializable(uint32_t version, const char* classID)
+Ether::Serializable::Serializable(uint32_t version, const char* classID, const std::string& name)
     : m_Version(version)
     , m_ClassID(classID)
+    , m_Name(name)
 {
     m_Guid = std::format(
         "{:X}-{:X}-{:X}-{:X}",
@@ -31,6 +32,11 @@ Ether::Serializable::Serializable(uint32_t version, const char* classID)
         SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
         SMath::Random::UniformInt(16, std::numeric_limits<int>::max()),
         SMath::Random::UniformInt(16, std::numeric_limits<int>::max()));
+
+    if (m_Name == "")
+    {
+        m_Name = "Unnammed Asset (" + m_Guid + ")";
+    }
 }
 
 Ether::Serializable::~Serializable()
@@ -42,6 +48,7 @@ void Ether::Serializable::Serialize(OStream& ostream) const
     ostream << m_Version;
     ostream << m_ClassID;
     ostream << m_Guid;
+    ostream << m_Name;
 }
 
 void Ether::Serializable::Deserialize(IStream& istream)
@@ -60,6 +67,7 @@ void Ether::Serializable::Deserialize(IStream& istream)
             std::format("Asset type mismatch - expected type {} but found type {}", version, m_Version));
 
     istream >> m_Guid;
+    istream >> m_Name;
 }
 
 std::string Ether::Serializable::DeserializeClassID(IStream& istream)

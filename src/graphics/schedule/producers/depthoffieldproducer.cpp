@@ -46,9 +46,7 @@ void Ether::Graphics::DepthOfFieldProducer::GetInputOutput(ScheduleContext& sche
     schedule.NewUA(ACCESS_GFX_UA(DofCircleOfConfusionTexture), resolution.x, resolution.y, RhiFormat::R16Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(DofCircleOfConfusionTexture), resolution.x, resolution.y, RhiFormat::R16Float, RhiResourceDimension::Texture2D);
 
-    schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
-
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
 }

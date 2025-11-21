@@ -54,8 +54,8 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    const float4 worldPos = float4(IN.Position, 1.0f); // TODO: Implement model matrices here?
-    const float4 worldPosPrev = float4(IN.PositionPrev, 1.0f); // TODO: Implement model matrices here?
+    const float4 worldPos = mul(g_InstanceParams.m_ModelMatrix, float4(IN.Position, 1.0f));
+    const float4 worldPosPrev = mul(g_InstanceParams.m_ModelMatrixPrev, float4(IN.PositionPrev, 1.0f));
     
     o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
     o.Normal = IN.Normal;

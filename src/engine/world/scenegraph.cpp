@@ -19,11 +19,11 @@
 
 #include "engine/world/scenegraph.h"
 
-constexpr uint32_t SceneGraphVersion = 0;
+constexpr uint32_t SceneGraphVersion = 1;
 
 Ether::SceneGraphNode::SceneGraphNode()
     : Serializable(SceneGraphVersion, "Engine::SceneGraphNode")
-    , m_ParentIndex(InvalidEntityID)
+    , m_ParentIndex(Ecs::InvalidEntityID)
     , m_IsRegistered(false)
 {
 }
@@ -47,10 +47,11 @@ void Ether::SceneGraphNode::Deserialize(IStream& istream)
     istream >> m_ParentIndex;
     istream >> m_IsRegistered;
 
-    uint32_t numIndices;
-    istream >> numIndices;
+    uint32_t numChildren;
+    istream >> numChildren;
+    m_ChildrenIndices.resize(numChildren);
 
-    for (int i = 0; i < numIndices; ++i)
+    for (int i = 0; i < numChildren; ++i)
         istream >> m_ChildrenIndices[i];
 }
 
@@ -80,7 +81,7 @@ void Ether::SceneGraph::Deserialize(IStream& istream)
 
 void Ether::SceneGraph::SetParent(Ecs::EntityID id, Ecs::EntityID parent)
 {
-    if (m_Nodes[id].m_ParentIndex != RootEntityID)
+    if (m_Nodes[id].m_ParentIndex != Ecs::RootEntityID)
     {
         SceneGraphNode oldParent = m_Nodes[m_Nodes[id].m_ParentIndex];
 
@@ -104,10 +105,10 @@ void Ether::SceneGraph::Deregister(Ecs::EntityID id)
 {
     AssertEngine(m_Nodes[id].m_IsRegistered, "EntityID was never registered to the scene graph");
     m_Nodes[id].m_IsRegistered = false;
-    SetParent(id, RootEntityID);
+    SetParent(id, Ecs::RootEntityID);
 
     for (Ecs::EntityID childIdx : m_Nodes[id].m_ChildrenIndices)
-        m_Nodes[childIdx].m_ParentIndex = RootEntityID;
+        m_Nodes[childIdx].m_ParentIndex = Ecs::RootEntityID;
 
     m_Nodes[id].m_ChildrenIndices.clear();
 }
@@ -117,10 +118,11 @@ void Ether::SceneGraph::Reset()
     for (uint32_t i = 0; i < Ecs::MaxNumEntities; ++i)
     {
         m_Nodes[i].m_IsRegistered = false;
-        m_Nodes[i].m_ParentIndex = InvalidEntityID;
+        m_Nodes[i].m_ParentIndex = Ecs::InvalidEntityID;
     }
 
-    m_Nodes[RootEntityID].m_IsRegistered = true;
-    m_Nodes[RootEntityID].m_ParentIndex = InvalidEntityID;
+    m_Nodes[Ecs::RootEntityID].m_IsRegistered = true;
+    m_Nodes[Ecs::RootEntityID].m_ParentIndex = Ecs::InvalidEntityID;
+    m_Nodes[Ecs::RootEntityID].m_ChildrenIndices.clear();
 }
 

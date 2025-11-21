@@ -22,6 +22,7 @@
 #include "engine/enginecore.h"
 #include "engine/world/entity.h"
 #include "engine/world/ecs/systems/ecsskinnedvisualsystem.h"
+#include "engine/world/ecs/components/ecsmetadatacomponent.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "engine/world/ecs/components/ecstransformcomponent.h"
@@ -48,6 +49,13 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
     {
         Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
         EcsSkinnedVisualComponent& data = entity.GetComponent<EcsSkinnedVisualComponent>();
+        EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
+        EcsMetadataComponent& metadata = entity.GetComponent<EcsMetadataComponent>();
+
+#if ETH_TOOLMODE
+        if (!metadata.m_ToolmodeVisibility)
+            continue;
+#endif
 
         if (!data.m_Enabled)
             continue;
@@ -97,6 +105,8 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
         gfxVisual.m_Mesh = skinnedMesh;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
+        gfxVisual.m_ModelMatrix = transform.ToMatrix();
+        gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
         gfxVisual.m_Culled = false; // TODO: Calculate max AABB for skinned mesh to do proper culling
 
         if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
@@ -105,6 +115,9 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         renderData.m_Visuals.push_back(gfxVisual);
         renderData.m_RaytracingVisuals.push_back(gfxVisual);
         gfxVisualBatch->m_Visuals.emplace_back(gfxVisual);
+        
+        // Update previous transform for velocity
+        transform.m_PreviousTransform = gfxVisual.m_ModelMatrix;
     }
 
 

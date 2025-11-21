@@ -28,6 +28,9 @@ constexpr uint32_t MaxNumEntities = 4096;
 constexpr uint32_t MaxNumComponents = 32;
 
 using ComponentID = size_t;
-using EntityID = uint32_t;
 using EntitySignature = std::bitset<MaxNumComponents>;
+
+using EntityID = uint32_t;
+constexpr EntityID InvalidEntityID = -1;
+constexpr EntityID RootEntityID = Ecs::MaxNumEntities - 1;
 } // namespace Ether::Ecs
