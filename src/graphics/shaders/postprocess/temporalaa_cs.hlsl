@@ -25,6 +25,8 @@
 
 Texture2D<float4> g_GBufferTexture1                 : register(t0);
 Texture2D<float4> g_AccumulationTextureIn           : register(t1);
+Texture2D<float2> g_SceneDepth                      : register(t2);
+
 RWTexture2D<float4> g_TargetTexture                 : register(u0);
 RWTexture2D<float4> g_AccumulationTextureOut        : register(u1);
 
@@ -33,9 +35,10 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
     sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
     sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float sceneDepth = g_SceneDepth.Load(threadID).r;
     const float2 resolution = g_GlobalConstants.m_ScreenResolution;
     const float2 screenCoords = threadID.xy;
-    const float2 velocity = g_GBufferTexture1.Load(threadID).zw;
+    const float2 velocity = g_GBufferTexture1.Load(threadID).zw; // todo: don't pack camera/static velocity into gbuffer
     const float2 uv = ScreenToTextureSpace(screenCoords);
     const float2 uvPrev = uv - velocity;
 
@@ -61,7 +64,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         }
     }
 
-    const float a = g_GlobalConstants.m_TaaAccumulationFactor;
+    const float a = (sceneDepth <= 0) ? 1 : g_GlobalConstants.m_TaaAccumulationFactor;
     const float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
     const float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
 

@@ -52,11 +52,6 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
         EcsMetadataComponent& metadata = entity.GetComponent<EcsMetadataComponent>();
 
-#if ETH_TOOLMODE
-        if (!metadata.m_ToolmodeVisibility)
-            continue;
-#endif
-
         if (!data.m_Enabled)
             continue;
 
@@ -107,7 +102,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_ModelMatrix = transform.ToMatrix();
         gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
-        gfxVisual.m_Culled = false; // TODO: Calculate max AABB for skinned mesh to do proper culling
+        gfxVisual.m_Culled = false ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility); // TODO: Calculate max AABB for skinned mesh to do proper culling
 
         if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
             renderData.m_RaytracingVisuals.push_back(gfxVisual);

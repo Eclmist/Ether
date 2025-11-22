@@ -30,7 +30,7 @@
 #define GRID_LINE_ALPHA 0.7
 #define GRID_SIZE 30
 
-Texture2D<float4> g_SceneDepth : register(t0);
+Texture2D<float2> g_SceneDepth : register(t0);
 
 float4 GetGridLevel(float level, float3 wPos, float3 dydx)
 {

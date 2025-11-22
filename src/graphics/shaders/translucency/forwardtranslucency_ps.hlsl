@@ -29,7 +29,7 @@
 #include "utils/fullscreenhelpers.hlsl"
 
 ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
-Texture2D<float4> g_SceneDepth                      : register(t1);
+Texture2D<float2> g_SceneDepth                      : register(t1);
 
 struct PS_INPUT
 {

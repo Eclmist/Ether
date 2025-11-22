@@ -28,6 +28,7 @@ DEFINE_GFX_SR(TaaAccumulationTexture)
 
 DECLARE_GFX_UA(PostFxSourceTexture)
 DECLARE_GFX_SR(GBufferTexture1) // For the velocity vectors
+DECLARE_GFX_SR(SceneDepth)
 
 Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
     : PostProcessProducer("TemporalAAProducer", "postprocess\\temporalaa_cs.hlsl")
@@ -42,6 +43,7 @@ void Ether::Graphics::TemporalAAProducer::GetInputOutput(ScheduleContext& schedu
 
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
     schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
+    schedule.Read(ACCESS_GFX_SR(SceneDepth));
 }
 
 void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -53,10 +55,14 @@ void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)), RhiResourceState::UnorderedAccess);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture1)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneDepth)), RhiResourceState::Common);
+
     ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(TaaAccumulationTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(TaaAccumulationTexture)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
+
     DispatchFullscreen(ctx);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::CopySrc);
@@ -74,7 +80,7 @@ bool Ether::Graphics::TemporalAAProducer::IsEnabled()
 
 void Ether::Graphics::TemporalAAProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(5, 0);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(6, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Uav, 1, 0, 0); // (u0) PostFxSource
@@ -84,6 +90,8 @@ void Ether::Graphics::TemporalAAProducer::CreateRootSignature()
     rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTexture1
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 1); // (t1) AccumulationIn
+    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
+    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 2); // (t2) SceneDepth
     rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

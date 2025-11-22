@@ -28,7 +28,7 @@
 ConstantBuffer<DepthOfFieldParams> g_DepthOfFieldParams : register(b1);
 
 Texture2D<float4> g_SourceTexture                   : register(t0);
-Texture2D<float4> g_SceneDepth                      : register(t1);
+Texture2D<float2> g_SceneDepth                      : register(t1);
 Texture2D<float4> g_CircleOfConfusionTexture        : register(t2);
 Texture2D<float4> g_DownsampledSceneColor           : register(t3);
 Texture2D<float4> g_DofAccumulationTexture          : register(t4);

@@ -49,11 +49,6 @@ void Ether::Ecs::EcsVisualSystem::Update()
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
         EcsMetadataComponent& metadata = entity.GetComponent<EcsMetadataComponent>();
 
-#if ETH_TOOLMODE
-        if (!metadata.m_ToolmodeVisibility)
-            continue;
-#endif
-
         if (!data.m_Enabled)
             continue;
 
@@ -92,7 +87,7 @@ void Ether::Ecs::EcsVisualSystem::Update()
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_ModelMatrix = transform.ToMatrix();
         gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
-        gfxVisual.m_Culled = !IsVisualCulled(gfxVisual);
+        gfxVisual.m_Culled = !IsVisualCulled(gfxVisual) ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility);
 
         // Raytraced translucency TODO
         // if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
