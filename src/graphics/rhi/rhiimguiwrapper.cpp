@@ -121,7 +121,7 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                     ImGui::Checkbox("Enabled", &gfxConfig.m_IsBloomEnabled);
                     ImGui::SliderFloat("Intensity", &gfxConfig.m_BloomIntensity, 0, 1);
                     ImGui::SliderFloat("Scatter", &gfxConfig.m_BloomScatter, 0, 1);
-                    ImGui::SliderFloat("Anamorphic", &gfxConfig.m_BloomAnamorphic, 0, 1);
+                    ImGui::SliderFloat("Anamorphic", &gfxConfig.m_BloomAnamorphic, 0, 10);
                     ImGui::TreePop();
                 }
 

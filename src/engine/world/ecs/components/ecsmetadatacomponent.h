@@ -40,5 +40,6 @@ public:
 
 public:
     bool m_ToolmodeVisibility;
+    bool m_ToolmodeSelected;
 };
 } // namespace Ether::Ecs

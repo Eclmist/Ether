@@ -87,10 +87,10 @@ public:
     bool m_IsBloomEnabled = true;
     float m_BloomIntensity = 0.15f;
     float m_BloomScatter = 0.85f;
-    float m_BloomAnamorphic = 0.0f;
+    float m_BloomAnamorphic = 1.0f;
 
     // Dof
-    bool m_IsDofEnabled = true;
+    bool m_IsDofEnabled = false;
 
     float m_FocusDistance   = 20.0f; // unitless (depends on linear depth; near/far plane)
     float m_FocalLength     = 0.05f; // meters (50mm)

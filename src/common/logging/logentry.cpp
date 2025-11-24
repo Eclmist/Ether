@@ -20,11 +20,27 @@
 #include "common/logging/logentry.h"
 #include "common/time/time.h"
 
-Ether::LogEntry::LogEntry(const std::string& text, LogLevel level, LogType type)
+Ether::LogEntry::LogEntry(
+    const std::string& text,
+    LogLevel level,
+    LogType type)
     : m_Text(text)
     , m_Level(level)
     , m_Type(type)
     , m_Time(Time::GetCurrentTime() / 1000.0)
+    , m_CustomPrefix("")
+{
+}
+
+Ether::LogEntry::LogEntry(
+    const std::string& text,
+    LogLevel level,
+    const std::string& prefix)
+    : m_Text(text)
+    , m_Level(level)
+    , m_Type(LogType::Custom)
+    , m_Time(Time::GetCurrentTime() / 1000.0)
+    , m_CustomPrefix(prefix)
 {
 }
 
@@ -66,9 +82,11 @@ std::string Ether::LogEntry::GetLogTypePrefix() const
         return "[ Platform ]";
     case LogType::Toolmode:
         return "[ Toolmode ]";
+    case LogType::Custom:
+        return m_CustomPrefix;
     case LogType::None:
     default:
-        return "[  Engine  ]";
+        return "";
     }
 }
 

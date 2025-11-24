@@ -57,7 +57,7 @@ void Ether::World::Load(const std::string& path)
     Deserialize(ifstream);
 
     auto end = Time::GetRealTime();
-    LogInfo("Deserialization took %f seconds", (end - start) / 1000.0f);
+    LogEngineInfo("Deserialization took %f seconds", (end - start) / 1000.0f);
 }
 
 void Ether::World::Unload()

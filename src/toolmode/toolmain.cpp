@@ -42,7 +42,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 
 void Ether::Toolmode::EtherHeadless::Initialize()
 {
-    LogInfo("%p", Ether::Toolmode::GetWindowHandle());
+    LogToolmodeInfo("%p", Ether::Toolmode::GetWindowHandle());
 }
 
 // The idea of this block is to test toolmode functionality without having the actual tool developed yet

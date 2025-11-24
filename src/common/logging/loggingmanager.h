@@ -37,8 +37,10 @@ public:
 
 public:
     void Log(LogLevel level, LogType type, const char* fmt, ...);
+    void Log(LogLevel level, const char* prefix, const char* fmt, ...);
 
 private:
+    void LogInternal(LogLevel level, LogType type, const char* prefix, const char* fmt, va_list args);
     void AddLog(const LogEntry entry);
     void Serialize(const LogEntry entry);
     void Clear();

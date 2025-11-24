@@ -26,7 +26,7 @@ int Ether::Start(IApplicationBase& app)
     Input::Instance().Initialize();
     LoggingManager::Instance().Initialize();
 
-    LogInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
+    LogEngineInfo("Starting Ether v%d.%d.%d", 0, 1, 0);
     EngineCore::Instance().Initialize();
     EngineCore::Instance().LoadApplication(app);
 
@@ -37,7 +37,7 @@ int Ether::Start(IApplicationBase& app)
 
     EngineCore::Instance().MainEngineLoop();
 
-    LogInfo("Shutting down Ether");
+    LogEngineInfo("Shutting down Ether");
     Input::Reset();
     Time::Reset();
     LoggingManager::Reset();

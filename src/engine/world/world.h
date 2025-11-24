@@ -40,6 +40,7 @@ public:
     void Unload();
 
 public:
+    inline bool IsEntityValid(Ecs::EntityID entityID) const { return m_Entities.contains(entityID); }
     inline Entity& GetEntity(Ecs::EntityID entityID) const { return *m_Entities.at(entityID); }
     inline SceneGraph& GetSceneGraph() { return m_SceneGraph; }
     inline ResourceManager& GetResourceManager() { return m_ResourceManager; }

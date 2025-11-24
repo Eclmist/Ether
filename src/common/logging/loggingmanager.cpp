@@ -51,22 +51,32 @@ void Ether::LoggingManager::Initialize()
 
 void Ether::LoggingManager::Log(LogLevel level, LogType type, const char* fmt, ...)
 {
-    char formattedBuffer[4096];
-
     va_list args;
     va_start(args, fmt);
-    vsprintf_s(formattedBuffer, fmt, args);
+    LogInternal(level, type, nullptr, fmt, args);
     va_end(args);
+}
+
+void Ether::LoggingManager::Log(LogLevel level, const char* prefix, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    LogInternal(level, LogType::Custom, prefix, fmt, args);
+    va_end(args);
+}
+
+void Ether::LoggingManager::LogInternal(LogLevel level, LogType type, const char* prefix, const char* fmt, va_list args)
+{
+    char formattedBuffer[4096];
+    vsprintf_s(formattedBuffer, fmt, args);
 
     std::string formattedText(formattedBuffer);
-
     std::stringstream ss(formattedText);
     std::string individualLine;
 
     while (std::getline(ss, individualLine, '\n'))
     {
-        LogEntry entry(individualLine, level, type);
-
+        LogEntry entry = prefix ? LogEntry(individualLine, level, prefix) : LogEntry(individualLine, level, type);
         AddLog(entry);
         Serialize(entry);
     }

@@ -37,6 +37,7 @@ enum class LogType
     Graphics,
     Win32,
     Toolmode,
+    Custom,
     None,
 };
 
@@ -44,6 +45,7 @@ class LogEntry
 {
 public:
     LogEntry(const std::string& text, LogLevel level, LogType type);
+    LogEntry(const std::string& text, LogLevel level, const std::string& prefix = "");
 
     std::string GetText() const;
     std::string GetFullText() const;
@@ -56,6 +58,7 @@ private:
 
 public:
     const std::string m_Text;
+    const std::string m_CustomPrefix;
     const LogLevel m_Level;
     const LogType m_Type;
     const uint64_t m_Time;

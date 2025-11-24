@@ -81,9 +81,9 @@ void Ether::SceneGraph::Deserialize(IStream& istream)
 
 void Ether::SceneGraph::SetParent(Ecs::EntityID id, Ecs::EntityID parent)
 {
-    if (m_Nodes[id].m_ParentIndex != Ecs::RootEntityID)
+    if (m_Nodes[id].m_ParentIndex != Ecs::InvalidEntityID)
     {
-        SceneGraphNode oldParent = m_Nodes[m_Nodes[id].m_ParentIndex];
+        SceneGraphNode& oldParent = m_Nodes[m_Nodes[id].m_ParentIndex];
 
         oldParent.m_ChildrenIndices.erase(
             std::remove(oldParent.m_ChildrenIndices.begin(), oldParent.m_ChildrenIndices.end(), id),
@@ -91,6 +91,7 @@ void Ether::SceneGraph::SetParent(Ecs::EntityID id, Ecs::EntityID parent)
     }
 
     m_Nodes[id].m_ParentIndex = parent;
+    m_Nodes[parent].m_ChildrenIndices.emplace_back(id);
 }
 
 void Ether::SceneGraph::Register(Ecs::EntityID id, Ecs::EntityID parent)

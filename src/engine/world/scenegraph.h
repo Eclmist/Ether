@@ -64,9 +64,9 @@ public:
     ETH_ENGINE_DLL inline const std::vector<Ecs::EntityID>& GetChildren(Ecs::EntityID id) const { return m_Nodes[id].m_ChildrenIndices; }
 
 public:
-    void Register(Ecs::EntityID id, Ecs::EntityID parent = Ecs::RootEntityID);
-    void Deregister(Ecs::EntityID id);
-    void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
+    ETH_ENGINE_DLL void Register(Ecs::EntityID id, Ecs::EntityID parent = Ecs::RootEntityID);
+    ETH_ENGINE_DLL void Deregister(Ecs::EntityID id);
+    ETH_ENGINE_DLL void SetParent(Ecs::EntityID id, Ecs::EntityID parent);
 
     void Reset();
 

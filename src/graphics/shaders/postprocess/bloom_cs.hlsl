@@ -34,7 +34,7 @@ float4 UpsampleSource(uint3 threadID)
     const float2 resolution = g_BloomParams.m_Resolution;
     const float2 halfTexelSize = 1.0f / resolution / 2.0f;
     const float2 uv = threadID.xy / resolution + halfTexelSize;
-    const float2 anamorphicFactor = float2(g_BloomParams.m_Anamorphic * 5, 1);
+    const float2 anamorphicFactor = float2(g_BloomParams.m_Anamorphic, 1);
     const float2 diffractionFactor = float2(1, 1);
     const float offsetConstant = 2;
 

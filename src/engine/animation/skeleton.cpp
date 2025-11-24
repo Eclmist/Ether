@@ -131,7 +131,7 @@ void Ether::Skeleton::DebugPrint(uint32_t parentIndex, const std::string& prefix
 
         std::string connector = childIsLast ? "„¤„Ÿ " : "„¥„Ÿ ";
         std::string line = prefix + connector + GetBone(childBoneIndex).m_Name;
-        LogInfo("%s", line.c_str());
+        LogEngineInfo("%s", line.c_str());
 
         // Prefix for next level
         std::string childPrefix = prefix + (childIsLast ? "   " : "„   ");
