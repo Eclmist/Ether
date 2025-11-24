@@ -19,7 +19,6 @@
 
 #include <filesystem>
 #include "toolmode/toolmain.h"
-#include "toolmode/ipc/ipcmanager.h"
 #include "engine/platform/win32/ethwin.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
@@ -213,9 +212,6 @@ void Ether::Toolmode::EtherHeadless::Shutdown()
 
 void Ether::Toolmode::EtherHeadless::OnUpdate(const Ether::UpdateEventArgs& e)
 {
-    IpcManager::Instance().ProcessIncomingCommands();
-    IpcManager::Instance().ProcessOutgoingCommands();
-
     UpdateGraphicConfig();
     UpdateCamera();
 }
