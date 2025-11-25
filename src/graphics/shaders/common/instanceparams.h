@@ -27,6 +27,7 @@ struct InstanceParams
 {
     ethMatrix4x4 m_ModelMatrix;
     ethMatrix4x4 m_ModelMatrixPrev;
+    ethMatrix4x4 m_NormalMatrix;
     uint32_t m_MaterialIdx;
 };
 

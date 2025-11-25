@@ -76,9 +76,6 @@ float3 BRDF_UE4(float3 wi, float3 wo, float3 normal, float3 baseColor, float rou
     wo = normalize(wo);
     normal = normalize(normal);
 
-    if (dot(wi, normal) < 0.0f)
-        normal = -normal;
-    
     roughness = min(max(0.01f, roughness), 1.0f);
     metalness = saturate(metalness);
     

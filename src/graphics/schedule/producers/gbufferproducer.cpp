@@ -126,6 +126,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
             instanceParams->m_MaterialIdx = batch.m_Material->GetTransientMaterialIdx();
             instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
             instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
+            instanceParams->m_NormalMatrix = visual.m_ModelMatrix.Inversed().Transposed();
             ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());

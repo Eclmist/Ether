@@ -58,7 +58,7 @@ VS_OUTPUT VS_Main(VS_INPUT IN)
     const float4 worldPosPrev = mul(g_InstanceParams.m_ModelMatrixPrev, float4(IN.PositionPrev, 1.0f));
     
     o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
-    o.Normal = IN.Normal;
+    o.Normal = mul(g_InstanceParams.m_NormalMatrix, float4(IN.Normal, 0.0f)).xyz;
     o.Tangent = IN.Tangent;
     o.TexCoord = IN.TexCoord;
     o.Color = IN.Color;
