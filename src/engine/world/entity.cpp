@@ -72,3 +72,32 @@ bool Ether::Entity::IsEnabled()
 {
     return GetComponent<Ecs::EcsMetadataComponent>().m_EntityEnabled;
 }
+
+bool Ether::Entity::HasComponent(Ecs::ComponentID id)
+{
+    return m_EntityManager.GetSignature(GetID()).test(id);
+}
+
+bool Ether::Entity::AddComponent(Ecs::ComponentID id)
+{
+    if (!HasComponent(id))
+        return false;
+
+    if (m_ComponentManager.AddComponent(GetID(), id))
+    {
+        // Update signature
+        auto signature = m_EntityManager.GetSignature(GetID());
+        signature.set(id);
+        m_EntityManager.SetSignature(GetID(), signature);
+        m_SystemsManager.UpdateEntitySignature(GetID(), signature);
+        return true;
+    }
+
+    return false;
+}
+
+bool Ether::Entity::RemoveComponent(Ecs::ComponentID id)
+{
+    return m_ComponentManager.RemoveComponent(GetID(), id);
+}
+

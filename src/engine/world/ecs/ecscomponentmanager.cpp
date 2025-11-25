@@ -30,9 +30,9 @@ Ether::Ecs::EcsComponentManager::EcsComponentManager()
     : Serializable(EcsComponentManagerVersion, "Engine::EcsComponentManager")
     , m_NextID(0)
 {
-    RegisterComponent<EcsCameraComponent>();
     RegisterComponent<EcsMetadataComponent>();
     RegisterComponent<EcsTransformComponent>();
+    RegisterComponent<EcsCameraComponent>();
     RegisterComponent<EcsVisualComponent>();
     RegisterComponent<EcsSkinnedVisualComponent>();
 }
@@ -72,4 +72,28 @@ void Ether::Ecs::EcsComponentManager::Reset()
     {
         iter->second->Reset();
     }
+}
+
+bool Ether::Ecs::EcsComponentManager::AddComponent(EntityID entityID, ComponentID id)
+{
+    if (!m_ComponentFactories.contains(id))
+    {
+        LogToolmodeError("Failed to add component - Component ID %u is not registered", id);
+        return false;
+    }
+
+    m_ComponentFactories.at(id)(entityID);
+    return true;
+}
+
+bool Ether::Ecs::EcsComponentManager::RemoveComponent(EntityID entityID, ComponentID id)
+{
+    if (!m_ComponentArrays.contains(id))
+    {
+        LogToolmodeError("Failed to remove component - Component ID %u is not registered", id);
+        return false;
+    }
+
+    m_ComponentArrays.at(id)->RemoveComponent(entityID);
+    return true;
 }

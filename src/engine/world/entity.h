@@ -25,12 +25,6 @@
 
 namespace Ether
 {
-namespace Ecs
-{
-class EcsMetadataComponent;
-class EcsTransformComponent;
-} // namespace Ecs
-
 class ETH_ENGINE_DLL Entity : public Serializable
 {
 public:
@@ -50,12 +44,17 @@ public:
     bool IsEnabled();
 
 public:
+    bool HasComponent(Ecs::ComponentID id);
+    bool AddComponent(Ecs::ComponentID id);
+    bool RemoveComponent(Ecs::ComponentID id);
+
+public:
+    template <typename T>
+    bool HasComponent();
     template <typename T>
     T& GetComponent();
-
     template <typename T>
     T& AddComponent();
-
     template <typename T>
     void RemoveComponent();
 
@@ -70,6 +69,12 @@ private:
 };
 
 template <typename T>
+bool Ether::Entity::HasComponent()
+{
+    return m_EntityManager.GetSignature(GetID()).test(m_ComponentManager.GetTypeID<T>());
+}
+
+template <typename T>
 T& Ether::Entity::GetComponent()
 {
     return m_ComponentManager.GetComponent<T>(GetID());
@@ -78,11 +83,15 @@ T& Ether::Entity::GetComponent()
 template <typename T>
 T& Ether::Entity::AddComponent()
 {
+    auto signature = m_EntityManager.GetSignature(GetID());
+
+    // Component already exist. Enforce only one component of each type for entity.
+    if (signature.test(m_ComponentManager.GetTypeID<T>()))
+        return GetComponent<T>();
+
     m_ComponentManager.AddComponent<T>(GetID());
 
     // Update signature
-    auto signature = m_EntityManager.GetSignature(GetID());
-
     signature.set(m_ComponentManager.GetTypeID<T>());
     m_EntityManager.SetSignature(GetID(), signature);
     m_SystemsManager.UpdateEntitySignature(GetID(), signature);

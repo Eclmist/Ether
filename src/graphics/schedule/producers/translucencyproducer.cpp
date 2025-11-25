@@ -89,11 +89,6 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     // Batch by material only for now
     for (const VisualBatch& batch : batches)
     {
-        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
-        Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
-        instanceParams->m_MaterialIdx = batch.m_Material->GetTransientMaterialIdx();
-        ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
         if (!batch.m_Material->HasTranslucency())
             continue;
 
@@ -102,8 +97,12 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
             if (visual.m_Culled)
                 continue;
 
+            auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
+            Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
+            instanceParams->m_MaterialIdx = batch.m_Material->GetTransientMaterialIdx();
             instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
             instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
+            ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());

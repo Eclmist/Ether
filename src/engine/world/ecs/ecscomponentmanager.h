@@ -21,6 +21,7 @@
 
 #include "engine/pch.h"
 #include "engine/world/ecs/components/ecscomponentarray.h"
+#include <functional>
 
 namespace Ether::Ecs
 {
@@ -37,6 +38,12 @@ public:
 public:
     void Reset();
 
+public:
+    // For when concrete types are not availble. Mostly for toolmode
+    bool AddComponent(EntityID entityID, ComponentID id);
+    bool RemoveComponent(EntityID entityID, ComponentID id);
+
+public:
     template <typename T>
     ComponentID GetTypeID()
     {
@@ -78,11 +85,16 @@ private:
         m_TypeNameToIDMap[typeid(T).name()] = newID;
         T::s_ComponentID = newID;
         m_ComponentArrays[newID] = std::make_unique<EcsComponentArray<T>>();
+        m_ComponentFactories[newID] = [this, newID](EntityID entityID)
+        {
+            dynamic_cast<EcsComponentArray<T>&>(*m_ComponentArrays.at(newID)).AddComponent(entityID);
+        };
     }
 
 private:
     std::unordered_map<std::string, ComponentID> m_TypeNameToIDMap;
     std::unordered_map<ComponentID, std::unique_ptr<EcsComponentArrayBase>> m_ComponentArrays;
+    std::unordered_map<ComponentID, std::function<void(EntityID)>> m_ComponentFactories;
 
     ComponentID m_NextID;
 };
