@@ -37,6 +37,8 @@ void Ether::Ecs::EcsVisualSystem::Update()
 {
     ETH_MARKER_EVENT("Visual System - Update");
 
+    World& world = EngineCore::GetActiveWorld();
+    SceneGraph& sceneGraph = EngineCore::GetActiveWorld().GetSceneGraph();
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
 
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
@@ -44,7 +46,7 @@ void Ether::Ecs::EcsVisualSystem::Update()
 
     for (EntityID entityID : m_Entities)
     {
-        Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
+        Entity& entity = world.GetEntity(entityID);
         EcsVisualComponent& data = entity.GetComponent<EcsVisualComponent>();
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
         EcsMetadataComponent& metadata = entity.GetComponent<EcsMetadataComponent>();
@@ -84,10 +86,18 @@ void Ether::Ecs::EcsVisualSystem::Update()
         if (gfxVisual.m_Mesh == nullptr)
             continue;
 
-        gfxVisual.m_Material = gfxVisualBatch->m_Material;
-        gfxVisual.m_ModelMatrix = transform.ToMatrix();
+        ethMatrix4x4 modelMatrix;
+        Ecs::EntityID parentID = entityID;
+        while (parentID != Ecs::RootEntityID)
+        {
+            modelMatrix = world.GetEntity(parentID).GetComponent<EcsTransformComponent>().ToMatrix() * modelMatrix;
+            parentID = sceneGraph.GetNode(parentID).GetParent();
+        }
+
+        gfxVisual.m_ModelMatrix = modelMatrix;
         gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
-        gfxVisual.m_Culled = !IsVisualCulled(gfxVisual) ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility);
+        gfxVisual.m_Material = gfxVisualBatch->m_Material;
+        gfxVisual.m_Culled = /*IsVisualCulled(gfxVisual)*/ false ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility);
 
         // Raytraced translucency TODO
         // if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
@@ -110,7 +120,6 @@ bool Ether::Ecs::EcsVisualSystem::IsVisualCulled(const Graphics::Visual& visual)
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
 
     Aabb visualAabb = visual.m_Mesh->GetBoundingBox();
-
     ethMatrix4x4 viewProjectionMatrix = renderData.m_ProjectionMatrix * renderData.m_ViewMatrix;
 
     ethVector4 planes[6];
@@ -136,8 +145,8 @@ bool Ether::Ecs::EcsVisualSystem::IsVisualCulled(const Graphics::Visual& visual)
         vert.w = 1.0f;
 
         if (ethVector4::Dot(vert, planes[i]) < 0.0f)
-            return false;
+            return true;
     }
-    return true;
+    return false;
 }
 

@@ -23,6 +23,7 @@
 #include "engine/world/ecs/components/ecsmetadatacomponent.h"
 #include "engine/world/ecs/components/ecstransformcomponent.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include "engine/world/ecs/components/ecsskinnedvisualcomponent.h"
 
 constexpr uint32_t EcsComponentManagerVersion = 0;
 

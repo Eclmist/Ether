@@ -23,7 +23,7 @@
 #include "engine/world/entity.h"
 #include "engine/world/ecs/systems/ecsskinnedvisualsystem.h"
 #include "engine/world/ecs/components/ecsmetadatacomponent.h"
-#include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include "engine/world/ecs/components/ecsskinnedvisualcomponent.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "engine/world/ecs/components/ecstransformcomponent.h"
 
@@ -39,7 +39,10 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 {
     ETH_MARKER_EVENT("Skinned Visual System - Update");
 
+    World& world = EngineCore::GetActiveWorld();
+    SceneGraph& sceneGraph = EngineCore::GetActiveWorld().GetSceneGraph();
     ResourceManager& resources = EngineCore::GetActiveWorld().GetResourceManager();
+
     Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
     std::unordered_map<StringID, uint32_t> materialToBatchMap;
 
@@ -47,7 +50,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
     for (EntityID entityID : m_Entities)
     {
-        Entity& entity = EngineCore::GetActiveWorld().GetEntity(entityID);
+        Entity& entity = world.GetEntity(entityID);
         EcsSkinnedVisualComponent& data = entity.GetComponent<EcsSkinnedVisualComponent>();
         EcsTransformComponent& transform = entity.GetComponent<EcsTransformComponent>();
         EcsMetadataComponent& metadata = entity.GetComponent<EcsMetadataComponent>();
@@ -98,10 +101,18 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
 
         UpdateSkinnedMesh(*skinnedMesh, *skeleton, *animClip);
 
-        gfxVisual.m_Mesh = skinnedMesh;
-        gfxVisual.m_Material = gfxVisualBatch->m_Material;
+        ethMatrix4x4 modelMatrix;
+        Ecs::EntityID parentID = entityID;
+        while (parentID != Ecs::RootEntityID)
+        {
+            modelMatrix = world.GetEntity(parentID).GetComponent<EcsTransformComponent>().ToMatrix() * modelMatrix;
+            parentID = sceneGraph.GetNode(parentID).GetParent();
+        }
+
         gfxVisual.m_ModelMatrix = transform.ToMatrix();
         gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
+        gfxVisual.m_Mesh = skinnedMesh;
+        gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = false ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility); // TODO: Calculate max AABB for skinned mesh to do proper culling
 
         if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
@@ -282,41 +293,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::UpdateSkinnedMesh(
 
 bool Ether::Ecs::EcsSkinnedVisualSystem::IsVisualCulled(const Graphics::Visual& visual) const
 {
-    Entity* camera = EngineCore::GetActiveWorld().GetMainCamera();
-    if (camera == nullptr)
-        return false;
-
-    Graphics::RenderData& renderData = Graphics::GraphicCore::GetGraphicRenderer().GetThreadedRenderData();
-
-    Aabb visualAabb = visual.m_Mesh->GetBoundingBox();
-
-    ethMatrix4x4 viewProjectionMatrix = renderData.m_ProjectionMatrix * renderData.m_ViewMatrix;
-
-    ethVector4 planes[6];
-    planes[0] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[2]);
-    planes[1] = ethVector4(viewProjectionMatrix.m_Data2D[2]);
-    planes[2] = ethVector4(viewProjectionMatrix.m_Data2D[3]) + ethVector4(viewProjectionMatrix.m_Data2D[0]);
-    planes[3] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[0]);
-    planes[4] = ethVector4(viewProjectionMatrix.m_Data2D[3]) - ethVector4(viewProjectionMatrix.m_Data2D[1]);
-    planes[5] = ethVector4(viewProjectionMatrix.m_Data2D[3]) + ethVector4(viewProjectionMatrix.m_Data2D[1]);
-
-    for (uint32_t i = 0; i < 6; ++i)
-    {
-        ethVector3 normal = planes[i].Resize<3>();
-        planes[i] /= normal.Magnitude();
-    }
-
-    for (uint32_t i = 0; i < 6; ++i)
-    {
-        ethVector4 vert;
-        vert.x = planes[i].x > 0 ? visualAabb.m_Max.x : visualAabb.m_Min.x;
-        vert.y = planes[i].y > 0 ? visualAabb.m_Max.y : visualAabb.m_Min.y;
-        vert.z = planes[i].z > 0 ? visualAabb.m_Max.z : visualAabb.m_Min.z;
-        vert.w = 1.0f;
-
-        if (ethVector4::Dot(vert, planes[i]) < 0.0f)
-            return false;
-    }
-    return true;
+    // TODO: Need to compute bounding skinned bounding box somehow
+    return false;
 }
 

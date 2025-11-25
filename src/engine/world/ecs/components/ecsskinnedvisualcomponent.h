@@ -17,26 +17,30 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/components/ecsvisualcomponent.h"
+#pragma once
 
-constexpr uint32_t EcsVisualComponentVersion = 1;
+#include "engine/world/ecs/components/ecstogglecomponent.h"
+#include "graphics/resources/staticmesh.h"
+#include "graphics/resources/skinnedmesh.h"
+#include "graphics/resources/material.h"
 
-Ether::Ecs::EcsVisualComponent::EcsVisualComponent()
-    : EcsToggleComponent(EcsVisualComponentVersion, "Ecs::EcsVisualComponent")
+namespace Ether::Ecs
 {
-}
-
-void Ether::Ecs::EcsVisualComponent::Serialize(OStream& ostream) const
+class ETH_ENGINE_DLL EcsSkinnedVisualComponent : public EcsToggleComponent<EcsSkinnedVisualComponent>
 {
-    EcsToggleComponent::Serialize(ostream);
-    ostream << m_MeshGuid.GetString();
-    ostream << m_MaterialGuid.GetString();
-}
+public:
+    EcsSkinnedVisualComponent();
+    ~EcsSkinnedVisualComponent() override = default;
 
-void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
-{
-    EcsToggleComponent::Deserialize(istream);
-    istream >> m_MeshGuid;
-    istream >> m_MaterialGuid;
-}
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
+public:
+    StringID m_MeshGuid;
+    StringID m_MaterialGuid;
+    StringID m_SkeletonGuid;
+    StringID m_AnimationGuid;
+};
+
+} // namespace Ether::Ecs

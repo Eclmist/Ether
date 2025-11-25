@@ -40,22 +40,4 @@ public:
     StringID m_MeshGuid;
     StringID m_MaterialGuid;
 };
-
-class ETH_ENGINE_DLL EcsSkinnedVisualComponent : public EcsToggleComponent<EcsSkinnedVisualComponent>
-{
-public:
-    EcsSkinnedVisualComponent();
-    ~EcsSkinnedVisualComponent() override = default;
-
-public:
-    void Serialize(OStream& ostream) const override;
-    void Deserialize(IStream& istream) override;
-
-public:
-    StringID m_MeshGuid;
-    StringID m_MaterialGuid;
-    StringID m_SkeletonGuid;
-    StringID m_AnimationGuid;
-};
-
 } // namespace Ether::Ecs

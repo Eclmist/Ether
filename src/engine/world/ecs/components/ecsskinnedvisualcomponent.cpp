@@ -17,26 +17,29 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include "engine/world/ecs/components/ecsskinnedvisualcomponent.h"
 
-constexpr uint32_t EcsVisualComponentVersion = 1;
+constexpr uint32_t EcsSkinnedVisualComponentVersion = 1;
 
-Ether::Ecs::EcsVisualComponent::EcsVisualComponent()
-    : EcsToggleComponent(EcsVisualComponentVersion, "Ecs::EcsVisualComponent")
+Ether::Ecs::EcsSkinnedVisualComponent::EcsSkinnedVisualComponent()
+    : EcsToggleComponent(EcsSkinnedVisualComponentVersion, "Ecs::EcsSkinnedVisualComponent")
 {
 }
 
-void Ether::Ecs::EcsVisualComponent::Serialize(OStream& ostream) const
+void Ether::Ecs::EcsSkinnedVisualComponent::Serialize(OStream& ostream) const
 {
     EcsToggleComponent::Serialize(ostream);
     ostream << m_MeshGuid.GetString();
     ostream << m_MaterialGuid.GetString();
+    ostream << m_SkeletonGuid.GetString();
+    ostream << m_AnimationGuid.GetString();
 }
 
-void Ether::Ecs::EcsVisualComponent::Deserialize(IStream& istream)
+void Ether::Ecs::EcsSkinnedVisualComponent::Deserialize(IStream& istream)
 {
     EcsToggleComponent::Deserialize(istream);
     istream >> m_MeshGuid;
     istream >> m_MaterialGuid;
+    istream >> m_SkeletonGuid;
+    istream >> m_AnimationGuid;
 }
-

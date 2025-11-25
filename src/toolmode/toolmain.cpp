@@ -22,6 +22,7 @@
 #include "engine/platform/win32/ethwin.h"
 #include "engine/world/ecs/components/ecscameracomponent.h"
 #include "engine/world/ecs/components/ecsvisualcomponent.h"
+#include "engine/world/ecs/components/ecsskinnedvisualcomponent.h"
 #include "engine/animation/animation.h"
 #include "engine/animation/skeleton.h"
 #include "asset/assetimporter.h"
@@ -34,6 +35,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
         MessageBox(nullptr, "An instance of Ether is already running.", "Ether", MB_OK | MB_ICONEXCLAMATION);
         return EXIT_FAILURE;
     }
+
 
     Ether::Toolmode::EtherHeadless etherHeadless;
     return Start(etherHeadless);
