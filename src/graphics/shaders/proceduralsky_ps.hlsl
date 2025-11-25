@@ -110,13 +110,30 @@ float fbm(float2 st)
     return value;
 }
 
-float Stars(float3 viewDir)
+float3 Stars(float3 viewDir)
 {
-    float stars_threshold = 15.0f;  // modifies the number of stars that are visible
-    float stars_exposure = 20000000.0f; // modifies the overall strength of the stars
-    float stars = pow(clamp(noise(viewDir * 200.0f), 0.0f, 1.0f), stars_threshold) * stars_exposure;
-    stars *= lerp(0.4, 1.4, noise(viewDir * 100.0f + g_GlobalConstants.m_Time.x / 100)); // time based flickering
-    return max(0.0f, stars);
+    float stars_threshold = 15.0f;
+    float stars_exposure = 20000000.0f;
+    
+    // Generate star intensity
+    float starIntensity = pow(clamp(noise(viewDir * 200.0f), 0.0f, 1.0f), stars_threshold) * stars_exposure;
+    starIntensity *= lerp(0.4, 1.4, noise(viewDir * 100.0f + g_GlobalConstants.m_Time.z));
+    starIntensity = max(0.0f, starIntensity);
+    
+    // Generate consistent color per star using different noise seeds
+    float3 starColor = float3(
+        noise(viewDir * 200.0f + float3(123.456, 0.0, 0.0)),
+        noise(viewDir * 200.0f + float3(0.0, 789.012, 0.0)),
+        noise(viewDir * 200.0f + float3(0.0, 0.0, 345.678))
+    );
+    
+    // Map to color range (you can adjust these)
+    starColor = starColor * 0.5 + 0.5;
+    
+    // Bias towards white/blue stars
+    starColor = lerp(float3(1.0, 1.0, 1.0), starColor, 0.5);
+    
+    return starColor * starIntensity;
 }
 
 float3 CalculateSunRadiance(float3 viewDirection, float3 sunDirection, float3 sunColor)
@@ -275,7 +292,7 @@ float4 GetHdriSkyColor(float2 uv)
     const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
 
     const float cloudMask = 1 - smoothstep(0.15, 0.3, hdri.r);
-    const float4 stars = cloudMask * Stars(viewDir);
+    const float4 stars = cloudMask * Stars(viewDir).xyzz;
     const float4 sun = cloudMask * CalculateSunRadiance(viewDir, g_GlobalConstants.m_SunDirection.xyz, g_GlobalConstants.m_SunColor.rgb).xyzz;
 
     const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
