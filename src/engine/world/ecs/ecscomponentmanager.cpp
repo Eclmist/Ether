@@ -79,7 +79,7 @@ bool Ether::Ecs::EcsComponentManager::AddComponent(EntityID entityID, ComponentI
 {
     if (!m_ComponentFactories.contains(id))
     {
-        LogToolmodeError("Failed to add component - Component ID %u is not registered", id);
+        LogEngineError("Failed to add component - Component ID %u is not registered", id);
         return false;
     }
 
@@ -91,7 +91,7 @@ bool Ether::Ecs::EcsComponentManager::RemoveComponent(EntityID entityID, Compone
 {
     if (!m_ComponentArrays.contains(id))
     {
-        LogToolmodeError("Failed to remove component - Component ID %u is not registered", id);
+        LogEngineError("Failed to remove component - Component ID %u is not registered", id);
         return false;
     }
 
