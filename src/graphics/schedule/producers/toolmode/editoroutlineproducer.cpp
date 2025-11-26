@@ -52,9 +52,8 @@ void Ether::Graphics::EditorOutlineProducer::GetInputOutput(ScheduleContext& sch
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    schedule.NewRT(ACCESS_GFX_RT(OutlineMaskTexture), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float);
-    schedule.NewSR(ACCESS_GFX_SR(OutlineMaskTexture), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-
+    schedule.NewRT(ACCESS_GFX_RT(OutlineMaskTexture), resolution.x, resolution.y, BackBufferLdrFormat);
+    schedule.NewSR(ACCESS_GFX_SR(OutlineMaskTexture), resolution.x, resolution.y, BackBufferLdrFormat, RhiResourceDimension::Texture2D);
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
 }
 

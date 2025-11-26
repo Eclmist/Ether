@@ -132,8 +132,8 @@ void Ether::Toolmode::AssetImporter::ProcessScene(const std::string& folderPath,
 
     ProcessMaterials(folderPath, assimpScene);
     ProcessSkeletons(assimpScene);
-    ProcessNodes(assimpScene, assimpScene->mRootNode, {});
     ProcessAnimations(assimpScene);
+    ProcessNodes(assimpScene, assimpScene->mRootNode, {});
 }
 
 void Ether::Toolmode::AssetImporter::ProcessMaterials(const std::string& folderPath, const aiScene* assimpScene)

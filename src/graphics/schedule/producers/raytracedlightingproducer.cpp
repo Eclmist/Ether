@@ -45,6 +45,11 @@ DECLARE_GFX_SR(GBufferTexture2)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
+// Spatial hashing prototype
+DEFINE_GFX_UA(SpatialHash)
+DEFINE_GFX_UA(SpatialHashAge)
+DEFINE_GFX_UA(SpatialHashPayload)
+
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
@@ -88,6 +93,12 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.NewUA(ACCESS_GFX_UA(GIReservoir_History), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
     schedule.NewUA(ACCESS_GFX_UA(GIReservoir_Staging), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
 
+    /* Spatial Hashing Prototype */
+    const uint32_t numHashEntries = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashSize, 1 << 10, 1 << 18);
+    schedule.NewUA(ACCESS_GFX_UA(SpatialHash), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
+    schedule.NewUA(ACCESS_GFX_UA(SpatialHashAge), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
+    schedule.NewUA(ACCESS_GFX_UA(SpatialHashPayload), sizeof(Shader::SpatialHashPayload) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::SpatialHashPayload));
+
     InitializeShaderBindingTable(rc);
 }
 
@@ -115,6 +126,11 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+
+    // Spatial Hashing Prototype
+    ctx.SetComputeRootDescriptorTable(12, ACCESS_GFX_UA(SpatialHash)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(13, ACCESS_GFX_UA(SpatialHashAge)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(14, ACCESS_GFX_UA(SpatialHashPayload)->GetGpuAddress());
 
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;
@@ -244,7 +260,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreateShaders()
 
 void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> raygenRsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(12, 0);
+    std::unique_ptr<RhiRootSignatureDesc> raygenRsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(15, 0);
     raygenRsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
     raygenRsDesc->SetAsShaderResourceView(1, 0, RhiShaderVisibility::All);        // (t1) MaterialTable
     raygenRsDesc->SetAsShaderResourceView(2, 1, RhiShaderVisibility::All);        // (t2) TLAS
@@ -265,6 +281,12 @@ void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
     raygenRsDesc->SetDescriptorTableRange(10, RhiDescriptorType::Uav, 1, 0, 2);   // (u2) GIReservoir_Output
     raygenRsDesc->SetAsDescriptorTable(11, 1, RhiShaderVisibility::All);
     raygenRsDesc->SetDescriptorTableRange(11, RhiDescriptorType::Uav, 1, 0, 3);   // (u3) LightingOutput
+    raygenRsDesc->SetAsDescriptorTable(12, 1, RhiShaderVisibility::All);
+    raygenRsDesc->SetDescriptorTableRange(12, RhiDescriptorType::Uav, 1, 0, 4);   // (u4) SpatialHash
+    raygenRsDesc->SetAsDescriptorTable(13, 1, RhiShaderVisibility::All);
+    raygenRsDesc->SetDescriptorTableRange(13, RhiDescriptorType::Uav, 1, 0, 5);   // (u5) SpatialHashTime
+    raygenRsDesc->SetAsDescriptorTable(14, 1, RhiShaderVisibility::All);
+    raygenRsDesc->SetDescriptorTableRange(14, RhiDescriptorType::Uav, 1, 0, 6);   // (u6) SpatialHashPayload
     raygenRsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = raygenRsDesc->Compile((GetName() + " Root Signature (RayGen)").c_str());
 }

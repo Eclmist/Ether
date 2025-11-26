@@ -99,6 +99,9 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_ColorGrading_Saturation = GraphicCore::GetGraphicConfig().m_ColorGrading_Saturation;
 
     globalConstants->m_RaytracedLightingDebug = GraphicCore::GetGraphicConfig().m_IsRaytracingDebugEnabled ? 1 : 0;
+    globalConstants->m_SpatialHashSize = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashSize, 1 << 10, 1 << 18);
+    globalConstants->m_SpatialHashCellSize = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashCellSize, 0.01f, 1.0f);
+
     globalConstants->m_SamplerIndex_Point_Clamp = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Clamp;
     globalConstants->m_SamplerIndex_Point_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Wrap;
     globalConstants->m_SamplerIndex_Point_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Point_Border;

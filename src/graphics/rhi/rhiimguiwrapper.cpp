@@ -196,6 +196,13 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 ImGui::InputInt("Skinned Mesh Debug Bone Index", &gfxConfig.m_SkinningDebugBoneId);
                 ImGui::TreePop();
             }
+
+            if (ImGui::TreeNode("Spatial Hash"))
+            {
+                ImGui::InputInt("Spatial Hash Size", &gfxConfig.m_SpatialHashSize, 1, 100);
+                ImGui::SliderFloat("Spatial Hash Cell Size", &gfxConfig.m_SpatialHashCellSize, 0.1, 1);
+                ImGui::TreePop();
+            }
         }
 
         static float fpsHistoryBuffer[128];
