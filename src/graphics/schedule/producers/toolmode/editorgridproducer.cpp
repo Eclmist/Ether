@@ -68,6 +68,7 @@ void Ether::Graphics::EditorGridProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
+    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv(), &(*ACCESS_GFX_DS(SceneDepth)));
     ctx.DrawInstanced(4, 1);
 }
@@ -112,7 +113,7 @@ void Ether::Graphics::EditorGridProducer::CreatePipelineState(ResourceContext& r
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
-    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
+    m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
     m_PsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
