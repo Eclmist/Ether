@@ -168,7 +168,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
 {
     float3 col = g_SceneColor[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
 
-    if (!g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    if (true)
     {
         const float manualExposure = g_GlobalConstants.m_Exposure;
         col = col * manualExposure;

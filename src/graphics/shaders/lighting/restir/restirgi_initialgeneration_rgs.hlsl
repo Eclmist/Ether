@@ -67,6 +67,17 @@ void RayGeneration()
     initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
     g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
+
+    // Spatial hash prototype
+    uint cellIndex = SpatialHash_FindOrInsert(surface.m_Position, surface.m_Normal);
+
+    if (cellIndex != 0xFFFFFFFFu)
+    {
+    initialReservoir.FinalizeResampling();
+        SpatialHashPayload payload;
+        payload.m_Color = initialReservoir.m_WeightSum;
+        g_SpatialHashPayload[cellIndex] = payload;
+    }
 }
 
 #endif // __RESTIR_INITIAL_GENERATION_RGS_HLSL__

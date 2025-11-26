@@ -26,6 +26,122 @@
 #include "utils/shading.hlsl"
 #include "utils/brdf.hlsl"
 
+// Spatial Hash Prototype
+RWStructuredBuffer<uint> g_SpatialHash                      : register(u4);
+RWStructuredBuffer<uint> g_SpatialHashTime                  : register(u5);
+RWStructuredBuffer<SpatialHashPayload> g_SpatialHashPayload : register(u6);
+
+#define SEARCH_COUNT 10
+
+//https://www.shadertoy.com/view/XlGcRh
+uint pcg(uint v)
+{
+    uint state = v * 747796405u + 2891336453u;
+    uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    return (word >> 22u) ^ word;
+}
+
+//https://www.shadertoy.com/view/XlGcRh
+uint xxhash32(uint p)
+{
+    const uint PRIME32_2 = 2246822519U, PRIME32_3 = 3266489917U;
+    const uint PRIME32_4 = 668265263U, PRIME32_5 = 374761393U;
+    uint h32 = p + PRIME32_5;
+    h32 = PRIME32_4 * ((h32 << 17) | (h32 >> (32 - 17)));
+    h32 = PRIME32_2 * (h32 ^ (h32 >> 15));
+    h32 = PRIME32_3 * (h32 ^ (h32 >> 13));
+    return h32 ^ (h32 >> 16);
+}
+
+uint SpatialHash_Lookup(float3 position, float3 normal)
+{
+    float cellSize = g_GlobalConstants.m_SpatialHashCellSize;
+    const uint HashmapSize = g_GlobalConstants.m_SpatialHashSize;
+
+    // Inputs to hashing
+    int3 p = floor(position / cellSize);
+    int3 n = floor(normal * 3.0);
+     
+    cellSize *= 10000; // cellSize can be small and lead to more conflicts, multiply to increase range
+     
+    uint hashKey = pcg(cellSize + pcg(p.x + pcg(p.y + pcg(p.z))));
+        
+    uint cellIndex = hashKey % HashmapSize;
+           
+    uint checksum = xxhash32(cellSize + xxhash32(p.x + xxhash32(p.y + xxhash32(p.z))));
+    checksum = max(checksum, 1); // 0 is reserved for available cells
+         
+    // Update data structure
+    for (uint i = 0; i < SEARCH_COUNT; i++)
+    {                
+        if (g_SpatialHash[cellIndex] == checksum)
+            return cellIndex;
+                          
+        cellIndex++;
+ 
+        if(cellIndex >= HashmapSize)
+            break;
+    }
+ 
+    return  0xFFFFFFFFu; // out of memory 
+}
+
+//Adapted from https://gboisse.github.io/posts/this-is-us/
+uint SpatialHash_FindOrInsert(float3 position, float3 normal)
+{
+    float cellSize = g_GlobalConstants.m_SpatialHashCellSize;
+    const uint HashmapSize = g_GlobalConstants.m_SpatialHashSize;
+    uint FrameIndex = g_GlobalConstants.m_FrameNumber;
+
+    // Inputs to hashing
+    int3 p = floor(position / cellSize);
+    int3 n = floor(normal * 3.0);
+     
+    cellSize *= 10000; // cellSize can be small and lead to more conflicts, multiply to increase range
+     
+    uint hashKey = pcg(cellSize + pcg(p.x + pcg(p.y + pcg(p.z))));
+        
+    uint cellIndex = hashKey % HashmapSize;
+           
+    uint checksum = xxhash32(cellSize + xxhash32(p.x + xxhash32(p.y + xxhash32(p.z))));
+    checksum = max(checksum, 1); // 0 is reserved for available cells
+         
+	// Update data structure
+	for (uint i = 0; i < SEARCH_COUNT; i++)
+	{                
+		uint cmp;        
+		InterlockedCompareExchange(g_SpatialHash[cellIndex], 0, checksum, cmp);
+		 
+		uint originalTime;
+		if (cmp == 0 || cmp == checksum)
+		{
+			InterlockedExchange(g_SpatialHashTime[cellIndex], FrameIndex, originalTime);
+			 
+			return cellIndex; 
+		}
+		 
+		originalTime = g_SpatialHashTime[cellIndex];
+		if (FrameIndex - originalTime > 20)
+		{
+            SpatialHashPayload emptyPayload;
+            emptyPayload.m_Color = float3(1, 0, 0);
+            g_SpatialHashPayload[cellIndex] = emptyPayload;
+
+            uint original;
+			InterlockedExchange(g_SpatialHash[cellIndex], checksum, original);
+			InterlockedExchange(g_SpatialHashTime[cellIndex], FrameIndex, originalTime);
+			
+			return cellIndex;
+		}
+		 
+		cellIndex++;
+		if (cellIndex >= HashmapSize)
+			break;       
+	} 
+
+    return  0xFFFFFFFFu; // out of memory 
+}
+
 float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
 {
     wi = normalize(wi);
