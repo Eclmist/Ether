@@ -17,8 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __EDITOR_GRIDS_VSPS_HLSL__
-#define __EDITOR_GRIDS_VSPS_HLSL__
+#ifndef __EDITOR_GRID_VSPS_HLSL__
+#define __EDITOR_GRID_VSPS_HLSL__
 
 #include "common/globalconstants.h"
 #include "utils/constants.hlsl"
@@ -101,4 +101,4 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     return col;
 }
 
-#endif // __EDITOR_GRIDS_VSPS_HLSL__
+#endif // __EDITOR_GRID_VSPS_HLSL__
