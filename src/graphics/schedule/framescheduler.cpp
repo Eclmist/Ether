@@ -39,7 +39,8 @@
 #include "graphics/schedule/producers/translucencyproducer.h"
 
 #if ETH_TOOLMODE
-#include "graphics/schedule/producers/toolmode/editorgridsproducer.h"
+#include "graphics/schedule/producers/toolmode/editorgridproducer.h"
+#include "graphics/schedule/producers/toolmode/editoroutlineproducer.h"
 #endif
 
 DECLARE_GFX_PA(DenoisedLightingProducer)
@@ -60,7 +61,8 @@ DECLARE_GFX_PA(BloomProducer)
 DECLARE_GFX_PA(DepthOfFieldProducer)
 
 #if ETH_TOOLMODE
-DECLARE_GFX_PA(EditorGridsProducer)
+DECLARE_GFX_PA(EditorGridProducer)
+DECLARE_GFX_PA(EditorOutlineProducer)
 #endif
 
 Ether::Graphics::FrameScheduler::FrameScheduler()
@@ -82,7 +84,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(DepthOfFieldProducer), new DepthOfFieldProducer());
 
 #if ETH_TOOLMODE
-    Register(ACCESS_GFX_PA(EditorGridsProducer), new EditorGridsProducer());
+    Register(ACCESS_GFX_PA(EditorGridProducer), new EditorGridProducer());
+    Register(ACCESS_GFX_PA(EditorOutlineProducer), new EditorOutlineProducer());
 #endif
 
     // Also for now, add imgui here
@@ -108,7 +111,8 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(DepthOfFieldProducer).Release();
 
 #if ETH_TOOLMODE
-    ACCESS_GFX_PA(EditorGridsProducer).Release();
+    ACCESS_GFX_PA(EditorGridProducer).Release();
+    ACCESS_GFX_PA(EditorOutlineProducer).Release();
 #endif
 }
 
@@ -196,7 +200,8 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get().get());
 
 #if ETH_TOOLMODE
-    m_OrderedProducers.push(ACCESS_GFX_PA(EditorGridsProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(EditorGridProducer).Get().get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(EditorOutlineProducer).Get().get());
 #endif
 
 }

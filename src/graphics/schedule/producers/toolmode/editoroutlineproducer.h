@@ -23,11 +23,11 @@
 
 namespace Ether::Graphics
 {
-class EditorGridsProducer : public GraphicProducer
+class EditorOutlineProducer : public GraphicProducer
 {
 public:
-    EditorGridsProducer();
-    ~EditorGridsProducer() override = default;
+    EditorOutlineProducer();
+    ~EditorOutlineProducer() override = default;
 
 public:
     void Initialize(ResourceContext& rc) override;

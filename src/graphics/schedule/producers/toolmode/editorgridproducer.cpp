@@ -17,30 +17,32 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "editorgridsproducer.h"
+#if ETH_TOOLMODE
+
+#include "editorgridproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
 
-DEFINE_GFX_PA(EditorGridsProducer)
+DEFINE_GFX_PA(EditorGridProducer)
 
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_DS(SceneDepth)
 DECLARE_GFX_UA_SR(PostFxSourceTexture)
 
-Ether::Graphics::EditorGridsProducer::EditorGridsProducer()
+Ether::Graphics::EditorGridProducer::EditorGridProducer()
     : GraphicProducer("EditorGridsProducer")
 {
 }
 
-void Ether::Graphics::EditorGridsProducer::Initialize(ResourceContext& rc)
+void Ether::Graphics::EditorGridProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::EditorGridsProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
+void Ether::Graphics::EditorGridProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_DS(SceneDepth));
@@ -48,7 +50,7 @@ void Ether::Graphics::EditorGridsProducer::GetInputOutput(ScheduleContext& sched
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
 }
 
-void Ether::Graphics::EditorGridsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::EditorGridProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("EditorGridsProducer");
 
@@ -70,16 +72,18 @@ void Ether::Graphics::EditorGridsProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.DrawInstanced(4, 1);
 }
 
-bool Ether::Graphics::EditorGridsProducer::IsEnabled()
+bool Ether::Graphics::EditorGridProducer::IsEnabled()
 {
+    // TODO: Check if grids are enabled by toolmode editor
+
     return true;
 }
 
-void Ether::Graphics::EditorGridsProducer::CreateShaders()
+void Ether::Graphics::EditorGridProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
-    m_VertexShader = gfxDevice.CreateShader({ "toolmode\\editorgrids_vsps.hlsl", "VS_Main", RhiShaderType::Vertex });
-    m_PixelShader = gfxDevice.CreateShader({ "toolmode\\editorgrids_vsps.hlsl", "PS_Main", RhiShaderType::Pixel });
+    m_VertexShader = gfxDevice.CreateShader({ "toolmode\\editorgrid_vsps.hlsl", "VS_Main", RhiShaderType::Vertex });
+    m_PixelShader = gfxDevice.CreateShader({ "toolmode\\editorgrid_vsps.hlsl", "PS_Main", RhiShaderType::Pixel });
 
     m_VertexShader->Compile();
     m_PixelShader->Compile();
@@ -88,7 +92,7 @@ void Ether::Graphics::EditorGridsProducer::CreateShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_PixelShader);
 }
 
-void Ether::Graphics::EditorGridsProducer::CreateRootSignature()
+void Ether::Graphics::EditorGridProducer::CreateRootSignature()
 {
     std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) Global Constants
@@ -99,7 +103,7 @@ void Ether::Graphics::EditorGridsProducer::CreateRootSignature()
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 
-void Ether::Graphics::EditorGridsProducer::CreatePipelineState(ResourceContext& rc)
+void Ether::Graphics::EditorGridProducer::CreatePipelineState(ResourceContext& rc)
 {
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
@@ -113,3 +117,4 @@ void Ether::Graphics::EditorGridsProducer::CreatePipelineState(ResourceContext& 
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 
+#endif

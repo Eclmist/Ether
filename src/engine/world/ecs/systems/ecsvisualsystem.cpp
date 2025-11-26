@@ -98,6 +98,9 @@ void Ether::Ecs::EcsVisualSystem::Update()
         gfxVisual.m_ModelMatrixPrev = transform.m_PreviousTransform;
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = /*IsVisualCulled(gfxVisual)*/ false ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility);
+#if ETH_TOOLMODE
+        gfxVisual.m_ToolmodeSelected = metadata.m_ToolmodeSelected;
+#endif
 
         // Raytraced translucency TODO
         // if (gfxVisual.m_Material->GetRaytracingVisibility() == Graphics::RaytracingVisibility::Lighting)
