@@ -57,7 +57,7 @@ public:
 
     template <typename T>
     RhiResource* GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const { return GetResource(view.Get().get()); }
-    RhiResource* GetResource(RhiResourceView* view) const;
+    RhiResource* GetResource(const RhiResourceView* view) const;
 
 private:
     bool ShouldRecreateResource(StringID resourceID, const RhiCommitedResourceDesc& desc);

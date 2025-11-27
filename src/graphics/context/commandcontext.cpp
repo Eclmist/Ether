@@ -211,6 +211,7 @@ void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiR
 
 void Ether::Graphics::CommandContext::SetResourceContext(const ResourceContext& resourceContext)
 {
+    m_ResourceContext = &resourceContext;
     m_RootSignatureBindingTable->SetResourceContext(resourceContext);
 }
 
@@ -221,11 +222,13 @@ void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapp
 
 void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset)
 {
+    TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::Common);
     m_RootSignatureBindingTable->Bind(*this, wrapper.GetSharedResourceName(), wrapper.Get().get(), offset);
 }
 
 void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView>& wrapper, uint64_t offset)
 {
+    TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::UnorderedAccess);
     m_RootSignatureBindingTable->Bind(*this, "RW" + std::string(wrapper.GetSharedResourceName()), wrapper.Get().get(), offset);
 }
 
@@ -241,11 +244,13 @@ void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_ST
 
 void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset)
 {
+    TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::Common);
     m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
 }
 
 void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView>& wrapper, uint64_t offset)
 {
+    TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::UnorderedAccess);
     m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
 }
 

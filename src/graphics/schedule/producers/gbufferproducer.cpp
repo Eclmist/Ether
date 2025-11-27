@@ -80,9 +80,6 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_VisualBatches;
 
     ctx.PushMarker("Clear");
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTextureA)), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTextureB)), RhiResourceState::RenderTarget);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(GBufferTextureC)), RhiResourceState::RenderTarget);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_DS(SceneDepth)), RhiResourceState::DepthWrite);
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureA));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureB));

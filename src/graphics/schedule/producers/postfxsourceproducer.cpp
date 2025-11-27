@@ -46,9 +46,6 @@ void Ether::Graphics::PostFxSourceProducer::RenderFrame(GraphicContext& ctx, Res
     ETH_MARKER_EVENT("PostFxSourceProducer");
 
     PostProcessProducer::RenderFrame(ctx, rc);
-
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneColor)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
     ctx.Bind(ACCESS_GFX_SR(SceneColor));
     ctx.Bind(ACCESS_GFX_UA(PostFxSourceTexture));
     DispatchFullscreen(ctx);
