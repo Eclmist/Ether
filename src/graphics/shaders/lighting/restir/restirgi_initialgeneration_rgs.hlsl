@@ -31,23 +31,23 @@ void RayGeneration()
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, bufferSize);
 
-    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= GlobalConstants.m_ScreenResolution.xy))
         return;
 
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
-    const float depth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
+    const float depth = SceneDepth.Load(int3(screenCoords, 0)).r;
 
     if (depth <= 0) // Reverse-z
         return;
 
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float3 wo = normalize(GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     float3 wi;
     float pdf;
 
 #if USE_IMPORTANCE_SAMPLING
-    SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, wo, wi, pdf);
+    SampleDirectionBrdf(surface, GlobalConstants.m_FrameNumber, wo, wi, pdf);
 #else
-    SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
+    SampleDirectionUniform(surface, GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
 
     GIReservoir initialReservoir = GIReservoir::Empty();
@@ -64,9 +64,9 @@ void RayGeneration()
     const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
     const float3 risWeight = targetFunction / max(0.05f, pdf);
         
-    initialReservoir.Resample(initialSample, Random(screenCoords * g_GlobalConstants.m_FrameNumber), targetFunction, risWeight);
+    initialReservoir.Resample(initialSample, Random(screenCoords * GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
-    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
+    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 
     // Spatial hash prototype
     uint cellIndex = SpatialHash_FindOrInsert(surface.m_Position, surface.m_Normal);
@@ -76,7 +76,7 @@ void RayGeneration()
     initialReservoir.FinalizeResampling();
         SpatialHashPayload payload;
         payload.m_Color = initialReservoir.m_WeightSum;
-        g_SpatialHashPayload[cellIndex] = payload;
+        RWSpatialHashPayload[cellIndex] = payload;
     }
 }
 

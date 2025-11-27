@@ -46,29 +46,29 @@ void CS_Main(
     uint3 groupThreadID : SV_GroupThreadID)
 {
     const uint2 sampleCoords = threadID.xy;
-    const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
+    const uint2 screenSize = GlobalConstants.m_ScreenResolution.xy;
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
-    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= GlobalConstants.m_ScreenResolution.xy))
         return;
     
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
     const float2 pixelVelocity = (surface.m_Velocity * screenSize);
-    const float2 screenCoordsPrev = screenCoords - pixelVelocity + 0.5f + (Random2D(screenCoords, g_GlobalConstants.m_FrameNumber) - 0.5f);
+    const float2 screenCoordsPrev = screenCoords - pixelVelocity + 0.5f + (Random2D(screenCoords, GlobalConstants.m_FrameNumber) - 0.5f);
 
     const uint prevSampleIdx = GetSampleIndexFromScreenCoords(screenCoordsPrev, screenSize);
 
-    GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
-    GIReservoir historyReservoir = GIReservoir::Unpack(g_HistoryReservoir[prevSampleIdx]);
+    GIReservoir initialReservoir = GIReservoir::Unpack(InputReservoir[sampleIdx]);
+    GIReservoir historyReservoir = GIReservoir::Unpack(HistoryReservoir[prevSampleIdx]);
 
     const float specularDependence = lerp(0.0f, lerp(1.0f, 0.0f, pow(surface.m_Roughness, 0.1f)), pow(surface.m_Metalness, 2.0f));
 
-    if (Random(screenCoords * g_GlobalConstants.m_FrameNumber + 110).x > specularDependence)
+    if (Random(screenCoords * GlobalConstants.m_FrameNumber + 110).x > specularDependence)
     {
-        if (all(screenCoordsPrev >= 0) && all(screenCoordsPrev < g_GlobalConstants.m_ScreenResolution.xy))
+        if (all(screenCoordsPrev >= 0) && all(screenCoordsPrev < GlobalConstants.m_ScreenResolution.xy))
         {
-            const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(screenCoordsPrev, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+            const ShadingSurface prevSurface = GetShadingSurfaceFromGBuffers(screenCoordsPrev, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
 
             if (IsValidReprojection(initialReservoir.m_Sample, historyReservoir.m_Sample))
             {
@@ -82,7 +82,7 @@ void CS_Main(
 
                     historyReservoir.FinalizeResampling();
                     historyReservoir.M = min(historyReservoir.M, MAX_TEMPORAL_HISTORY);
-                    initialReservoir.Combine(historyReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 100), targetFunction);
+                    initialReservoir.Combine(historyReservoir, Random(screenCoords * GlobalConstants.m_FrameNumber + 100), targetFunction);
                 }
             }
         }
@@ -91,7 +91,7 @@ void CS_Main(
     if (!BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(initialReservoir.m_WeightSum)))
         initialReservoir = GIReservoir::Empty();
 
-    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
+    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
 
 #endif // __RESTIR_GI_TEMPORAL_RESAMPLING_CS_HLSL__

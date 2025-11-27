@@ -117,7 +117,7 @@ float3 Stars(float3 viewDir)
     
     // Generate star intensity
     float starIntensity = pow(clamp(noise(viewDir * 200.0f), 0.0f, 1.0f), stars_threshold) * stars_exposure;
-    starIntensity *= lerp(0.4, 1.4, noise(viewDir * 100.0f + g_GlobalConstants.m_Time.z));
+    starIntensity *= lerp(0.4, 1.4, noise(viewDir * 100.0f + GlobalConstants.m_Time.z));
     starIntensity = max(0.0f, starIntensity);
     
     // Generate consistent color per star using different noise seeds
@@ -174,9 +174,9 @@ float3 CalculateSkyColor(float3 rayleighScattering, float3 mieScattering, float 
     float3 skyColor = saturate(rayleighScattering) * lerp(
                                                          float3(5.8, 8.5, 33.1) * 0.1,
                                                          float3(0.4, 0.25, 0.7),
-                                                         max(0, 1 - (g_GlobalConstants.m_SunDirection.y)));
+                                                         max(0, 1 - (GlobalConstants.m_SunDirection.y)));
     skyColor += saturate(mieScattering) *
-                lerp(float3(0.8, 0.3, 0.9), float3(1, 1, 1), 1 - g_GlobalConstants.m_SunDirection.y);
+                lerp(float3(0.8, 0.3, 0.9), float3(1, 1, 1), 1 - GlobalConstants.m_SunDirection.y);
     skyColor *= skyLuminance;
 
     return skyColor;
@@ -204,11 +204,11 @@ float3 CalculateSkyRadiance(
     // Calculate atmospheric scattering components
     float3 rayleighScattering = CalculateRayleighScattering(
         viewDirection,
-        g_GlobalConstants.m_SunDirection.xyz,
+        GlobalConstants.m_SunDirection.xyz,
         skyRayleigh);
     float3 mieScattering = CalculateMieScattering(
         viewDirection,
-        g_GlobalConstants.m_SunDirection.xyz,
+        GlobalConstants.m_SunDirection.xyz,
         skyMie,
         skyMieDirectionality);
     float3 skyColor = CalculateSkyColor(rayleighScattering, mieScattering, skyLuminance);
@@ -231,7 +231,7 @@ float4 ProceduralSky(float2 texCoord)
     // Temporarily override procedural sky until LUTs are implemented
     float3 daySkyColor = float3(0.6, 0.7, 1.0);
     float3 nightSkyColor = float3(0.1, 0.25, 0.4) * 0.2;
-    float3 skyColor = lerp(nightSkyColor, daySkyColor, dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
+    float3 skyColor = lerp(nightSkyColor, daySkyColor, dot(GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
 
     // Normalize screenUV to get a direction vector
     float3 viewDirection = normalize(ScreenToWorldSpace(TextureToScreenSpace(texCoord * 2 - 1), 0.0f)); // Reverse-Z
@@ -239,8 +239,8 @@ float4 ProceduralSky(float2 texCoord)
     // Calculate sun contribution
     float3 sunRadiance = CalculateSunRadiance(
         viewDirection,
-        g_GlobalConstants.m_SunDirection.xyz,
-        g_GlobalConstants.m_SunColor.rgb);
+        GlobalConstants.m_SunDirection.xyz,
+        GlobalConstants.m_SunColor.rgb);
 
     // Calculate sky contribution
     float3 skyRadiance = CalculateSkyRadiance(
@@ -256,9 +256,9 @@ float4 ProceduralSky(float2 texCoord)
     float2 fakeSkyUv = viewDirection.xz * viewDirection.y;
 
     float3 stars = Stars(viewDirection);
-    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + g_GlobalConstants.m_Time.x) * 1));
-    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 4 + g_GlobalConstants.m_Time.x) * 1));
-    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 1 + g_GlobalConstants.m_Time.x) * 1));
+    float3 cloud = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 10 + GlobalConstants.m_Time.x) * 1));
+    float3 cloud2 = lerp(0, 2.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 4 + GlobalConstants.m_Time.x) * 1));
+    float3 cloud3 = lerp(0, 4.0, smoothstep(0.5, 1, fbm(fakeSkyUv * 1 + GlobalConstants.m_Time.x) * 1));
 
     // Combine sun and sky radiance
     float3 totalRadiance = sunRadiance + skyRadiance;
@@ -269,11 +269,11 @@ float4 ProceduralSky(float2 texCoord)
 
 float4 SampleHdri(float2 uv)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[GlobalConstants.m_HdriTextureIndex];
 
-    const float flow1 = frac(g_GlobalConstants.m_Time.w);
-    const float flow2 = frac(g_GlobalConstants.m_Time.w + 0.5f);
+    const float flow1 = frac(GlobalConstants.m_Time.w);
+    const float flow2 = frac(GlobalConstants.m_Time.w + 0.5f);
     const float alt = abs((flow1 - 0.5) * 2.0);
 
     const float2 distortion = float2(-0.05, 0);
@@ -286,20 +286,20 @@ float4 SampleHdri(float2 uv)
 
 float4 GetHdriSkyColor(float2 uv)
 {
-    const float exposure = g_GlobalConstants.m_SkyIntensity * 1;
+    const float exposure = GlobalConstants.m_SkyIntensity * 1;
     const float3 pointAtInf = ScreenToWorldSpace(TextureToScreenSpace(uv), 0.0f); // Far plane point
-    const float3 viewDir = normalize(pointAtInf - g_GlobalConstants.m_CameraPosition.xyz); 
+    const float3 viewDir = normalize(pointAtInf - GlobalConstants.m_CameraPosition.xyz); 
     const float4 hdri = SampleHdri(SampleSphericalMap(viewDir));
 
     const float cloudMask = 1 - smoothstep(0.15, 0.3, hdri.r);
     const float4 stars = cloudMask * Stars(viewDir).xyzz;
-    const float4 sun = cloudMask * CalculateSunRadiance(viewDir, g_GlobalConstants.m_SunDirection.xyz, g_GlobalConstants.m_SunColor.rgb).xyzz;
+    const float4 sun = cloudMask * CalculateSunRadiance(viewDir, GlobalConstants.m_SunDirection.xyz, GlobalConstants.m_SunColor.rgb).xyzz;
 
-    const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
-    const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
+    const float sunsetFactor = saturate(asin(dot(GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+    const float sunlightFactor = 1 - saturate(asin(dot(GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
     
     const float4 color = lerp(float4(0.6, 0.2, 0.2, 0), 2, sunsetFactor) * sunlightFactor;
-    const float4 sunAttenuatedHdri = hdri * max(0.5, 2 * pow(saturate(dot(viewDir, g_GlobalConstants.m_SunDirection.xyz)), 8));
+    const float4 sunAttenuatedHdri = hdri * max(0.5, 2 * pow(saturate(dot(viewDir, GlobalConstants.m_SunDirection.xyz)), 8));
     const float4 coloredHdri = sunAttenuatedHdri * color;
     const float4 finalHdri = coloredHdri;
 

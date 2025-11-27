@@ -139,7 +139,6 @@ void Ether::Graphics::Dx12Shader::Compile()
             }
         }
 
-        throw std::runtime_error(std::format("Failed to compile shader {}", m_FileName));
     }
 
     result->GetResult(&m_ShaderBlob);

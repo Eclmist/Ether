@@ -52,25 +52,25 @@ struct ShadingSurface
 
 ShadingSurface GetShadingSurfaceFromGBuffers(
     float2 screenCoord,
-    Texture2D gbufferA,
-    Texture2D gbufferB,
-    Texture2D gbufferC,
-    Texture2D<float> sceneDepth)
+    Texture2D gbufferTexA,
+    Texture2D gBufferTexB,
+    Texture2D gBufferTexC,
+    Texture2D<float2> sceneDepth)
 {
-    const float4 gbuffer0 = gbufferA.Load(int3(screenCoord, 0));
-    const float4 gbuffer1 = gbufferB.Load(int3(screenCoord, 0));
-    const float4 gbuffer2 = gbufferC.Load(int3(screenCoord, 0));
+    const float4 gbufferA = gbufferTexA.Load(int3(screenCoord, 0));
+    const float4 gbufferB = gBufferTexB.Load(int3(screenCoord, 0));
+    const float4 gbufferC = gBufferTexC.Load(int3(screenCoord, 0));
     const float depth = sceneDepth.Load(int3(screenCoord, 0)).r;
 
     ShadingSurface surface;
     surface.m_Position = ScreenToWorldSpace(screenCoord, depth);
-    surface.m_Normal = DecodeNormals(gbuffer1.xy);
-    surface.m_BaseColor = gbuffer0.rgb;
-    surface.m_Emission = gbuffer2.rgb;
-    surface.m_Roughness = DecodeFP16(gbuffer2.w).x;
-    surface.m_Metalness = DecodeFP16(gbuffer2.w).y;
-    surface.m_Velocity = gbuffer1.zw;
-    surface.m_MaterialID = floor(gbuffer0.w * 255.0f);
+    surface.m_Normal = DecodeNormals(gbufferB.xy);
+    surface.m_BaseColor = gbufferA.rgb;
+    surface.m_Emission = gbufferC.rgb;
+    surface.m_Roughness = DecodeFP16(gbufferC.w).x;
+    surface.m_Metalness = DecodeFP16(gbufferC.w).y;
+    surface.m_Velocity = gbufferB.zw;
+    surface.m_MaterialID = floor(gbufferA.w * 255.0f);
 
     // Opacity information is lost after gbuffer discards alpha masked pixels.
     // For actually translucent pixels, they're not drawn in the gbuffer at all.

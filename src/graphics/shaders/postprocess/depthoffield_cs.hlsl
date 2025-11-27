@@ -25,15 +25,15 @@
 #include "utils/constants.hlsl"
 #include "utils/helpers.hlsl"
 
-ConstantBuffer<DepthOfFieldParams> g_DepthOfFieldParams : register(b1);
+ConstantBuffer<DepthOfFieldParams> DepthOfFieldParams   : register(b1);
 
-Texture2D<float4> g_SourceTexture                   : register(t0);
-Texture2D<float2> g_SceneDepth                      : register(t1);
-Texture2D<float4> g_CircleOfConfusionTexture        : register(t2);
-Texture2D<float4> g_DownsampledSceneColor           : register(t3);
-Texture2D<float4> g_DofAccumulationTexture          : register(t4);
+Texture2D<float4> SourceTexture                         : register(t0);
+Texture2D<float2> SceneDepth                            : register(t1);
+Texture2D<float4> CircleOfConfusionTexture              : register(t2);
+Texture2D<float4> DownsampledSceneColor                 : register(t3);
+Texture2D<float4> DofAccumulationTexture                : register(t4);
 
-RWTexture2D<float4> g_DestinationTextureUav         : register(u0);
+RWTexture2D<float4> RWDestinationTexture                : register(u0);
 
 // From https://github.com/Unity-Technologies/Graphics/blob/master/com.unity.postprocessing/PostProcessing/Shaders/Builtins/DiskKernels.hlsl
 static const int g_KernelSampleCount = 71;
@@ -123,24 +123,24 @@ float WeighSample(float3 c)
 
 void GenerateCocPass(uint3 threadID)
 {
-    const float linearDepth = LinearizeDepth(g_SceneDepth.Load(threadID).r);
-    const float coc = clamp((linearDepth - g_DepthOfFieldParams.m_FocusDistance) / (g_DepthOfFieldParams.m_FocusRange), -1.0f, 1.0f) * g_DepthOfFieldParams.m_Aperture;
-    g_DestinationTextureUav[threadID.xy] = coc;
+    const float linearDepth = LinearizeDepth(SceneDepth.Load(threadID).r);
+    const float coc = clamp((linearDepth - DepthOfFieldParams.m_FocusDistance) / (DepthOfFieldParams.m_FocusRange), -1.0f, 1.0f) * DepthOfFieldParams.m_Aperture;
+    RWDestinationTexture[threadID.xy] = coc;
 }
 
 void PreFilterPass(uint3 threadID)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    const float2 halfResolution = g_GlobalConstants.m_ScreenResolution / 2.0f;
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 halfResolution = GlobalConstants.m_ScreenResolution / 2.0f;
     const float2 texelSize = 1.0f / halfResolution;
     const float2 halfTexelSize = texelSize / 2.0f;
     const float2 uv = threadID.xy / halfResolution + halfTexelSize;
     const float4 offset = texelSize.xyxy * float2(-0.5f, 0.5f).xxyy;
 
-    const float3 color0 = g_SourceTexture.Sample(linearSampler, uv + offset.xy).xyz;
-    const float3 color1 = g_SourceTexture.Sample(linearSampler, uv + offset.zy).xyz;
-    const float3 color2 = g_SourceTexture.Sample(linearSampler, uv + offset.xw).xyz;
-    const float3 color3 = g_SourceTexture.Sample(linearSampler, uv + offset.zw).xyz;
+    const float3 color0 = SourceTexture.Sample(linearSampler, uv + offset.xy).xyz;
+    const float3 color1 = SourceTexture.Sample(linearSampler, uv + offset.zy).xyz;
+    const float3 color2 = SourceTexture.Sample(linearSampler, uv + offset.xw).xyz;
+    const float3 color3 = SourceTexture.Sample(linearSampler, uv + offset.zw).xyz;
 
     const float w0 = WeighSample(color0);
     const float w1 = WeighSample(color1);
@@ -150,27 +150,27 @@ void PreFilterPass(uint3 threadID)
     float3 color = color0 * w0 + color1 * w1 + color2 * w2 + color2 * w3;
     color /= max(w0 + w1 + w2 + w3, 0.0001f);
 
-    const float coc0 = g_CircleOfConfusionTexture.Sample(linearSampler, uv + offset.xy).r;
-    const float coc1 = g_CircleOfConfusionTexture.Sample(linearSampler, uv + offset.zy).r;
-    const float coc2 = g_CircleOfConfusionTexture.Sample(linearSampler, uv + offset.xw).r;
-    const float coc3 = g_CircleOfConfusionTexture.Sample(linearSampler, uv + offset.zw).r;
+    const float coc0 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.xy).r;
+    const float coc1 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.zy).r;
+    const float coc2 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.xw).r;
+    const float coc3 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.zw).r;
 
     const float cocMin = min(min(min(coc0, coc1), coc2), coc3);
     const float cocMax = max(max(max(coc0, coc1), coc2), coc3);
     const float coc = cocMax >= -cocMin ? cocMax : cocMin;
 
-    g_DestinationTextureUav[threadID.xy] = float4(color, coc);
+    RWDestinationTexture[threadID.xy] = float4(color, coc);
 }
 
 void AccumulateDepthOfField(uint3 threadID)
 {
-    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    const float2 halfResolution = g_GlobalConstants.m_ScreenResolution / 2.0f;
+    sampler pointSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Point_Clamp];
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 halfResolution = GlobalConstants.m_ScreenResolution / 2.0f;
     const float2 texelSize = 1.0f / halfResolution;
     const float2 halfTexelSize = texelSize / 2.0f;
     const float2 uv = threadID.xy / halfResolution + halfTexelSize;
-    const float coc = g_SourceTexture.Sample(pointSampler, uv).w;
+    const float coc = SourceTexture.Sample(pointSampler, uv).w;
 
     float3 backgroundColor = 0;
     float3 foregroundColor = 0;
@@ -179,10 +179,10 @@ void AccumulateDepthOfField(uint3 threadID)
 
     for (int i = 0; i < g_KernelSampleCount; ++i)
     {
-        float2 offset = g_Kernel[i] * g_DepthOfFieldParams.m_Aperture;
+        float2 offset = g_Kernel[i] * DepthOfFieldParams.m_Aperture;
         float radius = length(offset);
         offset *= texelSize;
-        float4 sample = g_SourceTexture.Sample(pointSampler, uv + offset);
+        float4 sample = SourceTexture.Sample(pointSampler, uv + offset);
 
         float backgroundSampleWeight = WeighSample(max(0, sample.w), radius);
         backgroundColor += sample.rgb * backgroundSampleWeight;
@@ -198,70 +198,70 @@ void AccumulateDepthOfField(uint3 threadID)
 
     float blendFactor = min(1.0f, foregroundWeight * Pi / g_KernelSampleCount);
     float3 finalColor = lerp(backgroundColor, foregroundColor, blendFactor);
-    g_DestinationTextureUav[threadID.xy] = float4(finalColor, blendFactor);
+    RWDestinationTexture[threadID.xy] = float4(finalColor, blendFactor);
 }
 
 void PostFilterPass(uint3 threadID)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    const float2 halfResolution = g_GlobalConstants.m_ScreenResolution / 2.0f;
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 halfResolution = GlobalConstants.m_ScreenResolution / 2.0f;
     const float2 texelSize = 1.0f / halfResolution;
     const float2 halfTexelSize = texelSize / 2.0f;
     const float2 uv = threadID.xy / halfResolution + halfTexelSize;
 
     float4 offset = texelSize.xyxy * float2(-0.5f, 0.5f).xxyy;
-    float4 tentFilter = g_SourceTexture.Sample(linearSampler, uv + offset.xy) + 
-                        g_SourceTexture.Sample(linearSampler, uv + offset.zy) + 
-                        g_SourceTexture.Sample(linearSampler, uv + offset.xw) + 
-                        g_SourceTexture.Sample(linearSampler, uv + offset.zw);
+    float4 tentFilter = SourceTexture.Sample(linearSampler, uv + offset.xy) + 
+                        SourceTexture.Sample(linearSampler, uv + offset.zy) + 
+                        SourceTexture.Sample(linearSampler, uv + offset.xw) + 
+                        SourceTexture.Sample(linearSampler, uv + offset.zw);
 
-    g_DestinationTextureUav[threadID.xy] = tentFilter * 0.25f;
+    RWDestinationTexture[threadID.xy] = tentFilter * 0.25f;
 }
 
 void CompositePass(uint3 threadID)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float2 resolution = GlobalConstants.m_ScreenResolution;
     const float2 texelSize = 1.0f / resolution;
     const float2 halfTexelSize = texelSize / 2.0f;
     const float2 uv = threadID.xy / resolution + halfTexelSize;
 
-    const float coc = g_CircleOfConfusionTexture.Load(threadID).r;
-    const float4 sceneColor = g_SourceTexture.Sample(linearSampler, uv);
-    const float4 dofColor = g_DofAccumulationTexture.Sample(linearSampler, uv);
+    const float coc = CircleOfConfusionTexture.Load(threadID).r;
+    const float4 sceneColor = SourceTexture.Sample(linearSampler, uv);
+    const float4 dofColor = DofAccumulationTexture.Sample(linearSampler, uv);
 
     // Debug visualizer
-    if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    if (GlobalConstants.m_RaytracedLightingDebug == 1)
     {
         float4 debugColor = float4(0, 1, 0, 1);
         if (coc > 0)
             debugColor = float4(0, 0, 1, 1);
 
-        g_DestinationTextureUav[threadID.xy] = lerp(sceneColor, sceneColor * debugColor, abs(coc));
+        RWDestinationTexture[threadID.xy] = lerp(sceneColor, sceneColor * debugColor, abs(coc));
         return;
     }
 
     const float dofStrength = smoothstep(0.1, 1, abs(coc));
     const float3 finalColor = lerp(sceneColor, dofColor, dofStrength + dofColor.a - dofStrength * dofColor.a).rgb;
 
-    g_DestinationTextureUav[threadID.xy] = float4(finalColor, sceneColor.a);
+    RWDestinationTexture[threadID.xy] = float4(finalColor, sceneColor.a);
 }
 
 [numthreads(DOF_KERNEL_GROUP_SIZE_X, DOF_KERNEL_GROUP_SIZE_Y, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    if (any(threadID.xy > g_GlobalConstants.m_ScreenResolution))
+    if (any(threadID.xy > GlobalConstants.m_ScreenResolution))
         return;
 
-    if (g_DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_GENERATE_COC)
+    if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_GENERATE_COC)
         GenerateCocPass(threadID);
-    else if (g_DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_PREFILTER_PASS)
+    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_PREFILTER_PASS)
         PreFilterPass(threadID);
-    else if (g_DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_ACCUMULATE)
+    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_ACCUMULATE)
         AccumulateDepthOfField(threadID);
-    else if (g_DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_POSTFILTER_PASS)
+    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_POSTFILTER_PASS)
         PostFilterPass(threadID);
-    else if (g_DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_COMPOSITE)
+    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_COMPOSITE)
         CompositePass(threadID);
 }
 

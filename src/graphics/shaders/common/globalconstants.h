@@ -99,7 +99,7 @@ struct GlobalConstants
 };
 
 #ifdef __HLSL__
-ConstantBuffer<GlobalConstants> g_GlobalConstants : register(b0);
+ConstantBuffer<GlobalConstants> GlobalConstants : register(b0);
 #endif
 
 ETH_END_SHADER_NAMESPACE
