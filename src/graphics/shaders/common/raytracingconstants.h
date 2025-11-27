@@ -93,8 +93,8 @@ struct SpatialHashPayload
 
 #include "common/vertexcommon.h"
 
-RaytracingAccelerationStructure g_RaytracingTlas    : register(t1);
-StructuredBuffer<GeometryInfo> g_GeometryInfo       : register(t2);
+RaytracingAccelerationStructure RaytracingTlas      : register(t1);
+StructuredBuffer<GeometryInfo> RTGeometryInfo       : register(t2);
 
 float BarycentricLerp(in float v0, in float v1, in float v2, in float3 barycentrics)
 {

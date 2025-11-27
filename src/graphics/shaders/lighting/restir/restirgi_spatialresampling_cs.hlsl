@@ -31,8 +31,8 @@ bool AreSurfacesSimilar(ShadingSurface thisSurface, ShadingSurface otherSurface)
     if (dot(thisSurface.m_Normal, otherSurface.m_Normal) < 0.95f)
         return false;
 
-    const float depthA = distance(thisSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
-    const float depthB = distance(otherSurface.m_Position, g_GlobalConstants.m_CameraPosition.xyz);
+    const float depthA = distance(thisSurface.m_Position, GlobalConstants.m_CameraPosition.xyz);
+    const float depthB = distance(otherSurface.m_Position, GlobalConstants.m_CameraPosition.xyz);
 
     if (abs(depthA - depthB) / depthA > 0.05f)
         return false;
@@ -71,15 +71,15 @@ void CS_Main(
 {
     const uint2 sampleCoords = threadID.xy;
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
-    const uint2 screenSize = g_GlobalConstants.m_ScreenResolution.xy;
+    const uint2 screenSize = GlobalConstants.m_ScreenResolution.xy;
     const uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
-    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= GlobalConstants.m_ScreenResolution.xy))
         return;
 
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
 
-    GIReservoir initialReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
+    GIReservoir initialReservoir = GIReservoir::Unpack(InputReservoir[sampleIdx]);
     const uint numSamples = initialReservoir.M < 5 ? NUM_SPATIAL_SAMPLES * 2.0f : NUM_SPATIAL_SAMPLES;
     const float lowHistorySampleMultiplier = 1.5f;
     const uint historyAwareSpatialSampleCount = NUM_SPATIAL_SAMPLES * max(1, lowHistorySampleMultiplier - (initialReservoir.M / (MAX_TEMPORAL_HISTORY / lowHistorySampleMultiplier)));
@@ -87,14 +87,14 @@ void CS_Main(
     for (int i = 0; i < numSamples; ++i)
     {
         const float goldenAngle = 2.3999632f;
-        const float angle = (i + Random(screenCoords * g_GlobalConstants.m_FrameNumber + 200) * 3.1415) * goldenAngle;
+        const float angle = (i + Random(screenCoords * GlobalConstants.m_FrameNumber + 200) * 3.1415) * goldenAngle;
         const float materialFactor = max(surface.m_Roughness, 1.0f - surface.m_Metalness);
         const float radius = pow(float(i + 1.0f), 0.666f) * SPATIAL_KERNEL_RADIUS / (float) numSamples * surface.m_Roughness;
         const float2 offset = float2(cos(angle), sin(angle)) * radius;
         const int2 neighbourScreenCoords = screenCoords + offset;
         const uint neighbourSampleIdx = GetSampleIndexFromScreenCoords(neighbourScreenCoords, screenSize);
 
-        const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+        const ShadingSurface neighbourSurface = GetShadingSurfaceFromGBuffers(neighbourScreenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
 
         if (any(neighbourScreenCoords < 0) || any(neighbourScreenCoords >= screenSize))
             continue;
@@ -102,7 +102,7 @@ void CS_Main(
         if (!AreSurfacesSimilar(surface, neighbourSurface))
             continue;
 
-        GIReservoir neighbourReservoir = GIReservoir::Unpack(g_InputReservoir[neighbourSampleIdx]);
+        GIReservoir neighbourReservoir = GIReservoir::Unpack(InputReservoir[neighbourSampleIdx]);
 
         if (!neighbourReservoir.IsValid())
             continue;
@@ -115,10 +115,10 @@ void CS_Main(
 
         neighbourReservoir.FinalizeResampling();
         neighbourReservoir.M = min(neighbourReservoir.M,  100);
-        initialReservoir.Combine(neighbourReservoir, Random(screenCoords * g_GlobalConstants.m_FrameNumber + 300), targetFunction);
+        initialReservoir.Combine(neighbourReservoir, Random(screenCoords * GlobalConstants.m_FrameNumber + 300), targetFunction);
     }
 
-    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
+    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
 }
 
 #endif // __RESTIR_GI_SPATIAL_RESAMPLING_CS_HLSL__

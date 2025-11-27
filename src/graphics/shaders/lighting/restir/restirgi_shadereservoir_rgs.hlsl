@@ -22,7 +22,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-RWTexture2D<float4> g_LightingOutput                        : register(u3);
+RWTexture2D<float4> RWLightingOutput                        : register(u3);
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -31,23 +31,23 @@ void RayGeneration()
     const uint2 screenCoords = DispatchRaysIndex().xy;
     uint sampleIdx = GetSampleIndexFromScreenCoords(screenCoords, screenSize);
 
-    if (any(screenCoords < 0) || any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords < 0) || any(screenCoords >= GlobalConstants.m_ScreenResolution.xy))
         return;
 
 #if DOWNSAMPLE_FACTOR != 1
-    const float2 stochasticOffsets = (CMJ_Sample2D(sampleIdx, 1024, 1024, g_GlobalConstants.m_FrameNumber + 400.0f) - 0.5f) * 2.0f;
+    const float2 stochasticOffsets = (CMJ_Sample2D(sampleIdx, 1024, 1024, GlobalConstants.m_FrameNumber + 400.0f) - 0.5f) * 2.0f;
     const uint2 sampleCoords = round( GetSampleCoordsFromScreenCoords(screenCoords) + stochasticOffsets);
     sampleIdx = GetSampleIndexFromSampleCoords(sampleCoords, screenSize / (float)DOWNSAMPLE_FACTOR);
 #endif
 
-    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
-    GIReservoir finalReservoir = GIReservoir::Unpack(g_InputReservoir[sampleIdx]);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
+    GIReservoir finalReservoir = GIReservoir::Unpack(InputReservoir[sampleIdx]);
     DeviceMemoryBarrier();
 
-    const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
+    const RayPayload shadowRay = TraceShadowRay(surface, GlobalConstants.m_SunDirection.xyz);
     const float3 Li = shadowRay.m_Radiance;
-    const float3 wi = normalize(g_GlobalConstants.m_SunDirection.xyz);
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float3 wi = normalize(GlobalConstants.m_SunDirection.xyz);
+    const float3 wo = normalize(GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float3 directLighting = ComputeRadiance(surface, Li, wi, wo);
     float3 indirectLighting = 0;
 
@@ -61,34 +61,34 @@ void RayGeneration()
         //if (validationRay.m_Hit)
         //{
         //    finalReservoir = GIReservoir::Empty();
-        //    g_RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
+        //    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
         //}
         
         indirectLighting = finalReservoir.m_TargetPdf * finalReservoir.m_WeightSum;
     }
 
     // Spatial Hash Prototype
-    if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    if (GlobalConstants.m_RaytracedLightingDebug == 1)
     {
 
-        const float cellSize = g_GlobalConstants.m_SpatialHashCellSize;
+        const float cellSize = GlobalConstants.m_SpatialHashCellSize;
 		uint cellIndex = SpatialHash_Lookup(surface.m_Position, surface.m_Normal);
 
         float3 finalColor = float3(1, 0, 1);
 
 		if (cellIndex != 0xFFFFFFFFu)
 		{
-			finalColor = g_SpatialHashPayload[cellIndex].m_Color;
+			finalColor = RWSpatialHashPayload[cellIndex].m_Color;
 		}
 
-		g_LightingOutput[screenCoords].xyz = finalColor * 1;
-		g_LightingOutput[screenCoords].a = 0;
+		RWLightingOutput[screenCoords].xyz = finalColor * 1;
+		RWLightingOutput[screenCoords].a = 0;
         return;
     }
 
 
-    g_LightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
-    g_LightingOutput[screenCoords].a = 0;
+    RWLightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
+    RWLightingOutput[screenCoords].a = 0;
 }
 
 #endif // __RESTIR_GI_SHADE_RESERVOIR_RGS_HLSL__

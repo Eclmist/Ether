@@ -31,8 +31,8 @@
 #include "utils/shading.hlsl"
 #include "utils/brdf.hlsl"
 
-Texture2D<float> g_SceneDepth                       : register(t3);
-RWTexture2D<float4> g_SceneColor                    : register(u0);
+Texture2D<float2> SceneDepth                     : register(t3);
+RWTexture2D<float4> RWSceneColor                 : register(u0);
 
 // TODO: Remove duplicates
 
@@ -59,14 +59,14 @@ float2 Hammersley(uint i, uint sequenceLength)
 
 float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    const float exposure = g_GlobalConstants.m_SkyIntensity;
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[GlobalConstants.m_HdriTextureIndex];
+    const float exposure = GlobalConstants.m_SkyIntensity;
 
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, mipLevel);
-    const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
-    const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
+    const float sunsetFactor = saturate(asin(dot(GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+    const float sunlightFactor = 1 - saturate(asin(dot(GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
 
     const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
 
@@ -78,7 +78,7 @@ float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
 
 float3 BruteForcedIBL(ShadingSurface surface, float3 wo)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
 
     float3 ibl = 0;
     for (uint i = 0; i < NUM_SAMPLES; i++)
@@ -146,7 +146,7 @@ float3 SampleEnvironmentLighting(float3 wi)
 TranslucentRayPayload TracePrimaryRay(float2 screenCoords, float sceneDepth, uint depth)
 {
     const float3 worldPos = ScreenToWorldSpace(screenCoords, sceneDepth);
-    const float3 origin = g_GlobalConstants.m_CameraPosition.xyz;
+    const float3 origin = GlobalConstants.m_CameraPosition.xyz;
     const float3 direction = normalize(worldPos - origin);
     const float tmax = length(worldPos - origin) * 0.99;
 
@@ -162,7 +162,7 @@ TranslucentRayPayload TracePrimaryRay(float2 screenCoords, float sceneDepth, uin
     ray.TMin = RAY_TMIN;
 
     uint rayFlags = 0;
-    TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -172,17 +172,17 @@ void RayGeneration()
 {
     const uint2 screenCoords = DispatchRaysIndex().xy;
 
-    if (any(screenCoords >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(screenCoords >= GlobalConstants.m_ScreenResolution.xy))
         return;
 
-    const float sceneDepth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
+    const float sceneDepth = SceneDepth.Load(int3(screenCoords, 0)).r;
 
     if (sceneDepth <= 0) // Reverse-Z
         return;
 
     TranslucentRayPayload primaryRay = TracePrimaryRay(screenCoords, sceneDepth, 2);
 
-    g_SceneColor[screenCoords].xyz += primaryRay.m_Radiance;
+    RWSceneColor[screenCoords].xyz += primaryRay.m_Radiance;
 }
 
 [shader("miss")]
@@ -195,9 +195,9 @@ void Miss(inout TranslucentRayPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const GeometryInfo geoInfo = RTGeometryInfo[InstanceIndex()];
     MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+    const Material material = MaterialTable[geoInfo.m_MaterialIndex];
 
     payload.SetHit(false);
     payload.m_Depth = max(0, (int)payload.m_Depth - 1);
@@ -211,8 +211,8 @@ void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersect
             return;
 
         payload.SetHit(true);
-        vertex.m_TexCoord += float2(0.2, -1) * g_GlobalConstants.m_Time.z;
-        const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+        vertex.m_TexCoord += float2(0.2, -1) * GlobalConstants.m_Time.z;
+        const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
 
         float3 direct = 0.0f;
         float3 reflection = 0.0f;
@@ -231,14 +231,14 @@ void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersect
             ray.TMin = RAY_TMIN;
 
             uint rayFlags = 0;
-            TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, screenTracePayload);
+            TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, screenTracePayload);
             payload.m_Radiance = ComputeRadiance(surface, screenTracePayload.m_Radiance, ray.Direction, -WorldRayDirection());
         }
 
     }
     else
     {
-        const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+        const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
 /*
         // Project hit point to screen space
         float4 hitPosWS = float4(vertex.m_Position, 1.0f);
@@ -246,7 +246,7 @@ void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersect
         hitPosProjection.xyz /= hitPosProjection.w;
 
         // Lookup scene depth + color
-        float sceneDepthAtHit = g_SceneDepth.Load(int3(screenCoords, 0)).r;
+        float sceneDepthAtHit = SceneDepth.Load(int3(screenCoords, 0)).r;
 
         // Return the real hit depth, + the projected screen pixel
         // The original raygen shader should use this info to sample scene color and maybe reject it
@@ -260,9 +260,9 @@ void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersect
 [shader("anyhit")]
 void AnyHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const GeometryInfo geoInfo = RTGeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+    const Material material = MaterialTable[geoInfo.m_MaterialIndex];
 
     //TODO: Any hit needs to be updated to ignore translucent objects in ssr
     if (material.m_Opacity < 1)
@@ -272,7 +272,7 @@ void AnyHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersectionA
     float opacity = material.m_Opacity;
     if (material.m_BaseColorTextureIndex != 0)
     {
-        sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+        sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
         Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_BaseColorTextureIndex];
         float4 gatherOpacity = albedoTex.GatherAlpha(linearSampler, vertex.m_TexCoord);
         opacity *= (gatherOpacity.x + gatherOpacity.y + gatherOpacity.z + gatherOpacity.w) / 4.0f;

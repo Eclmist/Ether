@@ -24,12 +24,12 @@
 #include "utils/encoding.hlsl"
 #include "utils/shading.hlsl"
 
-Texture2D<float4> g_GBuffer0                        : register(t0);
-Texture2D<float4> g_GBuffer1                        : register(t1);
-Texture2D<float4> g_GBuffer2                        : register(t2);
-Texture2D<float> g_SceneDepth                       : register(t3);
-Texture2D<float4> g_LightingTexture                 : register(t4);
-Texture2D<float4> g_ProceduralSkyTexture            : register(t5);
+Texture2D<float4> GBufferTextureA           : register(t0);
+Texture2D<float4> GBufferTextureB           : register(t1);
+Texture2D<float4> GBufferTextureC           : register(t2);
+Texture2D<float2> SceneDepth                : register(t3);
+Texture2D<float4> LightingTexture           : register(t4);
+Texture2D<float4> ProceduralSkyTexture      : register(t5);
 
 struct PS_INPUT
 {
@@ -39,14 +39,14 @@ struct PS_INPUT
 
 float4 PS_Main(PS_INPUT IN) : SV_Target
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
 
-    const float4 lighting = g_LightingTexture.Sample(linearSampler, IN.TexCoord);
-    const float4 sky = g_ProceduralSkyTexture[IN.TexCoord * g_GlobalConstants.m_ScreenResolution];
-    const float2 screenCoords = IN.TexCoord * g_GlobalConstants.m_ScreenResolution;
-    const float depth = g_SceneDepth.Load(int3(screenCoords, 0)).r;
+    const float4 lighting = LightingTexture.Sample(linearSampler, IN.TexCoord);
+    const float4 sky = ProceduralSkyTexture[IN.TexCoord * GlobalConstants.m_ScreenResolution];
+    const float2 screenCoords = IN.TexCoord * GlobalConstants.m_ScreenResolution;
+    const float depth = SceneDepth.Load(int3(screenCoords, 0)).r;
  
-    ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBuffer0, g_GBuffer1, g_GBuffer2, g_SceneDepth);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
 
     // Hack to get sky which is basically nothing drawn in gbuffer
     if (depth <= 0) // Reverse-z

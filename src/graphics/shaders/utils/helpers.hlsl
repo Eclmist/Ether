@@ -29,8 +29,8 @@ float GetLuminanceFromRGB(float3 rgb)
 
 float LinearizeDepth(float depth)
 {
-    float near = g_GlobalConstants.m_CameraClipNearFar.x;
-    float far = g_GlobalConstants.m_CameraClipNearFar.y;
+    float near = GlobalConstants.m_CameraClipNearFar.x;
+    float far = GlobalConstants.m_CameraClipNearFar.y;
     return far * near / (depth * (far - near) + near);
 }
 

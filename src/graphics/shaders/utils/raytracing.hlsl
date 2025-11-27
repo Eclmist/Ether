@@ -27,9 +27,9 @@
 #include "utils/brdf.hlsl"
 
 // Spatial Hash Prototype
-RWStructuredBuffer<uint> g_SpatialHash                      : register(u4);
-RWStructuredBuffer<uint> g_SpatialHashTime                  : register(u5);
-RWStructuredBuffer<SpatialHashPayload> g_SpatialHashPayload : register(u6);
+RWStructuredBuffer<uint> RWSpatialHash                      : register(u4);
+RWStructuredBuffer<uint> RWSpatialHashTime                  : register(u5);
+RWStructuredBuffer<SpatialHashPayload> RWSpatialHashPayload : register(u6);
 
 #define SEARCH_COUNT 10
 
@@ -55,8 +55,8 @@ uint xxhash32(uint p)
 
 uint SpatialHash_Lookup(float3 position, float3 normal)
 {
-    float cellSize = g_GlobalConstants.m_SpatialHashCellSize;
-    const uint HashmapSize = g_GlobalConstants.m_SpatialHashSize;
+    float cellSize = GlobalConstants.m_SpatialHashCellSize;
+    const uint HashmapSize = GlobalConstants.m_SpatialHashSize;
 
     // Inputs to hashing
     int3 p = floor(position / cellSize);
@@ -74,7 +74,7 @@ uint SpatialHash_Lookup(float3 position, float3 normal)
     // Update data structure
     for (uint i = 0; i < SEARCH_COUNT; i++)
     {                
-        if (g_SpatialHash[cellIndex] == checksum)
+        if (RWSpatialHash[cellIndex] == checksum)
             return cellIndex;
                           
         cellIndex++;
@@ -89,9 +89,9 @@ uint SpatialHash_Lookup(float3 position, float3 normal)
 //Adapted from https://gboisse.github.io/posts/this-is-us/
 uint SpatialHash_FindOrInsert(float3 position, float3 normal)
 {
-    float cellSize = g_GlobalConstants.m_SpatialHashCellSize;
-    const uint HashmapSize = g_GlobalConstants.m_SpatialHashSize;
-    uint FrameIndex = g_GlobalConstants.m_FrameNumber;
+    float cellSize = GlobalConstants.m_SpatialHashCellSize;
+    const uint HashmapSize = GlobalConstants.m_SpatialHashSize;
+    uint FrameIndex = GlobalConstants.m_FrameNumber;
 
     // Inputs to hashing
     int3 p = floor(position / cellSize);
@@ -110,26 +110,26 @@ uint SpatialHash_FindOrInsert(float3 position, float3 normal)
 	for (uint i = 0; i < SEARCH_COUNT; i++)
 	{                
 		uint cmp;        
-		InterlockedCompareExchange(g_SpatialHash[cellIndex], 0, checksum, cmp);
+		InterlockedCompareExchange(RWSpatialHash[cellIndex], 0, checksum, cmp);
 		 
 		uint originalTime;
 		if (cmp == 0 || cmp == checksum)
 		{
-			InterlockedExchange(g_SpatialHashTime[cellIndex], FrameIndex, originalTime);
+			InterlockedExchange(RWSpatialHashTime[cellIndex], FrameIndex, originalTime);
 			 
 			return cellIndex; 
 		}
 		 
-		originalTime = g_SpatialHashTime[cellIndex];
+		originalTime = RWSpatialHashTime[cellIndex];
 		if (FrameIndex - originalTime > 20)
 		{
             SpatialHashPayload emptyPayload;
             emptyPayload.m_Color = float3(1, 0, 0);
-            g_SpatialHashPayload[cellIndex] = emptyPayload;
+            RWSpatialHashPayload[cellIndex] = emptyPayload;
 
             uint original;
-			InterlockedExchange(g_SpatialHash[cellIndex], checksum, original);
-			InterlockedExchange(g_SpatialHashTime[cellIndex], FrameIndex, originalTime);
+			InterlockedExchange(RWSpatialHash[cellIndex], checksum, original);
+			InterlockedExchange(RWSpatialHashTime[cellIndex], FrameIndex, originalTime);
 			
 			return cellIndex;
 		}
@@ -190,14 +190,14 @@ void SampleDirectionUniform(ShadingSurface surface, float seed, out float3 wi, o
 
 float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
 {
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
-    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[g_GlobalConstants.m_HdriTextureIndex];
-    const float exposure = g_GlobalConstants.m_SkyIntensity;
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
+    Texture2D<float4> hdriTexture = ResourceDescriptorHeap[GlobalConstants.m_HdriTextureIndex];
+    const float exposure = GlobalConstants.m_SkyIntensity;
 
     const float2 hdriUv = SampleSphericalMap(wi);
     const float4 hdri = hdriTexture.SampleLevel(linearSampler, hdriUv, mipLevel);
-    const float sunsetFactor = saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
-    const float sunlightFactor = 1 - saturate(asin(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
+    const float sunsetFactor = saturate(asin(dot(GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0))));
+    const float sunlightFactor = 1 - saturate(asin(dot(GlobalConstants.m_SunDirection.xyz, float3(0, -1, 0))));
 
     const float4 color = lerp(float4(0.5, 0.25, 0.25, 0), 1, sunsetFactor) * sunlightFactor;
 
@@ -225,7 +225,7 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
     ray.TMin = RAY_TMIN;
 
     uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
-    TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -245,7 +245,7 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     ray.TMin = RAY_TMIN;
 
     uint rayFlags = RAY_FLAG_FORCE_OPAQUE; // Don't do any-hit for GI rays for performance reasons
-    TraceRay(g_RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -260,8 +260,8 @@ void Miss(inout RayPayload payload)
     if (payload.m_IsShadowRay)
     {
         // Sample sun color
-        const float lerpFactor = saturate(dot(g_GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
-        payload.m_Radiance = lerp(0.0f, g_GlobalConstants.m_SunColor.xyz, lerpFactor);
+        const float lerpFactor = saturate(dot(GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
+        payload.m_Radiance = lerp(0.0f, GlobalConstants.m_SunColor.xyz, lerpFactor);
     }
     else
     {
@@ -273,11 +273,11 @@ void Miss(inout RayPayload payload)
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const GeometryInfo geoInfo = RTGeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
-    const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, g_GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
-    const float3 viewDir = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const Material material = MaterialTable[geoInfo.m_MaterialIndex];
+    const ShadingSurface surface = GetShadingSurfaceFromHit(vertex, material, GlobalConstants.m_SamplerIndex_Linear_Wrap, INDIRECT_MIP_LEVEL);
+    const float3 viewDir = normalize(GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
 
     payload.m_Hit = true;
     payload.m_HitPosition = surface.m_Position;
@@ -295,8 +295,8 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
     float3 indirect = 0.0f;
 
     {   // Direct lighting
-        const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
-        direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, -WorldRayDirection());
+        const RayPayload shadowRay = TraceShadowRay(surface, GlobalConstants.m_SunDirection.xyz);
+        direct = ComputeRadiance(surface, shadowRay.m_Radiance, GlobalConstants.m_SunDirection.xyz, -WorldRayDirection());
     }
 
     {   // Indirect lighting
@@ -304,9 +304,9 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         float pdf;
 
 #if USE_IMPORTANCE_SAMPLING
-        SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
+        SampleDirectionBrdf(surface, GlobalConstants.m_FrameNumber, viewDir, wi, pdf);
 #else
-        SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
+        SampleDirectionUniform(surface, GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
 
         if (pdf > 0.1f)
@@ -323,9 +323,9 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 [shader("anyhit")]
 void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attribs)
 {
-    const GeometryInfo geoInfo = g_GeometryInfo[InstanceIndex()];
+    const GeometryInfo geoInfo = RTGeometryInfo[InstanceIndex()];
     const MeshVertex vertex = GetHitSurface(attribs, geoInfo);
-    const Material material = g_MaterialTable[geoInfo.m_MaterialIndex];
+    const Material material = MaterialTable[geoInfo.m_MaterialIndex];
 
     // Early out if not masked
     //if (!mat.IsMasked()) (TODO)
@@ -334,7 +334,7 @@ void AnyHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes a
     float opacity = material.m_Opacity;
     if (material.m_BaseColorTextureIndex != 0)
     {
-        sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Wrap];
+        sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
         Texture2D<float4> albedoTex = ResourceDescriptorHeap[material.m_BaseColorTextureIndex];
         float4 gatherOpacity = albedoTex.GatherAlpha(linearSampler, vertex.m_TexCoord);
         opacity *= (gatherOpacity.x + gatherOpacity.y + gatherOpacity.z + gatherOpacity.w) / 4.0f;

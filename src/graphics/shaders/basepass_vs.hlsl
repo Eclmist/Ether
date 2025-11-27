@@ -48,23 +48,23 @@ struct VS_OUTPUT
     float4 ClipPosPrev      : TEXCOORD3;
 };
 
-ConstantBuffer<InstanceParams> g_InstanceParams     : register(b1);
+ConstantBuffer<InstanceParams> InstanceParams : register(b1);
 
 VS_OUTPUT VS_Main(VS_INPUT IN)
 {
     VS_OUTPUT o;
 
-    const float4 worldPos = mul(g_InstanceParams.m_ModelMatrix, float4(IN.Position, 1.0f));
-    const float4 worldPosPrev = mul(g_InstanceParams.m_ModelMatrixPrev, float4(IN.PositionPrev, 1.0f));
+    const float4 worldPos = mul(InstanceParams.m_ModelMatrix, float4(IN.Position, 1.0f));
+    const float4 worldPosPrev = mul(InstanceParams.m_ModelMatrixPrev, float4(IN.PositionPrev, 1.0f));
     
-    o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, worldPos);
-    o.Normal = mul(g_InstanceParams.m_NormalMatrix, float4(IN.Normal, 0.0f)).xyz;
+    o.Position = mul(GlobalConstants.m_ViewProjectionMatrix, worldPos);
+    o.Normal = mul(InstanceParams.m_NormalMatrix, float4(IN.Normal, 0.0f)).xyz;
     o.Tangent = IN.Tangent;
     o.TexCoord = IN.TexCoord;
     o.Color = IN.Color;
 
-    o.ClipPos = mul(g_GlobalConstants.m_ViewProjectionMatrixNoJitter, worldPos);
-    o.ClipPosPrev = mul(g_GlobalConstants.m_ViewProjectionMatrixPrevNoJitter, worldPosPrev);
+    o.ClipPos = mul(GlobalConstants.m_ViewProjectionMatrixNoJitter, worldPos);
+    o.ClipPosPrev = mul(GlobalConstants.m_ViewProjectionMatrixPrevNoJitter, worldPosPrev);
 
     return o;
 }

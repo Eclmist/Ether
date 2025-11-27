@@ -30,7 +30,7 @@
 #define GRID_LINE_ALPHA 0.7
 #define GRID_SIZE 30
 
-Texture2D<float2> g_SceneDepth : register(t0);
+Texture2D<float2> SceneDepth : register(t0);
 
 float4 GetGridLevel(float level, float3 wPos, float3 dydx)
 {
@@ -61,10 +61,10 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
     pos.x = v.x * 2.0f - 1.0f;
     pos.y = v.y * 2.0f - 1.0f;
 
-    pos *= length(g_GlobalConstants.m_CameraPosition) * GRID_SIZE;
+    pos *= length(GlobalConstants.m_CameraPosition) * GRID_SIZE;
 
     o.PositionWS = float3(pos.x, 0.0, pos.y);
-    o.Position = mul(g_GlobalConstants.m_ViewProjectionMatrix, float4(o.PositionWS.xyz, 1.0));
+    o.Position = mul(GlobalConstants.m_ViewProjectionMatrix, float4(o.PositionWS.xyz, 1.0));
 
     return o;
 }
@@ -72,7 +72,7 @@ VS_OUTPUT VS_Main(uint ID : SV_VertexID)
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
     const float pixelDepth = LinearizeDepth(IN.Position.z);
-    const float sceneDepth = LinearizeDepth(g_SceneDepth.Load(float3(IN.Position.xy, 0)).r);
+    const float sceneDepth = LinearizeDepth(SceneDepth.Load(float3(IN.Position.xy, 0)).r);
 
     float3 ddxPos = ddx(IN.PositionWS);
     float3 ddyPos = ddy(IN.PositionWS);
@@ -81,7 +81,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     float fadeGradientFactor = 1.0 - saturate(length(surfaceGradient));
     float fadeDepthFactor = smoothstep(0, 0.1f, max(0, sceneDepth - pixelDepth));
-    float fadeAngleFactor = pow(abs(normalize(IN.PositionWS - g_GlobalConstants.m_CameraPosition.xyz).y), 0.5);
+    float fadeAngleFactor = pow(abs(normalize(IN.PositionWS - GlobalConstants.m_CameraPosition.xyz).y), 0.5);
     float fade = fadeGradientFactor * fadeDepthFactor * fadeAngleFactor;
     float3 axisOpacity = smoothstep(axisWidth, 0, abs(IN.PositionWS)) * AXIS_LINE_ALPHA;
 

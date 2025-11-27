@@ -24,13 +24,13 @@
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 
-Texture2D<float4> g_AccumulationTexture             : register(t3);
-Texture2D<float4> g_GBufferA                        : register(t4);
-Texture2D<float4> g_GBufferB                        : register(t5);
-Texture2D<float4> g_GBufferC                        : register(t6);
-Texture2D<float> g_SceneDepth                       : register(t7);
-RWTexture2D<float4> g_LightingOutput                : register(u0);
-RWTexture2D<float4> g_IndirectOutput                : register(u1);
+Texture2D<float4> AccumulationTexture               : register(t3);
+Texture2D<float4> GBufferTextureA                   : register(t4);
+Texture2D<float4> GBufferTextureB                   : register(t5);
+Texture2D<float4> GBufferTextureC                   : register(t6);
+Texture2D<float2> SceneDepth                        : register(t7);
+RWTexture2D<float4> RWLightingOutput                : register(u0);
+RWTexture2D<float4> RWIndirectOutput                : register(u1);
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -38,34 +38,34 @@ void RayGeneration()
     const float2 screenCoords = DispatchRaysIndex().xy;
     const uint2 bufferSize = DispatchRaysDimensions().xy;
     const uint sampleIdx = screenCoords.y * bufferSize.x + screenCoords.x;
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, g_GBufferA, g_GBufferB, g_GBufferC, g_SceneDepth);
+    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
 
-    const float3 wo = normalize(g_GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    const float3 wo = normalize(GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
     const float2 uv = ScreenToTextureSpace(screenCoords);
     const float2 uvPrev = ScreenToTextureSpace(screenCoords - surface.m_Velocity);
     float4 accumulation = 0.0f;
 
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
     if (all(uvPrev >= 0.0f) && all(uvPrev <= 1.0f))
     {
-        accumulation = g_AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+        accumulation = AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
         if (any(isnan(accumulation)) || any(isinf(accumulation)))
             accumulation = 0.0f;
         
     }
 
-    const RayPayload shadowRay = TraceShadowRay(surface, g_GlobalConstants.m_SunDirection.xyz);
-    const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, g_GlobalConstants.m_SunDirection.xyz, wo);
+    const RayPayload shadowRay = TraceShadowRay(surface, GlobalConstants.m_SunDirection.xyz);
+    const float3 direct = ComputeRadiance(surface, shadowRay.m_Radiance, GlobalConstants.m_SunDirection.xyz, wo);
 
     float3 wi;
     float pdf;
     float3 indirect = 0.0f;
 
 #if USE_IMPORTANCE_SAMPLING
-    SampleDirectionBrdf(surface, g_GlobalConstants.m_FrameNumber, wo, wi, pdf);
+    SampleDirectionBrdf(surface, GlobalConstants.m_FrameNumber, wo, wi, pdf);
 #else
-    SampleDirectionUniform(surface, g_GlobalConstants.m_FrameNumber, wi, pdf);
+    SampleDirectionUniform(surface, GlobalConstants.m_FrameNumber, wi, pdf);
 #endif
 
     if (pdf > 0.01f)
@@ -74,10 +74,10 @@ void RayGeneration()
         indirect = ComputeRadiance(surface, indirectRay.m_Radiance, wi, wo) / pdf;
     }
 
-    float a = max(0.005, 1 - smoothstep(0, 10, g_GlobalConstants.m_FrameNumber - g_GlobalConstants.m_FrameSinceLastMovement));
+    float a = max(0.005, 1 - smoothstep(0, 10, GlobalConstants.m_FrameNumber - GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
-    g_LightingOutput[screenCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
-    g_IndirectOutput[screenCoords].xyz = accumulatedIndirect;
+    RWLightingOutput[screenCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
+    RWIndirectOutput[screenCoords].xyz = accumulatedIndirect;
 }
 
 #endif // __PATHTRACING_RGS_HLSL__

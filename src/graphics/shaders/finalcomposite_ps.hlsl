@@ -22,7 +22,7 @@
 
 #include "common/globalconstants.h"
 
-Texture2D<float4> g_SceneColor        : register(t0);
+Texture2D<float4> SceneColor : register(t0);
 
 float luminance(float3 v)
 {
@@ -72,11 +72,11 @@ float H_f(float x, float e0, float e1)
 
 float GTTonemap_Internal(float x)
 {
-    float P = g_GlobalConstants.m_TonemapperParamA; // max brightness
-    float a = g_GlobalConstants.m_TonemapperParamB; // contrast
-    float m = g_GlobalConstants.m_TonemapperParamC; // linear section start
-    float l = g_GlobalConstants.m_TonemapperParamD; // linear section length
-    float c = g_GlobalConstants.m_TonemapperParamE; // black tightness
+    float P = GlobalConstants.m_TonemapperParamA; // max brightness
+    float a = GlobalConstants.m_TonemapperParamB; // contrast
+    float m = GlobalConstants.m_TonemapperParamC; // linear section start
+    float l = GlobalConstants.m_TonemapperParamD; // linear section length
+    float c = GlobalConstants.m_TonemapperParamE; // black tightness
     float b = 0; // dummy?
     float l0 = (P - m) * l / a;
     float L0 = m - m / a;
@@ -166,26 +166,26 @@ struct PS_INPUT
 
 float4 PS_Main(PS_INPUT IN) : SV_Target
 {
-    float3 col = g_SceneColor[IN.TexCoord * g_GlobalConstants.m_ScreenResolution].xyz;
+    float3 col = SceneColor[IN.TexCoord * GlobalConstants.m_ScreenResolution].xyz;
 
     if (true)
     {
-        const float manualExposure = g_GlobalConstants.m_Exposure;
+        const float manualExposure = GlobalConstants.m_Exposure;
         col = col * manualExposure;
 
         col = ColorGrade(
             col,
-            g_GlobalConstants.m_ColorGrading_Temperature,
-            g_GlobalConstants.m_ColorGrading_Tint,
-            g_GlobalConstants.m_ColorGrading_Contrast,
-            g_GlobalConstants.m_ColorGrading_Saturation
+            GlobalConstants.m_ColorGrading_Temperature,
+            GlobalConstants.m_ColorGrading_Tint,
+            GlobalConstants.m_ColorGrading_Contrast,
+            GlobalConstants.m_ColorGrading_Saturation
         );
 
-        if (g_GlobalConstants.m_TonemapperType == 1)
+        if (GlobalConstants.m_TonemapperType == 1)
             col = ACESFitted(col);
-        else if (g_GlobalConstants.m_TonemapperType == 2)
+        else if (GlobalConstants.m_TonemapperType == 2)
             col = reinhard_extended_luminance(col, 200000.0);
-        else if (g_GlobalConstants.m_TonemapperType == 3)
+        else if (GlobalConstants.m_TonemapperType == 3)
             col = GTTonemap(col);
     }
 

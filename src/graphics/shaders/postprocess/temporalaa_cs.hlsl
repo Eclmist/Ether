@@ -23,33 +23,33 @@
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
 
-Texture2D<float4> g_GBufferTexture1                 : register(t0);
-Texture2D<float4> g_AccumulationTextureIn           : register(t1);
-Texture2D<float2> g_SceneDepth                      : register(t2);
+Texture2D<float4> GBufferTextureA                   : register(t0);
+Texture2D<float4> AccumulationTexture               : register(t1);
+Texture2D<float2> SceneDepth                        : register(t2);
 
-RWTexture2D<float4> g_TargetTexture                 : register(u0);
-RWTexture2D<float4> g_AccumulationTextureOut        : register(u1);
+RWTexture2D<float4> RWTargetTexture                 : register(u0);
+RWTexture2D<float4> RWAccumulationTexture           : register(u1);
 
 [numthreads(32, 32, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    sampler pointSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Point_Clamp];
-    sampler linearSampler = SamplerDescriptorHeap[g_GlobalConstants.m_SamplerIndex_Linear_Clamp];
-    const float sceneDepth = g_SceneDepth.Load(threadID).r;
-    const float2 resolution = g_GlobalConstants.m_ScreenResolution;
+    sampler pointSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Point_Clamp];
+    sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
+    const float sceneDepth = SceneDepth.Load(threadID).r;
+    const float2 resolution = GlobalConstants.m_ScreenResolution;
     const float2 screenCoords = threadID.xy;
-    const float2 velocity = g_GBufferTexture1.Load(threadID).zw; // todo: don't pack camera/static velocity into gbuffer
+    const float2 velocity = GBufferTextureA.Load(threadID).zw; // todo: don't pack camera/static velocity into gbuffer
     const float2 uv = ScreenToTextureSpace(screenCoords);
     const float2 uvPrev = uv - velocity;
 
-    if (any(threadID.xy < 0) || any(threadID.xy >= g_GlobalConstants.m_ScreenResolution.xy))
+    if (any(threadID.xy < 0) || any(threadID.xy >= GlobalConstants.m_ScreenResolution.xy))
         return;
 
     if (uvPrev.x < 0 || uvPrev.y < 0 || uvPrev.x >= 1.0f || uvPrev.y >= 1.0f)
         return;
 
-    const float4 colorPrev = g_AccumulationTextureIn.SampleLevel(linearSampler, uvPrev, 0);
-    const float4 colorCurr = g_TargetTexture[threadID.xy];
+    const float4 colorPrev = AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+    const float4 colorCurr = RWTargetTexture[threadID.xy];
 
     // Variance Clipping
     float4 minColor = 9999999.0, maxColor = -9999999.0;
@@ -58,17 +58,17 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     {
         for (int y = -kernelSize; y <= kernelSize; ++y)
         {
-            float4 color = g_TargetTexture[threadID.xy + int2(x, y)];
+            float4 color = RWTargetTexture[threadID.xy + int2(x, y)];
             minColor = min(minColor, color);
             maxColor = max(maxColor, color);
         }
     }
 
-    const float a = (sceneDepth <= 0) ? 1 : g_GlobalConstants.m_TaaAccumulationFactor;
+    const float a = (sceneDepth <= 0) ? 1 : GlobalConstants.m_TaaAccumulationFactor;
     const float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
     const float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
 
-    g_TargetTexture[threadID.xy] = newColor;
+    RWTargetTexture[threadID.xy] = newColor;
 }
 
 #endif // __TEMPORAL_AA_CS_HLSL
