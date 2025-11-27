@@ -35,6 +35,5 @@ public:
 
 private:
     void CreatePipelineState(ResourceContext& rc) override;
-    void CreateRootSignature() override;
 };
 } // namespace Ether::Graphics

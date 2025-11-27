@@ -51,11 +51,3 @@ void Ether::Graphics::ProceduralSkyProducer::RenderFrame(GraphicContext& ctx, Re
     ctx.DrawInstanced(3, 1);
 }
 
-void Ether::Graphics::ProceduralSkyProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(1, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
-}
-

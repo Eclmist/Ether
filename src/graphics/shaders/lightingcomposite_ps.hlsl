@@ -53,9 +53,9 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
         return sky;
 
     // Debug: 
-    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
-    //    return float4(surface.m_Normal, 0.0f) * 1.0f;
-    //if (g_GlobalConstants.m_RaytracedLightingDebug == 1)
+    if (GlobalConstants.m_RaytracedLightingDebug == 1)
+        return float4(surface.m_Normal, 0.0f) * 10000.0f;
+    //if (GlobalConstants.m_RaytracedLightingDebug == 1)
     //    return float4(surface.m_Position, 1.0f);
 
     float4 finalColor = lighting;

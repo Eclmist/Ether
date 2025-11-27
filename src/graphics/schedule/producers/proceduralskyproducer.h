@@ -32,8 +32,5 @@ public:
 public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
-
-private:
-    void CreateRootSignature() override;
 };
 } // namespace Ether::Graphics
