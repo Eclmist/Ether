@@ -48,11 +48,7 @@ void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const std::
     {
          BindingInfo info;
          info.m_RootParameterIndex = i;
-         info.m_Binding.m_Name = mergedBindings[i].m_Name;
-         info.m_Binding.m_Type = mergedBindings[i].m_Type;
-         info.m_Binding.m_Dimension = mergedBindings[i].m_Dimension;
-         info.m_Binding.m_BindPoint = mergedBindings[i].m_BindPoint;
-         info.m_Binding.m_Space = mergedBindings[i].m_Space;
+         info.m_Binding = mergedBindings[i];
          m_NameToBinding[info.m_Binding.m_Name] = info;
     }
 }
@@ -108,6 +104,8 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
     switch (info.m_Binding.m_Type)
     {
     case RhiDescriptorType::Cbv:
+        AssertGraphics(!info.m_Binding.IsRootConstant(), "Use Bind(uint32_t) for root constants");
+
         if (m_PipelineType == RhiPipelineType::Compute)
             ctx.SetComputeRootConstantBufferView(info.m_RootParameterIndex, address + offset);
         else
@@ -136,5 +134,30 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
         // We have bindless samplers!
         break;
     }
+}
+
+void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
+    GraphicContext& ctx,
+    ResourceContext& rc,
+    const std::string& name,
+    uint32_t value) const
+{
+    if (!m_NameToBinding.contains(name))
+    {
+        if (!m_InvalidBindings.contains(name))
+        {
+            LogGraphicsWarning("Binding '%s' is bound but not found in shader %s", name.c_str(), m_DebugShaderName.c_str());
+            m_InvalidBindings.insert(name);
+        }
+        return;
+    }
+
+    const BindingInfo& info = m_NameToBinding.at(name);
+    AssertGraphics(info.m_Binding.IsRootConstant(), "Binding '%s' is not a root constant", name.c_str());
+
+    if (m_PipelineType == RhiPipelineType::Compute)
+        ctx.SetComputeRootConstant(info.m_RootParameterIndex, value, 0);
+    else
+        ctx.SetGraphicsRootConstant(info.m_RootParameterIndex, value, 0);
 }
 

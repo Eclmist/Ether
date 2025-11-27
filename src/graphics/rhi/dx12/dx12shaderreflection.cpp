@@ -85,7 +85,7 @@ void Ether::Graphics::Dx12ShaderReflection::Reflect(
 
             if (SUCCEEDED(hr))
             {
-                ReflectLibrary(libraryReflection.Get());
+                ReflectLibrary(reflection.Get(), libraryReflection.Get());
                 return;
             }
         }
@@ -101,11 +101,13 @@ void Ether::Graphics::Dx12ShaderReflection::Reflect(
     {
         D3D12_SHADER_INPUT_BIND_DESC bindDesc;
         reflection->GetResourceBindingDesc(i, &bindDesc);
-        ProcessBinding(bindDesc);
+        ProcessBinding(reflection.Get(), bindDesc);
     }
 }
 
-void Ether::Graphics::Dx12ShaderReflection::ReflectLibrary(ID3D12LibraryReflection* libraryReflection)
+void Ether::Graphics::Dx12ShaderReflection::ReflectLibrary(
+    ID3D12ShaderReflection* reflection,
+    ID3D12LibraryReflection* libraryReflection)
 {
     D3D12_LIBRARY_DESC libraryDesc;
     libraryReflection->GetDesc(&libraryDesc);
@@ -121,12 +123,14 @@ void Ether::Graphics::Dx12ShaderReflection::ReflectLibrary(ID3D12LibraryReflecti
         {
             D3D12_SHADER_INPUT_BIND_DESC bindDesc;
             funcReflection->GetResourceBindingDesc(resIdx, &bindDesc);
-            ProcessBinding(bindDesc);
+            ProcessBinding(reflection, bindDesc);
         }
     }
 }
 
-void Ether::Graphics::Dx12ShaderReflection::ProcessBinding(const D3D12_SHADER_INPUT_BIND_DESC& bindDesc)
+void Ether::Graphics::Dx12ShaderReflection::ProcessBinding(
+    ID3D12ShaderReflection* reflection, 
+    const D3D12_SHADER_INPUT_BIND_DESC& bindDesc)
 {
     ResourceBinding binding;
     binding.m_Name = bindDesc.Name;
@@ -137,10 +141,22 @@ void Ether::Graphics::Dx12ShaderReflection::ProcessBinding(const D3D12_SHADER_IN
     switch (bindDesc.Type)
     {
     case D3D_SIT_CBUFFER:
+    {
         binding.m_Type = RhiDescriptorType::Cbv;
         binding.m_Dimension = RhiResourceDimension::Buffer;
-        break;
 
+        if (reflection)
+        {
+            ID3D12ShaderReflectionConstantBuffer* cbReflection = reflection->GetConstantBufferByName(bindDesc.Name);
+            if (cbReflection)
+            {
+                D3D12_SHADER_BUFFER_DESC bufferDesc;
+                cbReflection->GetDesc(&bufferDesc);
+                binding.m_Size = bufferDesc.Size;
+            }
+        }
+        break;
+    }
     case D3D_SIT_TBUFFER:
     case D3D_SIT_TEXTURE:
         binding.m_Type = RhiDescriptorType::Srv;

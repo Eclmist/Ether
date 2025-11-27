@@ -34,8 +34,6 @@ public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
-    void BindCommonParams(Shader::DepthOfFieldParams& params, uint32_t passIndex);
-
 protected:
     bool IsEnabled() override;
 };

@@ -31,7 +31,6 @@ ETH_BEGIN_SHADER_NAMESPACE
 
 struct BloomParams
 {
-    uint32_t m_PassIndex;
     ethVector2 m_Resolution;
     float m_Intensity;
     float m_Scatter;

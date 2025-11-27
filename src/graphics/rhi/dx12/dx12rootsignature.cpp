@@ -68,10 +68,19 @@ void Ether::Graphics::Dx12RootSignatureDesc::BuildFromReflection(const std::vect
         switch (binding.m_Type)
         {
         case RhiDescriptorType::Cbv:
-            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+            if (binding.IsRootConstant())
+            {
+                param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+                param.Constants.Num32BitValues = 1;
+            }
+            else
+            {
+                param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+            }
+
             param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            param.Descriptor.ShaderRegister = binding.m_BindPoint;
-            param.Descriptor.RegisterSpace = binding.m_Space;
+            param.Constants.ShaderRegister = binding.m_BindPoint;
+            param.Constants.RegisterSpace = binding.m_Space;
             break;
 
         case RhiDescriptorType::Srv:

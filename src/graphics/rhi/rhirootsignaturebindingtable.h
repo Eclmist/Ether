@@ -41,6 +41,7 @@ public:
     void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
     void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset = 0) const;
     void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, RhiGpuAddress address, uint64_t offset = 0) const;
+    void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, uint32_t value) const;
 
 private:
     struct BindingInfo
