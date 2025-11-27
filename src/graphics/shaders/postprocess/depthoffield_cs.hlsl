@@ -27,12 +27,11 @@
 
 ConstantBuffer<DepthOfFieldParams> DepthOfFieldParams   : register(b1);
 
-Texture2D<float4> SourceTexture                         : register(t0);
-Texture2D<float2> SceneDepth                            : register(t1);
-Texture2D<float4> CircleOfConfusionTexture              : register(t2);
-Texture2D<float4> DownsampledSceneColor                 : register(t3);
-Texture2D<float4> DofAccumulationTexture                : register(t4);
+Texture2D<float2> SceneDepth                            : register(t0);
+Texture2D<float4> DofCircleOfConfusionTexture           : register(t1);
+Texture2D<float4> DofAccumulationTexture                : register(t2);
 
+Texture2D<float4> SourceTexture                         : register(t3);
 RWTexture2D<float4> RWDestinationTexture                : register(u0);
 
 // From https://github.com/Unity-Technologies/Graphics/blob/master/com.unity.postprocessing/PostProcessing/Shaders/Builtins/DiskKernels.hlsl
@@ -150,10 +149,10 @@ void PreFilterPass(uint3 threadID)
     float3 color = color0 * w0 + color1 * w1 + color2 * w2 + color2 * w3;
     color /= max(w0 + w1 + w2 + w3, 0.0001f);
 
-    const float coc0 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.xy).r;
-    const float coc1 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.zy).r;
-    const float coc2 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.xw).r;
-    const float coc3 = CircleOfConfusionTexture.Sample(linearSampler, uv + offset.zw).r;
+    const float coc0 = DofCircleOfConfusionTexture.Sample(linearSampler, uv + offset.xy).r;
+    const float coc1 = DofCircleOfConfusionTexture.Sample(linearSampler, uv + offset.zy).r;
+    const float coc2 = DofCircleOfConfusionTexture.Sample(linearSampler, uv + offset.xw).r;
+    const float coc3 = DofCircleOfConfusionTexture.Sample(linearSampler, uv + offset.zw).r;
 
     const float cocMin = min(min(min(coc0, coc1), coc2), coc3);
     const float cocMax = max(max(max(coc0, coc1), coc2), coc3);
@@ -226,7 +225,7 @@ void CompositePass(uint3 threadID)
     const float2 halfTexelSize = texelSize / 2.0f;
     const float2 uv = threadID.xy / resolution + halfTexelSize;
 
-    const float coc = CircleOfConfusionTexture.Load(threadID).r;
+    const float coc = DofCircleOfConfusionTexture.Load(threadID).r;
     const float4 sceneColor = SourceTexture.Sample(linearSampler, uv);
     const float4 dofColor = DofAccumulationTexture.Sample(linearSampler, uv);
 

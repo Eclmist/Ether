@@ -60,15 +60,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
     const ethVector2u resolution = config.GetResolution();
     const ethVector2u halfResolution = resolution / 2.0f;
 
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(PostFxSourceTexture));
     m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
     m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofCircleOfConfusionTexture));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(DofCircleOfConfusionTexture));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofIntermediateTexture1));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(DofIntermediateTexture1));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofIntermediateTexture2));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(DofIntermediateTexture2));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(PostFxSourceTexture));
 
     // Generate circle of confusion
     {
@@ -76,7 +69,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_GENERATE_COC);
         m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
+        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofCircleOfConfusionTexture));
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -86,7 +80,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_PREFILTER_PASS);
         m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
+        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -96,7 +91,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_ACCUMULATE);
         m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
+        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
+        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture2));
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -106,7 +102,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_POSTFILTER_PASS);
         m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
+        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture2));
+        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -116,7 +113,9 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_COMPOSITE);
         m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
+        m_BindingTable->Bind(ctx, rc, "DofAccumulationTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
+        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(PostFxSourceTexture));
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
