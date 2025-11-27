@@ -32,9 +32,9 @@ public:
         std::string m_Name;
         RhiDescriptorType m_Type;
         RhiResourceDimension m_Dimension;
-        uint32_t m_BindPoint; // Register number (the '0' in 't0')
-        uint32_t m_BindCount; // Array size (1 for non-arrays)
-        uint32_t m_Space;     // Register space
+        uint32_t m_BindPoint;               // Register number (the '0' in 't0')
+        uint32_t m_BindCount;               // Array size (1 for non-arrays)
+        uint32_t m_Space;                   // Register space
 
         bool RequiresResourceTable() const
         {
@@ -73,7 +73,7 @@ public:
     virtual void Reflect(const void* shaderBytecode, size_t bytecodeSize, RhiShaderType shaderType) = 0;
 
 public:
-    inline const std::vector<ResourceBinding>& GetResourceBindings() const { return m_ResourceBindings; }
+    inline const std::vector<ResourceBinding>& GetBindings() const { return m_ResourceBindings; }
     inline const RhiShaderType GetShaderType() const { return m_ShaderType; }
 
 public:
@@ -84,6 +84,7 @@ public:
     uint32_t GetNumConstantBuffers() const;
     uint32_t GetNumShaderResources() const;
     uint32_t GetNumUnorderedAccesses() const;
+
 
 protected:
     std::vector<ResourceBinding> m_ResourceBindings;

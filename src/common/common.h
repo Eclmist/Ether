@@ -23,6 +23,9 @@
 #include <cstdint>
 #include <string>
 #include <limits>
+#include <atomic>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "common/utils/commondefinitions.h"
 #include "common/utils/noncopyable.h"

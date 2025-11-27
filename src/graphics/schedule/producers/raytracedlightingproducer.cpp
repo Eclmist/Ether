@@ -274,7 +274,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
                                                                          &m_SpatialResamplingShader->GetReflection(),
                                                                          &m_LightingEvaluationShader->GetReflection() }; 
 
-    m_BindingTable = std::make_unique<RhiRootSignatureBindingTable>(shaderReflections, RhiPipelineType::Compute);
+    m_BindingTable = std::make_unique<RhiRootSignatureBindingTable>(shaderReflections, RhiPipelineType::Compute, "lighting\\restir\\restir_*.hlsl");
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(shaderReflections)->Compile((GetName() + " Root Signature").c_str());
 }
 

@@ -22,13 +22,13 @@
 
 #include "common/globalconstants.h"
 
-Texture2D<float4> SourceTexture                   : register(t0);
-RWTexture2D<float4> DestinationTexture            : register(u0);
+Texture2D<float4> SceneColor                      : register(t0);
+RWTexture2D<float4> RWPostFxSourceTexture         : register(u0);
 
 [numthreads(32, 32, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
 {
-    DestinationTexture[threadID.xy] = SourceTexture[threadID.xy];
+    RWPostFxSourceTexture[threadID.xy] = SceneColor[threadID.xy];
 }
 
 #endif //__POST_PROCESS_CS_HLSL__ 

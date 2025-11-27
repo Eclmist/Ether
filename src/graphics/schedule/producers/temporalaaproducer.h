@@ -35,8 +35,5 @@ public:
 
 protected:
     bool IsEnabled() override;
-
-private:
-    void CreateRootSignature() override;
 };
 } // namespace Ether::Graphics

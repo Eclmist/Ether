@@ -150,21 +150,6 @@ bool Ether::Graphics::BloomProducer::IsEnabled()
     return true;
 }
 
-void Ether::Graphics::BloomProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(5, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All);     // (b1) Bloom Params
-    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 0); // (t0) Source
-    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) Destination
-    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
-}
-
 void Ether::Graphics::BloomProducer::AddBloomSubpass(
     uint32_t passType,
     GraphicContext& ctx,
@@ -188,13 +173,12 @@ void Ether::Graphics::BloomProducer::AddBloomSubpass(
     params->m_Scatter = config.m_BloomScatter;
     params->m_Anamorphic = config.m_BloomAnamorphic;
     ctx.InsertUavBarrier(*rc.GetResource(src));
-    ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, src->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, dst->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, dstUav->GetGpuAddress());
-    ctx.Dispatch(
-        std::ceil(dstResolution.x / float(BLOOM_KERNEL_GROUP_SIZE_X)),
-        std::ceil(dstResolution.y / float(BLOOM_KERNEL_GROUP_SIZE_Y)),
-        1);
+
+    m_BindingTable->Bind(ctx, rc, "BloomParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+    m_BindingTable->Bind(ctx, rc, "SourceTexture", src);
+    m_BindingTable->Bind(ctx, rc, "DestinationTexture", dst);
+    m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", dstUav);
+
+    ctx.Dispatch(std::ceil(dstResolution.x / float(BLOOM_KERNEL_GROUP_SIZE_X)), std::ceil(dstResolution.y / float(BLOOM_KERNEL_GROUP_SIZE_Y)), 1);
 }
 

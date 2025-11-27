@@ -22,7 +22,6 @@
 #include "toolmode/pch.h"
 #include "graphics/common/vertexformats.h"
 #include "assimp/scene.h"
-#include <unordered_set>
 
 namespace Ether::Toolmode
 {

@@ -51,8 +51,7 @@ void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_ComputePsoDesc));
 
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
 }
 
 void Ether::Graphics::PostProcessProducer::CreateShaders()
@@ -71,9 +70,14 @@ void Ether::Graphics::PostProcessProducer::CreatePipelineState(ResourceContext& 
     rc.RegisterPipelineState((GetName() + " Compute Pipeline State").c_str(), *m_ComputePsoDesc);
 }
 
+void Ether::Graphics::PostProcessProducer::CreateRootSignature()
+{
+    m_BindingTable = std::make_unique<RhiRootSignatureBindingTable>(m_ComputeShader->GetReflection(), RhiPipelineType::Compute, m_ComputeShader->GetFileName());
+    m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(m_ComputeShader->GetReflection())->Compile((GetName() + " Root Signature").c_str());
+}
+
 void Ether::Graphics::PostProcessProducer::DispatchFullscreen(GraphicContext& ctx)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.Dispatch(std::ceil(resolution.x / 32.0), std::ceil(resolution.y / 32.0), 1);
 }
-

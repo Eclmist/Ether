@@ -22,13 +22,30 @@
 
 Ether::Graphics::RhiRootSignatureBindingTable::RhiRootSignatureBindingTable(
     const std::vector<const RhiShaderReflection*>& reflections,
-    RhiPipelineType type)
+    RhiPipelineType type,
+    const std::string& debugName)
     : m_PipelineType(type)
+    , m_DebugShaderName(debugName)
 {
-     std::vector<RhiShaderReflection::ResourceBinding> mergedBindings = RhiShaderReflection::MergeBindings(reflections);
+    PopulateBindings(reflections);
+}
 
-     for (uint32_t i = 0; i < mergedBindings.size(); ++i)
-     {
+Ether::Graphics::RhiRootSignatureBindingTable::RhiRootSignatureBindingTable(
+    const RhiShaderReflection& reflection,
+    RhiPipelineType type,
+    const std::string& debugName)
+    : m_PipelineType(type)
+    , m_DebugShaderName(debugName)
+{
+    PopulateBindings({ &reflection });
+}
+
+void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const std::vector<const RhiShaderReflection*>& reflections)
+{
+    std::vector<RhiShaderReflection::ResourceBinding> mergedBindings = RhiShaderReflection::MergeBindings(reflections);
+
+    for (uint32_t i = 0; i < mergedBindings.size(); ++i)
+    {
          BindingInfo info;
          info.m_RootParameterIndex = i;
          info.m_Binding.m_Name = mergedBindings[i].m_Name;
@@ -37,8 +54,8 @@ Ether::Graphics::RhiRootSignatureBindingTable::RhiRootSignatureBindingTable(
          info.m_Binding.m_BindPoint = mergedBindings[i].m_BindPoint;
          info.m_Binding.m_Space = mergedBindings[i].m_Space;
          m_NameToBinding[info.m_Binding.m_Name] = info;
-     }
- }
+    }
+}
 
 void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
     GraphicContext& ctx,
@@ -47,7 +64,44 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
     RhiShaderVisibleResourceView* view,
     uint64_t offset) const
 {
-    AssertGraphics(m_NameToBinding.contains(name), "Binding '%s' not found", name.c_str());
+    if (!m_NameToBinding.contains(name))
+    {
+        if (!m_InvalidBindings.contains(name))
+        {
+            LogGraphicsWarning("Binding '%s' is bound but not found in shader %s", name.c_str(), m_DebugShaderName.c_str());
+            m_InvalidBindings.insert(name);
+        }
+        return;
+    }
+
+    const BindingInfo& info = m_NameToBinding.at(name);
+
+    RhiGpuAddress gpuAddress = view->GetGpuAddress();
+
+    if (!info.m_Binding.RequiresResourceTable())
+    {
+        gpuAddress = rc.GetResource(view)->GetGpuAddress();
+    }
+
+    Bind(ctx, rc, name, gpuAddress);
+}
+
+void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
+    GraphicContext& ctx,
+    ResourceContext& rc,
+    const std::string& name,
+    RhiGpuAddress address,
+    uint64_t offset) const
+{
+    if (!m_NameToBinding.contains(name))
+    {
+        if (!m_InvalidBindings.contains(name))
+        {
+            LogGraphicsWarning("Binding '%s' is bound but not found in shader %s", name.c_str(), m_DebugShaderName.c_str());
+            m_InvalidBindings.insert(name);
+        }
+        return;
+    }
 
     const BindingInfo& info = m_NameToBinding.at(name);
 
@@ -55,33 +109,27 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
     {
     case RhiDescriptorType::Cbv:
         if (m_PipelineType == RhiPipelineType::Compute)
-            ctx.SetComputeRootConstantBufferView(info.m_RootParameterIndex, rc.GetResource(view)->GetGpuAddress() + offset);
+            ctx.SetComputeRootConstantBufferView(info.m_RootParameterIndex, address + offset);
         else
-            ctx.SetGraphicsRootConstantBufferView(info.m_RootParameterIndex, rc.GetResource(view)->GetGpuAddress() + offset);
+            ctx.SetGraphicsRootConstantBufferView(info.m_RootParameterIndex, address + offset);
         break;
 
     case RhiDescriptorType::Srv:
-        if (info.m_Binding.RequiresResourceTable())
+        if (!info.m_Binding.RequiresResourceTable())
         {
             if (m_PipelineType == RhiPipelineType::Compute)
-                ctx.SetComputeRootDescriptorTable(info.m_RootParameterIndex, view->GetGpuAddress());
+                ctx.SetComputeRootShaderResourceView(info.m_RootParameterIndex, address);
             else
-                ctx.SetGraphicsRootDescriptorTable(info.m_RootParameterIndex, view->GetGpuAddress());
-        }
-        else
-        {
-            if (m_PipelineType == RhiPipelineType::Compute)
-                ctx.SetComputeRootShaderResourceView(info.m_RootParameterIndex, rc.GetResource(view)->GetGpuAddress());
-            else
-                ctx.SetGraphicsRootShaderResourceView(info.m_RootParameterIndex, rc.GetResource(view)->GetGpuAddress());
-        }
-        break;
+                ctx.SetGraphicsRootShaderResourceView(info.m_RootParameterIndex, address);
 
+            break;
+        }
+        // intentional fallthrough
     case RhiDescriptorType::Uav:
         if (m_PipelineType == RhiPipelineType::Compute)
-            ctx.SetComputeRootDescriptorTable(info.m_RootParameterIndex, view->GetGpuAddress());
+            ctx.SetComputeRootDescriptorTable(info.m_RootParameterIndex, address);
         else
-            ctx.SetGraphicsRootDescriptorTable(info.m_RootParameterIndex, view->GetGpuAddress());
+            ctx.SetGraphicsRootDescriptorTable(info.m_RootParameterIndex, address);
         break;
 
     case RhiDescriptorType::Sampler:

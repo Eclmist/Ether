@@ -29,7 +29,7 @@ std::vector<Ether::Graphics::RhiShaderReflection::ResourceBinding> Ether::Graphi
     // Merge bindings from all shaders
     for (const RhiShaderReflection* reflection : reflections)
     {
-        for (const auto& binding : reflection->GetResourceBindings())
+        for (const auto& binding : reflection->GetBindings())
         {
             // Create unique identifier for this binding
             std::string key = binding.m_Name + "_" + std::to_string(binding.m_BindPoint) + "_" +
@@ -50,7 +50,6 @@ std::vector<Ether::Graphics::RhiShaderReflection::ResourceBinding> Ether::Graphi
         }
     }
 
-    // Sort bindings by type, then by register (for consistent layout)
     std::stable_sort(
         mergedBindings.begin(),
         mergedBindings.end(),

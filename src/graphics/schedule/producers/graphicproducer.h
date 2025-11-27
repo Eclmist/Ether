@@ -50,6 +50,9 @@ protected:
 
 protected:
     UploadBufferAllocator& GetFrameAllocator();
+    uint64_t GetRingBufferOffset() const;
+
+protected:
     std::string m_Name;
 
 private:
