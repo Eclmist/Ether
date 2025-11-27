@@ -39,7 +39,7 @@ DECLARE_GFX_SR(GBufferTextureA)
 DECLARE_GFX_SR(GBufferTextureB)
 DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_SR(SceneDepth)
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
@@ -74,7 +74,7 @@ void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext
     schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
     schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
     InitializeShaderBindingTable(rc);
@@ -97,7 +97,7 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_GlobalRootSignature);
 
-    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_AS(RTRaytracingTlas))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());

@@ -33,7 +33,7 @@ DEFINE_GFX_PA(TranslucencyProducer)
 DECLARE_GFX_RT(SceneColor)
 DECLARE_GFX_DS(SceneDepth)
 DECLARE_GFX_SR(SceneDepth)
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
 Ether::Graphics::TranslucencyProducer::TranslucencyProducer()
@@ -53,7 +53,7 @@ void Ether::Graphics::TranslucencyProducer::GetInputOutput(ScheduleContext& sche
     schedule.Read(ACCESS_GFX_RT(SceneColor));
     schedule.Read(ACCESS_GFX_DS(SceneDepth));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 }
 
@@ -81,7 +81,7 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
     ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));

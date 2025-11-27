@@ -22,7 +22,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-RWTexture2D<float4> RWLightingOutput                        : register(u3);
+RWTexture2D<float4> RWLightingTexture                   : register(u3);
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -81,14 +81,14 @@ void RayGeneration()
 			finalColor = RWSpatialHashPayload[cellIndex].m_Color;
 		}
 
-		RWLightingOutput[screenCoords].xyz = finalColor * 1;
-		RWLightingOutput[screenCoords].a = 0;
+		RWLightingTexture[screenCoords].xyz = finalColor * 1;
+		RWLightingTexture[screenCoords].a = 0;
         return;
     }
 
 
-    RWLightingOutput[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
-    RWLightingOutput[screenCoords].a = 0;
+    RWLightingTexture[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
+    RWLightingTexture[screenCoords].a = 0;
 }
 
 #endif // __RESTIR_GI_SHADE_RESERVOIR_RGS_HLSL__

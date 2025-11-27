@@ -39,7 +39,7 @@ DEFINE_GFX_SR(GBufferTextureA)
 DEFINE_GFX_SR(GBufferTextureB)
 DEFINE_GFX_SR(GBufferTextureC)
 
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
 Ether::Graphics::GBufferProducer::GBufferProducer()
@@ -67,7 +67,7 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureB), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureC), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
 
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 }
 
@@ -100,7 +100,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
     ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
 
     RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTextureA),

@@ -21,15 +21,17 @@
 
 constexpr uint32_t EcsEntityDataComponentVersion = 0;
 
+// Toolmode specific stuff is being serialized!
+// In engine mode, these should go away. But we don't have a process to binarize now,
+// so ETH_TOOLMODE checks have been removed so that engine can open scene files for now.
+
 Ether::Ecs::EcsMetadataComponent::EcsMetadataComponent()
     : EcsComponent(EcsEntityDataComponentVersion, "Ecs::EcsEntityDataComponent")
     , m_EntityID(-1)
     , m_EntityName("Entity")
     , m_EntityEnabled(true)
-#if ETH_TOOLMODE
     , m_ToolmodeVisibility(true)
     , m_ToolmodeSelected(false)
-#endif
 {
 }
 
@@ -40,11 +42,8 @@ void Ether::Ecs::EcsMetadataComponent::Serialize(OStream& ostream) const
     ostream << m_EntityID;
     ostream << m_EntityName;
     ostream << m_EntityEnabled;
-
-#if ETH_TOOLMODE
     ostream << m_ToolmodeVisibility;
     ostream << m_ToolmodeSelected;
-#endif
 }
 
 void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
@@ -54,9 +53,6 @@ void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
     istream >> m_EntityID;
     istream >> m_EntityName;
     istream >> m_EntityEnabled;
-
-#if ETH_TOOLMODE
     istream >> m_ToolmodeVisibility;
     istream >> m_ToolmodeSelected;
-#endif
 }

@@ -32,9 +32,9 @@ DEFINE_GFX_PA(RaytracedLightingProducer)
 
 DEFINE_GFX_UA(LightingTexture)
 DEFINE_GFX_SR(LightingTexture)
-DEFINE_GFX_UA(GIReservoir_Initial)
-DEFINE_GFX_UA(GIReservoir_History)
-DEFINE_GFX_UA(GIReservoir_Staging)
+DEFINE_GFX_UA(InputReservoir)
+DEFINE_GFX_UA(HistoryReservoir)
+DEFINE_GFX_UA(OutputReservoir)
 
 DECLARE_GFX_SR(RTGeometryInfo)
 DECLARE_GFX_AS(RTRaytracingTlas)
@@ -42,7 +42,7 @@ DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_SR(GBufferTextureA)
 DECLARE_GFX_SR(GBufferTextureB)
 DECLARE_GFX_SR(GBufferTextureC)
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
 // Spatial hashing prototype
@@ -82,16 +82,16 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(GBufferTextureA));
     schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
     schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
     /* ReSTIR GI Implementation */
     const uint32_t downsampleFactor = GraphicCore::GetGraphicConfig().m_ReSTIRGIConfig.m_DownsampleFactor;
     const ethVector2u sampleResolution = resolution / downsampleFactor;
     const uint32_t sampleSize = sampleResolution.x * sampleResolution.y;
-    schedule.NewUA(ACCESS_GFX_UA(GIReservoir_Initial), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
-    schedule.NewUA(ACCESS_GFX_UA(GIReservoir_History), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
-    schedule.NewUA(ACCESS_GFX_UA(GIReservoir_Staging), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
+    schedule.NewUA(ACCESS_GFX_UA(InputReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
+    schedule.NewUA(ACCESS_GFX_UA(HistoryReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
+    schedule.NewUA(ACCESS_GFX_UA(OutputReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
 
     /* Spatial Hashing Prototype */
     const uint32_t numHashEntries = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashSize, 1 << 10, 1 << 18);
@@ -119,19 +119,19 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_RootSignature);
 
-    m_BindingTable->Bind(ctx, rc, "GlobalConstants", ACCESS_GFX_CB(GlobalRingBuffer), ringBufferOffset);
-    m_BindingTable->Bind(ctx, rc, "MaterialTable", ACCESS_GFX_SR(MaterialTable));
-    m_BindingTable->Bind(ctx, rc, "RTRaytracingTlas", ACCESS_GFX_AS(RTRaytracingTlas));
-    m_BindingTable->Bind(ctx, rc, "RTGeometryInfo", ACCESS_GFX_SR(RTGeometryInfo));
-    m_BindingTable->Bind(ctx, rc, "SceneDepth", ACCESS_GFX_SR(SceneDepth));
-    m_BindingTable->Bind(ctx, rc, "GBufferTextureA", ACCESS_GFX_SR(GBufferTextureA));
-    m_BindingTable->Bind(ctx, rc, "GBufferTextureB", ACCESS_GFX_SR(GBufferTextureB));
-    m_BindingTable->Bind(ctx, rc, "GBufferTextureC", ACCESS_GFX_SR(GBufferTextureC));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_CB(GlobalConstants), ringBufferOffset);
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(MaterialTable));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_AS(RTRaytracingTlas));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(RTGeometryInfo));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureA));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureB));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureC));
 
     // Spatial Hashing Prototype
-    m_BindingTable->Bind(ctx, rc, "RWSpatialHash", ACCESS_GFX_UA(SpatialHash));
-    m_BindingTable->Bind(ctx, rc, "RWSpatialHashTime", ACCESS_GFX_UA(SpatialHashAge));
-    m_BindingTable->Bind(ctx, rc, "RWSpatialHashPayload", ACCESS_GFX_UA(SpatialHashPayload));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(SpatialHash));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(SpatialHashAge));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(SpatialHashPayload));
 
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;
@@ -139,9 +139,9 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     const uint32_t downsampleFactor = config.m_ReSTIRGIConfig.m_DownsampleFactor;
     const ethVector2u sampleResolution = resolution / downsampleFactor;
 
-    auto initialReservoir = ACCESS_GFX_UA(GIReservoir_Initial);
-    auto historyReservoir = ACCESS_GFX_UA(GIReservoir_History);
-    auto stagingReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
+    auto initialReservoir = ACCESS_GFX_UA(InputReservoir);
+    auto historyReservoir = ACCESS_GFX_UA(HistoryReservoir);
+    auto stagingReservoir = ACCESS_GFX_UA(OutputReservoir);
     auto finalReservoir = initialReservoir;
     auto fallbackReservoir = initialReservoir;
 
@@ -149,8 +149,8 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     {
         if (!spatialFeedback && GraphicCore::GetGraphicRenderer().GetFrameNumber() % 2 == 0)
         {
-            historyReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
-            stagingReservoir = ACCESS_GFX_UA(GIReservoir_History);
+            historyReservoir = ACCESS_GFX_UA(OutputReservoir);
+            stagingReservoir = ACCESS_GFX_UA(HistoryReservoir);
         }
 
         finalReservoir = historyReservoir;
@@ -160,8 +160,8 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     {
         if (temporalResampling && GraphicCore::GetGraphicRenderer().GetFrameNumber() % 2 == 0)
         {
-            historyReservoir = ACCESS_GFX_UA(GIReservoir_Staging);
-            stagingReservoir = ACCESS_GFX_UA(GIReservoir_History);
+            historyReservoir = ACCESS_GFX_UA(OutputReservoir);
+            stagingReservoir = ACCESS_GFX_UA(HistoryReservoir);
         }
 
         finalReservoir = stagingReservoir;
@@ -208,7 +208,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
 
         m_BindingTable->Bind(ctx, rc, "InputReservoir", (temporalResampling ? stagingReservoir : initialReservoir));
         m_BindingTable->Bind(ctx, rc, "RWOutputReservoir", (temporalResampling ? historyReservoir : stagingReservoir));
-
+        
         ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
         ctx.PopMarker();
     }
@@ -224,7 +224,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         m_BindingTable->Bind(ctx, rc, "InputReservoir", finalReservoir);
         m_BindingTable->Bind(ctx, rc, "HistoryReservoir", fallbackReservoir);
         m_BindingTable->Bind(ctx, rc, "RWOutputReservoir", finalReservoir);
-        m_BindingTable->Bind(ctx, rc, "RWLightingOutput", ACCESS_GFX_UA(LightingTexture));
+        m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(LightingTexture));
 
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();

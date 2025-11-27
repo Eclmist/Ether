@@ -25,7 +25,7 @@
 DEFINE_GFX_PA(FinalCompositeProducer)
 
 DECLARE_GFX_SR(PostFxSourceTexture)
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
     : FullScreenProducer("FinalCompositeProducer", "finalcomposite_ps.hlsl")
@@ -35,7 +35,7 @@ Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
 void Ether::Graphics::FinalCompositeProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     schedule.Read(ACCESS_GFX_SR(PostFxSourceTexture));
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
 }
 
 void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)

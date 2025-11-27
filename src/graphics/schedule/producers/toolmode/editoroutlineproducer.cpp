@@ -34,7 +34,7 @@ DEFINE_GFX_PA(EditorOutlineProducer)
 DEFINE_GFX_RT(OutlineMaskTexture)
 DEFINE_GFX_SR(OutlineMaskTexture)
 
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::EditorOutlineProducer::EditorOutlineProducer()
     : GraphicProducer("EditorOutlineProducer")
@@ -54,7 +54,7 @@ void Ether::Graphics::EditorOutlineProducer::GetInputOutput(ScheduleContext& sch
 
     schedule.NewRT(ACCESS_GFX_RT(OutlineMaskTexture), resolution.x, resolution.y, BackBufferLdrFormat);
     schedule.NewSR(ACCESS_GFX_SR(OutlineMaskTexture), resolution.x, resolution.y, BackBufferLdrFormat, RhiResourceDimension::Texture2D);
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
 }
 
 void Ether::Graphics::EditorOutlineProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -77,7 +77,7 @@ void Ether::Graphics::EditorOutlineProducer::RenderFrame(GraphicContext& ctx, Re
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
 
 	for (const Visual& visual : visuals)

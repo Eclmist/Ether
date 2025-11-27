@@ -23,7 +23,7 @@
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(GlobalConstantsProducer)
-DEFINE_GFX_CB(GlobalRingBuffer)
+DEFINE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::GlobalConstantsProducer::GlobalConstantsProducer()
     : GraphicProducer("GlobalConstantsProducer")
@@ -36,7 +36,7 @@ void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    schedule.NewCB(ACCESS_GFX_CB(GlobalRingBuffer), AlignUp(sizeof(Shader::GlobalConstants), 256) * 3);
+    schedule.NewCB(ACCESS_GFX_CB(GlobalConstants), AlignUp(sizeof(Shader::GlobalConstants), 256) * 3);
 }
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -114,7 +114,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
 
     ctx.CopyBufferRegion(
         dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
-        *rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer)),
+        *rc.GetResource(ACCESS_GFX_CB(GlobalConstants)),
         alloc->GetSize(),
         0,
         alloc->GetSize() * GraphicCore::GetGraphicDisplay().GetBackBufferIndex()

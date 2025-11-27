@@ -33,7 +33,7 @@ DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_SR(LightingTexture)
 DECLARE_GFX_SR(ProceduralSkyTexture)
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::LightingCompositeProducer::LightingCompositeProducer()
     : FullScreenProducer("LightingCompositeProducer", "lightingcomposite_ps.hlsl")
@@ -53,7 +53,7 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_SR(LightingTexture));
     schedule.Read(ACCESS_GFX_SR(ProceduralSkyTexture));
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
 }
 
 void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)

@@ -35,6 +35,8 @@ public:
 
 public:
     template <typename T>
+    void Bind(GraphicContext& ctx, ResourceContext& rc, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
+    template <typename T>
     void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
 
 private:
@@ -61,6 +63,21 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
     uint64_t offset) const
 {
     Bind(ctx, rc, name, wrapper.Get().get(), offset);
+}
+
+template <typename T>
+void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
+    GraphicContext& ctx,
+    ResourceContext& rc,
+    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
+    uint64_t offset) const
+{
+    std::string bindingName = wrapper.GetSharedResourceName();
+
+    if (std::string(wrapper.GetType()) == "UA")
+        bindingName = "RW" + bindingName;
+
+    Bind(ctx, rc, bindingName, wrapper.Get().get(), offset);
 }
 
 } // namespace Ether::Graphics
