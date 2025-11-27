@@ -85,6 +85,7 @@ std::string Ether::LogEntry::GetLogTypePrefix() const
     case LogType::Custom:
         return m_CustomPrefix;
     case LogType::None:
+        return "[  Engine  ]";
     default:
         return "";
     }

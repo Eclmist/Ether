@@ -36,5 +36,6 @@ public:
 
 protected:
     void ReflectLibrary(ID3D12LibraryReflection* libraryReflection);
+    void ProcessBinding(const D3D12_SHADER_INPUT_BIND_DESC& bindDesc);
 };
 } // namespace Ether::Graphics

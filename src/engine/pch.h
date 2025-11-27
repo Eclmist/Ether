@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include <atomic>
-
 #include "common/common.h"
 #include "common/logging/loggingmanager.h"
 #include "common/stream/filestream.h"

@@ -49,20 +49,10 @@ void Ether::Graphics::PostFxSourceProducer::RenderFrame(GraphicContext& ctx, Res
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneColor)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
-    ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_SR(SceneColor)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
-    DispatchFullscreen(ctx);
-}
 
-void Ether::Graphics::PostFxSourceProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) SourceTexture
-    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Uav, 1, 0, 0); // (t0) DestinationTexture
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneColor));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(PostFxSourceTexture));
+
+    DispatchFullscreen(ctx);
 }
 

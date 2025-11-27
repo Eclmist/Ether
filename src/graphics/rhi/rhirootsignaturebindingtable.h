@@ -27,7 +27,8 @@ namespace Ether::Graphics
 class RhiRootSignatureBindingTable
 {
 public:
-    RhiRootSignatureBindingTable(const std::vector<const RhiShaderReflection*>& reflections, RhiPipelineType type);
+    RhiRootSignatureBindingTable(const std::vector<const RhiShaderReflection*>& reflections, RhiPipelineType type, const std::string& debugName = "");
+    RhiRootSignatureBindingTable(const RhiShaderReflection& reflections, RhiPipelineType type, const std::string& debugName = "");
     ~RhiRootSignatureBindingTable() = default;
 
 public:
@@ -38,9 +39,8 @@ public:
     void Bind(GraphicContext& ctx, ResourceContext& rc, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
     template <typename T>
     void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
-
-private:
     void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset = 0) const;
+    void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, RhiGpuAddress address, uint64_t offset = 0) const;
 
 private:
     struct BindingInfo
@@ -50,8 +50,15 @@ private:
     };
 
 private:
+    void PopulateBindings(const std::vector<const RhiShaderReflection*>& reflections);
+
+private:
     std::unordered_map<std::string, BindingInfo> m_NameToBinding;
     RhiPipelineType m_PipelineType;
+
+    // For debug
+    mutable std::unordered_set<std::string> m_InvalidBindings;
+    std::string m_DebugShaderName;
 };
 
 template <typename T>

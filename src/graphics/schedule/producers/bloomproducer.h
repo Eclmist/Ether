@@ -35,7 +35,6 @@ public:
 
 protected:
     bool IsEnabled() override;
-    void CreateRootSignature() override;
 
 private:
     void AddBloomSubpass(

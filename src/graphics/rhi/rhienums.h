@@ -122,9 +122,9 @@ enum class RhiDescriptorType
 {
     Rtv,
     Dsv,
+    Cbv,
     Srv,
     Uav,
-    Cbv,
     Sampler,
 };
 

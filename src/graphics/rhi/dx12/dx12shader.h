@@ -22,7 +22,6 @@
 #include "graphics/pch.h"
 #include "graphics/rhi/rhishader.h"
 #include "graphics/rhi/dx12/dx12includes.h"
-#include <unordered_set>
 
 namespace Ether::Graphics::Dxc
 {

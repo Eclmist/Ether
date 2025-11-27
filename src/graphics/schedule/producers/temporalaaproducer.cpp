@@ -57,11 +57,10 @@ void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTextureB)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneDepth)), RhiResourceState::Common);
 
-    ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(TaaAccumulationTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTextureB)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(TaaAccumulationTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(PostFxSourceTexture));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureB));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(TaaAccumulationTexture));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
 
     DispatchFullscreen(ctx);
 
@@ -78,21 +77,4 @@ bool Ether::Graphics::TemporalAAProducer::IsEnabled()
     return true;
 }
 
-void Ether::Graphics::TemporalAAProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(6, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Uav, 1, 0, 0); // (u0) PostFxSource
-    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Uav, 1, 0, 1); // (u1) AccumulationOut
-    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTextureB
-    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 1); // (t1) AccumulationIn
-    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 2); // (t2) SceneDepth
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
-}
 

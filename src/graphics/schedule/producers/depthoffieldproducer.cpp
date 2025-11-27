@@ -60,17 +60,23 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
     const ethVector2u resolution = config.GetResolution();
     const ethVector2u halfResolution = resolution / 2.0f;
 
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(PostFxSourceTexture));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofCircleOfConfusionTexture));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(DofCircleOfConfusionTexture));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofIntermediateTexture1));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(DofIntermediateTexture1));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofIntermediateTexture2));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(DofIntermediateTexture2));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(PostFxSourceTexture));
+
     // Generate circle of confusion
     {
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_GENERATE_COC);
+        m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        //ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
-        //ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofCircleOfConfusionTexture)->GetGpuAddress());
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -79,12 +85,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_PREFILTER_PASS);
+        m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        //ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture1)->GetGpuAddress());
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -93,10 +95,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_ACCUMULATE);
+        m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture2)->GetGpuAddress());
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -105,14 +105,9 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_POSTFILTER_PASS);
+        m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(DofIntermediateTexture2)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(DofIntermediateTexture1)->GetGpuAddress());
-        ctx.Dispatch(
-            std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)),
-            std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)),
-            1);
+        ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
     // Final Composite
@@ -120,14 +115,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
         auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::DepthOfFieldParams), 256 });
         Shader::DepthOfFieldParams* params = (Shader::DepthOfFieldParams*)alloc->GetCpuHandle();
         BindCommonParams(*params, DOF_PASSINDEX_COMPOSITE);
+        m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-        ctx.SetComputeRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(DofCircleOfConfusionTexture)->GetGpuAddress());
-        //ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(DofIntermediateTexture1)->GetGpuAddress());
-        ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
@@ -150,28 +139,5 @@ bool Ether::Graphics::DepthOfFieldProducer::IsEnabled()
         return false;
 
     return true;
-}
-
-void Ether::Graphics::DepthOfFieldProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(8, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) Global Constants
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) Dof Params
-    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 0); // (t0) Source
-    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) SceneDepth
-    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 2); // (t2) CoC Texture
-    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 3); // (t2) DofIntermediateTexture1
-    rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 4); // (t2) DofIntermediateTexture1
-
-    rsDesc->SetAsDescriptorTable(7, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(7, RhiDescriptorType::Uav, 1, 0, 0); // (u0) Destination 
-
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 

@@ -22,7 +22,6 @@
 #include "engine/pch.h"
 
 #include <any>
-#include <unordered_set>
 #include <functional>
 
 #define ETH_CLASS_ID_ANIMATIONCLIP "Engine::AnimationClip"

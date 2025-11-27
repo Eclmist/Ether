@@ -23,12 +23,11 @@
 #include "common/globalconstants.h"
 #include "utils/fullscreenhelpers.hlsl"
 
-Texture2D<float4> GBufferTextureA                   : register(t0);
-Texture2D<float4> AccumulationTexture               : register(t1);
+Texture2D<float4> GBufferTextureB                   : register(t0);
+Texture2D<float4> TaaAccumulationTexture            : register(t1);
 Texture2D<float2> SceneDepth                        : register(t2);
 
-RWTexture2D<float4> RWTargetTexture                 : register(u0);
-RWTexture2D<float4> RWAccumulationTexture           : register(u1);
+RWTexture2D<float4> RWPostFxSourceTexture           : register(u0);
 
 [numthreads(32, 32, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
@@ -38,7 +37,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     const float sceneDepth = SceneDepth.Load(threadID).r;
     const float2 resolution = GlobalConstants.m_ScreenResolution;
     const float2 screenCoords = threadID.xy;
-    const float2 velocity = GBufferTextureA.Load(threadID).zw; // todo: don't pack camera/static velocity into gbuffer
+    const float2 velocity = GBufferTextureB.Load(threadID).zw; // todo: don't pack camera/static velocity into gbuffer
     const float2 uv = ScreenToTextureSpace(screenCoords);
     const float2 uvPrev = uv - velocity;
 
@@ -48,8 +47,8 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     if (uvPrev.x < 0 || uvPrev.y < 0 || uvPrev.x >= 1.0f || uvPrev.y >= 1.0f)
         return;
 
-    const float4 colorPrev = AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
-    const float4 colorCurr = RWTargetTexture[threadID.xy];
+    const float4 colorPrev = TaaAccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+    const float4 colorCurr = RWPostFxSourceTexture[threadID.xy];
 
     // Variance Clipping
     float4 minColor = 9999999.0, maxColor = -9999999.0;
@@ -58,7 +57,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     {
         for (int y = -kernelSize; y <= kernelSize; ++y)
         {
-            float4 color = RWTargetTexture[threadID.xy + int2(x, y)];
+            float4 color = RWPostFxSourceTexture[threadID.xy + int2(x, y)];
             minColor = min(minColor, color);
             maxColor = max(maxColor, color);
         }
@@ -68,7 +67,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     const float4 previousColorClamped = clamp(colorPrev, minColor, maxColor);
     const float4 newColor = (a * colorCurr) + (1 - a) * previousColorClamped;
 
-    RWTargetTexture[threadID.xy] = newColor;
+    RWPostFxSourceTexture[threadID.xy] = newColor;
 }
 
 #endif // __TEMPORAL_AA_CS_HLSL

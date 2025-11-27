@@ -19,6 +19,7 @@
 
 #include "graphicproducer.h"
 #include "graphics/graphiccore.h"
+#include "graphics/shaders/common/globalconstants.h"
 
 Ether::Graphics::GraphicProducer::GraphicProducer(const char* name)
 {
@@ -42,4 +43,10 @@ bool Ether::Graphics::GraphicProducer::IsEnabled()
 Ether::Graphics::UploadBufferAllocator& Ether::Graphics::GraphicProducer::GetFrameAllocator()
 {
     return *m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()];
+}
+
+uint64_t Ether::Graphics::GraphicProducer::GetRingBufferOffset() const
+{
+    const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
+    return gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
 }
