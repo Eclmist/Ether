@@ -44,8 +44,6 @@ protected:
 protected:
     std::string m_ShaderPath;
     std::unique_ptr<RhiShader> m_ComputeShader;
-    std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiRootSignatureBindingTable> m_BindingTable;
     std::unique_ptr<RhiComputePipelineStateDesc> m_ComputePsoDesc;
 };
 } // namespace Ether::Graphics

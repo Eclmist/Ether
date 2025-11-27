@@ -46,7 +46,9 @@ void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, R
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(PostFxSourceTexture)), RhiResourceState::Common);
     ctx.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(PostFxSourceTexture)->GetGpuAddress());
+
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(PostFxSourceTexture));
+
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     ctx.DrawInstanced(3, 1);
 }
@@ -61,15 +63,5 @@ void Ether::Graphics::FinalCompositeProducer::CreatePipelineState(ResourceContex
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
-}
-
-void Ether::Graphics::FinalCompositeProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) LightingCompositeTexture
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 

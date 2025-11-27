@@ -22,7 +22,7 @@
 
 #include "common/globalconstants.h"
 
-Texture2D<float4> SceneColor : register(t0);
+Texture2D<float4> PostFxSourceTexture : register(t0);
 
 float luminance(float3 v)
 {
@@ -166,7 +166,7 @@ struct PS_INPUT
 
 float4 PS_Main(PS_INPUT IN) : SV_Target
 {
-    float3 col = SceneColor[IN.TexCoord * GlobalConstants.m_ScreenResolution].xyz;
+    float3 col = PostFxSourceTexture[IN.TexCoord * GlobalConstants.m_ScreenResolution].xyz;
 
     if (true)
     {

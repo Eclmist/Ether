@@ -70,36 +70,14 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(ProceduralSkyTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(SceneColor)), RhiResourceState::RenderTarget);
 
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(GBufferTextureA)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTextureB)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTextureC)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(4, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(LightingTexture)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(6, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureA));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureB));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureC));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(LightingTexture));
+    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(ProceduralSkyTexture));
 
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor).Get());
     ctx.DrawInstanced(3, 1);
-}
-
-void Ether::Graphics::LightingCompositeProducer::CreateRootSignature()
-{
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(7, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
-
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTextureA
-    rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 1); // (t1) GBufferTextureB
-    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2); // (t2) GBufferTextureC
-    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3); // (t3) SceneDepth
-    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Srv, 1, 0, 4); // (t4) LightingTexture
-    rsDesc->SetAsDescriptorTable(6, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(6, RhiDescriptorType::Srv, 1, 0, 5); // (t5) ProceduralSkyTexture
-
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 
