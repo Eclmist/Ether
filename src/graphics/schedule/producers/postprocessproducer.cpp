@@ -22,7 +22,7 @@
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
 
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::PostProcessProducer::PostProcessProducer(const char* name, const char* shaderPath)
     : GraphicProducer(name)
@@ -52,7 +52,7 @@ void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_ComputePsoDesc));
 
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
+    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
 }
 
 void Ether::Graphics::PostProcessProducer::CreateShaders()

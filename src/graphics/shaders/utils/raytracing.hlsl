@@ -28,7 +28,7 @@
 
 // Spatial Hash Prototype
 RWStructuredBuffer<uint> RWSpatialHash                      : register(u4);
-RWStructuredBuffer<uint> RWSpatialHashTime                  : register(u5);
+RWStructuredBuffer<uint> RWSpatialHashAge                   : register(u5);
 RWStructuredBuffer<SpatialHashPayload> RWSpatialHashPayload : register(u6);
 
 #define SEARCH_COUNT 10
@@ -115,12 +115,12 @@ uint SpatialHash_FindOrInsert(float3 position, float3 normal)
 		uint originalTime;
 		if (cmp == 0 || cmp == checksum)
 		{
-			InterlockedExchange(RWSpatialHashTime[cellIndex], FrameIndex, originalTime);
+			InterlockedExchange(RWSpatialHashAge[cellIndex], FrameIndex, originalTime);
 			 
 			return cellIndex; 
 		}
 		 
-		originalTime = RWSpatialHashTime[cellIndex];
+		originalTime = RWSpatialHashAge[cellIndex];
 		if (FrameIndex - originalTime > 20)
 		{
             SpatialHashPayload emptyPayload;
@@ -129,7 +129,7 @@ uint SpatialHash_FindOrInsert(float3 position, float3 normal)
 
             uint original;
 			InterlockedExchange(RWSpatialHash[cellIndex], checksum, original);
-			InterlockedExchange(RWSpatialHashTime[cellIndex], FrameIndex, originalTime);
+			InterlockedExchange(RWSpatialHashAge[cellIndex], FrameIndex, originalTime);
 			
 			return cellIndex;
 		}

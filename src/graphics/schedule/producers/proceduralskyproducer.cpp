@@ -26,7 +26,7 @@ DEFINE_GFX_PA(ProceduralSkyProducer)
 DEFINE_GFX_RT(ProceduralSkyTexture)
 DEFINE_GFX_SR(ProceduralSkyTexture)
 
-DECLARE_GFX_CB(GlobalRingBuffer)
+DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::ProceduralSkyProducer::ProceduralSkyProducer()
     : FullScreenProducer("ProceduralSkyProducer", "proceduralsky_ps.hlsl")
@@ -38,7 +38,7 @@ void Ether::Graphics::ProceduralSkyProducer::GetInputOutput(ScheduleContext& sch
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     schedule.NewRT(ACCESS_GFX_RT(ProceduralSkyTexture), resolution.x, resolution.y, BackBufferHdrFormat);
     schedule.NewSR(ACCESS_GFX_SR(ProceduralSkyTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
+    schedule.Read(ACCESS_GFX_CB(GlobalConstants));
 }
 
 void Ether::Graphics::ProceduralSkyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
