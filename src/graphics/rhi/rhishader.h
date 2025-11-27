@@ -44,7 +44,6 @@ public:
 
 public:
     virtual void Compile() = 0;
-    virtual void ReflectShader() = 0;
 
 protected:
     friend class ShaderDaemon;

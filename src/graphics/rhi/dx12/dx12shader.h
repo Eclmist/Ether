@@ -50,7 +50,6 @@ public:
 
 public:
     void Compile() override;
-    void ReflectShader() override;
 
 protected:
     void InitializeTargetProfile(RhiShaderType type);

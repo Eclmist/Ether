@@ -180,10 +180,25 @@ std::unique_ptr<Ether::Graphics::RhiShader> Ether::Graphics::Dx12Device::CreateS
 
 std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Device::CreateRootSignatureDesc(
     uint32_t numParams,
-    uint32_t numSamplers,
-    bool isLocal) const
+    uint32_t numSamplers) const
 {
-    return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers, isLocal);
+    return std::make_unique<Dx12RootSignatureDesc>(numParams, numSamplers);
+}
+
+std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Device::CreateRootSignatureDesc(
+    const RhiShaderReflection& reflection) const
+{
+    auto rsDesc = std::make_unique<Dx12RootSignatureDesc>(0, 0);
+    rsDesc->BuildFromReflection({ &reflection });
+    return rsDesc;
+}
+
+std::unique_ptr<Ether::Graphics::RhiRootSignatureDesc> Ether::Graphics::Dx12Device::CreateRootSignatureDesc(
+    const std::vector<const RhiShaderReflection*>& reflections) const
+{
+    auto rsDesc = std::make_unique<Dx12RootSignatureDesc>(0, 0);
+    rsDesc->BuildFromReflection(reflections);
+    return rsDesc;
 }
 
 std::unique_ptr<Ether::Graphics::RhiGraphicPipelineStateDesc> Ether::Graphics::Dx12Device::CreateGraphicPipelineStateDesc() const

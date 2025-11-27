@@ -20,6 +20,52 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhishaderreflection.h"
 
+std::vector<Ether::Graphics::RhiShaderReflection::ResourceBinding> Ether::Graphics::RhiShaderReflection::MergeBindings(
+    const std::vector<const RhiShaderReflection*>& reflections)
+{
+    std::vector<RhiShaderReflection::ResourceBinding> mergedBindings;
+    std::unordered_map<std::string, size_t> nameToIndex;
+
+    // Merge bindings from all shaders
+    for (const RhiShaderReflection* reflection : reflections)
+    {
+        for (const auto& binding : reflection->GetResourceBindings())
+        {
+            // Create unique identifier for this binding
+            std::string key = binding.m_Name + "_" + std::to_string(binding.m_BindPoint) + "_" +
+                              std::to_string(binding.m_Space);
+
+            if (nameToIndex.contains(key))
+                continue;
+
+            RhiShaderReflection::ResourceBinding mergedBinding;
+            mergedBinding.m_Name = binding.m_Name;
+            mergedBinding.m_Type = binding.m_Type;
+            mergedBinding.m_Dimension = binding.m_Dimension;
+            mergedBinding.m_BindPoint = binding.m_BindPoint;
+            mergedBinding.m_Space = binding.m_Space;
+
+            nameToIndex[key] = mergedBindings.size();
+            mergedBindings.push_back(mergedBinding);
+        }
+    }
+
+    // Sort bindings by type, then by register (for consistent layout)
+    std::stable_sort(
+        mergedBindings.begin(),
+        mergedBindings.end(),
+        [](const RhiShaderReflection::ResourceBinding& a, const RhiShaderReflection::ResourceBinding& b)
+        {
+            if (a.m_Type != b.m_Type)
+                return a.m_Type < b.m_Type;
+            if (a.m_Space != b.m_Space)
+                return a.m_Space < b.m_Space;
+            return a.m_BindPoint < b.m_BindPoint;
+        });
+
+    return mergedBindings;
+}
+
 const Ether::Graphics::RhiShaderReflection::ResourceBinding* Ether::Graphics::RhiShaderReflection::FindBinding(
     const std::string& name) const
 {

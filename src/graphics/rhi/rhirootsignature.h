@@ -32,7 +32,12 @@ public:
     {
     }
 
-    virtual ~RhiRootSignatureDesc() {}
+    virtual ~RhiRootSignatureDesc() = default;
+
+public:
+    // NEW and shiny root signature builder from shader reflection!
+    virtual void BuildFromReflection(const RhiShaderReflection& reflection) = 0;
+    virtual void BuildFromReflection(const std::vector<const RhiShaderReflection*>& reflections) = 0;
 
 public:
     virtual void SetAsConstant(

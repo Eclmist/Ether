@@ -19,13 +19,13 @@
 
 #include "graphics/rhi/dx12/dx12rootsignature.h"
 #include "graphics/rhi/dx12/dx12translation.h"
+#include "graphics/rhi/dx12/dx12shaderreflection.h"
 
 #ifdef ETH_GRAPHICS_DX12
 
 Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(
     uint32_t numParams,
-    uint32_t numSamplers,
-    bool isLocal)
+    uint32_t numSamplers)
     : RhiRootSignatureDesc(numParams, numSamplers)
 {
     m_Dx12RootParameters.resize(numParams);
@@ -35,8 +35,93 @@ Ether::Graphics::Dx12RootSignatureDesc::Dx12RootSignatureDesc(
     m_Dx12RootSignatureDesc.NumStaticSamplers = numSamplers;
     m_Dx12RootSignatureDesc.pParameters = m_Dx12RootParameters.data();
     m_Dx12RootSignatureDesc.pStaticSamplers = m_Dx12StaticSamplers.data();
-    m_Dx12RootSignatureDesc.Flags = isLocal ? D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE
-                                            : D3D12_ROOT_SIGNATURE_FLAG_NONE;
+}
+
+void Ether::Graphics::Dx12RootSignatureDesc::BuildFromReflection(const RhiShaderReflection& reflection)
+{
+    BuildFromReflection({ &reflection });
+}
+
+void Ether::Graphics::Dx12RootSignatureDesc::BuildFromReflection(const std::vector<const RhiShaderReflection*>& reflections)
+{
+    // Since raytracing requires multiple shaders, we'll merge them all so that they
+    // can still all share the same root signature. The caveat here is that we need
+    // to manually ensure that the bindings are consistent across shaders. This is generally not a problem
+    // because it's more convenient for multiple raytracing shaders of the same producer to share headers anyway
+    std::vector<RhiShaderReflection::ResourceBinding> mergedBindings = RhiShaderReflection::MergeBindings(reflections);
+
+    // Resize internal structures
+    m_Dx12RootParameters.resize(mergedBindings.size());
+    m_Dx12RootSignatureDesc.NumParameters = mergedBindings.size();
+    m_Dx12RootSignatureDesc.pParameters = m_Dx12RootParameters.data();
+
+    // For bindless, we always need these two flags. Put it here for convenience so we don't have to keep setting flags for every RS
+    m_Dx12RootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
+                                    D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
+
+    // Build root parameters
+    for (size_t i = 0; i < mergedBindings.size(); ++i)
+    {
+        const RhiShaderReflection::ResourceBinding& binding = mergedBindings[i];
+        D3D12_ROOT_PARAMETER& param = m_Dx12RootParameters[i];
+
+        switch (binding.m_Type)
+        {
+        case RhiDescriptorType::Cbv:
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+            param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            param.Descriptor.ShaderRegister = binding.m_BindPoint;
+            param.Descriptor.RegisterSpace = binding.m_Space;
+            break;
+
+        case RhiDescriptorType::Srv:
+            if (binding.RequiresResourceTable())
+            {
+                // Use descriptor table
+                // For now, one resource per table. We could pack this further in the future (TODO)
+                m_Dx12DescriptorRanges[i].resize(1);
+                m_Dx12DescriptorRanges[i][0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                m_Dx12DescriptorRanges[i][0].NumDescriptors = 1;
+                m_Dx12DescriptorRanges[i][0].BaseShaderRegister = binding.m_BindPoint;
+                m_Dx12DescriptorRanges[i][0].RegisterSpace = binding.m_Space;
+                m_Dx12DescriptorRanges[i][0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+                param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+                param.DescriptorTable.NumDescriptorRanges = 1;
+                param.DescriptorTable.pDescriptorRanges = m_Dx12DescriptorRanges[i].data();
+            }
+            else
+            {
+                // Use root descriptor (for buffers, acceleration structures)
+                param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+                param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+                param.Descriptor.ShaderRegister = binding.m_BindPoint;
+                param.Descriptor.RegisterSpace = binding.m_Space;
+            }
+            break;
+
+        case RhiDescriptorType::Uav:
+            // UAVs typically need descriptor tables
+            // For now, one resource per table. We could pack this further in the future (TODO)
+            m_Dx12DescriptorRanges[i].resize(1);
+            m_Dx12DescriptorRanges[i][0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+            m_Dx12DescriptorRanges[i][0].NumDescriptors = 1;
+            m_Dx12DescriptorRanges[i][0].BaseShaderRegister = binding.m_BindPoint;
+            m_Dx12DescriptorRanges[i][0].RegisterSpace = binding.m_Space;
+            m_Dx12DescriptorRanges[i][0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+            param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            param.DescriptorTable.NumDescriptorRanges = 1;
+            param.DescriptorTable.pDescriptorRanges = m_Dx12DescriptorRanges[i].data();
+            break;
+
+        case RhiDescriptorType::Sampler:
+            // We have bindless samplers!
+            break;
+        }
+    }
 }
 
 void Ether::Graphics::Dx12RootSignatureDesc::SetAsConstant(

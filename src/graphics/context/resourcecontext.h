@@ -56,7 +56,8 @@ public:
     void InitializeConstantBufferView(std::shared_ptr<RhiResourceView> view);
 
     template <typename T>
-    RhiResource* GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const;
+    RhiResource* GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const { return GetResource(view.Get().get()); }
+    RhiResource* GetResource(RhiResourceView* view) const;
 
 private:
     bool ShouldRecreateResource(StringID resourceID, const RhiCommitedResourceDesc& desc);
@@ -86,14 +87,4 @@ private:
 
     std::queue<std::unique_ptr<RhiResource>> m_StaleResources;
 };
-
-template <typename T>
-RhiResource* Ether::Graphics::ResourceContext::GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const
-{
-    if (m_ResourceTable.find(view.GetSharedResourceName()) == m_ResourceTable.end())
-        LogGraphicsFatal("The requested resource (%s) has not yet been created", view.GetSharedResourceName());
-
-    return m_ResourceTable.at(view.GetSharedResourceName()).get();
-}
-
 } // namespace Ether::Graphics

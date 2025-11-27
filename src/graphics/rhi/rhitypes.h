@@ -44,6 +44,7 @@ class RhiResource;
 class RhiRootParameter;
 class RhiRootSignature;
 class RhiRootSignatureDesc;
+class RhiRootSignatureBindingTable;
 class RhiPipelineState;
 class RhiPipelineStateDesc;
 class RhiGraphicPipelineState;

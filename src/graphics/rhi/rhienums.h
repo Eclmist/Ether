@@ -290,6 +290,12 @@ enum class RhiRootSignatureFlag : uint64_t
 };
 ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 
+enum class RhiPipelineType
+{
+    Graphics,
+    Compute
+};
+
 enum class RhiShaderType
 {
     Vertex,

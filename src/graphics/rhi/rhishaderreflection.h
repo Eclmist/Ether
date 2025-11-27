@@ -23,6 +23,7 @@
 
 namespace Ether::Graphics
 {
+
 class RhiShaderReflection
 {
 public:
@@ -34,17 +35,49 @@ public:
         uint32_t m_BindPoint; // Register number (the '0' in 't0')
         uint32_t m_BindCount; // Array size (1 for non-arrays)
         uint32_t m_Space;     // Register space
+
+        bool RequiresResourceTable() const
+        {
+            if (m_Type == RhiDescriptorType::Uav)
+                return true; // UAVs always need tables
+
+            if (m_Type == RhiDescriptorType::Cbv)
+                return false; // CBVs can be root descriptors
+
+            // For SRVs, check dimension
+            switch (m_Dimension)
+            {
+            case RhiResourceDimension::Buffer:
+            case RhiResourceDimension::StructuredBuffer:
+            case RhiResourceDimension::RTAccelerationStructure:
+                return false; // Use root descriptors for buffers
+            case RhiResourceDimension::Texture1D:
+            case RhiResourceDimension::Texture1DArray:
+            case RhiResourceDimension::Texture2D:
+            case RhiResourceDimension::Texture2DArray:
+            case RhiResourceDimension::Texture3D:
+            case RhiResourceDimension::TextureCube:
+            case RhiResourceDimension::TextureCubeArray:
+                return true; // Use tables for textures
+            default:
+                return true; // Default to table
+            }
+        }
     };
 
 public:
     RhiShaderReflection() = default;
-    virtual ~RhiShaderReflection() = 0;
+    virtual ~RhiShaderReflection() {};
 
 public:
-    virtual void Reflect(const void* shaderBytecode, size_t bytecodeSize) = 0;
+    virtual void Reflect(const void* shaderBytecode, size_t bytecodeSize, RhiShaderType shaderType) = 0;
 
 public:
     inline const std::vector<ResourceBinding>& GetResourceBindings() const { return m_ResourceBindings; }
+    inline const RhiShaderType GetShaderType() const { return m_ShaderType; }
+
+public:
+    static std::vector<RhiShaderReflection::ResourceBinding> MergeBindings(const std::vector<const RhiShaderReflection*>& reflections);
 
 public:
     const ResourceBinding* FindBinding(const std::string& name) const;
@@ -55,6 +88,7 @@ public:
 protected:
     std::vector<ResourceBinding> m_ResourceBindings;
     std::unordered_map<std::string, size_t> m_NameToBindingIndex;
+    RhiShaderType m_ShaderType;
 };
 
 } // namespace Ether::Graphics

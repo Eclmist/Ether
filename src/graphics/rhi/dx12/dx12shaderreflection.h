@@ -32,6 +32,9 @@ public:
     ~Dx12ShaderReflection() override = default;
 
 public:
-    void Reflect(const void* shaderBytecode, size_t bytecodeSize) override;
+    void Reflect(const void* shaderBytecode, size_t bytecodeSize, RhiShaderType type) override;
+
+protected:
+    void ReflectLibrary(ID3D12LibraryReflection* libraryReflection);
 };
 } // namespace Ether::Graphics
