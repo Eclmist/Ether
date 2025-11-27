@@ -50,7 +50,6 @@ protected:
     std::unique_ptr<RhiShader> m_TemporalResamplingShader;
     std::unique_ptr<RhiShader> m_SpatialResamplingShader;
     std::unique_ptr<RhiShader> m_LightingEvaluationShader;
-    std::unique_ptr<RhiRootSignature> m_RootSignature;
 
     std::unique_ptr<RhiRaytracingPipelineStateDesc> m_InitialGenerationPsoDesc;
     std::unique_ptr<RhiComputePipelineStateDesc> m_TemporalResamplingPsoDesc;

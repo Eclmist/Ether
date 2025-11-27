@@ -79,11 +79,9 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
-
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
-    ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
+    ctx.Bind(ACCESS_GFX_SR(MaterialTable));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Batch by material only for now
@@ -103,8 +101,7 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
             instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
             instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
             instanceParams->m_NormalMatrix = visual.m_ModelMatrix.Inversed().Transposed();
-            ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-
+            ctx.Bind("InstanceParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
             ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
@@ -141,13 +138,7 @@ void Ether::Graphics::TranslucencyProducer::CreateShaders()
 
 void Ether::Graphics::TranslucencyProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(4, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) InstanceParams
-    rsDesc->SetAsShaderResourceView(2, 0, RhiShaderVisibility::All); // (t0) MaterialTable
-    rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 1); // (t1) SceneDepth
-
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc({ &m_VertexShader->GetReflection(), &m_PixelShader->GetReflection() });
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

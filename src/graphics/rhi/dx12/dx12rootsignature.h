@@ -35,40 +35,6 @@ public:
 public:
     void BuildFromReflection(const RhiShaderReflection& reflection) override;
     void BuildFromReflection(const std::vector<const RhiShaderReflection*>& reflections) override;
-
-public:
-    void SetAsConstant(
-        uint32_t rootParameterIndex,
-        uint32_t shaderRegister,
-        uint32_t numDword,
-        RhiShaderVisibility shaderVisibility) override;
-    void SetAsConstantBufferView(
-        uint32_t rootParameterIndex,
-        uint32_t shaderRegister,
-        RhiShaderVisibility shaderVisibility) override;
-    void SetAsShaderResourceView(
-        uint32_t rootParameterIndex,
-        uint32_t shaderRegister,
-        RhiShaderVisibility shaderVisibility) override;
-    void SetAsUnorderedAccessView(
-        uint32_t rootParameterIndex,
-        uint32_t shaderRegister,
-        RhiShaderVisibility shaderVisibility) override;
-    void SetAsDescriptorTable(
-        uint32_t rootParameterIndex,
-        uint32_t numRanges,
-        RhiShaderVisibility shaderVisibility) override;
-    void SetDescriptorTableRange(
-        uint32_t rootParamterIndex,
-        RhiDescriptorType rangeType,
-        uint32_t numDescriptors = 1,
-        uint32_t rangeIndex = 0,
-        uint32_t baseShaderRegister = 0) override;
-    void SetAsSampler(
-        uint32_t shaderRegister,
-        RhiSamplerParameterDesc samplerDesc,
-        RhiShaderVisibility shaderVisibility) override;
-
     void SetFlags(RhiRootSignatureFlag flag) override;
 
 protected:

@@ -222,7 +222,14 @@ void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapp
 
 void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset)
 {
-    TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::Common);
+    RhiResource* resource = m_ResourceContext->GetResource(wrapper);
+
+    // Hack for now. Not sure what's the best way to know if this is a depth resource. TODO
+    if (resource->GetCurrentState() == RhiResourceState::DepthRead || resource->GetCurrentState() == RhiResourceState::DepthWrite)
+        TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::DepthRead);
+    else
+        TransitionResource(*m_ResourceContext->GetResource(wrapper), RhiResourceState::Common);
+
     m_RootSignatureBindingTable->Bind(*this, wrapper.GetSharedResourceName(), wrapper.Get().get(), offset);
 }
 

@@ -75,9 +75,7 @@ void Ether::Graphics::EditorOutlineProducer::RenderFrame(GraphicContext& ctx, Re
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
-
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
 
 	for (const Visual& visual : visuals)
@@ -87,14 +85,14 @@ void Ether::Graphics::EditorOutlineProducer::RenderFrame(GraphicContext& ctx, Re
         if (!visual.m_ToolmodeSelected)
 			continue;
 
-		auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
-		Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
-		instanceParams->m_MaterialIdx = visual.m_Material->GetTransientMaterialIdx();
-		instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
-		instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
-		instanceParams->m_NormalMatrix = visual.m_ModelMatrix.Inversed().Transposed();
-		ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-		ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
+        auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
+        Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
+        instanceParams->m_MaterialIdx = visual.m_Material->GetTransientMaterialIdx();
+        instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
+        instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
+        instanceParams->m_NormalMatrix = visual.m_ModelMatrix.Inversed().Transposed();
+        ctx.Bind("InstanceParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+        ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
 		ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
 		ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
 	}
@@ -128,9 +126,7 @@ void Ether::Graphics::EditorOutlineProducer::CreateShaders()
 
 void Ether::Graphics::EditorOutlineProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) InstanceParams
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc({ &m_VertexShader->GetReflection(), &m_PixelShader->GetReflection() });
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

@@ -119,11 +119,14 @@ void Ether::Graphics::GraphicContext::SetGraphicsRootDescriptorTable(
 
 void Ether::Graphics::GraphicContext::ClearColor(RhiRenderTargetView rtv, const ethVector4& color)
 {
+    const bool isBackBuffer = rtv.GetResourceID() == GraphicCore::GetGraphicDisplay().GetBackBufferRtv().GetResourceID();
+    TransitionResource(isBackBuffer ? GraphicCore::GetGraphicDisplay().GetBackBuffer() : *m_ResourceContext->GetResource(&rtv), RhiResourceState::RenderTarget);
     m_CommandList->ClearRenderTargetView(rtv, color);
 }
 
 void Ether::Graphics::GraphicContext::ClearDepthStencil(RhiDepthStencilView dsv, float depth, float stencil)
 {
+    TransitionResource(*m_ResourceContext->GetResource(&dsv), RhiResourceState::DepthWrite);
     m_CommandList->ClearDepthStencilView(dsv, depth, stencil);
 }
 
