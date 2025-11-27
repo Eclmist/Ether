@@ -225,7 +225,7 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
     ray.TMin = RAY_TMIN;
 
     uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
-    TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RTRaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -245,7 +245,7 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     ray.TMin = RAY_TMIN;
 
     uint rayFlags = RAY_FLAG_FORCE_OPAQUE; // Don't do any-hit for GI rays for performance reasons
-    TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RTRaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }

@@ -27,7 +27,7 @@ DEFINE_GFX_UA(TaaAccumulationTexture)
 DEFINE_GFX_SR(TaaAccumulationTexture)
 
 DECLARE_GFX_UA(PostFxSourceTexture)
-DECLARE_GFX_SR(GBufferTexture1) // For the velocity vectors
+DECLARE_GFX_SR(GBufferTextureB) // For the velocity vectors
 DECLARE_GFX_SR(SceneDepth)
 
 Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
@@ -42,7 +42,7 @@ void Ether::Graphics::TemporalAAProducer::GetInputOutput(ScheduleContext& schedu
     schedule.NewSR(ACCESS_GFX_SR(TaaAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_UA(PostFxSourceTexture));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
 }
 
@@ -54,12 +54,12 @@ void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, Resou
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(TaaAccumulationTexture)), RhiResourceState::UnorderedAccess);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture1)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTextureB)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneDepth)), RhiResourceState::Common);
 
     ctx.SetComputeRootDescriptorTable(1, ACCESS_GFX_UA(PostFxSourceTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(2, ACCESS_GFX_UA(TaaAccumulationTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTextureB)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(TaaAccumulationTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
 
@@ -87,7 +87,7 @@ void Ether::Graphics::TemporalAAProducer::CreateRootSignature()
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Uav, 1, 0, 1); // (u1) AccumulationOut
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTexture1
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTextureB
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 1); // (t1) AccumulationIn
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);

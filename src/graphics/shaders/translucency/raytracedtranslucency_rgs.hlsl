@@ -162,7 +162,7 @@ TranslucentRayPayload TracePrimaryRay(float2 screenCoords, float sceneDepth, uin
     ray.TMin = RAY_TMIN;
 
     uint rayFlags = 0;
-    TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RTRaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
@@ -231,7 +231,7 @@ void ClosestHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersect
             ray.TMin = RAY_TMIN;
 
             uint rayFlags = 0;
-            TraceRay(RaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, screenTracePayload);
+            TraceRay(RTRaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, screenTracePayload);
             payload.m_Radiance = ComputeRadiance(surface, screenTracePayload.m_Radiance, ray.Direction, -WorldRayDirection());
         }
 
