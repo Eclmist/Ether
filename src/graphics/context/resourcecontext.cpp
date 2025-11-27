@@ -281,7 +281,7 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(StringID resourceI
     return false;
 }
 
-Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::GetResource(RhiResourceView* view) const
+Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::GetResource(const RhiResourceView* view) const
 {
     if (!m_ResourceTable.contains(view->GetResourceID()))
         LogGraphicsFatal("The requested resource (%s) has not yet been created", view->GetResourceID().GetString().c_str());

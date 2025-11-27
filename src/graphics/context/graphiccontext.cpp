@@ -57,6 +57,8 @@ void Ether::Graphics::GraphicContext::SetPrimitiveTopology(const RhiPrimitiveTop
 
 void Ether::Graphics::GraphicContext::SetRenderTarget(const RhiRenderTargetView rtv, const RhiDepthStencilView* dsv)
 {
+    const bool isBackBuffer = rtv.GetResourceID() == GraphicCore::GetGraphicDisplay().GetBackBufferRtv().GetResourceID();
+    TransitionResource(isBackBuffer ? GraphicCore::GetGraphicDisplay().GetBackBuffer() : *m_ResourceContext->GetResource(&rtv), RhiResourceState::RenderTarget);
     m_CommandList->SetRenderTargets(&rtv, 1, dsv);
 }
 

@@ -117,6 +117,7 @@ protected:
     const RhiDescriptorHeap* m_SamplerHeap;
 
     const RhiResource* m_RaytracingBindTable;
+    const ResourceContext* m_ResourceContext;
 };
 } // namespace Ether::Graphics
 

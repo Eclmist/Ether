@@ -46,7 +46,6 @@ void Ether::Graphics::ProceduralSkyProducer::RenderFrame(GraphicContext& ctx, Re
     ETH_MARKER_EVENT("ProceduralSkyProducer");
 
     FullScreenProducer::RenderFrame(ctx, rc);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(ProceduralSkyTexture)), RhiResourceState::RenderTarget);
     ctx.SetRenderTarget(*ACCESS_GFX_RT(ProceduralSkyTexture).Get());
     ctx.DrawInstanced(3, 1);
 }
