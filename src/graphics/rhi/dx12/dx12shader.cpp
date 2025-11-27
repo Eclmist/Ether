@@ -19,6 +19,7 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/dx12/dx12shader.h"
+#include "graphics/rhi/dx12/dx12shaderreflection.h"
 #include "common/utils/stringutils.h"
 
 #ifdef ETH_GRAPHICS_DX12
@@ -181,6 +182,15 @@ void Ether::Graphics::Dx12Shader::InitializeDxc()
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to initialize DXC compiler");
+}
+
+void Ether::Graphics::Dx12Shader::ReflectShader()
+{
+    if (m_CompiledData != nullptr)
+    {
+        m_Reflection = std::make_unique<Dx12ShaderReflection>();
+        m_Reflection->Reflect(m_CompiledData, m_CompiledSize);
+    }
 }
 
 HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource(

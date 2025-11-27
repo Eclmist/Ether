@@ -17,19 +17,21 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "graphics/graphiccore.h"
-#include "graphics/rhi/rhishader.h"
+#pragma once
+
+#include "graphics/pch.h"
 #include "graphics/rhi/rhishaderreflection.h"
+#include "graphics/rhi/dx12/dx12includes.h"
 
-Ether::Graphics::RhiShader::RhiShader(const RhiShaderDesc& desc)
-    : m_Type(desc.m_Type)
-    , m_Reflection(nullptr)
-    , m_IsCompiled(false)
-    , m_CompiledSize(0)
-    , m_CompiledData(nullptr)
-    , m_FileName(desc.m_Filename)
-    , m_FilePath(GraphicCore::GetGraphicConfig().GetShaderPath() + "\\" + desc.m_Filename)
-    , m_EntryPoint(desc.m_EntryPoint)
+namespace Ether::Graphics
 {
-}
+class Dx12ShaderReflection : public RhiShaderReflection
+{
+public:
+    Dx12ShaderReflection() = default;
+    ~Dx12ShaderReflection() override = default;
 
+public:
+    void Reflect(const void* shaderBytecode, size_t bytecodeSize) override;
+};
+} // namespace Ether::Graphics
