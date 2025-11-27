@@ -21,6 +21,7 @@
 
 #include "graphics/pch.h"
 #include "graphics/rhi/rhirootsignature.h"
+#include "graphics/rhi/rhishaderreflection.h"
 #include "graphics/rhi/dx12/dx12includes.h"
 
 namespace Ether::Graphics
@@ -28,8 +29,12 @@ namespace Ether::Graphics
 class Dx12RootSignatureDesc : public RhiRootSignatureDesc
 {
 public:
-    Dx12RootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal);
+    Dx12RootSignatureDesc(uint32_t numParams, uint32_t numSamplers);
     ~Dx12RootSignatureDesc() override = default;
+
+public:
+    void BuildFromReflection(const RhiShaderReflection& reflection) override;
+    void BuildFromReflection(const std::vector<const RhiShaderReflection*>& reflections) override;
 
 public:
     void SetAsConstant(

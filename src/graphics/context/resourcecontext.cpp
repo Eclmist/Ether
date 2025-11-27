@@ -54,14 +54,14 @@ void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, R
         return;
     }
 
-    if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
+    if (!m_CachedPipelineStates.contains(&pipelineStateDesc))
         m_CachedPipelineStates[&pipelineStateDesc] = pipelineStateDesc.Compile(name);
 }
 
 Ether::Graphics::RhiPipelineState& Ether::Graphics::ResourceContext::GetPipelineState(
     RhiPipelineStateDesc& pipelineStateDesc)
 {
-    if (m_CachedPipelineStates.find(&pipelineStateDesc) == m_CachedPipelineStates.end())
+    if (!m_CachedPipelineStates.contains(&pipelineStateDesc))
     {
         LogGraphicsError("A pipeline state desc was used before registration");
         RegisterPipelineState("Unknown Pipeline State", pipelineStateDesc);
@@ -264,11 +264,11 @@ void Ether::Graphics::ResourceContext::InitializeConstantBufferView(std::shared_
 bool Ether::Graphics::ResourceContext::ShouldRecreateResource(StringID resourceID, const RhiCommitedResourceDesc& desc)
 {
     // If the resource don't exist in the resource table at all
-    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
+    if (!m_ResourceTable.contains(resourceID))
         return true;
 
     AssertGraphics(
-        m_ResourceDescriptionTable.find(resourceID) != m_ResourceDescriptionTable.end(),
+        m_ResourceDescriptionTable.contains(resourceID),
         "If the resource never existed, there should not be any cached desc with the same resourceID");
 
     // If the resource exist, but it's description has changed
@@ -279,6 +279,14 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(StringID resourceI
         return true;
 
     return false;
+}
+
+Ether::Graphics::RhiResource* Ether::Graphics::ResourceContext::GetResource(RhiResourceView* view) const
+{
+    if (!m_ResourceTable.contains(view->GetResourceID()))
+        LogGraphicsFatal("The requested resource (%s) has not yet been created", view->GetResourceID().GetString().c_str());
+
+    return m_ResourceTable.at(view->GetResourceID()).get();
 }
 
 bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
@@ -293,11 +301,11 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     return true;
 
     // If the resource don't exist in the resource table at all
-    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
+    if (!m_ResourceTable.contains(resourceID))
         return true;
 
     AssertGraphics(
-        m_RaytracingResourceDescriptionTable.find(resourceID) != m_RaytracingResourceDescriptionTable.end(),
+        m_RaytracingResourceDescriptionTable.contains(resourceID),
         "If the resource never existed, there should not be any cached desc with the same resourceID");
 
     Visual* vbOld = (Visual*)m_RaytracingResourceDescriptionTable.at(resourceID).m_Visuals;
@@ -319,11 +327,11 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     StringID resourceID,
     const RhiRaytracingShaderBindingTableDesc& desc)
 {
-    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
+    if (!m_ResourceTable.contains(resourceID))
         return true;
 
     AssertGraphics(
-        m_RaytracingShaderBindingsTable.find(resourceID) != m_RaytracingShaderBindingsTable.end(),
+        m_RaytracingShaderBindingsTable.contains(resourceID),
         "If the resource never existed, there should not be any cached desc with the same resourceID");
 
     if (m_RaytracingShaderBindingsTable.at(resourceID) != desc)
@@ -334,12 +342,12 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
 
 bool Ether::Graphics::ResourceContext::ShouldRecreateView(StringID viewID)
 {
-    return m_DescriptorTable.find(viewID) == m_DescriptorTable.end();
+    return !m_DescriptorTable.contains(viewID);
 }
 
 void Ether::Graphics::ResourceContext::InvalidateViews(StringID resourceID)
 {
-    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
+    if (!m_ResourceTable.contains(resourceID))
         return;
 
     for (auto iter = m_DescriptorTable.begin(); iter != m_DescriptorTable.end();)
@@ -359,7 +367,7 @@ void Ether::Graphics::ResourceContext::InvalidateViews(StringID resourceID)
 
 void Ether::Graphics::ResourceContext::InvalidateResource(StringID resourceID)
 {
-    if (m_ResourceTable.find(resourceID) == m_ResourceTable.end())
+    if (!m_ResourceTable.contains(resourceID))
         return;
 
     m_StaleResources.push(std::move(m_ResourceTable.at(resourceID)));
@@ -374,4 +382,3 @@ void Ether::Graphics::ResourceContext::Reset()
     for (auto& psoPair : m_CachedPipelineStates)
         RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);
 }
-

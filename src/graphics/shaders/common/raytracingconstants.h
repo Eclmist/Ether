@@ -42,6 +42,7 @@ struct GeometryInfo
 
 struct RayPayload
 {
+    // TODO: Flag these bools and update payload size in the producers
     bool m_Hit;
     bool m_IsShadowRay;
     uint32_t m_Depth;

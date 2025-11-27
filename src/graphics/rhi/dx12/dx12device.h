@@ -39,7 +39,9 @@ public:
     std::unique_ptr<RhiFence> CreateFence() const override;
     std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const override;
     std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const override;
-    std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal) const override;
+    std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(const RhiShaderReflection& reflection) const override;
+    std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(const std::vector<const RhiShaderReflection*>& reflections) const override;
+    std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const override;
     std::unique_ptr<RhiGraphicPipelineStateDesc> CreateGraphicPipelineStateDesc() const override;
     std::unique_ptr<RhiComputePipelineStateDesc> CreateComputePipelineStateDesc() const override;
     std::unique_ptr<RhiRaytracingPipelineStateDesc> CreateRaytracingPipelineStateDesc() const override;

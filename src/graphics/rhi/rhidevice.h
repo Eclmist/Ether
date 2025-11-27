@@ -42,7 +42,9 @@ public:
     virtual std::unique_ptr<RhiFence> CreateFence() const = 0;
     virtual std::unique_ptr<RhiSwapChain> CreateSwapChain(const RhiSwapChainDesc& desc) const = 0;
     virtual std::unique_ptr<RhiShader> CreateShader(const RhiShaderDesc& desc) const = 0;
-    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers, bool isLocal = false) const = 0;
+    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(const RhiShaderReflection& reflection) const = 0;
+    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(const std::vector<const RhiShaderReflection*>& reflections) const = 0;
+    virtual std::unique_ptr<RhiRootSignatureDesc> CreateRootSignatureDesc(uint32_t numParams, uint32_t numSamplers) const = 0;
     virtual std::unique_ptr<RhiGraphicPipelineStateDesc> CreateGraphicPipelineStateDesc() const = 0;
     virtual std::unique_ptr<RhiComputePipelineStateDesc> CreateComputePipelineStateDesc() const = 0;
     virtual std::unique_ptr<RhiRaytracingPipelineStateDesc> CreateRaytracingPipelineStateDesc() const = 0;

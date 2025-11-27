@@ -25,6 +25,7 @@
 #include "graphics/context/resourcecontext.h"
 #include "graphics/context/graphiccontext.h"
 #include "graphics/rhi/rhiresourceviews.h"
+#include "graphics/rhi/rhirootsignaturebindingtable.h"
 
 namespace Ether::Graphics
 {

@@ -72,17 +72,20 @@ void Ether::Graphics::Dx12Shader::Compile()
     arguments.push_back(L"-T");
     arguments.push_back(wProfile.c_str());
 
+    // We always need reflection data that is generated with Zi flag
+    // For release builds, we'll push -O3 to optimize but keep reflection data
+    // In the future for binarizing, we'll serialize root signatures and strip reflection data altogether
+    // TODO: ETH_SHIPPING
+    arguments.push_back(DXC_ARG_DEBUG); // -Zi
+
 #ifdef _DEBUG
     // Disable optimization for renderdoc pixel debugging
     arguments.push_back(L"-Od");
     arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS); //-WX
-
-    // Strip reflection data and pdbs
-    arguments.push_back(DXC_ARG_DEBUG);
-
+#else
+    // Release: optimize but keep reflection
+    arguments.push_back(L"-O3"); // Or whatever optimization level you want
 #endif
-    //arguments.push_back(L"-Qstrip_debug");
-    //arguments.push_back(L"-Qstrip_reflect");
 
     arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);
 
@@ -143,6 +146,12 @@ void Ether::Graphics::Dx12Shader::Compile()
 
     m_CompiledData = m_ShaderBlob->GetBufferPointer();
     m_CompiledSize = m_ShaderBlob->GetBufferSize();
+    
+    if (m_CompiledData != nullptr)
+    {
+        m_Reflection = std::make_unique<Dx12ShaderReflection>();
+        m_Reflection->Reflect(m_CompiledData, m_CompiledSize, m_Type);
+    }
 }
 
 void Ether::Graphics::Dx12Shader::InitializeTargetProfile(RhiShaderType type)
@@ -182,15 +191,6 @@ void Ether::Graphics::Dx12Shader::InitializeDxc()
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to initialize DXC compiler");
-}
-
-void Ether::Graphics::Dx12Shader::ReflectShader()
-{
-    if (m_CompiledData != nullptr)
-    {
-        m_Reflection = std::make_unique<Dx12ShaderReflection>();
-        m_Reflection->Reflect(m_CompiledData, m_CompiledSize);
-    }
 }
 
 HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource(
