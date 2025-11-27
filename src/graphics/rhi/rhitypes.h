@@ -55,6 +55,7 @@ class RhiRaytracingPipelineStateDesc;
 class RhiRaytracingShaderBindingTable;
 class RhiSwapChain;
 class RhiShader;
+class RhiShaderReflection;
 
 using RhiFenceValue = uint64_t;
 using RhiStencilValue = uint32_t;

@@ -40,13 +40,17 @@ public:
     inline std::string GetFilePath() const { return m_FilePath; }
     inline std::string GetEntryPoint() const { return m_EntryPoint; }
 
+    inline const RhiShaderReflection& GetReflection() const { return *m_Reflection; }
+
 public:
     virtual void Compile() = 0;
+    virtual void ReflectShader() = 0;
 
 protected:
     friend class ShaderDaemon;
 
     RhiShaderType m_Type;
+    std::unique_ptr<RhiShaderReflection> m_Reflection;
 
     std::atomic_bool m_IsCompiled;
     size_t m_CompiledSize;
