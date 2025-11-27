@@ -20,7 +20,9 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhirootsignaturebindingtable.h"
 
+#if _DEBUG
 std::unordered_set<std::string> Ether::Graphics::RhiRootSignatureBindingTable::m_InvalidBindings;
+#endif
 
 void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const RhiRootSignature& rootSignature)
 {
