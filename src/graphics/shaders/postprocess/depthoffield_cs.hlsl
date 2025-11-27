@@ -26,6 +26,7 @@
 #include "utils/helpers.hlsl"
 
 ConstantBuffer<DepthOfFieldParams> DepthOfFieldParams   : register(b1);
+cbuffer PassIndexCB                                     : register(b2) { uint PassIndex; };
 
 Texture2D<float2> SceneDepth                            : register(t0);
 Texture2D<float4> DofCircleOfConfusionTexture           : register(t1);
@@ -33,6 +34,7 @@ Texture2D<float4> DofAccumulationTexture                : register(t2);
 
 Texture2D<float4> SourceTexture                         : register(t3);
 RWTexture2D<float4> RWDestinationTexture                : register(u0);
+
 
 // From https://github.com/Unity-Technologies/Graphics/blob/master/com.unity.postprocessing/PostProcessing/Shaders/Builtins/DiskKernels.hlsl
 static const int g_KernelSampleCount = 71;
@@ -252,15 +254,15 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     if (any(threadID.xy > GlobalConstants.m_ScreenResolution))
         return;
 
-    if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_GENERATE_COC)
+    if (PassIndex == DOF_PASSINDEX_GENERATE_COC)
         GenerateCocPass(threadID);
-    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_PREFILTER_PASS)
+    else if (PassIndex == DOF_PASSINDEX_PREFILTER_PASS)
         PreFilterPass(threadID);
-    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_ACCUMULATE)
+    else if (PassIndex == DOF_PASSINDEX_ACCUMULATE)
         AccumulateDepthOfField(threadID);
-    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_POSTFILTER_PASS)
+    else if (PassIndex == DOF_PASSINDEX_POSTFILTER_PASS)
         PostFilterPass(threadID);
-    else if (DepthOfFieldParams.m_PassIndex == DOF_PASSINDEX_COMPOSITE)
+    else if (PassIndex == DOF_PASSINDEX_COMPOSITE)
         CompositePass(threadID);
 }
 

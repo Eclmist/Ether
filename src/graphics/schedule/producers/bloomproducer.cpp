@@ -167,7 +167,6 @@ void Ether::Graphics::BloomProducer::AddBloomSubpass(
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::BloomParams), 256 });
     Shader::BloomParams* params = (Shader::BloomParams*)alloc->GetCpuHandle();
-    params->m_PassIndex = passType;
     params->m_Resolution = { std::floor(dstResolution.x), std::floor(dstResolution.y) };
     params->m_Intensity = config.m_BloomIntensity;
     params->m_Scatter = config.m_BloomScatter;
@@ -175,6 +174,7 @@ void Ether::Graphics::BloomProducer::AddBloomSubpass(
     ctx.InsertUavBarrier(*rc.GetResource(src));
 
     m_BindingTable->Bind(ctx, rc, "BloomParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+    m_BindingTable->Bind(ctx, rc, "PassIndexCB", passType);
     m_BindingTable->Bind(ctx, rc, "SourceTexture", src);
     m_BindingTable->Bind(ctx, rc, "DestinationTexture", dst);
     m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", dstUav);

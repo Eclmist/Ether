@@ -34,16 +34,11 @@ ETH_BEGIN_SHADER_NAMESPACE
 
 struct DepthOfFieldParams
 {
-    uint32_t m_PassIndex;
-
     float m_FocalLength;
     float m_Aperture;
     float m_MaxCoC;
     float m_FocusDistance;
-
     float m_FocusRange;
-
-
 };
 
 ETH_END_SHADER_NAMESPACE

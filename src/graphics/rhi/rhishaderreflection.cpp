@@ -38,15 +38,8 @@ std::vector<Ether::Graphics::RhiShaderReflection::ResourceBinding> Ether::Graphi
             if (nameToIndex.contains(key))
                 continue;
 
-            RhiShaderReflection::ResourceBinding mergedBinding;
-            mergedBinding.m_Name = binding.m_Name;
-            mergedBinding.m_Type = binding.m_Type;
-            mergedBinding.m_Dimension = binding.m_Dimension;
-            mergedBinding.m_BindPoint = binding.m_BindPoint;
-            mergedBinding.m_Space = binding.m_Space;
-
             nameToIndex[key] = mergedBindings.size();
-            mergedBindings.push_back(mergedBinding);
+            mergedBindings.push_back(binding);
         }
     }
 

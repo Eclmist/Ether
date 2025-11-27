@@ -24,6 +24,8 @@
 #include "common/bloomparams.h"
 
 ConstantBuffer<BloomParams> BloomParams             : register(b1);
+cbuffer PassIndexCB                                 : register(b2) { uint PassIndex; };
+
 Texture2D<float4> SourceTexture                     : register(t0);
 Texture2D<float4> DestinationTexture                : register(t1);
 RWTexture2D<float4> RWDestinationTexture            : register(u0);
@@ -105,11 +107,11 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     if (any(threadID.xy > BloomParams.m_Resolution.xy))
         return;
 
-    if (BloomParams.m_PassIndex == BLOOM_PASSINDEX_DOWNSAMPLE)
+    if (PassIndex == BLOOM_PASSINDEX_DOWNSAMPLE)
         DownsamplePass(threadID);
-    else if (BloomParams.m_PassIndex == BLOOM_PASSINDEX_UPSAMPLE)
+    else if (PassIndex == BLOOM_PASSINDEX_UPSAMPLE)
         UpsamplePass(threadID);
-    else if (BloomParams.m_PassIndex == BLOOM_PASSINDEX_COMPOSITE)
+    else if (PassIndex == BLOOM_PASSINDEX_COMPOSITE)
         CompositePass(threadID);
 }
 

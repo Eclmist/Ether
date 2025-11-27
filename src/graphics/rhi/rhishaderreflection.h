@@ -35,6 +35,13 @@ public:
         uint32_t m_BindPoint;               // Register number (the '0' in 't0')
         uint32_t m_BindCount;               // Array size (1 for non-arrays)
         uint32_t m_Space;                   // Register space
+        uint32_t m_Size;                    // Size in bytes for root constants
+
+        bool IsRootConstant() const
+        { 
+            // Root constants go up to 4 DWORDS
+            return m_Type == RhiDescriptorType::Cbv && m_Size > 0 && m_Size <= 16;
+        }
 
         bool RequiresResourceTable() const
         {
