@@ -66,10 +66,14 @@ public:
     void SetResourceContext(const ResourceContext& resourceContext);
 
     // Shader Data
-    template <typename T>
-    void Bind(const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0);
-    template <typename T>
-    void Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0);
+    void Bind(const GFX_STATIC::StaticResourceWrapper<RhiConstantBufferView>& wrapper, uint64_t offset = 0);
+    void Bind(const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset = 0);
+    void Bind(const GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView>& wrapper, uint64_t offset = 0);
+    void Bind(const GFX_STATIC::StaticResourceWrapper<RhiAccelerationStructureResourceView>& wrapper, uint64_t offset = 0);
+    void Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiConstantBufferView>& wrapper, uint64_t offset = 0);
+    void Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset = 0);
+    void Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView>& wrapper, uint64_t offset = 0);
+    void Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiAccelerationStructureResourceView>& wrapper, uint64_t offset = 0);
     void Bind(const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset = 0);
     void Bind(const std::string& name, RhiGpuAddress address, uint64_t offset = 0);
     void Bind(const std::string& name, uint32_t value, uint64_t offset = 0);
@@ -114,28 +118,5 @@ protected:
 
     const RhiResource* m_RaytracingBindTable;
 };
-
-template <typename T>
-void Ether::Graphics::CommandContext::Bind(
-    const std::string& name,
-    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
-    uint64_t offset)
-{
-    m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
-}
-
-template <typename T>
-void Ether::Graphics::CommandContext::Bind(
-    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
-    uint64_t offset)
-{
-    std::string bindingName = wrapper.GetSharedResourceName();
-
-    if (std::string(wrapper.GetType()) == "UA")
-        bindingName = "RW" + bindingName;
-
-    m_RootSignatureBindingTable->Bind(*this, bindingName, wrapper.Get().get(), offset);
-}
-
 } // namespace Ether::Graphics
 

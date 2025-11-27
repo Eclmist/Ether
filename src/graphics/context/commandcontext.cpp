@@ -214,6 +214,46 @@ void Ether::Graphics::CommandContext::SetResourceContext(const ResourceContext& 
     m_RootSignatureBindingTable->SetResourceContext(resourceContext);
 }
 
+void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiConstantBufferView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, wrapper.GetSharedResourceName(), wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, wrapper.GetSharedResourceName(), wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, "RW" + std::string(wrapper.GetSharedResourceName()), wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const GFX_STATIC::StaticResourceWrapper<RhiAccelerationStructureResourceView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, wrapper.GetSharedResourceName(), wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiConstantBufferView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiShaderResourceView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiUnorderedAccessView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<RhiAccelerationStructureResourceView>& wrapper, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
+}
+
 void Ether::Graphics::CommandContext::Bind(const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset)
 {
     m_RootSignatureBindingTable->Bind(*this, name, resource, offset);
