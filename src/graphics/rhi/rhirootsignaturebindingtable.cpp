@@ -83,7 +83,7 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
         gpuAddress = rc.GetResource(view)->GetGpuAddress();
     }
 
-    Bind(ctx, rc, name, gpuAddress);
+    Bind(ctx, rc, name, gpuAddress, offset);
 }
 
 void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
