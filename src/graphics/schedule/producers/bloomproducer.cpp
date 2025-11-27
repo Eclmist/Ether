@@ -173,11 +173,11 @@ void Ether::Graphics::BloomProducer::AddBloomSubpass(
     params->m_Anamorphic = config.m_BloomAnamorphic;
     ctx.InsertUavBarrier(*rc.GetResource(src));
 
-    m_BindingTable->Bind(ctx, rc, "BloomParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-    m_BindingTable->Bind(ctx, rc, "PassIndexCB", passType);
-    m_BindingTable->Bind(ctx, rc, "SourceTexture", src);
-    m_BindingTable->Bind(ctx, rc, "DestinationTexture", dst);
-    m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", dstUav);
+    ctx.Bind("BloomParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+    ctx.Bind("PassIndexCB", passType);
+    ctx.Bind("SourceTexture", src);
+    ctx.Bind("DestinationTexture", dst);
+    ctx.Bind("RWDestinationTexture", dstUav);
 
     ctx.Dispatch(std::ceil(dstResolution.x / float(BLOOM_KERNEL_GROUP_SIZE_X)), std::ceil(dstResolution.y / float(BLOOM_KERNEL_GROUP_SIZE_Y)), 1);
 }

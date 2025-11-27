@@ -55,7 +55,6 @@ protected:
 protected:
     std::string m_Name;
     std::unique_ptr<RhiRootSignature> m_RootSignature;
-    std::unique_ptr<RhiRootSignatureBindingTable> m_BindingTable;
 
 private:
     std::unique_ptr<UploadBufferAllocator> m_FrameLocalUploadBuffer[MaxSwapChainBuffers];

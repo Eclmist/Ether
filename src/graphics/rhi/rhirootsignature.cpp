@@ -20,8 +20,10 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhirootsignature.h"
 
-std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::RhiRootSignatureDesc::Compile(
-    const char* name) const
+std::unique_ptr<Ether::Graphics::RhiRootSignature> Ether::Graphics::RhiRootSignatureDesc::Compile(const char* name) const
 {
-    return GraphicCore::GetDevice().CreateRootSignature(name, *this);
+    auto rootSignature = GraphicCore::GetDevice().CreateRootSignature(name, *this);
+    rootSignature->SetName(name);
+    rootSignature->SetShaderBindings(m_ShaderBindings);
+    return rootSignature;
 }

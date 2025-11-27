@@ -46,9 +46,7 @@ void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, R
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(PostFxSourceTexture)), RhiResourceState::Common);
     ctx.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(PostFxSourceTexture));
-
+    ctx.Bind(ACCESS_GFX_SR(PostFxSourceTexture));
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     ctx.DrawInstanced(3, 1);
 }

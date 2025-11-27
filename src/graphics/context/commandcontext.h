@@ -20,17 +20,20 @@
 #pragma once
 
 #include "graphics/pch.h"
-#include "graphics/memory/uploadbufferallocator.h"
 #include "graphics/rhi/rhicommandlist.h"
 #include "graphics/rhi/rhicomputepipelinestate.h"
 #include "graphics/rhi/rhigraphicpipelinestate.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
+#include "graphics/rhi/rhirootsignaturebindingtable.h"
+#include "graphics/memory/uploadbufferallocator.h"
+#include "graphics/schedule/frameschedulerutils.h"
 
 namespace Ether::Graphics
 {
 class RhiCommandQueue;
 class RhiCommandAllocator;
 class CommandAllocatorPool;
+class ResourceContext;
 
 class ETH_GRAPHIC_DLL CommandContext : public NonCopyable, public NonMovable
 {
@@ -39,7 +42,7 @@ public:
         const char* contextName,
         RhiCommandType type = RhiCommandType::Graphic,
         size_t uploadBufferSize = _4MiB);
-    ~CommandContext() = default;
+    virtual ~CommandContext() = default;
 
 public:
     inline RhiCommandList& GetCommandList() const { return *m_CommandList; }
@@ -60,8 +63,18 @@ public:
     void SetGraphicPipelineState(const RhiGraphicPipelineState& pipelineState);
     void SetComputePipelineState(const RhiComputePipelineState& pipelineState);
     void SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState);
+    void SetResourceContext(const ResourceContext& resourceContext);
 
     // Shader Data
+    template <typename T>
+    void Bind(const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0);
+    template <typename T>
+    void Bind(const std::string& name, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0);
+    void Bind(const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset = 0);
+    void Bind(const std::string& name, RhiGpuAddress address, uint64_t offset = 0);
+    void Bind(const std::string& name, uint32_t value, uint64_t offset = 0);
+
+    // TODO: Deprecate
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
     void SetComputeRootConstant(uint32_t rootParameterIndex, uint32_t data, uint32_t destOffset);
     void SetComputeRootConstantBufferView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
@@ -94,11 +107,35 @@ protected:
 
     std::unique_ptr<RhiCommandList> m_CommandList;
     std::unique_ptr<UploadBufferAllocator> m_UploadBufferAllocator;
+    std::unique_ptr<RhiRootSignatureBindingTable> m_RootSignatureBindingTable;
 
     const RhiDescriptorHeap* m_SrvCbvUavHeap;
     const RhiDescriptorHeap* m_SamplerHeap;
 
-    // Raytracing
     const RhiResource* m_RaytracingBindTable;
 };
+
+template <typename T>
+void Ether::Graphics::CommandContext::Bind(
+    const std::string& name,
+    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
+    uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, wrapper.Get().get(), offset);
+}
+
+template <typename T>
+void Ether::Graphics::CommandContext::Bind(
+    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
+    uint64_t offset)
+{
+    std::string bindingName = wrapper.GetSharedResourceName();
+
+    if (std::string(wrapper.GetType()) == "UA")
+        bindingName = "RW" + bindingName;
+
+    m_RootSignatureBindingTable->Bind(*this, bindingName, wrapper.Get().get(), offset);
+}
+
 } // namespace Ether::Graphics
+

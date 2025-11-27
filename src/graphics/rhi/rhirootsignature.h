@@ -20,6 +20,7 @@
 #pragma once
 
 #include "graphics/pch.h"
+#include "graphics/rhi/rhishaderreflection.h"
 
 namespace Ether::Graphics
 {
@@ -40,6 +41,7 @@ public:
     virtual void BuildFromReflection(const std::vector<const RhiShaderReflection*>& reflections) = 0;
 
 public:
+    // TODO: Deprecate
     virtual void SetAsConstant(
         uint32_t rootParamterIndex,
         uint32_t shaderRegister,
@@ -80,6 +82,8 @@ public:
 protected:
     uint32_t m_NumParameters;
     uint32_t m_NumSamplers;
+
+    std::vector<RhiShaderReflection::ResourceBinding> m_ShaderBindings;
 };
 
 class RhiRootSignature
@@ -87,6 +91,17 @@ class RhiRootSignature
 public:
     RhiRootSignature() = default;
     virtual ~RhiRootSignature() {}
+
+public:
+    inline const std::string& GetName() const { return m_Name; }
+    inline const std::vector<RhiShaderReflection::ResourceBinding>& GetShaderBindings() const { return m_ShaderBindings; }
+
+    inline void SetName(const std::string& name) { m_Name = name; }
+    inline void SetShaderBindings(const std::vector<RhiShaderReflection::ResourceBinding>& bindings) { m_ShaderBindings = bindings; }
+
+protected:
+    std::string m_Name;
+    std::vector<RhiShaderReflection::ResourceBinding> m_ShaderBindings;
 };
 
 } // namespace Ether::Graphics

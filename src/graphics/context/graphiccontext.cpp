@@ -71,6 +71,11 @@ void Ether::Graphics::GraphicContext::SetRenderTargets(
 void Ether::Graphics::GraphicContext::SetGraphicRootSignature(const RhiRootSignature& rootSignature)
 {
     m_CommandList->SetGraphicRootSignature(rootSignature);
+    m_RootSignatureBindingTable->PopulateBindings(rootSignature);
+    m_RootSignatureBindingTable->SetPipelineType(RhiPipelineType::Compute);
+#if _DEBUG
+    m_RootSignatureBindingTable->SetDebugName(rootSignature.GetName());
+#endif
 }
 
 void Ether::Graphics::GraphicContext::SetGraphicsRootConstant(

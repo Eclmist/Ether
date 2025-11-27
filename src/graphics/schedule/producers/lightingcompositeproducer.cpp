@@ -69,14 +69,12 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(ProceduralSkyTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(SceneColor)), RhiResourceState::RenderTarget);
-
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureA));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureB));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureC));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(LightingTexture));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(ProceduralSkyTexture));
-
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_SR(LightingTexture));
+    ctx.Bind(ACCESS_GFX_SR(ProceduralSkyTexture));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor).Get());
     ctx.DrawInstanced(3, 1);
 }

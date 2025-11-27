@@ -293,7 +293,8 @@ ETH_DEFINE_ENUM_FLAGS(RhiRootSignatureFlag);
 enum class RhiPipelineType
 {
     Graphics,
-    Compute
+    Compute,
+    Raytracing
 };
 
 enum class RhiShaderType

@@ -119,19 +119,19 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_RootSignature);
 
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_CB(GlobalConstants), ringBufferOffset);
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(MaterialTable));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_AS(RTRaytracingTlas));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(RTGeometryInfo));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureA));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureB));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureC));
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), ringBufferOffset);
+    ctx.Bind(ACCESS_GFX_SR(MaterialTable));
+    ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
+    ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
 
     // Spatial Hashing Prototype
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(SpatialHash));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(SpatialHashAge));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(SpatialHashPayload));
+    ctx.Bind(ACCESS_GFX_UA(SpatialHash));
+    ctx.Bind(ACCESS_GFX_UA(SpatialHashAge));
+    ctx.Bind(ACCESS_GFX_UA(SpatialHashPayload));
 
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;
@@ -173,9 +173,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         ctx.PushMarker("ReSTIR - Initial Reservoir Generation");
         ctx.SetRaytracingShaderBindingTable(m_InitialGenerationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_InitialGenerationPsoDesc));
-
-        m_BindingTable->Bind(ctx, rc, "RWOutputReservoir", initialReservoir);
-
+        ctx.Bind("RWOutputReservoir", initialReservoir);
         ctx.DispatchRays(sampleResolution.x, sampleResolution.y, 1);
         ctx.PopMarker();
     }
@@ -188,11 +186,9 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
         ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
         ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_TemporalResamplingPsoDesc));
-
-        m_BindingTable->Bind(ctx, rc, "InputReservoir", initialReservoir);
-        m_BindingTable->Bind(ctx, rc, "HistoryReservoir", historyReservoir);
-        m_BindingTable->Bind(ctx, rc, "RWOutputReservoir", stagingReservoir);
-
+        ctx.Bind("InputReservoir", initialReservoir);
+        ctx.Bind("HistoryReservoir", historyReservoir);
+        ctx.Bind("RWOutputReservoir", stagingReservoir);
         ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
         ctx.PopMarker();
     }
@@ -205,10 +201,8 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
         ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
         ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_SpatialResamplingPsoDesc));
-
-        m_BindingTable->Bind(ctx, rc, "InputReservoir", (temporalResampling ? stagingReservoir : initialReservoir));
-        m_BindingTable->Bind(ctx, rc, "RWOutputReservoir", (temporalResampling ? historyReservoir : stagingReservoir));
-        
+        ctx.Bind("InputReservoir", (temporalResampling ? stagingReservoir : initialReservoir));
+        ctx.Bind("RWOutputReservoir", (temporalResampling ? historyReservoir : stagingReservoir));
         ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
         ctx.PopMarker();
     }
@@ -220,12 +214,10 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         ctx.InsertUavBarrier(*rc.GetResource(fallbackReservoir));
         ctx.SetRaytracingShaderBindingTable(m_LightingEvaluationSBT);
         ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_LightingEvaluationPsoDesc));
-
-        m_BindingTable->Bind(ctx, rc, "InputReservoir", finalReservoir);
-        m_BindingTable->Bind(ctx, rc, "HistoryReservoir", fallbackReservoir);
-        m_BindingTable->Bind(ctx, rc, "RWOutputReservoir", finalReservoir);
-        m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(LightingTexture));
-
+        ctx.Bind("InputReservoir", finalReservoir);
+        ctx.Bind("HistoryReservoir", fallbackReservoir);
+        ctx.Bind("RWOutputReservoir", finalReservoir);
+        ctx.Bind(ACCESS_GFX_UA(LightingTexture));
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();
     }
@@ -274,7 +266,6 @@ void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
                                                                          &m_SpatialResamplingShader->GetReflection(),
                                                                          &m_LightingEvaluationShader->GetReflection() }; 
 
-    m_BindingTable = std::make_unique<RhiRootSignatureBindingTable>(shaderReflections, RhiPipelineType::Compute, "lighting\\restir\\restir_*.hlsl");
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(shaderReflections)->Compile((GetName() + " Root Signature").c_str());
 }
 

@@ -50,8 +50,7 @@ void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_ComputePsoDesc));
-
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
 }
 
 void Ether::Graphics::PostProcessProducer::CreateShaders()
@@ -72,7 +71,6 @@ void Ether::Graphics::PostProcessProducer::CreatePipelineState(ResourceContext& 
 
 void Ether::Graphics::PostProcessProducer::CreateRootSignature()
 {
-    m_BindingTable = std::make_unique<RhiRootSignatureBindingTable>(m_ComputeShader->GetReflection(), RhiPipelineType::Compute, m_ComputeShader->GetFileName());
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(m_ComputeShader->GetReflection())->Compile((GetName() + " Root Signature").c_str());
 }
 
