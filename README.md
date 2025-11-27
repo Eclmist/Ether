@@ -34,7 +34,8 @@ Ether is open-sourced, licensed under the [GNU General Public License v3](https:
 * Post Processing (TAA, Bloom, DOF)
 * Skeletal Mesh & Animation System
 * GPU Resource & Descriptor Management
-* Shader Hot Reloading 
+* Shader Reflection & Hot Reloading
+* Automatic Root Signature Generation 
 * Asset Pipeline /w Tool Integration ([Matcha Editor](https://github.com/Eclmist/Matcha-Editor))
 
 ## Screenshots
