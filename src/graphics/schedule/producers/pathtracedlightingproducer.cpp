@@ -32,12 +32,12 @@ DEFINE_GFX_UA(RTIndirectTexture)
 DEFINE_GFX_SR(RTAccumulationTexture)
 
 DECLARE_GFX_SR(RTGeometryInfo)
-DECLARE_GFX_AS(RTTopLevelAccelerationStructure)
+DECLARE_GFX_AS(RTRaytracingTlas)
 DECLARE_GFX_UA(LightingTexture)
 DECLARE_GFX_SR(LightingTexture)
-DECLARE_GFX_SR(GBufferTexture0)
-DECLARE_GFX_SR(GBufferTexture1)
-DECLARE_GFX_SR(GBufferTexture2)
+DECLARE_GFX_SR(GBufferTextureA)
+DECLARE_GFX_SR(GBufferTextureB)
+DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
@@ -69,10 +69,10 @@ void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext
     schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
-    schedule.Read(ACCESS_GFX_AS(RTTopLevelAccelerationStructure));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
+    schedule.Read(ACCESS_GFX_AS(RTRaytracingTlas));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureA));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
@@ -99,12 +99,12 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
 
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure))->GetGpuAddress());
+    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_AS(RTRaytracingTlas))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(RTAccumulationTexture)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_SR(GBufferTextureA)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(6, ACCESS_GFX_SR(GBufferTextureB)->GetGpuAddress());
+    ctx.SetComputeRootDescriptorTable(7, ACCESS_GFX_SR(GBufferTextureC)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(8, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(9, ACCESS_GFX_UA(LightingTexture)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(10, ACCESS_GFX_UA(RTIndirectTexture)->GetGpuAddress());

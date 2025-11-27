@@ -27,7 +27,7 @@
 
 DEFINE_GFX_PA(RaytracingResourceProducer)
 DEFINE_GFX_SR(RTGeometryInfo)
-DEFINE_GFX_AS(RTTopLevelAccelerationStructure)
+DEFINE_GFX_AS(RTRaytracingTlas)
 
 Ether::Graphics::RaytracingResourceProducer::RaytracingResourceProducer()
     : GraphicProducer("RaytracingResourceProducer")
@@ -44,7 +44,7 @@ void Ether::Graphics::RaytracingResourceProducer::GetInputOutput(ScheduleContext
     uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.size();
 
     schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numRTVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
-    schedule.NewAS(ACCESS_GFX_AS(RTTopLevelAccelerationStructure), GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals);
+    schedule.NewAS(ACCESS_GFX_AS(RTRaytracingTlas), GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals);
 }
 
 void Ether::Graphics::RaytracingResourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)

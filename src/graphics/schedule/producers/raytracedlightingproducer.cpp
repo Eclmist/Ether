@@ -37,11 +37,11 @@ DEFINE_GFX_UA(GIReservoir_History)
 DEFINE_GFX_UA(GIReservoir_Staging)
 
 DECLARE_GFX_SR(RTGeometryInfo)
-DECLARE_GFX_AS(RTTopLevelAccelerationStructure)
+DECLARE_GFX_AS(RTRaytracingTlas)
 DECLARE_GFX_SR(SceneDepth)
-DECLARE_GFX_SR(GBufferTexture0)
-DECLARE_GFX_SR(GBufferTexture1)
-DECLARE_GFX_SR(GBufferTexture2)
+DECLARE_GFX_SR(GBufferTextureA)
+DECLARE_GFX_SR(GBufferTextureB)
+DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_CB(GlobalRingBuffer)
 DECLARE_GFX_SR(MaterialTable)
 
@@ -77,11 +77,11 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.NewSR(ACCESS_GFX_SR(LightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
-    schedule.Read(ACCESS_GFX_AS(RTTopLevelAccelerationStructure));
+    schedule.Read(ACCESS_GFX_AS(RTRaytracingTlas));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureA));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
@@ -121,12 +121,12 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
 
     m_BindingTable->Bind(ctx, rc, "GlobalConstants", ACCESS_GFX_CB(GlobalRingBuffer), ringBufferOffset);
     m_BindingTable->Bind(ctx, rc, "MaterialTable", ACCESS_GFX_SR(MaterialTable));
-    m_BindingTable->Bind(ctx, rc, "RaytracingTlas", ACCESS_GFX_AS(RTTopLevelAccelerationStructure));
+    m_BindingTable->Bind(ctx, rc, "RTRaytracingTlas", ACCESS_GFX_AS(RTRaytracingTlas));
     m_BindingTable->Bind(ctx, rc, "RTGeometryInfo", ACCESS_GFX_SR(RTGeometryInfo));
     m_BindingTable->Bind(ctx, rc, "SceneDepth", ACCESS_GFX_SR(SceneDepth));
-    m_BindingTable->Bind(ctx, rc, "GBufferTextureA", ACCESS_GFX_SR(GBufferTexture0));
-    m_BindingTable->Bind(ctx, rc, "GBufferTextureB", ACCESS_GFX_SR(GBufferTexture1));
-    m_BindingTable->Bind(ctx, rc, "GBufferTextureC", ACCESS_GFX_SR(GBufferTexture2));
+    m_BindingTable->Bind(ctx, rc, "GBufferTextureA", ACCESS_GFX_SR(GBufferTextureA));
+    m_BindingTable->Bind(ctx, rc, "GBufferTextureB", ACCESS_GFX_SR(GBufferTextureB));
+    m_BindingTable->Bind(ctx, rc, "GBufferTextureC", ACCESS_GFX_SR(GBufferTextureC));
 
     // Spatial Hashing Prototype
     m_BindingTable->Bind(ctx, rc, "RWSpatialHash", ACCESS_GFX_UA(SpatialHash));
@@ -298,7 +298,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceCon
     m_InitialGenerationPsoDesc->PushExportAssociation(s_EntryPoints, numExports);
     m_InitialGenerationPsoDesc->PushPipelineConfig();
     m_InitialGenerationPsoDesc->PushGlobalRootSignature();
-    rc.RegisterPipelineState((GetName() + " Initial Generation Raytracing Pipeline State").c_str(), *m_InitialGenerationPsoDesc);
+    rc.RegisterPipelineState((GetName() + "Raytraced Lighting Pipeline State").c_str(), *m_InitialGenerationPsoDesc);
 
     m_LightingEvaluationPsoDesc = GraphicCore::GetDevice().CreateRaytracingPipelineStateDesc();
     m_LightingEvaluationPsoDesc->SetLibraryShader(*m_LightingEvaluationShader);

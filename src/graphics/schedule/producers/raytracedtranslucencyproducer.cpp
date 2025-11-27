@@ -30,7 +30,7 @@
 DEFINE_GFX_PA(RaytracedTranslucencyProducer)
 
 DECLARE_GFX_SR(RTGeometryInfo)
-DECLARE_GFX_AS(RTTopLevelAccelerationStructure)
+DECLARE_GFX_AS(RTRaytracingTlas)
 DECLARE_GFX_UA(SceneColor)
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalRingBuffer)
@@ -61,7 +61,7 @@ void Ether::Graphics::RaytracedTranslucencyProducer::GetInputOutput(ScheduleCont
     uint32_t numRTVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.size();
 
     schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
-    schedule.Read(ACCESS_GFX_AS(RTTopLevelAccelerationStructure));
+    schedule.Read(ACCESS_GFX_AS(RTRaytracingTlas));
     schedule.Read(ACCESS_GFX_UA(SceneColor));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalRingBuffer));
@@ -89,7 +89,7 @@ void Ether::Graphics::RaytracedTranslucencyProducer::RenderFrame(GraphicContext&
     uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
     ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalRingBuffer))->GetGpuAddress() + ringBufferOffset);
     ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_AS(RTTopLevelAccelerationStructure))->GetGpuAddress());
+    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_AS(RTRaytracingTlas))->GetGpuAddress());
     ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_UA(SceneColor)->GetGpuAddress());

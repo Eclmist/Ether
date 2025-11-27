@@ -27,9 +27,9 @@ DEFINE_GFX_RT(SceneColor)
 DEFINE_GFX_SR(SceneColor)
 DEFINE_GFX_UA(SceneColor)
 
-DECLARE_GFX_SR(GBufferTexture0)
-DECLARE_GFX_SR(GBufferTexture1)
-DECLARE_GFX_SR(GBufferTexture2)
+DECLARE_GFX_SR(GBufferTextureA)
+DECLARE_GFX_SR(GBufferTextureB)
+DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_SR(LightingTexture)
 DECLARE_GFX_SR(ProceduralSkyTexture)
@@ -47,9 +47,9 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     schedule.NewSR(ACCESS_GFX_SR(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture0));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture1));
-    schedule.Read(ACCESS_GFX_SR(GBufferTexture2));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureA));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_SR(LightingTexture));
     schedule.Read(ACCESS_GFX_SR(ProceduralSkyTexture));
@@ -62,17 +62,17 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
 
     FullScreenProducer::RenderFrame(ctx, rc);
 
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture0)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture1)), RhiResourceState::Common);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTexture2)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTextureA)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTextureB)), RhiResourceState::Common);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTextureC)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneDepth)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(LightingTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(ProceduralSkyTexture)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_RT(SceneColor)), RhiResourceState::RenderTarget);
 
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(GBufferTexture0)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTexture1)->GetGpuAddress());
-    ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTexture2)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(GBufferTextureA)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(2, ACCESS_GFX_SR(GBufferTextureB)->GetGpuAddress());
+    ctx.SetGraphicsRootDescriptorTable(3, ACCESS_GFX_SR(GBufferTextureC)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(4, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(5, ACCESS_GFX_SR(LightingTexture)->GetGpuAddress());
     ctx.SetGraphicsRootDescriptorTable(6, ACCESS_GFX_SR(ProceduralSkyTexture)->GetGpuAddress());
@@ -87,11 +87,11 @@ void Ether::Graphics::LightingCompositeProducer::CreateRootSignature()
     rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);     // (b0) Global Constants
 
     rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTexture0
+    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) GBufferTextureA
     rsDesc->SetAsDescriptorTable(2, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 1); // (t1) GBufferTexture1
+    rsDesc->SetDescriptorTableRange(2, RhiDescriptorType::Srv, 1, 0, 1); // (t1) GBufferTextureB
     rsDesc->SetAsDescriptorTable(3, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2); // (t2) GBufferTexture2
+    rsDesc->SetDescriptorTableRange(3, RhiDescriptorType::Srv, 1, 0, 2); // (t2) GBufferTextureC
     rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
     rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3); // (t3) SceneDepth
     rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);

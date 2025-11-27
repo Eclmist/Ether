@@ -82,7 +82,7 @@ RayPayload TraceValidationRay(ShadingSurface surface, GIReservoirSample sample)
     ray.Direction = normalize(sample.m_SamplePosition - surface.m_Position);
     ray.TMax = length(sample.m_SamplePosition - ray.Origin) * 0.99f;
     ray.TMin = RAY_TMIN;
-    TraceRay(RaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
+    TraceRay(RTRaytracingTlas, RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, 0, 0, ray, payload);
 
     return payload;
 }
