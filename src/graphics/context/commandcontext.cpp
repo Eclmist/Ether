@@ -36,6 +36,7 @@ Ether::Graphics::CommandContext::CommandContext(const char* contextName, RhiComm
     m_CommandList->Close();
 
     m_UploadBufferAllocator = std::make_unique<UploadBufferAllocator>(uploadBufferSize);
+    m_RootSignatureBindingTable = std::make_unique<RhiRootSignatureBindingTable>();
 }
 
 void Ether::Graphics::CommandContext::Reset()
@@ -94,16 +95,19 @@ void Ether::Graphics::CommandContext::SetSamplerDescriptorHeap(const RhiDescript
 void Ether::Graphics::CommandContext::SetGraphicPipelineState(const RhiGraphicPipelineState& pipelineState)
 {
     m_CommandList->SetGraphicPipelineState(pipelineState);
+    m_RootSignatureBindingTable->SetPipelineType(RhiPipelineType::Graphics);
 }
 
 void Ether::Graphics::CommandContext::SetComputePipelineState(const RhiComputePipelineState& pipelineState)
 {
     m_CommandList->SetComputePipelineState(pipelineState);
+    m_RootSignatureBindingTable->SetPipelineType(RhiPipelineType::Compute);
 }
 
 void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytracingPipelineState& pipelineState)
 {
     m_CommandList->SetRaytracingPipelineState(pipelineState);
+    m_RootSignatureBindingTable->SetPipelineType(RhiPipelineType::Raytracing);
 }
 
 void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
@@ -205,9 +209,35 @@ void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiR
     m_RaytracingBindTable = bindTable;
 }
 
+void Ether::Graphics::CommandContext::SetResourceContext(const ResourceContext& resourceContext)
+{
+    m_RootSignatureBindingTable->SetResourceContext(resourceContext);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, resource, offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, RhiGpuAddress address, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, address, offset);
+}
+
+void Ether::Graphics::CommandContext::Bind(const std::string& name, uint32_t value, uint64_t offset)
+{
+    m_RootSignatureBindingTable->Bind(*this, name, value, offset);
+}
+
 void Ether::Graphics::CommandContext::SetComputeRootSignature(const RhiRootSignature& rootSignature)
 {
     m_CommandList->SetComputeRootSignature(rootSignature);
+    m_RootSignatureBindingTable->PopulateBindings(rootSignature);
+    m_RootSignatureBindingTable->SetPipelineType(RhiPipelineType::Compute);
+
+#if _DEBUG
+    m_RootSignatureBindingTable->SetDebugName(rootSignature.GetName());
+#endif
 }
 
 void Ether::Graphics::CommandContext::SetComputeRootConstant(

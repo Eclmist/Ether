@@ -26,11 +26,11 @@
 
 namespace Ether::Graphics
 {
-class GraphicContext : public CommandContext
+class ETH_GRAPHIC_DLL GraphicContext : public CommandContext
 {
 public:
     GraphicContext(const char* contextName, size_t uploadBufferSize = _4MiB);
-    ~GraphicContext() = default;
+    ~GraphicContext() override = default;
 
 public:
     // Common

@@ -67,48 +67,48 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
     params->m_FocalLength = config.m_FocalLength;
     params->m_MaxCoC = config.m_MaxCoC;
     params->m_FocusRange = config.m_FocusRange;
-    m_BindingTable->Bind(ctx, rc, "DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(DofCircleOfConfusionTexture));
+    ctx.Bind("DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_SR(DofCircleOfConfusionTexture));
 
     // Generate circle of confusion
     {
-        m_BindingTable->Bind(ctx, rc, "PassIndexCB", (uint32_t)DOF_PASSINDEX_GENERATE_COC);
-        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
-        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofCircleOfConfusionTexture));
+        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_GENERATE_COC);
+        ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofCircleOfConfusionTexture));
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
     // Generate downsampled scene color + coc
     {
-        m_BindingTable->Bind(ctx, rc, "PassIndexCB", (uint32_t)DOF_PASSINDEX_PREFILTER_PASS);
-        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
-        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
+        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_PREFILTER_PASS);
+        ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
     // Accumulate dof / bokeh
     {
-        m_BindingTable->Bind(ctx, rc, "PassIndexCB", (uint32_t)DOF_PASSINDEX_ACCUMULATE);
-        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
-        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture2));
+        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_ACCUMULATE);
+        ctx.Bind("SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
+        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture2));
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
     // Post filter / tent filter
     {
-        m_BindingTable->Bind(ctx, rc, "PassIndexCB", (uint32_t)DOF_PASSINDEX_POSTFILTER_PASS);
-        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture2));
-        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
+        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_POSTFILTER_PASS);
+        ctx.Bind("SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture2));
+        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
         ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 
     // Final Composite
     {
-        m_BindingTable->Bind(ctx, rc, "PassIndexCB", (uint32_t)DOF_PASSINDEX_COMPOSITE);
-        m_BindingTable->Bind(ctx, rc, "DofAccumulationTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
-        m_BindingTable->Bind(ctx, rc, "SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
-        m_BindingTable->Bind(ctx, rc, "RWDestinationTexture", ACCESS_GFX_UA(PostFxSourceTexture));
+        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_COMPOSITE);
+        ctx.Bind("DofAccumulationTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
+        ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(PostFxSourceTexture));
         ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
     }
 

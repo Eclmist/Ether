@@ -56,11 +56,10 @@ void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(PostFxSourceTexture)), RhiResourceState::UnorderedAccess);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(GBufferTextureB)), RhiResourceState::Common);
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(SceneDepth)), RhiResourceState::Common);
-
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_UA(PostFxSourceTexture));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(GBufferTextureB));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(TaaAccumulationTexture));
-    m_BindingTable->Bind(ctx, rc, ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_UA(PostFxSourceTexture));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
+    ctx.Bind(ACCESS_GFX_SR(TaaAccumulationTexture));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
 
     DispatchFullscreen(ctx);
 

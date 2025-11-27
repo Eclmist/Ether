@@ -48,11 +48,11 @@ void Ether::Graphics::Dx12RootSignatureDesc::BuildFromReflection(const std::vect
     // can still all share the same root signature. The caveat here is that we need
     // to manually ensure that the bindings are consistent across shaders. This is generally not a problem
     // because it's more convenient for multiple raytracing shaders of the same producer to share headers anyway
-    std::vector<RhiShaderReflection::ResourceBinding> mergedBindings = RhiShaderReflection::MergeBindings(reflections);
+    m_ShaderBindings = RhiShaderReflection::MergeBindings(reflections);
 
     // Resize internal structures
-    m_Dx12RootParameters.resize(mergedBindings.size());
-    m_Dx12RootSignatureDesc.NumParameters = mergedBindings.size();
+    m_Dx12RootParameters.resize(m_ShaderBindings.size());
+    m_Dx12RootSignatureDesc.NumParameters = m_ShaderBindings.size();
     m_Dx12RootSignatureDesc.pParameters = m_Dx12RootParameters.data();
 
     // For bindless, we always need these two flags. Put it here for convenience so we don't have to keep setting flags for every RS
@@ -60,9 +60,9 @@ void Ether::Graphics::Dx12RootSignatureDesc::BuildFromReflection(const std::vect
                                     D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
 
     // Build root parameters
-    for (size_t i = 0; i < mergedBindings.size(); ++i)
+    for (size_t i = 0; i < m_ShaderBindings.size(); ++i)
     {
-        const RhiShaderReflection::ResourceBinding& binding = mergedBindings[i];
+        const RhiShaderReflection::ResourceBinding& binding = m_ShaderBindings[i];
         D3D12_ROOT_PARAMETER& param = m_Dx12RootParameters[i];
 
         switch (binding.m_Type)

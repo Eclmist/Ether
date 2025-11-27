@@ -211,6 +211,8 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxCo
     ETH_MARKER_EVENT("Frame Scheduler - Render Single Threaded");
 
     gfxContext.Reset();
+    gfxContext.SetResourceContext(m_ResourceContext);
+
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
     // For single threaded rendering, all producers will append into the same context

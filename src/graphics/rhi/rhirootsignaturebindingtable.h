@@ -24,24 +24,32 @@
 
 namespace Ether::Graphics
 {
+class CommandContext;
+class ResourceContext;
+
 class RhiRootSignatureBindingTable
 {
 public:
-    RhiRootSignatureBindingTable(const std::vector<const RhiShaderReflection*>& reflections, RhiPipelineType type, const std::string& debugName = "");
-    RhiRootSignatureBindingTable(const RhiShaderReflection& reflections, RhiPipelineType type, const std::string& debugName = "");
+    RhiRootSignatureBindingTable() = default;
     ~RhiRootSignatureBindingTable() = default;
 
 public:
     inline bool HasBinding(const std::string& name) const { return m_NameToBinding.contains(name); }
+    inline void SetPipelineType(RhiPipelineType type) { m_PipelineType = type; }
+    inline void SetResourceContext(const ResourceContext& rc) { m_ResourceContext = &rc; }
+
+#if _DEBUG
+    inline void SetDebugName(const std::string& name) { m_DebugName = name; }
+    void LogInvalidBinding(const std::string& name) const;
+#endif
 
 public:
-    template <typename T>
-    void Bind(GraphicContext& ctx, ResourceContext& rc, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
-    template <typename T>
-    void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, const GFX_STATIC::StaticResourceWrapper<T>& wrapper, uint64_t offset = 0) const;
-    void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset = 0) const;
-    void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, RhiGpuAddress address, uint64_t offset = 0) const;
-    void Bind(GraphicContext& ctx, ResourceContext& rc, const std::string& name, uint32_t value) const;
+    void PopulateBindings(const RhiRootSignature& rootSignature);
+    
+public:
+    void Bind(CommandContext& ctx, const std::string& name, RhiShaderVisibleResourceView* resource, uint64_t offset = 0) const;
+    void Bind(CommandContext& ctx, const std::string& name, RhiGpuAddress address, uint64_t offset = 0) const;
+    void Bind(CommandContext& ctx, const std::string& name, uint32_t value, uint64_t offset = 0) const;
 
 private:
     struct BindingInfo
@@ -51,41 +59,14 @@ private:
     };
 
 private:
-    void PopulateBindings(const std::vector<const RhiShaderReflection*>& reflections);
-
-private:
+    const ResourceContext* m_ResourceContext;
     std::unordered_map<std::string, BindingInfo> m_NameToBinding;
     RhiPipelineType m_PipelineType;
 
-    // For debug
-    mutable std::unordered_set<std::string> m_InvalidBindings;
-    std::string m_DebugShaderName;
+#if _DEBUG
+    static std::unordered_set<std::string> m_InvalidBindings;
+    std::string m_DebugName;
+#endif
 };
-
-template <typename T>
-void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
-    GraphicContext& ctx,
-    ResourceContext& rc,
-    const std::string& name,
-    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
-    uint64_t offset) const
-{
-    Bind(ctx, rc, name, wrapper.Get().get(), offset);
-}
-
-template <typename T>
-void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
-    GraphicContext& ctx,
-    ResourceContext& rc,
-    const GFX_STATIC::StaticResourceWrapper<T>& wrapper,
-    uint64_t offset) const
-{
-    std::string bindingName = wrapper.GetSharedResourceName();
-
-    if (std::string(wrapper.GetType()) == "UA")
-        bindingName = "RW" + bindingName;
-
-    Bind(ctx, rc, bindingName, wrapper.Get().get(), offset);
-}
-
 } // namespace Ether::Graphics
+

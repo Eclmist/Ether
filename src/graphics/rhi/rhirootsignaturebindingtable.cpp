@@ -20,53 +20,46 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhirootsignaturebindingtable.h"
 
-Ether::Graphics::RhiRootSignatureBindingTable::RhiRootSignatureBindingTable(
-    const std::vector<const RhiShaderReflection*>& reflections,
-    RhiPipelineType type,
-    const std::string& debugName)
-    : m_PipelineType(type)
-    , m_DebugShaderName(debugName)
-{
-    PopulateBindings(reflections);
-}
+std::unordered_set<std::string> Ether::Graphics::RhiRootSignatureBindingTable::m_InvalidBindings;
 
-Ether::Graphics::RhiRootSignatureBindingTable::RhiRootSignatureBindingTable(
-    const RhiShaderReflection& reflection,
-    RhiPipelineType type,
-    const std::string& debugName)
-    : m_PipelineType(type)
-    , m_DebugShaderName(debugName)
+void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const RhiRootSignature& rootSignature)
 {
-    PopulateBindings({ &reflection });
-}
+    std::vector<RhiShaderReflection::ResourceBinding> shaderBindings = rootSignature.GetShaderBindings();
 
-void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const std::vector<const RhiShaderReflection*>& reflections)
-{
-    std::vector<RhiShaderReflection::ResourceBinding> mergedBindings = RhiShaderReflection::MergeBindings(reflections);
+    // Old bindings must be removed!
+    m_NameToBinding.clear();
 
-    for (uint32_t i = 0; i < mergedBindings.size(); ++i)
+    for (uint32_t i = 0; i < shaderBindings.size(); ++i)
     {
          BindingInfo info;
          info.m_RootParameterIndex = i;
-         info.m_Binding = mergedBindings[i];
+         info.m_Binding = shaderBindings[i];
          m_NameToBinding[info.m_Binding.m_Name] = info;
     }
 }
 
+#if _DEBUG
+void Ether::Graphics::RhiRootSignatureBindingTable::LogInvalidBinding(const std::string& name) const
+{
+    if (!m_InvalidBindings.contains(name))
+    {
+        LogGraphicsWarning("Binding '%s' is bound but not found in %s", name.c_str(), m_DebugName.c_str());
+        m_InvalidBindings.insert(name);
+    }
+}
+#endif
+
 void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
-    GraphicContext& ctx,
-    ResourceContext& rc,
+    CommandContext& ctx,
     const std::string& name,
     RhiShaderVisibleResourceView* view,
     uint64_t offset) const
 {
     if (!m_NameToBinding.contains(name))
     {
-        if (!m_InvalidBindings.contains(name))
-        {
-            LogGraphicsWarning("Binding '%s' is bound but not found in shader %s", name.c_str(), m_DebugShaderName.c_str());
-            m_InvalidBindings.insert(name);
-        }
+#if _DEBUG
+        LogInvalidBinding(name);
+#endif
         return;
     }
 
@@ -76,26 +69,23 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
 
     if (!info.m_Binding.RequiresResourceTable())
     {
-        gpuAddress = rc.GetResource(view)->GetGpuAddress();
+        gpuAddress = m_ResourceContext->GetResource(view)->GetGpuAddress();
     }
 
-    Bind(ctx, rc, name, gpuAddress, offset);
+    Bind(ctx, name, gpuAddress, offset);
 }
 
 void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
-    GraphicContext& ctx,
-    ResourceContext& rc,
+    CommandContext& ctx,
     const std::string& name,
     RhiGpuAddress address,
     uint64_t offset) const
 {
     if (!m_NameToBinding.contains(name))
     {
-        if (!m_InvalidBindings.contains(name))
-        {
-            LogGraphicsWarning("Binding '%s' is bound but not found in shader %s", name.c_str(), m_DebugShaderName.c_str());
-            m_InvalidBindings.insert(name);
-        }
+#if _DEBUG
+        LogInvalidBinding(name);
+#endif
         return;
     }
 
@@ -106,28 +96,28 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
     case RhiDescriptorType::Cbv:
         AssertGraphics(!info.m_Binding.IsRootConstant(), "Use Bind(uint32_t) for root constants");
 
-        if (m_PipelineType == RhiPipelineType::Compute)
-            ctx.SetComputeRootConstantBufferView(info.m_RootParameterIndex, address + offset);
+        if (m_PipelineType == RhiPipelineType::Graphics)
+            dynamic_cast<GraphicContext&>(ctx).SetGraphicsRootConstantBufferView(info.m_RootParameterIndex, address + offset);
         else
-            ctx.SetGraphicsRootConstantBufferView(info.m_RootParameterIndex, address + offset);
+            ctx.SetComputeRootConstantBufferView(info.m_RootParameterIndex, address + offset);
         break;
 
     case RhiDescriptorType::Srv:
         if (!info.m_Binding.RequiresResourceTable())
         {
-            if (m_PipelineType == RhiPipelineType::Compute)
-                ctx.SetComputeRootShaderResourceView(info.m_RootParameterIndex, address);
+            if (m_PipelineType == RhiPipelineType::Graphics)
+                dynamic_cast<GraphicContext&>(ctx).SetGraphicsRootShaderResourceView(info.m_RootParameterIndex, address);
             else
-                ctx.SetGraphicsRootShaderResourceView(info.m_RootParameterIndex, address);
+                ctx.SetComputeRootShaderResourceView(info.m_RootParameterIndex, address);
 
             break;
         }
         // intentional fallthrough
     case RhiDescriptorType::Uav:
-        if (m_PipelineType == RhiPipelineType::Compute)
-            ctx.SetComputeRootDescriptorTable(info.m_RootParameterIndex, address);
+        if (m_PipelineType == RhiPipelineType::Graphics)
+            dynamic_cast<GraphicContext&>(ctx).SetGraphicsRootDescriptorTable(info.m_RootParameterIndex, address);
         else
-            ctx.SetGraphicsRootDescriptorTable(info.m_RootParameterIndex, address);
+            ctx.SetComputeRootDescriptorTable(info.m_RootParameterIndex, address);
         break;
 
     case RhiDescriptorType::Sampler:
@@ -137,27 +127,25 @@ void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
 }
 
 void Ether::Graphics::RhiRootSignatureBindingTable::Bind(
-    GraphicContext& ctx,
-    ResourceContext& rc,
+    CommandContext& ctx,
     const std::string& name,
-    uint32_t value) const
+    uint32_t value,
+    uint64_t offset) const
 {
     if (!m_NameToBinding.contains(name))
     {
-        if (!m_InvalidBindings.contains(name))
-        {
-            LogGraphicsWarning("Binding '%s' is bound but not found in shader %s", name.c_str(), m_DebugShaderName.c_str());
-            m_InvalidBindings.insert(name);
-        }
+#if _DEBUG
+        LogInvalidBinding(name);
+#endif
         return;
     }
 
     const BindingInfo& info = m_NameToBinding.at(name);
     AssertGraphics(info.m_Binding.IsRootConstant(), "Binding '%s' is not a root constant", name.c_str());
 
-    if (m_PipelineType == RhiPipelineType::Compute)
-        ctx.SetComputeRootConstant(info.m_RootParameterIndex, value, 0);
+    if (m_PipelineType == RhiPipelineType::Graphics)
+        dynamic_cast<GraphicContext&>(ctx).SetGraphicsRootConstant(info.m_RootParameterIndex, value, offset);
     else
-        ctx.SetGraphicsRootConstant(info.m_RootParameterIndex, value, 0);
+        ctx.SetComputeRootConstant(info.m_RootParameterIndex, value, offset);
 }
 
