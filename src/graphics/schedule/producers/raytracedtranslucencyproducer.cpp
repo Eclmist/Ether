@@ -84,17 +84,15 @@ void Ether::Graphics::RaytracedTranslucencyProducer::RenderFrame(GraphicContext&
     ctx.PushMarker("Raytrace translucencies");
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
-    ctx.SetComputeRootSignature(*m_GlobalRootSignature);
-
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetComputeRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
-    ctx.SetComputeRootShaderResourceView(1, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
-    ctx.SetComputeRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_AS(RTRaytracingTlas))->GetGpuAddress());
-    ctx.SetComputeRootShaderResourceView(3, rc.GetResource(ACCESS_GFX_SR(RTGeometryInfo))->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(4, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
-    ctx.SetComputeRootDescriptorTable(5, ACCESS_GFX_UA(SceneColor)->GetGpuAddress());
+    ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
+    ctx.Bind(ACCESS_GFX_SR(MaterialTable));
+    ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
+    ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_UA(SceneColor));
     ctx.DispatchRays(resolution.x, resolution.y, 1);
     ctx.PopMarker();
 }
@@ -125,19 +123,7 @@ void Ether::Graphics::RaytracedTranslucencyProducer::CreateShaders()
 
 void Ether::Graphics::RaytracedTranslucencyProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(6, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All);        // (b0) Global Constants    
-    rsDesc->SetAsShaderResourceView(1, 0, RhiShaderVisibility::All);        // (t0) MaterialTable
-    rsDesc->SetAsShaderResourceView(2, 1, RhiShaderVisibility::All);        // (t1) TLAS
-    rsDesc->SetAsShaderResourceView(3, 2, RhiShaderVisibility::All);        // (t2) RTGeometryInfo
-
-    rsDesc->SetAsDescriptorTable(4, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(4, RhiDescriptorType::Srv, 1, 0, 3);    // (t3) SceneDepth
-    rsDesc->SetAsDescriptorTable(5, 1, RhiShaderVisibility::All);       
-    rsDesc->SetDescriptorTableRange(5, RhiDescriptorType::Uav, 1, 0, 0);    // (u0) SceneColor
-
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
-    m_GlobalRootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
+    m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(m_Shader->GetReflection())->Compile((GetName() + " Root Signature").c_str());
 }
 
 void Ether::Graphics::RaytracedTranslucencyProducer::CreatePipelineState(ResourceContext& rc)
@@ -152,7 +138,7 @@ void Ether::Graphics::RaytracedTranslucencyProducer::CreatePipelineState(Resourc
     m_RTPsoDesc->SetMaxRecursionDepth(2);
     m_RTPsoDesc->SetMaxAttributeSize(sizeof(float) * 2); // from built in attributes
     m_RTPsoDesc->SetMaxPayloadSize(sizeof(Shader::TranslucentRayPayload));
-    m_RTPsoDesc->SetRootSignature(*m_GlobalRootSignature);
+    m_RTPsoDesc->SetRootSignature(*m_RootSignature);
 
     uint32_t numExports = sizeof(s_EntryPoints) / sizeof(s_EntryPoints[0]);
 

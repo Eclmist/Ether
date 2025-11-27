@@ -68,7 +68,7 @@ void Ether::Graphics::EditorGridProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
-    ctx.SetGraphicsRootDescriptorTable(1, ACCESS_GFX_SR(SceneDepth)->GetGpuAddress());
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv(), &(*ACCESS_GFX_DS(SceneDepth)));
     ctx.DrawInstanced(4, 1);
 }
@@ -95,12 +95,8 @@ void Ether::Graphics::EditorGridProducer::CreateShaders()
 
 void Ether::Graphics::EditorGridProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(2, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) Global Constants
-    rsDesc->SetAsDescriptorTable(1, 1, RhiShaderVisibility::All);
-    rsDesc->SetDescriptorTableRange(1, RhiDescriptorType::Srv, 1, 0, 0); // (t0) SceneDepth
-
-    rsDesc->SetFlags(RhiRootSignatureFlag::DirectlyIndexed);
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc({ &m_VertexShader->GetReflection(), &m_PixelShader->GetReflection() });
+    rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }
 

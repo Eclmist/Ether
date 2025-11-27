@@ -80,7 +80,6 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     const std::vector<VisualBatch>& batches = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_VisualBatches;
 
     ctx.PushMarker("Clear");
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_DS(SceneDepth)), RhiResourceState::DepthWrite);
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureA));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureB));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureC));
@@ -95,10 +94,8 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
-
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
-    ctx.SetGraphicsRootConstantBufferView(0, rc.GetResource(ACCESS_GFX_CB(GlobalConstants))->GetGpuAddress() + ringBufferOffset);
-    ctx.SetGraphicsRootShaderResourceView(2, rc.GetResource(ACCESS_GFX_SR(MaterialTable))->GetGpuAddress());
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
+    ctx.Bind(ACCESS_GFX_SR(MaterialTable));
 
     RhiRenderTargetView rtvs[] = { *ACCESS_GFX_RT(GBufferTextureA),
                                    *ACCESS_GFX_RT(GBufferTextureB),
@@ -124,7 +121,7 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
             instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
             instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
             instanceParams->m_NormalMatrix = visual.m_ModelMatrix.Inversed().Transposed();
-            ctx.SetGraphicsRootConstantBufferView(1, ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+            ctx.Bind("InstanceParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
             ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
@@ -159,10 +156,7 @@ void Ether::Graphics::GBufferProducer::CreateShaders()
 
 void Ether::Graphics::GBufferProducer::CreateRootSignature()
 {
-    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc(3, 0);
-    rsDesc->SetAsConstantBufferView(0, 0, RhiShaderVisibility::All); // (b0) GlobalConstants
-    rsDesc->SetAsConstantBufferView(1, 1, RhiShaderVisibility::All); // (b1) InstanceParams
-    rsDesc->SetAsShaderResourceView(2, 0, RhiShaderVisibility::All); // (t0) MaterialTable
+    std::unique_ptr<RhiRootSignatureDesc> rsDesc = GraphicCore::GetDevice().CreateRootSignatureDesc({ &m_VertexShader->GetReflection(), &m_PixelShader->GetReflection() });
     rsDesc->SetFlags(RhiRootSignatureFlag::AllowIAInputLayout | RhiRootSignatureFlag::DirectlyIndexed);
     m_RootSignature = rsDesc->Compile((GetName() + " Root Signature").c_str());
 }

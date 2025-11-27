@@ -68,8 +68,8 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
     params->m_MaxCoC = config.m_MaxCoC;
     params->m_FocusRange = config.m_FocusRange;
     ctx.Bind("DepthOfFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
     ctx.Bind(ACCESS_GFX_SR(DofCircleOfConfusionTexture));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
 
     // Generate circle of confusion
     {

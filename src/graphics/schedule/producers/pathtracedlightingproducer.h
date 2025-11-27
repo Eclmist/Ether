@@ -47,7 +47,6 @@ protected:
 
 protected:
     std::unique_ptr<RhiShader> m_Shader;
-    std::unique_ptr<RhiRootSignature> m_GlobalRootSignature;
     std::unique_ptr<RhiRaytracingPipelineStateDesc> m_RTPsoDesc;
 
 protected:

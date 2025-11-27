@@ -78,7 +78,6 @@ public:
     void Bind(const std::string& name, RhiGpuAddress address, uint64_t offset = 0);
     void Bind(const std::string& name, uint32_t value, uint64_t offset = 0);
 
-    // TODO: Deprecate
     void SetComputeRootSignature(const RhiRootSignature& rootSignature);
     void SetComputeRootConstant(uint32_t rootParameterIndex, uint32_t data, uint32_t destOffset);
     void SetComputeRootConstantBufferView(uint32_t rootParameterIndex, RhiGpuAddress resourceAddr);
