@@ -71,47 +71,11 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
     ctx.Bind(ACCESS_GFX_SR(DofCircleOfConfusionTexture));
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
 
-    // Generate circle of confusion
-    {
-        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_GENERATE_COC);
-        ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
-        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofCircleOfConfusionTexture));
-        ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
-    }
-
-    // Generate downsampled scene color + coc
-    {
-        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_PREFILTER_PASS);
-        ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
-        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
-        ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
-    }
-
-    // Accumulate dof / bokeh
-    {
-        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_ACCUMULATE);
-        ctx.Bind("SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
-        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture2));
-        ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
-    }
-
-    // Post filter / tent filter
-    {
-        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_POSTFILTER_PASS);
-        ctx.Bind("SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture2));
-        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
-        ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
-    }
-
-    // Final Composite
-    {
-        ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_COMPOSITE);
-        ctx.Bind("DofAccumulationTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
-        ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
-        ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(PostFxSourceTexture));
-        ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
-    }
-
+    AddCocGenerationPass(ctx);
+    AddPreFilterPass(ctx);
+    AddAccumulatePass(ctx);
+    AddPostFilterPass(ctx);
+    AddCompositePass(ctx);
 }
 
 bool Ether::Graphics::DepthOfFieldProducer::IsEnabled()
@@ -120,5 +84,61 @@ bool Ether::Graphics::DepthOfFieldProducer::IsEnabled()
         return false;
 
     return true;
+}
+
+void Ether::Graphics::DepthOfFieldProducer::AddCocGenerationPass(GraphicContext& ctx)
+{
+    const ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    ctx.PushMarker("CocGeneration");
+    ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_GENERATE_COC);
+    ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+    ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofCircleOfConfusionTexture));
+    ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    ctx.PopMarker();
+}
+
+void Ether::Graphics::DepthOfFieldProducer::AddPreFilterPass(GraphicContext& ctx)
+{
+    const ethVector2u halfResolution = GraphicCore::GetGraphicConfig().GetResolution() / 2.0f;
+    ctx.PushMarker("PreFilter");
+    ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_PREFILTER_PASS);
+    ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+    ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
+    ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    ctx.PopMarker();
+}
+
+void Ether::Graphics::DepthOfFieldProducer::AddAccumulatePass(GraphicContext& ctx)
+{
+    const ethVector2u halfResolution = GraphicCore::GetGraphicConfig().GetResolution() / 2.0f;
+    ctx.PushMarker("Accumulate");
+    ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_ACCUMULATE);
+    ctx.Bind("SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
+    ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture2));
+    ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    ctx.PopMarker();
+}
+
+void Ether::Graphics::DepthOfFieldProducer::AddPostFilterPass(GraphicContext& ctx)
+{
+    const ethVector2u halfResolution = GraphicCore::GetGraphicConfig().GetResolution() / 2.0f;
+    ctx.PushMarker("PostFilter");
+    ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_POSTFILTER_PASS);
+    ctx.Bind("SourceTexture", ACCESS_GFX_SR(DofIntermediateTexture2));
+    ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(DofIntermediateTexture1));
+    ctx.Dispatch(std::ceil(halfResolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(halfResolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    ctx.PopMarker();
+}
+
+void Ether::Graphics::DepthOfFieldProducer::AddCompositePass(GraphicContext& ctx)
+{
+    const ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
+    ctx.PushMarker("Composite");
+    ctx.Bind("PassIndexCB", (uint32_t)DOF_PASSINDEX_COMPOSITE);
+    ctx.Bind("DofAccumulationTexture", ACCESS_GFX_SR(DofIntermediateTexture1));
+    ctx.Bind("SourceTexture", ACCESS_GFX_SR(PostFxSourceTexture));
+    ctx.Bind("RWDestinationTexture", ACCESS_GFX_UA(PostFxSourceTexture));
+    ctx.Dispatch(std::ceil(resolution.x / float(DOF_KERNEL_GROUP_SIZE_X)), std::ceil(resolution.y / float(DOF_KERNEL_GROUP_SIZE_Y)), 1);
+    ctx.PopMarker();
 }
 

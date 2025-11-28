@@ -36,5 +36,12 @@ public:
 
 protected:
     bool IsEnabled() override;
+
+protected:
+    void AddCocGenerationPass(GraphicContext& ctx);
+    void AddPreFilterPass(GraphicContext& ctx);
+    void AddAccumulatePass(GraphicContext& ctx);
+    void AddPostFilterPass(GraphicContext& ctx);
+    void AddCompositePass(GraphicContext& ctx);
 };
 } // namespace Ether::Graphics

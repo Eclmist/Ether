@@ -37,7 +37,7 @@ protected:
     bool IsEnabled() override;
 
 private:
-    void AddBloomSubpass(
+    void AddBloomPass(
         uint32_t passType,
         GraphicContext& ctx,
         ResourceContext& rc,

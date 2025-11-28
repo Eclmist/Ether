@@ -96,7 +96,6 @@ void Ether::Graphics::EditorOutlineProducer::RenderFrame(GraphicContext& ctx, Re
 		ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
 		ctx.DrawIndexedInstanced(visual.m_Mesh->GetNumIndices(), 1);
 	}
-
     ctx.PopMarker();
 }
 

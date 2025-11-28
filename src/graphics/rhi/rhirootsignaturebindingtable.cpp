@@ -21,7 +21,7 @@
 #include "graphics/rhi/rhirootsignaturebindingtable.h"
 
 #if _DEBUG
-std::unordered_set<std::string> Ether::Graphics::RhiRootSignatureBindingTable::m_InvalidBindings;
+std::unordered_set<std::string> Ether::Graphics::RhiRootSignatureBindingTable::s_InvalidBindings;
 #endif
 
 void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const RhiRootSignature& rootSignature)
@@ -43,10 +43,10 @@ void Ether::Graphics::RhiRootSignatureBindingTable::PopulateBindings(const RhiRo
 #if _DEBUG
 void Ether::Graphics::RhiRootSignatureBindingTable::LogInvalidBinding(const std::string& name) const
 {
-    if (!m_InvalidBindings.contains(name))
+    if (!s_InvalidBindings.contains(name))
     {
         LogGraphicsWarning("Binding '%s' is bound but not found in %s", name.c_str(), m_DebugName.c_str());
-        m_InvalidBindings.insert(name);
+        s_InvalidBindings.insert(name);
     }
 }
 #endif

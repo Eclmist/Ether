@@ -64,7 +64,7 @@ private:
     RhiPipelineType m_PipelineType;
 
 #if _DEBUG
-    static std::unordered_set<std::string> m_InvalidBindings;
+    static std::unordered_set<std::string> s_InvalidBindings;
     std::string m_DebugName;
 #endif
 };

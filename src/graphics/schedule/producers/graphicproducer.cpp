@@ -24,14 +24,12 @@
 Ether::Graphics::GraphicProducer::GraphicProducer(const char* name)
 {
     m_Name = name;
-
-    for (int i = 0; i < MaxSwapChainBuffers; ++i)
-        m_FrameLocalUploadBuffer[i] = std::make_unique<UploadBufferAllocator>(_2MiB);
 }
 
 void Ether::Graphics::GraphicProducer::Reset()
 {
-    m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Reset();
+    if (m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()] != nullptr)
+        m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()]->Reset();
 }
 
 bool Ether::Graphics::GraphicProducer::IsEnabled()
@@ -42,6 +40,9 @@ bool Ether::Graphics::GraphicProducer::IsEnabled()
 
 Ether::Graphics::UploadBufferAllocator& Ether::Graphics::GraphicProducer::GetFrameAllocator()
 {
+    if (m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()] == nullptr)
+        m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()] = std::make_unique<UploadBufferAllocator>(_2MiB);
+
     return *m_FrameLocalUploadBuffer[GraphicCore::GetGraphicDisplay().GetBackBufferIndex()];
 }
 
@@ -50,3 +51,4 @@ uint64_t Ether::Graphics::GraphicProducer::GetRingBufferOffset() const
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
     return gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
 }
+

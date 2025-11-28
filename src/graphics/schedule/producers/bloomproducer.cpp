@@ -109,7 +109,7 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
 
     for (uint32_t i = 1; i <= numIterations; ++i)
     {
-        AddBloomSubpass(
+        AddBloomPass(
             BLOOM_PASSINDEX_DOWNSAMPLE,
             ctx,
             rc,
@@ -121,7 +121,7 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
 
     for (int32_t i = numIterations; i > 1; --i)
     {
-        AddBloomSubpass(
+        AddBloomPass(
             BLOOM_PASSINDEX_UPSAMPLE,
             ctx,
             rc,
@@ -132,7 +132,7 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
     }
 
     // Composite
-    AddBloomSubpass(
+    AddBloomPass(
         BLOOM_PASSINDEX_COMPOSITE,
         ctx,
         rc,
@@ -150,7 +150,7 @@ bool Ether::Graphics::BloomProducer::IsEnabled()
     return true;
 }
 
-void Ether::Graphics::BloomProducer::AddBloomSubpass(
+void Ether::Graphics::BloomProducer::AddBloomPass(
     uint32_t passType,
     GraphicContext& ctx,
     ResourceContext& rc,
