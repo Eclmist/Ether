@@ -50,9 +50,9 @@ public:
     virtual void Compile() = 0;
 
 protected:
-    bool TryLoadFromCache();
-    void SaveToCache();
-    size_t ComputeHash(uint8_t* data, size_t size) const;
+    bool TryLoadFromCache(const std::string& hash);
+    void SaveToCache(const std::string& hash);
+    std::string ComputeHash(const void* data, size_t size) const;
 
 protected:
     friend class ShaderDaemon;

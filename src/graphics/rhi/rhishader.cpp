@@ -73,20 +73,10 @@ void Ether::Graphics::RhiShader::Deserialize(IStream& istream)
     m_IsCompiled = true;
 }
 
-bool Ether::Graphics::RhiShader::TryLoadFromCache()
+bool Ether::Graphics::RhiShader::TryLoadFromCache(const std::string& hash)
 {
-    IFileStream fstream(m_FilePath);
-    if (!fstream.IsOpen() || fstream.GetFileSize() <= 0)
-    {
-        return false;
-    }
-
-    size_t fileSize = fstream.GetFileSize();
-    uint8_t* data = (uint8_t*)malloc(fileSize);
-    fstream.ReadBytes(data, fileSize);
-    size_t hash = ComputeHash(data, fileSize);
-
-    std::string cachedShaderFile = std::format("{}\\{:016x}.shcache", GraphicCore::GetGraphicConfig().GetCompiledShaderPath(), hash);
+    std::string cacheDir = GraphicCore::GetGraphicConfig().GetCompiledShaderPath();
+    std::string cachedShaderFile = std::format("{}/{}.ether", cacheDir, hash);
     IFileStream cachedShader(cachedShaderFile);
 
     if (!cachedShader.IsOpen() || cachedShader.GetFileSize() <= 0)
@@ -100,29 +90,16 @@ bool Ether::Graphics::RhiShader::TryLoadFromCache()
     return true;
 }
 
-void Ether::Graphics::RhiShader::SaveToCache()
+void Ether::Graphics::RhiShader::SaveToCache(const std::string& hash)
 {
-    IFileStream fstream(m_FilePath);
-    if (!fstream.IsOpen() || fstream.GetFileSize() <= 0)
-    {
-        LogGraphicsWarning("Failed to open shader file %s", m_FilePath);
-        return;
-    }
-
-    size_t fileSize = fstream.GetFileSize();
-    uint8_t* data = (uint8_t*)malloc(fileSize);
-    fstream.ReadBytes(data, fileSize);
-    size_t hash = ComputeHash(data, fileSize);
-
     std::string cacheDir = GraphicCore::GetGraphicConfig().GetCompiledShaderPath();
     std::filesystem::create_directories(cacheDir);
-
-    std::string cachedShaderFile = std::format("{}\\{:016x}.shcache", cacheDir, hash);
+    std::string cachedShaderFile = std::format("{}/{}.ether", cacheDir, hash);
     OFileStream cachedShader(cachedShaderFile);
     Serialize(cachedShader);
 }
 
-size_t Ether::Graphics::RhiShader::ComputeHash(uint8_t* data, size_t size) const
+std::string Ether::Graphics::RhiShader::ComputeHash(const void* data, size_t size) const
 {
     std::hash<std::string_view> hasher;
     size_t hash = hasher(std::string_view(reinterpret_cast<const char*>(data), size));
@@ -132,6 +109,6 @@ size_t Ether::Graphics::RhiShader::ComputeHash(uint8_t* data, size_t size) const
     hashCombine(hash, std::hash<std::string>{}(m_FilePath));
     hashCombine(hash, std::hash<std::string>{}(m_EntryPoint));
 
-    return hash;
+    return std::to_string(hash);
 }
 

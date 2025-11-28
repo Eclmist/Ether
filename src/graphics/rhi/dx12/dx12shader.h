@@ -55,6 +55,13 @@ protected:
     void InitializeDxc();
 
 protected:
+    wrl::ComPtr<IDxcBlobEncoding> ReadFile() const;
+    std::vector<LPCWSTR> GetPreprocessArguments() const;
+    std::vector<LPCWSTR> GetCompilationArguments() const;
+    std::string GetPreprocessedShaderHash(const DxcBuffer& sourceBuffer) const;
+    wrl::ComPtr<IDxcResult> Compile(const DxcBuffer& sourceBuffer) const;
+
+protected:
     friend class Dxc::CustomIncludeHandler;
     static wrl::ComPtr<IDxcLibrary> s_DxcLibrary;
     static wrl::ComPtr<IDxcCompiler3> s_DxcCompiler;
@@ -64,5 +71,10 @@ protected:
 protected:
     friend class Dx12Device;
     std::string m_TargetProfile;
+    std::wstring m_wSourceDir;
+    std::wstring m_wFilePath;
+    std::wstring m_wFileName;
+    std::wstring m_wEntryPoint;
+    std::wstring m_wProfile;
 };
 } // namespace Ether::Graphics

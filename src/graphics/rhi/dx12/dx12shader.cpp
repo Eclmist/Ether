@@ -38,80 +38,52 @@ Ether::Graphics::Dx12Shader::Dx12Shader(RhiShaderDesc desc)
 
 void Ether::Graphics::Dx12Shader::Compile()
 {
-    if (TryLoadFromCache())
+    // Set this flag regardless of if compilation pass.
+    // This is so that PSO won't keep trying to recompile broken shaders every frame
+    m_IsCompiled = true;
+    m_wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
+    m_wFilePath = ToWideString(m_FilePath);
+    m_wFileName = ToWideString(m_FileName);
+    m_wEntryPoint = ToWideString(m_EntryPoint);
+    m_wProfile = ToWideString(m_TargetProfile);
+
+    wrl::ComPtr<IDxcBlobEncoding> encodingBlob = ReadFile();
+    DxcBuffer buffer;
+    buffer.Ptr = encodingBlob->GetBufferPointer();
+    buffer.Size = encodingBlob->GetBufferSize();
+    buffer.Encoding = 0;
+
+    std::string preprocessedHash = GetPreprocessedShaderHash(buffer);
+
+    if (preprocessedHash != "" && TryLoadFromCache(preprocessedHash))
     {
+        LogGraphicsInfo("Loaded %s shader %s from cache", m_TargetProfile.c_str(), m_FileName.c_str());
         return;
     }
 
     LogGraphicsInfo("Compiling %s shader %s", m_TargetProfile.c_str(), m_FileName.c_str());
 
-    // Set this flag regardless of if compilation pass.
-    // This is so that PSO won't keep trying to recompile broken shaders every frame
-    m_IsCompiled = true;
+    wrl::ComPtr<IDxcResult> result = Compile(buffer);
+    wrl::ComPtr<IDxcBlob> shaderBlob;
+    result->GetResult(&shaderBlob);
 
-    std::wstring wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
-    std::wstring wFilePath = ToWideString(m_FilePath);
-    std::wstring wFileName = ToWideString(m_FileName);
-    std::wstring wEntryPoint = ToWideString(m_EntryPoint);
-    std::wstring wProfile = ToWideString(m_TargetProfile);
-
-    std::vector<LPCWSTR> arguments;
-    arguments.push_back(L"line-directive");
-    arguments.push_back(wFileName.c_str());
-
-    arguments.push_back(L"-I");
-    arguments.push_back(wSourceDir.c_str());
-
-    arguments.push_back(L"-D");
-    arguments.push_back(L"__HLSL__");
-
-    // Specify file name using line directive for better error output
-    // -E for the entry point (eg. PSMain)
-    if (m_Type != RhiShaderType::Library)
+    if (shaderBlob && shaderBlob->GetBufferSize() > 0)
     {
-        arguments.push_back(L"-E");
-        arguments.push_back(wEntryPoint.c_str());
+        const uint8_t* blobData = static_cast<const uint8_t*>(shaderBlob->GetBufferPointer());
+        const size_t blobSize = shaderBlob->GetBufferSize();
+        m_CompiledData.assign(blobData, blobData + blobSize);
+        m_Reflection = std::make_unique<Dx12ShaderReflection>();
+        m_Reflection->Reflect(m_CompiledData.data(), m_CompiledData.size(), m_Type);
+        SaveToCache(preprocessedHash);
     }
+}
 
-    //-T for the target profile (eg. ps_6_2)
-    arguments.push_back(L"-T");
-    arguments.push_back(wProfile.c_str());
-
-    // We always need reflection data that is generated with Zi flag
-    // For release builds, we'll push -O3 to optimize but keep reflection data
-    // In the future for binarizing, we'll serialize root signatures and strip reflection data altogether
-    // TODO: ETH_SHIPPING
-    arguments.push_back(DXC_ARG_DEBUG); // -Zi
-
-#ifdef _DEBUG
-    // Disable optimization for renderdoc pixel debugging
-    arguments.push_back(L"-Od");
-    arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS); //-WX
-#else
-    // Release: optimize but keep reflection
-    arguments.push_back(L"-O3"); // Or whatever optimization level you want
-#endif
-
-    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);
-
-    ETH_TOOLONLY(arguments.push_back(L"-D"));
-    ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
-
-    uint32_t encoding = CP_UTF8;
-
-    wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
-    HRESULT hr = s_DxcLibrary->CreateBlobFromFile(wFilePath.c_str(), &encoding, encodingBlob.GetAddressOf());
-
-    if (FAILED(hr))
-        throw std::runtime_error(std::format("Failed to open shader {} for compilation", m_FilePath.c_str()));
-
-    DxcBuffer sourceBuffer;
-    sourceBuffer.Ptr = encodingBlob->GetBufferPointer();
-    sourceBuffer.Size = encodingBlob->GetBufferSize();
-    sourceBuffer.Encoding = 0;
+wrl::ComPtr<IDxcResult> Ether::Graphics::Dx12Shader::Compile(const DxcBuffer& sourceBuffer) const
+{
+    auto arguments = GetCompilationArguments();
 
     wrl::ComPtr<IDxcResult> result;
-    hr = s_DxcCompiler->Compile(
+    HRESULT hr = s_DxcCompiler->Compile(
         &sourceBuffer,
         arguments.data(),
         arguments.size(),
@@ -143,23 +115,9 @@ void Ether::Graphics::Dx12Shader::Compile()
                 LogGraphicsError(errorString.c_str());
             }
         }
-
     }
 
-    wrl::ComPtr<IDxcBlob> shaderBlob;
-    result->GetResult(&shaderBlob);
-
-    if (shaderBlob && shaderBlob->GetBufferSize() > 0)
-    {
-        const uint8_t* blobData = static_cast<const uint8_t*>(shaderBlob->GetBufferPointer());
-        size_t blobSize = shaderBlob->GetBufferSize();
-
-        m_CompiledData.assign(blobData, blobData + blobSize);
-
-        m_Reflection = std::make_unique<Dx12ShaderReflection>();
-        m_Reflection->Reflect(m_CompiledData.data(), m_CompiledData.size(), m_Type);
-        SaveToCache();
-    }
+    return result;
 }
 
 void Ether::Graphics::Dx12Shader::InitializeTargetProfile(RhiShaderType type)
@@ -199,6 +157,107 @@ void Ether::Graphics::Dx12Shader::InitializeDxc()
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to initialize DXC compiler");
+}
+
+wrl::ComPtr<IDxcBlobEncoding> Ether::Graphics::Dx12Shader::ReadFile() const
+{
+    uint32_t encoding = CP_UTF8;
+    wrl::ComPtr<IDxcBlobEncoding> encodingBlob;
+    HRESULT hr = s_DxcLibrary->CreateBlobFromFile(m_wFilePath.c_str(), &encoding, encodingBlob.GetAddressOf());
+
+    if (FAILED(hr))
+        throw std::runtime_error(std::format("Failed to open shader {} for compilation", m_FilePath.c_str()));
+
+    return encodingBlob;
+}
+
+std::vector<LPCWSTR> Ether::Graphics::Dx12Shader::GetPreprocessArguments() const
+{
+    std::vector<LPCWSTR> preprocessArgs;
+    preprocessArgs.push_back(L"-P"); // Preprocess only
+    preprocessArgs.push_back(L"-I");
+    preprocessArgs.push_back(m_wSourceDir.c_str());
+    preprocessArgs.push_back(L"-D");
+    preprocessArgs.push_back(L"__HLSL__");
+    ETH_TOOLONLY(preprocessArgs.push_back(L"-D"));
+    ETH_TOOLONLY(preprocessArgs.push_back(L"ETH_TOOLMODE"));
+    return preprocessArgs;
+}
+
+std::vector<LPCWSTR> Ether::Graphics::Dx12Shader::GetCompilationArguments() const
+{
+    std::vector<LPCWSTR> arguments;
+    arguments.push_back(L"line-directive");
+    arguments.push_back(m_wFileName.c_str());
+    arguments.push_back(L"-I");
+    arguments.push_back(m_wSourceDir.c_str());
+    arguments.push_back(L"-D");
+    arguments.push_back(L"__HLSL__");
+
+    if (m_Type != RhiShaderType::Library)
+    {
+        arguments.push_back(L"-E");
+        arguments.push_back(m_wEntryPoint.c_str());
+    }
+
+    //-T for the target profile (eg. ps_6_2)
+    arguments.push_back(L"-T");
+    arguments.push_back(m_wProfile.c_str());
+
+    // We always need reflection data that is generated with Zi flag
+    // For release builds, we'll push -O3 to optimize but keep reflection data
+    // In the future for binarizing, we'll serialize root signatures and strip reflection data altogether
+    // TODO: ETH_SHIPPING
+    arguments.push_back(DXC_ARG_DEBUG); // -Zi
+
+#ifdef _DEBUG
+    // Disable optimization for renderdoc pixel debugging
+    arguments.push_back(L"-Od");
+    arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS); //-WX
+#else
+    // Release: optimize but keep reflection
+    arguments.push_back(L"-O3"); // Or whatever optimization level you want
+#endif
+    arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);
+    ETH_TOOLONLY(arguments.push_back(L"-D"));
+    ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
+
+    return arguments;
+}
+
+std::string Ether::Graphics::Dx12Shader::GetPreprocessedShaderHash(const DxcBuffer& sourceBuffer) const
+{
+    std::vector<LPCWSTR> preprocessArgs = GetPreprocessArguments();
+
+    wrl::ComPtr<IDxcResult> preprocessResult;
+    HRESULT hr = s_DxcCompiler->Compile(
+        &sourceBuffer,
+        preprocessArgs.data(),
+        static_cast<UINT32>(preprocessArgs.size()),
+        s_IncludeHandler.Get(),
+        IID_PPV_ARGS(preprocessResult.GetAddressOf()));
+
+    if (FAILED(hr))
+    {
+        LogGraphicsError("Failed to preprocess shader %s", m_FileName.c_str());
+        return "";
+    }
+
+    // Get preprocessed output
+    wrl::ComPtr<IDxcBlob> preprocessedBlob;
+    wrl::ComPtr<IDxcBlobUtf16> outputName;
+    hr = preprocessResult->GetOutput(DXC_OUT_HLSL, IID_PPV_ARGS(&preprocessedBlob), &outputName);
+
+    if (FAILED(hr) || !preprocessedBlob || preprocessedBlob->GetBufferSize() == 0)
+    {
+        LogGraphicsError("Failed to get preprocessed output for %s", m_FileName.c_str());
+        return "";
+    }
+
+    // Hash the preprocessed source
+    const uint8_t* preprocessedData = static_cast<const uint8_t*>(preprocessedBlob->GetBufferPointer());
+    size_t preprocessedSize = preprocessedBlob->GetBufferSize();
+    return ComputeHash(preprocessedData, preprocessedSize);
 }
 
 HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource(
