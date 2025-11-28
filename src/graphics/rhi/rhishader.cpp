@@ -46,8 +46,19 @@ void Ether::Graphics::RhiShader::Serialize(OStream& ostream) const
     ostream << m_FileName;
     ostream << m_FilePath;
     ostream << m_EntryPoint;
+
+    // Serialize compiled data
     ostream << static_cast<uint32_t>(m_CompiledData.size());
     ostream.WriteBytes(m_CompiledData.data(), m_CompiledData.size());
+
+    // Serialize included files
+    ostream << static_cast<uint32_t>(m_IncludedFiles.size());
+    for (const auto& includedFile : m_IncludedFiles)
+    {
+        uint32_t length = static_cast<uint32_t>(includedFile.size());
+        ostream << length;
+        ostream.WriteBytes(includedFile.data(), length * sizeof(wchar_t));
+    }
 
     m_Reflection->Serialize(ostream);
 }
@@ -61,12 +72,24 @@ void Ether::Graphics::RhiShader::Deserialize(IStream& istream)
     istream >> m_FilePath;
     istream >> m_EntryPoint;
 
+    // Deserialize compiled data
     uint32_t compiledSize;
     istream >> compiledSize;
-
     m_CompiledData.resize(compiledSize);
     if (compiledSize > 0)
         istream.ReadBytes(m_CompiledData.data(), compiledSize);
+
+    // Deserialize included files
+    uint32_t includedFilesCount;
+    istream >> includedFilesCount;
+    m_IncludedFiles.resize(includedFilesCount);
+    for (uint32_t i = 0; i < includedFilesCount; ++i)
+    {
+        uint32_t length;
+        istream >> length;
+        m_IncludedFiles[i].resize(length);
+        istream.ReadBytes(m_IncludedFiles[i].data(), length * sizeof(wchar_t));
+    }
 
     m_Reflection = std::make_unique<RhiShaderReflection>();
     m_Reflection->Deserialize(istream);

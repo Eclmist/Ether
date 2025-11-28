@@ -21,6 +21,7 @@
 #include "graphics/shaderdaemon/shaderdaemon.h"
 #include "graphics/rhi/rhishader.h"
 #include "engine/platform/win32/ethwin.h"
+#include <filesystem>
 
 Ether::Graphics::ShaderDaemon::ShaderDaemon()
 {
@@ -48,7 +49,13 @@ Ether::Graphics::ShaderDaemon::~ShaderDaemon()
 void Ether::Graphics::ShaderDaemon::RegisterShader(RhiShader& shader)
 {
 #ifdef ETH_PLATFORM_WIN32
-    m_RegisteredShaders[ToWideString(shader.GetFileName())].push_back(&shader);
+    m_RegisteredShaders[ToWideString(shader.GetFilePath())].push_back(&shader);
+
+    // Make sure that if any of the included files have been changed, we also recompile the dependents
+    for (const std::wstring& include : shader.GetIncludedFiles())
+    {
+        m_RegisteredShaders[include].push_back(&shader);
+    }
 #endif
 }
 
@@ -112,18 +119,14 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
 #endif
 }
 
-void Ether::Graphics::ShaderDaemon::WaitForFileUnlock(const std::wstring& shaderFileName)
+void Ether::Graphics::ShaderDaemon::WaitForFileUnlock(const std::wstring& filePath)
 {
 #ifdef ETH_PLATFORM_WIN32
-    std::wstring shaderPath = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
-    std::wstring fullPathToFile = shaderPath + L"\\" + shaderFileName;
-
     // Apparently there is no better way to do this..
     // https://stackoverflow.com/questions/1746781/waiting-until-a-file-is-available-for-reading-with-win32
     int delay = 64;
     HANDLE handle;
-    while (
-        (handle = CreateFileW(fullPathToFile.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) ==
+    while ((handle = CreateFileW(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) ==
         INVALID_HANDLE_VALUE)
     {
         if (GetLastError() == ERROR_SHARING_VIOLATION)
@@ -146,16 +149,23 @@ void Ether::Graphics::ShaderDaemon::ProcessModifiedShaders(char* notifyInfo)
     FILE_NOTIFY_INFORMATION* info;
     DWORD offset = 0;
 
+    std::wstring shaderSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
+
     do
     {
         info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&notifyInfo[offset]);
-        std::wstring shaderFileName(info->FileName, info->FileNameLength / sizeof(WCHAR));
-        if (m_RegisteredShaders.find(shaderFileName) != m_RegisteredShaders.end() &&
-            info->Action != FILE_ACTION_RENAMED_OLD_NAME)
+        std::wstring relativeFileName(info->FileName, info->FileNameLength / sizeof(WCHAR));
+
+        // Build full path
+        std::filesystem::path fullPath = std::filesystem::path(shaderSourceDir) / relativeFileName;
+        fullPath = fullPath.lexically_normal(); // Normalize the path
+        std::wstring fullPathStr = fullPath.wstring();
+
+        if (m_RegisteredShaders.contains(fullPath) && info->Action != FILE_ACTION_RENAMED_OLD_NAME)
         {
-            LogGraphicsInfo("Shader Daemon: Detected changes to shaderfile %s", ToNarrowString(shaderFileName).c_str());
-            WaitForFileUnlock(shaderFileName);
-            for (auto shaders : m_RegisteredShaders[shaderFileName])
+            LogGraphicsInfo("Shader Daemon: Detected changes to file %s", ToNarrowString(relativeFileName).c_str());
+            WaitForFileUnlock(fullPath);
+            for (auto shaders : m_RegisteredShaders[fullPath])
                 shaders->m_IsCompiled = false;
         }
 

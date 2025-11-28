@@ -44,6 +44,7 @@ public:
     inline std::string GetFilePath() const { return m_FilePath; }
     inline std::string GetEntryPoint() const { return m_EntryPoint; }
 
+    inline const std::vector<std::wstring>& GetIncludedFiles() const { return m_IncludedFiles; }
     inline const RhiShaderReflection& GetReflection() const { return *m_Reflection; }
 
 public:
@@ -56,16 +57,16 @@ protected:
 
 protected:
     friend class ShaderDaemon;
-
     RhiShaderType m_Type;
-    std::unique_ptr<RhiShaderReflection> m_Reflection;
-
     std::atomic_bool m_IsCompiled;
     std::vector<uint8_t> m_CompiledData;
 
     std::string m_FileName = "";
     std::string m_FilePath = "";
     std::string m_EntryPoint = "";
+
+    std::vector<std::wstring> m_IncludedFiles;
+    std::unique_ptr<RhiShaderReflection> m_Reflection;
 };
 
 } // namespace Ether::Graphics

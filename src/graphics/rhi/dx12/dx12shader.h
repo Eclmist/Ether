@@ -28,14 +28,25 @@ namespace Ether::Graphics::Dxc
 class CustomIncludeHandler : public IDxcIncludeHandler
 {
 public:
-    HRESULT STDMETHODCALLTYPE
-    LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override;
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override;
+    CustomIncludeHandler(IDxcIncludeHandler* defaultHandler)
+        : m_DefaultIncludeHandler(defaultHandler)
+    {
+    }
 
-    ULONG STDMETHODCALLTYPE AddRef(void) override { return 0; }
-    ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
+public:
+    HRESULT STDMETHODCALLTYPE LoadSource(_In_ LPCWSTR pFilename, _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource) override;
 
+    // These still need to be here thanks to IUnknown... Maybe there's a cleaner way
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject) override 
+    { 
+        return m_DefaultIncludeHandler->QueryInterface(riid, ppvObject);
+    }
+    ULONG STDMETHODCALLTYPE AddRef(void) override { return m_DefaultIncludeHandler->AddRef(); }
+    ULONG STDMETHODCALLTYPE Release(void) override { return m_DefaultIncludeHandler->Release(); }
+
+public:
     std::unordered_set<std::wstring> m_IncludedFiles;
+    wrl::ComPtr<IDxcIncludeHandler> m_DefaultIncludeHandler;
 };
 } // namespace Ether::Graphics::Dxc
 
@@ -66,7 +77,7 @@ protected:
     static wrl::ComPtr<IDxcLibrary> s_DxcLibrary;
     static wrl::ComPtr<IDxcCompiler3> s_DxcCompiler;
     static wrl::ComPtr<IDxcUtils> s_DxcUtils;
-    static wrl::ComPtr<IDxcIncludeHandler> s_IncludeHandler;
+    static wrl::ComPtr<Dxc::CustomIncludeHandler> s_CustomIncludeHandler;
 
 protected:
     friend class Dx12Device;

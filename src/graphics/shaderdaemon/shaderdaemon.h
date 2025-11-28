@@ -37,7 +37,7 @@ public:
 private:
     void DaemonThreadMain();
 
-    void WaitForFileUnlock(const std::wstring& shaderFileName);
+    void WaitForFileUnlock(const std::wstring& filePath);
     void ProcessModifiedShaders(char* notifyInfo);
 
 private:

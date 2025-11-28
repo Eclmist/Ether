@@ -21,13 +21,14 @@
 #include "graphics/rhi/dx12/dx12shader.h"
 #include "graphics/rhi/dx12/dx12shaderreflection.h"
 #include "common/utils/stringutils.h"
+#include <filesystem>
 
 #ifdef ETH_GRAPHICS_DX12
 
 wrl::ComPtr<IDxcLibrary> Ether::Graphics::Dx12Shader::s_DxcLibrary;
 wrl::ComPtr<IDxcCompiler3> Ether::Graphics::Dx12Shader::s_DxcCompiler;
 wrl::ComPtr<IDxcUtils> Ether::Graphics::Dx12Shader::s_DxcUtils;
-wrl::ComPtr<IDxcIncludeHandler> Ether::Graphics::Dx12Shader::s_IncludeHandler;
+wrl::ComPtr<Ether::Graphics::Dxc::CustomIncludeHandler> Ether::Graphics::Dx12Shader::s_CustomIncludeHandler;
 
 Ether::Graphics::Dx12Shader::Dx12Shader(RhiShaderDesc desc)
     : RhiShader(desc)
@@ -38,6 +39,9 @@ Ether::Graphics::Dx12Shader::Dx12Shader(RhiShaderDesc desc)
 
 void Ether::Graphics::Dx12Shader::Compile()
 {
+    // Clear included file list since this is a new shader file with fresh includes
+    s_CustomIncludeHandler->m_IncludedFiles.clear();
+
     // Set this flag regardless of if compilation pass.
     // This is so that PSO won't keep trying to recompile broken shaders every frame
     m_IsCompiled = true;
@@ -74,6 +78,10 @@ void Ether::Graphics::Dx12Shader::Compile()
         m_CompiledData.assign(blobData, blobData + blobSize);
         m_Reflection = std::make_unique<Dx12ShaderReflection>();
         m_Reflection->Reflect(m_CompiledData.data(), m_CompiledData.size(), m_Type);
+
+        for (const std::wstring& include : s_CustomIncludeHandler->m_IncludedFiles)
+            m_IncludedFiles.emplace_back(include);
+
         SaveToCache(preprocessedHash);
     }
 }
@@ -87,7 +95,7 @@ wrl::ComPtr<IDxcResult> Ether::Graphics::Dx12Shader::Compile(const DxcBuffer& so
         &sourceBuffer,
         arguments.data(),
         arguments.size(),
-        s_IncludeHandler.Get(),
+        s_CustomIncludeHandler.Get(),
         IID_PPV_ARGS(result.GetAddressOf()));
 
     if (SUCCEEDED(hr))
@@ -152,8 +160,12 @@ void Ether::Graphics::Dx12Shader::InitializeDxc()
         hr |= DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&s_DxcCompiler));
     if (!s_DxcUtils)
         hr |= DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&s_DxcUtils));
-    if (!s_IncludeHandler)
-        hr |= s_DxcUtils->CreateDefaultIncludeHandler(s_IncludeHandler.GetAddressOf());
+    if (!s_CustomIncludeHandler)
+    {
+        IDxcIncludeHandler* defaultIncludeHandler;
+        hr |= s_DxcUtils->CreateDefaultIncludeHandler(&defaultIncludeHandler);
+        s_CustomIncludeHandler = new Dxc::CustomIncludeHandler(defaultIncludeHandler);
+    }
 
     if (FAILED(hr))
         LogGraphicsFatal("Failed to initialize DXC compiler");
@@ -234,7 +246,7 @@ std::string Ether::Graphics::Dx12Shader::GetPreprocessedShaderHash(const DxcBuff
         &sourceBuffer,
         preprocessArgs.data(),
         static_cast<UINT32>(preprocessArgs.size()),
-        s_IncludeHandler.Get(),
+        s_CustomIncludeHandler.Get(),
         IID_PPV_ARGS(preprocessResult.GetAddressOf()));
 
     if (FAILED(hr))
@@ -264,34 +276,17 @@ HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::LoadSource
     _In_ LPCWSTR pFilename,
     _COM_Outptr_result_maybenull_ IDxcBlob** ppIncludeSource)
 {
-    wrl::ComPtr<IDxcBlobEncoding> pEncoding;
-    std::wstring path = pFilename;
-    if (m_IncludedFiles.find(path) != m_IncludedFiles.end())
-    {
-        // Return empty string blob if this file has been included before
-        static const char nullStr[] = " ";
-        Graphics::Dx12Shader::s_DxcUtils->CreateBlob(nullStr, ARRAYSIZE(nullStr), CP_UTF8, pEncoding.GetAddressOf());
-        *ppIncludeSource = pEncoding.Detach();
-        return S_OK;
-    }
+    HRESULT hr = m_DefaultIncludeHandler->LoadSource(pFilename, ppIncludeSource);
 
-    HRESULT hr = Graphics::Dx12Shader::s_DxcUtils->LoadFile(pFilename, nullptr, pEncoding.GetAddressOf());
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(hr) && *ppIncludeSource)
     {
-        m_IncludedFiles.insert(path);
-        *ppIncludeSource = pEncoding.Detach();
+        std::wstring shaderSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
+        std::filesystem::path fullPath = std::filesystem::path(shaderSourceDir) / pFilename;
+        fullPath = std::filesystem::canonical(fullPath);
+        m_IncludedFiles.insert(fullPath.wstring());
     }
-    else
-        *ppIncludeSource = nullptr;
 
     return hr;
-}
-
-HRESULT STDMETHODCALLTYPE Ether::Graphics::Dxc::CustomIncludeHandler::QueryInterface(
-    REFIID riid,
-    _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject)
-{
-    return Graphics::Dx12Shader::s_IncludeHandler->QueryInterface(riid, ppvObject);
 }
 
 #endif // ETH_GRAPHICS_DX12
