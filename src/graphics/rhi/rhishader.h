@@ -23,18 +23,22 @@
 
 namespace Ether::Graphics
 {
-class RhiShader
+class RhiShader : public Serializable
 {
 public:
     RhiShader(const RhiShaderDesc& desc);
-    virtual ~RhiShader() = default;
+    ~RhiShader() = default;
+
+public:
+    void Serialize(OStream& ostream) const override;
+    void Deserialize(IStream& istream) override;
 
 public:
     inline RhiShaderType GetType() const { return m_Type; }
 
     inline bool IsCompiled() const { return m_IsCompiled; }
-    inline size_t GetCompiledSize() const { return m_CompiledSize; }
-    inline void* GetCompiledData() const { return m_CompiledData; }
+    inline size_t GetCompiledSize() const { return m_CompiledData.size(); }
+    inline void* GetCompiledData() const { return (void*)m_CompiledData.data(); }
 
     inline std::string GetFileName() const { return m_FileName; }
     inline std::string GetFilePath() const { return m_FilePath; }
@@ -46,14 +50,18 @@ public:
     virtual void Compile() = 0;
 
 protected:
+    bool TryLoadFromCache();
+    void SaveToCache();
+    size_t ComputeHash(uint8_t* data, size_t size) const;
+
+protected:
     friend class ShaderDaemon;
 
     RhiShaderType m_Type;
     std::unique_ptr<RhiShaderReflection> m_Reflection;
 
     std::atomic_bool m_IsCompiled;
-    size_t m_CompiledSize;
-    void* m_CompiledData;
+    std::vector<uint8_t> m_CompiledData;
 
     std::string m_FileName = "";
     std::string m_FilePath = "";

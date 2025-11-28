@@ -38,13 +38,18 @@ Ether::Graphics::Dx12Shader::Dx12Shader(RhiShaderDesc desc)
 
 void Ether::Graphics::Dx12Shader::Compile()
 {
+    if (TryLoadFromCache())
+    {
+        return;
+    }
+
     LogGraphicsInfo("Compiling %s shader %s", m_TargetProfile.c_str(), m_FileName.c_str());
 
     // Set this flag regardless of if compilation pass.
     // This is so that PSO won't keep trying to recompile broken shaders every frame
     m_IsCompiled = true;
 
-    std::wstring wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderPath());
+    std::wstring wSourceDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
     std::wstring wFilePath = ToWideString(m_FilePath);
     std::wstring wFileName = ToWideString(m_FileName);
     std::wstring wEntryPoint = ToWideString(m_EntryPoint);
@@ -141,15 +146,19 @@ void Ether::Graphics::Dx12Shader::Compile()
 
     }
 
-    result->GetResult(&m_ShaderBlob);
+    wrl::ComPtr<IDxcBlob> shaderBlob;
+    result->GetResult(&shaderBlob);
 
-    m_CompiledData = m_ShaderBlob->GetBufferPointer();
-    m_CompiledSize = m_ShaderBlob->GetBufferSize();
-    
-    if (m_CompiledData != nullptr)
+    if (shaderBlob && shaderBlob->GetBufferSize() > 0)
     {
+        const uint8_t* blobData = static_cast<const uint8_t*>(shaderBlob->GetBufferPointer());
+        size_t blobSize = shaderBlob->GetBufferSize();
+
+        m_CompiledData.assign(blobData, blobData + blobSize);
+
         m_Reflection = std::make_unique<Dx12ShaderReflection>();
-        m_Reflection->Reflect(m_CompiledData, m_CompiledSize, m_Type);
+        m_Reflection->Reflect(m_CompiledData.data(), m_CompiledData.size(), m_Type);
+        SaveToCache();
     }
 }
 

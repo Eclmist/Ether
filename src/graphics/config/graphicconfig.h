@@ -47,7 +47,8 @@ public:
 
 public:
     inline ethVector2u GetResolution() const { return m_Resolution; }
-    inline std::string GetShaderPath() const { return m_ShaderPath; }
+    inline std::string GetShaderSourcePath() const { return m_ShaderSourcePath; }
+    inline std::string GetCompiledShaderPath() const { return m_CompiledShaderPath; }
     inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
     inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
     inline bool GetUseGraphicsThread() const { return m_UseGraphicsThread; }
@@ -57,7 +58,7 @@ public:
     inline ethVector4 GetClearColor() const { return m_ClearColor; }
 
     void SetResolution(const ethVector2u& resolution);
-    inline void SetShaderSourceDir(const std::string& dir) { m_ShaderPath = dir; }
+    inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourcePath = dir; }
     inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
     inline void SetUseShaderDaemon(bool enable) { m_UseShaderDaemon = enable; }
     inline void SetUseGraphicsThread(bool enable) { m_UseGraphicsThread = enable; }
@@ -132,7 +133,8 @@ public:
 private:
     ethVector4 m_ClearColor;
     ethVector2u m_Resolution;
-    std::string m_ShaderPath;
+    std::string m_ShaderSourcePath;
+    std::string m_CompiledShaderPath;
     bool m_UseSourceShaders;
     bool m_UseShaderDaemon;
     bool m_UseGraphicsThread;

@@ -20,6 +20,42 @@
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhishaderreflection.h"
 
+void Ether::Graphics::RhiShaderReflection::Serialize(OStream& ostream) const
+{
+    ostream << m_ShaderType;
+    ostream << (uint32_t)m_ResourceBindings.size();
+    for (const ResourceBinding& binding : m_ResourceBindings)
+    {
+        ostream << binding.m_Name;
+        ostream << binding.m_Type;
+        ostream << binding.m_Dimension;
+        ostream << binding.m_BindPoint;
+        ostream << binding.m_BindCount;
+        ostream << binding.m_Space;
+        ostream << binding.m_Size;
+    }
+}
+
+void Ether::Graphics::RhiShaderReflection::Deserialize(IStream& istream)
+{
+    istream >> m_ShaderType;
+    uint32_t numBindings;
+    istream >> numBindings; m_ResourceBindings.resize(numBindings);
+
+    for (uint32_t i = 0; i < numBindings; ++i)
+    {
+        istream >> m_ResourceBindings[i].m_Name;
+        istream >> m_ResourceBindings[i].m_Type;
+        istream >> m_ResourceBindings[i].m_Dimension;
+        istream >> m_ResourceBindings[i].m_BindPoint;
+        istream >> m_ResourceBindings[i].m_BindCount;
+        istream >> m_ResourceBindings[i].m_Space;
+        istream >> m_ResourceBindings[i].m_Size;
+
+        m_NameToBindingIndex[m_ResourceBindings[i].m_Name] = i;
+    }
+}
+
 std::vector<Ether::Graphics::RhiShaderReflection::ResourceBinding> Ether::Graphics::RhiShaderReflection::MergeBindings(
     const std::vector<const RhiShaderReflection*>& reflections)
 {

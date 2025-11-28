@@ -25,6 +25,21 @@ namespace Ether
 {
 class StringID;
 
+template <typename T>
+typename std::enable_if<std::is_enum<T>::value, OStream&>::type operator<<(OStream& os, T value)
+{
+    return os << static_cast<std::underlying_type_t<T>>(value);
+}
+
+template <typename T>
+typename std::enable_if<std::is_enum<T>::value, IStream&>::type operator>>(IStream& is, T& value)
+{
+    std::underlying_type_t<T> temp;
+    is >> temp;
+    value = static_cast<T>(temp);
+    return is;
+}
+
 class ETH_COMMON_DLL Stream : public NonCopyable
 {
 public:
@@ -32,7 +47,7 @@ public:
     inline bool IsOpen() const { return m_IsOpen; }
 
 protected:
-    bool m_IsOpen;
+    bool m_IsOpen = false;
 };
 
 class ETH_COMMON_DLL IStream : public Stream

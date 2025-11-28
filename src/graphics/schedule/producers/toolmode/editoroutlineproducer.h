@@ -37,8 +37,6 @@ public:
 protected:
     bool IsEnabled() override;
 
-
-
 private:
     void CreateShaders();
     void CreateRootSignature();

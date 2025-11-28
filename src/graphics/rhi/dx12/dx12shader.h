@@ -63,7 +63,6 @@ protected:
 
 protected:
     friend class Dx12Device;
-    wrl::ComPtr<IDxcBlob> m_ShaderBlob;
     std::string m_TargetProfile;
 };
 } // namespace Ether::Graphics

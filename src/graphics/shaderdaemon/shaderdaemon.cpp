@@ -57,7 +57,7 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
 #ifdef ETH_PLATFORM_WIN32
     ETH_MARKER_EVENT("Shader Daemon");
 
-    std::wstring shaderDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderPath());
+    std::wstring shaderDir = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
     HANDLE hDir = CreateFileW(
         shaderDir.c_str(),
         FILE_LIST_DIRECTORY,
@@ -115,7 +115,7 @@ void Ether::Graphics::ShaderDaemon::DaemonThreadMain()
 void Ether::Graphics::ShaderDaemon::WaitForFileUnlock(const std::wstring& shaderFileName)
 {
 #ifdef ETH_PLATFORM_WIN32
-    std::wstring shaderPath = ToWideString(GraphicCore::GetGraphicConfig().GetShaderPath());
+    std::wstring shaderPath = ToWideString(GraphicCore::GetGraphicConfig().GetShaderSourcePath());
     std::wstring fullPathToFile = shaderPath + L"\\" + shaderFileName;
 
     // Apparently there is no better way to do this..

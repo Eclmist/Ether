@@ -77,7 +77,11 @@ public:
     virtual ~RhiShaderReflection() {};
 
 public:
-    virtual void Reflect(const void* shaderBytecode, size_t bytecodeSize, RhiShaderType shaderType) = 0;
+    void Serialize(OStream& ostream) const;
+    void Deserialize(IStream& istream);
+
+public:
+    virtual void Reflect(const void* shaderBytecode, size_t bytecodeSize, RhiShaderType shaderType) {};
 
 public:
     inline const std::vector<ResourceBinding>& GetBindings() const { return m_ResourceBindings; }
@@ -91,7 +95,6 @@ public:
     uint32_t GetNumConstantBuffers() const;
     uint32_t GetNumShaderResources() const;
     uint32_t GetNumUnorderedAccesses() const;
-
 
 protected:
     std::vector<ResourceBinding> m_ResourceBindings;
