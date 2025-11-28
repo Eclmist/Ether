@@ -27,7 +27,7 @@ Ether::LogEntry::LogEntry(
     : m_Text(text)
     , m_Level(level)
     , m_Type(type)
-    , m_Time(Time::GetCurrentTime() / 1000.0)
+    , m_Time(Time::GetRealTime() / 1000.0)
     , m_CustomPrefix("")
 {
 }
@@ -39,7 +39,7 @@ Ether::LogEntry::LogEntry(
     : m_Text(text)
     , m_Level(level)
     , m_Type(LogType::Custom)
-    , m_Time(Time::GetCurrentTime() / 1000.0)
+    , m_Time(Time::GetRealTime() / 1000.0)
     , m_CustomPrefix(prefix)
 {
 }
