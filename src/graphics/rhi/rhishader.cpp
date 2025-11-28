@@ -87,8 +87,6 @@ bool Ether::Graphics::RhiShader::TryLoadFromCache(const std::string& hash)
         return false;
     }
 
-    LogGraphicsInfo("Loaded shader %s from cache %s", m_FileName.c_str(), cachedShaderFile.c_str());
-
     Deserialize(cachedShader);
     return true;
 }
