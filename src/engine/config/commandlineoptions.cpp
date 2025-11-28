@@ -27,6 +27,7 @@ constexpr uint16_t DefaultToolmodePort = 2134;
 
 Ether::CommandLineOptions::CommandLineOptions()
     : m_UseSourceShaders(false)
+    , m_UseShaderCache(true)
     , m_UseShaderDaemon(false)
     , m_UseValidationLayer(false)
     , m_UseGraphicsThread(true)
@@ -56,6 +57,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         { m_UseSourceShaders = true; m_ShaderSourcePath = arg; }
     else if (flag == "-shaderdaemon")
         m_UseShaderDaemon = true;
+    else if (flag == "-noshadercache")
+        m_UseShaderCache = false;
     else if (flag == "-validationlayer")
         m_UseValidationLayer = true;
     else if (flag == "-singlethreaded")

@@ -22,7 +22,7 @@
 
 Ether::Graphics::RenderThread::RenderThread()
 {
-    m_GraphicsThreadEnabled = GraphicCore::GetGraphicConfig().GetUseGraphicsThread();
+    m_GraphicsThreadEnabled = GraphicCore::GetGraphicConfig().UseGraphicsThread();
 
     if (m_GraphicsThreadEnabled)
     {

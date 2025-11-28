@@ -31,7 +31,7 @@ int Ether::Start(IApplicationBase& app)
     EngineCore::Instance().LoadApplication(app);
 
     #if ETH_ENGINE
-    if (!EngineCore::GetCommandLineOptions().GetUseHeadlessRenderer())
+    if (!EngineCore::GetCommandLineOptions().UseHeadlessRenderer())
         EngineCore::Instance().GetMainWindow().Show();
     #endif
 

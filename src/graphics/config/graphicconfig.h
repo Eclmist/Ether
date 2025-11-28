@@ -49,9 +49,10 @@ public:
     inline ethVector2u GetResolution() const { return m_Resolution; }
     inline std::string GetShaderSourcePath() const { return m_ShaderSourcePath; }
     inline std::string GetCompiledShaderPath() const { return m_CompiledShaderPath; }
-    inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
-    inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
-    inline bool GetUseGraphicsThread() const { return m_UseGraphicsThread; }
+    inline bool UseSourceShaders() const { return m_UseSourceShaders; }
+    inline bool UseShaderCache() const { return m_UseShaderCache; }
+    inline bool UseShaderDaemon() const { return m_UseShaderDaemon; }
+    inline bool UseGraphicsThread() const { return m_UseGraphicsThread; }
     inline bool IsValidationLayerEnabled() const { return m_IsValidationLayerEnabled; }
     inline bool IsDebugGuiEnabled() const { return m_IsDebugGuiEnabled; }
     inline void* GetWindowHandle() const { return m_WindowHandle; }
@@ -60,6 +61,7 @@ public:
     void SetResolution(const ethVector2u& resolution);
     inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourcePath = dir; }
     inline void SetUseSourceShaders(bool enable) { m_UseSourceShaders = enable; }
+    inline void SetUseShaderCache(bool enable) { m_UseShaderCache = enable; }
     inline void SetUseShaderDaemon(bool enable) { m_UseShaderDaemon = enable; }
     inline void SetUseGraphicsThread(bool enable) { m_UseGraphicsThread = enable; }
     inline void SetValidationLayerEnabled(bool enabled) { m_IsValidationLayerEnabled = enabled; }
@@ -136,6 +138,7 @@ private:
     std::string m_ShaderSourcePath;
     std::string m_CompiledShaderPath;
     bool m_UseSourceShaders;
+    bool m_UseShaderCache;
     bool m_UseShaderDaemon;
     bool m_UseGraphicsThread;
     bool m_IsValidationLayerEnabled;

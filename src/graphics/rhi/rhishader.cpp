@@ -75,6 +75,9 @@ void Ether::Graphics::RhiShader::Deserialize(IStream& istream)
 
 bool Ether::Graphics::RhiShader::TryLoadFromCache(const std::string& hash)
 {
+    if (!GraphicCore::GetGraphicConfig().UseShaderCache())
+        return false;
+
     std::string cacheDir = GraphicCore::GetGraphicConfig().GetCompiledShaderPath();
     std::string cachedShaderFile = std::format("{}/{}.ether", cacheDir, hash);
     IFileStream cachedShader(cachedShaderFile);
@@ -92,6 +95,9 @@ bool Ether::Graphics::RhiShader::TryLoadFromCache(const std::string& hash)
 
 void Ether::Graphics::RhiShader::SaveToCache(const std::string& hash)
 {
+    if (!GraphicCore::GetGraphicConfig().UseShaderCache())
+        return;
+
     std::string cacheDir = GraphicCore::GetGraphicConfig().GetCompiledShaderPath();
     std::filesystem::create_directories(cacheDir);
     std::string cachedShaderFile = std::format("{}/{}.ether", cacheDir, hash);

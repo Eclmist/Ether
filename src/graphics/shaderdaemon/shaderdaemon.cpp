@@ -25,7 +25,7 @@
 Ether::Graphics::ShaderDaemon::ShaderDaemon()
 {
 #ifdef ETH_PLATFORM_WIN32
-    if (!GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
+    if (!GraphicCore::GetGraphicConfig().UseShaderDaemon())
     {
         LogGraphicsInfo("To enable shader daemon, run with -usesourceshaders");
         return;

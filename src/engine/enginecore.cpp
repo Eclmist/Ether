@@ -93,9 +93,10 @@ void Ether::EngineCore::InitializeGraphicsLayer()
 {
     Graphics::GraphicConfig& config = Graphics::GraphicCore::GetGraphicConfig();
     config.SetWindowHandle(m_MainWindow->GetWindowHandle());
-    config.SetValidationLayerEnabled(m_CommandLineOptions.GetUseValidationLayer());
-    config.SetUseShaderDaemon(m_CommandLineOptions.GetUseShaderDaemon());
-    config.SetUseGraphicsThread(m_CommandLineOptions.GetUseGraphicsThread());
+    config.SetValidationLayerEnabled(m_CommandLineOptions.UseValidationLayer());
+    config.SetUseShaderCache(m_CommandLineOptions.UseShaderCache());
+    config.SetUseShaderDaemon(m_CommandLineOptions.UseShaderDaemon());
+    config.SetUseGraphicsThread(m_CommandLineOptions.UseGraphicsThread());
     config.SetShaderSourceDir(m_CommandLineOptions.GetShaderSourcePath());
     config.SetResolution(m_EngineConfig.GetClientSize());
 

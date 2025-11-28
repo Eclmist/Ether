@@ -157,7 +157,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     //  - Figure out resource lifetimes, and what can be aliased in a big placed resource
     //  - Batch resource barriers
 
-    if (GraphicCore::GetGraphicConfig().GetUseShaderDaemon())
+    if (GraphicCore::GetGraphicConfig().UseShaderDaemon())
         m_ResourceContext.Reset();
 
     for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)

@@ -30,11 +30,12 @@ public:
     ~CommandLineOptions() = default;
 
 public:
-    inline bool GetUseSourceShaders() const { return m_UseSourceShaders; }
-    inline bool GetUseShaderDaemon() const { return m_UseShaderDaemon; }
-    inline bool GetUseGraphicsThread() const { return m_UseGraphicsThread; }
-    inline bool GetUseValidationLayer() const { return m_UseValidationLayer; }
-    inline bool GetUseHeadlessRenderer() const { return m_UseHeadlessRenderer; }
+    inline bool UseSourceShaders() const { return m_UseSourceShaders; }
+    inline bool UseShaderCache() const { return m_UseShaderCache; }
+    inline bool UseShaderDaemon() const { return m_UseShaderDaemon; }
+    inline bool UseGraphicsThread() const { return m_UseGraphicsThread; }
+    inline bool UseValidationLayer() const { return m_UseValidationLayer; }
+    inline bool UseHeadlessRenderer() const { return m_UseHeadlessRenderer; }
     inline const std::string& GetWorldName() const { return m_WorldName; }
     inline const std::string& GetShaderSourcePath() const { return m_ShaderSourcePath; }
 
@@ -53,6 +54,7 @@ private:
 
 private:
     bool m_UseSourceShaders;
+    bool m_UseShaderCache;
     bool m_UseShaderDaemon;
     bool m_UseGraphicsThread;
     bool m_UseValidationLayer;
