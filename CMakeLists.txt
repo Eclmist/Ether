@@ -77,3 +77,35 @@ if (CONFIGURE_AS_TOOLMODE)
 else()
     add_subdirectory(sampleapp)
 endif()
+
+if (CONFIGURE_AS_TOOLMODE)
+
+    set(AURORA_PATH "${CMAKE_SOURCE_DIR}/../Aurora" CACHE PATH "Path to Aurora project root (optional)")
+    set(AURORA_BIN "${AURORA_PATH}/bin/$<CONFIG>")
+    set(AURORA_EXE "${AURORA_BIN}/Aurora.exe")
+
+    # Only create the target if Aurora exists
+    if (EXISTS "${AURORA_PATH}")
+
+        add_custom_target(AuroraEditor
+            COMMAND ${AURORA_EXE}
+            WORKING_DIRECTORY ${AURORA_BIN}
+            COMMENT "Launching Aurora Editor"
+            USES_TERMINAL
+            VERBATIM
+        )
+
+        set_target_properties(AuroraEditor PROPERTIES
+            VS_DEBUGGER_COMMAND           ${AURORA_EXE}
+            VS_DEBUGGER_WORKING_DIRECTORY ${AURORA_BIN}
+
+        )
+
+        add_dependencies(AuroraEditor Common Graphics Engine)
+
+        message(STATUS "AuroraEditor target enabled: ${AURORA_EXE}")
+
+    else()
+        message(WARNING "Aurora project not found at ${AURORA_PATH}; AuroraEditor disabled")
+    endif()
+endif()
