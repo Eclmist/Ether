@@ -132,7 +132,6 @@ void Ether::Graphics::FrameScheduler::Deregister(GFX_STATIC::GFX_PA_TYPE& pass)
     m_RegisteredProducers.erase(pass.GetName());
 }
 
-
 void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
 {
     ETH_MARKER_EVENT("Frame Scheduler - Precompile pipeline states");
