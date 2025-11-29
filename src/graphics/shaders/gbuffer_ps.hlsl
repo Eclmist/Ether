@@ -23,6 +23,7 @@
 #include "common/globalconstants.h"
 #include "common/material.h"
 #include "common/instanceparams.h"
+#include "common/metadata.h"
 #include "utils/shading.hlsl"
 
 struct PS_INPUT
@@ -88,7 +89,10 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     o.Output2 = float4(emissive.x, emissive.y, emissive.z, EncodeFP16(roughness, metalness));
 
 #if ETH_TOOLMODE
-    o.Metadata = InstanceParams.m_EntityID;
+    Metadata metadata;
+    metadata.m_IsValid = true;
+    metadata.m_EntityID = InstanceParams.m_EntityID;
+    o.Metadata = PackMetadata(metadata);
 #endif
     return o;
 }

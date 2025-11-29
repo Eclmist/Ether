@@ -19,28 +19,30 @@
 
 #pragma once
 
-#ifdef __cplusplus
-#define ETH_BEGIN_SHADER_NAMESPACE namespace Ether::Graphics::Shader {
-#define ETH_END_SHADER_NAMESPACE }
+#include "hlsltranslation.h"
 
-#define ETH_SHADER_STATIC_ASSERT(cond) static_assert(cond)
-#else
-#define ETH_BEGIN_SHADER_NAMESPACE
-#define ETH_END_SHADER_NAMESPACE
-#define ETH_SHADER_STATIC_ASSERT(cond)
-#endif
+ETH_BEGIN_SHADER_NAMESPACE
 
-#ifdef __HLSL__
-typedef float4x4 ethMatrix4x4;
-typedef float3x3 ethMatrix3x3;
+struct Metadata
+{
+    uint32_t m_EntityID;
+    bool m_IsValid;
+};
 
-typedef float4 ethVector4;
-typedef float3 ethVector3;
-typedef float2 ethVector2;
+inline uint32_t PackMetadata(Metadata metadata)
+{
+    uint32_t packed;
+    packed = metadata.m_EntityID & 0x7FFFFFFF;
+    packed |= (uint32_t(metadata.m_IsValid) << 31);
+    return packed;
+}
 
-typedef uint4 ethVector4u;
-typedef uint3 ethVector3u;
-typedef uint2 ethVector2u;
-typedef uint uint32_t;
-#endif
+inline Metadata UnpackMetadata(uint32_t packed)
+{
+    Metadata metadata;
+    metadata.m_EntityID = packed & 0x7FFFFFFF;
+    metadata.m_IsValid = (packed >> 31) & 0x1;
+    return metadata;
+}
 
+ETH_END_SHADER_NAMESPACE
