@@ -19,11 +19,11 @@
 
 #pragma once
 
-#include "graphics/schedule/producers/fullscreenproducer.h"
+#include "graphics/schedule/producers/fullscreenpixelproducer.h"
 
 namespace Ether::Graphics
 {
-class ProceduralSkyProducer : public FullScreenProducer
+class ProceduralSkyProducer : public FullScreenPixelProducer
 {
 public:
     ProceduralSkyProducer();

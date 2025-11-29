@@ -17,28 +17,28 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "postprocessproducer.h"
+#include "fullscreencomputeproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
 
 DECLARE_GFX_CB(GlobalConstants)
 
-Ether::Graphics::PostProcessProducer::PostProcessProducer(const char* name, const char* shaderPath)
+Ether::Graphics::FullScreenComputeProducer::FullScreenComputeProducer(const char* name, const char* shaderPath)
     : GraphicProducer(name)
     , m_ShaderPath(shaderPath)
 {
 
 }
 
-void Ether::Graphics::PostProcessProducer::Initialize(ResourceContext& rc)
+void Ether::Graphics::FullScreenComputeProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::FullScreenComputeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("PostProcessProducer");
 
@@ -53,7 +53,7 @@ void Ether::Graphics::PostProcessProducer::RenderFrame(GraphicContext& ctx, Reso
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
 }
 
-void Ether::Graphics::PostProcessProducer::CreateShaders()
+void Ether::Graphics::FullScreenComputeProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_ComputeShader = gfxDevice.CreateShader({ m_ShaderPath.c_str(), "CS_Main", RhiShaderType::Compute });
@@ -61,7 +61,7 @@ void Ether::Graphics::PostProcessProducer::CreateShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_ComputeShader);
 }
 
-void Ether::Graphics::PostProcessProducer::CreatePipelineState(ResourceContext& rc)
+void Ether::Graphics::FullScreenComputeProducer::CreatePipelineState(ResourceContext& rc)
 {
     m_ComputePsoDesc = GraphicCore::GetDevice().CreateComputePipelineStateDesc();
     m_ComputePsoDesc->SetComputeShader(*m_ComputeShader);
@@ -69,12 +69,12 @@ void Ether::Graphics::PostProcessProducer::CreatePipelineState(ResourceContext& 
     rc.RegisterPipelineState((GetName() + " Compute Pipeline State").c_str(), *m_ComputePsoDesc);
 }
 
-void Ether::Graphics::PostProcessProducer::CreateRootSignature()
+void Ether::Graphics::FullScreenComputeProducer::CreateRootSignature()
 {
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(m_ComputeShader->GetReflection())->Compile((GetName() + " Root Signature").c_str());
 }
 
-void Ether::Graphics::PostProcessProducer::DispatchFullscreen(GraphicContext& ctx)
+void Ether::Graphics::FullScreenComputeProducer::DispatchFullscreen(GraphicContext& ctx)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
     ctx.Dispatch(std::ceil(resolution.x / 32.0), std::ceil(resolution.y / 32.0), 1);

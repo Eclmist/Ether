@@ -17,27 +17,27 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "fullscreenproducer.h"
+#include "fullscreenpixelproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
 
 DECLARE_GFX_CB(GlobalConstants)
 
-Ether::Graphics::FullScreenProducer::FullScreenProducer(const char* name, const char* shaderPath)
+Ether::Graphics::FullScreenPixelProducer::FullScreenPixelProducer(const char* name, const char* shaderPath)
     : GraphicProducer(name)
     , m_ShaderPath(shaderPath)
 {
 }
 
-void Ether::Graphics::FullScreenProducer::Initialize(ResourceContext& rc)
+void Ether::Graphics::FullScreenPixelProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::FullScreenProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::FullScreenPixelProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("FullScreenProducer");
 
@@ -55,7 +55,7 @@ void Ether::Graphics::FullScreenProducer::RenderFrame(GraphicContext& ctx, Resou
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
 }
 
-void Ether::Graphics::FullScreenProducer::CreateShaders()
+void Ether::Graphics::FullScreenPixelProducer::CreateShaders()
 {
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_VertexShader = gfxDevice.CreateShader({ "fullscreen_vs.hlsl", "VS_Main", RhiShaderType::Vertex });
@@ -68,12 +68,12 @@ void Ether::Graphics::FullScreenProducer::CreateShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_PixelShader);
 }
 
-void Ether::Graphics::FullScreenProducer::CreateRootSignature()
+void Ether::Graphics::FullScreenPixelProducer::CreateRootSignature()
 {
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(m_PixelShader->GetReflection())->Compile((GetName() + " Root Signature").c_str());
 }
 
-void Ether::Graphics::FullScreenProducer::CreatePipelineState(ResourceContext& rc)
+void Ether::Graphics::FullScreenPixelProducer::CreatePipelineState(ResourceContext& rc)
 {
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
@@ -83,5 +83,10 @@ void Ether::Graphics::FullScreenProducer::CreatePipelineState(ResourceContext& r
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateDisabled);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
+}
+
+void Ether::Graphics::FullScreenPixelProducer::DrawFullScreen(GraphicContext& ctx)
+{
+    ctx.DrawInstanced(3, 1);
 }
 

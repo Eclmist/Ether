@@ -23,11 +23,11 @@
 
 namespace Ether::Graphics
 {
-class PostProcessProducer : public GraphicProducer
+class FullScreenComputeProducer : public GraphicProducer
 {
 public:
-    PostProcessProducer(const char* name, const char* shaderPath);
-    ~PostProcessProducer() override = default;
+    FullScreenComputeProducer(const char* name, const char* shaderPath);
+    ~FullScreenComputeProducer() override = default;
 
 public:
     virtual void Initialize(ResourceContext& rc) override;

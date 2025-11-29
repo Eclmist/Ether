@@ -39,7 +39,7 @@ DECLARE_GFX_UA_SR(PostFxSourceTexture)
 constexpr  uint32_t NumBloomTextures = 9;
 
 Ether::Graphics::BloomProducer::BloomProducer()
-    : PostProcessProducer("BloomProducer", "postprocess\\bloom_cs.hlsl")
+    : FullScreenComputeProducer("BloomProducer", "postprocess\\bloom_cs.hlsl")
 {
 }
 
@@ -75,7 +75,7 @@ void Ether::Graphics::BloomProducer::RenderFrame(GraphicContext& ctx, ResourceCo
 {
     ETH_MARKER_EVENT("BloomProducer");
 
-    PostProcessProducer::RenderFrame(ctx, rc);
+    FullScreenComputeProducer::RenderFrame(ctx, rc);
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const ethVector2u resolution = config.GetResolution();
     const uint32_t numIterations = NumBloomTextures;

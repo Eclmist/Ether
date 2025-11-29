@@ -20,17 +20,17 @@
 #pragma once
 
 #include "graphics/schedule/producers/graphicproducer.h"
+#include "graphics/schedule/producers/fullscreenpixelproducer.h"
 
 namespace Ether::Graphics
 {
-class EditorOutlineProducer : public GraphicProducer
+class EditorOutlineProducer : public FullScreenPixelProducer
 {
 public:
     EditorOutlineProducer();
     ~EditorOutlineProducer() override = default;
 
 public:
-    void Initialize(ResourceContext& rc) override;
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
@@ -38,12 +38,13 @@ protected:
     bool IsEnabled() override;
 
 private:
-    void CreateShaders();
-    void CreateRootSignature();
-    void CreatePipelineState(ResourceContext& rc);
+    void CreateShaders() override;
+    void CreateRootSignature() override;
+    void CreatePipelineState(ResourceContext& rc) override;
 
 private:
-    std::unique_ptr<RhiShader> m_VertexShader, m_PixelShader;
-    std::unique_ptr<RhiGraphicPipelineStateDesc> m_PsoDesc;
+    std::unique_ptr<RhiShader> m_BasePassVS, m_BasePassPS;
+    std::unique_ptr<RhiGraphicPipelineStateDesc> m_BasePassPsoDesc;
+    std::unique_ptr<RhiRootSignature> m_BasePassRootSignature;
 };
 } // namespace Ether::Graphics

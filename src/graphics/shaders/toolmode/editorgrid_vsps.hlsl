@@ -26,6 +26,9 @@
 
 #define AXIS_LINE_WIDTH 1.2
 #define AXIS_LINE_ALPHA 1.0
+#define AXIS_LINE_COLOR_X float3(1.0, 0.4, 0.5)
+#define AXIS_LINE_COLOR_Z float3(0.3, 0.7, 1.0)
+
 #define GRID_LINE_WIDTH 1.0
 #define GRID_LINE_ALPHA 0.7
 #define GRID_SIZE 30
@@ -93,9 +96,9 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     // Axis lines
     if (axisOpacity.z > 0)
-        col = float4(1.0, 0.4, 0.5, axisOpacity.z);
+        col = float4(AXIS_LINE_COLOR_X, axisOpacity.z);
     if (axisOpacity.x > 0)
-        col = float4(0.3, 0.7, 1.0, axisOpacity.x);
+        col = float4(AXIS_LINE_COLOR_Z, axisOpacity.x);
 
     col.a *= fade;
     return col;

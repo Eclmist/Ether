@@ -29,7 +29,7 @@ DEFINE_GFX_UA(PostFxSourceTexture)
 DECLARE_GFX_SR(SceneColor)
 
 Ether::Graphics::PostFxSourceProducer::PostFxSourceProducer()
-    : PostProcessProducer("PostFxSourceProducer", "postprocess\\postprocess_cs.hlsl")
+    : FullScreenComputeProducer("PostFxSourceProducer", "postprocess\\postprocess_cs.hlsl")
 {
 }
 
@@ -44,8 +44,7 @@ void Ether::Graphics::PostFxSourceProducer::GetInputOutput(ScheduleContext& sche
 void Ether::Graphics::PostFxSourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("PostFxSourceProducer");
-
-    PostProcessProducer::RenderFrame(ctx, rc);
+    FullScreenComputeProducer::RenderFrame(ctx, rc);
     ctx.Bind(ACCESS_GFX_SR(SceneColor));
     ctx.Bind(ACCESS_GFX_UA(PostFxSourceTexture));
     DispatchFullscreen(ctx);

@@ -31,7 +31,7 @@ DEFINE_GFX_UA_SR(DofIntermediateTexture2)
 DEFINE_GFX_UA_SR(DofCircleOfConfusionTexture)
 
 Ether::Graphics::DepthOfFieldProducer::DepthOfFieldProducer()
-    : PostProcessProducer("DepthOfFieldProducer", "postprocess\\depthoffield_cs.hlsl")
+    : FullScreenComputeProducer("DepthOfFieldProducer", "postprocess\\depthoffield_cs.hlsl")
 {
 }
 
@@ -55,7 +55,7 @@ void Ether::Graphics::DepthOfFieldProducer::RenderFrame(GraphicContext& ctx, Res
 {
     ETH_MARKER_EVENT("DepthOfFieldProducer");
 
-    PostProcessProducer::RenderFrame(ctx, rc);
+    FullScreenComputeProducer::RenderFrame(ctx, rc);
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const ethVector2u resolution = config.GetResolution();
     const ethVector2u halfResolution = resolution / 2.0f;

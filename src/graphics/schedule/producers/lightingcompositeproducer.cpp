@@ -36,7 +36,7 @@ DECLARE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::LightingCompositeProducer::LightingCompositeProducer()
-    : FullScreenProducer("LightingCompositeProducer", "lightingcomposite_ps.hlsl")
+    : FullScreenPixelProducer("LightingCompositeProducer", "lightingcomposite_ps.hlsl")
 {
 }
 
@@ -60,7 +60,7 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
 {
     ETH_MARKER_EVENT("LightingCompositeProducer");
 
-    FullScreenProducer::RenderFrame(ctx, rc);
+    FullScreenPixelProducer::RenderFrame(ctx, rc);
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
@@ -68,6 +68,6 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ctx.Bind(ACCESS_GFX_SR(LightingTexture));
     ctx.Bind(ACCESS_GFX_SR(ProceduralSkyTexture));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor).Get());
-    ctx.DrawInstanced(3, 1);
+    FullScreenPixelProducer::DrawFullScreen(ctx);
 }
 

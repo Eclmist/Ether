@@ -53,8 +53,8 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
         return sky;
 
     // Debug: 
-    if (GlobalConstants.m_RaytracedLightingDebug == 1)
-        return float4(surface.m_Normal, 0.0f) * 10000.0f;
+    //if (GlobalConstants.m_RaytracedLightingDebug == 1)
+    //    return float4(surface.m_Normal, 0.0f) * 10000.0f;
     //if (GlobalConstants.m_RaytracedLightingDebug == 1)
     //    return float4(surface.m_Position, 1.0f);
 
@@ -62,4 +62,4 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     return finalColor;
 }
 
-#endif // __LIGHTING_COMPOSITE_PS_HLSL__
+#endif // __LIGHTING_COMPOSITE_PS_HLSL__o

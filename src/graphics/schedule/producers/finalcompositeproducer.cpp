@@ -28,7 +28,7 @@ DECLARE_GFX_SR(PostFxSourceTexture)
 DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
-    : FullScreenProducer("FinalCompositeProducer", "finalcomposite_ps.hlsl")
+    : FullScreenPixelProducer("FinalCompositeProducer", "finalcomposite_ps.hlsl")
 {
 }
 
@@ -41,11 +41,10 @@ void Ether::Graphics::FinalCompositeProducer::GetInputOutput(ScheduleContext& sc
 void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("FinalCompositeProducer");
-
-    FullScreenProducer::RenderFrame(ctx, rc);
+    FullScreenPixelProducer::RenderFrame(ctx, rc);
     ctx.Bind(ACCESS_GFX_SR(PostFxSourceTexture));
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
-    ctx.DrawInstanced(3, 1);
+    FullScreenPixelProducer::DrawFullScreen(ctx);
 }
 
 void Ether::Graphics::FinalCompositeProducer::CreatePipelineState(ResourceContext& rc)

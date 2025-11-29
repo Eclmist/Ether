@@ -31,7 +31,7 @@ DECLARE_GFX_SR(GBufferTextureB) // For the velocity vectors
 DECLARE_GFX_SR(SceneDepth)
 
 Ether::Graphics::TemporalAAProducer::TemporalAAProducer()
-    : PostProcessProducer("TemporalAAProducer", "postprocess\\temporalaa_cs.hlsl")
+    : FullScreenComputeProducer("TemporalAAProducer", "postprocess\\temporalaa_cs.hlsl")
 {
 }
 
@@ -50,7 +50,7 @@ void Ether::Graphics::TemporalAAProducer::RenderFrame(GraphicContext& ctx, Resou
 {
     ETH_MARKER_EVENT("TemporalAAProducer");
 
-    PostProcessProducer::RenderFrame(ctx, rc);
+    FullScreenComputeProducer::RenderFrame(ctx, rc);
 
     ctx.Bind(ACCESS_GFX_UA(PostFxSourceTexture));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));

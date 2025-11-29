@@ -23,11 +23,11 @@
 
 namespace Ether::Graphics
 {
-class FullScreenProducer : public GraphicProducer
+class FullScreenPixelProducer : public GraphicProducer
 {
 public:
-    FullScreenProducer(const char* name, const char* shaderPath);
-    ~FullScreenProducer() override = default;
+    FullScreenPixelProducer(const char* name, const char* shaderPath);
+    ~FullScreenPixelProducer() override = default;
 
 public:
     virtual void Initialize(ResourceContext& rc) override;
@@ -37,6 +37,9 @@ protected:
     virtual void CreateShaders();
     virtual void CreateRootSignature();
     virtual void CreatePipelineState(ResourceContext& rc);
+
+protected:
+    void DrawFullScreen(GraphicContext& ctx);
 
 protected:
     std::string m_ShaderPath;

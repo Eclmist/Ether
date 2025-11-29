@@ -29,7 +29,7 @@ DEFINE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::ProceduralSkyProducer::ProceduralSkyProducer()
-    : FullScreenProducer("ProceduralSkyProducer", "proceduralsky_ps.hlsl")
+    : FullScreenPixelProducer("ProceduralSkyProducer", "proceduralsky_ps.hlsl")
 {
 }
 
@@ -44,9 +44,8 @@ void Ether::Graphics::ProceduralSkyProducer::GetInputOutput(ScheduleContext& sch
 void Ether::Graphics::ProceduralSkyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
     ETH_MARKER_EVENT("ProceduralSkyProducer");
-
-    FullScreenProducer::RenderFrame(ctx, rc);
+    FullScreenPixelProducer::RenderFrame(ctx, rc);
     ctx.SetRenderTarget(*ACCESS_GFX_RT(ProceduralSkyTexture).Get());
-    ctx.DrawInstanced(3, 1);
+    FullScreenPixelProducer::DrawFullScreen(ctx);
 }
 
