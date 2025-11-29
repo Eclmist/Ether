@@ -21,7 +21,7 @@
 #include "graphics/graphicexporter.h"
 
 #if ETH_TOOLMODE
-DECLARE_GFX_SR(MetadataBuffer)
+DECLARE_GFX_UA(MetadataBuffer)
 #endif
 
 Ether::Graphics::GraphicExporter::GraphicExporter()
@@ -68,7 +68,7 @@ void Ether::Graphics::GraphicExporter::Export()
             break;
 #if ETH_TOOLMODE
         case ExportTarget::MetadataBuffer:
-            target = GraphicCore::GetGraphicRenderer().GetFrameResource(ACCESS_GFX_SR(MetadataBuffer).Get());
+            target = GraphicCore::GetGraphicRenderer().GetFrameResource(ACCESS_GFX_UA(MetadataBuffer).Get());
             break;
 #endif
         default:

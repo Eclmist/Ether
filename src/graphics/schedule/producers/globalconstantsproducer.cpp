@@ -109,6 +109,10 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
     globalConstants->m_SamplerIndex_Linear_Wrap = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Wrap;
     globalConstants->m_SamplerIndex_Linear_Border = GraphicCore::GetGraphicCommon().m_SamplerIndex_Linear_Border;
 
+#if ETH_TOOLMODE
+    globalConstants->m_TranslucentPickingEnabled = GraphicCore::GetGraphicConfig().IsTranslucencyPickingEnabled();
+#endif
+
     StringID hdriID = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_HdriTextureID;
     globalConstants->m_HdriTextureIndex = GraphicCore::GetBindlessDescriptorManager().GetDescriptorIndex(hdriID); 
 

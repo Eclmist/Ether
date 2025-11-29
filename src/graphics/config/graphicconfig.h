@@ -57,6 +57,7 @@ public:
     inline bool IsDebugGuiEnabled() const { return m_IsDebugGuiEnabled; }
     inline void* GetWindowHandle() const { return m_WindowHandle; }
     inline ethVector4 GetClearColor() const { return m_ClearColor; }
+    ETH_TOOLONLY(inline bool IsTranslucencyPickingEnabled() const { return m_TranslucencyPickingEnabled; })
 
     void SetResolution(const ethVector2u& resolution);
     inline void SetShaderSourceDir(const std::string& dir) { m_ShaderSourcePath = dir; }
@@ -68,6 +69,7 @@ public:
     inline void SetDebugGuiEnabled(bool enabled) { m_IsDebugGuiEnabled = enabled; }
     inline void SetWindowHandle(void* hwnd) { m_WindowHandle = hwnd; }
     inline void SetClearColor(const ethVector4& clearColor) { m_ClearColor = clearColor; }
+    ETH_TOOLONLY(inline void SetTranslucencyPickingEnabled(bool enable) { m_TranslucencyPickingEnabled = enable; })
 
 public:
     // Temporary debugging flags/values to be removed
@@ -144,5 +146,10 @@ private:
     bool m_IsValidationLayerEnabled;
     bool m_IsDebugGuiEnabled;
     void* m_WindowHandle;
+
+#if ETH_TOOLMODE
+private:
+    bool m_TranslucencyPickingEnabled;
+#endif
 };
 } // namespace Ether::Graphics

@@ -37,9 +37,35 @@ Ether::Graphics::Dx12GraphicPipelineStateDesc::Dx12GraphicPipelineStateDesc()
     SetNodeMask(0);
 }
 
-void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetBlendState(const RhiBlendDesc& desc)
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetVertexShader(const RhiShader& vs)
 {
-    m_Dx12PsoDesc.BlendState = Translate(desc);
+    AssertGraphics(
+        vs.GetType() == RhiShaderType::Vertex,
+        "Vertex shader expected, but encountered %u",
+        static_cast<uint32_t>(vs.GetType()));
+    m_Dx12PsoDesc.VS.pShaderBytecode = vs.GetCompiledData();
+    m_Dx12PsoDesc.VS.BytecodeLength = vs.GetCompiledSize();
+    m_Shaders[vs.GetType()] = &vs;
+}
+
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetPixelShader(const RhiShader& ps)
+{
+    AssertGraphics(
+        ps.GetType() == RhiShaderType::Pixel,
+        "Pixel shader expected, but encountered %u",
+        static_cast<uint32_t>(ps.GetType()));
+    m_Dx12PsoDesc.PS.pShaderBytecode = ps.GetCompiledData();
+    m_Dx12PsoDesc.PS.BytecodeLength = ps.GetCompiledSize();
+    m_Shaders[ps.GetType()] = &ps;
+}
+
+void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetBlendState(const RhiBlendDesc& desc, uint32_t index)
+{
+    D3D12_BLEND_DESC blendState = Translate(desc);
+    m_Dx12PsoDesc.BlendState.RenderTarget[index] = blendState.RenderTarget[0];
+
+    if (index != 0)
+        m_Dx12PsoDesc.BlendState.IndependentBlendEnable = true;
 }
 
 void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetRasterizerState(const RhiRasterizerDesc& desc)
@@ -92,28 +118,6 @@ void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetSamplingDesc(uint32_t num
 {
     m_Dx12PsoDesc.SampleDesc.Count = numMsaaSamples;
     m_Dx12PsoDesc.SampleDesc.Quality = msaaQuality;
-}
-
-void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetVertexShader(const RhiShader& vs)
-{
-    AssertGraphics(
-        vs.GetType() == RhiShaderType::Vertex,
-        "Vertex shader expected, but encountered %u",
-        static_cast<uint32_t>(vs.GetType()));
-    m_Dx12PsoDesc.VS.pShaderBytecode = vs.GetCompiledData();
-    m_Dx12PsoDesc.VS.BytecodeLength = vs.GetCompiledSize();
-    m_Shaders[vs.GetType()] = &vs;
-}
-
-void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetPixelShader(const RhiShader& ps)
-{
-    AssertGraphics(
-        ps.GetType() == RhiShaderType::Pixel,
-        "Pixel shader expected, but encountered %u",
-        static_cast<uint32_t>(ps.GetType()));
-    m_Dx12PsoDesc.PS.pShaderBytecode = ps.GetCompiledData();
-    m_Dx12PsoDesc.PS.BytecodeLength = ps.GetCompiledSize();
-    m_Shaders[ps.GetType()] = &ps;
 }
 
 void Ether::Graphics::Dx12GraphicPipelineStateDesc::SetNodeMask(uint32_t mask)

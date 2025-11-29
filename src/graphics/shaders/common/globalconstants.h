@@ -96,6 +96,10 @@ struct GlobalConstants
     uint32_t m_SamplerIndex_Linear_Clamp;
     uint32_t m_SamplerIndex_Linear_Wrap;
     uint32_t m_SamplerIndex_Linear_Border;
+
+#if ETH_TOOLMODE
+    bool m_TranslucentPickingEnabled;
+#endif
 };
 
 #ifdef __HLSL__

@@ -33,7 +33,7 @@ public:
 public:
     virtual void SetVertexShader(const RhiShader& vs) = 0;
     virtual void SetPixelShader(const RhiShader& ps) = 0;
-    virtual void SetBlendState(const RhiBlendDesc& desc) = 0;
+    virtual void SetBlendState(const RhiBlendDesc& desc, uint32_t index = 0) = 0;
     virtual void SetRasterizerState(const RhiRasterizerDesc& desc) = 0;
     virtual void SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements) = 0;
     virtual void SetPrimitiveTopology(const RhiPrimitiveTopologyType& type) = 0;

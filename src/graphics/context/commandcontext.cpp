@@ -71,14 +71,6 @@ void Ether::Graphics::CommandContext::PopMarker()
     m_CommandList->PopMarker();
 }
 
-void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, RhiResourceState newState)
-{
-    if (resource.GetCurrentState() == newState)
-        return;
-
-    m_CommandList->TransitionResource(resource, newState);
-}
-
 void Ether::Graphics::CommandContext::SetSrvCbvUavDescriptorHeap(const RhiDescriptorHeap& descriptorHeap)
 {
     m_SrvCbvUavHeap = &descriptorHeap;
@@ -108,90 +100,6 @@ void Ether::Graphics::CommandContext::SetRaytracingPipelineState(const RhiRaytra
 {
     m_CommandList->SetRaytracingPipelineState(pipelineState);
     m_RootSignatureBindingTable->SetPipelineType(RhiPipelineType::Raytracing);
-}
-
-void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
-{
-    m_CommandList->CopyResource(src, dest);
-}
-
-void Ether::Graphics::CommandContext::InitializeBufferRegion(
-    RhiResource& dest,
-    const void* data,
-    uint32_t size,
-    uint32_t destOffset)
-{
-    auto alloc = m_UploadBufferAllocator->Allocate(size);
-    memcpy(alloc->GetCpuHandle(), data, size);
-
-    CopyBufferRegion(
-        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
-        dest,
-        size,
-        alloc->GetOffset(),
-        destOffset);
-    TransitionResource(dest, RhiResourceState::GenericRead);
-}
-
-void Ether::Graphics::CommandContext::InitializeTexture(RhiResource& dest, void** data)
-{
-    auto alloc = m_UploadBufferAllocator->Allocate(dest.GetSize());
-    TransitionResource(dest, RhiResourceState::CopyDest);
-    m_CommandList->CopyBufferToTexture(((UploadBufferAllocation&)*alloc).GetResource(), dest, data);
-    TransitionResource(dest, RhiResourceState::GenericRead);
-}
-
-void Ether::Graphics::CommandContext::CopyBufferRegion(
-    RhiResource& src,
-    RhiResource& dest,
-    uint32_t size,
-    uint32_t srcOffset,
-    uint32_t destOffset)
-{
-    TransitionResource(src, RhiResourceState::CopySrc);
-    TransitionResource(dest, RhiResourceState::CopyDest);
-    m_CommandList->CopyBufferRegion(src, dest, size, srcOffset, destOffset);
-}
-
-void Ether::Graphics::CommandContext::CopyTextureToBuffer(RhiResource& src, RhiResource& dest)
-{
-    TransitionResource(src, RhiResourceState::CopySrc);
-    TransitionResource(dest, RhiResourceState::CopyDest);
-    m_CommandList->CopyTextureToBuffer(src, dest);
-}
-
-void Ether::Graphics::CommandContext::CopyTextureRegionToBuffer(RhiResource& src, RhiResource& dest, Rect rect)
-{
-    TransitionResource(src, RhiResourceState::CopySrc);
-    TransitionResource(dest, RhiResourceState::CopyDest);
-    m_CommandList->CopyTextureRegionToBuffer(src, dest, rect);
-}
-
-void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavResource)
-{
-    m_CommandList->InsertUavBarrier(uavResource);
-}
-
-void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(
-    const RhiAccelerationStructure& accelStructure)
-{
-    m_CommandList->BuildAccelerationStructure(accelStructure);
-}
-
-void Ether::Graphics::CommandContext::RefitBottomLevelAccelerationStructure(
-    const RhiAccelerationStructure& accelStructure)
-{
-    m_CommandList->RefitAccelerationStructure(accelStructure);
-}
-
-void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
-{
-    m_CommandList->BuildAccelerationStructure(accelStructure);
-}
-
-void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiResource* bindTable)
-{
-    m_RaytracingBindTable = bindTable;
 }
 
 void Ether::Graphics::CommandContext::SetResourceContext(const ResourceContext& resourceContext)
@@ -311,6 +219,98 @@ void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
     RhiGpuAddress baseAddress)
 {
     m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, baseAddress);
+}
+
+void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(
+    const RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->BuildAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::RefitBottomLevelAccelerationStructure(
+    const RhiAccelerationStructure& accelStructure)
+{
+    m_CommandList->RefitAccelerationStructure(accelStructure);
+}
+
+void Ether::Graphics::CommandContext::SetRaytracingShaderBindingTable(const RhiResource* bindTable)
+{
+    m_RaytracingBindTable = bindTable;
+}
+
+void Ether::Graphics::CommandContext::InsertUavBarrier(const RhiResource& uavResource)
+{
+    m_CommandList->InsertUavBarrier(uavResource);
+}
+
+void Ether::Graphics::CommandContext::TransitionResource(RhiResource& resource, RhiResourceState newState)
+{
+    if (resource.GetCurrentState() == newState)
+        return;
+
+    m_CommandList->TransitionResource(resource, newState);
+}
+
+void Ether::Graphics::CommandContext::InitializeBufferRegion(
+    RhiResource& dest,
+    const void* data,
+    uint32_t size,
+    uint32_t destOffset)
+{
+    auto alloc = m_UploadBufferAllocator->Allocate(size);
+    memcpy(alloc->GetCpuHandle(), data, size);
+
+    CopyBufferRegion(
+        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
+        dest,
+        size,
+        alloc->GetOffset(),
+        destOffset);
+    TransitionResource(dest, RhiResourceState::GenericRead);
+}
+
+void Ether::Graphics::CommandContext::InitializeTexture(RhiResource& dest, void** data)
+{
+    auto alloc = m_UploadBufferAllocator->Allocate(dest.GetSize());
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    m_CommandList->CopyBufferToTexture(((UploadBufferAllocation&)*alloc).GetResource(), dest, data);
+    TransitionResource(dest, RhiResourceState::GenericRead);
+}
+
+void Ether::Graphics::CommandContext::CopyResource(RhiResource& src, RhiResource& dest)
+{
+    m_CommandList->CopyResource(src, dest);
+}
+
+void Ether::Graphics::CommandContext::CopyBufferRegion(
+    RhiResource& src,
+    RhiResource& dest,
+    uint32_t size,
+    uint32_t srcOffset,
+    uint32_t destOffset)
+{
+    TransitionResource(src, RhiResourceState::CopySrc);
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    m_CommandList->CopyBufferRegion(src, dest, size, srcOffset, destOffset);
+}
+
+void Ether::Graphics::CommandContext::CopyTextureToBuffer(RhiResource& src, RhiResource& dest)
+{
+    TransitionResource(src, RhiResourceState::CopySrc);
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    m_CommandList->CopyTextureToBuffer(src, dest);
+}
+
+void Ether::Graphics::CommandContext::CopyTextureRegionToBuffer(RhiResource& src, RhiResource& dest, Rect rect)
+{
+    TransitionResource(src, RhiResourceState::CopySrc);
+    TransitionResource(dest, RhiResourceState::CopyDest);
+    m_CommandList->CopyTextureRegionToBuffer(src, dest, rect);
 }
 
 void Ether::Graphics::CommandContext::Dispatch(uint32_t x, uint32_t y, uint32_t z)

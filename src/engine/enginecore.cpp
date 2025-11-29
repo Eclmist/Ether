@@ -99,7 +99,6 @@ void Ether::EngineCore::InitializeGraphicsLayer()
     config.SetUseGraphicsThread(m_CommandLineOptions.UseGraphicsThread());
     config.SetShaderSourceDir(m_CommandLineOptions.GetShaderSourcePath());
     config.SetResolution(m_EngineConfig.GetClientSize());
-
     Graphics::GraphicCore::Instance().Initialize();
 }
 

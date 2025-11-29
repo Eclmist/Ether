@@ -33,7 +33,9 @@ public:
     ~Dx12GraphicPipelineStateDesc() override = default;
 
 public:
-    void SetBlendState(const RhiBlendDesc& desc) override;
+    void SetVertexShader(const RhiShader& vs) override;
+    void SetPixelShader(const RhiShader& ps) override;
+    void SetBlendState(const RhiBlendDesc& desc, uint32_t index = 0) override;
     void SetRasterizerState(const RhiRasterizerDesc& desc) override;
     void SetInputLayout(const RhiInputElementDesc* descs, uint32_t numElements) override;
     void SetPrimitiveTopology(const RhiPrimitiveTopologyType& type) override;
@@ -43,8 +45,6 @@ public:
     void SetRenderTargetFormats(const RhiFormat* rtvFormats, uint32_t numRtv) override;
     void SetRootSignature(const RhiRootSignature& rootSignature) override;
     void SetSamplingDesc(uint32_t numMsaaSamples, uint32_t msaaQuality) override;
-    void SetVertexShader(const RhiShader& vs) override;
-    void SetPixelShader(const RhiShader& ps) override;
     void SetNodeMask(uint32_t mask) override;
     void SetSampleMask(uint32_t mask) override;
     void Reset() override;

@@ -36,6 +36,11 @@ DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
+#if ETH_TOOLMODE
+DECLARE_GFX_UA(MetadataBuffer)
+#endif
+
+
 Ether::Graphics::TranslucencyProducer::TranslucencyProducer()
     : GraphicProducer("TranslucencyProducer")
 {
@@ -55,6 +60,7 @@ void Ether::Graphics::TranslucencyProducer::GetInputOutput(ScheduleContext& sche
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
+    ETH_TOOLONLY(schedule.Read(ACCESS_GFX_UA(MetadataBuffer)));
 }
 
 void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -82,6 +88,7 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_UA(MetadataBuffer));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Batch by material only for now
@@ -101,6 +108,7 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
             instanceParams->m_ModelMatrix = visual.m_ModelMatrix;
             instanceParams->m_ModelMatrixPrev = visual.m_ModelMatrixPrev;
             instanceParams->m_NormalMatrix = visual.m_ModelMatrix.Inversed().Transposed();
+            ETH_TOOLONLY(instanceParams->m_EntityID = visual.m_EntityID);
             ctx.Bind("InstanceParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
             ctx.SetVertexBuffer(visual.m_Mesh->GetVertexBufferView());
             ctx.SetIndexBuffer(visual.m_Mesh->GetIndexBufferView());
@@ -154,6 +162,7 @@ void Ether::Graphics::TranslucencyProducer::CreatePipelineState(ResourceContext&
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     m_PsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional);
+
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
 

@@ -23,24 +23,29 @@
 #include "common/globalconstants.h"
 #include "common/material.h"
 #include "common/instanceparams.h"
+#include "common/metadata.h"
 #include "utils/brdf.hlsl"
 #include "utils/shading.hlsl"
 #include "utils/helpers.hlsl"
 #include "utils/fullscreenhelpers.hlsl"
 
-ConstantBuffer<InstanceParams> InstanceParams     : register(b1);
-Texture2D<float2> SceneDepth                      : register(t1);
+ConstantBuffer<InstanceParams> InstanceParams   : register(b1);
+Texture2D<float2> SceneDepth                    : register(t1);
+
+#if ETH_TOOLMODE
+RWTexture2D<uint> RWMetadataBuffer              : register(u0);
+#endif
 
 struct PS_INPUT
 {
     float4 ScreenPos : SV_POSITION;
-    float3 Normal : NORMAL;
-    float4 Color : COLOR;
-    float3 Tangent : TEXCOORD0;
-    float2 TexCoord : TEXCOORD1;
+    float3 Normal    : NORMAL;
+    float4 Color     : COLOR;
+    float3 Tangent   : TEXCOORD0;
+    float2 TexCoord  : TEXCOORD1;
 };
 
-float4 PS_Main(PS_INPUT IN) : SV_Target
+float4 PS_Main(PS_INPUT IN) : SV_TARGET
 {
     sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
     const Material material = MaterialTable[InstanceParams.m_MaterialIdx];
@@ -64,6 +69,16 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_BaseColor, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     Lo += f * Li * cosTheta;
+
+#if ETH_TOOLMODE
+    if (GlobalConstants.m_TranslucentPickingEnabled)
+    {
+        Metadata metadata;
+        metadata.m_IsValid = true;
+        metadata.m_EntityID = InstanceParams.m_EntityID;
+        RWMetadataBuffer[IN.ScreenPos.xy] = PackMetadata(metadata);
+    }
+#endif
 
     return float4(Lo, surface.m_Opacity);
 }

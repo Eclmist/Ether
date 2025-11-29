@@ -34,16 +34,15 @@ DEFINE_GFX_RT(GBufferTextureA) // [BaseColor.x, BaseColor.y, BaseColor.z, Materi
 DEFINE_GFX_RT(GBufferTextureB) // [Normal.x,    Normal.y,    Velocity.x,  Velocity.y]
 DEFINE_GFX_RT(GBufferTextureC) // [Emissive.x,  Emissive.y,  Emissive.z,  Roughness & Metalness Packed]
 
-#if ETH_TOOLMODE
-// For picking and selection outlines
-DEFINE_GFX_RT(MetadataBuffer)
-DEFINE_GFX_SR(MetadataBuffer)
-#endif
-
 DEFINE_GFX_SR(SceneDepth)
 DEFINE_GFX_SR(GBufferTextureA)
 DEFINE_GFX_SR(GBufferTextureB)
 DEFINE_GFX_SR(GBufferTextureC)
+
+#if ETH_TOOLMODE
+DEFINE_GFX_RT(MetadataBuffer) // TODO: Implement generic ClearUAV pass. Currently borrowing RT's clear color
+DEFINE_GFX_UA(MetadataBuffer)
+#endif
 
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
@@ -72,8 +71,8 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureA), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureB), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureC), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-    ETH_TOOLONLY(schedule.NewRT(ACCESS_GFX_RT(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint));
-    ETH_TOOLONLY(schedule.NewSR(ACCESS_GFX_SR(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint, RhiResourceDimension::Texture2D));
+    ETH_TOOLONLY(schedule.NewRT(ACCESS_GFX_RT(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint, RhiResourceDimension::Texture2D));
+    ETH_TOOLONLY(schedule.NewUA(ACCESS_GFX_UA(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint, RhiResourceDimension::Texture2D));
 
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
@@ -91,10 +90,8 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureA));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureB));
     ctx.ClearColor(*ACCESS_GFX_RT(GBufferTextureC));
-#if ETH_TOOLMODE
-    ctx.ClearColor(*ACCESS_GFX_RT(MetadataBuffer));
-#endif
     ctx.ClearDepthStencil(*ACCESS_GFX_DS(SceneDepth));
+    ETH_TOOLONLY(ctx.ClearColor(*ACCESS_GFX_RT(MetadataBuffer)));
     ctx.PopMarker();
 
     ctx.PushMarker("Draw Geometry");
@@ -107,15 +104,12 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
+    ETH_TOOLONLY(ctx.Bind(ACCESS_GFX_UA(MetadataBuffer)));
 
     std::vector<RhiRenderTargetView> rtvs;
     rtvs.emplace_back(*ACCESS_GFX_RT(GBufferTextureA));
     rtvs.emplace_back(*ACCESS_GFX_RT(GBufferTextureB));
     rtvs.emplace_back(*ACCESS_GFX_RT(GBufferTextureC));
-#if ETH_TOOLMODE
-    rtvs.emplace_back(*ACCESS_GFX_RT(MetadataBuffer));
-#endif
-    
     ctx.SetRenderTargets(rtvs.data(), rtvs.size(), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Batch by material only for now
@@ -179,15 +173,15 @@ void Ether::Graphics::GBufferProducer::CreateRootSignature()
 
 void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
 {
-    RhiFormat formats[] = { RhiFormat::R8G8B8A8Unorm,
-                            RhiFormat::R16G16B16A16Float,
-                            RhiFormat::R16G16B16A16Float, 
-                            ETH_TOOLONLY(RhiFormat::R32Uint)};
+    std::vector<RhiFormat> rtvFormats;
+    rtvFormats.emplace_back(RhiFormat::R8G8B8A8Unorm);
+    rtvFormats.emplace_back(RhiFormat::R16G16B16A16Float);
+    rtvFormats.emplace_back(RhiFormat::R16G16B16A16Float);
 
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormats(formats, sizeof(formats) / sizeof(formats[0]));
+    m_PsoDesc->SetRenderTargetFormats(rtvFormats.data(), rtvFormats.size());
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(VertexFormats::BaseVertexFormat::s_InputElementDesc, VertexFormats::BaseVertexFormat::s_NumElements);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
