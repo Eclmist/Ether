@@ -69,6 +69,9 @@ D3D12_INDEX_BUFFER_VIEW Translate(const RhiIndexBufferViewDesc& rhiDesc);
 
 template <typename RhiType>
 uint32_t TranslateFlags(const RhiType& rhiType);
+
+uint32_t GetBytesPerPixel(DXGI_FORMAT format);
+
 } // namespace Ether::Graphics
 
 template <typename RhiType>

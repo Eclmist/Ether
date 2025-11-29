@@ -193,7 +193,7 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateRaytracing
     return *m_ResourceTable.at(resourceName);
 }
 
-void Ether::Graphics::ResourceContext::InitializeRenderTargetView(std::shared_ptr<RhiResourceView> view)
+void Ether::Graphics::ResourceContext::InitializeRenderTargetView(RhiResourceView* view)
 {
     if (!ShouldRecreateView(view->GetViewID()))
         return;
@@ -201,12 +201,12 @@ void Ether::Graphics::ResourceContext::InitializeRenderTargetView(std::shared_pt
     auto alloc = GraphicCore::GetRtvAllocator().Allocate();
     view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
 
-    GraphicCore::GetDevice().InitializeRenderTargetView((*(RhiRenderTargetView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    GraphicCore::GetDevice().InitializeRenderTargetView((*(RhiRenderTargetView*)(view)), *m_ResourceTable[view->GetResourceID()]);
     m_DescriptorTable[view->GetViewID()] = view;
     m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-void Ether::Graphics::ResourceContext::InitializeDepthStencilView(std::shared_ptr<RhiResourceView> view)
+void Ether::Graphics::ResourceContext::InitializeDepthStencilView(RhiResourceView* view)
 {
     if (!ShouldRecreateView(view->GetViewID()))
         return;
@@ -214,49 +214,49 @@ void Ether::Graphics::ResourceContext::InitializeDepthStencilView(std::shared_pt
     auto alloc = GraphicCore::GetDsvAllocator().Allocate();
     view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
 
-    GraphicCore::GetDevice().InitializeDepthStencilView((*(RhiDepthStencilView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    GraphicCore::GetDevice().InitializeDepthStencilView((*(RhiDepthStencilView*)(view)), *m_ResourceTable[view->GetResourceID()]);
     m_DescriptorTable[view->GetViewID()] = view;
     m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-void Ether::Graphics::ResourceContext::InitializeShaderResourceView(std::shared_ptr<RhiResourceView> view)
+void Ether::Graphics::ResourceContext::InitializeShaderResourceView(RhiResourceView* view)
 {
     if (!ShouldRecreateView(view->GetViewID()))
         return;
 
     auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
     view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
-    ((RhiShaderResourceView*)view.get())->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
+    ((RhiShaderResourceView*)view)->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
 
-    GraphicCore::GetDevice().InitializeShaderResourceView((*(RhiShaderResourceView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    GraphicCore::GetDevice().InitializeShaderResourceView((*(RhiShaderResourceView*)(view)), *m_ResourceTable[view->GetResourceID()]);
     m_DescriptorTable[view->GetViewID()] = view;
     m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-void Ether::Graphics::ResourceContext::InitializeUnorderedAccessView(std::shared_ptr<RhiResourceView> view)
+void Ether::Graphics::ResourceContext::InitializeUnorderedAccessView(RhiResourceView* view)
 {
     if (!ShouldRecreateView(view->GetViewID()))
         return;
 
     auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
     view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
-    ((RhiUnorderedAccessView*)view.get())->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
+    ((RhiUnorderedAccessView*)view)->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
 
-    GraphicCore::GetDevice().InitializeUnorderedAccessView((*(RhiUnorderedAccessView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    GraphicCore::GetDevice().InitializeUnorderedAccessView((*(RhiUnorderedAccessView*)(view)), *m_ResourceTable[view->GetResourceID()]);
     m_DescriptorTable[view->GetViewID()] = view;
     m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }
 
-void Ether::Graphics::ResourceContext::InitializeConstantBufferView(std::shared_ptr<RhiResourceView> view)
+void Ether::Graphics::ResourceContext::InitializeConstantBufferView(RhiResourceView* view)
 {
     if (!ShouldRecreateView(view->GetViewID()))
         return;
 
     auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
     view->SetCpuAddress(((DescriptorAllocation&)(*alloc)).GetCpuAddress());
-    ((RhiConstantBufferView*)view.get())->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
+    ((RhiConstantBufferView*)view)->SetGpuAddress(((DescriptorAllocation&)(*alloc)).GetGpuAddress());
 
-    GraphicCore::GetDevice().InitializeConstantBufferView((*(RhiConstantBufferView*)(view.get())), *m_ResourceTable[view->GetResourceID()]);
+    GraphicCore::GetDevice().InitializeConstantBufferView((*(RhiConstantBufferView*)(view)), *m_ResourceTable[view->GetResourceID()]);
     m_DescriptorTable[view->GetViewID()] = view;
     m_DescriptorAllocations[view->GetViewID()] = std::move(alloc);
 }

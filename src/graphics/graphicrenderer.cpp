@@ -20,6 +20,7 @@
 #include "graphics/graphiccore.h"
 #include "graphics/graphicrenderer.h"
 #include "graphics/resources/material.h"
+#include "graphics/rhi/rhiresource.h"
 #include "graphics/rhi/rhishader.h"
 
 Ether::Graphics::GraphicRenderer::GraphicRenderer()
@@ -28,6 +29,30 @@ Ether::Graphics::GraphicRenderer::GraphicRenderer()
 {
     LogGraphicsInfo("Initializing Graphic Renderer");
     m_Scheduler.PrecompilePipelineStates();
+}
+
+Ether::Graphics::RhiResource* Ether::Graphics::GraphicRenderer::GetFrameResource(const RhiResourceView* resourceView) const
+{
+    return m_Scheduler.m_ResourceContext.GetResource(resourceView);
+}
+
+Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRenderData()
+{
+    if (GraphicCore::GetRenderThread().IsGraphicsThread())
+    {
+        return m_RenderData[(m_FrameNumber + 1) % 2];
+    }
+    else
+    {
+        return m_RenderData[m_FrameNumber % 2];
+    }
+}
+
+void Ether::Graphics::GraphicRenderer::ClearAllRenderData()
+{
+    GraphicCore::GetBindlessDescriptorManager().Reset();
+    m_RenderData[0] = RenderData();
+    m_RenderData[1] = RenderData();
 }
 
 void Ether::Graphics::GraphicRenderer::WaitForPresent()
@@ -63,24 +88,5 @@ void Ether::Graphics::GraphicRenderer::Cleanup()
     GetThreadedRenderData().m_Visuals.clear();
     GetThreadedRenderData().m_VisualBatches.clear();
     GetThreadedRenderData().m_RaytracingVisuals.clear();
-}
-
-Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRenderData()
-{
-    if (GraphicCore::GetRenderThread().IsGraphicsThread())
-    {
-        return m_RenderData[(m_FrameNumber + 1) % 2];
-    }
-    else
-    {
-        return m_RenderData[m_FrameNumber % 2];
-    }
-}
-
-void Ether::Graphics::GraphicRenderer::ClearAllRenderData()
-{
-    GraphicCore::GetBindlessDescriptorManager().Reset();
-    m_RenderData[0] = RenderData();
-    m_RenderData[1] = RenderData();
 }
 

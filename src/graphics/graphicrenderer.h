@@ -37,6 +37,7 @@ public:
     inline void IncrementFrameNumber() { m_FrameNumber++; }
 
 public:
+    ETH_GRAPHIC_DLL RhiResource* GetFrameResource(const RhiResourceView* resourceView) const;
     ETH_GRAPHIC_DLL RenderData& GetThreadedRenderData();
     ETH_GRAPHIC_DLL void ClearAllRenderData();
 

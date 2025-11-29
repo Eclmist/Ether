@@ -37,7 +37,9 @@ struct ETH_GRAPHIC_DLL Visual
     ethMatrix4x4 m_ModelMatrix;
     ethMatrix4x4 m_ModelMatrixPrev;
     bool m_Culled;
+
 #if ETH_TOOLMODE
+    uint32_t m_EntityID;
     bool m_ToolmodeSelected;
 #endif
 

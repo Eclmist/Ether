@@ -46,6 +46,7 @@ public:
     void RenderMultiThreaded(GraphicContext& visualContext);
 
 private:
+    friend class GraphicRenderer;
     ResourceContext m_ResourceContext;
 
     std::unordered_map<StringID, std::shared_ptr<GraphicProducer>> m_RegisteredProducers;

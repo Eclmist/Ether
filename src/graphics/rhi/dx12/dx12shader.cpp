@@ -205,6 +205,8 @@ std::vector<LPCWSTR> Ether::Graphics::Dx12Shader::GetCompilationArguments() cons
     arguments.push_back(m_wSourceDir.c_str());
     arguments.push_back(L"-D");
     arguments.push_back(L"__HLSL__");
+    ETH_TOOLONLY(arguments.push_back(L"-D"));
+    ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
 
     if (m_Type != RhiShaderType::Library)
     {
@@ -231,8 +233,6 @@ std::vector<LPCWSTR> Ether::Graphics::Dx12Shader::GetCompilationArguments() cons
     arguments.push_back(L"-O3"); // Or whatever optimization level you want
 #endif
     arguments.push_back(DXC_ARG_PACK_MATRIX_ROW_MAJOR);
-    ETH_TOOLONLY(arguments.push_back(L"-D"));
-    ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
 
     return arguments;
 }

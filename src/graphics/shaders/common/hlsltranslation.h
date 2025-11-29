@@ -27,8 +27,8 @@
 #else
 #define ETH_BEGIN_SHADER_NAMESPACE
 #define ETH_END_SHADER_NAMESPACE
-
 #define ETH_SHADER_STATIC_ASSERT(cond)
+#define ETH_GRAPHIC_DLL
 #endif
 
 #ifdef __HLSL__

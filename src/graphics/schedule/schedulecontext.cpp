@@ -24,12 +24,12 @@
 #define MARK_FOR_READ(input)                                                                            \
     input.Create();                                                                                     \
     m_Reads[input.GetName()] = input.Get();                                                             \
-    m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get().get();
+    m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get();
 
 #define MARK_FOR_WRITE(input)                                                                           \
     input.Create();                                                                                     \
     m_Writes[input.GetName()] = input.Get();                                                            \
-    m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get().get();
+    m_ResourceToDescriptorMap[input.GetSharedResourceName()][input.GetName()] = input.Get();
 
 void Ether::Graphics::ScheduleContext::Read(GFX_STATIC::GFX_RT_TYPE& rtv)
 {
@@ -100,7 +100,7 @@ const void Ether::Graphics::ScheduleContext::NewRT(
     uint32_t depth)
 {
     rtv.Create();
-    RhiRenderTargetView* view = rtv.Get().get();
+    RhiRenderTargetView* view = rtv.Get();
     view->SetWidth(std::max(1u, width));
     view->SetHeight(std::max(1u, height));
     view->SetDepth(std::max(1u, depth));
@@ -119,7 +119,7 @@ const void Ether::Graphics::ScheduleContext::NewDS(
     RhiFormat format)
 {
     dsv.Create();
-    RhiDepthStencilView* view = dsv.Get().get();
+    RhiDepthStencilView* view = dsv.Get();
     view->SetWidth(std::max(1u, width));
     view->SetHeight(std::max(1u, height));
     view->SetDepth(1);
@@ -140,7 +140,7 @@ const void Ether::Graphics::ScheduleContext::NewSR(
     uint32_t depthOrStride)
 {
     srv.Create();
-    RhiShaderResourceView* view = srv.Get().get();
+    RhiShaderResourceView* view = srv.Get();
     view->SetStructuredBufferStride(std::max(1u, depthOrStride));
     view->SetWidth(std::max((uint32_t)view->GetStructuredBufferStride(), width));
     view->SetHeight(std::max(1u, height));
@@ -162,7 +162,7 @@ const void Ether::Graphics::ScheduleContext::NewUA(
     uint32_t depthOrStride)
 {
     uav.Create();
-    RhiUnorderedAccessView* view = uav.Get().get();
+    RhiUnorderedAccessView* view = uav.Get();
     view->SetStructuredBufferStride(std::max(1u, depthOrStride));
     view->SetWidth(std::max((uint32_t)view->GetStructuredBufferStride(), width));
     view->SetHeight(std::max(1u, height));
@@ -178,7 +178,7 @@ const void Ether::Graphics::ScheduleContext::NewUA(
 const void Ether::Graphics::ScheduleContext::NewCB(GFX_STATIC::GFX_CB_TYPE& cbv, size_t size)
 {
     cbv.Create();
-    RhiConstantBufferView* view = cbv.Get().get();
+    RhiConstantBufferView* view = cbv.Get();
     view->SetWidth(std::max(1u, uint32_t(size)));
     view->SetHeight(1);
     view->SetDepth(1);
@@ -193,7 +193,7 @@ const void Ether::Graphics::ScheduleContext::NewCB(GFX_STATIC::GFX_CB_TYPE& cbv,
 const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const std::vector<Visual>& visuals)
 {
     acv.Create();
-    RhiAccelerationStructureResourceView* view = acv.Get().get();
+    RhiAccelerationStructureResourceView* view = acv.Get();
     view->SetWidth(0);
     view->SetHeight(0);
     view->SetDepth(0);
@@ -293,35 +293,35 @@ void Ether::Graphics::ScheduleContext::CreateViews(ResourceContext& resourceCont
 {
     for (auto viewIter = m_Reads.begin(); viewIter != m_Reads.end(); ++viewIter)
     {
-        std::shared_ptr<RhiResourceView> view = viewIter->second;
-        if (dynamic_cast<RhiRenderTargetView*>(view.get()) != nullptr)
+        RhiResourceView* view = viewIter->second;
+        if (dynamic_cast<RhiRenderTargetView*>(view) != nullptr)
             resourceContext.InitializeRenderTargetView(view);
-        else if (dynamic_cast<RhiDepthStencilView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiDepthStencilView*>(view) != nullptr)
             resourceContext.InitializeDepthStencilView(view);
-        else if (dynamic_cast<RhiShaderResourceView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiShaderResourceView*>(view) != nullptr)
             resourceContext.InitializeShaderResourceView(view);
-        else if (dynamic_cast<RhiUnorderedAccessView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiUnorderedAccessView*>(view) != nullptr)
             resourceContext.InitializeUnorderedAccessView(view);
-        else if (dynamic_cast<RhiConstantBufferView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiConstantBufferView*>(view) != nullptr)
             resourceContext.InitializeConstantBufferView(view);
-        else if (dynamic_cast<RhiAccelerationStructureResourceView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiAccelerationStructureResourceView*>(view) != nullptr)
             resourceContext.InitializeConstantBufferView(view);
     }
 
     for (auto viewIter = m_Writes.begin(); viewIter != m_Writes.end(); ++viewIter)
     {
-        std::shared_ptr<RhiResourceView> view = viewIter->second;
-        if (dynamic_cast<RhiRenderTargetView*>(view.get()) != nullptr)
+        RhiResourceView* view = viewIter->second;
+        if (dynamic_cast<RhiRenderTargetView*>(view) != nullptr)
             resourceContext.InitializeRenderTargetView(view);
-        else if (dynamic_cast<RhiDepthStencilView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiDepthStencilView*>(view) != nullptr)
             resourceContext.InitializeDepthStencilView(view);
-        else if (dynamic_cast<RhiShaderResourceView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiShaderResourceView*>(view) != nullptr)
             resourceContext.InitializeShaderResourceView(view);
-        else if (dynamic_cast<RhiUnorderedAccessView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiUnorderedAccessView*>(view) != nullptr)
             resourceContext.InitializeUnorderedAccessView(view);
-        else if (dynamic_cast<RhiConstantBufferView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiConstantBufferView*>(view) != nullptr)
             resourceContext.InitializeConstantBufferView(view);
-        else if (dynamic_cast<RhiAccelerationStructureResourceView*>(view.get()) != nullptr)
+        else if (dynamic_cast<RhiAccelerationStructureResourceView*>(view) != nullptr)
             resourceContext.InitializeConstantBufferView(view);
     }
 }

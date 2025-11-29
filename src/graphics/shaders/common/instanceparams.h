@@ -29,6 +29,10 @@ struct InstanceParams
     ethMatrix4x4 m_ModelMatrixPrev;
     ethMatrix4x4 m_NormalMatrix;
     uint32_t m_MaterialIdx;
+
+#if ETH_TOOLMODE
+    uint32_t m_EntityID;
+#endif
 };
 
 ETH_END_SHADER_NAMESPACE

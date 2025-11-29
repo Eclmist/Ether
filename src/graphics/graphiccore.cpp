@@ -91,7 +91,6 @@ void Ether::Graphics::GraphicCore::NewFrame()
         GetGraphicRenderer().Render();
         GetGraphicRenderer().Present();
         GetGraphicExporter().Export();
-        GetGraphicExporter().Reset();
     });
 
     GetGraphicRenderer().Cleanup();

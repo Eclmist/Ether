@@ -66,13 +66,13 @@ Ether::World& Ether::GetActiveWorld()
 
 Ether::Graphics::GraphicConfig& Ether::Graphics::GetGraphicConfig()
 {
-    // NOT THREADSAFE!! Leaving it here for backwards compatibility, but should deprecate when possible.
+    // NOT THREADSAFE!! Leaving it here for backwards compatibility, but should deprecate when possible. (TODO)
     return GraphicCore::GetGraphicConfig();
 }
 
-void Ether::Graphics::RequestExport(void** exportTarget)
+void Ether::Graphics::RequestExport(const Ether::Graphics::GraphicExporter::ExportRequest& request)
 {
-    return GraphicCore::GetGraphicExporter().RequestExport(exportTarget);
+    return GraphicCore::GetGraphicExporter().RequestExport(request);
 }
 
 void Ether::Client::SetClientTitle(const std::string& title)

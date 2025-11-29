@@ -324,26 +324,21 @@ void Ether::Graphics::Dx12CommandList::CopyBufferRegion(
     m_CommandList->CopyBufferRegion(dx12DstResource->m_Resource.Get(), destOff, dx12SrcResource->m_Resource.Get(), srcOff, size);
 }
 
-void Ether::Graphics::Dx12CommandList::CopyTexture(
-    RhiResource& scratch,
-    RhiResource& dest,
-    void** data,
-    uint32_t numMips,
-    uint32_t width,
-    uint32_t height,
-    uint32_t bytesPerPixel)
+void Ether::Graphics::Dx12CommandList::CopyBufferToTexture(RhiResource& scratch, RhiResource& dest, void** data)
 {
     const auto dx12ScratchResource = (Dx12Resource*)&scratch;
     const auto dx12DstResource = (Dx12Resource*)&dest;
 
+    D3D12_RESOURCE_DESC dstDesc = dx12DstResource->m_Resource->GetDesc();
+
     std::vector<D3D12_SUBRESOURCE_DATA> allMipsData;
 
-    for (uint32_t i = 0; i < numMips; ++i)
+    for (uint32_t i = 0; i < dstDesc.MipLevels; ++i)
     {
         D3D12_SUBRESOURCE_DATA mipData = {};
         mipData.pData = data[i];
-        mipData.RowPitch = width * std::pow(0.5, i) * bytesPerPixel;
-        mipData.SlicePitch = height * std::pow(0.5, i) * mipData.RowPitch;
+        mipData.RowPitch = dstDesc.Width * std::pow(0.5, i) * GetBytesPerPixel(dstDesc.Format);
+        mipData.SlicePitch = dstDesc.Height * std::pow(0.5, i) * mipData.RowPitch;
         allMipsData.push_back(mipData);
     }
 
@@ -354,15 +349,18 @@ void Ether::Graphics::Dx12CommandList::CopyTexture(
         dx12ScratchResource->m_Resource.Get(),
         0,
         0,
-        numMips,
+        dstDesc.MipLevels,
         allMipsData.data());
 }
 
-void Ether::Graphics::Dx12CommandList::CopyTextureToBuffer(
-    const RhiResource& src,
-    RhiResource& dest,
-    uint32_t rowPitch,
-    uint32_t numRows)
+void Ether::Graphics::Dx12CommandList::CopyTextureToBuffer(const RhiResource& src, RhiResource& dest)
+{
+    const auto dx12SrcResource = (Dx12Resource*)&src;
+    D3D12_RESOURCE_DESC srcDesc = dx12SrcResource->m_Resource->GetDesc();
+    CopyTextureRegionToBuffer(src, dest, { 0, 0, (uint32_t)srcDesc.Width, (uint32_t)srcDesc.Height });
+}
+
+void Ether::Graphics::Dx12CommandList::CopyTextureRegionToBuffer(const RhiResource& src, RhiResource& dest, Rect rect)
 {
     const auto dx12SrcResource = (Dx12Resource*)&src;
     const auto dx12DstResource = (Dx12Resource*)&dest;
@@ -372,10 +370,10 @@ void Ether::Graphics::Dx12CommandList::CopyTextureToBuffer(
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout = {};
     layout.Offset = 0;
     layout.Footprint.Format = srcDesc.Format;
-    layout.Footprint.Width = static_cast<UINT>(srcDesc.Width);
-    layout.Footprint.Height = numRows;
+    layout.Footprint.Width = rect.w;
+    layout.Footprint.Height = rect.h;
     layout.Footprint.Depth = 1;
-    layout.Footprint.RowPitch = rowPitch;
+    layout.Footprint.RowPitch = srcDesc.Height;
 
     D3D12_TEXTURE_COPY_LOCATION srcLocation = {};
     srcLocation.pResource = dx12SrcResource->m_Resource.Get();
@@ -387,7 +385,15 @@ void Ether::Graphics::Dx12CommandList::CopyTextureToBuffer(
     dstLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
     dstLocation.PlacedFootprint = layout;
 
-    m_CommandList->CopyTextureRegion(&dstLocation, 0, 0, 0, &srcLocation, nullptr);
+    D3D12_BOX srcBox = {};
+    srcBox.left = rect.x;
+    srcBox.top = rect.y;
+    srcBox.right = rect.x + rect.w;
+    srcBox.bottom = rect.y + rect.h;
+    srcBox.front = 0;
+    srcBox.back = 1;
+
+    m_CommandList->CopyTextureRegion(&dstLocation, 0, 0, 0, &srcLocation, &srcBox);
 }
 
 void Ether::Graphics::Dx12CommandList::ClearRenderTargetView(

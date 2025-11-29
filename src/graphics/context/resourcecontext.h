@@ -49,14 +49,14 @@ public:
     RhiResource& CreateAccelerationStructure(const char* resourceName, const RhiTopLevelAccelerationStructureDesc& desc);
     RhiResource& CreateRaytracingShaderBindingTable(const char* resourceName, const RhiRaytracingShaderBindingTableDesc& desc);
 
-    void InitializeRenderTargetView(std::shared_ptr<RhiResourceView> view);
-    void InitializeDepthStencilView(std::shared_ptr<RhiResourceView> view);
-    void InitializeShaderResourceView(std::shared_ptr<RhiResourceView> view);
-    void InitializeUnorderedAccessView(std::shared_ptr<RhiResourceView> view);
-    void InitializeConstantBufferView(std::shared_ptr<RhiResourceView> view);
+    void InitializeRenderTargetView(RhiResourceView* view);
+    void InitializeDepthStencilView(RhiResourceView* view);
+    void InitializeShaderResourceView(RhiResourceView* view);
+    void InitializeUnorderedAccessView(RhiResourceView* view);
+    void InitializeConstantBufferView(RhiResourceView* view);
 
     template <typename T>
-    RhiResource* GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const { return GetResource(view.Get().get()); }
+    RhiResource* GetResource(GFX_STATIC::StaticResourceWrapper<T> view) const { return GetResource(view.Get()); }
     RhiResource* GetResource(const RhiResourceView* view) const;
 
 private:
@@ -81,8 +81,8 @@ private:
     std::unordered_map<StringID, RhiRaytracingShaderBindingTableDesc> m_RaytracingShaderBindingsTable;
     std::unordered_map<StringID, RhiTopLevelAccelerationStructureDesc> m_RaytracingResourceDescriptionTable;
 
+    std::unordered_map<StringID, RhiResourceView*> m_DescriptorTable;
     std::unordered_map<StringID, std::unique_ptr<RhiResource>> m_ResourceTable;
-    std::unordered_map<StringID, std::shared_ptr<RhiResourceView>> m_DescriptorTable;
     std::unordered_map<StringID, std::unique_ptr<MemoryAllocation>> m_DescriptorAllocations;
 
     std::queue<std::unique_ptr<RhiResource>> m_StaleResources;

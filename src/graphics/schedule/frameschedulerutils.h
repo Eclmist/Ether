@@ -79,24 +79,24 @@ public:
         , m_SharedResourceName(sharedName) {}
 
 public:
-    inline T& operator*() const { return *m_Resource; }
-    inline T* operator->() const { return m_Resource.get(); }
+    inline T& operator*() const { return *m_Object; }
+    inline T* operator->() const { return m_Object.get(); }
 
 public:
-    inline std::shared_ptr<T> Get() const { return m_Resource; }
+    inline T* Get() const { return m_Object.get(); }
     inline const char* GetName() const { return m_Name; }
     inline const char* GetType() const { return m_Type; }
     inline const char* GetSharedResourceName() const { return m_SharedResourceName; }
 
 public:
-    inline void Release() { m_Resource.reset(); }
+    inline void Release() { m_Object.reset(); }
 
 public:
-    inline void Create() { if (m_Resource == nullptr) m_Resource = std::make_shared<T>(); }
-    inline void Create(T* source) { if (m_Resource == nullptr) m_Resource = std::shared_ptr<T>(source); }
+    inline void Create() { if (m_Object == nullptr) m_Object = std::make_shared<T>(); }
+    inline void Create(T* source) { if (m_Object == nullptr) m_Object = std::shared_ptr<T>(source); }
 
 private:
-    std::shared_ptr<T> m_Resource;
+    std::shared_ptr<T> m_Object;
     const char* m_Name;
     const char* m_Type;
 

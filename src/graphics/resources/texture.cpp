@@ -86,7 +86,7 @@ void Ether::Graphics::Texture::CreateGpuResource(CommandContext& ctx)
     desc.m_ResourceDesc.m_MipLevels = m_NumMips;
 
     m_Resource = GraphicCore::GetDevice().CreateCommittedResource(desc);
-    ctx.InitializeTexture(*m_Resource, (void**)m_Data, m_NumMips, m_Width, m_Height, GetBytesPerPixel());
+    ctx.InitializeTexture(*m_Resource, (void**)m_Data);
     m_BindlessIndex = GraphicCore::GetBindlessDescriptorManager().RegisterAsShaderResourceView(m_Guid, *m_Resource.get(), m_Format);
 
 #ifdef ETH_ENGINE

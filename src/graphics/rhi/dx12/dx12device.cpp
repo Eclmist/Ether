@@ -407,9 +407,19 @@ std::unique_ptr<Ether::Graphics::RhiResource> Ether::Graphics::Dx12Device::Creat
     if (FAILED(hr))
         LogGraphicsFatal("Failed to create DirectX12 commited resource (%s)", desc.m_Name);
 
+    uint64_t resourceSize = 0;
+    if (creationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER)
+        resourceSize = creationDesc.Width;
+    else
+    {
+        D3D12_RESOURCE_ALLOCATION_INFO allocInfo = m_Device->GetResourceAllocationInfo(0, 1, &creationDesc);
+        resourceSize = allocInfo.SizeInBytes;
+    }
+
     dx12Obj->m_Resource->SetName(ToWideString(desc.m_Name).c_str());
     dx12Obj->SetNumMips(desc.m_ResourceDesc.m_MipLevels);
     dx12Obj->SetState(desc.m_State);
+    dx12Obj->SetSize(resourceSize);
     return dx12Obj;
 }
 

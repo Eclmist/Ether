@@ -42,9 +42,11 @@ public:
 public:
     inline StringID GetResourceID() const { return m_ResourceID; }
     inline uint32_t GetNumMips() const { return m_NumMips; }
+    inline uint64_t GetSize() const { return m_Size; }
     inline RhiResourceState GetCurrentState() const { return m_CurrentState; }
 
     inline void SetNumMips(uint32_t numMips) { m_NumMips = numMips; }
+    inline void SetSize(uint64_t size) { m_Size = size; }
     inline void SetState(RhiResourceState state) { m_CurrentState = state; }
 
 protected:
@@ -52,6 +54,7 @@ protected:
     std::string m_Name;
     StringID m_ResourceID;
     uint32_t m_NumMips;
+    uint64_t m_Size;
 };
 
 static RhiResourceDesc RhiCreateBaseResourceDesc()

@@ -46,7 +46,7 @@ namespace Ether
     constexpr size_t _1GiB                          = 1 << 30;
 
 /**
- * The following helpers were taken from the MiniEngine:
+ * The following helpers were adapted from the MiniEngine:
  * https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Math/Common.h
  */
 

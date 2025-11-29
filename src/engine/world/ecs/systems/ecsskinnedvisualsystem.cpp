@@ -115,6 +115,7 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         gfxVisual.m_Material = gfxVisualBatch->m_Material;
         gfxVisual.m_Culled = false ETH_TOOLONLY(|| !metadata.m_ToolmodeVisibility); // TODO: Calculate max AABB for skinned mesh to do proper culling
 #if ETH_TOOLMODE
+        gfxVisual.m_EntityID = entityID;
         gfxVisual.m_ToolmodeSelected = metadata.m_ToolmodeSelected;
 #endif
 

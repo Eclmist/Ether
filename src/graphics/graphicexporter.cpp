@@ -20,72 +20,115 @@
 #include "graphics/graphiccore.h"
 #include "graphics/graphicexporter.h"
 
-#define NUM_PIXEL_CHANNELS 4
+#if ETH_TOOLMODE
+DECLARE_GFX_SR(MetadataBuffer)
+#endif
 
 Ether::Graphics::GraphicExporter::GraphicExporter()
-    : m_ExportRequested(false)
-    , m_ExportAddress(nullptr)
-    , m_ExportResolution({0, 0})
 {
     LogGraphicsInfo("Initializing Graphic Exporter");
 }
 
-void Ether::Graphics::GraphicExporter::RequestExport(void** exportTarget)
+void Ether::Graphics::GraphicExporter::RequestExport(const ExportRequest& request)
 {
-    m_ExportRequested = true;
-    m_ExportAddress = exportTarget;
-    m_ExportResolution = GraphicCore::GetGraphicConfig().GetResolution();
+    std::unique_ptr<RhiResource> readbackBuffer;
+    Graphics::CommandContext ctx("Export Readback Buffer Creation", Graphics::RhiCommandType::Graphic, _16MiB);
+    RhiCommitedResourceDesc desc = {};
+    desc.m_ClearValue = {};
+    desc.m_HeapType = RhiHeapType::Readback;
+    desc.m_Name = "Export Readback Buffer";
+    desc.m_State = RhiResourceState::CopyDest;
 
-    if (!m_ReadbackBuffer)
-    {
-        Graphics::CommandContext ctx("Export Readback Buffer Creation", Graphics::RhiCommandType::Graphic, _16MiB);
+    // Dx12 expects the row pitch to be 256 bytes aligned
+    uint64_t rowPitch = AlignUp(request.m_ExportResolution.x * request.m_BytesPerPixel, 256);
+    uint64_t totalSize = rowPitch * request.m_ExportResolution.y;
+    desc.m_ResourceDesc = RhiCreateBufferResourceDesc(totalSize);
+    readbackBuffer = GraphicCore::GetDevice().CreateCommittedResource(desc);
 
-        RhiCommitedResourceDesc desc = {};
-        desc.m_ClearValue = {};
-        desc.m_HeapType = RhiHeapType::Readback;
-        desc.m_Name = "Export Readback Buffer";
-        desc.m_State = RhiResourceState::CopyDest;
-
-        // 4 - pixel size (rgba) and 256 (dx12 alignment) is hardcoded for now (RTCamp-TODO)
-        uint64_t rowPitch = AlignUp(m_ExportResolution.x * NUM_PIXEL_CHANNELS, 256);
-        uint64_t totalSize = rowPitch * m_ExportResolution.y;
-        desc.m_ResourceDesc = RhiCreateBufferResourceDesc(totalSize);
-
-        m_ReadbackBuffer = GraphicCore::GetDevice().CreateCommittedResource(desc);
-    }
+    m_Requests.emplace_back(request);
+    m_ReadbackBuffers.emplace_back(std::move(readbackBuffer));
 }
 
 void Ether::Graphics::GraphicExporter::Export()
 {
-    if (!m_ExportRequested)
+    if (m_Requests.empty())
         return;
 
-    if (!m_ExportAddress)
+    for (uint32_t i = 0; i < m_Requests.size(); ++i)
     {
-        LogGraphicsError("Export requested but destination address was not set");
-        return;
+        ExportRequest& request = m_Requests[i];
+        RhiResource* readbackBuffer = m_ReadbackBuffers[i].get();
+
+        RhiResource* target;
+
+        switch (request.m_ExportTarget)
+        {
+        case ExportTarget::FinalRenderTarget:
+            target = &GraphicCore::GetGraphicDisplay().GetBackBuffer();
+            break;
+#if ETH_TOOLMODE
+        case ExportTarget::MetadataBuffer:
+            target = GraphicCore::GetGraphicRenderer().GetFrameResource(ACCESS_GFX_SR(MetadataBuffer).Get());
+            break;
+#endif
+        default:
+            continue;
+        }
+
+        if (target == nullptr)
+        {
+            LogGraphicsError("Export requested but target address was null");
+            return;
+        }
+
+        if (request.m_ExportAddress == nullptr)
+        {
+            LogGraphicsError("Export requested but destination address was null");
+            return;
+        }
+
+        if (request.m_ExportResolution.x <= 0 || request.m_ExportResolution.y <= 0)
+        {
+            LogGraphicsError("Export requested but export resolution was not set");
+            return;
+        }
+
+        ETH_MARKER_EVENT("Backbuffer Readback");
+
+        Rect readbackRegion = { request.m_SourceOffset.x,
+                                request.m_SourceOffset.y,
+                                request.m_ExportResolution.x,
+                                request.m_ExportResolution.y };
+
+        CommandContext context("Command Context - Export Context");
+        context.Reset();
+        context.CopyTextureRegionToBuffer(*target, *readbackBuffer, readbackRegion);
+        context.FinalizeAndExecute(true);
+
+        void* mappedPtr = nullptr;
+        readbackBuffer->Map(&mappedPtr);
+
+        uint64_t rowPitch = AlignUp(request.m_ExportResolution.x * request.m_BytesPerPixel, 256);
+
+        // Copy row by row to handle aligned pitch
+        uint8_t* src = (uint8_t*)mappedPtr;
+        uint8_t* dst = (uint8_t*)request.m_ExportAddress;
+
+        for (uint32_t y = 0; y < request.m_ExportResolution.y; ++y)
+        {
+            memcpy(
+                dst + y * request.m_ExportResolution.x * request.m_BytesPerPixel,
+                src + y * rowPitch,
+                request.m_ExportResolution.x * request.m_BytesPerPixel);
+        }
     }
 
-    if (m_ExportResolution.x <= 0 || m_ExportResolution.y <= 0)
-    {
-        LogGraphicsError("Export requested but export resolution was not set");
-        return;
-    }
-
-    ETH_MARKER_EVENT("Backbuffer Readback");
-
-    CommandContext context("Command Context - Export Context");
-    context.Reset();
-    context.CopyTextureToBuffer(GraphicCore::GetGraphicDisplay().GetBackBuffer(), *m_ReadbackBuffer, m_ExportResolution.x, m_ExportResolution.y);
-    context.FinalizeAndExecute(true);
-
-    m_ReadbackBuffer->Map(m_ExportAddress);
+    Reset();
 }
 
 void Ether::Graphics::GraphicExporter::Reset()
 {
-    m_ExportRequested = false;
-    m_ExportAddress = nullptr;
-    m_ExportResolution = { 0, 0 };
+    m_Requests.clear();
+    m_ReadbackBuffers.clear();
 }
 

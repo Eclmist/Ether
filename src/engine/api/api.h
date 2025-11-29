@@ -26,6 +26,7 @@
 #include "common/logging/loggingmanager.h"
 #include "engine/config/commandlineoptions.h"
 #include "graphics/config/graphicconfig.h"
+#include "graphics/graphicexporter.h"
 
 namespace Ether
 {
@@ -41,7 +42,9 @@ ETH_ENGINE_DLL World& GetActiveWorld();
 namespace Ether::Graphics
 {
 ETH_ENGINE_DLL GraphicConfig& GetGraphicConfig();
-ETH_ENGINE_DLL void RequestExport(void** exportTarget);
+
+class GraphicExporter::ExportRequest;
+ETH_ENGINE_DLL void RequestExport(const GraphicExporter::ExportRequest& request);
 }
 
 namespace Ether::Client

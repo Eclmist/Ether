@@ -27,21 +27,38 @@ namespace Ether::Graphics
 class GraphicExporter : public NonCopyable, public NonMovable
 {
 public:
+    enum class ExportTarget
+    {
+        FinalRenderTarget,
+#if ETH_TOOLMODE
+        MetadataBuffer
+#endif
+    };
+
+    struct ETH_GRAPHIC_DLL ExportRequest
+    {
+        void* m_ExportAddress = nullptr;
+        ethVector2u m_ExportResolution;
+        ethVector2u m_SourceOffset;
+        size_t m_BytesPerPixel;
+        ExportTarget m_ExportTarget;
+    };
+
+public:
     GraphicExporter();
     ~GraphicExporter() = default;
 
 public:
-    ETH_GRAPHIC_DLL void RequestExport(void** exportTarget);
+    ETH_GRAPHIC_DLL void RequestExport(const ExportRequest& request);
 
 public:
     void Export();
+
+private:
     void Reset();
 
 private:
-    bool m_ExportRequested;
-    void** m_ExportAddress;
-    ethVector2u m_ExportResolution;
-
-    std::unique_ptr<RhiResource> m_ReadbackBuffer;
+    std::vector<ExportRequest> m_Requests;
+    std::vector<std::unique_ptr<RhiResource>> m_ReadbackBuffers;
 };
 } // namespace Ether::Graphics

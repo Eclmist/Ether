@@ -61,8 +61,8 @@ private:
     void ValidateView(RhiResourceView* firstView, RhiResourceView* view);
 
 private:
-    std::unordered_map<StringID, std::shared_ptr<RhiResourceView>> m_Writes;
-    std::unordered_map<StringID, std::shared_ptr<RhiResourceView>> m_Reads;
+    std::unordered_map<StringID, RhiResourceView*> m_Writes;
+    std::unordered_map<StringID, RhiResourceView*> m_Reads;
     std::unordered_map<StringID, std::unordered_map<StringID, RhiResourceView*>> m_ResourceToDescriptorMap;
 };
 } // namespace Ether::Graphics

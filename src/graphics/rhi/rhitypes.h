@@ -325,9 +325,7 @@ struct RhiCommitedResourceDesc
     {
         if (strcmp(m_Name, other.m_Name) != 0)
             return false;
-        if (m_ClearValue != other.m_ClearValue)
-            return false;
-
+        ETH_COMPARATOR_GUARD_CLAUS(m_ClearValue);
         ETH_COMPARATOR_GUARD_CLAUS(m_HeapType);
         ETH_COMPARATOR_GUARD_CLAUS(m_State);
         ETH_COMPARATOR_GUARD_CLAUS(m_ResourceDesc);
