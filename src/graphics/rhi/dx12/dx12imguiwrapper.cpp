@@ -23,9 +23,12 @@
 #include "graphics/rhi/dx12/dx12device.h"
 #include "graphics/rhi/dx12/dx12descriptorheap.h"
 #include "graphics/rhi/dx12/dx12commandlist.h"
+#include "graphics/rhi/dx12/dx12commandqueue.h"
 
 #include "graphics/imgui/dx12/imgui_impl_dx12.h"
 #include "graphics/imgui/win32/imgui_impl_win32.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #ifdef ETH_GRAPHICS_DX12
 
@@ -34,13 +37,34 @@ Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
     m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(RhiDescriptorHeapType::SrvCbvUav, 1024, true);
 
     ImGui_ImplWin32_Init(GraphicCore::GetGraphicConfig().GetWindowHandle());
-    ImGui_ImplDX12_Init(
-        ((Dx12Device&)GraphicCore::GetDevice()).m_Device.Get(),
-        GraphicCore::GetGraphicDisplay().GetNumBuffers(),
-        Translate(BackBufferLdrFormat),
-        ((Dx12DescriptorHeap&)m_DescriptorHeap).m_Heap.Get(),
-        { m_DescriptorHeap->GetBaseCpuAddress() },
-        { m_DescriptorHeap->GetBaseGpuAddress() });
+
+    ImGui_ImplDX12_InitInfo init_info = {};
+    init_info.Device = ((Dx12Device&)GraphicCore::GetDevice()).m_Device.Get();
+    init_info.CommandQueue = ((Dx12CommandQueue&)GraphicCore::GetCommandManager().GetGraphicQueue()).m_CommandQueue.Get();
+    init_info.NumFramesInFlight = GraphicCore::GetGraphicDisplay().GetNumBuffers();
+    init_info.RTVFormat = Translate(BackBufferLdrFormat);
+
+    static std::unordered_map<size_t, std::unique_ptr<MemoryAllocation>> ImguiAllocations;
+
+    init_info.SrvDescriptorHeap = ((Dx12DescriptorHeap&)m_DescriptorHeap).m_Heap.Get();
+    init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*,
+                                        D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle,
+                                        D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle)
+    { 
+        auto alloc = GraphicCore::GetSrvCbvUavAllocator().Allocate();
+        *out_cpu_handle = { ((DescriptorAllocation&)(*alloc)).GetCpuAddress() };
+        *out_gpu_handle = { ((DescriptorAllocation&)(*alloc)).GetGpuAddress() };
+        ImguiAllocations.emplace(out_cpu_handle->ptr, std::move(alloc));
+    };
+
+    init_info.SrvDescriptorFreeFn =
+        [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)
+    { 
+        ImguiAllocations.erase(cpu_handle.ptr);
+    };
+
+
+    ImGui_ImplDX12_Init(&init_info);
 }
 
 Ether::Graphics::Dx12ImguiWrapper::~Dx12ImguiWrapper()
@@ -65,7 +89,47 @@ void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData()
 
 bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam)
 {
-    return ImGui_ImplWin32_WndProcHandler((HWND)hWnd, msg, wParam, lParam);
+    if (ImGui_ImplWin32_WndProcHandler((HWND)hWnd, msg, wParam, lParam))
+        return true;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Check if ImGui wants to capture input and block it from your app
+    switch (msg)
+    {
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONDBLCLK:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONDBLCLK:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONDBLCLK:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_XBUTTONUP:
+        if (io.WantCaptureMouse)
+            return true; // Consume the event
+        break;
+
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL:
+        if (io.WantCaptureMouse)
+            return true;
+        break;
+
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYDOWN:
+    case WM_SYSKEYUP:
+    case WM_CHAR:
+        if (io.WantCaptureKeyboard)
+            return true; // Consume the event
+        break;
+    }
+
+    return false;
 }
 
 #endif // ETH_GRAPHICS_DX12

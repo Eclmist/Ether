@@ -19,14 +19,20 @@
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiimguiwrapper.h"
-#include "graphics/imgui/imgui.h"
 #include "graphics/rhi/dx12/dx12imguiwrapper.h"
+#include "graphics/imgui/imgui.h"
+#include "graphics/imgui/ImGuizmo.h"
 
 Ether::Graphics::RhiImguiWrapper::RhiImguiWrapper()
     : m_Context("Imgui Context")
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
     SetStyle();
 }
 
@@ -43,14 +49,13 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 
     auto& gfxConfig = GraphicCore::GetGraphicConfig();
 
-    ImGui::SetNextWindowPos(ImVec2(20, 20));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(400, 0));
+    ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(400, 0), ImVec2(FLT_MAX, FLT_MAX));
     {
         ImGui::Begin(
             "Debug Menu",
             nullptr,
-            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoCollapse);
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
 
         ImGui::Text("Ether Version: 0.1.0");
         ImGui::Spacing();
@@ -227,7 +232,6 @@ void Ether::Graphics::RhiImguiWrapper::Render()
         }
         ImGui::End();
     }
-    ImGui::PopStyleVar();
 
 #if 0
     ImGui::ShowDemoWindow();

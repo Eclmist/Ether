@@ -38,6 +38,7 @@ public:
 
 private:
     friend class Dx12Device;
+    friend class Dx12ImguiWrapper;
     wrl::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 };
 } // namespace Ether::Graphics
