@@ -43,16 +43,10 @@
 
 #define ETH_WINDOW_STYLE_FULLSCREEN         WS_VISIBLE | WS_POPUP
 
-namespace
-{
-static constexpr UINT WM_RESIZE_TIMER = 1;
-static constexpr UINT RESIZE_DELAY_MS = 100;
-static UINT_PTR g_ResizeTimerID = 0;
-static Ether::ethVector2u g_PendingSize;
-}
-
 Ether::Win32::Win32Window::Win32Window()
 {
+    ::SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
     RegisterWindowClass();
     m_WindowHandle = (void*)::CreateWindowEx(
         WS_EX_NOREDIRECTIONBITMAP,
@@ -155,14 +149,17 @@ void Ether::Win32::Win32Window::SetTitle(const std::string& title)
 
 void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
 {
-    if (m_WindowHandle == nullptr)
+    if (m_WindowHandle == nullptr && !IsWindow((HWND)m_WindowHandle)
+    {
+        LogEngineError("Failed to set HWND parent: Ether's window handle is invalid: %p", m_WindowHandle);
         return;
+    }
 
     m_ParentWindowHandle = parentHandle;
+
     ::SetWindowLong((HWND)m_WindowHandle, GWL_STYLE, m_ParentWindowHandle == nullptr ? ETH_WINDOW_STYLE : WS_CHILD);
     ::SetParent((HWND)m_WindowHandle, (HWND)m_ParentWindowHandle);
 }
-
 bool Ether::Win32::Win32Window::ProcessPlatformMessages()
 {
     MSG msg = {};
@@ -269,17 +266,10 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
     case WM_SIZE:
     {
         ethVector2u newSize = { LOWORD(lParam), HIWORD(lParam) };
-
         if (newSize.x == 0 || newSize.y == 0)
             break; // Ignore minimized
-
-        g_PendingSize = newSize;
-        if (g_ResizeTimerID != 0)
-        {
-            KillTimer(hWnd, WM_RESIZE_TIMER);
-        }
-
-        g_ResizeTimerID = SetTimer(hWnd, WM_RESIZE_TIMER, RESIZE_DELAY_MS, nullptr);
+        if (EngineCore::GetEngineConfig().GetClientSize() != newSize)
+            EngineCore::GetEngineConfig().SetClientSize(newSize);
         break;
     }
     case WM_MOVE:
@@ -289,20 +279,6 @@ LRESULT CALLBACK Ether::Win32::Win32Window::WndProc(HWND hWnd, UINT msg, WPARAM 
         ethVector2u clientPos = { (uint32_t)clientRect.x, (uint32_t)clientRect.y };
         if (EngineCore::GetEngineConfig().GetClientPosition() != clientPos)
             EngineCore::GetEngineConfig().SetClientPosition(clientPos);
-        break;
-    }
-    case WM_TIMER:
-    {
-        if (wParam == WM_RESIZE_TIMER)
-        {
-            KillTimer(hWnd, WM_RESIZE_TIMER);
-            g_ResizeTimerID = 0;
-
-            LogWin32Info("Window resize settled, applying %dx%d", g_PendingSize.x, g_PendingSize.y);
-
-            if (EngineCore::GetEngineConfig().GetClientSize() != g_PendingSize)
-                EngineCore::GetEngineConfig().SetClientSize(g_PendingSize);
-        }
         break;
     }
     case WM_KEYDOWN:

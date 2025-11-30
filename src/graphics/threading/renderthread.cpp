@@ -119,6 +119,9 @@ void Ether::Graphics::RenderThread::ProcessRenderCommands()
 
 void Ether::Graphics::RenderThread::SignalFrame()
 {
+    if (!IsGraphicsThreadEnabled() || !m_GraphicsThreadRunning)
+        return;
+
     {
         std::lock_guard<std::mutex> lock(m_FrameMutex);
         m_RenderDataReady = true;
@@ -130,6 +133,10 @@ void Ether::Graphics::RenderThread::SignalFrame()
 void Ether::Graphics::RenderThread::WaitForFrame()
 {
     ETH_MARKER_EVENT("Wait for Render Thread Completion");
+
+    if (!IsGraphicsThreadEnabled() || !m_GraphicsThreadRunning || IsGraphicsThread())
+        return;
+
     std::unique_lock<std::mutex> lock(m_CompleteMutex);
     m_CompleteCV.wait(lock, [this] { return m_FrameComplete.load(); });
 }
