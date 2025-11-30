@@ -32,10 +32,6 @@
 ConstantBuffer<InstanceParams> InstanceParams   : register(b1);
 Texture2D<float2> SceneDepth                    : register(t1);
 
-#if ETH_TOOLMODE
-RWTexture2D<uint> RWMetadataBuffer              : register(u0);
-#endif
-
 struct PS_INPUT
 {
     float4 ScreenPos : SV_POSITION;
@@ -45,7 +41,16 @@ struct PS_INPUT
     float2 TexCoord  : TEXCOORD1;
 };
 
-float4 PS_Main(PS_INPUT IN) : SV_TARGET
+struct PS_OUTPUT
+{
+    float4 Output    : SV_TARGET0;
+#if ETH_TOOLMODE
+    uint Metadata    : SV_TARGET1;
+#endif
+};
+
+
+PS_OUTPUT PS_Main(PS_INPUT IN)
 {
     sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Wrap];
     const Material material = MaterialTable[InstanceParams.m_MaterialIdx];
@@ -70,17 +75,21 @@ float4 PS_Main(PS_INPUT IN) : SV_TARGET
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     Lo += f * Li * cosTheta;
 
+    PS_OUTPUT o;
+    o.Output = float4(Lo, surface.m_Opacity);
+
 #if ETH_TOOLMODE
     if (GlobalConstants.m_TranslucentPickingEnabled)
     {
         Metadata metadata;
         metadata.m_IsValid = true;
         metadata.m_EntityID = InstanceParams.m_EntityID;
-        RWMetadataBuffer[IN.ScreenPos.xy] = PackMetadata(metadata);
+        o.Metadata = PackMetadata(metadata);
     }
 #endif
 
-    return float4(Lo, surface.m_Opacity);
+    return o;
+
 }
 
 #endif // __FORWARD_TRANSLUCENCY_PS__

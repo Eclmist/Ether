@@ -40,8 +40,8 @@ DEFINE_GFX_SR(GBufferTextureB)
 DEFINE_GFX_SR(GBufferTextureC)
 
 #if ETH_TOOLMODE
-DEFINE_GFX_RT(MetadataBuffer) // TODO: Implement generic ClearUAV pass. Currently borrowing RT's clear color
-DEFINE_GFX_UA(MetadataBuffer)
+DEFINE_GFX_RT(MetadataBuffer)
+DEFINE_GFX_SR(MetadataBuffer)
 #endif
 
 DECLARE_GFX_CB(GlobalConstants)
@@ -71,8 +71,8 @@ void Ether::Graphics::GBufferProducer::GetInputOutput(ScheduleContext& schedule,
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureA), resolution.x, resolution.y, RhiFormat::R8G8B8A8Unorm, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureB), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(GBufferTextureC), resolution.x, resolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
-    ETH_TOOLONLY(schedule.NewRT(ACCESS_GFX_RT(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint, RhiResourceDimension::Texture2D));
-    ETH_TOOLONLY(schedule.NewUA(ACCESS_GFX_UA(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint, RhiResourceDimension::Texture2D));
+    ETH_TOOLONLY(schedule.NewRT(ACCESS_GFX_RT(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint));
+    ETH_TOOLONLY(schedule.NewSR(ACCESS_GFX_SR(MetadataBuffer), resolution.x, resolution.y, RhiFormat::R32Uint, RhiResourceDimension::Texture2D));
 
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
@@ -104,12 +104,12 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
-    ETH_TOOLONLY(ctx.Bind(ACCESS_GFX_UA(MetadataBuffer)));
 
     std::vector<RhiRenderTargetView> rtvs;
     rtvs.emplace_back(*ACCESS_GFX_RT(GBufferTextureA));
     rtvs.emplace_back(*ACCESS_GFX_RT(GBufferTextureB));
     rtvs.emplace_back(*ACCESS_GFX_RT(GBufferTextureC));
+    ETH_TOOLONLY(rtvs.emplace_back(*ACCESS_GFX_RT(MetadataBuffer)));
     ctx.SetRenderTargets(rtvs.data(), rtvs.size(), &(*ACCESS_GFX_DS(SceneDepth)));
 
     // Batch by material only for now
@@ -177,6 +177,7 @@ void Ether::Graphics::GBufferProducer::CreatePipelineState(ResourceContext& rc)
     rtvFormats.emplace_back(RhiFormat::R8G8B8A8Unorm);
     rtvFormats.emplace_back(RhiFormat::R16G16B16A16Float);
     rtvFormats.emplace_back(RhiFormat::R16G16B16A16Float);
+    ETH_TOOLONLY(rtvFormats.emplace_back(RhiFormat::R32Uint));
 
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);

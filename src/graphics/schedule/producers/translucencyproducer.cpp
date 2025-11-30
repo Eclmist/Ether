@@ -37,7 +37,7 @@ DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
 #if ETH_TOOLMODE
-DECLARE_GFX_UA(MetadataBuffer)
+DECLARE_GFX_RT(MetadataBuffer)
 #endif
 
 
@@ -55,12 +55,19 @@ void Ether::Graphics::TranslucencyProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::TranslucencyProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
+    const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     schedule.Read(ACCESS_GFX_RT(SceneColor));
     schedule.Read(ACCESS_GFX_DS(SceneDepth));
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
-    ETH_TOOLONLY(schedule.Read(ACCESS_GFX_UA(MetadataBuffer)));
+
+#if ETH_TOOLMODE
+    if (config.IsTranslucencyPickingEnabled())
+    {
+        schedule.Read(ACCESS_GFX_RT(MetadataBuffer));
+    }
+#endif
 }
 
 void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -85,11 +92,21 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
+    ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
-    ctx.Bind(ACCESS_GFX_UA(MetadataBuffer));
-    ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
+
+#if ETH_TOOLMODE
+    if (config.IsTranslucencyPickingEnabled())
+    {
+        ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_MetadataWritePsoDesc));
+        std::vector<RhiRenderTargetView> rtvs;
+        rtvs.emplace_back(*ACCESS_GFX_RT(SceneColor));
+        rtvs.emplace_back(*ACCESS_GFX_RT(MetadataBuffer));
+        ctx.SetRenderTargets(rtvs.data(), rtvs.size(), &(*ACCESS_GFX_DS(SceneDepth)));
+    }
+#endif
 
     // Batch by material only for now
     for (const VisualBatch& batch : batches)
@@ -162,7 +179,24 @@ void Ether::Graphics::TranslucencyProducer::CreatePipelineState(ResourceContext&
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
     m_PsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
     m_PsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional);
-
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
+
+#if ETH_TOOLMODE
+    std::vector<RhiFormat> rtvFormats;
+    rtvFormats.emplace_back(BackBufferHdrFormat);
+    rtvFormats.emplace_back(RhiFormat::R32Uint);
+
+    m_MetadataWritePsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
+    m_MetadataWritePsoDesc->SetVertexShader(*m_VertexShader);
+    m_MetadataWritePsoDesc->SetPixelShader(*m_PixelShader);
+    m_MetadataWritePsoDesc->SetRenderTargetFormats(rtvFormats.data(), rtvFormats.size());
+    m_MetadataWritePsoDesc->SetRootSignature(*m_RootSignature);
+    m_MetadataWritePsoDesc->SetInputLayout(VertexFormats::BaseVertexFormat::s_InputElementDesc, VertexFormats::BaseVertexFormat::s_NumElements);
+    m_MetadataWritePsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);
+    m_MetadataWritePsoDesc->SetDepthStencilState(GraphicCore::GetGraphicCommon().m_DepthStateReadOnly);
+    m_MetadataWritePsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendTraditional, 0);
+    m_MetadataWritePsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled, 1);
+    rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_MetadataWritePsoDesc);
+#endif
 }
 

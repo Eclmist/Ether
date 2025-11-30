@@ -28,10 +28,6 @@
 
 ConstantBuffer<InstanceParams> InstanceParams : register(b1);
 
-#if ETH_TOOLMODE
-RWTexture2D<uint> RWMetadataBuffer            : register(u0);
-#endif
-
 struct PS_INPUT
 {
     float4 ScreenPos        : SV_POSITION;
@@ -48,6 +44,9 @@ struct PS_OUTPUT
     float4 Output0 : SV_TARGET0;
     float4 Output1 : SV_TARGET1;
     float4 Output2 : SV_TARGET2;
+#if ETH_TOOLMODE
+    uint Metadata  : SV_TARGET3;
+#endif
 };
 
 void DiscardAlphaMaskedPixels(const ShadingSurface surface)
@@ -84,17 +83,19 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
 
     DiscardAlphaMaskedPixels(shadingSurface);
 
-#if ETH_TOOLMODE
-    Metadata metadata;
-    metadata.m_IsValid = true;
-    metadata.m_EntityID = InstanceParams.m_EntityID;
-    RWMetadataBuffer[IN.ScreenPos.xy] = PackMetadata(metadata);
-#endif
 
     PS_OUTPUT o;
     o.Output0 = float4(baseColor.x, baseColor.y, baseColor.z, (InstanceParams.m_MaterialIdx / 255.0f));
     o.Output1 = float4(EncodeNormals(normal), velocity.x, velocity.y);
     o.Output2 = float4(emissive.x, emissive.y, emissive.z, EncodeFP16(roughness, metalness));
+
+#if ETH_TOOLMODE
+    Metadata metadata;
+    metadata.m_IsValid = true;
+    metadata.m_EntityID = InstanceParams.m_EntityID;
+    o.Metadata = PackMetadata(metadata);
+#endif
+
     return o;
 }
 
