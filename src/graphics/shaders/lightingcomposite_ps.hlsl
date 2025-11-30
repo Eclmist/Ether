@@ -24,12 +24,9 @@
 #include "utils/encoding.hlsl"
 #include "utils/shading.hlsl"
 
-Texture2D<float4> GBufferTextureA           : register(t0);
-Texture2D<float4> GBufferTextureB           : register(t1);
-Texture2D<float4> GBufferTextureC           : register(t2);
-Texture2D<float2> SceneDepth                : register(t3);
-Texture2D<float4> LightingTexture           : register(t4);
-Texture2D<float4> ProceduralSkyTexture      : register(t5);
+Texture2D<float2> SceneDepth                : register(t0);
+Texture2D<float4> LightingTexture           : register(t1);
+Texture2D<float4> ProceduralSkyTexture      : register(t2);
 
 struct PS_INPUT
 {
@@ -46,17 +43,8 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     const float2 screenCoords = IN.TexCoord * GlobalConstants.m_ScreenResolution;
     const float depth = SceneDepth.Load(int3(screenCoords, 0)).r;
  
-    const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
-
-    // Hack to get sky which is basically nothing drawn in gbuffer
     if (depth <= 0) // Reverse-z
         return sky;
-
-    // Debug: 
-    //if (GlobalConstants.m_RaytracedLightingDebug == 1)
-    //    return float4(surface.m_Normal, 0.0f) * 10000.0f;
-    //if (GlobalConstants.m_RaytracedLightingDebug == 1)
-    //    return float4(surface.m_Position, 1.0f);
 
     float4 finalColor = lighting;
     return finalColor;

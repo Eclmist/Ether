@@ -26,6 +26,12 @@
 
 #define OUTLINE_WIDTH               2
 #define OUTLINE_COLOR               float4(1, 0.35, 0.1, 1.0)
+
+// The area color effect looks nice and makes the selection very obvious
+// but it also means that it's harder to adjust materials and visually inspect
+// a selected object due to the overlay :( 
+// Disable for now.
+#define USE_OVERLAY_COLOR 0
 #define OUTLINE_AREA_COLOR          float4(1, 0.35, 0.1, 0.15)
 
 // A different color can be set for occluded pixels, but it makes the
@@ -55,7 +61,11 @@ float4 PS_Main(float4 SVPosition : SV_Position) : SV_Target
     float4 outlineMask = OutlineMaskTexture.Load(float3(SVPosition.xy, 0));
 
     if (all(outlineMask) != 0)
+#if USE_OVERLAY_COLOR
         return outlineMask;
+#else
+        discard;
+#endif
 
     for (int u = -OUTLINE_WIDTH; u <= OUTLINE_WIDTH; ++u)
     {
