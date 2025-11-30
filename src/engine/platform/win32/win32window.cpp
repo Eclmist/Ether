@@ -149,7 +149,7 @@ void Ether::Win32::Win32Window::SetTitle(const std::string& title)
 
 void Ether::Win32::Win32Window::SetParentWindowHandle(void* parentHandle)
 {
-    if (m_WindowHandle == nullptr && !IsWindow((HWND)m_WindowHandle)
+    if (m_WindowHandle == nullptr && !IsWindow((HWND)m_WindowHandle))
     {
         LogEngineError("Failed to set HWND parent: Ether's window handle is invalid: %p", m_WindowHandle);
         return;
