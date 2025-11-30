@@ -208,6 +208,12 @@ std::vector<LPCWSTR> Ether::Graphics::Dx12Shader::GetCompilationArguments() cons
     ETH_TOOLONLY(arguments.push_back(L"-D"));
     ETH_TOOLONLY(arguments.push_back(L"ETH_TOOLMODE"));
 
+    for (const std::wstring& define : m_CustomDefines)
+    {
+        arguments.push_back(L"-D");
+        arguments.push_back(define.c_str());
+    }
+
     if (m_Type != RhiShaderType::Library)
     {
         arguments.push_back(L"-E");

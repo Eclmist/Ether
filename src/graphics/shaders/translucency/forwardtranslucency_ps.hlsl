@@ -44,7 +44,7 @@ struct PS_INPUT
 struct PS_OUTPUT
 {
     float4 Output    : SV_TARGET0;
-#if ETH_TOOLMODE
+#if ETH_TOOLMODE && WRITE_METADATA
     uint Metadata    : SV_TARGET1;
 #endif
 };
@@ -78,7 +78,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     PS_OUTPUT o;
     o.Output = float4(Lo, surface.m_Opacity);
 
-#if ETH_TOOLMODE
+#if ETH_TOOLMODE && WRITE_METADATA
     if (GlobalConstants.m_TranslucentPickingEnabled)
     {
         Metadata metadata;

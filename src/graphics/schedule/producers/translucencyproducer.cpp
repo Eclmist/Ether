@@ -152,13 +152,18 @@ void Ether::Graphics::TranslucencyProducer::CreateShaders()
     RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_VertexShader = gfxDevice.CreateShader({ "basepass_vs.hlsl", "VS_Main", RhiShaderType::Vertex });
     m_PixelShader = gfxDevice.CreateShader({ "translucency\\forwardtranslucency_ps.hlsl", "PS_Main", RhiShaderType::Pixel });
-
-    // Manually compile shader since raytracing PSO caching has not been implemented yet
     m_VertexShader->Compile();
     m_PixelShader->Compile();
 
     GraphicCore::GetShaderDaemon().RegisterShader(*m_VertexShader);
     GraphicCore::GetShaderDaemon().RegisterShader(*m_PixelShader);
+
+#if ETH_TOOLMODE
+    m_MetadataPS = gfxDevice.CreateShader({ "translucency\\forwardtranslucency_ps.hlsl", "PS_Main", RhiShaderType::Pixel });
+    m_MetadataPS->AddDefinition("WRITE_METADATA");
+    m_MetadataPS->Compile();
+    GraphicCore::GetShaderDaemon().RegisterShader(*m_MetadataPS);
+#endif
 }
 
 void Ether::Graphics::TranslucencyProducer::CreateRootSignature()
@@ -188,7 +193,7 @@ void Ether::Graphics::TranslucencyProducer::CreatePipelineState(ResourceContext&
 
     m_MetadataWritePsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_MetadataWritePsoDesc->SetVertexShader(*m_VertexShader);
-    m_MetadataWritePsoDesc->SetPixelShader(*m_PixelShader);
+    m_MetadataWritePsoDesc->SetPixelShader(*m_MetadataPS);
     m_MetadataWritePsoDesc->SetRenderTargetFormats(rtvFormats.data(), rtvFormats.size());
     m_MetadataWritePsoDesc->SetRootSignature(*m_RootSignature);
     m_MetadataWritePsoDesc->SetInputLayout(VertexFormats::BaseVertexFormat::s_InputElementDesc, VertexFormats::BaseVertexFormat::s_NumElements);

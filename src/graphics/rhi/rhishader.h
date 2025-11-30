@@ -47,6 +47,8 @@ public:
     inline const std::vector<std::wstring>& GetIncludedFiles() const { return m_IncludedFiles; }
     inline const RhiShaderReflection& GetReflection() const { return *m_Reflection; }
 
+    inline void AddDefinition(const std::string& define) { m_CustomDefines.emplace_back(ToWideString(define)); }
+
 public:
     virtual void Compile() = 0;
 
@@ -64,7 +66,7 @@ protected:
     std::string m_FileName = "";
     std::string m_FilePath = "";
     std::string m_EntryPoint = "";
-
+    std::vector<std::wstring> m_CustomDefines;
     std::vector<std::wstring> m_IncludedFiles;
     std::unique_ptr<RhiShaderReflection> m_Reflection;
 };

@@ -51,6 +51,16 @@ void Ether::Graphics::RhiShader::Serialize(OStream& ostream) const
     ostream << static_cast<uint32_t>(m_CompiledData.size());
     ostream.WriteBytes(m_CompiledData.data(), m_CompiledData.size());
 
+    // Serialize defines
+    ostream << static_cast<uint32_t>(m_CustomDefines.size());
+    for (const auto& definition : m_CustomDefines)
+    {
+        uint32_t length = static_cast<uint32_t>(definition.size());
+        ostream << length;
+        ostream.WriteBytes(definition.data(), length * sizeof(wchar_t));
+
+    }
+
     // Serialize included files
     ostream << static_cast<uint32_t>(m_IncludedFiles.size());
     for (const auto& includedFile : m_IncludedFiles)
@@ -79,11 +89,23 @@ void Ether::Graphics::RhiShader::Deserialize(IStream& istream)
     if (compiledSize > 0)
         istream.ReadBytes(m_CompiledData.data(), compiledSize);
 
+    // Deserialize defines
+    uint32_t numDefinitions;
+    istream >> numDefinitions;
+    m_CustomDefines.resize(numDefinitions);
+    for (uint32_t i = 0; i < numDefinitions; ++i)
+    {
+        uint32_t length;
+        istream >> length;
+        m_CustomDefines[i].resize(length);
+        istream.ReadBytes(m_CustomDefines[i].data(), length * sizeof(wchar_t));
+    }
+
     // Deserialize included files
-    uint32_t includedFilesCount;
-    istream >> includedFilesCount;
-    m_IncludedFiles.resize(includedFilesCount);
-    for (uint32_t i = 0; i < includedFilesCount; ++i)
+    uint32_t numIncludes;
+    istream >> numIncludes;
+    m_IncludedFiles.resize(numIncludes);
+    for (uint32_t i = 0; i < numIncludes; ++i)
     {
         uint32_t length;
         istream >> length;
@@ -135,6 +157,9 @@ std::string Ether::Graphics::RhiShader::ComputeHash(const void* data, size_t siz
     hashCombine(hash, std::hash<uint32_t>{}((uint32_t)m_Type));
     hashCombine(hash, std::hash<std::string>{}(m_FilePath));
     hashCombine(hash, std::hash<std::string>{}(m_EntryPoint));
+
+    for (const std::wstring& define : m_CustomDefines)
+        hashCombine(hash, std::hash<std::wstring>{}(define));
 
     return std::to_string(hash);
 }
