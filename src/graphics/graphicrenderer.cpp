@@ -48,6 +48,21 @@ Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetThreadedRender
     }
 }
 
+Ether::Graphics::RenderData& Ether::Graphics::GraphicRenderer::GetRenderData(uint32_t index)
+{
+    return m_RenderData[index];
+}
+ 
+void Ether::Graphics::GraphicRenderer::EnqueueImGuiCommand(std::function<void()> cmd)
+{
+    m_Scheduler.m_ImguiWrapper->EnqueueExternalCommand(cmd);
+}
+
+ImGuiContext* Ether::Graphics::GraphicRenderer::GetImGuiContext()
+{
+    return m_Scheduler.m_ImguiWrapper->GetImGuiContext();
+}
+
 void Ether::Graphics::GraphicRenderer::ClearAllRenderData()
 {
     GraphicCore::GetBindlessDescriptorManager().Reset();

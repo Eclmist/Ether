@@ -22,6 +22,8 @@
 #include "graphics/pch.h"
 #include "graphics/context/graphiccontext.h"
 
+struct ImGuiContext;
+
 namespace Ether::Graphics
 {
 class ETH_GRAPHIC_DLL RhiImguiWrapper : public NonCopyable, public NonMovable
@@ -37,11 +39,21 @@ public:
 public:
     static std::unique_ptr<RhiImguiWrapper> InitForPlatform();
 
+public:
+    void EnqueueExternalCommand(std::function<void()> cmd);
+    ImGuiContext* GetImGuiContext();
+
 protected:
     void SetStyle() const;
+    void DrawDebugMenu() const;
+    void DrawExternalCommand();
 
 protected:
     GraphicContext m_Context;
-    std::unique_ptr<RhiDescriptorHeap> m_DescriptorHeap;
+    RhiDescriptorHeap* m_DescriptorHeap;
+
+protected:
+    std::queue<std::function<void()>> m_ExternalCommandQueue;
+
 };
 } // namespace Ether::Graphics

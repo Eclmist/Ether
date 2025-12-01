@@ -50,52 +50,44 @@ void Ether::Ecs::EcsTransformComponent::Deserialize(IStream& istream)
 Ether::ethMatrix4x4 Ether::Ecs::EcsTransformComponent::ToMatrix() const
 {
     return Transform::GetTranslationMatrix(m_Translation) *
-           Transform::GetRotationMatrix(ethQuaternion::FromEuler(m_Rotation)) *
+           Transform::GetRotationMatrix(ethQuaternion::FromEuler(m_Rotation)) * 
            Transform::GetScaleMatrix(m_Scale);
 }
 
 void Ether::Ecs::EcsTransformComponent::FromMatrix(const ethMatrix4x4& transformation)
 {
-    // TODO: Move into SMath library?
+    // Extract translation
     m_Translation = { transformation.m_14, transformation.m_24, transformation.m_34 };
 
-    // --- Scale ---------------------------------------------------------------
+    // Extract scale
+    m_Scale.x = ethVector3{ transformation.m_11, transformation.m_21, transformation.m_31 }.Magnitude();
+    m_Scale.y = ethVector3{ transformation.m_12, transformation.m_22, transformation.m_32 }.Magnitude();
+    m_Scale.z = ethVector3{ transformation.m_13, transformation.m_23, transformation.m_33 }.Magnitude();
 
-    ethVector3 x = { transformation.m_11, transformation.m_21, transformation.m_31 };
-    ethVector3 y = { transformation.m_12, transformation.m_22, transformation.m_32 };
-    ethVector3 z = { transformation.m_13, transformation.m_23, transformation.m_33 };
+    // Orthonormalize to get pure rotation matrix
+    ethMatrix4x4 rotationMatrix = transformation;
 
-    m_Scale.x = x.Magnitude();
-    m_Scale.y = y.Magnitude();
-    m_Scale.z = z.Magnitude();
+    // Remove scale from each basis vector
+    float invScaleX = (m_Scale.x != 0.0f) ? 1.0f / m_Scale.x : 0.0f;
+    float invScaleY = (m_Scale.y != 0.0f) ? 1.0f / m_Scale.y : 0.0f;
+    float invScaleZ = (m_Scale.z != 0.0f) ? 1.0f / m_Scale.z : 0.0f;
 
-    // --- Normalized rotation basis ------------------------------------------
-    ethVector3 xN = x / m_Scale.x;
-    ethVector3 yN = y / m_Scale.y;
-    ethVector3 zN = z / m_Scale.z;
+    rotationMatrix.m_11 *= invScaleX;
+    rotationMatrix.m_21 *= invScaleX;
+    rotationMatrix.m_31 *= invScaleX;
+    rotationMatrix.m_12 *= invScaleY;
+    rotationMatrix.m_22 *= invScaleY;
+    rotationMatrix.m_32 *= invScaleY;
+    rotationMatrix.m_13 *= invScaleZ;
+    rotationMatrix.m_23 *= invScaleZ;
+    rotationMatrix.m_33 *= invScaleZ;
 
-    // Rotation matrix R:
-    //
-    // | xN.x  yN.x  zN.x |
-    // | xN.y  yN.y  zN.y |
-    // | xN.z  yN.z  zN.z |
-
-    // --- Extract Euler rotation (XYZ order) ---------------------------------
-
-    float sy = -zN.x; // -R[0][2]
-    m_Rotation.y = std::asin(sy);
-
-    float cy = std::cos(m_Rotation.y);
-
-    if (std::fabs(cy) > 1e-6f) // Not gimbal locked
-    {
-        m_Rotation.x = std::atan2(zN.y, zN.z); // atan2(R[1][2], R[2][2])
-        m_Rotation.z = std::atan2(yN.x, xN.x); // atan2(R[0][1], R[0][0])
-    }
-    else // Gimbal lock fallback
-    {
-        m_Rotation.x = std::atan2(-yN.z, yN.y);
-        m_Rotation.z = 0.0f;
-    }
+    // Extract Euler angles from the clean rotation matrix
+    m_Rotation.x = atan2f(rotationMatrix.m_Data2D[2][1], rotationMatrix.m_Data2D[2][2]);
+    m_Rotation.y = atan2f(
+            -rotationMatrix.m_Data2D[2][0], sqrtf(
+            rotationMatrix.m_Data2D[2][1] * rotationMatrix.m_Data2D[2][1] +
+            rotationMatrix.m_Data2D[2][2] * rotationMatrix.m_Data2D[2][2]));
+    m_Rotation.z = atan2f(rotationMatrix.m_Data2D[1][0], rotationMatrix.m_Data2D[0][0]);
 }
 

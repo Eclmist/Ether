@@ -67,3 +67,4 @@ ETH_ENGINE_DLL void* GetWindowHandle();
 ETH_ENGINE_DLL void ShowWindow();
 ETH_ENGINE_DLL void HideWindow();
 } // namespace Ether::Toolmode
+

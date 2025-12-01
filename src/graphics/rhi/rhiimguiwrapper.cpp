@@ -21,7 +21,6 @@
 #include "graphics/rhi/rhiimguiwrapper.h"
 #include "graphics/rhi/dx12/dx12imguiwrapper.h"
 #include "graphics/imgui/imgui.h"
-#include "graphics/imgui/ImGuizmo.h"
 
 Ether::Graphics::RhiImguiWrapper::RhiImguiWrapper()
     : m_Context("Imgui Context")
@@ -45,6 +44,114 @@ void Ether::Graphics::RhiImguiWrapper::Render()
 {
     ImGui::NewFrame();
 
+    if (GraphicCore::GetGraphicConfig().IsDebugGuiEnabled())
+        DrawDebugMenu();
+
+    DrawExternalCommand();
+
+    ImGui::Render();
+
+    m_Context.Reset();
+    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
+    m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
+    m_Context.SetSrvCbvUavDescriptorHeap(*m_DescriptorHeap);
+    m_Context.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
+
+    RenderDrawData();
+    m_Context.FinalizeAndExecute();
+}
+
+std::unique_ptr<Ether::Graphics::RhiImguiWrapper> Ether::Graphics::RhiImguiWrapper::InitForPlatform()
+{
+#if defined(ETH_GRAPHICS_DX12)
+    return std::make_unique<Dx12ImguiWrapper>();
+#else
+    static_assert(false, "Not yet implemented");
+#endif
+}
+
+void Ether::Graphics::RhiImguiWrapper::EnqueueExternalCommand(std::function<void()> cmd)
+{
+    m_ExternalCommandQueue.push(cmd);
+}
+
+ImGuiContext* Ether::Graphics::RhiImguiWrapper::GetImGuiContext()
+{
+    return ImGui::GetCurrentContext();
+}
+
+void Ether::Graphics::RhiImguiWrapper::SetStyle() const
+{
+    ImGuiStyle* style = &ImGui::GetStyle();
+    style->WindowBorderSize = 0.0f;
+    style->FrameBorderSize = 0.0f;
+    style->PopupBorderSize = 0.0f;
+    style->TabBorderSize = 0.0f;
+    style->ChildBorderSize = 0.0f;
+    style->WindowPadding = ImVec2(20, 15);
+    style->WindowRounding = 5.0f;
+    style->FramePadding = ImVec2(5, 5);
+    style->FrameRounding = 4.0f;
+    style->ItemSpacing = ImVec2(12, 8);
+    style->ItemInnerSpacing = ImVec2(8, 6);
+    style->IndentSpacing = 25.0f;
+    style->ScrollbarSize = 15.0f;
+    style->ScrollbarRounding = 9.0f;
+    style->GrabMinSize = 5.0f;
+    style->GrabRounding = 0.0f;
+    style->Alpha = 0.96f;
+
+    style->Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
+    style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style->Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+    style->Colors[ImGuiCol_Border] = ImVec4(0.80f, 0.80f, 0.83f, 0.88f);
+    style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.92f, 0.91f, 0.88f, 0.00f);
+    style->Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.36f, 0.36f, 0.38f, 1.00f);
+    style->Colors[ImGuiCol_TitleBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.10f, 0.10f, 0.12f, 1.00);
+    style->Colors[ImGuiCol_TitleBgActive] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+    style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_CheckMark] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style->Colors[ImGuiCol_SliderGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_Button] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.34f, 0.33f, 0.39f, 1.00f);
+    style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style->Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.34f, 0.33f, 0.39f, 1.00f);
+    style->Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+    style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+    style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.543f);
+    style->Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
+    style->Colors[ImGuiCol_Tab] = style->Colors[ImGuiCol_Button];
+    style->Colors[ImGuiCol_TabHovered] = style->Colors[ImGuiCol_ButtonActive];
+    style->Colors[ImGuiCol_TabActive] = style->Colors[ImGuiCol_ButtonHovered];
+
+    static const float gamma = 2.2f;
+    for (int i = 0; i < ImGuiCol_COUNT; ++i)
+        style->Colors[i] = ImVec4(
+            std::pow(style->Colors[i].x, gamma),
+            std::pow(style->Colors[i].y, gamma),
+            std::pow(style->Colors[i].z, gamma),
+            style->Colors[i].w
+        );
+}
+
+void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
+{
     ETH_MARKER_EVENT("Debug Menu Gui Component - Draw");
 
     auto& gfxConfig = GraphicCore::GetGraphicConfig();
@@ -230,100 +337,22 @@ void Ether::Graphics::RhiImguiWrapper::Render()
                 300.0f,
                 ImVec2(360, 60));
         }
-        ImGui::End();
     }
+    ImGui::End();
 
 #if 0
     ImGui::ShowDemoWindow();
 #endif 
 
-    ImGui::Render();
-
-    m_Context.Reset();
-    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-    m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
-    m_Context.SetSrvCbvUavDescriptorHeap(*m_DescriptorHeap);
-    m_Context.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
-
-    RenderDrawData();
-    m_Context.FinalizeAndExecute();
 }
 
-std::unique_ptr<Ether::Graphics::RhiImguiWrapper> Ether::Graphics::RhiImguiWrapper::InitForPlatform()
+void Ether::Graphics::RhiImguiWrapper::DrawExternalCommand()
 {
-#if defined(ETH_GRAPHICS_DX12)
-    return std::make_unique<Dx12ImguiWrapper>();
-#else
-    static_assert(false, "Not yet implemented");
-#endif
+    while (!m_ExternalCommandQueue.empty())
+    {
+        ETH_MARKER_EVENT("External ImGui Commands");
+        m_ExternalCommandQueue.front()();
+        m_ExternalCommandQueue.pop();
+    }
 }
 
-void Ether::Graphics::RhiImguiWrapper::SetStyle() const
-{
-    ImGuiStyle* style = &ImGui::GetStyle();
-    style->WindowBorderSize = 0.0f;
-    style->FrameBorderSize = 0.0f;
-    style->PopupBorderSize = 0.0f;
-    style->TabBorderSize = 0.0f;
-    style->ChildBorderSize = 0.0f;
-    style->WindowPadding = ImVec2(20, 15);
-    style->WindowRounding = 5.0f;
-    style->FramePadding = ImVec2(5, 5);
-    style->FrameRounding = 4.0f;
-    style->ItemSpacing = ImVec2(12, 8);
-    style->ItemInnerSpacing = ImVec2(8, 6);
-    style->IndentSpacing = 25.0f;
-    style->ScrollbarSize = 15.0f;
-    style->ScrollbarRounding = 9.0f;
-    style->GrabMinSize = 5.0f;
-    style->GrabRounding = 0.0f;
-    style->Alpha = 0.96f;
-
-    style->Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
-    style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
-    style->Colors[ImGuiCol_Border] = ImVec4(0.80f, 0.80f, 0.83f, 0.88f);
-    style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.92f, 0.91f, 0.88f, 0.00f);
-    style->Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.36f, 0.36f, 0.38f, 1.00f);
-    style->Colors[ImGuiCol_TitleBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.10f, 0.10f, 0.12f, 1.00);
-    style->Colors[ImGuiCol_TitleBgActive] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
-    style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
-    style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_CheckMark] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
-    style->Colors[ImGuiCol_SliderGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
-    style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_Button] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.34f, 0.33f, 0.39f, 1.00f);
-    style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.34f, 0.33f, 0.39f, 1.00f);
-    style->Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-    style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
-    style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
-    style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.543f);
-    style->Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
-    style->Colors[ImGuiCol_Tab] = style->Colors[ImGuiCol_Button];
-    style->Colors[ImGuiCol_TabHovered] = style->Colors[ImGuiCol_ButtonActive];
-    style->Colors[ImGuiCol_TabActive] = style->Colors[ImGuiCol_ButtonHovered];
-
-    static const float gamma = 2.2f;
-    for (int i = 0; i < ImGuiCol_COUNT; ++i)
-        style->Colors[i] = ImVec4(
-            std::pow(style->Colors[i].x, gamma),
-            std::pow(style->Colors[i].y, gamma),
-            std::pow(style->Colors[i].z, gamma),
-            style->Colors[i].w
-        );
-}

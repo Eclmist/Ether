@@ -73,9 +73,9 @@ void RayGeneration()
 
     if (cellIndex != 0xFFFFFFFFu)
     {
-    initialReservoir.FinalizeResampling();
+        initialReservoir.FinalizeResampling();
         SpatialHashPayload payload;
-        payload.m_Color = initialReservoir.m_WeightSum;
+        payload.m_Color = surface.m_Normal;
         RWSpatialHashPayload[cellIndex] = payload;
     }
 }

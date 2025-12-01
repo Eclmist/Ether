@@ -123,4 +123,3 @@ void Ether::Toolmode::HideWindow()
 {
     EngineCore::GetMainWindow().Hide();
 }
-

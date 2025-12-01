@@ -21,8 +21,13 @@
 
 #include "graphics/pch.h"
 
+#if ETH_TOOLMODE
+#include "graphics/common/visual.h"
+#endif
+
 namespace Ether::Graphics
 {
+
 enum RaytracingMode : int32_t
 {
     Pathtracer,

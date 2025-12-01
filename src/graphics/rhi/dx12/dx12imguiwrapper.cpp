@@ -34,7 +34,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 Ether::Graphics::Dx12ImguiWrapper::Dx12ImguiWrapper()
 {
-    m_DescriptorHeap = GraphicCore::GetDevice().CreateDescriptorHeap(RhiDescriptorHeapType::SrvCbvUav, 1024, true);
+    m_DescriptorHeap = &GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap();
 
     ImGui_ImplWin32_Init(GraphicCore::GetGraphicConfig().GetWindowHandle());
 

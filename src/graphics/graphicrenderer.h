@@ -24,6 +24,8 @@
 #include "graphics/context/graphiccontext.h"
 #include "graphics/schedule/framescheduler.h"
 
+class ImGuiContext;
+
 namespace Ether::Graphics
 {
 class GraphicRenderer : public NonCopyable, public NonMovable
@@ -39,6 +41,9 @@ public:
 public:
     ETH_GRAPHIC_DLL RhiResource* GetFrameResource(const RhiResourceView* resourceView) const;
     ETH_GRAPHIC_DLL RenderData& GetThreadedRenderData();
+    ETH_GRAPHIC_DLL RenderData& GetRenderData(uint32_t index);
+    ETH_GRAPHIC_DLL void EnqueueImGuiCommand(std::function<void()> cmd);
+    ETH_GRAPHIC_DLL ImGuiContext* GetImGuiContext();
     ETH_GRAPHIC_DLL void ClearAllRenderData();
 
 public:

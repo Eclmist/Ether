@@ -232,8 +232,7 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxCo
 
     gfxContext.FinalizeAndExecute();
 
-    if (GraphicCore::GetGraphicConfig().IsDebugGuiEnabled())
-        m_ImguiWrapper->Render();
+    m_ImguiWrapper->Render();
 
     gfxContext.Reset();
     gfxContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::Present);
