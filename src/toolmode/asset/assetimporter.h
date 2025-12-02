@@ -36,7 +36,7 @@ namespace Ether::Toolmode
         inline void SetMeshScale(float scale) { m_MeshScale = scale; }
 
     public:
-        void Import(const std::string& assetPath, bool flattern = false);
+        void Import(const std::string& assetPath, bool splitLargeMeshes = false);
         void ImportTexture(const std::string& assetPath, bool isSrgb = true, bool genMips = true);
 
     public:

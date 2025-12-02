@@ -71,7 +71,7 @@ inline aiMatrix4x4 ToAiMatrix4x4(Ether::ethMatrix4x4 matrix)
              matrix.m_31, matrix.m_32, matrix.m_33, matrix.m_34,
              matrix.m_41, matrix.m_42, matrix.m_43, matrix.m_44 };
 }
-void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool flattern)
+void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool splitLargeMeshes)
 {
     ETH_MARKER_FRAME("Import Frame");
 
@@ -87,15 +87,8 @@ void Ether::Toolmode::AssetImporter::Import(const std::string& assetPath, bool f
     importFlags |= aiProcessPreset_TargetRealtime_Quality;
     importFlags |= aiProcess_PopulateArmatureData;
 
-    if (flattern)
-    {
-        importFlags |= aiProcess_PreTransformVertices;
-    }
-    else
-    {
-        // Workaround for large skeletal meshes. Splitting discards bones!
+    if (!splitLargeMeshes)
         importFlags &= ~aiProcess_SplitLargeMeshes;
-    }
 
     auto scene = importer.ReadFile(assetPath, importFlags);
     if (scene == nullptr)
@@ -379,6 +372,8 @@ void Ether::Toolmode::AssetImporter::ProcessStaticMesh(const aiMesh* assimpMesh,
     gfxStaticMesh.SetPackedVertices(std::move(packedVertices));
     gfxStaticMesh.SetIndices(std::move(indices));
     gfxStaticMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
+    gfxStaticMesh.SetAssetTransform(transform);
+
     SerializeLibraryData(&gfxStaticMesh);
 }
 
@@ -403,6 +398,7 @@ void Ether::Toolmode::AssetImporter::ProcessSkinnedMesh(const aiMesh* assimpMesh
     gfxSkinnedMesh.SetIndices(std::move(indices));
     gfxSkinnedMesh.SetDefaultMaterialGuid(m_MaterialGuids[assimpMesh->mMaterialIndex]);
     gfxSkinnedMesh.SetAnimationGuid(m_AnimationGuids[0]); // Assign the first available animation
+    gfxSkinnedMesh.SetAssetTransform(transform);
 
     if (m_ArmatureRootToSkeletonMap.contains(assimpMesh->mBones[0]->mArmature))
     {
@@ -533,7 +529,6 @@ template void Ether::Toolmode::AssetImporter::FillVertexData(
 template <typename VertexFormat>
 void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, std::vector<VertexFormat>& data)
 {
-    AssertToolmode(assimpMesh->mNumVertices <= Graphics::MaxVerticesPerMesh, "Max vertices exceeded limit");
     data.resize(assimpMesh->mNumVertices);
 
     const bool hasVertexColors = assimpMesh->HasVertexColors(0);
@@ -633,7 +628,6 @@ void Ether::Toolmode::AssetImporter::FillVertexData(const aiMesh* assimpMesh, st
 void Ether::Toolmode::AssetImporter::FillIndexData(const aiMesh* assimpMesh, std::vector<uint32_t>& indices) const
 {
     const uint32_t numVerticesPerFace = 3; // Triangulated mesh only
-    AssertToolmode(assimpMesh->mNumFaces <= Graphics::MaxTrianglePerMesh, "Max triangles exceeded limit");
     indices.reserve(assimpMesh->mNumFaces * numVerticesPerFace);
     for (int j = 0; j < assimpMesh->mNumFaces; ++j)
     {

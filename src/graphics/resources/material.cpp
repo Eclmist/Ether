@@ -32,6 +32,7 @@ Ether::Graphics::Material::Material()
     , m_NormalTextureID()
     , m_MetalnessTextureID()
     , m_RoughnessTextureID()
+    , m_EmissiveTextureID()
 {
 }
 

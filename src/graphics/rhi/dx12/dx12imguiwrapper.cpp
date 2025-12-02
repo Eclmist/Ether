@@ -89,12 +89,14 @@ void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData()
 
 bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam)
 {
+    if (ImGui::GetCurrentContext() == nullptr)
+        return false;
+
     if (ImGui_ImplWin32_WndProcHandler((HWND)hWnd, msg, wParam, lParam))
         return true;
 
     ImGuiIO& io = ImGui::GetIO();
 
-    // Check if ImGui wants to capture input and block it from your app
     switch (msg)
     {
     case WM_LBUTTONDOWN:
@@ -110,7 +112,7 @@ bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t
     case WM_MBUTTONUP:
     case WM_XBUTTONUP:
         if (io.WantCaptureMouse)
-            return true; // Consume the event
+            return true;
         break;
 
     case WM_MOUSEWHEEL:
@@ -125,7 +127,7 @@ bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t
     case WM_SYSKEYUP:
     case WM_CHAR:
         if (io.WantCaptureKeyboard)
-            return true; // Consume the event
+            return true;
         break;
     }
 

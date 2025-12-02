@@ -43,7 +43,6 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int cmdShow)
 
 void Ether::Toolmode::EtherHeadless::Initialize()
 {
-    LogToolmodeInfo("%p", Ether::Toolmode::GetWindowHandle());
 }
 
 // The idea of this block is to test toolmode functionality without having the actual tool developed yet
@@ -68,7 +67,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
     const std::string hdriPath = "D:\\Graphics_Projects\\Atelier\\Workspaces\\Hdri\\kloofendal_48d_partly_cloudy_puresky_8k.hdr";
     const std::string workspacePath = GetCommandLineOptions().GetWorkspacePath();
     const std::vector<std::string>& m_ImportPaths = GetCommandLineOptions().GetImportPaths();
-    const std::vector<std::string>& m_FlatternedImportPaths = GetCommandLineOptions().GetFlatternedImportPaths();
+    const std::vector<std::string>& m_LargeImportPaths = GetCommandLineOptions().GetLargeImportPaths();
 
     if (GetCommandLineOptions().HasImports())
     {
@@ -91,10 +90,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         }
 
         for (uint32_t i = 0; i < m_ImportPaths.size(); ++i)
-            AssetImporter::Instance().Import(m_ImportPaths[i]);
+            AssetImporter::Instance().Import(m_ImportPaths[i], false);
 
-        for (uint32_t i = 0; i < m_FlatternedImportPaths.size(); ++i)
-            AssetImporter::Instance().Import(m_FlatternedImportPaths[i], true);
+        for (uint32_t i = 0; i < m_LargeImportPaths.size(); ++i)
+            AssetImporter::Instance().Import(m_LargeImportPaths[i], true);
 
         //AssetImporter::Instance().ImportTexture(hdriPath);
 
@@ -169,6 +168,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             Ecs::EcsVisualComponent& visual = entity.AddComponent<Ecs::EcsVisualComponent>();
             visual.m_MeshGuid = staticMesh->GetGuid();
             visual.m_MaterialGuid = staticMesh->GetDefaultMaterialGuid();
+
+            Ecs::EcsTransformComponent& transform = entity.GetComponent<Ecs::EcsTransformComponent>();
+            transform.FromMatrix(staticMesh->GetAssetTransform());
+
             currentWorld.GetResourceManager().RegisterStaticMeshResource(std::move(staticMesh));
         }
 
@@ -181,6 +184,10 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
             visual.m_MaterialGuid = skinnedMesh->GetDefaultMaterialGuid();
             visual.m_SkeletonGuid = skinnedMesh->GetSkeletonGuid();
             visual.m_AnimationGuid = skinnedMesh->GetAnimationGuid();
+
+            Ecs::EcsTransformComponent& transform = entity.GetComponent<Ecs::EcsTransformComponent>();
+            transform.FromMatrix(skinnedMesh->GetAssetTransform());
+
             resources.RegisterSkinnedMeshResource(std::move(skinnedMesh));
         }
 
@@ -189,19 +196,9 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
 
         currentWorld.SetName(exportWorldName);
         currentWorld.Save(sceneSavePath);
-        PostQuitMessage(0);
+        Ether::Shutdown();
+        return;
     }
-
-    const std::string importWorldName = GetCommandLineOptions().GetWorldName();
-    const std::string sceneLoadPath = workspacePath + "\\" + importWorldName;
-
-    if (PathUtils::GetFileExtension(sceneLoadPath) == ".ether")
-        currentWorld.Load(sceneLoadPath);
-
-    Entity& cameraObj = currentWorld.CreateCamera();
-    m_CameraTransform = &cameraObj.GetComponent<Ecs::EcsTransformComponent>();
-    m_CameraTransform->m_Translation = { 0, 2, 0 };
-    m_CameraTransform->m_Rotation = { 0, SMath::DegToRad(-90.0f), 0 };
 }
 
 void Ether::Toolmode::EtherHeadless::UnloadContent()

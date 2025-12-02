@@ -26,8 +26,8 @@
 
 namespace Ether::Graphics
 {
-constexpr uint32_t MaxVerticesPerMesh = 1 << 16;
-constexpr uint32_t MaxTrianglePerMesh = 1 << 16;
+constexpr uint32_t MaxVerticesPerMesh = 1 << 18;
+constexpr uint32_t MaxTrianglePerMesh = MaxVerticesPerMesh / 3;
 
 class ETH_GRAPHIC_DLL Mesh : public Serializable
 {
@@ -45,6 +45,9 @@ public:
     inline uint32_t GetNumIndices() const { return m_NumIndices; }
     inline StringID GetDefaultMaterialGuid() const { return m_DefaultMaterialGuid; }
     inline Aabb GetBoundingBox() const { return m_BoundingBox; }
+
+    inline ethMatrix4x4 GetAssetTransform() const { return m_AssetTransform; }
+    inline void SetAssetTransform(const ethMatrix4x4& transform) { m_AssetTransform = transform; }
 
 public:
     virtual void Serialize(OStream& ostream) const override;
@@ -95,5 +98,11 @@ protected:
 
     std::string m_VbName;
     std::string m_IbName;
+
+    // TODO: This doesn't belong in a graphics type. In fact, the whole of Asset importer
+    // serializes graphics types which should all be converted to engine types,
+    // and then renderer proxies should be created for pure renderer types.
+    // BIG TODO!!
+    ethMatrix4x4 m_AssetTransform;
 };
 } // namespace Ether::Graphics

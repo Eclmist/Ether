@@ -41,7 +41,6 @@ void Ether::Graphics::StaticMesh::Deserialize(IStream& istream)
     Mesh::Deserialize(istream);
 
     istream >> m_NumVertices;
-    AssertGraphics(m_NumVertices <= MaxVerticesPerMesh, "Num vertices exceeds limit");
 
     m_PackedVertices.resize(m_NumVertices);
     for (int i = 0; i < m_PackedVertices.size(); ++i)

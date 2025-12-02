@@ -74,8 +74,8 @@ void Ether::CommandLineOptions::RegisterSingleOption(const std::string& flag, co
         m_ImportScale = stof(arg);
     else if (flag == "-import")
         m_ImportPaths.push_back(arg);
-    else if (flag == "-fimport")
-        m_FlattenedImportPaths.push_back(arg);
+    else if (flag == "-importlarge")
+        m_LargeImportPaths.push_back(arg);
     else if (flag == "-export")
         m_ExportName = arg;
     else if (flag == "-toolmodeport")

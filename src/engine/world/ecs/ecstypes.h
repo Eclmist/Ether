@@ -24,7 +24,7 @@
 
 namespace Ether::Ecs
 {
-constexpr uint32_t MaxNumEntities = 4096;
+constexpr uint32_t MaxNumEntities = 1 << 16;
 constexpr uint32_t MaxNumComponents = 32;
 
 using ComponentID = size_t;

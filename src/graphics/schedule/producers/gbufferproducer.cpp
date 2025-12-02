@@ -125,6 +125,11 @@ void Ether::Graphics::GBufferProducer::RenderFrame(GraphicContext& ctx, Resource
                 continue;
 
             auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::InstanceParams), 256 });
+            if (alloc == nullptr)
+            {
+                LogGraphicsError("Failed to allocate from frame allocator. Visual is discarded.");
+                continue;
+            }
             Shader::InstanceParams* instanceParams = (Shader::InstanceParams*)alloc->GetCpuHandle();
             instanceParams->m_MaterialIdx = batch.m_Material->GetTransientMaterialIdx();
             instanceParams->m_ModelMatrix = visual.m_ModelMatrix;

@@ -40,6 +40,8 @@ void Ether::Graphics::Mesh::Serialize(OStream& ostream) const
     ostream << m_DefaultMaterialGuid.GetString();
     ostream << m_BoundingBox.m_Min;
     ostream << m_BoundingBox.m_Max;
+
+    ostream << m_AssetTransform;
 }
 
 void Ether::Graphics::Mesh::Deserialize(IStream& istream)
@@ -47,8 +49,6 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
     Serializable::Deserialize(istream);
 
     istream >> m_NumIndices;
-    AssertGraphics(m_NumIndices <= MaxTrianglePerMesh * 3, "Num triangles exceeds limit");
-
     m_Indices.resize(m_NumIndices);
     for (int i = 0; i < m_Indices.size(); ++i)
         istream >> m_Indices[i];
@@ -56,6 +56,8 @@ void Ether::Graphics::Mesh::Deserialize(IStream& istream)
     istream >> m_DefaultMaterialGuid;
     istream >> (ethVector3&)m_BoundingBox.m_Min;
     istream >> (ethVector3&)m_BoundingBox.m_Max;
+
+    istream >> m_AssetTransform;
 }
 
 void Ether::Graphics::Mesh::SetIndices(std::vector<uint32_t>&& indices)
