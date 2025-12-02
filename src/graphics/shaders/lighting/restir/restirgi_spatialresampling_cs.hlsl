@@ -40,28 +40,28 @@ bool AreSurfacesSimilar(ShadingSurface thisSurface, ShadingSurface otherSurface)
     return true;
 }
 
-void CalculatePartialJacobian(const float3 RecieverPos, const float3 SamplePos, const float3 SampleNormal,
-	out float DistanceToSurfaceSqr, out float CosineEmissionAngle)
+void CalculatePartialJacobian(const float3 receiverPos, const float3 samplePos, const float3 sampleNormal,
+	out float distanceToSurfaceSqr, out float cosineEmissionAngle)
 {
-	const float3 Vec = RecieverPos - SamplePos;
+	const float3 Vec = receiverPos - samplePos;
 
-	DistanceToSurfaceSqr = dot(Vec, Vec);
-	CosineEmissionAngle = saturate(dot(SampleNormal, Vec * rsqrt(DistanceToSurfaceSqr)));
+	distanceToSurfaceSqr = dot(Vec, Vec);
+	cosineEmissionAngle = saturate(dot(sampleNormal, Vec * rsqrt(distanceToSurfaceSqr)));
 }
 
-float CalculateJacobian(float3 RecieverPos, float3 NeighborReceiverPos, const GIReservoir NeighborReservoir)
+float CalculateJacobian(float3 receiverPos, float3 neighbourReceiverPos, const GIReservoir neighbourReservoir)
 {
-	float OriginalDistanceSqr, OriginalCosine;
-	float NewDistanceSqr, NewCosine;
-	CalculatePartialJacobian(RecieverPos, NeighborReservoir.m_Sample.m_SamplePosition, NeighborReservoir.m_Sample.m_SampleNormal, NewDistanceSqr, NewCosine);
-	CalculatePartialJacobian(NeighborReceiverPos, NeighborReservoir.m_Sample.m_SamplePosition, NeighborReservoir.m_Sample.m_SampleNormal, OriginalDistanceSqr, OriginalCosine);
+	float originalDistanceSqr, originalCosineSqr;
+	float newDistanceSqr, newCosineSqr;
+	CalculatePartialJacobian(receiverPos, neighbourReservoir.m_Sample.m_SamplePosition, neighbourReservoir.m_Sample.m_SampleNormal, newDistanceSqr, newCosineSqr);
+	CalculatePartialJacobian(neighbourReceiverPos, neighbourReservoir.m_Sample.m_SamplePosition, neighbourReservoir.m_Sample.m_SampleNormal, originalDistanceSqr, originalCosineSqr);
 
-	float Jacobian = (NewCosine * OriginalDistanceSqr) / (OriginalCosine * NewDistanceSqr);
+	float jacobian = (newCosineSqr * originalDistanceSqr) / (originalCosineSqr * newDistanceSqr);
 
-	if (isinf(Jacobian) || isnan(Jacobian))
-		Jacobian = 1;
+	if (isinf(jacobian) || isnan(jacobian))
+		jacobian = 1;
 
-	return saturate(Jacobian);
+	return saturate(jacobian);
 }
 
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, 1)]
@@ -108,7 +108,7 @@ void CS_Main(
             continue;
 
         const float jacobian = CalculateJacobian(surface.m_Position, neighbourSurface.m_Position, neighbourReservoir);
-        const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample) * jacobian;
+        const float3 targetFunction = ComputeTargetFunction(surface, neighbourReservoir.m_Sample);
 
         // surface detail is somehow lost if this is added
         // neighbourReservoir.m_TargetPdf = targetFunction;

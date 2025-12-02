@@ -24,13 +24,13 @@
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"
 
-Texture2D<float4> AccumulationTexture               : register(t3);
+Texture2D<float4> RTAccumulationTexture             : register(t3);
 Texture2D<float4> GBufferTextureA                   : register(t4);
 Texture2D<float4> GBufferTextureB                   : register(t5);
 Texture2D<float4> GBufferTextureC                   : register(t6);
 Texture2D<float2> SceneDepth                        : register(t7);
-RWTexture2D<float4> RWLightingOutput                : register(u0);
-RWTexture2D<float4> RWIndirectOutput                : register(u1);
+RWTexture2D<float4> RWLightingTexture               : register(u0);
+RWTexture2D<float4> RWRTIndirectTexture             : register(u1);
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -48,7 +48,7 @@ void RayGeneration()
     sampler linearSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Linear_Clamp];
     if (all(uvPrev >= 0.0f) && all(uvPrev <= 1.0f))
     {
-        accumulation = AccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
+        accumulation = RTAccumulationTexture.SampleLevel(linearSampler, uvPrev, 0);
 
         if (any(isnan(accumulation)) || any(isinf(accumulation)))
             accumulation = 0.0f;
@@ -76,8 +76,8 @@ void RayGeneration()
 
     float a = max(0.005, 1 - smoothstep(0, 10, GlobalConstants.m_FrameNumber - GlobalConstants.m_FrameSinceLastMovement));
     const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
-    RWLightingOutput[screenCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
-    RWIndirectOutput[screenCoords].xyz = accumulatedIndirect;
+    RWLightingTexture[screenCoords].xyz = surface.m_Emission + direct + accumulatedIndirect;
+    RWRTIndirectTexture[screenCoords].xyz = accumulatedIndirect;
 }
 
 #endif // __PATHTRACING_RGS_HLSL__

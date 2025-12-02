@@ -220,7 +220,7 @@ RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
 
     RayDesc ray;
     ray.Direction = direction;
-    ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
+    ray.Origin = surface.m_Position + surface.m_Normal * RAY_TMIN;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;
 
@@ -239,7 +239,7 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     payload.m_Depth = depth;
 
     RayDesc ray;
-    ray.Origin = surface.m_Position + surface.m_Normal * 0.01;
+    ray.Origin = surface.m_Position + surface.m_Normal * RAY_TMIN;
     ray.Direction = direction;
     ray.TMax = RAY_TMAX;
     ray.TMin = RAY_TMIN;

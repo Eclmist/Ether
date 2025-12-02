@@ -160,7 +160,7 @@ ShadingSurface GetShadingSurfaceFromGeometry(InterpolatedSurface interpolatedSur
 ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material, uint samplerIndex, float mipLevel)
 {
     InterpolatedSurface geometricSurface;
-    geometricSurface.m_VertexPosition = hitSurface.m_Position;
+    geometricSurface.m_VertexPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection(); // Do not use hitSurface.m_Position! It is in local space!
     geometricSurface.m_Normal = hitSurface.m_Normal;
     geometricSurface.m_Tangent = hitSurface.m_Tangent;
     geometricSurface.m_Color = hitSurface.m_Color;

@@ -28,7 +28,7 @@ ETH_BEGIN_SHADER_NAMESPACE
 
 // TODO: implement various biases (pullback, surface, etc.)
 #define RAY_TMAX            128
-#define RAY_TMIN            0.1
+#define RAY_TMIN            0.01
 
 #define USE_IMPORTANCE_SAMPLING 1
 
