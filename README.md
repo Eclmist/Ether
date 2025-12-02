@@ -5,7 +5,7 @@
   Ether
   <br>
 </h1>
-<h4 align="center">A realtime DirectX12 rendering engine</h4>
+<h4 align="center">A DirectX12 raytracing renderer</h4>
 
 <p align="center">
   <a href="https://github.com/Eclmist/Ether/actions">
@@ -21,7 +21,7 @@
 
 ## Introduction
 
-Ether is a 3D renderer written with DirectX 12 and C++, meant to be used as a platform for creating and testing modern graphics rendering techniques. 
+Ether is a 3D renderer written with DirectX 12 and C++, meant to be used as a platform for creating and testing graphics rendering techniques. 
 
 Ether is open-sourced, licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
