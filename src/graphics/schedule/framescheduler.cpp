@@ -201,6 +201,10 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(TranslucencyProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedTranslucencyProducer).Get());
 
+    // Debug Visualizers:
+    // Do it before post process because we're debugging HDR colors
+    m_OrderedProducers.push(ACCESS_GFX_PA(IrradianceFieldVisualizationProducer).Get());
+
     // Order of post process is important, obviously
     // Reference: https://www.renderingevolution.net/?p=103
     m_OrderedProducers.push(ACCESS_GFX_PA(PostFxSourceProducer).Get());
@@ -209,9 +213,6 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get());
     // TODO: Add a tonemapping pass instead of dumping it in final composite, and move it before TAA
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get());
-
-    // Debug Visualizers:
-    m_OrderedProducers.push(ACCESS_GFX_PA(IrradianceFieldVisualizationProducer).Get());
 
 #if ETH_TOOLMODE
     m_OrderedProducers.push(ACCESS_GFX_PA(EditorGridProducer).Get());

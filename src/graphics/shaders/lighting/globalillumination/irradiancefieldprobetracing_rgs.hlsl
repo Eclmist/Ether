@@ -22,6 +22,23 @@
 
 #include "lighting/globalillumination/irradiancefield.hlsl"
 
+RayPayload TraceProbeRay(float3 origin, float3 direction)
+{
+    RayPayload payload;
+    payload.m_IsShadowRay = false;
+    payload.m_Depth = MAX_DEPTH;
+    
+    RayDesc ray;
+    ray.Origin = origin;
+    ray.Direction = normalize(direction);
+    ray.TMax = RAY_TMAX;
+    ray.TMin = RAY_TMIN;
+    
+    uint rayFlags = RAY_FLAG_FORCE_OPAQUE; // Don't do any-hit for GI rays for performance
+    TraceRay(RTRaytracingTlas, rayFlags, 0xFF, 0, 0, 0, ray, payload);
+    return payload;
+}
+
 [shader("raygeneration")]
 void RayGeneration()
 {
@@ -29,12 +46,15 @@ void RayGeneration()
 
     if (IsWithinIrradianceAtlasBounds(sampleCoords))
     {
-        if (IsWithinIrradianceProbeBounds(sampleCoords))
+        if (IsWithinIrradianceTileBounds(sampleCoords))
         {
-            uint probeIndex = GetProbeIndex(sampleCoords, IrradianceFieldParams.m_IrradianceTileSize);
-            uint2 localCoords = GetProbeLocalCoords(sampleCoords, IrradianceFieldParams.m_IrradianceTileSize);
-            float3 rayDirection = ProbeTexelCoordsToDirection(localCoords, IrradianceFieldParams.m_IrradianceTileSize - 1);
-            RWIrradianceFieldIrradianceAtlas[sampleCoords] = rayDirection;
+            const uint probeIndex = GetTileIndex(sampleCoords, IrradianceFieldParams.m_IrradianceTileSize);
+            const uint2 localCoords = GetTileLocalCoords(sampleCoords, IrradianceFieldParams.m_IrradianceTileSize);
+            const float3 probeWorldPos = GetProbeWorldPosition(probeIndex);
+            const float3 rayDirection = TileTexelToDirection(localCoords, IrradianceFieldParams.m_IrradianceTileSize - 1);
+
+            RayPayload payload = TraceProbeRay(probeWorldPos, rayDirection);
+            RWIrradianceFieldIrradianceAtlas[sampleCoords] = payload.m_Radiance;
         }
         else
         {

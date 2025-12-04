@@ -32,6 +32,7 @@ DEFINE_GFX_PA(IrradianceFieldVisualizationProducer)
 
 DECLARE_GFX_SR(RTGeometryInfo)
 DECLARE_GFX_AS(RTRaytracingTlas)
+DECLARE_GFX_RT(SceneColor)
 DECLARE_GFX_DS(SceneDepth)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
@@ -215,6 +216,7 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::GetInputOutput(
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
     schedule.Read(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
+    schedule.Read(ACCESS_GFX_RT(SceneColor));
     schedule.Read(ACCESS_GFX_DS(SceneDepth));
 }
 
@@ -236,7 +238,7 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::RenderFrame(GraphicC
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetGraphicRootSignature(*m_RootSignature);
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
-    ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv(), &(*ACCESS_GFX_DS(SceneDepth)));
+    ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::IrradianceFieldParams), 256 });
     Shader::IrradianceFieldParams* params = (Shader::IrradianceFieldParams*)alloc->GetCpuHandle();
@@ -282,7 +284,7 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::CreatePipelineState(
     m_PsoDesc = GraphicCore::GetDevice().CreateGraphicPipelineStateDesc();
     m_PsoDesc->SetVertexShader(*m_VertexShader);
     m_PsoDesc->SetPixelShader(*m_PixelShader);
-    m_PsoDesc->SetRenderTargetFormat(BackBufferLdrFormat);
+    m_PsoDesc->SetRenderTargetFormat(BackBufferHdrFormat);
     m_PsoDesc->SetRootSignature(*m_RootSignature);
     m_PsoDesc->SetInputLayout(nullptr, 0);
     m_PsoDesc->SetDepthTargetFormat(DepthBufferDsvFormat);

@@ -38,17 +38,12 @@ uint GetTotalProbeCount()
     return IrradianceFieldParams.m_GridResolution.x * IrradianceFieldParams.m_GridResolution.y * IrradianceFieldParams.m_GridResolution.z;
 }
 
-uint GetIrradianceProbesPerRow()
+uint GetNumProbesPerRow()
 {
-    return IrradianceFieldParams.m_IrradianceAtlasResolution.x / IrradianceFieldParams.m_IrradianceTileSize;
+    return IrradianceFieldParams.m_GridResolution.x * IrradianceFieldParams.m_GridResolution.y;
 }
 
-uint GetDepthProbesPerRow()
-{
-    return IrradianceFieldParams.m_DepthAtlasResolution.x / IrradianceFieldParams.m_DepthTileSize;
-}
-
-uint2 GetProbeLocalCoords(uint2 dispatchCoords, uint tileSize)
+uint2 GetTileLocalCoords(uint2 dispatchCoords, uint tileSize)
 {
     return uint2(dispatchCoords.x % tileSize, dispatchCoords.y % tileSize);
 }
@@ -65,9 +60,9 @@ bool IsWithinDepthAtlasBounds(uint2 dispatchCoords)
            dispatchCoords.y < IrradianceFieldParams.m_DepthAtlasResolution.y;
 }
 
-bool IsWithinIrradianceProbeBounds(uint2 dispatchCoords)
+bool IsWithinIrradianceTileBounds(uint2 dispatchCoords)
 {
-    uint2 localCoords = GetProbeLocalCoords(dispatchCoords, IrradianceFieldParams.m_IrradianceTileSize);
+    uint2 localCoords = GetTileLocalCoords(dispatchCoords, IrradianceFieldParams.m_IrradianceTileSize);
     
     if (any(localCoords == IrradianceFieldParams.m_IrradianceTileSize - 1))
         return false;
@@ -75,14 +70,12 @@ bool IsWithinIrradianceProbeBounds(uint2 dispatchCoords)
     return true;
 }
 
-uint GetProbeIndex(uint2 dispatchCoords, uint tileSize)
+uint GetTileIndex(uint2 dispatchCoords, uint tileSize)
 {
-    uint probesPerRow = GetDepthProbesPerRow();
-    return (dispatchCoords.x / IrradianceFieldParams.m_DepthTileSize) + 
-           (dispatchCoords.y / IrradianceFieldParams.m_DepthTileSize) * probesPerRow;
+    return (dispatchCoords.x / tileSize) + (dispatchCoords.y / tileSize) * GetNumProbesPerRow();
 }
 
-float3 ProbeTexelCoordsToDirection(uint2 localCoords, uint tileSize)
+float3 TileTexelToDirection(uint2 localCoords, uint tileSize)
 {
     return OctahedralDecode((float2(localCoords) + 0.5) / float(tileSize));
 }
@@ -106,7 +99,7 @@ float3 GetProbeWorldPosition(uint probeIndex)
 
 uint2 GetAtlasOffset(uint probeIndex, uint tileSize)
 {
-    uint probesPerRow = GetIrradianceProbesPerRow();
+    uint probesPerRow = GetNumProbesPerRow();
     uint probeX = probeIndex % probesPerRow;
     uint probeY = probeIndex / probesPerRow;
     return uint2(probeX * tileSize, probeY * tileSize);
