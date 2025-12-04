@@ -30,27 +30,14 @@
 DEFINE_GFX_PA(IrradianceFieldProducer)
 DEFINE_GFX_PA(IrradianceFieldVisualizationProducer)
 
-//DEFINE_GFX_UA(LightingTexture)
-//DEFINE_GFX_SR(LightingTexture)
-//DEFINE_GFX_UA(InputReservoir)
-//DEFINE_GFX_UA(HistoryReservoir)
-//DEFINE_GFX_UA(OutputReservoir)
-//
 DECLARE_GFX_SR(RTGeometryInfo)
 DECLARE_GFX_AS(RTRaytracingTlas)
 DECLARE_GFX_DS(SceneDepth)
-//DECLARE_GFX_SR(GBufferTextureA)
-//DECLARE_GFX_SR(GBufferTextureB)
-//DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
-//DECLARE_GFX_UA(SpatialHash)
-//DECLARE_GFX_UA(SpatialHashAge)
-//DECLARE_GFX_UA(SpatialHashPayload)
-
-DEFINE_GFX_UA_SR(IrradianceFieldProbeAtlas)
-DEFINE_GFX_UA_SR(IrradianceFieldProbeDepth)
+DEFINE_GFX_UA_SR(IrradianceFieldIrradianceAtlas)
+DEFINE_GFX_UA_SR(IrradianceFieldDepthAtlas)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
@@ -80,10 +67,10 @@ void Ether::Graphics::IrradianceFieldProducer::GetInputOutput(ScheduleContext& s
 
     Shader::IrradianceFieldParams params;
     GetIrradianceFieldParams(params);
-    schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldProbeAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldProbeAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
-    schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldProbeDepth), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldProbeDepth), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldDepthAtlas), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldDepthAtlas), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
 
     InitializeShaderBindingTable(rc);
 }
@@ -108,16 +95,19 @@ void Ether::Graphics::IrradianceFieldProducer::RenderFrame(GraphicContext& ctx, 
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
     ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));
-    ctx.Bind(ACCESS_GFX_UA(IrradianceFieldProbeAtlas));
-    ctx.Bind(ACCESS_GFX_UA(IrradianceFieldProbeDepth));
+    ctx.Bind(ACCESS_GFX_UA(IrradianceFieldIrradianceAtlas));
+    ctx.Bind(ACCESS_GFX_UA(IrradianceFieldDepthAtlas));
+
+    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::IrradianceFieldParams), 256 });
+    Shader::IrradianceFieldParams* params = (Shader::IrradianceFieldParams*)alloc->GetCpuHandle();
+    IrradianceFieldProducer::GetIrradianceFieldParams(*params);
+    ctx.Bind("IrradianceFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
     // For now, trace every probe texel for simplicity. A dynamically allocated ray budget is possible here, and necessary for lower LODs
     // Depth and irradiance will be traced at the same time
-    Shader::IrradianceFieldParams params;
-    GetIrradianceFieldParams(params);
 
-    const uint32_t traceResolutionX = std::max(params.m_DepthAtlasResolution.x, params.m_IrradianceAtlasResolution.x);
-    const uint32_t traceResolutionY = std::max(params.m_DepthAtlasResolution.y, params.m_IrradianceAtlasResolution.y);
+    const uint32_t traceResolutionX = std::max(params->m_DepthAtlasResolution.x, params->m_IrradianceAtlasResolution.x);
+    const uint32_t traceResolutionY = std::max(params->m_DepthAtlasResolution.y, params->m_IrradianceAtlasResolution.y);
 
     ctx.DispatchRays(traceResolutionX, traceResolutionY, 1);
     ctx.PopMarker();
@@ -131,8 +121,8 @@ bool Ether::Graphics::IrradianceFieldProducer::IsEnabled()
     //if (GraphicCore::GetGraphicConfig().m_LightingMode != RaytracingMode::ReSTIR)
     //    return false;
 
-    if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
-        return false;
+    //if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
+    //    return false;
 
     // TODO: Add "Global Illumination mode"
 
@@ -195,12 +185,12 @@ void Ether::Graphics::IrradianceFieldProducer::GetIrradianceFieldParams(Shader::
     params.m_GridSpacing = config.m_IrradianceFieldGridSpacing;
     params.m_GridOrigin = config.m_IrradianceFieldGridOrigin;
     params.m_GridResolution = config.m_IrradianceFieldGridResolution;
-    params.m_NumProbeIrradianceInteriorTexels = config.m_IrradianceFieldNumIrradianceInteroirTexels;
-    params.m_NumProbeDepthInteriorTexels = config.m_IrradianceFieldNumDepthInteroirTexels;
-    params.m_IrradianceAtlasResolution.x = params.m_GridResolution.x * params.m_GridResolution.y * (params.m_NumProbeIrradianceInteriorTexels + 1); // +1 for border
-    params.m_IrradianceAtlasResolution.y = params.m_GridResolution.z * (params.m_NumProbeIrradianceInteriorTexels + 1);                             // +1 for border
-    params.m_DepthAtlasResolution.x = params.m_GridResolution.x * params.m_GridResolution.y * params.m_NumProbeDepthInteriorTexels;
-    params.m_DepthAtlasResolution.y = params.m_GridResolution.z * params.m_NumProbeDepthInteriorTexels;
+    params.m_IrradianceTileSize = config.m_IrradianceTileSize + 1; // + 1 for border
+    params.m_DepthTileSize = config.m_DepthTileSize;
+    params.m_IrradianceAtlasResolution.x = params.m_GridResolution.x * params.m_GridResolution.y * params.m_IrradianceTileSize;
+    params.m_IrradianceAtlasResolution.y = params.m_GridResolution.z * params.m_IrradianceTileSize;
+    params.m_DepthAtlasResolution.x = params.m_GridResolution.x * params.m_GridResolution.y * params.m_DepthTileSize;
+    params.m_DepthAtlasResolution.y = params.m_GridResolution.z * params.m_DepthTileSize;
 
     params.m_VisualizeProbeRadius = config.m_IrradianceFieldVisualizeProbeRadius;
 }
@@ -223,8 +213,8 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::GetInputOutput(
     ResourceContext& rc)
 {
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
-    schedule.Read(ACCESS_GFX_SR(IrradianceFieldProbeAtlas));
-    schedule.Read(ACCESS_GFX_SR(IrradianceFieldProbeDepth));
+    schedule.Read(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    schedule.Read(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
     schedule.Read(ACCESS_GFX_DS(SceneDepth));
 }
 
@@ -253,8 +243,8 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::RenderFrame(GraphicC
     IrradianceFieldProducer::GetIrradianceFieldParams(*params);
     ctx.Bind("IrradianceFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants));
-    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldProbeAtlas));
-    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldProbeDepth));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
 
     const uint32_t numProbes = params->m_GridResolution.x * params->m_GridResolution.y * params->m_GridResolution.z;
     ctx.DrawInstanced(6, numProbes);

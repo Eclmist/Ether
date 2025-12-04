@@ -30,8 +30,8 @@ struct IrradianceFieldParams
     ethVector3u m_GridResolution;
     uint32_t m_Padding;
 
-    uint32_t m_NumProbeIrradianceInteriorTexels;
-    uint32_t m_NumProbeDepthInteriorTexels;
+    uint32_t m_IrradianceTileSize;
+    uint32_t m_DepthTileSize;
 
     ethVector2u m_IrradianceAtlasResolution;
     ethVector2u m_DepthAtlasResolution;

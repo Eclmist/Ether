@@ -20,16 +20,7 @@
 #ifndef __IRRADIANCE_FIELD_VISUALIZE_VSPS_HLSL__
 #define __IRRADIANCE_FIELD_VISUALIZE_VSPS_HLSL__
 
-#include "common/globalconstants.h"
-#include "common/irradiancefieldparams.h"
-#include "utils/encoding.hlsl"
-#include "utils/constants.hlsl"
-#include "utils/helpers.hlsl"
-
-ConstantBuffer<IrradianceFieldParams> IrradianceFieldParams : register(b1);
-
-Texture2D<float3> IrradianceFieldProbeAtlas                 : register(t0);
-Texture2D<float2> IrradianceFieldProbeDepth                 : register(t1);
+#include "lighting/globalillumination/irradiancefield.hlsl"
 
 struct VS_OUTPUT
 {
@@ -37,42 +28,6 @@ struct VS_OUTPUT
     float3 WorldPos                 : TEXCOORD0;
     nointerpolation uint ProbeIndex : TEXCOORD1;
 };
-
-float3 GetProbeWorldPosition(uint probeIndex)
-{
-    const uint x = probeIndex % IrradianceFieldParams.m_GridResolution.x;
-    const uint temp = probeIndex / IrradianceFieldParams.m_GridResolution.x;
-    const uint y = temp % IrradianceFieldParams.m_GridResolution.y;
-    const uint z = temp / IrradianceFieldParams.m_GridResolution.y;
-
-    const float3 gridPos = float3(x, y, z);
-    const float3 gridExtent = float3(IrradianceFieldParams.m_GridResolution - 1) * 0.5;
-    return IrradianceFieldParams.m_GridOrigin + (gridPos - gridExtent) * IrradianceFieldParams.m_GridSpacing;
-}
-
-// TODO: This calculation is probably accounting for the border wrong!!
-// Also, it is not interpolating
-float3 SampleProbeIrradiance(uint probeIndex, float3 worldDir)
-{
-    uint x = probeIndex % IrradianceFieldParams.m_GridResolution.x;
-    uint temp = probeIndex / IrradianceFieldParams.m_GridResolution.x;
-    uint y = temp % IrradianceFieldParams.m_GridResolution.y;
-    uint z = temp / IrradianceFieldParams.m_GridResolution.y;
-    
-    uint probeAtlasX = x + y * IrradianceFieldParams.m_GridResolution.x;
-    uint probeAtlasY = z;
-    
-    float2 octCoord = OctahedralEncode(normalize(worldDir));
-    float2 probeUV = octCoord * IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + 1.0;
-    
-    uint probeSize = IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + 2;
-    uint2 atlasCoord = uint2(
-        probeAtlasX * probeSize + probeUV.x,
-        probeAtlasY * probeSize + probeUV.y
-    );
-    
-    return IrradianceFieldProbeAtlas[atlasCoord];
-}
 
 float2 RayIntersectSphere(float3 rayOrigin, float3 rayDir, float4 sphere)
 {
@@ -133,7 +88,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
     const float3 worldDir = normalize(intersectionPos - probeWorldCenter);
     const float3 probeColor = SampleProbeIrradiance(IN.ProbeIndex, worldDir);
 
-    return float4(worldDir, 1.0);
+    return float4(probeColor, 1.0);
 }
 
 #endif // __IRRADIANCE_FIELD_VISUALIZE_VSPS_HLSL__

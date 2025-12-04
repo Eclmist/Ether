@@ -64,7 +64,7 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
 
     ShadingSurface surface;
     surface.m_Position = ScreenToWorldSpace(screenCoord, depth);
-    surface.m_Normal = DecodeNormals(gbufferB.xy);
+    surface.m_Normal = OctahedralDecode(gbufferB.xy);
     surface.m_BaseColor = gbufferA.rgb;
     surface.m_Emission = gbufferC.rgb;
     surface.m_Roughness = DecodeFP16(gbufferC.w).x;

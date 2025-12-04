@@ -45,7 +45,7 @@ float2 OctahedralEncode(float3 n)
     return n.xy;
 }
 
-float3 DecodeNormals(float2 f)
+float3 OctahedralDecode(float2 f)
 {
     f = f * 2.0 - 1.0;
     float3 n = float3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));

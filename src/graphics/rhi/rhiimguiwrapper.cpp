@@ -212,9 +212,12 @@ void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
                     ImGui::Separator();
                     ImGui::DragScalarN("Grid Resolution", ImGuiDataType_U32, &gfxConfig.m_IrradianceFieldGridResolution, 3, 1.0f, &minRes, &maxRes);
                     ImGui::Separator();
+                    ImGui::DragScalar("Irradiance Tile Size", ImGuiDataType_U32, &gfxConfig.m_IrradianceTileSize, 1.0f, &minRes, &maxRes);
+                    ImGui::DragScalar("Depth Tile Size", ImGuiDataType_U32, &gfxConfig.m_DepthTileSize, 1.0f, &minRes, &maxRes);
+                    ImGui::Separator();
                     ImGui::Text("Num Probes: %u", gfxConfig.m_IrradianceFieldGridResolution.x * gfxConfig.m_IrradianceFieldGridResolution.y * gfxConfig.m_IrradianceFieldGridResolution.z);
-                    ImGui::Text("Irradiance Interior Texels: %u", gfxConfig.m_IrradianceFieldNumIrradianceInteroirTexels);
-                    ImGui::Text("Depth Interior Texels: %u", gfxConfig.m_IrradianceFieldNumDepthInteroirTexels);
+                    ImGui::Text("Irradiance Interior Texels: %u", gfxConfig.m_IrradianceTileSize);
+                    ImGui::Text("Depth Interior Texels: %u", gfxConfig.m_DepthTileSize);
                     ImGui::Separator();
                     ImGui::SliderFloat("Visualize Probe Radius", &gfxConfig.m_IrradianceFieldVisualizeProbeRadius, 0.01f, 1.0f);
                     ImGui::TreePop();

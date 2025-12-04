@@ -20,13 +20,28 @@
 #ifndef __IRRADIANCE_FIELD_PROBE_TRACING_HLSL__
 #define __IRRADIANCE_FIELD_PROBE_TRACING_HLSL__
 
-#include "utils/helpers.hlsl"
-#include "utils/sampling.hlsl"
-#include "utils/raytracing.hlsl"
+#include "lighting/globalillumination/irradiancefield.hlsl"
 
 [shader("raygeneration")]
 void RayGeneration()
 {
+    const uint2 sampleCoords = DispatchRaysIndex().xy;
+
+    if (IsWithinIrradianceAtlasBounds(sampleCoords))
+    {
+        if (IsWithinIrradianceProbeBounds(sampleCoords))
+        {
+            uint probeIndex = GetProbeIndex(sampleCoords, IrradianceFieldParams.m_IrradianceTileSize);
+            uint2 localCoords = GetProbeLocalCoords(sampleCoords, IrradianceFieldParams.m_IrradianceTileSize);
+            float3 rayDirection = ProbeTexelCoordsToDirection(localCoords, IrradianceFieldParams.m_IrradianceTileSize - 1);
+            RWIrradianceFieldIrradianceAtlas[sampleCoords] = rayDirection;
+        }
+        else
+        {
+            // Zero out border texel 
+            RWIrradianceFieldIrradianceAtlas[sampleCoords] = 0;
+        }
+    }
 }
 
 #endif // __IRRADIANCE_FIELD_PROBE_TRACING_HLSL__

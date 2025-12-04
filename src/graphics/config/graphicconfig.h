@@ -143,8 +143,8 @@ public:
     float m_IrradianceFieldGridSpacing = 1.0f;
     ethVector3 m_IrradianceFieldGridOrigin = { 0, 0, 0 };
     ethVector3u m_IrradianceFieldGridResolution = { 32, 4, 32 };
-    uint32_t m_IrradianceFieldNumIrradianceInteroirTexels = 6;
-    uint32_t m_IrradianceFieldNumDepthInteroirTexels = 16;
+    uint32_t m_IrradianceTileSize = 6;
+    uint32_t m_DepthTileSize = 16;
     float m_IrradianceFieldVisualizeProbeRadius = 0.1f;
 
 private:
