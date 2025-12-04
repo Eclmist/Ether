@@ -142,6 +142,7 @@ enum class RhiFormat
     R8G8B8A8UnormSrgb,
     R11G11B10Float,
     R16G16B16A16Float,
+    R16G16Float,
     R32G32Float,
     R32G32B32Float,
     R32G32B32A32Float,

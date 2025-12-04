@@ -200,6 +200,28 @@ void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Global Illumination"))
+            {
+                if (ImGui::TreeNode("Irradiance Field"))
+                {
+                    uint32_t minRes = 1;
+                    uint32_t maxRes = 128;
+
+                    ImGui::SliderFloat("Grid Spacing", &gfxConfig.m_IrradianceFieldGridSpacing, 0.1f, 10.0f);
+                    ImGui::DragFloat3("Grid Origin", (float*)&gfxConfig.m_IrradianceFieldGridOrigin, 0.1f);
+                    ImGui::Separator();
+                    ImGui::DragScalarN("Grid Resolution", ImGuiDataType_U32, &gfxConfig.m_IrradianceFieldGridResolution, 3, 1.0f, &minRes, &maxRes);
+                    ImGui::Separator();
+                    ImGui::Text("Num Probes: %u", gfxConfig.m_IrradianceFieldGridResolution.x * gfxConfig.m_IrradianceFieldGridResolution.y * gfxConfig.m_IrradianceFieldGridResolution.z);
+                    ImGui::Text("Irradiance Interior Texels: %u", gfxConfig.m_IrradianceFieldNumIrradianceInteroirTexels);
+                    ImGui::Text("Depth Interior Texels: %u", gfxConfig.m_IrradianceFieldNumDepthInteroirTexels);
+                    ImGui::Separator();
+                    ImGui::SliderFloat("Visualize Probe Radius", &gfxConfig.m_IrradianceFieldVisualizeProbeRadius, 0.01f, 1.0f);
+                    ImGui::TreePop();
+                }
+                ImGui::TreePop();
+            }
+
             if (ImGui::TreeNode("Raytracing"))
             {
                 ImGui::Checkbox("Enabled", &gfxConfig.m_IsRaytracingEnabled);

@@ -32,6 +32,8 @@
 #include "graphics/schedule/producers/pathtracedlightingproducer.h"
 #include "graphics/schedule/producers/translucencyproducer.h"
 
+#include "graphics/schedule/producers/globalillumination/irradiancefieldproducer.h"
+
 #include "graphics/schedule/producers/postprocess/postfxsourceproducer.h"
 #include "graphics/schedule/producers/postprocess/bloomproducer.h"
 #include "graphics/schedule/producers/postprocess/depthoffieldproducer.h"
@@ -45,13 +47,14 @@
 
 DECLARE_GFX_PA(GBufferProducer)
 DECLARE_GFX_PA(GlobalConstantsProducer)
-DECLARE_GFX_PA(LightingCompositeProducer)
 DECLARE_GFX_PA(MaterialTableProducer)
 DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(RaytracingResourceProducer)
+DECLARE_GFX_PA(IrradianceFieldProducer)
 DECLARE_GFX_PA(RaytracedLightingProducer)
 DECLARE_GFX_PA(RaytracedTranslucencyProducer)
 DECLARE_GFX_PA(PathtracedLightingProducer)
+DECLARE_GFX_PA(LightingCompositeProducer)
 DECLARE_GFX_PA(TranslucencyProducer)
 
 DECLARE_GFX_PA(PostFxSourceProducer)
@@ -59,6 +62,8 @@ DECLARE_GFX_PA(BloomProducer)
 DECLARE_GFX_PA(DepthOfFieldProducer)
 DECLARE_GFX_PA(TemporalAAProducer)
 DECLARE_GFX_PA(FinalCompositeProducer)
+
+DECLARE_GFX_PA(IrradianceFieldVisualizationProducer)
 
 #if ETH_TOOLMODE
 DECLARE_GFX_PA(EditorGridProducer)
@@ -69,13 +74,14 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
 {
     Register(ACCESS_GFX_PA(GBufferProducer), new GBufferProducer());
     Register(ACCESS_GFX_PA(GlobalConstantsProducer), new GlobalConstantsProducer());
-    Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
     Register(ACCESS_GFX_PA(MaterialTableProducer), new MaterialTableProducer());
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(RaytracingResourceProducer), new RaytracingResourceProducer());
+    Register(ACCESS_GFX_PA(IrradianceFieldProducer), new IrradianceFieldProducer());
     Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
     Register(ACCESS_GFX_PA(RaytracedTranslucencyProducer), new RaytracedTranslucencyProducer());
     Register(ACCESS_GFX_PA(PathtracedLightingProducer), new PathtracedLightingProducer());
+    Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
     Register(ACCESS_GFX_PA(TranslucencyProducer), new TranslucencyProducer());
 
     Register(ACCESS_GFX_PA(PostFxSourceProducer), new PostFxSourceProducer());
@@ -83,6 +89,8 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(DepthOfFieldProducer), new DepthOfFieldProducer());
     Register(ACCESS_GFX_PA(TemporalAAProducer), new TemporalAAProducer());
     Register(ACCESS_GFX_PA(FinalCompositeProducer), new FinalCompositeProducer());
+
+    Register(ACCESS_GFX_PA(IrradianceFieldVisualizationProducer), new IrradianceFieldVisualizationProducer());
 
 #if ETH_TOOLMODE
     Register(ACCESS_GFX_PA(EditorGridProducer), new EditorGridProducer());
@@ -101,6 +109,7 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(MaterialTableProducer).Release();
     ACCESS_GFX_PA(ProceduralSkyProducer).Release();
     ACCESS_GFX_PA(RaytracingResourceProducer).Release();
+    ACCESS_GFX_PA(IrradianceFieldProducer).Release();
     ACCESS_GFX_PA(RaytracedLightingProducer).Release();
     ACCESS_GFX_PA(PathtracedLightingProducer).Release();
     ACCESS_GFX_PA(TranslucencyProducer).Release();
@@ -111,6 +120,8 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(DepthOfFieldProducer).Release();
     ACCESS_GFX_PA(TemporalAAProducer).Release();
     ACCESS_GFX_PA(FinalCompositeProducer).Release();
+
+    ACCESS_GFX_PA(IrradianceFieldVisualizationProducer).Release();
 
 #if ETH_TOOLMODE
     ACCESS_GFX_PA(EditorGridProducer).Release();
@@ -182,6 +193,7 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(MaterialTableProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracingResourceProducer).Get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(IrradianceFieldProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(PathtracedLightingProducer).Get());
@@ -197,6 +209,9 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(TemporalAAProducer).Get());
     // TODO: Add a tonemapping pass instead of dumping it in final composite, and move it before TAA
     m_OrderedProducers.push(ACCESS_GFX_PA(FinalCompositeProducer).Get());
+
+    // Debug Visualizers:
+    m_OrderedProducers.push(ACCESS_GFX_PA(IrradianceFieldVisualizationProducer).Get());
 
 #if ETH_TOOLMODE
     m_OrderedProducers.push(ACCESS_GFX_PA(EditorGridProducer).Get());
