@@ -25,7 +25,7 @@
 #include "utils/fullscreenhelpers.hlsl"
 #include "utils/encoding.hlsl"
 
-#define EMISSION_SCALE 10000.0f
+#define EMISSION_SCALE 100000.0f
 
 struct InterpolatedSurface
 {
@@ -165,7 +165,6 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
     geometricSurface.m_Tangent = hitSurface.m_Tangent;
     geometricSurface.m_Color = hitSurface.m_Color;
     geometricSurface.m_TexCoord = hitSurface.m_TexCoord;
-
     ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, samplerIndex, mipLevel);
     return shadingSurface;
 }

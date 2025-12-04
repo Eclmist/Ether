@@ -20,6 +20,9 @@
 #ifndef __RESTIR_GI_INITIAL_GENERATION_RGS_HLSL__
 #define __RESTIR_GI_INITIAL_GENERATION_RGS_HLSL__
 
+#define USE_IRRADIANCE_CACHE 0
+#define USE_IMPORTANCE_SAMPLING 0
+
 #include "lighting/restir/gireservoirresampling.hlsl"
 #include "utils/helpers.hlsl"
 
@@ -61,23 +64,28 @@ void RayGeneration()
     initialSample.m_SampleNormal = payload.m_HitNormal;
     initialSample.m_Radiance = payload.m_Radiance;
 
-    const float3 targetFunction = ComputeTargetFunction(surface, initialSample);
-    const float3 risWeight = targetFunction / max(0.05f, pdf);
+    float3 targetFunction = ComputeTargetFunction(surface, initialSample);
+    float3 risWeight = targetFunction / max(0.05f, pdf);
         
-    initialReservoir.Resample(initialSample, Random(screenCoords * GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
-    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
+#if USE_IRRADIANCE_CACHE
+    float3 irradiance = ComputeIrradiance(surface, payload.m_Radiance, wi) / pdf;
+    float3 positionJitter = 0;//Random3D(DispatchRaysIndex().xy, GlobalConstants.m_FrameNumber) - 0.5f;
+    uint cellIndex = SpatialHash_FindOrInsert(surface.m_Position + positionJitter, surface.m_Normal);
 
-    // Spatial hash prototype
-    uint cellIndex = SpatialHash_FindOrInsert(surface.m_Position, surface.m_Normal);
-
+    // Spatial hash experiment: increment irradiance
     if (cellIndex != 0xFFFFFFFFu)
     {
-        initialReservoir.FinalizeResampling();
-        SpatialHashPayload payload;
-        payload.m_Color = initialReservoir.m_WeightSum;
-        RWSpatialHashPayload[cellIndex] = payload;
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_Radiance.x, (uint)(irradiance.x));
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_Radiance.y, (uint)(irradiance.y));
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_Radiance.z, (uint)(irradiance.z));
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_NumSamples, 1);
     }
+#endif
+
+    initialReservoir.Resample(initialSample, Random(screenCoords * GlobalConstants.m_FrameNumber), targetFunction, risWeight);
+    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
+
 }
 
 #endif // __RESTIR_INITIAL_GENERATION_RGS_HLSL__

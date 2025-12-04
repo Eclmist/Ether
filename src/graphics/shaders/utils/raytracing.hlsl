@@ -19,7 +19,7 @@
 
 #ifndef __RAYTRACING_HLSL__
 #define __RAYTRACING_HLSL__
-
+#define SCALE 65536.0f
 #include "common/globalconstants.h"
 #include "common/raytracingconstants.h"
 #include "utils/encoding.hlsl"
@@ -32,6 +32,8 @@ RWStructuredBuffer<uint> RWSpatialHashAge                   : register(u5);
 RWStructuredBuffer<SpatialHashPayload> RWSpatialHashPayload : register(u6);
 
 #define SEARCH_COUNT 10
+#define HASH_NORMAL 1
+#define MAX_HASH_AGE 30
 
 //https://www.shadertoy.com/view/XlGcRh
 uint pcg(uint v)
@@ -61,14 +63,18 @@ uint SpatialHash_Lookup(float3 position, float3 normal)
     // Inputs to hashing
     int3 p = floor(position / cellSize);
     int3 n = floor(normal * 3.0);
+
+    #if !HASH_NORMAL
+        n = 0;
+    #endif
      
     cellSize *= 10000; // cellSize can be small and lead to more conflicts, multiply to increase range
      
-    uint hashKey = pcg(cellSize + pcg(p.x + pcg(p.y + pcg(p.z))));
+    uint hashKey = pcg(cellSize + pcg(p.x + pcg(p.y + pcg(p.z + pcg(n.x + pcg(n.y + pcg(n.z)))))));
         
     uint cellIndex = hashKey % HashmapSize;
            
-    uint checksum = xxhash32(cellSize + xxhash32(p.x + xxhash32(p.y + xxhash32(p.z))));
+    uint checksum = xxhash32(cellSize + xxhash32(p.x + xxhash32(p.y + xxhash32(p.z + xxhash32(n.x + xxhash32(n.y + xxhash32(n.z)))))));
     checksum = max(checksum, 1); // 0 is reserved for available cells
          
     // Update data structure
@@ -96,14 +102,18 @@ uint SpatialHash_FindOrInsert(float3 position, float3 normal)
     // Inputs to hashing
     int3 p = floor(position / cellSize);
     int3 n = floor(normal * 3.0);
+
+    #if !HASH_NORMAL
+        n = 0;
+    #endif
      
     cellSize *= 10000; // cellSize can be small and lead to more conflicts, multiply to increase range
      
-    uint hashKey = pcg(cellSize + pcg(p.x + pcg(p.y + pcg(p.z))));
+    uint hashKey = pcg(cellSize + pcg(p.x + pcg(p.y + pcg(p.z + pcg(n.x + pcg(n.y + pcg(n.z)))))));
         
     uint cellIndex = hashKey % HashmapSize;
            
-    uint checksum = xxhash32(cellSize + xxhash32(p.x + xxhash32(p.y + xxhash32(p.z))));
+    uint checksum = xxhash32(cellSize + xxhash32(p.x + xxhash32(p.y + xxhash32(p.z + xxhash32(n.x + xxhash32(n.y + xxhash32(n.z)))))));
     checksum = max(checksum, 1); // 0 is reserved for available cells
          
 	// Update data structure
@@ -113,18 +123,23 @@ uint SpatialHash_FindOrInsert(float3 position, float3 normal)
 		InterlockedCompareExchange(RWSpatialHash[cellIndex], 0, checksum, cmp);
 		 
 		uint originalTime;
+        bool isCorrectCell = false;
 		if (cmp == 0 || cmp == checksum)
 		{
-			InterlockedExchange(RWSpatialHashAge[cellIndex], FrameIndex, originalTime);
-			 
-			return cellIndex; 
+			//InterlockedExchange(RWSpatialHashAge[cellIndex], FrameIndex, originalTime);
+            isCorrectCell = true;
 		}
 		 
 		originalTime = RWSpatialHashAge[cellIndex];
-		if (FrameIndex - originalTime > 20)
+
+        if (isCorrectCell && FrameIndex - originalTime < MAX_HASH_AGE)
+			return cellIndex; 
+
+		if (FrameIndex - originalTime >= MAX_HASH_AGE)
 		{
             SpatialHashPayload emptyPayload;
-            emptyPayload.m_Color = float3(1, 0, 0);
+            emptyPayload.m_Radiance = 0;
+            emptyPayload.m_NumSamples = 0;
             RWSpatialHashPayload[cellIndex] = emptyPayload;
 
             uint original;
@@ -149,6 +164,13 @@ float3 ComputeRadiance(ShadingSurface surface, float3 Li, float3 wi, float3 wo)
     const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_BaseColor, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     return f * Li * cosTheta;
+}
+
+float3 ComputeIrradiance(ShadingSurface surface, float3 Li, float3 wi)
+{
+    wi = normalize(wi);
+    const float cosTheta = saturate(dot(wi, surface.m_Normal));
+    return Li * cosTheta;
 }
 
 void SampleDirectionBrdf(ShadingSurface surface, float seed, float3 wo, out float3 wi, out float pdf)
@@ -185,7 +207,6 @@ void SampleDirectionUniform(ShadingSurface surface, float seed, out float3 wi, o
     const float2 rand2D = CMJ_Sample2D(sampleIdx, 1024, 1024, seed);
     wi = TangentToWorld(SampleDirectionHemisphere(rand2D), surface.m_Normal);
     pdf = SampleDirectionHemisphere_Pdf();
-
 }
 
 float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
@@ -237,6 +258,7 @@ RayPayload TraceShadingRay(ShadingSurface surface, float3 direction, uint depth)
     RayPayload payload;
     payload.m_IsShadowRay = false;
     payload.m_Depth = depth;
+    payload.m_Radiance = 0;
 
     RayDesc ray;
     ray.Origin = surface.m_Position + surface.m_Normal * RAY_TMIN;
@@ -300,6 +322,22 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
 
     }
 
+
+#if USE_IRRADIANCE_CACHE
+    uint cellIndex = SpatialHash_Lookup(surface.m_Position, surface.m_Normal);
+    float3 irradianceCache = 0;
+    float numSamples = 0;
+
+    if (cellIndex != 0xFFFFFFFFu)
+    {
+        numSamples = RWSpatialHashPayload[cellIndex].m_NumSamples;
+        irradianceCache.x = RWSpatialHashPayload[cellIndex].m_Radiance.x / numSamples;
+        irradianceCache.y = RWSpatialHashPayload[cellIndex].m_Radiance.y / numSamples;
+        irradianceCache.z = RWSpatialHashPayload[cellIndex].m_Radiance.z / numSamples;
+        payload.m_Radiance += irradianceCache * surface.m_BaseColor / Pi;
+    }
+#endif
+
     // Indirect lighting
     {
         float3 wi;
@@ -311,13 +349,27 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         SampleDirectionUniform(surface, payload.m_Depth, wi, pdf);
 #endif
 
-        if (pdf > 0.1f)
+        if (pdf > 0.01f)
         {
             const RayPayload indirectRay = TraceShadingRay(surface, wi, payload.m_Depth);
             payload.m_Radiance += ComputeRadiance(surface, indirectRay.m_Radiance, wi, -WorldRayDirection()) / pdf;
+            irradiance += ComputeIrradiance(surface, indirectRay.m_Radiance, wi) / pdf;
         }
     }
 
+#if USE_IRRADIANCE_CACHE
+    float3 positionJitter = 0;//Random3D(DispatchRaysIndex().xy, GlobalConstants.m_FrameNumber) - 0.5f;
+    cellIndex = SpatialHash_FindOrInsert(surface.m_Position + positionJitter, surface.m_Normal);
+
+    // Spatial hash experiment: increment irradiance
+    if (cellIndex != 0xFFFFFFFFu)
+    {
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_Radiance.x, (uint)(irradiance.x));
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_Radiance.y, (uint)(irradiance.y));
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_Radiance.z, (uint)(irradiance.z));
+        InterlockedAdd(RWSpatialHashPayload[cellIndex].m_NumSamples, 1);
+    }
+#endif
 }
 
 [shader("anyhit")]

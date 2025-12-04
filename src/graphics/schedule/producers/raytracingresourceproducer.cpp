@@ -29,6 +29,10 @@ DEFINE_GFX_PA(RaytracingResourceProducer)
 DEFINE_GFX_SR(RTGeometryInfo)
 DEFINE_GFX_AS(RTRaytracingTlas)
 
+DEFINE_GFX_UA(SpatialHash)
+DEFINE_GFX_UA(SpatialHashAge)
+DEFINE_GFX_UA(SpatialHashPayload)
+
 Ether::Graphics::RaytracingResourceProducer::RaytracingResourceProducer()
     : GraphicProducer("RaytracingResourceProducer")
 {
@@ -45,6 +49,12 @@ void Ether::Graphics::RaytracingResourceProducer::GetInputOutput(ScheduleContext
 
     schedule.NewSR(ACCESS_GFX_SR(RTGeometryInfo), sizeof(Shader::GeometryInfo) * numRTVisuals, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GeometryInfo));
     schedule.NewAS(ACCESS_GFX_AS(RTRaytracingTlas), GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals);
+
+    /* Spatial Hashing Prototype */
+    const uint32_t numHashEntries = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashSize, 1 << 10, 1 << 18);
+    schedule.NewUA(ACCESS_GFX_UA(SpatialHash), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
+    schedule.NewUA(ACCESS_GFX_UA(SpatialHashAge), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
+    schedule.NewUA(ACCESS_GFX_UA(SpatialHashPayload), sizeof(Shader::SpatialHashPayload) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::SpatialHashPayload));
 }
 
 void Ether::Graphics::RaytracingResourceProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)

@@ -71,17 +71,19 @@ void RayGeneration()
     if (GlobalConstants.m_RaytracedLightingDebug == 1)
     {
 
-        const float cellSize = GlobalConstants.m_SpatialHashCellSize;
 		uint cellIndex = SpatialHash_Lookup(surface.m_Position, surface.m_Normal);
 
-        float3 finalColor = float3(1, 0, 1);
+        float3 finalColor = float3(1, 0, 1) * 1000;
 
 		if (cellIndex != 0xFFFFFFFFu)
 		{
-			finalColor = RWSpatialHashPayload[cellIndex].m_Color;
+            float numSamples = RWSpatialHashPayload[cellIndex].m_NumSamples;
+		    finalColor.x = RWSpatialHashPayload[cellIndex].m_Radiance.x / numSamples;
+		    finalColor.y = RWSpatialHashPayload[cellIndex].m_Radiance.y / numSamples;
+		    finalColor.z = RWSpatialHashPayload[cellIndex].m_Radiance.z / numSamples;
 		}
 
-		RWLightingTexture[screenCoords].xyz = finalColor * 1;
+		RWLightingTexture[screenCoords].xyz = finalColor * surface.m_BaseColor / Pi;
 		RWLightingTexture[screenCoords].a = 0;
         return;
     }

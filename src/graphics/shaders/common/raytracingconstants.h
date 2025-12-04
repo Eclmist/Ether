@@ -30,8 +30,6 @@ ETH_BEGIN_SHADER_NAMESPACE
 #define RAY_TMAX            128
 #define RAY_TMIN            0.01
 
-#define USE_IMPORTANCE_SAMPLING 1
-
 struct GeometryInfo
 {
     uint32_t m_VBDescriptorIndex;
@@ -85,9 +83,9 @@ struct GIPackedReservoir
 
 struct SpatialHashPayload
 {
-    ethVector3 m_Color;
+    ethVector3u m_Radiance;
+    uint32_t m_NumSamples;
 };
-
 
 #ifdef __HLSL__
 

@@ -20,6 +20,9 @@
 #ifndef __PATHTRACING_RGS_HLSL__
 #define __PATHTRACING_RGS_HLSL__
 
+#define USE_IRRADIANCE_CACHE 0
+#define USE_IMPORTANCE_SAMPLING 0
+
 #include "utils/helpers.hlsl"
 #include "utils/sampling.hlsl"
 #include "utils/raytracing.hlsl"

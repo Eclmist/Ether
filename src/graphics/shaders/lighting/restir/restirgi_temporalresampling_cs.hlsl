@@ -88,7 +88,7 @@ void CS_Main(
         }
     }
 
-    if (!BoilingFilter(groupThreadID.xy, 0.5f, GetLuminanceFromRGB(initialReservoir.m_WeightSum)))
+    if (!BoilingFilter(groupThreadID.xy, 0.3f, GetLuminanceFromRGB(initialReservoir.m_WeightSum)))
         initialReservoir = GIReservoir::Empty();
 
     RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);

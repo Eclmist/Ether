@@ -93,4 +93,9 @@ float2 Random2D(float2 uv, uint index)
     return CMJ_Sample2D(uv.y * 1024 + uv.x, 1024, 1024, index);
 }
 
+float3 Random3D(float2 uv, uint index)
+{
+    return float3(Random(uv * index), Random(uv + Random(uv * index)), Random(uv + Random(uv + Random(uv * index))));
+}
+
 #endif // __RANDOM_HLSL__

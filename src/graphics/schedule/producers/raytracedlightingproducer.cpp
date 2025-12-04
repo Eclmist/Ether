@@ -45,10 +45,9 @@ DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
-// Spatial hashing prototype
-DEFINE_GFX_UA(SpatialHash)
-DEFINE_GFX_UA(SpatialHashAge)
-DEFINE_GFX_UA(SpatialHashPayload)
+DECLARE_GFX_UA(SpatialHash)
+DECLARE_GFX_UA(SpatialHashAge)
+DECLARE_GFX_UA(SpatialHashPayload)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
@@ -85,6 +84,10 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
+    schedule.Read(ACCESS_GFX_UA(SpatialHash));
+    schedule.Read(ACCESS_GFX_UA(SpatialHashAge));
+    schedule.Read(ACCESS_GFX_UA(SpatialHashPayload));
+
     /* ReSTIR GI Implementation */
     const uint32_t downsampleFactor = GraphicCore::GetGraphicConfig().m_ReSTIRGIConfig.m_DownsampleFactor;
     const ethVector2u sampleResolution = resolution / downsampleFactor;
@@ -92,12 +95,6 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.NewUA(ACCESS_GFX_UA(InputReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
     schedule.NewUA(ACCESS_GFX_UA(HistoryReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
     schedule.NewUA(ACCESS_GFX_UA(OutputReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
-
-    /* Spatial Hashing Prototype */
-    const uint32_t numHashEntries = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashSize, 1 << 10, 1 << 18);
-    schedule.NewUA(ACCESS_GFX_UA(SpatialHash), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
-    schedule.NewUA(ACCESS_GFX_UA(SpatialHashAge), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
-    schedule.NewUA(ACCESS_GFX_UA(SpatialHashPayload), sizeof(Shader::SpatialHashPayload) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::SpatialHashPayload));
 
     InitializeShaderBindingTable(rc);
 }

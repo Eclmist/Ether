@@ -20,6 +20,8 @@
 #ifndef __RAYTRACED_TRANSLUCENCY_RGS_HLSL__
 #define __RAYTRACED_TRANSLUCENCY_RGS_HLSL__
 
+#define USE_IRRADIANCE_CACHE 1
+#define USE_IMPORTANCE_SAMPLING 1
 
 #include "utils/helpers.hlsl"
 #include "utils/sampling.hlsl"

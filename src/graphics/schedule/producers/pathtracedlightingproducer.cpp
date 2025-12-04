@@ -42,6 +42,10 @@ DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
+DECLARE_GFX_UA(SpatialHash)
+DECLARE_GFX_UA(SpatialHashAge)
+DECLARE_GFX_UA(SpatialHashPayload)
+
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
@@ -77,6 +81,10 @@ void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
+    schedule.Read(ACCESS_GFX_UA(SpatialHash));
+    schedule.Read(ACCESS_GFX_UA(SpatialHashAge));
+    schedule.Read(ACCESS_GFX_UA(SpatialHashPayload));
+
     InitializeShaderBindingTable(rc);
 }
 
@@ -109,6 +117,12 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
     ctx.Bind(ACCESS_GFX_UA(LightingTexture));
     ctx.Bind(ACCESS_GFX_UA(RTIndirectTexture));
+
+    // Spatial Hashing Prototype
+    ctx.Bind(ACCESS_GFX_UA(SpatialHash));
+    ctx.Bind(ACCESS_GFX_UA(SpatialHashAge));
+    ctx.Bind(ACCESS_GFX_UA(SpatialHashPayload));
+
     ctx.DispatchRays(resolution.x, resolution.y, 1);
 
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
