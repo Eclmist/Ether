@@ -17,8 +17,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PATHTRACING_RGS_HLSL__
-#define __PATHTRACING_RGS_HLSL__
+#ifndef __RAYTRACED_TRANSLUCENCY_RGS_HLSL__
+#define __RAYTRACED_TRANSLUCENCY_RGS_HLSL__
 
 
 #include "utils/helpers.hlsl"
@@ -282,4 +282,4 @@ void AnyHit(inout TranslucentRayPayload payload, in BuiltInTriangleIntersectionA
         IgnoreHit();
 }
 
-#endif // __PATHTRACING_RGS_HLSL__
+#endif // __RAYTRACED_TRANSLUCENCY_RGS_HLSL__

@@ -160,14 +160,13 @@ ShadingSurface GetShadingSurfaceFromGeometry(InterpolatedSurface interpolatedSur
 ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material, uint samplerIndex, float mipLevel)
 {
     InterpolatedSurface geometricSurface;
-    geometricSurface.m_VertexPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection(); // Do not use hitSurface.m_Position! It is in local space!
-    geometricSurface.m_Normal = hitSurface.m_Normal;
+    geometricSurface.m_VertexPosition = mul(ObjectToWorld3x4(), float4(hitSurface.m_Position, 1.0f));
+    geometricSurface.m_Normal = mul(ObjectToWorld3x4(), float4(hitSurface.m_Normal, 0.0f));
     geometricSurface.m_Tangent = hitSurface.m_Tangent;
     geometricSurface.m_Color = hitSurface.m_Color;
     geometricSurface.m_TexCoord = hitSurface.m_TexCoord;
 
     ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, samplerIndex, mipLevel);
-    shadingSurface.m_Normal = dot(-WorldRayDirection(), shadingSurface.m_Normal) < 0 ? -shadingSurface.m_Normal : shadingSurface.m_Normal; // Fix lightleakage
     return shadingSurface;
 }
 
