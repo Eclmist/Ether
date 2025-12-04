@@ -37,7 +37,7 @@ float2 OctWrap(float2 v)
     return (1.0 - abs(v.yx)) * float2((v.x >= 0) ? 1 : -1, (v.y >= 0) ? 1 : -1);
 }
 
-float2 EncodeNormals(float3 n)
+float2 OctahedralEncode(float3 n)
 {
     n /= (abs(n.x) + abs(n.y) + abs(n.z));
     n.xy = n.z >= 0.0 ? n.xy : OctWrap(n.xy);

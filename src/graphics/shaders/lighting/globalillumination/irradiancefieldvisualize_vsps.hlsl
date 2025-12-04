@@ -22,6 +22,7 @@
 
 #include "common/globalconstants.h"
 #include "common/irradiancefieldparams.h"
+#include "utils/encoding.hlsl"
 #include "utils/constants.hlsl"
 #include "utils/helpers.hlsl"
 
@@ -33,7 +34,7 @@ Texture2D<float2> IrradianceFieldProbeDepth                 : register(t1);
 struct VS_OUTPUT
 {
     float4 Position                 : SV_Position;
-    float2 TexCoord                 : TEXCOORD0;
+    float3 WorldPos                 : TEXCOORD0;
     nointerpolation uint ProbeIndex : TEXCOORD1;
 };
 
@@ -51,56 +52,67 @@ float3 GetProbeWorldPosition(uint probeIndex)
 
 // TODO: This calculation is probably accounting for the border wrong!!
 // Also, it is not interpolating
-float3 SampleProbeIrradiance(uint probeIndex, float2 uv)
+float3 SampleProbeIrradiance(uint probeIndex, float3 worldDir)
 {
-    const uint x = probeIndex % IrradianceFieldParams.m_GridResolution.x;
-    const uint temp = probeIndex / IrradianceFieldParams.m_GridResolution.x;
-    const uint y = temp % IrradianceFieldParams.m_GridResolution.y;
-    const uint z = temp / IrradianceFieldParams.m_GridResolution.y;
-
-    const uint probeAtlasX = x + y * IrradianceFieldParams.m_GridResolution.x;
-    const uint probeAtlasY = z;
-
-    const float2 probeUV = uv * (IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + 1.0);
-
-    const uint2 atlasCoord = uint2(
-        probeAtlasX * IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + probeUV.x,
-        probeAtlasY * IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + probeUV.y
+    uint x = probeIndex % IrradianceFieldParams.m_GridResolution.x;
+    uint temp = probeIndex / IrradianceFieldParams.m_GridResolution.x;
+    uint y = temp % IrradianceFieldParams.m_GridResolution.y;
+    uint z = temp / IrradianceFieldParams.m_GridResolution.y;
+    
+    uint probeAtlasX = x + y * IrradianceFieldParams.m_GridResolution.x;
+    uint probeAtlasY = z;
+    
+    float2 octCoord = OctahedralEncode(normalize(worldDir));
+    float2 probeUV = octCoord * IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + 1.0;
+    
+    uint probeSize = IrradianceFieldParams.m_NumProbeIrradianceInteriorTexels + 2;
+    uint2 atlasCoord = uint2(
+        probeAtlasX * probeSize + probeUV.x,
+        probeAtlasY * probeSize + probeUV.y
     );
-
-    // Debug visualize temp
-    return float3(uv, 1.0f);
-
+    
     return IrradianceFieldProbeAtlas[atlasCoord];
+}
+
+float2 RayIntersectSphere(float3 rayOrigin, float3 rayDir, float4 sphere)
+{
+    float3 oc = rayOrigin - sphere.xyz;
+    float b = dot(oc, rayDir);
+    float c = dot(oc, oc) - sphere.w * sphere.w;
+    float h = b * b - c;
+    
+    if (h < 0.0)
+        return float2(-1.0, -1.0);
+    
+    h = sqrt(h);
+    return float2(-b - h, -b + h);
 }
 
 VS_OUTPUT VS_Main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
     VS_OUTPUT output;
 
-    const float2 offsets[6] =
+    const float2 offsets[6] = 
     {
         float2(-1, -1), float2(1, -1), float2(1, 1),
         float2(-1, -1), float2(1, 1), float2(-1, 1)
     };
 
-    const float2 uvs[6] =
-    {
-        float2(0, 1), float2(1, 1), float2(1, 0),
-        float2(0, 1), float2(1, 0), float2(0, 0)
-    };
-
     const float3 probeWorldPos = GetProbeWorldPosition(instanceID);
-    const float3 viewDir = normalize(GlobalConstants.m_CameraPosition.xyz - probeWorldPos);
 
-    // Create orthonormal basis for billboard
-    float3 up = float3(0, 1, 0);
-    float3 right = normalize(cross(up, viewDir));
-    up = cross(viewDir, right);
+    const float4 probeClipPos = mul(GlobalConstants.m_ViewProjectionMatrix, float4(probeWorldPos, 1.0));
+    const float3 probeNDC = probeClipPos.xyz / probeClipPos.w;
+    const float screenRadius = IrradianceFieldParams.m_VisualizeProbeRadius * 2.0f / probeClipPos.w;
 
-    float3 worldPos = probeWorldPos + (right * offsets[vertexID].x + up * offsets[vertexID].y) * IrradianceFieldParams.m_VisualizeProbeRadius;
-    output.Position = mul(GlobalConstants.m_ViewProjectionMatrix, float4(worldPos, 1.0));
-    output.TexCoord = uvs[vertexID];
+    const float aspectRatio = GlobalConstants.m_ProjectionMatrix[1][1] / GlobalConstants.m_ProjectionMatrix[0][0];
+    float2 ndcOffset = offsets[vertexID] * screenRadius;
+    ndcOffset.x /= aspectRatio;
+
+    const float4 vertexClipPos = float4(probeNDC.xy + ndcOffset, probeNDC.z, 1.0);
+    const float4 vertexWorldPos = mul(GlobalConstants.m_ViewProjectionMatrixInv, vertexClipPos);
+
+    output.Position = vertexClipPos;
+    output.WorldPos = vertexWorldPos.xyz / vertexWorldPos.w;
     output.ProbeIndex = instanceID;
 
     return output;
@@ -108,13 +120,20 @@ VS_OUTPUT VS_Main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 
 float4 PS_Main(VS_OUTPUT IN) : SV_Target
 {
-    float dist = length(IN.TexCoord * 2.0 - 1.0);
-    if (dist > 1.0)
-        discard;
+    const float3 probeWorldCenter = GetProbeWorldPosition(IN.ProbeIndex);
+    const float probeRadius = IrradianceFieldParams.m_VisualizeProbeRadius;
+    const float3 rayOrigin = GlobalConstants.m_CameraPosition.xyz;
+    const float3 rayDir = normalize(IN.WorldPos - rayOrigin);
 
-    float3 probeColor = SampleProbeIrradiance(IN.ProbeIndex, IN.TexCoord);
+    const float4 sphere = float4(probeWorldCenter, probeRadius);
+    const float2 intersections = RayIntersectSphere(rayOrigin, rayDir, sphere);
+    clip(intersections.x);
 
-    return float4(probeColor, 1.0);
+    const float3 intersectionPos = rayOrigin + rayDir * intersections.x;
+    const float3 worldDir = normalize(intersectionPos - probeWorldCenter);
+    const float3 probeColor = SampleProbeIrradiance(IN.ProbeIndex, worldDir);
+
+    return float4(worldDir, 1.0);
 }
 
 #endif // __IRRADIANCE_FIELD_VISUALIZE_VSPS_HLSL__

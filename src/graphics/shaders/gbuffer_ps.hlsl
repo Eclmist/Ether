@@ -86,7 +86,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
 
     PS_OUTPUT o;
     o.Output0 = float4(baseColor.x, baseColor.y, baseColor.z, (InstanceParams.m_MaterialIdx / 255.0f));
-    o.Output1 = float4(EncodeNormals(normal), velocity.x, velocity.y);
+    o.Output1 = float4(OctahedralEncode(normal), velocity.x, velocity.y);
     o.Output2 = float4(emissive.x, emissive.y, emissive.z, EncodeFP16(roughness, metalness));
 
 #if ETH_TOOLMODE

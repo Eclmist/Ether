@@ -94,8 +94,8 @@ struct GIReservoir
     static GIPackedReservoir Pack(GIReservoir reservoir)
     {
         GIPackedReservoir packedReservoir;
-        packedReservoir.m_PackedNormals.xy = EncodeNormals(reservoir.m_Sample.m_VisibleNormal);
-        packedReservoir.m_PackedNormals.zw = EncodeNormals(reservoir.m_Sample.m_SampleNormal);
+        packedReservoir.m_PackedNormals.xy = OctahedralEncode(reservoir.m_Sample.m_VisibleNormal);
+        packedReservoir.m_PackedNormals.zw = OctahedralEncode(reservoir.m_Sample.m_SampleNormal);
         packedReservoir.m_WeightSum = reservoir.m_WeightSum;
         packedReservoir.m_TargetPdf = reservoir.m_TargetPdf;
 
