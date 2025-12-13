@@ -268,9 +268,10 @@ std::unique_ptr<Ether::Graphics::RhiAccelerationStructure> Ether::Graphics::Dx12
     Visual* visuals = reinterpret_cast<Visual*>(desc.m_Visuals);
 
     dx12Obj->m_Inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-    dx12Obj->m_Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
     dx12Obj->m_Inputs.NumDescs = desc.m_NumVisuals;
     dx12Obj->m_Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+    dx12Obj->m_Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE |
+                              D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info;
     m_Device->GetRaytracingAccelerationStructurePrebuildInfo(&dx12Obj->m_Inputs, &info);

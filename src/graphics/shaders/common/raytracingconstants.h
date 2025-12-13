@@ -83,12 +83,6 @@ struct GIPackedReservoir
     uint32_t m_PackedData4; // [fp16] Radiance.z    | Unused
 };
 
-struct SpatialHashPayload
-{
-    ethVector3 m_Color;
-};
-
-
 #ifdef __HLSL__
 
 #include "common/vertexcommon.h"

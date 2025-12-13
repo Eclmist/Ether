@@ -45,11 +45,6 @@ DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
 
-// Spatial hashing prototype
-DEFINE_GFX_UA(SpatialHash)
-DEFINE_GFX_UA(SpatialHashAge)
-DEFINE_GFX_UA(SpatialHashPayload)
-
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
 static const wchar_t* k_ClosestHitShader = L"ClosestHit";
@@ -93,12 +88,6 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.NewUA(ACCESS_GFX_UA(HistoryReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
     schedule.NewUA(ACCESS_GFX_UA(OutputReservoir), sizeof(Shader::GIPackedReservoir) * sampleSize, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::GIPackedReservoir));
 
-    /* Spatial Hashing Prototype */
-    const uint32_t numHashEntries = std::clamp(GraphicCore::GetGraphicConfig().m_SpatialHashSize, 1 << 10, 1 << 18);
-    schedule.NewUA(ACCESS_GFX_UA(SpatialHash), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
-    schedule.NewUA(ACCESS_GFX_UA(SpatialHashAge), sizeof(uint32_t) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(uint32_t));
-    schedule.NewUA(ACCESS_GFX_UA(SpatialHashPayload), sizeof(Shader::SpatialHashPayload) * numHashEntries, 0, RhiFormat::Unknown, RhiResourceDimension::StructuredBuffer, sizeof(Shader::SpatialHashPayload));
-
     InitializeShaderBindingTable(rc);
 }
 
@@ -112,14 +101,13 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals;
     const std::vector<Visual>& raytracedVisuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals;
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
 
     ctx.PushMarker("Direct & Indirect lighting with ReSTIR GI");
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_RootSignature);
 
-    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), ringBufferOffset);
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
     ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));
@@ -127,11 +115,6 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
-
-    // Spatial Hashing Prototype
-    ctx.Bind(ACCESS_GFX_UA(SpatialHash));
-    ctx.Bind(ACCESS_GFX_UA(SpatialHashAge));
-    ctx.Bind(ACCESS_GFX_UA(SpatialHashPayload));
 
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;

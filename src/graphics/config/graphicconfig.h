@@ -135,10 +135,6 @@ public:
     // Translucency
     bool m_TranslucencyEnabled = true;
 
-    // Spatial Hash
-    int32_t m_SpatialHashSize = 1 << 16; // Roughly 1mb budget for a float3 payload
-    float m_SpatialHashCellSize = 0.1; // Roughly 1mb budget for a float3 payload
-
     // DDGI
     float m_IrradianceFieldGridSpacing = 1.0f;
     ethVector3 m_IrradianceFieldGridOrigin = { 0, 0, 0 };

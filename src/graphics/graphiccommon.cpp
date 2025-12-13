@@ -178,6 +178,8 @@ void Ether::Graphics::GraphicCommon::InitializeDefaultTextures()
     black2DTex.CreateGpuResource(context);
 
     m_Black2DTextureIndex = black2DTex.GetBindlessIndex();
+
+    context.FinalizeAndExecute(true);
 }
 
 void Ether::Graphics::GraphicCommon::InitializeMaterials()

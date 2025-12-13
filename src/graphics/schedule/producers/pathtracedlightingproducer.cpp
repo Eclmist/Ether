@@ -89,7 +89,6 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     const std::vector<Visual>& visuals = GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_Visuals;
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    uint64_t ringBufferOffset = gfxDisplay.GetBackBufferIndex() * AlignUp(sizeof(Shader::GlobalConstants), 256);
 
     ctx.PushMarker("Direct & Indirect lighting with pathtracing");
     ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(LightingTexture)), RhiResourceState::UnorderedAccess);
@@ -98,7 +97,7 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     ctx.SetComputeRootSignature(*m_RootSignature);
     ctx.SetRaytracingShaderBindingTable(m_RaytracingShaderBindingTable);
     ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_RTPsoDesc));
-    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), ringBufferOffset);
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
     ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));

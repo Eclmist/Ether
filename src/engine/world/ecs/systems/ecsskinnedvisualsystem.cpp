@@ -130,24 +130,26 @@ void Ether::Ecs::EcsSkinnedVisualSystem::Update()
         transform.m_PreviousTransform = gfxVisual.m_ModelMatrix;
     }
 
+    if (!m_Entities.empty())
+    {
+        Graphics::GraphicCore::GetRenderThread().EnqueueRenderCommand([&]()
+        { 
+            Graphics::CommandContext ctx("BLAS Update Context");
+            ctx.Reset();
 
-    Graphics::GraphicCore::GetRenderThread().EnqueueRenderCommand([&]()
-    { 
-        Graphics::CommandContext ctx("BLAS Update Context");
-        ctx.Reset();
-
-        for (Graphics::Visual visual : renderData.m_Visuals)
-        {
-            Graphics::SkinnedMesh* skinnedMesh = dynamic_cast<Graphics::SkinnedMesh*>(visual.m_Mesh);
-
-            if (skinnedMesh != nullptr)
+            for (Graphics::Visual visual : renderData.m_Visuals)
             {
-                skinnedMesh->UpdateGpuResources(ctx);
-            }
-        }
+                Graphics::SkinnedMesh* skinnedMesh = dynamic_cast<Graphics::SkinnedMesh*>(visual.m_Mesh);
 
-        ctx.FinalizeAndExecute();
-    });
+                if (skinnedMesh != nullptr)
+                {
+                    skinnedMesh->UpdateGpuResources(ctx);
+                }
+            }
+
+            ctx.FinalizeAndExecute();
+        });
+    }
 }
 
 Ether::SkeletonPose Ether::Ecs::EcsSkinnedVisualSystem::CalculatePoseFromAnimation(

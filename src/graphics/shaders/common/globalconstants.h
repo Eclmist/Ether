@@ -86,8 +86,6 @@ struct GlobalConstants
 
     // ============= Debug ============== //
     uint32_t m_RaytracedLightingDebug;
-    uint32_t m_SpatialHashSize;
-    float    m_SpatialHashCellSize;
 
     // ============ Samplers ============ //
     uint32_t m_SamplerIndex_Point_Clamp;

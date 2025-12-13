@@ -41,9 +41,9 @@ public:
 
 public:
     void PrecompilePipelineStates();
-    void BuildSchedule();
-    void RenderSingleThreaded(GraphicContext& visualContext);
-    void RenderMultiThreaded(GraphicContext& visualContext);
+    void BuildSchedule(GraphicContext& gfxContext);
+    void RenderSingleThreaded(GraphicContext& gfxContext);
+    void RenderMultiThreaded(GraphicContext& gfxContext);
 
 private:
     friend class GraphicRenderer;

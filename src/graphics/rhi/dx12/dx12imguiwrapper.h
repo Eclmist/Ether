@@ -31,8 +31,8 @@ public:
     virtual ~Dx12ImguiWrapper() override;
 
 public:
-    void Render() override;
-    void RenderDrawData() override;
+    void Render(GraphicContext& gfxContext) override;
+    void RenderDrawData(GraphicContext& gfxContext) override;
 
 public:
     static bool Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam);

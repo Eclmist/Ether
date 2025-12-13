@@ -120,7 +120,7 @@ void Ether::Graphics::Mesh::CreateAccelerationStructure(CommandContext& ctx, boo
     m_AccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
     ctx.PushMarker("Build BLAS");
     ctx.TransitionResource(*m_AccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
-    ctx.BuildBottomLevelAccelerationStructure(*m_AccelerationStructure);
+    ctx.BuildAccelerationStructure(*m_AccelerationStructure);
     ctx.PopMarker();
 }
 

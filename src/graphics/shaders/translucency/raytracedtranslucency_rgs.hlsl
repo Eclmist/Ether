@@ -182,7 +182,8 @@ void RayGeneration()
 
     TranslucentRayPayload primaryRay = TracePrimaryRay(screenCoords, sceneDepth, 2);
 
-    RWSceneColor[screenCoords].xyz += primaryRay.m_Radiance;
+    if (primaryRay.IsHit())
+        RWSceneColor[screenCoords].xyz += primaryRay.m_Radiance;
 }
 
 [shader("miss")]

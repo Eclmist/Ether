@@ -25,10 +25,22 @@
 
 Ether::Graphics::ResourceContext::ResourceContext()
 {
+    Reset();
+}
+
+void Ether::Graphics::ResourceContext::Reset()
+{
     m_StagingSrvCbvUavAllocator = std::make_unique<DescriptorAllocator>(
         RhiDescriptorHeapType::SrvCbvUav,
         _64KiB,
         false);
+
+    m_ResourceDescriptionTable.clear();
+    m_RaytracingShaderBindingsTable.clear();
+    m_RaytracingResourceDescriptionTable.clear();
+    m_DescriptorTable.clear();
+    m_ResourceTable.clear();
+    m_DescriptorAllocations.clear();
 }
 
 void Ether::Graphics::ResourceContext::RegisterPipelineState(const char* name, RhiPipelineStateDesc& pipelineStateDesc)
@@ -155,24 +167,30 @@ Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateTexture3DR
 
 Ether::Graphics::RhiResource& Ether::Graphics::ResourceContext::CreateAccelerationStructure(
     const char* resourceName,
-    const RhiTopLevelAccelerationStructureDesc& desc)
+    const RhiTopLevelAccelerationStructureDesc& desc, 
+    GraphicContext& gfxContext)
 {
-    if (!ShouldRecreateResource(resourceName, desc))
-        return *m_ResourceTable.at(resourceName);
+    if (ShouldRecreateResource(resourceName, desc))
+    {
+        const bool resourceExists = m_TopLevelAccelerationStructure != nullptr;
+        if (resourceExists)
+        {
+            m_StaleAccelerationStructures.emplace(m_TopLevelAccelerationStructure);
+            if (m_StaleAccelerationStructures.size() > 4)
+                m_StaleAccelerationStructures.pop();
+        }
 
-    InvalidateViews(resourceName);
-    InvalidateResource(resourceName);
+        InvalidateViews(resourceName);
+        InvalidateResource(resourceName);
+        m_TopLevelAccelerationStructure = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
+        m_ResourceTable[resourceName] = m_TopLevelAccelerationStructure->m_DataBuffer;
+        m_RaytracingResourceDescriptionTable[resourceName] = desc;
 
-    std::unique_ptr<RhiAccelerationStructure> as = GraphicCore::GetDevice().CreateAccelerationStructure(desc);
-
-    CommandContext ctx("CommandContext - Build TLAS");
-    ctx.Reset();
-    ctx.TransitionResource(*as->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
-    ctx.BuildTopLevelAccelerationStructure(*as);
-    ctx.FinalizeAndExecute(true);
-
-    m_ResourceTable[resourceName] = std::move(as->m_DataBuffer);
-    m_RaytracingResourceDescriptionTable[resourceName] = desc;
+        gfxContext.TransitionResource(*m_TopLevelAccelerationStructure->m_ScratchBuffer, RhiResourceState::UnorderedAccess);
+        gfxContext.BuildAccelerationStructure(*m_TopLevelAccelerationStructure);
+        gfxContext.FinalizeAndExecute(!resourceExists);
+        gfxContext.Reset();
+    }
 
     return *m_ResourceTable.at(resourceName);
 }
@@ -293,13 +311,6 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
     StringID resourceID,
     const RhiTopLevelAccelerationStructureDesc& desc)
 {
-    // TODO: Check for actual changes to visuals.
-    // However, the odds of there being absolutely nothing changing is pretty slim,
-    // So it's probably fine to rebuild TLAS every frame.
-    // WARNING: We also need to check if visuals are still pointing to anything at all.
-    // It's possible that the entity has been deleted on engine side.
-    return true;
-
     // If the resource don't exist in the resource table at all
     if (!m_ResourceTable.contains(resourceID))
         return true;
@@ -308,17 +319,23 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
         m_RaytracingResourceDescriptionTable.contains(resourceID),
         "If the resource never existed, there should not be any cached desc with the same resourceID");
 
-    Visual* vbOld = (Visual*)m_RaytracingResourceDescriptionTable.at(resourceID).m_Visuals;
-    Visual* vbNew = (Visual*)desc.m_Visuals;
-
-    if (vbOld == vbNew)
-        return false;
-
-    if (vbOld == nullptr)
+    if (m_RaytracingResourceDescriptionTable.at(resourceID).m_NumVisuals != desc.m_NumVisuals)
         return true;
 
-    if (*vbOld != *vbNew)
-        return true;
+    for (uint32_t i = 0; i < desc.m_NumVisuals; ++i)
+    {
+        Visual vbOld = ((Visual*)m_RaytracingResourceDescriptionTable.at(resourceID).m_Visuals)[i];
+        Visual vbNew = ((Visual*)desc.m_Visuals)[i];
+
+        if (vbOld.m_EntityID != vbNew.m_EntityID)
+            return true;
+
+        if (vbOld.m_ModelMatrix != vbNew.m_ModelMatrix)
+            return true;
+
+        if (vbOld.m_Mesh != vbNew.m_Mesh)
+            return true;
+    }
 
     return false;
 }
@@ -370,14 +387,16 @@ void Ether::Graphics::ResourceContext::InvalidateResource(StringID resourceID)
     if (!m_ResourceTable.contains(resourceID))
         return;
 
-    m_StaleResources.push(std::move(m_ResourceTable.at(resourceID)));
+    m_StaleResources.push(m_ResourceTable.at(resourceID));
+    m_ResourceTable.erase(resourceID);
     
     // Start deallocating stale resources once there's too many (64 is arbitrary)
+    // Should really track resource lifetime (TODO)
     if (m_StaleResources.size() > 64)
         m_StaleResources.pop();
 }
 
-void Ether::Graphics::ResourceContext::Reset()
+void Ether::Graphics::ResourceContext::ReloadPipelineStates()
 {
     for (auto& psoPair : m_CachedPipelineStates)
         RegisterPipelineState("Recompiled Pipeline State (Shader Hot Reload Only)", *psoPair.first);

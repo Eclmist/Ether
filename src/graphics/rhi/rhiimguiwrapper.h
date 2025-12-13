@@ -33,8 +33,8 @@ public:
     virtual ~RhiImguiWrapper();
 
 public:
-    virtual void Render();
-    virtual void RenderDrawData() = 0;
+    virtual void Render(GraphicContext& gfxContext);
+    virtual void RenderDrawData(GraphicContext& gfxContext) = 0;
 
 public:
     static std::unique_ptr<RhiImguiWrapper> InitForPlatform();
@@ -49,7 +49,6 @@ protected:
     void DrawExternalCommand();
 
 protected:
-    GraphicContext m_Context;
     RhiDescriptorHeap* m_DescriptorHeap;
 
 protected:

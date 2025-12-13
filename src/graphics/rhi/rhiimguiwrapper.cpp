@@ -23,7 +23,6 @@
 #include "graphics/imgui/imgui.h"
 
 Ether::Graphics::RhiImguiWrapper::RhiImguiWrapper()
-    : m_Context("Imgui Context")
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -40,25 +39,26 @@ Ether::Graphics::RhiImguiWrapper::~RhiImguiWrapper()
     ImGui::DestroyContext();
 }
 
-void Ether::Graphics::RhiImguiWrapper::Render()
+void Ether::Graphics::RhiImguiWrapper::Render(GraphicContext& gfxContext)
 {
+    gfxContext.PushMarker("ImguiProducer");
+
     ImGui::NewFrame();
+    {
+        if (GraphicCore::GetGraphicConfig().IsDebugGuiEnabled())
+            DrawDebugMenu();
 
-    if (GraphicCore::GetGraphicConfig().IsDebugGuiEnabled())
-        DrawDebugMenu();
-
-    DrawExternalCommand();
-
+        DrawExternalCommand();
+    }
     ImGui::Render();
 
-    m_Context.Reset();
-    m_Context.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
-    m_Context.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
-    m_Context.SetSrvCbvUavDescriptorHeap(*m_DescriptorHeap);
-    m_Context.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
+    gfxContext.TransitionResource(GraphicCore::GetGraphicDisplay().GetBackBuffer(), RhiResourceState::RenderTarget);
+    gfxContext.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
+    gfxContext.SetSrvCbvUavDescriptorHeap(*m_DescriptorHeap);
+    gfxContext.SetGraphicRootSignature(*GraphicCore::GetGraphicCommon().m_EmptyRootSignature);
+    RenderDrawData(gfxContext);
 
-    RenderDrawData();
-    m_Context.FinalizeAndExecute();
+    gfxContext.PopMarker();
 }
 
 std::unique_ptr<Ether::Graphics::RhiImguiWrapper> Ether::Graphics::RhiImguiWrapper::InitForPlatform()
@@ -334,12 +334,6 @@ void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
                 ImGui::TreePop();
             }
 
-            if (ImGui::TreeNode("Spatial Hash"))
-            {
-                ImGui::InputInt("Spatial Hash Size", &gfxConfig.m_SpatialHashSize, 1, 100);
-                ImGui::SliderFloat("Spatial Hash Cell Size", &gfxConfig.m_SpatialHashCellSize, 0.1, 1);
-                ImGui::TreePop();
-            }
         }
 
         static float fpsHistoryBuffer[128];
@@ -352,15 +346,6 @@ void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
                 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
             ImGui::Text("Frame Number: %lld", Graphics::GraphicCore::GetGraphicRenderer().GetFrameNumber());
-            ImGui::PlotLines(
-                "",
-                fpsHistoryBuffer,
-                128,
-                ImGui::GetFrameCount() % 128,
-                "FPS History",
-                0.0f,
-                300.0f,
-                ImVec2(360, 60));
         }
     }
     ImGui::End();

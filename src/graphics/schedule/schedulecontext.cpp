@@ -207,7 +207,7 @@ const void Ether::Graphics::ScheduleContext::NewAS(GFX_STATIC::GFX_AS_TYPE& acv,
     Write(acv);
 }
 
-void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resourceContext)
+void Ether::Graphics::ScheduleContext::CreateResources(GraphicContext& gfxContext, ResourceContext& resourceContext)
 {
     ETH_MARKER_EVENT("Schedule Context - Create Resources");
 
@@ -219,6 +219,8 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
     // 1)
     for (auto iter = m_ResourceToDescriptorMap.begin(); iter != m_ResourceToDescriptorMap.end(); ++iter)
     {
+        ETH_MARKER_EVENT("Initialize Resource Descriptor");
+
         auto& associatedViews = iter->second;
         AssertGraphics(!associatedViews.empty(), "A resource without views should never have been registered");
         RhiResourceView* firstView = associatedViews.begin()->second;
@@ -234,6 +236,7 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
         RhiResourceFlag flags = RhiResourceFlag::None;
         for (auto viewIter = associatedViews.begin(); viewIter != associatedViews.end(); ++viewIter)
         {
+            ETH_MARKER_EVENT("Views");
             RhiResourceView* view = viewIter->second;
             ValidateView(firstView, view);
 
@@ -245,27 +248,31 @@ void Ether::Graphics::ScheduleContext::CreateResources(ResourceContext& resource
                 flags |= RhiResourceFlag::AllowUnorderedAccess;
         }
 
-        // 3)
-        switch (dimension)
         {
-        case RhiResourceDimension::Buffer:
-        case RhiResourceDimension::StructuredBuffer:
-            resourceContext.CreateBufferResource(resourceID.GetString().c_str(), width, flags);
-            break;
-        case RhiResourceDimension::Texture2D:
-            resourceContext.CreateTexture2DResource(resourceID.GetString().c_str(), { width, height }, format, flags);
-            break;
-        case RhiResourceDimension::Texture3D:
-            resourceContext.CreateTexture3DResource(resourceID.GetString().c_str(), { width, height, depth }, format, flags);
-            break;
-        case RhiResourceDimension::RTAccelerationStructure:
-            resourceContext.CreateAccelerationStructure(
-                resourceID.GetString().c_str(),
-                { dynamic_cast<RhiAccelerationStructureResourceView*>(firstView)->GetVisuals(),
-                  dynamic_cast<RhiAccelerationStructureResourceView*>(firstView)->GetNumVisuals() });
-            break;
-        default:
-            LogGraphicsError("Resource of an unsupported dimension specified");
+            ETH_MARKER_EVENT("Resource Creation");
+            // 3)
+            switch (dimension)
+            {
+            case RhiResourceDimension::Buffer:
+            case RhiResourceDimension::StructuredBuffer:
+                resourceContext.CreateBufferResource(resourceID.GetString().c_str(), width, flags);
+                break;
+            case RhiResourceDimension::Texture2D:
+                resourceContext.CreateTexture2DResource(resourceID.GetString().c_str(), { width, height }, format, flags);
+                break;
+            case RhiResourceDimension::Texture3D:
+                resourceContext.CreateTexture3DResource(resourceID.GetString().c_str(), { width, height, depth }, format, flags);
+                break;
+            case RhiResourceDimension::RTAccelerationStructure:
+                resourceContext.CreateAccelerationStructure(
+                    resourceID.GetString().c_str(),
+                    { dynamic_cast<RhiAccelerationStructureResourceView*>(firstView)->GetVisuals(),
+                      dynamic_cast<RhiAccelerationStructureResourceView*>(firstView)->GetNumVisuals() },
+                    gfxContext);
+                break;
+            default:
+                LogGraphicsError("Resource of an unsupported dimension specified");
+            }
         }
     }
 

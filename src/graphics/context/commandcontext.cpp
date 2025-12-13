@@ -221,19 +221,12 @@ void Ether::Graphics::CommandContext::SetComputeRootDescriptorTable(
     m_CommandList->SetComputeRootDescriptorTable(rootParameterIndex, baseAddress);
 }
 
-void Ether::Graphics::CommandContext::BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure)
+void Ether::Graphics::CommandContext::BuildAccelerationStructure(const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->BuildAccelerationStructure(accelStructure);
 }
 
-void Ether::Graphics::CommandContext::BuildBottomLevelAccelerationStructure(
-    const RhiAccelerationStructure& accelStructure)
-{
-    m_CommandList->BuildAccelerationStructure(accelStructure);
-}
-
-void Ether::Graphics::CommandContext::RefitBottomLevelAccelerationStructure(
-    const RhiAccelerationStructure& accelStructure)
+void Ether::Graphics::CommandContext::RefitAccelerationStructure(const RhiAccelerationStructure& accelStructure)
 {
     m_CommandList->RefitAccelerationStructure(accelStructure);
 }

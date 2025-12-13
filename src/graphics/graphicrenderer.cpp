@@ -68,6 +68,7 @@ void Ether::Graphics::GraphicRenderer::ClearAllRenderData()
     GraphicCore::GetBindlessDescriptorManager().Reset();
     m_RenderData[0] = RenderData();
     m_RenderData[1] = RenderData();
+    m_Scheduler.m_ResourceContext.Reset();
 }
 
 void Ether::Graphics::GraphicRenderer::WaitForPresent()
@@ -81,7 +82,8 @@ void Ether::Graphics::GraphicRenderer::Render()
 {
     ETH_MARKER_EVENT("GraphicRenderer - Render");
     GraphicContext gfxContext("GraphicRenderer - Single Threaded Render Context");
-    m_Scheduler.BuildSchedule();
+    gfxContext.Reset();
+    m_Scheduler.BuildSchedule(gfxContext);
     m_Scheduler.RenderSingleThreaded(gfxContext);
 }
 

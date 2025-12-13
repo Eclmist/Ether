@@ -30,11 +30,11 @@ public:
     virtual ~RhiAccelerationStructure() = default;
 
 public:
-    std::unique_ptr<RhiResource> m_ScratchBuffer;
-    std::unique_ptr<RhiResource> m_DataBuffer;
+    std::shared_ptr<RhiResource> m_ScratchBuffer;
+    std::shared_ptr<RhiResource> m_DataBuffer;
 
     // Only for TLAS
-    std::unique_ptr<RhiResource> m_InstanceDescBuffer;
+    std::shared_ptr<RhiResource> m_InstanceDescBuffer;
 
 protected:
     uint64_t m_Size;

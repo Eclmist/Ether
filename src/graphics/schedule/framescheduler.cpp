@@ -158,7 +158,7 @@ void Ether::Graphics::FrameScheduler::PrecompilePipelineStates()
     }
 }
 
-void Ether::Graphics::FrameScheduler::BuildSchedule()
+void Ether::Graphics::FrameScheduler::BuildSchedule(GraphicContext& gfxContext)
 {
     ETH_MARKER_EVENT("Frame Scheduler - Build Schedule");
 
@@ -169,19 +169,20 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     //  - Batch resource barriers
 
     if (GraphicCore::GetGraphicConfig().UseShaderDaemon())
-        m_ResourceContext.Reset();
+        m_ResourceContext.ReloadPipelineStates();
 
-    for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
-        iter->second->Reset();
+    for (auto producer : m_RegisteredProducers)
+        producer.second->Reset();
 
     ScheduleContext schedule;
-    for (auto iter = m_RegisteredProducers.begin(); iter != m_RegisteredProducers.end(); ++iter)
+
     {
-        ETH_MARKER_EVENT(iter->second->GetName().c_str());
-        iter->second->GetInputOutput(schedule, m_ResourceContext);
+        ETH_MARKER_EVENT("Get Producer Input/Output");
+        for (auto producer : m_RegisteredProducers)
+            producer.second->GetInputOutput(schedule, m_ResourceContext);
     }
 
-    schedule.CreateResources(m_ResourceContext);
+    schedule.CreateResources(gfxContext, m_ResourceContext);
 
     // TODO: Run a topological sort to order the producers based on their inputs and outputs
     // defined in schedule context.
@@ -198,12 +199,14 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(PathtracedLightingProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(TranslucencyProducer).Get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedTranslucencyProducer).Get());
 
     // Debug Visualizers:
     // Do it before post process because we're debugging HDR colors
     m_OrderedProducers.push(ACCESS_GFX_PA(IrradianceFieldVisualizationProducer).Get());
+
+    // Translucency
+    m_OrderedProducers.push(ACCESS_GFX_PA(TranslucencyProducer).Get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedTranslucencyProducer).Get());
 
     // Order of post process is important, obviously
     // Reference: https://www.renderingevolution.net/?p=103
@@ -224,8 +227,6 @@ void Ether::Graphics::FrameScheduler::BuildSchedule()
 void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxContext)
 {
     ETH_MARKER_EVENT("Frame Scheduler - Render Single Threaded");
-
-    gfxContext.Reset();
     gfxContext.SetResourceContext(m_ResourceContext);
 
     GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
@@ -238,7 +239,7 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxCo
         // (TODO)
         if (m_OrderedProducers.front()->IsEnabled())
         {
-            gfxContext.PushMarker(m_OrderedProducers.front()->GetName());
+            gfxContext.PushMarker(m_OrderedProducers.front()->GetName().c_str());
             m_OrderedProducers.front()->RenderFrame(gfxContext, m_ResourceContext);
             gfxContext.PopMarker();
         }
@@ -246,11 +247,8 @@ void Ether::Graphics::FrameScheduler::RenderSingleThreaded(GraphicContext& gfxCo
         m_OrderedProducers.pop();
     }
 
-    gfxContext.FinalizeAndExecute();
+    m_ImguiWrapper->Render(gfxContext);
 
-    m_ImguiWrapper->Render();
-
-    gfxContext.Reset();
     gfxContext.TransitionResource(gfxDisplay.GetBackBuffer(), RhiResourceState::Present);
     gfxContext.FinalizeAndExecute();
 }

@@ -73,18 +73,18 @@ Ether::Graphics::Dx12ImguiWrapper::~Dx12ImguiWrapper()
     ImGui_ImplWin32_Shutdown();
 }
 
-void Ether::Graphics::Dx12ImguiWrapper::Render()
+void Ether::Graphics::Dx12ImguiWrapper::Render(GraphicContext& gfxContext)
 {
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    RhiImguiWrapper::Render();
+    RhiImguiWrapper::Render(gfxContext);
 }
 
-void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData()
+void Ether::Graphics::Dx12ImguiWrapper::RenderDrawData(GraphicContext& gfxContext)
 {
     ImGui_ImplDX12_RenderDrawData(
         ImGui::GetDrawData(),
-        ((Dx12CommandList&)m_Context.GetCommandList()).m_CommandList.Get());
+        ((Dx12CommandList&)gfxContext.GetCommandList()).m_CommandList.Get());
 }
 
 bool Ether::Graphics::Dx12ImguiWrapper::Win32MessageHandler(void* hWnd, uint32_t msg, uint32_t wParam, uint64_t lParam)

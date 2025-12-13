@@ -54,7 +54,7 @@ public:
     ETH_GRAPHIC_DLL const void NewAS(GFX_STATIC::GFX_AS_TYPE& acv, const std::vector<Visual>& visuals);
 
 public:
-    void CreateResources(ResourceContext& resourceContext);
+    void CreateResources(GraphicContext& gfxContext, ResourceContext& resourceContext);
     void CreateViews(ResourceContext& resourceContext);
 
 private:

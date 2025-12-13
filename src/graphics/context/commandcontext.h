@@ -86,9 +86,8 @@ public:
     void SetComputeRootDescriptorTable(uint32_t rootParameterIndex, RhiGpuAddress baseAddress);
 
     // Raytracing
-    void BuildTopLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
-    void BuildBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
-    void RefitBottomLevelAccelerationStructure(const RhiAccelerationStructure& accelStructure);
+    void BuildAccelerationStructure(const RhiAccelerationStructure& accelStructure);
+    void RefitAccelerationStructure(const RhiAccelerationStructure& accelStructure);
     void SetRaytracingShaderBindingTable(const RhiResource* bindTable);
 
     // Barriers

@@ -41,14 +41,13 @@ float2 OctahedralEncode(float3 n)
 {
     n /= (abs(n.x) + abs(n.y) + abs(n.z));
     n.xy = n.z >= 0.0 ? n.xy : OctWrap(n.xy);
-    n.xy = n.xy * 0.5 + 0.5;
-    return n.xy;
+    return n.xy * 0.5 + 0.5;
 }
 
-float3 OctahedralDecode(float2 f)
+float3 OctahedralDecode(float2 uv)
 {
-    f = f * 2.0 - 1.0;
-    float3 n = float3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
+    uv = uv * 2.0 - 1.0;
+    float3 n = float3(uv.x, uv.y, 1.0 - abs(uv.x) - abs(uv.y));
     float t = saturate(-n.z);
     n.xy += float2(n.x >= 0.0 ? -t : t, n.y >= 0.0 ? -t : t);
     return normalize(n);

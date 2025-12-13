@@ -147,7 +147,7 @@ void Ether::Graphics::SkinnedMesh::RefitAccelerationStructure(CommandContext& ct
         return;
 
     ctx.PushMarker("Refit BLAS");
-    ctx.RefitBottomLevelAccelerationStructure(*m_AccelerationStructure);
+    ctx.RefitAccelerationStructure(*m_AccelerationStructure);
     ctx.PopMarker();
 }
 

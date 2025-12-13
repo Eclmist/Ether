@@ -27,6 +27,10 @@ DEFINE_GFX_PA(FinalCompositeProducer)
 DECLARE_GFX_SR(PostFxSourceTexture)
 DECLARE_GFX_CB(GlobalConstants)
 
+// TO BE REMOVED
+DECLARE_GFX_SR(IrradianceFieldIrradianceAtlas)
+DECLARE_GFX_SR(IrradianceFieldDepthAtlas)
+
 Ether::Graphics::FinalCompositeProducer::FinalCompositeProducer()
     : FullScreenPixelProducer("FinalCompositeProducer", "finalcomposite_ps.hlsl")
 {
@@ -43,6 +47,8 @@ void Ether::Graphics::FinalCompositeProducer::RenderFrame(GraphicContext& ctx, R
     ETH_MARKER_EVENT("FinalCompositeProducer");
     FullScreenPixelProducer::RenderFrame(ctx, rc);
     ctx.Bind(ACCESS_GFX_SR(PostFxSourceTexture));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
     ctx.SetRenderTarget(GraphicCore::GetGraphicDisplay().GetBackBufferRtv());
     FullScreenPixelProducer::DrawFullScreen(ctx);
 }

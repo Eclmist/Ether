@@ -96,7 +96,9 @@ void Ether::Graphics::IrradianceFieldProducer::RenderFrame(GraphicContext& ctx, 
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
     ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
     ctx.Bind(ACCESS_GFX_UA(IrradianceFieldIrradianceAtlas));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
     ctx.Bind(ACCESS_GFX_UA(IrradianceFieldDepthAtlas));
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::IrradianceFieldParams), 256 });
@@ -104,13 +106,9 @@ void Ether::Graphics::IrradianceFieldProducer::RenderFrame(GraphicContext& ctx, 
     IrradianceFieldProducer::GetIrradianceFieldParams(*params);
     ctx.Bind("IrradianceFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
 
-    // For now, trace every probe texel for simplicity. A dynamically allocated ray budget is possible here, and necessary for lower LODs
+    // For now, trace every probe for simplicity. A dynamically allocated ray budget is possible here, and necessary for lower LODs
     // Depth and irradiance will be traced at the same time
-
-    const uint32_t traceResolutionX = std::max(params->m_DepthAtlasResolution.x, params->m_IrradianceAtlasResolution.x);
-    const uint32_t traceResolutionY = std::max(params->m_DepthAtlasResolution.y, params->m_IrradianceAtlasResolution.y);
-
-    ctx.DispatchRays(traceResolutionX, traceResolutionY, 1);
+    ctx.DispatchRays(params->m_GridResolution.x, params->m_GridResolution.y, params->m_GridResolution.z);
     ctx.PopMarker();
 }
 
@@ -186,7 +184,7 @@ void Ether::Graphics::IrradianceFieldProducer::GetIrradianceFieldParams(Shader::
     params.m_GridSpacing = config.m_IrradianceFieldGridSpacing;
     params.m_GridOrigin = config.m_IrradianceFieldGridOrigin;
     params.m_GridResolution = config.m_IrradianceFieldGridResolution;
-    params.m_IrradianceTileSize = config.m_IrradianceTileSize + 1; // + 1 for border
+    params.m_IrradianceTileSize = config.m_IrradianceTileSize + 2; // 1px of border on each edge
     params.m_DepthTileSize = config.m_DepthTileSize;
     params.m_IrradianceAtlasResolution.x = params.m_GridResolution.x * params.m_GridResolution.y * params.m_IrradianceTileSize;
     params.m_IrradianceAtlasResolution.y = params.m_GridResolution.z * params.m_IrradianceTileSize;
@@ -244,7 +242,7 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::RenderFrame(GraphicC
     Shader::IrradianceFieldParams* params = (Shader::IrradianceFieldParams*)alloc->GetCpuHandle();
     IrradianceFieldProducer::GetIrradianceFieldParams(*params);
     ctx.Bind("IrradianceFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
-    ctx.Bind(ACCESS_GFX_CB(GlobalConstants));
+    ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
     ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
 

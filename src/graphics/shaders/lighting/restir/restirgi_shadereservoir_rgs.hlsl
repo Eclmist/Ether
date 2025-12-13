@@ -67,27 +67,7 @@ void RayGeneration()
         indirectLighting = finalReservoir.m_TargetPdf * finalReservoir.m_WeightSum;
     }
 
-    // Spatial Hash Prototype
-    if (GlobalConstants.m_RaytracedLightingDebug == 1)
-    {
-
-        const float cellSize = GlobalConstants.m_SpatialHashCellSize;
-		uint cellIndex = SpatialHash_Lookup(surface.m_Position, surface.m_Normal);
-
-        float3 finalColor = float3(1, 0, 1);
-
-		if (cellIndex != 0xFFFFFFFFu)
-		{
-			finalColor = RWSpatialHashPayload[cellIndex].m_Color;
-		}
-
-		RWLightingTexture[screenCoords].xyz = finalColor * 1;
-		RWLightingTexture[screenCoords].a = 0;
-        return;
-    }
-
-
-    RWLightingTexture[screenCoords].xyz = surface.m_Emission + directLighting + indirectLighting;
+    RWLightingTexture[screenCoords].xyz = surface.m_Emission + directLighting;
     RWLightingTexture[screenCoords].a = 0;
 }
 

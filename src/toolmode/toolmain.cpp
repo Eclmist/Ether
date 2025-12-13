@@ -95,7 +95,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         for (uint32_t i = 0; i < m_LargeImportPaths.size(); ++i)
             AssetImporter::Instance().Import(m_LargeImportPaths[i], true);
 
-        //AssetImporter::Instance().ImportTexture(hdriPath);
+        AssetImporter::Instance().ImportTexture(hdriPath);
 
         // Load from library files and serialize to world
         // This simulates user dragging resources from the editor resource browser into the scene,
@@ -192,7 +192,7 @@ void Ether::Toolmode::EtherHeadless::LoadContent()
         }
 
         Entity& cameraObj = currentWorld.CreateCamera();
-        //cameraObj.GetComponent<Ecs::EcsCameraComponent>().SetHdriTextureID(AssetImporter::Instance().GetAssetGuid(hdriPath));
+        cameraObj.GetComponent<Ecs::EcsCameraComponent>().SetHdriTextureID(AssetImporter::Instance().GetAssetGuid(hdriPath));
 
         currentWorld.SetName(exportWorldName);
         currentWorld.Save(sceneSavePath);

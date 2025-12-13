@@ -21,6 +21,7 @@
 #define __FINAL_COMPOSITE_PS_HLSL__
 
 #include "common/globalconstants.h"
+#include "lighting/globalillumination/irradiancefield.hlsl"
 
 Texture2D<float4> PostFxSourceTexture : register(t0);
 
@@ -187,6 +188,13 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
             col = reinhard_extended_luminance(col, 200000.0);
         else if (GlobalConstants.m_TonemapperType == 3)
             col = GTTonemap(col);
+    }
+
+    float zoom = 1.5f;
+
+    if (all(IN.Position.xy < min(IrradianceFieldParams.m_IrradianceAtlasResolution * zoom, float2(800, 100))))
+    {
+        return float4(IrradianceFieldIrradianceAtlas.Load(float3(IN.Position.xy / zoom,0)), 0.0f) / 100;
     }
 
     return float4(col, 1.0f);
