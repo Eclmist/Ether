@@ -37,6 +37,9 @@ public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
 
+public:
+    static void GetIrradianceFieldParams(Shader::IrradianceFieldParams& params);
+
 protected:
     bool IsEnabled() override;
 
@@ -45,10 +48,6 @@ protected:
     void CreateRootSignature();
     void CreatePipelineState(ResourceContext& rc);
     void InitializeShaderBindingTable(ResourceContext& rc);
-
-protected:
-    friend class IrradianceFieldVisualizationProducer;
-    static void GetIrradianceFieldParams(Shader::IrradianceFieldParams& params);
 
 protected:
     std::unique_ptr<RhiShader> m_TraceProbesShader;

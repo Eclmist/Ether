@@ -36,7 +36,7 @@ void Ether::Graphics::GlobalConstantsProducer::Initialize(ResourceContext& rc)
 
 void Ether::Graphics::GlobalConstantsProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
-    schedule.NewCB(ACCESS_GFX_CB(GlobalConstants), AlignUp(sizeof(Shader::GlobalConstants), 256) * 3);
+    schedule.NewCB(ACCESS_GFX_CB(GlobalConstants), AlignUp(sizeof(Shader::GlobalConstants), 256) * GraphicCore::GetGraphicDisplay().GetNumBuffers());
 }
 
 void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
@@ -119,7 +119,7 @@ void Ether::Graphics::GlobalConstantsProducer::RenderFrame(GraphicContext& ctx, 
         *rc.GetResource(ACCESS_GFX_CB(GlobalConstants)),
         alloc->GetSize(),
         0,
-        alloc->GetSize() * GraphicCore::GetGraphicDisplay().GetBackBufferIndex()
+        GetRingBufferOffset()
     );
 
     // For velocity vector calculations

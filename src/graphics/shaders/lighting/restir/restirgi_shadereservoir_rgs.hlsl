@@ -22,7 +22,7 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-RWTexture2D<float4> RWLightingTexture                   : register(u3);
+RWTexture2D<float4> RWLightingTexture : register(u3);
 
 [shader("raygeneration")]
 void RayGeneration()

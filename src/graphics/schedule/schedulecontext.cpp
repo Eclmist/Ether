@@ -298,9 +298,9 @@ void Ether::Graphics::ScheduleContext::ValidateView(RhiResourceView* firstView, 
 
 void Ether::Graphics::ScheduleContext::CreateViews(ResourceContext& resourceContext)
 {
-    for (auto viewIter = m_Reads.begin(); viewIter != m_Reads.end(); ++viewIter)
+    for (auto pair : m_Reads)
     {
-        RhiResourceView* view = viewIter->second;
+        RhiResourceView* view = pair.second;
         if (dynamic_cast<RhiRenderTargetView*>(view) != nullptr)
             resourceContext.InitializeRenderTargetView(view);
         else if (dynamic_cast<RhiDepthStencilView*>(view) != nullptr)
@@ -315,9 +315,9 @@ void Ether::Graphics::ScheduleContext::CreateViews(ResourceContext& resourceCont
             resourceContext.InitializeConstantBufferView(view);
     }
 
-    for (auto viewIter = m_Writes.begin(); viewIter != m_Writes.end(); ++viewIter)
+    for (auto pair : m_Writes)
     {
-        RhiResourceView* view = viewIter->second;
+        RhiResourceView* view = pair.second;
         if (dynamic_cast<RhiRenderTargetView*>(view) != nullptr)
             resourceContext.InitializeRenderTargetView(view);
         else if (dynamic_cast<RhiDepthStencilView*>(view) != nullptr)

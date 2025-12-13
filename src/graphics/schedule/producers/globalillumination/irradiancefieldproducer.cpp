@@ -39,6 +39,7 @@ DECLARE_GFX_SR(MaterialTable)
 
 DEFINE_GFX_UA_SR(IrradianceFieldIrradianceAtlas)
 DEFINE_GFX_UA_SR(IrradianceFieldDepthAtlas)
+DEFINE_GFX_CB(IrradianceFieldParams)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
@@ -67,7 +68,8 @@ void Ether::Graphics::IrradianceFieldProducer::GetInputOutput(ScheduleContext& s
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
 
     Shader::IrradianceFieldParams params;
-    GetIrradianceFieldParams(params);
+    IrradianceFieldProducer::FillCommonParameters(params);
+    schedule.NewCB(ACCESS_GFX_CB(IrradianceFieldParams), AlignUp(sizeof(Shader::IrradianceFieldParams), 256) * GraphicCore::GetGraphicDisplay().GetNumBuffers());
     schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldDepthAtlas), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
@@ -103,11 +105,18 @@ void Ether::Graphics::IrradianceFieldProducer::RenderFrame(GraphicContext& ctx, 
 
     auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::IrradianceFieldParams), 256 });
     Shader::IrradianceFieldParams* params = (Shader::IrradianceFieldParams*)alloc->GetCpuHandle();
-    IrradianceFieldProducer::GetIrradianceFieldParams(*params);
-    ctx.Bind("IrradianceFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+    IrradianceFieldProducer::FillCommonParameters(*params);
 
-    // For now, trace every probe for simplicity. A dynamically allocated ray budget is possible here, and necessary for lower LODs
-    // Depth and irradiance will be traced at the same time
+    ctx.CopyBufferRegion(
+        dynamic_cast<UploadBufferAllocation&>(*alloc).GetResource(),
+        *rc.GetResource(ACCESS_GFX_CB(IrradianceFieldParams)),
+        alloc->GetSize(),
+        0,
+        alloc->GetSize() * GraphicCore::GetGraphicDisplay().GetBackBufferIndex());
+    ctx.Bind(ACCESS_GFX_CB(IrradianceFieldParams), alloc->GetSize() * GraphicCore::GetGraphicDisplay().GetBackBufferIndex());
+
+    // For now, trace every probe for simplicity. A dynamically allocated ray budget is possible here, and necessary for
+    // lower LODs Depth and irradiance will be traced at the same time
     ctx.DispatchRays(params->m_GridResolution.x, params->m_GridResolution.y, params->m_GridResolution.z);
     ctx.PopMarker();
 }
@@ -117,11 +126,11 @@ bool Ether::Graphics::IrradianceFieldProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    //if (GraphicCore::GetGraphicConfig().m_LightingMode != RaytracingMode::ReSTIR)
-    //    return false;
+    // if (GraphicCore::GetGraphicConfig().m_LightingMode != RaytracingMode::ReSTIR)
+    //     return false;
 
-    //if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
-    //    return false;
+    // if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
+    //     return false;
 
     // TODO: Add "Global Illumination mode"
 
@@ -138,7 +147,7 @@ void Ether::Graphics::IrradianceFieldProducer::CreateShaders()
 
 void Ether::Graphics::IrradianceFieldProducer::CreateRootSignature()
 {
-    const std::vector<const RhiShaderReflection*>& shaderReflections = { &m_TraceProbesShader->GetReflection() }; 
+    const std::vector<const RhiShaderReflection*>& shaderReflections = { &m_TraceProbesShader->GetReflection() };
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(shaderReflections)->Compile((GetName() + " Root Signature").c_str());
 }
 
@@ -178,7 +187,7 @@ void Ether::Graphics::IrradianceFieldProducer::InitializeShaderBindingTable(Reso
     m_TraceProbesSBT = &rc.CreateRaytracingShaderBindingTable("Irradiance Probe Trace Bindings Table", desc);
 }
 
-void Ether::Graphics::IrradianceFieldProducer::GetIrradianceFieldParams(Shader::IrradianceFieldParams& params)
+void Ether::Graphics::IrradianceFieldProducer::FillCommonParameters(Shader::IrradianceFieldParams& params)
 {
     const GraphicConfig& config = GraphicCore::GetGraphicConfig();
     params.m_GridSpacing = config.m_IrradianceFieldGridSpacing;
@@ -197,7 +206,6 @@ void Ether::Graphics::IrradianceFieldProducer::GetIrradianceFieldParams(Shader::
 Ether::Graphics::IrradianceFieldVisualizationProducer::IrradianceFieldVisualizationProducer()
     : GraphicProducer("IrradianceFieldProbeVisualize")
 {
-
 }
 
 void Ether::Graphics::IrradianceFieldVisualizationProducer::Initialize(ResourceContext& rc)
@@ -238,15 +246,14 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::RenderFrame(GraphicC
     ctx.SetGraphicPipelineState((RhiGraphicPipelineState&)rc.GetPipelineState(*m_PsoDesc));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor), &(*ACCESS_GFX_DS(SceneDepth)));
 
-    auto alloc = GetFrameAllocator().Allocate({ sizeof(Shader::IrradianceFieldParams), 256 });
-    Shader::IrradianceFieldParams* params = (Shader::IrradianceFieldParams*)alloc->GetCpuHandle();
-    IrradianceFieldProducer::GetIrradianceFieldParams(*params);
-    ctx.Bind("IrradianceFieldParams", ((UploadBufferAllocation&)(*alloc)).GetGpuAddress());
+    Shader::IrradianceFieldParams params;
+    IrradianceFieldProducer::FillCommonParameters(params);
+    ctx.Bind(ACCESS_GFX_CB(IrradianceFieldParams), AlignUp(sizeof(Shader::IrradianceFieldParams), 256) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex());
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
     ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
 
-    const uint32_t numProbes = params->m_GridResolution.x * params->m_GridResolution.y * params->m_GridResolution.z;
+    const uint32_t numProbes = params.m_GridResolution.x * params.m_GridResolution.y * params.m_GridResolution.z;
     ctx.DrawInstanced(6, numProbes);
 }
 
@@ -273,7 +280,8 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::CreateShaders()
 
 void Ether::Graphics::IrradianceFieldVisualizationProducer::CreateRootSignature()
 {
-    const std::vector<const RhiShaderReflection*>& shaderReflections = { &m_VertexShader->GetReflection(), &m_PixelShader->GetReflection() }; 
+    const std::vector<const RhiShaderReflection*>& shaderReflections = { &m_VertexShader->GetReflection(),
+                                                                         &m_PixelShader->GetReflection() };
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(shaderReflections)->Compile("Probe Visualize Root Signature");
 }
 
@@ -290,4 +298,3 @@ void Ether::Graphics::IrradianceFieldVisualizationProducer::CreatePipelineState(
     m_PsoDesc->SetBlendState(GraphicCore::GetGraphicCommon().m_BlendDisabled);
     rc.RegisterPipelineState((GetName() + " Pipeline State").c_str(), *m_PsoDesc);
 }
-
