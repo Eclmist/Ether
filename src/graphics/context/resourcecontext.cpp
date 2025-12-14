@@ -327,9 +327,6 @@ bool Ether::Graphics::ResourceContext::ShouldRecreateResource(
         Visual vbOld = ((Visual*)m_RaytracingResourceDescriptionTable.at(resourceID).m_Visuals)[i];
         Visual vbNew = ((Visual*)desc.m_Visuals)[i];
 
-        if (vbOld.m_EntityID != vbNew.m_EntityID)
-            return true;
-
         if (vbOld.m_ModelMatrix != vbNew.m_ModelMatrix)
             return true;
 
