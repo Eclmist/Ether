@@ -27,10 +27,13 @@ DEFINE_GFX_RT(SceneColor)
 DEFINE_GFX_SR(SceneColor)
 DEFINE_GFX_UA(SceneColor)
 
-DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_SR(DirectLightingTexture)
 DECLARE_GFX_SR(DiffuseIndirectLightingTexture)
 DECLARE_GFX_SR(ProceduralSkyTexture)
+DECLARE_GFX_SR(SceneDepth)
+DECLARE_GFX_SR(GBufferTextureA)
+DECLARE_GFX_SR(GBufferTextureB)
+DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_CB(GlobalConstants)
 
 Ether::Graphics::LightingCompositeProducer::LightingCompositeProducer()
@@ -45,10 +48,13 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     schedule.NewSR(ACCESS_GFX_SR(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
-    schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_SR(DirectLightingTexture));
     schedule.Read(ACCESS_GFX_SR(DiffuseIndirectLightingTexture));
     schedule.Read(ACCESS_GFX_SR(ProceduralSkyTexture));
+    schedule.Read(ACCESS_GFX_SR(SceneDepth));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureA));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureB));
+    schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
 }
 
@@ -57,10 +63,13 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
     ETH_MARKER_EVENT("LightingCompositeProducer");
 
     FullScreenPixelProducer::RenderFrame(ctx, rc);
-    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
     ctx.Bind(ACCESS_GFX_SR(DirectLightingTexture));
     ctx.Bind(ACCESS_GFX_SR(DiffuseIndirectLightingTexture));
     ctx.Bind(ACCESS_GFX_SR(ProceduralSkyTexture));
+    ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
+    ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor).Get());
     FullScreenPixelProducer::DrawFullScreen(ctx);
 }

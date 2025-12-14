@@ -50,14 +50,6 @@ void RayGeneration()
 
     if (finalReservoir.IsValid())
     {
-        //const RayPayload validationRay = TraceValidationRay(surface, finalReservoir.m_Sample);
-
-        //if (validationRay.m_Hit)
-        //{
-        //    finalReservoir = GIReservoir::Empty();
-        //    RWOutputReservoir[sampleIdx] = GIReservoir::Pack(finalReservoir);
-        //}
-        
         indirectLighting = finalReservoir.m_TargetPdf * finalReservoir.m_WeightSum;
     }
 

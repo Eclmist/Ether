@@ -41,7 +41,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
     const float3 indirect = SampleIrradianceField(surface.m_Position, surface.m_Normal);
-    RWDiffuseIndirectLightingTexture[screenCoords] = float4(indirect * surface.m_BaseColor / Pi, 1.0f);
+    RWDiffuseIndirectLightingTexture[screenCoords].xyz = indirect * surface.m_BaseColor / Pi;
 }
 
 #endif // __IRRADIANCE_FIELD_GATHER_CS_HLSL__

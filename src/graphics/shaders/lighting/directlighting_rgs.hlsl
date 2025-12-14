@@ -47,9 +47,12 @@ void RayGeneration()
     const float3 Li = shadowRay.m_Radiance;
     const float3 wi = normalize(GlobalConstants.m_SunDirection.xyz);
     const float3 wo = normalize(GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
+    float3 Lo = ComputeRadiance(surface, Li, wi, wo);
 
-    const float3 directLighting = ComputeRadiance(surface, Li, wi, wo);
-    RWDirectLightingTexture[screenCoords].xyz = surface.m_Emission + directLighting;
+    if (GlobalConstants.m_RaytracedLightingDebug)
+        Lo = Li;
+
+    RWDirectLightingTexture[screenCoords].xyz = Lo;
 }
 
 #endif // __DIRECT_LIGHTING_RGS_HLSL__

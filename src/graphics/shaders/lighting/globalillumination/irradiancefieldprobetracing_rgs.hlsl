@@ -76,7 +76,7 @@ void RayGeneration()
     uint2 atlasOffset = GetAtlasOffset(probeIndex, IrradianceFieldParams.m_IrradianceTileSize);
     const uint tileSize = IrradianceFieldParams.m_IrradianceTileSize;
     
-    const uint sqrtNumRays = 16;
+    const uint sqrtNumRays = 4;
     const uint numRays = sqrtNumRays * sqrtNumRays;
  
     // read previous frame's irradiance for this probe into local storage
@@ -110,18 +110,14 @@ void RayGeneration()
         
         // Splat to all texels with cosine weighting
         texelIdx = 0;
-        for (uint yy = 1; yy < tileSize - 1; yy++)
+        for (uint y2 = 1; y2 < tileSize - 1; y2++)
         {
-            for (uint xx = 1; xx < tileSize - 1; xx++)
+            for (uint x2 = 1; x2 < tileSize - 1; x2++)
             {
-                uint2 localCoords = uint2(xx, yy);
+                uint2 localCoords = uint2(x2, y2);
                 float3 texelDirection = TileTexelToDirection(localCoords, tileSize);
                 float cosTheta = saturate(dot(rayDirection, texelDirection));
-                
-                if (cosTheta > 0.0)
-                {
-                    accumulatedIrradiance[texelIdx] += payload.m_Radiance * cosTheta / (numRays * pdf);
-                }
+                accumulatedIrradiance[texelIdx] += payload.m_Radiance * cosTheta / (numRays * pdf);
                 texelIdx++;
             }
         }
@@ -136,11 +132,11 @@ void RayGeneration()
     
     float3 spatiallyFilteredIrradiance[64];
     texelIdx = 0;
-    for (uint yyy = 1; yyy < tileSize - 1; yyy++)
+    for (uint y3 = 1; y3 < tileSize - 1; y3++)
     {
-        for (uint xxx = 1; xxx < tileSize - 1; xxx++)
+        for (uint x3 = 1; x3 < tileSize - 1; x3++)
         {
-            uint2 localCoords = uint2(xxx, yyy);
+            uint2 localCoords = uint2(x3, y3);
             float3 texelDirection = TileTexelToDirection(localCoords, tileSize);
             
             float3 centerIrradiance = accumulatedIrradiance[texelIdx];
@@ -181,30 +177,29 @@ void RayGeneration()
     
     // Temporal blend with history
     texelIdx = 0;
-    float temporalBlend = 0.90; // High history weight for stability
-    for (uint yyyy = 1; yyyy < tileSize - 1; yyyy++)
+    float temporalBlend = 0.98;
+    for (uint y4 = 1; y4 < tileSize - 1; y4++)
     {
-        for (uint xxxx = 1; xxxx < tileSize - 1; xxxx++)
+        for (uint x4 = 1; x4 < tileSize - 1; x4++)
         {
             float3 filteredIrradiance = spatiallyFilteredIrradiance[texelIdx];
             float3 blendedIrradiance = lerp(filteredIrradiance, previousIrradiance[texelIdx], temporalBlend);
             
-            uint2 atlasCoords = atlasOffset + uint2(xxxx, yyyy);
+            uint2 atlasCoords = atlasOffset + uint2(x4, y4);
             RWIrradianceFieldIrradianceAtlas[atlasCoords] = blendedIrradiance;
-            
             texelIdx++;
         }
     }
     
     // Fill borders
-    for (uint yyyyy = 0; yyyyy < tileSize; yyyyy++)
+    for (uint y5 = 0; y5 < tileSize; y5++)
     {
-        for (uint xxxxx = 0; xxxxx < tileSize; xxxxx++)
+        for (uint x5 = 0; x5 < tileSize; x5++)
         {
-            if (xxxxx > 0 && xxxxx < tileSize - 1 && yyyyy > 0 && yyyyy < tileSize - 1)
+            if (x5 > 0 && x5 < tileSize - 1 && y5 > 0 && y5 < tileSize - 1)
                 continue;
             
-            uint2 borderCoords = atlasOffset + uint2(xxxxx, yyyyy);
+            uint2 borderCoords = atlasOffset + uint2(x5, y5);
             FillIrradianceBorder(borderCoords);
         }
     }

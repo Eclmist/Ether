@@ -75,9 +75,9 @@ void RayGeneration()
     }
 
     float a = max(0.005, 1 - smoothstep(0, 10, GlobalConstants.m_FrameNumber - GlobalConstants.m_FrameSinceLastMovement));
-    const float3 accumulatedIndirect = (a * indirect) + (1 - a) * accumulation.xyz;
+    indirect = (a * indirect) + (1 - a) * accumulation.xyz;
     RWDirectLightingTexture[screenCoords].xyz = surface.m_Emission + direct;
-    RWDiffuseIndirectLightingTexture[screenCoords].xyz = accumulatedIndirect;
+    RWDiffuseIndirectLightingTexture[screenCoords].xyz = indirect;
 }
 
 #endif // __PATHTRACING_RGS_HLSL__

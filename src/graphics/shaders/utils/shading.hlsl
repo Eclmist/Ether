@@ -76,6 +76,10 @@ ShadingSurface GetShadingSurfaceFromGBuffers(
     // For actually translucent pixels, they're not drawn in the gbuffer at all.
     surface.m_Opacity = 1.0f;
 
+    // White furnace test
+    if (GlobalConstants.m_RaytracedLightingDebug)
+        surface.m_BaseColor = 1.0f;
+
     return surface;
 }
 
@@ -165,6 +169,9 @@ ShadingSurface GetShadingSurfaceFromHit(MeshVertex hitSurface, Material material
     geometricSurface.m_Tangent = hitSurface.m_Tangent;
     geometricSurface.m_Color = hitSurface.m_Color;
     geometricSurface.m_TexCoord = hitSurface.m_TexCoord;
+
+    // We flip normals here because if a backface is hit, we don't want light from the other side to leak over
+    geometricSurface.m_Normal *= dot(-WorldRayDirection(), geometricSurface.m_Normal) < 0 ? -1.0f : 1.0f;
 
     ShadingSurface shadingSurface = GetShadingSurfaceFromGeometry(geometricSurface, material, samplerIndex, mipLevel);
     return shadingSurface;

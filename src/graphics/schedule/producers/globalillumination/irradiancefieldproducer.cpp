@@ -70,8 +70,8 @@ void Ether::Graphics::IrradianceFieldProducer::GetInputOutput(ScheduleContext& s
     Shader::IrradianceFieldParams params;
     IrradianceFieldProducer::FillCommonParameters(params);
     schedule.NewCB(ACCESS_GFX_CB(IrradianceFieldParams), AlignUp(sizeof(Shader::IrradianceFieldParams), 256) * GraphicCore::GetGraphicDisplay().GetNumBuffers());
-    schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R11G11B10Float, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas), params.m_IrradianceAtlasResolution.x, params.m_IrradianceAtlasResolution.y, RhiFormat::R16G16B16A16Float, RhiResourceDimension::Texture2D);
     schedule.NewUA(ACCESS_GFX_UA(IrradianceFieldDepthAtlas), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
     schedule.NewSR(ACCESS_GFX_SR(IrradianceFieldDepthAtlas), params.m_DepthAtlasResolution.x, params.m_DepthAtlasResolution.y, RhiFormat::R16G16Float, RhiResourceDimension::Texture2D);
 

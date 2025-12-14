@@ -37,6 +37,7 @@ struct PS_INPUT
     float2 TexCoord         : TEXCOORD1;
     float4 ClipPos          : TEXCOORD2;
     float4 ClipPosPrev      : TEXCOORD3;
+    bool   IsFrontFace      : SV_ISFRONTFACE;
 };
 
 struct PS_OUTPUT
@@ -66,7 +67,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
 
     InterpolatedSurface interpolatedSurface;
     interpolatedSurface.m_VertexPosition = ClipToWorldSpace(IN.ClipPos);
-    interpolatedSurface.m_Normal = IN.Normal;
+    interpolatedSurface.m_Normal = IN.IsFrontFace ? IN.Normal : -IN.Normal;
     interpolatedSurface.m_Tangent = IN.Tangent;
     interpolatedSurface.m_Color = IN.Color;
     interpolatedSurface.m_TexCoord = IN.TexCoord;
