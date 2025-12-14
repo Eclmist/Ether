@@ -89,7 +89,7 @@ float3 SampleEnvironmentLighting(float3 wi, float mipLevel)
 
 float3 SampleEnvironmentLighting(float3 wi)
 {
-    return SampleEnvironmentLighting(wi, 4);
+    return SampleEnvironmentLighting(wi, 8);
 }
 
 RayPayload TraceShadowRay(ShadingSurface surface, float3 direction)
@@ -206,7 +206,6 @@ void ClosestHit(inout RayPayload payload, in BuiltInTriangleIntersectionAttribut
         }
     }
 #endif
-
 }
 
 [shader("anyhit")]

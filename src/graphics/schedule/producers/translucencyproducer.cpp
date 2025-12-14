@@ -27,6 +27,7 @@
 
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/instanceparams.h"
+#include "graphics/shaders/common/irradiancefieldparams.h"
 
 DEFINE_GFX_PA(TranslucencyProducer)
 
@@ -35,6 +36,9 @@ DECLARE_GFX_DS(SceneDepth)
 DECLARE_GFX_SR(SceneDepth)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
+DECLARE_GFX_SR(IrradianceFieldIrradianceAtlas)
+DECLARE_GFX_SR(IrradianceFieldDepthAtlas)
+DECLARE_GFX_CB(IrradianceFieldParams)
 
 #if ETH_TOOLMODE
 DECLARE_GFX_RT(MetadataBuffer)
@@ -61,6 +65,9 @@ void Ether::Graphics::TranslucencyProducer::GetInputOutput(ScheduleContext& sche
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
+    schedule.Read(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    schedule.Read(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
+    schedule.Read(ACCESS_GFX_CB(IrradianceFieldParams));
 
 #if ETH_TOOLMODE
     if (config.IsTranslucencyPickingEnabled())
@@ -96,6 +103,9 @@ void Ether::Graphics::TranslucencyProducer::RenderFrame(GraphicContext& ctx, Res
     ctx.Bind(ACCESS_GFX_CB(GlobalConstants), GetRingBufferOffset());
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
+    ctx.Bind(ACCESS_GFX_CB(IrradianceFieldParams), AlignUp(sizeof(Shader::IrradianceFieldParams), 256) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex());
 
 #if ETH_TOOLMODE
     if (config.IsTranslucencyPickingEnabled())

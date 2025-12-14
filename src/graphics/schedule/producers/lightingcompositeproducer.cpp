@@ -28,8 +28,8 @@ DEFINE_GFX_SR(SceneColor)
 DEFINE_GFX_UA(SceneColor)
 
 DECLARE_GFX_SR(SceneDepth)
-DECLARE_GFX_SR(LightingTexture)
-DECLARE_GFX_SR(DiffuseIndirectTexture)
+DECLARE_GFX_SR(DirectLightingTexture)
+DECLARE_GFX_SR(DiffuseIndirectLightingTexture)
 DECLARE_GFX_SR(ProceduralSkyTexture)
 DECLARE_GFX_CB(GlobalConstants)
 
@@ -46,8 +46,8 @@ void Ether::Graphics::LightingCompositeProducer::GetInputOutput(ScheduleContext&
     schedule.NewUA(ACCESS_GFX_UA(SceneColor), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
-    schedule.Read(ACCESS_GFX_SR(LightingTexture));
-    schedule.Read(ACCESS_GFX_SR(DiffuseIndirectTexture));
+    schedule.Read(ACCESS_GFX_SR(DirectLightingTexture));
+    schedule.Read(ACCESS_GFX_SR(DiffuseIndirectLightingTexture));
     schedule.Read(ACCESS_GFX_SR(ProceduralSkyTexture));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
 }
@@ -58,8 +58,8 @@ void Ether::Graphics::LightingCompositeProducer::RenderFrame(GraphicContext& ctx
 
     FullScreenPixelProducer::RenderFrame(ctx, rc);
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
-    ctx.Bind(ACCESS_GFX_SR(LightingTexture));
-    ctx.Bind(ACCESS_GFX_SR(DiffuseIndirectTexture));
+    ctx.Bind(ACCESS_GFX_SR(DirectLightingTexture));
+    ctx.Bind(ACCESS_GFX_SR(DiffuseIndirectLightingTexture));
     ctx.Bind(ACCESS_GFX_SR(ProceduralSkyTexture));
     ctx.SetRenderTarget(*ACCESS_GFX_RT(SceneColor).Get());
     FullScreenPixelProducer::DrawFullScreen(ctx);

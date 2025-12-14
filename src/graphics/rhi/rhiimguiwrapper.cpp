@@ -219,6 +219,7 @@ void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
                     ImGui::Text("Irradiance Interior Texels: %u", gfxConfig.m_IrradianceTileSize);
                     ImGui::Text("Depth Interior Texels: %u", gfxConfig.m_DepthTileSize);
                     ImGui::Separator();
+                    ImGui::Checkbox("Visualize Probes", &gfxConfig.m_IrradianceProbeVisualize);
                     ImGui::SliderFloat("Visualize Probe Radius", &gfxConfig.m_IrradianceFieldVisualizeProbeRadius, 0.01f, 1.0f);
                     ImGui::TreePop();
                 }
@@ -233,10 +234,10 @@ void Ether::Graphics::RhiImguiWrapper::DrawDebugMenu() const
                 {
                     ImGui::Checkbox("Raytraced Reflections", &gfxConfig.m_RaytracedReflectionsEnabled);
 
-                    const char* items[] = { "Pathtracer", "ReSTIR GI" };
-                    ImGui::Combo("Raytraced Lighting", &gfxConfig.m_LightingMode, items, IM_ARRAYSIZE(items));
+                    const char* items[] = { "Pathtracer", "ReSTIR GI", "DDGI" };
+                    ImGui::Combo("Raytraced Lighting", &gfxConfig.m_GlobalIlluminationMode, items, IM_ARRAYSIZE(items));
 
-                    if (gfxConfig.m_LightingMode == RaytracingMode::ReSTIR)
+                    if (gfxConfig.m_GlobalIlluminationMode == RaytracingMode::ReSTIR_GI)
                     {
                         if (ImGui::CollapsingHeader("ReSTIR Options"))
                         {

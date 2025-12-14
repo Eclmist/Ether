@@ -28,13 +28,12 @@
 #include "graphics/shaders/common/globalconstants.h"
 
 DEFINE_GFX_PA(PathtracedLightingProducer)
-DEFINE_GFX_UA(RTIndirectTexture)
-DEFINE_GFX_SR(RTAccumulationTexture)
+DEFINE_GFX_SR(DiffuseIndirectAccumulationTexture)
 
 DECLARE_GFX_SR(RTGeometryInfo)
 DECLARE_GFX_AS(RTRaytracingTlas)
-DECLARE_GFX_UA(LightingTexture)
-DECLARE_GFX_SR(LightingTexture)
+DECLARE_GFX_UA(DirectLightingTexture)
+DECLARE_GFX_UA(DiffuseIndirectLightingTexture)
 DECLARE_GFX_SR(GBufferTextureA)
 DECLARE_GFX_SR(GBufferTextureB)
 DECLARE_GFX_SR(GBufferTextureC)
@@ -65,8 +64,7 @@ void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
-    schedule.NewUA(ACCESS_GFX_UA(RTIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(RTAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(DiffuseIndirectAccumulationTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
     schedule.Read(ACCESS_GFX_AS(RTRaytracingTlas));
@@ -76,6 +74,7 @@ void Ether::Graphics::PathtracedLightingProducer::GetInputOutput(ScheduleContext
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
+    schedule.Read(ACCESS_GFX_UA(DiffuseIndirectLightingTexture));
 
     InitializeShaderBindingTable(rc);
 }
@@ -91,7 +90,7 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     const auto resolution = GraphicCore::GetGraphicConfig().GetResolution();
 
     ctx.PushMarker("Direct & Indirect lighting with pathtracing");
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(LightingTexture)), RhiResourceState::UnorderedAccess);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(DirectLightingTexture)), RhiResourceState::UnorderedAccess);
     ctx.SetSrvCbvUavDescriptorHeap(GraphicCore::GetSrvCbvUavAllocator().GetDescriptorHeap());
     ctx.SetSamplerDescriptorHeap(GraphicCore::GetSamplerAllocator().GetDescriptorHeap());
     ctx.SetComputeRootSignature(*m_RootSignature);
@@ -101,18 +100,19 @@ void Ether::Graphics::PathtracedLightingProducer::RenderFrame(GraphicContext& ct
     ctx.Bind(ACCESS_GFX_SR(MaterialTable));
     ctx.Bind(ACCESS_GFX_AS(RTRaytracingTlas));
     ctx.Bind(ACCESS_GFX_SR(RTGeometryInfo));
-    ctx.Bind(ACCESS_GFX_SR(RTAccumulationTexture));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
-    ctx.Bind(ACCESS_GFX_UA(LightingTexture));
-    ctx.Bind(ACCESS_GFX_UA(RTIndirectTexture));
+    ctx.Bind(ACCESS_GFX_UA(DirectLightingTexture));
+    ctx.Bind(ACCESS_GFX_UA(DiffuseIndirectLightingTexture));
+    ctx.Bind(ACCESS_GFX_SR(DiffuseIndirectAccumulationTexture));
     ctx.DispatchRays(resolution.x, resolution.y, 1);
 
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), RhiResourceState::CopySrc);
-    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)), RhiResourceState::CopyDest);
-    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(RTIndirectTexture)), *rc.GetResource(ACCESS_GFX_SR(RTAccumulationTexture)));
+    // TODO: Move transition into CopyResource
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_UA(DiffuseIndirectLightingTexture)), RhiResourceState::CopySrc);
+    ctx.TransitionResource(*rc.GetResource(ACCESS_GFX_SR(DiffuseIndirectAccumulationTexture)), RhiResourceState::CopyDest);
+    ctx.CopyResource(*rc.GetResource(ACCESS_GFX_UA(DiffuseIndirectLightingTexture)), *rc.GetResource(ACCESS_GFX_SR(DiffuseIndirectAccumulationTexture)));
     ctx.PopMarker();
 }
 
@@ -121,7 +121,7 @@ bool Ether::Graphics::PathtracedLightingProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    if (GraphicCore::GetGraphicConfig().m_LightingMode != RaytracingMode::Pathtracer)
+    if (GraphicCore::GetGraphicConfig().m_GlobalIlluminationMode != RaytracingMode::Pathtracer)
         return false;
 
     if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())

@@ -22,7 +22,8 @@
 
 #include "lighting/restir/gireservoirresampling.hlsl"
 
-RWTexture2D<float4> RWLightingTexture : register(u3);
+RWTexture2D<float4> RWDirectLightingTexture             : register(u3);
+RWTexture2D<float4> RWDiffuseIndirectLightingTexture    : register(u4);
 
 [shader("raygeneration")]
 void RayGeneration()
@@ -42,13 +43,6 @@ void RayGeneration()
 
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
     GIReservoir finalReservoir = GIReservoir::Unpack(InputReservoir[sampleIdx]);
-    DeviceMemoryBarrier();
-
-    const RayPayload shadowRay = TraceShadowRay(surface, GlobalConstants.m_SunDirection.xyz);
-    const float3 Li = shadowRay.m_Radiance;
-    const float3 wi = normalize(GlobalConstants.m_SunDirection.xyz);
-    const float3 wo = normalize(GlobalConstants.m_CameraPosition.xyz - surface.m_Position);
-    const float3 directLighting = ComputeRadiance(surface, Li, wi, wo);
     float3 indirectLighting = 0;
 
     finalReservoir.m_TargetPdf = ComputeTargetFunction(surface, finalReservoir.m_Sample);
@@ -67,8 +61,7 @@ void RayGeneration()
         indirectLighting = finalReservoir.m_TargetPdf * finalReservoir.m_WeightSum;
     }
 
-    RWLightingTexture[screenCoords].xyz = surface.m_Emission + directLighting;
-    RWLightingTexture[screenCoords].a = 0;
+    RWDiffuseIndirectLightingTexture[screenCoords].xyz = indirectLighting;
 }
 
 #endif // __RESTIR_GI_SHADE_RESERVOIR_RGS_HLSL__

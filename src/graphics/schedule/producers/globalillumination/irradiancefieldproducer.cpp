@@ -262,7 +262,15 @@ bool Ether::Graphics::IrradianceFieldVisualizationProducer::IsEnabled()
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    // TODO: Add toggle
+    if (!GraphicCore::GetGraphicConfig().m_IrradianceFieldEnabled)
+        return false;
+
+    if (!GraphicCore::GetGraphicConfig().m_IrradianceProbeVisualize)
+        return false;
+
+    // Allow for ReSTIR GI as well since it uses irradiance field as well
+    if (GraphicCore::GetGraphicConfig().m_GlobalIlluminationMode == RaytracingMode::Pathtracer)
+        return false;
 
     return true;
 }

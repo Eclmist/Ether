@@ -40,6 +40,9 @@ public:
 
 public:
     bool m_ToolmodeVisibility;
+
+public:
+    // Transients
     bool m_ToolmodeSelected;
 };
 } // namespace Ether::Ecs

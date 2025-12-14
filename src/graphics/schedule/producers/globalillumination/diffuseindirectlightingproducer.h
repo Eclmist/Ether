@@ -23,14 +23,17 @@
 
 namespace Ether::Graphics
 {
-class DiffuseIndirectProducer : public FullScreenComputeProducer
+class DiffuseIndirectLightingProducer : public FullScreenComputeProducer
 {
 public:
-    DiffuseIndirectProducer();
-    ~DiffuseIndirectProducer() override = default;
+    DiffuseIndirectLightingProducer();
+    ~DiffuseIndirectLightingProducer() override = default;
 
 public:
     void GetInputOutput(ScheduleContext& schedule, ResourceContext& rc) override;
     void RenderFrame(GraphicContext& ctx, ResourceContext& rc) override;
+
+protected:
+    bool IsEnabled() override;
 };
 } // namespace Ether::Graphics

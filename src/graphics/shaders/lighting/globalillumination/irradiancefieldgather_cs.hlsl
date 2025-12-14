@@ -24,12 +24,12 @@
 #include "lighting/globalillumination/irradiancefield.hlsl"
 #include "utils/shading.hlsl"
 
-RWTexture2D<float4> RWDiffuseIndirectTexture : register(u0);
+RWTexture2D<float4> RWDiffuseIndirectLightingTexture : register(u0);
 
-Texture2D<float4> GBufferTextureA            : register(t4);
-Texture2D<float4> GBufferTextureB            : register(t5);
-Texture2D<float4> GBufferTextureC            : register(t6);
-Texture2D<float2> SceneDepth                 : register(t7);
+Texture2D<float4> GBufferTextureA                    : register(t4);
+Texture2D<float4> GBufferTextureB                    : register(t5);
+Texture2D<float4> GBufferTextureC                    : register(t6);
+Texture2D<float2> SceneDepth                         : register(t7);
 
 [numthreads(32, 32, 1)]
 void CS_Main(uint3 threadID : SV_DispatchThreadID)
@@ -40,7 +40,8 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
         return;
 
     const ShadingSurface surface = GetShadingSurfaceFromGBuffers(screenCoords, GBufferTextureA, GBufferTextureB, GBufferTextureC, SceneDepth);
-    RWDiffuseIndirectTexture[screenCoords] = float4(SampleIrradianceField(surface.m_Position, surface.m_Normal), 1.0f);
+    const float3 indirect = SampleIrradianceField(surface.m_Position, surface.m_Normal);
+    RWDiffuseIndirectLightingTexture[screenCoords] = float4(indirect * surface.m_BaseColor / Pi, 1.0f);
 }
 
 #endif // __IRRADIANCE_FIELD_GATHER_CS_HLSL__

@@ -20,8 +20,11 @@
 #ifndef __GI_RESERVOIR_SAMPLING_HLSL__
 #define __GI_RESERVOIR_SAMPLING_HLSL__
 
-#include "utils/sampling.hlsl"
+#define USE_IRRADIANCE_FIELD 1
+#include "lighting/globalillumination/irradiancefield.hlsl"
 #include "utils/raytracing.hlsl"
+
+#include "utils/sampling.hlsl"
 #include "utils/helpers.hlsl"
 #include "common/raytracingconstants.h"
 #include "common/material.h"
@@ -35,10 +38,10 @@
 #define NUM_SPATIAL_SAMPLES 8
 #define SPATIAL_KERNEL_RADIUS 64
 
-Texture2D<float2> SceneDepth                                : register(t3);
-Texture2D<float4> GBufferTextureA                           : register(t4);
-Texture2D<float4> GBufferTextureB                           : register(t5);
-Texture2D<float4> GBufferTextureC                           : register(t6);
+Texture2D<float2> SceneDepth                                : register(t4);
+Texture2D<float4> GBufferTextureA                           : register(t5);
+Texture2D<float4> GBufferTextureB                           : register(t6);
+Texture2D<float4> GBufferTextureC                           : register(t7);
 
 RWStructuredBuffer<GIPackedReservoir> InputReservoir        : register(u0);
 RWStructuredBuffer<GIPackedReservoir> HistoryReservoir      : register(u1);

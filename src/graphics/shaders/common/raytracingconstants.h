@@ -30,7 +30,7 @@ ETH_BEGIN_SHADER_NAMESPACE
 #define RAY_TMAX            128
 #define RAY_TMIN            0.01
 
-#define USE_IMPORTANCE_SAMPLING 1
+#define USE_IMPORTANCE_SAMPLING 0
 
 struct GeometryInfo
 {

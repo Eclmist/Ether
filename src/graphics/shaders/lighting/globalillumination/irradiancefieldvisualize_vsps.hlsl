@@ -86,7 +86,7 @@ float4 PS_Main(VS_OUTPUT IN) : SV_Target
 
     const float3 intersectionPos = rayOrigin + rayDir * intersections.x;
     const float3 worldDir = normalize(intersectionPos - probeWorldCenter);
-    const float3 probeColor = SampleProbeIrradiance(IN.ProbeIndex, worldDir);
+    const float3 probeColor = SampleProbeIrradiance(IN.ProbeIndex, worldDir) / Pi;
 
     return float4(probeColor, 1.0);
 }

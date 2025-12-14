@@ -27,13 +27,14 @@
 #include "graphics/schedule/producers/materialtableproducer.h"
 #include "graphics/schedule/producers/proceduralskyproducer.h"
 #include "graphics/schedule/producers/raytracingresourceproducer.h"
-#include "graphics/schedule/producers/raytracedlightingproducer.h"
+#include "graphics/schedule/producers/reservoirlightingproducer.h"
 #include "graphics/schedule/producers/raytracedtranslucencyproducer.h"
+#include "graphics/schedule/producers/directlightingproducer.h"
 #include "graphics/schedule/producers/pathtracedlightingproducer.h"
 #include "graphics/schedule/producers/translucencyproducer.h"
 
 #include "graphics/schedule/producers/globalillumination/irradiancefieldproducer.h"
-#include "graphics/schedule/producers/globalillumination/diffuseindirectproducer.h"
+#include "graphics/schedule/producers/globalillumination/diffuseindirectlightingproducer.h"
 
 #include "graphics/schedule/producers/postprocess/postfxsourceproducer.h"
 #include "graphics/schedule/producers/postprocess/bloomproducer.h"
@@ -52,8 +53,9 @@ DECLARE_GFX_PA(MaterialTableProducer)
 DECLARE_GFX_PA(ProceduralSkyProducer)
 DECLARE_GFX_PA(RaytracingResourceProducer)
 DECLARE_GFX_PA(IrradianceFieldProducer)
-DECLARE_GFX_PA(DiffuseIndirectProducer)
-DECLARE_GFX_PA(RaytracedLightingProducer)
+DECLARE_GFX_PA(DiffuseIndirectLightingProducer)
+DECLARE_GFX_PA(DirectLightingProducer)
+DECLARE_GFX_PA(ReservoirLightingProducer)
 DECLARE_GFX_PA(RaytracedTranslucencyProducer)
 DECLARE_GFX_PA(PathtracedLightingProducer)
 DECLARE_GFX_PA(LightingCompositeProducer)
@@ -80,8 +82,9 @@ Ether::Graphics::FrameScheduler::FrameScheduler()
     Register(ACCESS_GFX_PA(ProceduralSkyProducer), new ProceduralSkyProducer());
     Register(ACCESS_GFX_PA(RaytracingResourceProducer), new RaytracingResourceProducer());
     Register(ACCESS_GFX_PA(IrradianceFieldProducer), new IrradianceFieldProducer());
-    Register(ACCESS_GFX_PA(DiffuseIndirectProducer), new DiffuseIndirectProducer());
-    Register(ACCESS_GFX_PA(RaytracedLightingProducer), new RaytracedLightingProducer());
+    Register(ACCESS_GFX_PA(DiffuseIndirectLightingProducer), new DiffuseIndirectLightingProducer());
+    Register(ACCESS_GFX_PA(DirectLightingProducer), new DirectLightingProducer());
+    Register(ACCESS_GFX_PA(ReservoirLightingProducer), new ReservoirLightingProducer());
     Register(ACCESS_GFX_PA(RaytracedTranslucencyProducer), new RaytracedTranslucencyProducer());
     Register(ACCESS_GFX_PA(PathtracedLightingProducer), new PathtracedLightingProducer());
     Register(ACCESS_GFX_PA(LightingCompositeProducer), new LightingCompositeProducer());
@@ -113,8 +116,9 @@ Ether::Graphics::FrameScheduler::~FrameScheduler()
     ACCESS_GFX_PA(ProceduralSkyProducer).Release();
     ACCESS_GFX_PA(RaytracingResourceProducer).Release();
     ACCESS_GFX_PA(IrradianceFieldProducer).Release();
-    ACCESS_GFX_PA(DiffuseIndirectProducer).Release();
-    ACCESS_GFX_PA(RaytracedLightingProducer).Release();
+    ACCESS_GFX_PA(DiffuseIndirectLightingProducer).Release();
+    ACCESS_GFX_PA(DirectLightingProducer).Release();
+    ACCESS_GFX_PA(ReservoirLightingProducer).Release();
     ACCESS_GFX_PA(PathtracedLightingProducer).Release();
     ACCESS_GFX_PA(TranslucencyProducer).Release();
     ACCESS_GFX_PA(RaytracedTranslucencyProducer).Release();
@@ -199,9 +203,10 @@ void Ether::Graphics::FrameScheduler::BuildSchedule(GraphicContext& gfxContext)
     m_OrderedProducers.push(ACCESS_GFX_PA(ProceduralSkyProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(RaytracingResourceProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(IrradianceFieldProducer).Get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(DiffuseIndirectProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(GBufferProducer).Get());
-    m_OrderedProducers.push(ACCESS_GFX_PA(RaytracedLightingProducer).Get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(DirectLightingProducer).Get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(DiffuseIndirectLightingProducer).Get());
+    m_OrderedProducers.push(ACCESS_GFX_PA(ReservoirLightingProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(PathtracedLightingProducer).Get());
     m_OrderedProducers.push(ACCESS_GFX_PA(LightingCompositeProducer).Get());
 

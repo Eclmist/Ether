@@ -26,7 +26,6 @@
 [shader("raygeneration")]
 void RayGeneration()
 {
-/*
     const uint2 sampleCoords = DispatchRaysIndex().xy;
     const uint2 screenCoords = GetScreenCoordsFromSampleCoords(sampleCoords);
     const uint2 bufferSize = DispatchRaysDimensions().xy;
@@ -68,7 +67,6 @@ void RayGeneration()
     initialReservoir.Resample(initialSample, Random(screenCoords * GlobalConstants.m_FrameNumber), targetFunction, risWeight);
 
     RWOutputReservoir[sampleIdx] = GIReservoir::Pack(initialReservoir);
-*/
 }
 
 #endif // __RESTIR_INITIAL_GENERATION_RGS_HLSL__

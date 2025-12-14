@@ -20,7 +20,7 @@
 #ifndef __IRRADIANCE_FIELD_PROBE_TRACING_HLSL__
 #define __IRRADIANCE_FIELD_PROBE_TRACING_HLSL__
 
-#define USE_IRRADIANCE_FIELD 0
+#define USE_IRRADIANCE_FIELD 1
 #include "lighting/globalillumination/irradiancefield.hlsl"
 #include "utils/raytracing.hlsl"
 
@@ -28,7 +28,10 @@ RayPayload TraceProbeRay(float3 origin, float3 direction)
 {
     RayPayload payload;
     payload.m_IsShadowRay = false;
-    payload.m_Depth = MAX_DEPTH;
+
+    // Only need 2, one for the probe ray, and one for direct light on hit. 
+    // Infinite bounce is handled by reading back from irradiance cache with USE_IRRADIANCE_FIELD 1 
+    payload.m_Depth = 2; 
     
     RayDesc ray;
     ray.Origin = origin;
@@ -66,18 +69,18 @@ void RayGeneration()
     
     const uint3 probeGridCoords = dispatchCoords;
     const uint probeIndex = probeGridCoords.x + 
-                           probeGridCoords.y * IrradianceFieldParams.m_GridResolution.x +
-                           probeGridCoords.z * IrradianceFieldParams.m_GridResolution.x * IrradianceFieldParams.m_GridResolution.y;
+                            probeGridCoords.y * IrradianceFieldParams.m_GridResolution.x +
+                            probeGridCoords.z * IrradianceFieldParams.m_GridResolution.x * IrradianceFieldParams.m_GridResolution.y;
     
     float3 probeWorldPos = GetProbeWorldPosition(probeIndex);
     uint2 atlasOffset = GetAtlasOffset(probeIndex, IrradianceFieldParams.m_IrradianceTileSize);
     const uint tileSize = IrradianceFieldParams.m_IrradianceTileSize;
     
-    const uint sqrtNumRays = 4;
+    const uint sqrtNumRays = 16;
     const uint numRays = sqrtNumRays * sqrtNumRays;
  
-    // First, read previous frame's irradiance for this probe into local storage
-    float3 previousIrradiance[64]; // Assuming max 8x8 interior = 64 texels, adjust as needed
+    // read previous frame's irradiance for this probe into local storage
+    float3 previousIrradiance[64]; // Assuming max 8x8 interior = 64 texels
     uint texelIdx = 0;
     for (uint y = 1; y < tileSize - 1; y++)
     {
@@ -101,6 +104,7 @@ void RayGeneration()
         float2 jitter = CMJ_Sample2D(rayIdx, sqrtNumRays, sqrtNumRays, GlobalConstants.m_FrameNumber);
         float2 sampleUV = (float2(strataX, strataY) + jitter) / float(sqrtNumRays);
         float3 rayDirection = SampleDirectionSphere(sampleUV);
+        float pdf = SampleDirectionSphere_Pdf();
         
         RayPayload payload = TraceProbeRay(probeWorldPos, rayDirection);
         
@@ -112,45 +116,99 @@ void RayGeneration()
             {
                 uint2 localCoords = uint2(xx, yy);
                 float3 texelDirection = TileTexelToDirection(localCoords, tileSize);
-                float weight = max(0.0, dot(rayDirection, texelDirection));
+                float cosTheta = saturate(dot(rayDirection, texelDirection));
                 
-                if (weight > 0.0)
+                if (cosTheta > 0.0)
                 {
-                    accumulatedIrradiance[texelIdx] += payload.m_Radiance * weight;
+                    accumulatedIrradiance[texelIdx] += payload.m_Radiance * cosTheta / (numRays * pdf);
                 }
                 texelIdx++;
             }
         }
     }
     
-    // Normalize by number of rays and blend with history
+    // Spatial filtering from neighboring probes
+    const int3 neighborOffsets[6] = {
+        int3(-1, 0, 0), int3(1, 0, 0),
+        int3(0, -1, 0), int3(0, 1, 0),
+        int3(0, 0, -1), int3(0, 0, 1)
+    };
+    
+    float3 spatiallyFilteredIrradiance[64];
     texelIdx = 0;
-    float hysteresis = 0.95;
     for (uint yyy = 1; yyy < tileSize - 1; yyy++)
     {
         for (uint xxx = 1; xxx < tileSize - 1; xxx++)
         {
-            float3 newIrradiance = accumulatedIrradiance[texelIdx] / numRays;
-            float3 blendedIrradiance = lerp(newIrradiance, previousIrradiance[texelIdx], hysteresis);
+            uint2 localCoords = uint2(xxx, yyy);
+            float3 texelDirection = TileTexelToDirection(localCoords, tileSize);
             
-            uint2 atlasCoords = atlasOffset + uint2(xxx, yyy);
+            float3 centerIrradiance = accumulatedIrradiance[texelIdx];
+            float3 neighborSum = 0;
+            float totalWeight = 1.0; // Weight for center probe
+            
+            // Sample from immediate neighbors
+            for (uint n = 0; n < 6; n++)
+            {
+                int3 neighborGridCoords = int3(probeGridCoords) + neighborOffsets[n];
+                
+                // Check bounds
+                if (any(neighborGridCoords < 0) || 
+                    any(neighborGridCoords >= int3(IrradianceFieldParams.m_GridResolution)))
+                    continue;
+                
+                uint neighborProbeIndex = neighborGridCoords.x + 
+                                         neighborGridCoords.y * IrradianceFieldParams.m_GridResolution.x +
+                                         neighborGridCoords.z * IrradianceFieldParams.m_GridResolution.x * IrradianceFieldParams.m_GridResolution.y;
+                
+                uint2 neighborAtlasOffset = GetAtlasOffset(neighborProbeIndex, IrradianceFieldParams.m_IrradianceTileSize);
+                uint2 neighborAtlasCoords = neighborAtlasOffset + localCoords;
+                
+                float3 neighborIrradiance = IrradianceFieldIrradianceAtlas[neighborAtlasCoords];
+                
+                // Weight by direction similarity (optional - helps preserve directional features)
+                float3 toNeighbor = normalize(float3(neighborOffsets[n]));
+                float directionWeight = saturate(dot(texelDirection, toNeighbor) * 0.5 + 0.5);
+                
+                neighborSum += neighborIrradiance * directionWeight;
+                totalWeight += directionWeight;
+            }
+            
+            spatiallyFilteredIrradiance[texelIdx] = (centerIrradiance + neighborSum) / totalWeight;
+            texelIdx++;
+        }
+    }
+    
+    // Temporal blend with history
+    texelIdx = 0;
+    float temporalBlend = 0.90; // High history weight for stability
+    for (uint yyyy = 1; yyyy < tileSize - 1; yyyy++)
+    {
+        for (uint xxxx = 1; xxxx < tileSize - 1; xxxx++)
+        {
+            float3 filteredIrradiance = spatiallyFilteredIrradiance[texelIdx];
+            float3 blendedIrradiance = lerp(filteredIrradiance, previousIrradiance[texelIdx], temporalBlend);
+            
+            uint2 atlasCoords = atlasOffset + uint2(xxxx, yyyy);
             RWIrradianceFieldIrradianceAtlas[atlasCoords] = blendedIrradiance;
             
             texelIdx++;
         }
     }
-
-    for (uint yyyy = 0; yyyy < tileSize; yyyy++)
+    
+    // Fill borders
+    for (uint yyyyy = 0; yyyyy < tileSize; yyyyy++)
     {
-        for (uint xxxx = 0; xxxx < tileSize; xxxx++)
+        for (uint xxxxx = 0; xxxxx < tileSize; xxxxx++)
         {
-            if (xxxx > 0 && xxxx < tileSize - 1 && yyyy > 0 && yyyy < tileSize - 1)
+            if (xxxxx > 0 && xxxxx < tileSize - 1 && yyyyy > 0 && yyyyy < tileSize - 1)
                 continue;
             
-            uint2 borderCoords = atlasOffset + uint2(xxxx, yyyy);
+            uint2 borderCoords = atlasOffset + uint2(xxxxx, yyyyy);
             FillIrradianceBorder(borderCoords);
         }
     }
+
 }
 
 #endif // __IRRADIANCE_FIELD_PROBE_TRACING_HLSL__

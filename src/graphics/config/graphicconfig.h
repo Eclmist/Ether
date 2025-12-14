@@ -31,7 +31,8 @@ namespace Ether::Graphics
 enum RaytracingMode : int32_t
 {
     Pathtracer,
-    ReSTIR
+    ReSTIR_GI,
+    DDGI,
 };
 
 struct ReSTIRGIConfig
@@ -81,7 +82,8 @@ public:
     bool m_IsRaytracingEnabled = true;
     bool m_IsRaytracingDebugEnabled = false;
     bool m_RaytracedReflectionsEnabled = true;
-    int32_t m_LightingMode = RaytracingMode::ReSTIR;
+    bool m_IrradianceFieldEnabled = true;
+    int32_t m_GlobalIlluminationMode = RaytracingMode::DDGI;
     int32_t m_SkinningDebugBoneId = -1;
 
     // Camera
@@ -136,12 +138,13 @@ public:
     bool m_TranslucencyEnabled = true;
 
     // DDGI
-    float m_IrradianceFieldGridSpacing = 1.0f;
-    ethVector3 m_IrradianceFieldGridOrigin = { 0, 0, 0 };
-    ethVector3u m_IrradianceFieldGridResolution = { 32, 4, 32 };
+    float m_IrradianceFieldGridSpacing = 1.5f;
+    ethVector3 m_IrradianceFieldGridOrigin = { 0, 8, 0 };
+    ethVector3u m_IrradianceFieldGridResolution = { 15, 11, 8 };
     uint32_t m_IrradianceTileSize = 6;
     uint32_t m_DepthTileSize = 16;
     float m_IrradianceFieldVisualizeProbeRadius = 0.1f;
+    bool m_IrradianceProbeVisualize = false;
 
 private:
     ethVector4 m_ClearColor;

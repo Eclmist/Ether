@@ -194,7 +194,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
 
     if (all(IN.Position.xy < min(IrradianceFieldParams.m_IrradianceAtlasResolution * zoom, float2(800, 100))))
     {
-        return float4(IrradianceFieldIrradianceAtlas.Load(float3(IN.Position.xy / zoom,0)), 0.0f) / 100;
+        return float4(IrradianceFieldIrradianceAtlas.Load(float3(IN.Position.xy / zoom,0)), 0.0f) / 100000;
     }
 
     return float4(col, 1.0f);

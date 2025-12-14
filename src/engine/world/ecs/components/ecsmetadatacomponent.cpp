@@ -43,7 +43,6 @@ void Ether::Ecs::EcsMetadataComponent::Serialize(OStream& ostream) const
     ostream << m_EntityName;
     ostream << m_EntityEnabled;
     ostream << m_ToolmodeVisibility;
-    ostream << m_ToolmodeSelected;
 }
 
 void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
@@ -54,5 +53,4 @@ void Ether::Ecs::EcsMetadataComponent::Deserialize(IStream& istream)
     istream >> m_EntityName;
     istream >> m_EntityEnabled;
     istream >> m_ToolmodeVisibility;
-    istream >> m_ToolmodeSelected;
 }

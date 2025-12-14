@@ -19,7 +19,7 @@
 */
 
 // TODO: Rename to deferredlightsproducer
-#include "raytracedlightingproducer.h"
+#include "reservoirlightingproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/rhi/rhiraytracingpipelinestate.h"
@@ -27,11 +27,10 @@
 #include "graphics/resources/material.h"
 #include "graphics/shaders/common/raytracingconstants.h"
 #include "graphics/shaders/common/globalconstants.h"
+#include "graphics/shaders/common/irradiancefieldparams.h"
 
-DEFINE_GFX_PA(RaytracedLightingProducer)
+DEFINE_GFX_PA(ReservoirLightingProducer)
 
-DEFINE_GFX_UA(LightingTexture)
-DEFINE_GFX_SR(LightingTexture)
 DEFINE_GFX_UA(InputReservoir)
 DEFINE_GFX_UA(HistoryReservoir)
 DEFINE_GFX_UA(OutputReservoir)
@@ -44,6 +43,10 @@ DECLARE_GFX_SR(GBufferTextureB)
 DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_CB(GlobalConstants)
 DECLARE_GFX_SR(MaterialTable)
+DECLARE_GFX_UA(DiffuseIndirectLightingTexture)
+DECLARE_GFX_SR(IrradianceFieldIrradianceAtlas)
+DECLARE_GFX_SR(IrradianceFieldDepthAtlas)
+DECLARE_GFX_CB(IrradianceFieldParams)
 
 static const wchar_t* k_RayGenShader = L"RayGeneration";
 static const wchar_t* k_MissShader = L"Miss";
@@ -52,24 +55,21 @@ static const wchar_t* k_AnyHitShader = L"AnyHit";
 static const wchar_t* k_HitGroupName = L"HitGroup";
 static const wchar_t* s_EntryPoints[] = { k_RayGenShader, k_MissShader, k_ClosestHitShader, k_AnyHitShader };
 
-Ether::Graphics::RaytracedLightingProducer::RaytracedLightingProducer()
-    : GraphicProducer("RaytracedLightingProducer")
+Ether::Graphics::ReservoirLightingProducer::ReservoirLightingProducer()
+    : GraphicProducer("ReservoirLightingProducer")
 {
 }
 
-void Ether::Graphics::RaytracedLightingProducer::Initialize(ResourceContext& rc)
+void Ether::Graphics::ReservoirLightingProducer::Initialize(ResourceContext& rc)
 {
     CreateShaders();
     CreateRootSignature();
     CreatePipelineState(rc);
 }
 
-void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
+void Ether::Graphics::ReservoirLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     const ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-
-    schedule.NewUA(ACCESS_GFX_UA(LightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(LightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(RTGeometryInfo));
     schedule.Read(ACCESS_GFX_AS(RTRaytracingTlas));
@@ -79,6 +79,10 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     schedule.Read(ACCESS_GFX_SR(GBufferTextureC));
     schedule.Read(ACCESS_GFX_CB(GlobalConstants));
     schedule.Read(ACCESS_GFX_SR(MaterialTable));
+    schedule.Read(ACCESS_GFX_UA(DiffuseIndirectLightingTexture));
+    schedule.Read(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    schedule.Read(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
+    schedule.Read(ACCESS_GFX_CB(IrradianceFieldParams));
 
     /* ReSTIR GI Implementation */
     const uint32_t downsampleFactor = GraphicCore::GetGraphicConfig().m_ReSTIRGIConfig.m_DownsampleFactor;
@@ -91,9 +95,9 @@ void Ether::Graphics::RaytracedLightingProducer::GetInputOutput(ScheduleContext&
     InitializeShaderBindingTable(rc);
 }
 
-void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::ReservoirLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    ETH_MARKER_EVENT("RaytracedLightingProducer");
+    ETH_MARKER_EVENT("ReservoirLightingProducer");
 
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
@@ -115,6 +119,9 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
+    ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
+    ctx.Bind(ACCESS_GFX_CB(IrradianceFieldParams), AlignUp(sizeof(Shader::IrradianceFieldParams), 256) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex());
 
     const bool temporalResampling = config.m_ReSTIRGIConfig.m_TemporalResampling;
     const bool spatialResampling = config.m_ReSTIRGIConfig.m_SpatialResampling;
@@ -151,43 +158,47 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         fallbackReservoir = historyReservoir;
     }
 
-    // Initial Reservoir Generation
+    // Use for DDGI as well since we're borrowing the final shading pass for direct lighting (TODO)
+    if (GraphicCore::GetGraphicConfig().m_GlobalIlluminationMode != RaytracingMode::DDGI)
     {
-        ctx.PushMarker("ReSTIR - Initial Reservoir Generation");
-        ctx.SetRaytracingShaderBindingTable(m_InitialGenerationSBT);
-        ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_InitialGenerationPsoDesc));
-        ctx.Bind("RWOutputReservoir", initialReservoir);
-        ctx.DispatchRays(sampleResolution.x, sampleResolution.y, 1);
-        ctx.PopMarker();
-    }
+        // Initial Reservoir Generation
+        {
+            ctx.PushMarker("ReSTIR - Initial Reservoir Generation");
+            ctx.SetRaytracingShaderBindingTable(m_InitialGenerationSBT);
+            ctx.SetRaytracingPipelineState((RhiRaytracingPipelineState&)rc.GetPipelineState(*m_InitialGenerationPsoDesc));
+            ctx.Bind("RWOutputReservoir", initialReservoir);
+            ctx.DispatchRays(sampleResolution.x, sampleResolution.y, 1);
+            ctx.PopMarker();
+        }
 
-    // Temporal Resampling Pass
-    if (temporalResampling)
-    {
-        ctx.PushMarker("ReSTIR - Temporal Resampling");
-        ctx.InsertUavBarrier(*rc.GetResource(initialReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
-        ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_TemporalResamplingPsoDesc));
-        ctx.Bind("InputReservoir", initialReservoir);
-        ctx.Bind("HistoryReservoir", historyReservoir);
-        ctx.Bind("RWOutputReservoir", stagingReservoir);
-        ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
-        ctx.PopMarker();
-    }
+        // Temporal Resampling Pass
+        if (temporalResampling)
+        {
+            ctx.PushMarker("ReSTIR - Temporal Resampling");
+            ctx.InsertUavBarrier(*rc.GetResource(initialReservoir));
+            ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
+            ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
+            ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_TemporalResamplingPsoDesc));
+            ctx.Bind("InputReservoir", initialReservoir);
+            ctx.Bind("HistoryReservoir", historyReservoir);
+            ctx.Bind("RWOutputReservoir", stagingReservoir);
+            ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
+            ctx.PopMarker();
+        }
 
-    // Spatial Resampling Pass
-    if (spatialResampling)
-    {
-        ctx.PushMarker("ReSTIR - Spatial Resampling");
-        ctx.InsertUavBarrier(*rc.GetResource(initialReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
-        ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
-        ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_SpatialResamplingPsoDesc));
-        ctx.Bind("InputReservoir", (temporalResampling ? stagingReservoir : initialReservoir));
-        ctx.Bind("RWOutputReservoir", (temporalResampling ? historyReservoir : stagingReservoir));
-        ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
-        ctx.PopMarker();
+        // Spatial Resampling Pass
+        if (spatialResampling)
+        {
+            ctx.PushMarker("ReSTIR - Spatial Resampling");
+            ctx.InsertUavBarrier(*rc.GetResource(initialReservoir));
+            ctx.InsertUavBarrier(*rc.GetResource(historyReservoir));
+            ctx.InsertUavBarrier(*rc.GetResource(stagingReservoir));
+            ctx.SetComputePipelineState((RhiComputePipelineState&)rc.GetPipelineState(*m_SpatialResamplingPsoDesc));
+            ctx.Bind("InputReservoir", (temporalResampling ? stagingReservoir : initialReservoir));
+            ctx.Bind("RWOutputReservoir", (temporalResampling ? historyReservoir : stagingReservoir));
+            ctx.Dispatch(std::ceil(sampleResolution.x / 8.0), std::ceil(sampleResolution.y / 8.0), 1);
+            ctx.PopMarker();
+        }
     }
 
     // Final shading pass
@@ -200,7 +211,7 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
         ctx.Bind("InputReservoir", finalReservoir);
         ctx.Bind("HistoryReservoir", fallbackReservoir);
         ctx.Bind("RWOutputReservoir", finalReservoir);
-        ctx.Bind(ACCESS_GFX_UA(LightingTexture));
+        ctx.Bind(ACCESS_GFX_UA(DiffuseIndirectLightingTexture));
         ctx.DispatchRays(resolution.x, resolution.y, 1);
         ctx.PopMarker();
     }
@@ -208,12 +219,12 @@ void Ether::Graphics::RaytracedLightingProducer::RenderFrame(GraphicContext& ctx
     ctx.PopMarker();
 }
 
-bool Ether::Graphics::RaytracedLightingProducer::IsEnabled()
+bool Ether::Graphics::ReservoirLightingProducer::IsEnabled()
 {
     if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
         return false;
 
-    if (GraphicCore::GetGraphicConfig().m_LightingMode != RaytracingMode::ReSTIR)
+    if (GraphicCore::GetGraphicConfig().m_GlobalIlluminationMode != RaytracingMode::ReSTIR_GI)
         return false;
 
     if (GraphicCore::GetGraphicRenderer().GetThreadedRenderData().m_RaytracingVisuals.empty())
@@ -222,7 +233,7 @@ bool Ether::Graphics::RaytracedLightingProducer::IsEnabled()
     return true;
 }
 
-void Ether::Graphics::RaytracedLightingProducer::CreateShaders()
+void Ether::Graphics::ReservoirLightingProducer::CreateShaders()
 {
     const RhiDevice& gfxDevice = GraphicCore::GetDevice();
     m_InitialGenerationShader = gfxDevice.CreateShader({ "lighting\\restir\\restirgi_initialgeneration_rgs.hlsl", "", RhiShaderType::Library });
@@ -242,7 +253,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreateShaders()
     GraphicCore::GetShaderDaemon().RegisterShader(*m_LightingEvaluationShader);
 }
 
-void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
+void Ether::Graphics::ReservoirLightingProducer::CreateRootSignature()
 {
     const std::vector<const RhiShaderReflection*>& shaderReflections = { &m_InitialGenerationShader->GetReflection(),
                                                                          &m_TemporalResamplingShader->GetReflection(),
@@ -252,7 +263,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreateRootSignature()
     m_RootSignature = GraphicCore::GetDevice().CreateRootSignatureDesc(shaderReflections)->Compile((GetName() + " Root Signature").c_str());
 }
 
-void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceContext& rc)
+void Ether::Graphics::ReservoirLightingProducer::CreatePipelineState(ResourceContext& rc)
 {
     uint32_t numExports = sizeof(s_EntryPoints) / sizeof(s_EntryPoints[0]);
     m_InitialGenerationPsoDesc = GraphicCore::GetDevice().CreateRaytracingPipelineStateDesc();
@@ -304,7 +315,7 @@ void Ether::Graphics::RaytracedLightingProducer::CreatePipelineState(ResourceCon
     rc.RegisterPipelineState((GetName() + " Spatial Resampling Pipeline State").c_str(), *m_SpatialResamplingPsoDesc);
 }
 
-void Ether::Graphics::RaytracedLightingProducer::InitializeShaderBindingTable(ResourceContext& rc)
+void Ether::Graphics::ReservoirLightingProducer::InitializeShaderBindingTable(ResourceContext& rc)
 {
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 

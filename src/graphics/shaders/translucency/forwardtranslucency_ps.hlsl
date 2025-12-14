@@ -28,6 +28,7 @@
 #include "utils/shading.hlsl"
 #include "utils/helpers.hlsl"
 #include "utils/fullscreenhelpers.hlsl"
+#include "lighting/globalillumination/irradiancefield.hlsl"
 
 ConstantBuffer<InstanceParams> InstanceParams   : register(b1);
 Texture2D<float2> SceneDepth                    : register(t1);
@@ -67,6 +68,7 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     float3 Lo = 0;
 
     // Sun radiance
+    /*
     const float lerpFactor = saturate(dot(GlobalConstants.m_SunDirection.xyz, float3(0, 1, 0)));
     float3 Li = lerp(0.0f, GlobalConstants.m_SunColor.xyz, lerpFactor);
     float3 wi = GlobalConstants.m_SunDirection.xyz;
@@ -74,6 +76,11 @@ PS_OUTPUT PS_Main(PS_INPUT IN)
     const float3 f = BRDF_UE4(wi, wo, surface.m_Normal, surface.m_BaseColor, surface.m_Roughness, surface.m_Metalness);
     const float cosTheta = saturate(dot(wi, surface.m_Normal));
     Lo += f * Li * cosTheta;
+    */
+
+    // DDGI Diffuse Indirect
+    const float3 indirect = SampleIrradianceField(surface.m_Position, surface.m_Normal);
+    Lo += indirect * surface.m_BaseColor / Pi;
 
     PS_OUTPUT o;
     o.Output = float4(Lo, surface.m_Opacity);

@@ -17,14 +17,14 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "diffuseindirectproducer.h"
+#include "diffuseindirectlightingproducer.h"
 
 #include "graphics/graphiccore.h"
 #include "graphics/shaders/common/globalconstants.h"
 #include "graphics/shaders/common/irradiancefieldparams.h"
 
-DEFINE_GFX_PA(DiffuseIndirectProducer)
-DEFINE_GFX_UA_SR(DiffuseIndirectTexture)
+DEFINE_GFX_PA(DiffuseIndirectLightingProducer)
+DEFINE_GFX_UA_SR(DiffuseIndirectLightingTexture)
 
 DECLARE_GFX_SR(IrradianceFieldIrradianceAtlas)
 DECLARE_GFX_SR(IrradianceFieldDepthAtlas)
@@ -35,16 +35,16 @@ DECLARE_GFX_SR(GBufferTextureB)
 DECLARE_GFX_SR(GBufferTextureC)
 DECLARE_GFX_SR(SceneDepth)
 
-Ether::Graphics::DiffuseIndirectProducer::DiffuseIndirectProducer()
-    : FullScreenComputeProducer("DiffuseIndirectProducer", "lighting\\globalillumination\\irradiancefieldgather_cs.hlsl")
+Ether::Graphics::DiffuseIndirectLightingProducer::DiffuseIndirectLightingProducer()
+    : FullScreenComputeProducer("DiffuseIndirectLightingProducer", "lighting\\globalillumination\\irradiancefieldgather_cs.hlsl")
 {
 }
 
-void Ether::Graphics::DiffuseIndirectProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
+void Ether::Graphics::DiffuseIndirectLightingProducer::GetInputOutput(ScheduleContext& schedule, ResourceContext& rc)
 {
     ethVector2u resolution = GraphicCore::GetGraphicConfig().GetResolution();
-    schedule.NewUA(ACCESS_GFX_UA(DiffuseIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
-    schedule.NewSR(ACCESS_GFX_SR(DiffuseIndirectTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewUA(ACCESS_GFX_UA(DiffuseIndirectLightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
+    schedule.NewSR(ACCESS_GFX_SR(DiffuseIndirectLightingTexture), resolution.x, resolution.y, BackBufferHdrFormat, RhiResourceDimension::Texture2D);
 
     schedule.Read(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
     schedule.Read(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
@@ -56,22 +56,35 @@ void Ether::Graphics::DiffuseIndirectProducer::GetInputOutput(ScheduleContext& s
     schedule.Read(ACCESS_GFX_SR(SceneDepth));
 }
 
-void Ether::Graphics::DiffuseIndirectProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
+void Ether::Graphics::DiffuseIndirectLightingProducer::RenderFrame(GraphicContext& ctx, ResourceContext& rc)
 {
-    ETH_MARKER_EVENT("DiffuseIndirectProducer");
+    ETH_MARKER_EVENT("DiffuseIndirectLightingProducer");
 
     const GraphicDisplay& gfxDisplay = GraphicCore::GetGraphicDisplay();
 
     FullScreenComputeProducer::RenderFrame(ctx, rc);
-    ctx.Bind(ACCESS_GFX_UA(DiffuseIndirectTexture));
+    ctx.Bind(ACCESS_GFX_UA(DiffuseIndirectLightingTexture));
     ctx.Bind(ACCESS_GFX_SR(IrradianceFieldIrradianceAtlas));
     ctx.Bind(ACCESS_GFX_SR(IrradianceFieldDepthAtlas));
     ctx.Bind(ACCESS_GFX_CB(IrradianceFieldParams), AlignUp(sizeof(Shader::IrradianceFieldParams), 256) * GraphicCore::GetGraphicDisplay().GetBackBufferIndex());
-    ctx.Bind(ACCESS_GFX_CB(GlobalConstants));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureA));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureB));
     ctx.Bind(ACCESS_GFX_SR(GBufferTextureC));
     ctx.Bind(ACCESS_GFX_SR(SceneDepth));
     DispatchFullscreen(ctx);
+}
+
+bool Ether::Graphics::DiffuseIndirectLightingProducer::IsEnabled()
+{
+    if (!GraphicCore::GetGraphicConfig().m_IsRaytracingEnabled)
+        return false;
+
+    if (!GraphicCore::GetGraphicConfig().m_IrradianceFieldEnabled)
+        return false;
+
+    if (GraphicCore::GetGraphicConfig().m_GlobalIlluminationMode != RaytracingMode::DDGI)
+        return false;
+
+    return true;
 }
 

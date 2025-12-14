@@ -24,10 +24,10 @@
 #include "utils/encoding.hlsl"
 #include "utils/shading.hlsl"
 
-Texture2D<float2> SceneDepth                : register(t0);
-Texture2D<float4> LightingTexture           : register(t1);
-Texture2D<float4> DiffuseIndirectTexture    : register(t2);
-Texture2D<float4> ProceduralSkyTexture      : register(t3);
+Texture2D<float2> SceneDepth                        : register(t0);
+Texture2D<float4> DirectLightingTexture             : register(t1);
+Texture2D<float4> DiffuseIndirectLightingTexture    : register(t2);
+Texture2D<float4> ProceduralSkyTexture              : register(t3);
 
 struct PS_INPUT
 {
@@ -39,8 +39,8 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
 {
     sampler pointSampler = SamplerDescriptorHeap[GlobalConstants.m_SamplerIndex_Point_Clamp];
 
-    const float4 direct = LightingTexture.Sample(pointSampler, IN.TexCoord);
-    const float4 indirect = DiffuseIndirectTexture.Sample(pointSampler, IN.TexCoord);
+    const float4 direct = DirectLightingTexture.Sample(pointSampler, IN.TexCoord);
+    const float4 indirect = DiffuseIndirectLightingTexture.Sample(pointSampler, IN.TexCoord);
     const float4 sky = ProceduralSkyTexture[IN.TexCoord * GlobalConstants.m_ScreenResolution];
     const float2 screenCoords = IN.TexCoord * GlobalConstants.m_ScreenResolution;
     const float depth = SceneDepth.Load(int3(screenCoords, 0)).r;
@@ -48,8 +48,7 @@ float4 PS_Main(PS_INPUT IN) : SV_Target
     if (depth <= 0) // Reverse-z
         return sky;
 
-    float4 finalColor = direct + indirect;
-    return finalColor;
+    return direct + indirect;
 }
 
-#endif // __LIGHTING_COMPOSITE_PS_HLSL__o
+#endif // __LIGHTING_COMPOSITE_PS_HLSL__

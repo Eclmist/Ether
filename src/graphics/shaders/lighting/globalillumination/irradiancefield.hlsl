@@ -25,7 +25,7 @@
 #include "utils/sampling.hlsl"
 #include "utils/encoding.hlsl"
 
-ConstantBuffer<IrradianceFieldParams> IrradianceFieldParams : register(b1);
+ConstantBuffer<IrradianceFieldParams> IrradianceFieldParams : register(b2);
 
 Texture2D<float3> IrradianceFieldIrradianceAtlas            : register(t3);
 Texture2D<float2> IrradianceFieldDepthAtlas                 : register(t4);

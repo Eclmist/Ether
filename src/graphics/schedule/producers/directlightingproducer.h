@@ -25,11 +25,11 @@
 
 namespace Ether::Graphics
 {
-class RaytracedLightingProducer : public GraphicProducer
+class DirectLightingProducer : public GraphicProducer
 {
 public:
-    RaytracedLightingProducer();
-    ~RaytracedLightingProducer() override = default;
+    DirectLightingProducer();
+    ~DirectLightingProducer() override = default;
 
 public:
     void Initialize(ResourceContext& rc) override;
@@ -46,18 +46,10 @@ protected:
     void InitializeShaderBindingTable(ResourceContext& rc);
 
 protected:
-    std::unique_ptr<RhiShader> m_InitialGenerationShader;
-    std::unique_ptr<RhiShader> m_TemporalResamplingShader;
-    std::unique_ptr<RhiShader> m_SpatialResamplingShader;
     std::unique_ptr<RhiShader> m_LightingEvaluationShader;
-
-    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_InitialGenerationPsoDesc;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_TemporalResamplingPsoDesc;
-    std::unique_ptr<RhiComputePipelineStateDesc> m_SpatialResamplingPsoDesc;
-    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_LightingEvaluationPsoDesc;
+    std::unique_ptr<RhiRaytracingPipelineStateDesc> m_PsoDesc;
 
 protected:
-    RhiResource* m_InitialGenerationSBT;
-    RhiResource* m_LightingEvaluationSBT;
+    RhiResource* m_DirectLightingSBT;
 };
 } // namespace Ether::Graphics
